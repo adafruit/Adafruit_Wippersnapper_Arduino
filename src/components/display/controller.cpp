@@ -72,7 +72,7 @@ bool DisplayController::Handle_Display_AddOrReplace(
   WS.feedWDT();
   display->showSplash();
   WS.feedWDT();
-  display->drawStatusBar();
+  display->drawStatusBar(WS._config.aio_user);
   WS.feedWDT();
 
   _hw_instances.push_back(display); // Store the display instance
@@ -131,7 +131,7 @@ bool DisplayController::Handle_Display_Write(
   return true;
 }
 
-void DisplayController::update() {
+void DisplayController::update(int32_t rssi, bool is_connected) {
   // if _hw_instances is empty, early out
   if (_hw_instances.size() == 0)
     return;
@@ -139,6 +139,8 @@ void DisplayController::update() {
   // Get the driver instance for the display
   DisplayHardware *display = nullptr;
   for (auto &hw_instance : _hw_instances) {
-    hw_instance->updateStatusBar(WS.getRSSI(), 100, WS.networkStatus());
+    // Note: For now, battery is always 100% as we don't have a way to read it
+    // yet.
+    hw_instance->updateStatusBar(rssi, 100, is_connected);
   }
 }

@@ -46,7 +46,7 @@ public:
 
   void showSplash();
   void drawStatusBar(const char *io_username);
-  void updateStatusBar(int8_t rssi, uint8_t bat, ws_status_t mqtt_connected);
+  void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_connected);
   //
   // API for Adafruit_GFX that abstracts hardware functionality
   // NOTE: These methods are meant to be implemented within dispDrvBase and

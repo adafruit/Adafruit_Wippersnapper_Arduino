@@ -148,11 +148,17 @@ public:
   /*!
     @brief  Updates the status bar with current information (battery level,
     connectivity status, etc).
+    @param  rssi
+            The current WiFi RSSI (signal strength) in dB.
+    @param  bat
+            The current battery level as a percentage (0-100).
+    @param  mqtt_status
+            The current MQTT connection status.
     @note   This method can be overridden by derived classes to provide
             specific functionality.
   */
   virtual void updateStatusBar(int8_t rssi, uint8_t bat,
-                               ws_status_t mqtt_connected) {
+                               bool mqtt_status) {
     // No-op for base class
   }
 
@@ -172,8 +178,7 @@ protected:
   int8_t _statusbar_rssi; ///< RSSI value for status bar
   uint8_t
       _statusbar_bat; ///< Battery level, as a percentage, for the status bar
-  ws_status_t
-      _statusbar_mqtt_connected; ///< MQTT connection status for the status bar
+  bool _statusbar_mqtt_connected; ///< MQTT connection status for the status bar
 };
 
 #endif // WS_DISP_DRV_BASE_H

@@ -269,11 +269,11 @@ void DisplayHardware::showSplash() {
 void DisplayHardware::drawStatusBar(const char *io_username) {
   if (!_drvDisp)
     return;
-  _drvDisp->drawStatusBar(const char *io_username);
+  _drvDisp->drawStatusBar(io_username);
 }
 
 void DisplayHardware::updateStatusBar(int8_t rssi, uint8_t bat,
-                                      ws_status_t mqtt_connected) {
+                                      bool mqtt_connected) {
   if (!_drvDisp)
     return;
   _drvDisp->updateStatusBar(rssi, bat, mqtt_connected);
