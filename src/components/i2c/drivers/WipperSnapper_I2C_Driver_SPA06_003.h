@@ -119,10 +119,10 @@ public:
 
 protected:
   Adafruit_SPA06_003 *_spa06_003 = nullptr; ///< SPA06-003 object
-  Adafruit_Sensor *_spa06_003_temp = {
-      0}; ///< Ptr to an adafruit_sensor representing the temperature
-  Adafruit_Sensor *_spa06_003_pressure = {
-      0}; ///< Ptr to an adafruit_sensor representing the pressure
+  Adafruit_Sensor *_spa06_003_temp =
+      nullptr; ///< Ptr to an adafruit_sensor representing the temperature
+  Adafruit_Sensor *_spa06_003_pressure =
+      nullptr; ///< Ptr to an adafruit_sensor representing the pressure
 };
 
 #endif // WipperSnapper_I2C_Driver_SPA06_003_H
