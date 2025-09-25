@@ -1347,12 +1347,6 @@ void WipperSnapper_Component_I2C::update() {
   msgi2cResponse.which_payload =
       wippersnapper_signal_v1_I2CResponse_resp_i2c_device_event_tag;
 
-  // one fast pass for all drivers every update() call
-  for (auto *drv : drivers) {
-    if (drv)
-      drv->fastTick();
-  }
-
   long curTime;
   bool sensorsReturningFalse = true;
   int retries = 3;
@@ -1364,6 +1358,9 @@ void WipperSnapper_Component_I2C::update() {
 
     std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
     for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
+      // Per-driver fast tick (non-blocking)
+      (*iter)->fastTick();
+
       // Number of events which occurred for this driver
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
 

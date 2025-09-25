@@ -70,10 +70,9 @@ public:
       _sgp40 = nullptr;
       return false;
     }
-    _lastFastMs = millis();
-    _n = 0;
-    _vocSum = 0.0f;
-    _rawSum = 0;
+    // Initialize cached values
+    _rawValue = 0;
+    _vocIdx = 0;
     return true;
   }
 
@@ -89,14 +88,7 @@ public:
   bool getEventRaw(sensors_event_t *rawEvent) override {
     if (!_sgp40)
       return false;
-    if (_n > 0) {
-      rawEvent->data[0] = (float)_rawSum / (float)_n;
-      _rawSum = 0;
-      _vocSum = 0.0f;
-      _n = 0;
-      return true;
-    }
-    rawEvent->data[0] = (float)_sgp40->measureRaw();
+    rawEvent->data[0] = (float)_rawValue;
     return true;
   }
 
@@ -112,22 +104,15 @@ public:
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) override {
     if (!_sgp40)
       return false;
-    if (_n > 0) {
-      vocIndexEvent->voc_index = (uint16_t)(_vocSum / (float)_n);
-      _rawSum = 0;
-      _vocSum = 0.0f;
-      _n = 0;
-      return true;
-    }
-    vocIndexEvent->voc_index = (uint16_t)_sgp40->measureVocIndex();
+    vocIndexEvent->voc_index = (uint16_t)_vocIdx;
     return true;
   }
 
   /*******************************************************************************/
   /*!
       @brief    Performs background sampling for the SGP40.
-                Runs once per second to accumulate raw and VOC index values
-                for later averaging in getEventRaw() and getEventVOCIndex().
+                single poll (no averaging) and cache
+                results for getEventRaw()/getEventVOCIndex().
   */
   /*******************************************************************************/
   void fastTick() override {
@@ -136,29 +121,17 @@ public:
     if (!vocEnabled())
       return;
 
-    uint32_t now = millis();
-    if (now - _lastFastMs >= 1000) {
-      _rawSum += _sgp40->measureRaw();
-      _vocSum += _sgp40->measureVocIndex();
-      _n++;
-      _lastFastMs = now;
-    }
+    // Single poll and cache latest values (no cadence/averaging)
+    _rawValue = _sgp40->measureRaw();
+    _vocIdx = (uint16_t)_sgp40->measureVocIndex();
   }
 
 protected:
   Adafruit_SGP40 *_sgp40; ///< SGP40
 
-  /** Millis timestamp of last 1 Hz background read. */
-  uint32_t _lastFastMs = 0;
-
-  /** Number of samples accumulated since last publish. */
-  uint32_t _n = 0;
-
-  /** Running sum of VOC index samples for averaging. */
-  float _vocSum = 0.0f;
-
-  /** Running sum of raw samples for averaging. */
-  uint32_t _rawSum = 0;
+  /** Cached latest measurements (no averaging). */
+  uint16_t _rawValue = 0;
+  uint16_t _vocIdx = 0;
 
   /*******************************************************************************/
   /*!

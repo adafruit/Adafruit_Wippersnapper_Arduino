@@ -33,7 +33,6 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_SGP30() override {
-    // Called when a SGP30 component is deleted.
     if (_sgp30) {
       delete _sgp30;
       _sgp30 = nullptr;
@@ -53,74 +52,62 @@ public:
       _sgp30 = nullptr;
       return false;
     }
-    _sgp30->IAQinit();            // start IAQ algorithm
-    _lastFastMs = millis();       // reset fast sampler
-    _n = _eco2Sum = _tvocSum = 0; // clear accumulators
+    _sgp30->IAQinit(); // start IAQ algorithm
+    _did_measure = false;
     return true;
   }
 
   bool getEventECO2(sensors_event_t *senseEvent) override {
     if (!_sgp30)
       return false;
-    if (_n > 0) {
-      senseEvent->eCO2 = (uint16_t)(_eco2Sum / _n);
-      _eco2Sum = 0;
-      _tvocSum = 0;
-      _n = 0;
-      return true;
+    if (!_did_measure) {
+      _did_measure = _sgp30->IAQmeasure();
     }
-    if (_sgp30->IAQmeasure()) {
-      senseEvent->eCO2 = (uint16_t)_sgp30->eCO2;
-      return true;
-    }
-    return false;
+    if (!_did_measure)
+      return false;
+
+    senseEvent->eCO2 = (uint16_t)_sgp30->eCO2;
+    _did_measure = false; // consume cached reading
+    return true;
   }
 
   bool getEventTVOC(sensors_event_t *senseEvent) override {
     if (!_sgp30)
       return false;
-    if (_n > 0) {
-      senseEvent->tvoc = (uint16_t)(_tvocSum / _n);
-      _eco2Sum = 0;
-      _tvocSum = 0;
-      _n = 0;
-      return true;
+    if (!_did_measure) {
+      _did_measure = _sgp30->IAQmeasure();
     }
-    if (_sgp30->IAQmeasure()) {
-      senseEvent->tvoc = (uint16_t)_sgp30->TVOC;
-      return true;
-    }
-    return false;
+    if (!_did_measure)
+      return false;
+
+    senseEvent->tvoc = (uint16_t)_sgp30->TVOC;
+    _did_measure = false; // consume cached reading
+    return true;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief  Performs a lightweight background poll for the SGP30.
+              Calls IAQmeasure() once and caches whether it succeeded.
+              Cached values (eCO2, TVOC) are then available via getEvent*().
+              No averaging or delay; must be non-blocking.
+  */
+  /*******************************************************************************/
   void fastTick() override {
+    if (!_sgp30)
+      return;
     if (!iaqEnabled())
-      return; // nothing enabled, save cycles
-    uint32_t now = millis();
-    if (now - _lastFastMs >= 1000) { // ~1 Hz cadence
-      if (_sgp30 && _sgp30->IAQmeasure()) {
-        _eco2Sum += _sgp30->eCO2; // uint16_t in library
-        _tvocSum += _sgp30->TVOC; // uint16_t in library
-        _n++;
-      }
-      _lastFastMs = now;
-    }
+      return;
+
+    // Only perform a single IAQ measurement and cache the result
+    _did_measure = _sgp30->IAQmeasure();
   }
 
 protected:
   Adafruit_SGP30 *_sgp30; ///< Pointer to SGP30 sensor object
 
-  /** Millis timestamp of last 1 Hz background read. */
-  uint32_t _lastFastMs = 0;
-
-  /** Number of samples accumulated since last publish. */
-  uint32_t _n = 0;
-
-  /** Running sum of eCO2 samples for averaging. */
-  uint32_t _eco2Sum = 0;
-
-  /** Running sum of TVOC samples for averaging. */
-  uint32_t _tvocSum = 0;
+  /** Whether we have a fresh IAQ measurement ready. */
+  bool _did_measure = false;
 
   /*******************************************************************************/
   /*!
@@ -134,4 +121,4 @@ protected:
   }
 };
 
-#endif // WipperSnapper_I2C_Driver_SGP30
+#endif // WipperSnapper_I2C_Driver_SGP30_H
