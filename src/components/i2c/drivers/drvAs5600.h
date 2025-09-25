@@ -108,27 +108,20 @@ public:
       WS_DEBUG_PRINTLN("Magnet not detected!");
       return false;
     }
-
-    // Continuously read and display angle values
-    uint16_t rawAngle = _as5600->getRawAngle();
-    uint16_t angle = _as5600->getAngle();
-
-    WS_DEBUG_PRINT("AS5600 Raw: ");
-    WS_DEBUG_PRINT(rawAngle);
-    WS_DEBUG_PRINT(" | Scaled: ");
-    WS_DEBUG_PRINT(angle);
-
-    // Check status conditions
     if (_as5600->isAGCminGainOverflow()) {
-      WS_DEBUG_PRINTLN(" | MH: magnet too strong");
-      return false;
+      WS_DEBUG_PRINTLN("MH: magnet too strong");
+    } else if (_as5600->isAGCmaxGainOverflow()) {
+      WS_DEBUG_PRINTLN("ML: magnet too weak");
+    } else {
+      uint16_t angle = _as5600->getAngle();
+      _angle = ((float)angle / 4095.0) * 360.0;
+      return true;
     }
-    if (_as5600->isAGCmaxGainOverflow()) {
-      WS_DEBUG_PRINTLN(" | ML: magnet too weak");
-      return false;
-    }
-    _angle = ((float)angle / 4095.0) * 360.0;
-    return true;
+    // Show raw changing data if low/high value errors
+    uint16_t rawAngle = _as5600->getRawAngle();
+    WS_DEBUG_PRINT("AS5600 Raw: ");
+    WS_DEBUG_PRINTLN(rawAngle);
+    return false;
   }
 
   /*******************************************************************************/
