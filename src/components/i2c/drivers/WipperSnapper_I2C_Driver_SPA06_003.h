@@ -19,6 +19,13 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_SPA06_003.h>
 
+#define SPA06_003_TEMP_MIN -40.0 ///< Minimum valid temperature reading
+#define SPA06_003_TEMP_MAX 85.0  ///< Maximum valid temperature reading
+#define SPA06_003_PRESSURE_MIN                                                 \
+  300.0 ///< Minimum valid pressure (9km above sea level)
+#define SPA06_003_PRESSURE_MAX                                                 \
+  1100.0 ///< Maximum valid pressure (500m below sea level)
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the SPA06-003 PT sensor.
@@ -80,7 +87,8 @@ public:
     if (_spa06_003_temp == NULL)
       return false;
     success = _spa06_003_temp->getEvent(tempEvent);
-    if (tempEvent->temperature > 85.0 || tempEvent->temperature < -40.0) {
+    if (tempEvent->temperature > SPA06_003_TEMP_MAX ||
+        tempEvent->temperature < SPA06_003_TEMP_MIN) {
       success = false;
     }
     return success;
@@ -102,7 +110,8 @@ public:
       return false;
     }
     success = _spa06_003_pressure->getEvent(pressureEvent);
-    if (pressureEvent->pressure < 300.0 || pressureEvent->pressure > 1100.0) {
+    if (pressureEvent->pressure < SPA06_003_PRESSURE_MIN ||
+        pressureEvent->pressure > SPA06_003_PRESSURE_MAX) {
       success = false;
     }
     return success;
