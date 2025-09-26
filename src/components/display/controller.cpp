@@ -69,8 +69,8 @@ bool DisplayController::Handle_Display_AddOrReplace(
     return false;
   }
 
-  WS.feedWDT();
-  display->showSplash();
+  //WS.feedWDT();
+  //display->showSplash();
   WS.feedWDT();
   display->drawStatusBar(WS._config.aio_user);
   WS.feedWDT();

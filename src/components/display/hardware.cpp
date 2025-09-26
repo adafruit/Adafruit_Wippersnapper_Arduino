@@ -44,12 +44,12 @@ using FnCreateDispDrvTft = std::function<dispDrvBase *(
 // NOTE: When you add a new SPI TFT display driver, make sure to add it to the
 // factory!
 static const std::map<std::string, FnCreateDispDrvTft> FactoryDrvDispTft = {
-    {"st7735",
+    {"tft-154-wide-angle",
      [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
         int16_t miso) -> dispDrvBase * {
        return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
      }},
-    {"st7789",
+    {"tft-154-wide-angle",
      [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
         int16_t miso) -> dispDrvBase * {
        return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
@@ -344,11 +344,30 @@ bool DisplayHardware::beginTft(
   }
 
   // Create display driver object using the factory function
+  WS_DEBUG_PRINTLN("[display] Creating TFT display driver with pinout: ");
+    WS_DEBUG_PRINT("  CS: D");  WS_DEBUG_PRINTLN(cs);
+    WS_DEBUG_PRINT("  DC: D");  WS_DEBUG_PRINTLN(dc);
+    WS_DEBUG_PRINT("  MOSI: D");WS_DEBUG_PRINTLN(mosi);
+    WS_DEBUG_PRINT("  SCK: D"); WS_DEBUG_PRINTLN(sck);
+    if (rst != -1) {
+        WS_DEBUG_PRINT("  RST: D"); WS_DEBUG_PRINTLN(rst);
+    }
+    if (miso != -1) {
+        WS_DEBUG_PRINT("  MISO: D"); WS_DEBUG_PRINTLN(miso);
+    }
   _drvDisp = CreateDrvDispTft(_name, cs, dc, mosi, sck, rst, miso);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false;
   }
+
+  // Print configuration
+    WS_DEBUG_PRINTLN("[display] Successfully created tft display driver!");
+    WS_DEBUG_PRINTLN("[display] TFT configuration:");
+    WS_DEBUG_PRINT("  Width: "); WS_DEBUG_PRINTLN(config->width);
+    WS_DEBUG_PRINT("  Height: ");WS_DEBUG_PRINTLN(config->height);
+    WS_DEBUG_PRINT("  Rotation: ");WS_DEBUG_PRINTLN(config->rotation);
+    WS_DEBUG_PRINT("  Text Size: ");WS_DEBUG_PRINTLN(text_sz);
 
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);

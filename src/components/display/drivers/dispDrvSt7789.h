@@ -44,11 +44,15 @@ public:
                 int16_t rst = -1, int16_t miso = -1)
       : dispDrvBase(cs, dc, mosi, sck, rst, miso), _display(nullptr) {}
 
+  /*!
+      @brief  Destructor for the ST7789 display driver.
+  */
   ~dispDrvSt7789() {
     if (_display) {
       delete _display;
       _display = nullptr;
     }
+    //digitalWrite(TFT_BACKLIGHT, LOW);
   }
 
   /*!
@@ -57,21 +61,6 @@ public:
   */
   bool begin() override {
 
-// Special power control configuration for
-// boards with built-in TFTs
-#if defined(TFT_BACKLITE)
-    // turn on backlite
-    pinMode(TFT_BACKLITE, OUTPUT);
-    digitalWrite(TFT_BACKLITE, HIGH);
-
-#if defined(TFT_I2C_POWER)
-    // turn on the TFT / I2C power supply
-    pinMode(TFT_I2C_POWER, OUTPUT);
-    digitalWrite(TFT_I2C_POWER, HIGH);
-    delay(10);
-#endif // TFT_I2C_POWER
-#endif
-
     _display = new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_rst);
     if (!_display)
       return false;
@@ -79,8 +68,14 @@ public:
     _display->init(_width, _height);
     _display->setRotation(_rotation);
     setTextSize(ST7789_TEXT_SZ_DEFAULT);
-    _display->fillScreen(ST77XX_BLACK);
+    _display->fillScreen(ST77XX_WHITE);
     _display->setTextColor(ST77XX_WHITE);
+
+/*     #ifdef TFT_BACKLIGHT
+    pinMode(TFT_BACKLIGHT, OUTPUT);
+    digitalWrite(TFT_BACKLIGHT, HIGH); // Backlight on
+    #endif */
+
     return true;
   }
 
@@ -115,7 +110,7 @@ public:
       return;
     }
 
-    delay(1000);
+    delay(1500); // Pause for 1.5 seconds
   }
 
   /*!
