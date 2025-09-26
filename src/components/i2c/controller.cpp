@@ -208,6 +208,23 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvMcp9808(i2c, addr, mux_channel, driver_name);
      }},
+    {"mlx90632b",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMLX90632(i2c, addr, mux_channel, driver_name);
+     }},
+    {"mlx90632d_med",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMLX90632(i2c, addr, mux_channel, driver_name);
+     }},
+    {"mlx90632d_ext",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       drvMLX90632 *drv = new drvMLX90632(i2c, addr, mux_channel, driver_name);
+       drv->ConfigureAndPrintSensorInfo(true);
+       return drv;
+     }},
     {"mpl115a2",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -396,6 +413,8 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x2A, {"nau7802"}},
         {0x38, {"aht20", "max17048"}},
         {0x39, {"tsl2591"}},
+        {0x3A, {"mlx90632"}},
+        {0x3B, {"mlx90632"}},
         {0x40,
          {"htu21d", "htu31d", "ina219", "ina228", "ina237", "ina238", "ina260",
           "ms8607", "si7021", "stemma_soil"}},
