@@ -131,7 +131,7 @@ protected:
 
   /** Cached latest measurements (no averaging). */
   uint16_t _rawValue = 0;
-  uint16_t _vocIdx = 0; ///< Index for the VOC (volatile organic compounds) sensor reading
+  uint16_t _vocIdx = 0; ///< VOC index value (0–500)
 
   /*******************************************************************************/
   /*!
