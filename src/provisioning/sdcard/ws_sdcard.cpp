@@ -1122,7 +1122,7 @@ const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
     return "\x25";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-    return "C (Ambiant)";
+    return "C (Ambient)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
     return "C (Object)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
