@@ -174,17 +174,14 @@ public:
       @brief    Gets a ptr to an array containing the sensor types, as strings.
       @returns  Pointer to an array of strings.
   */
-  /*******************************************************************************/
   const char **GetSensorTypeStrings() { return _sensor_type_strings; }
 
-  /*******************************************************************************/
   /*!
       @brief    Configures a driver with the default SensorType(s) for the
                 device.
-  /*******************************************************************************/
+  */
   virtual void ConfigureDefaultSensorTypes() { return; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the number of enabled sensors.
       @returns  The number of enabled sensors.
@@ -229,12 +226,14 @@ public:
       @brief    Gets the sensor's types
       @returns  A pointer to an array of SensorTypes.
   */
-  /*******************************************************************************/
   wippersnapper_sensor_SensorType *GetSensorTypes() { return _sensors; }
 
+  /*!
+      @brief    Gets the number of sensor types.
+      @returns  The number of sensor types.
+  */
   size_t GetNumSensorTypes() { return _sensors_count; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the sensor's previous period.
       @returns  The sensor's previous period, in milliseconds.
@@ -439,6 +438,78 @@ public:
                 otherwise.
   */
   virtual bool getEventCurrent(sensors_event_t *currentEvent) { return false; }
+
+  /*!
+      @brief    Gets a sensor's magnetic field value.
+      @param    magneticEvent
+                The magnetic field vector (x, y, z) in microTesla.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventMagneticField(sensors_event_t *magneticEvent) {
+    return false;
+  }
+
+  /*!
+      @brief    Gets a sensor's gravity vector value.
+      @param    gravityEvent
+                The gravity vector (x, y, z) in m/s^2.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventGravity(sensors_event_t *gravityEvent) { return false; }
+
+  /*!
+      @brief    Gets a sensor's linear acceleration vector value.
+      @param    linearAccelEvent
+                The linear acceleration vector (x, y, z) in m/s^2.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventLinearAcceleration(sensors_event_t *linearAccelEvent) {
+    return false;
+  }
+
+  /*!
+      @brief    Gets a sensor's rotation vector value.
+      @param    rotationEvent
+                The rotation vector (x, y, z, w) in radians.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventRotationVector(sensors_event_t *rotationEvent) {
+    return false;
+  }
+
+  /*!
+      @brief    Gets a sensor's gyroscope value.
+      @param    gyroEvent
+                The gyroscope vector (x, y, z) in rad/s.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventGyroscope(sensors_event_t *gyroEvent) { return false; }
+  /*!
+      @brief    Gets a sensor's accelerometer value.
+      @param    accelEvent
+                The accelerometer vector (x, y, z) in m/s^2.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventAccelerometer(sensors_event_t *accelEvent) {
+    return false;
+  }
+
+  /*!
+      @brief    Gets a sensor's orientation value.
+      @param    orientationEvent
+                The orientation vector (x, y, z) in degrees.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventOrientation(sensors_event_t *orientationEvent) {
+    return false;
+  }
 
   /*!
       @brief    Gets a sensor's Raw value.
@@ -665,6 +736,34 @@ public:
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC,
        [this](sensors_event_t *event) -> bool {
          return this->getEventTVOC(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventMagneticField(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventAccelerometer(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventGyroscope(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventOrientation(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventGravity(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventLinearAcceleration(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventRotationVector(event);
        }}}; ///< SensorType to function call map
 
   wippersnapper_sensor_SensorType

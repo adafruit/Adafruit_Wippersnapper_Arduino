@@ -20,6 +20,7 @@
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
+#include "drivers/drvAs5600.h"
 #include "drivers/drvBase.h" ///< Base i2c input driver class
 #include "drivers/drvBh1750.h"
 #include "drivers/drvBme280.h"
@@ -59,6 +60,7 @@
 #include "drivers/drvOutputBase.h" ///< Base i2c output driver class
 #include "drivers/drvPct2075.h"
 #include "drivers/drvPm25.h"
+#include "drivers/drvQmc5883p.h"
 #include "drivers/drvScd30.h"
 #include "drivers/drvScd4x.h"
 #include "drivers/drvSen5x.h"

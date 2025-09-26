@@ -1288,11 +1288,12 @@ void Wippersnapper_V2::connect() {
     // Parse the JSON file
     if (!WsV2._sdCardV2->ParseFileConfig())
       haltErrorV2("[APP] Failed to parse config.json!");
-    WS_DEBUG_PRINTLN("[APP] Attempting to configure hardware...");
 #ifndef OFFLINE_MODE_DEBUG
+    WS_DEBUG_PRINTLN("[APP] Creating new .log file on SD card...");
     if (!WsV2._sdCardV2->CreateNewLogFile())
       haltErrorV2("Unable to create new .log file on SD card!");
 #endif
+    WS_DEBUG_PRINTLN("[APP] Attempting to configure hardware...");
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
 #ifndef OFFLINE_MODE_WOKWI

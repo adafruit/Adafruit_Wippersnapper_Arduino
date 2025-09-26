@@ -58,6 +58,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvAhtx0(i2c, addr, mux_channel, driver_name);
      }},
+    {"as5600",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvAs5600(i2c, addr, mux_channel, driver_name);
+     }},
     {"dht20",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -255,6 +260,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvPm25(i2c, addr, mux_channel, driver_name);
      }},
+    {"qmc5883p",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvQmc5883p(i2c, addr, mux_channel, driver_name);
+     }},
     {"scd40",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -411,6 +421,8 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
          {"ltr303", "pct2075", "tsl2591", "veml7700", "vl53l1x", "vl53l4cd",
           "vl53l4cx", "vl6180x"}},
         {0x2A, {"nau7802"}},
+        {0x2C, {"qmc5883p"}},
+        {0x36, {"as5600"}},
         {0x38, {"aht20", "max17048"}},
         {0x39, {"tsl2591"}},
         {0x3A, {"mlx90632"}},
@@ -1442,7 +1454,9 @@ void I2cController::update() {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
       if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to read sensor!");
+        WS_DEBUG_PRINT("[i2c] ERROR: Failed to read sensor! (");
+        WS_DEBUG_PRINT(drv->GetDrvName());
+        WS_DEBUG_PRINTLN(")");
         continue;
       }
       // Fill the I2cDeviceEvent's sensor_event array submsg.
