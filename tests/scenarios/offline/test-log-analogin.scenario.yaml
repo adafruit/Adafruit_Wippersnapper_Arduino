@@ -11,10 +11,10 @@ steps:
   - wait-serial: 'Period: 5000.00'
   - wait-serial: 'Read Mode: 18'
   - delay: 5s
-  - wait-serial: '{"timestamp":0,"pin":"A14","value":0,"si_unit":"none"}'
+  - wait-serial: '{"timestamp":0,"pin":"A14","value":0,"si_unit":"none (Raw)"}'
   - set-control:
       part-id: pot1
       control: position
       value: 0.5
   - delay: 3s
-  - wait-serial: '{"timestamp":1,"pin":"A14","value":16384,"si_unit":"none"}'
+  - wait-serial: '{"timestamp":1,"pin":"A14","value":16384,"si_unit":"none (Raw)"}'
