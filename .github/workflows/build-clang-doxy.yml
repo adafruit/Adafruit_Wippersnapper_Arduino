@@ -376,6 +376,7 @@ jobs:
           [
             "wippersnapper_feather_esp32",
             "qtpy_esp32",
+            "sparklemotion_esp32",
             "sparklemotionmini_esp32",
             "sparklemotionstick_esp32",
             "feather_esp32_v2",
@@ -428,6 +429,7 @@ jobs:
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
+          ref: add-sparkle-motion
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
