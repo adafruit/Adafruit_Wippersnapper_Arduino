@@ -23,7 +23,7 @@ using FnCreateDispDrvEpd =
 // Factory for creating a new display drivers
 // NOTE: When you add a new display driver, make sure to add it to the factory!
 static const std::map<std::string, FnCreateDispDrvEpd> FactoryDrvDispEpd = {
-    {"thinkink-gs4-eaamfgn",
+    {"eink-29-grayscale-ssd1680",
      [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
         int16_t busy) -> dispDrvBase * {
        return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
@@ -216,8 +216,8 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
-  // For "magtag" component name, attempt to autodetect the driver type
-  if (strncmp(_name, "magtag", 6) == 0) {
+/*   // For "magtag" component name, attempt to autodetect the driver type
+  if (strncmp(_name, "eink-29-grayscale-ssd1680", 6) == 0) {
     if (detect_ssd1680(cs, dc, rst)) {
       // Detected SSD1680, use EAAMFGN driver
       strncpy(_name, "thinkink-gs4-eaamfgn", sizeof(_name) - 1);
@@ -227,7 +227,7 @@ bool DisplayHardware::beginEPD(
       strncpy(_name, "thinkink-gs4-t5", sizeof(_name) - 1);
       _name[sizeof(_name) - 1] = '\0';
     }
-  }
+  } */
 
   // Create display driver object using the factory function
   _drvDisp = CreateDrvDispEpd(_name, dc, rst, cs, srcs, busy);

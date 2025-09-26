@@ -99,6 +99,104 @@ public:
   }
 
   /*!
+      @brief  Displays the splash screen on the display.
+  */
+  void showSplash() override {
+    if (!_display)
+      return;
+
+    // Display the appropriate splash screen based on resolution
+    if (_width == 240 && _height == 240) {
+      _display->drawBitmap(0, 0, tft_bmp_logo_240240, 240, 240, ST77XX_BLACK);
+    } else if (_width == 240 && _height == 135) {
+      _display->drawBitmap(0, 0, tft_bmp_logo_240135, 240, 135, EPD_BLACK);
+    } else {
+      // Unsupported resolution
+      return;
+    }
+
+    delay(1000);
+  }
+
+  /*!
+      @brief  Draws a status bar at the top of the display.
+  */
+  virtual void drawStatusBar(const char *io_username) override {
+    if (!_display)
+      return;
+
+    // Configure status bar parameters based on resolution
+    if (_width == 240 && _height == 240) {
+      _status_bar_height = 20;
+      _status_bar_icon_sz = 16;
+      _status_bar_icon_spacing = 4;
+      _status_bar_icon_margin = 5;
+    } else if (_width == 240 && _height == 135) {
+      // TODO: The required icons are not added/implemented for 12px icons
+      _status_bar_height = 16;
+      _status_bar_icon_sz = 12;
+      _status_bar_icon_spacing = 3;
+      _status_bar_icon_margin = 4;
+    } else {
+      // Unsupported resolution
+      return;
+    }
+
+    // Clear the entire display buffer to remove splash screen
+    _display->fillScreen(ST77XX_BLACK);
+
+    // Draw status bar
+    // TODO: We are not drawing a border here because it isnt
+    // required on a color display, I think.
+    _display->fillRect(0, 0, _display->width(), _status_bar_height,
+                       ST77XX_BLACK);
+
+    // Draw username on left side of the status bar
+    _display->setTextSize(1);
+    _display->setTextColor(EPD_BLACK);
+    _display->setCursor(5, 6);
+    _display->print(io_username);
+
+    // Calculate icon positions and center vertically
+    int iconY = (_status_bar_height - _status_bar_icon_sz) / 2;
+    int batteryX =
+        _display->width() - _status_bar_icon_sz - _status_bar_icon_margin;
+    int wifiX = batteryX - _status_bar_icon_sz - _status_bar_icon_spacing;
+    int cloudX = wifiX - _status_bar_icon_sz - _status_bar_icon_spacing;
+    if (_height == 240) {
+      // Draw 16px icons on right side of the status bar
+      _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
+                           _status_bar_icon_sz, _status_bar_icon_sz, EPD_BLACK);
+      _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_full, _status_bar_icon_sz,
+                           _status_bar_icon_sz, EPD_BLACK);
+      _display->drawBitmap(batteryX, iconY, epd_bmp_bat_full,
+                           _status_bar_icon_sz, _status_bar_icon_sz, EPD_BLACK);
+    } else if (_height == 135) {
+      // TODO: Draw 12px icons on right side of the status bar
+    } else {
+      // Unsupported resolution
+      return;
+    }
+  }
+
+  /*!
+  @brief  Updates the status bar with current information (battery level,
+  connectivity status, etc).
+  @param  rssi
+          The current WiFi RSSI (signal strength) in dB.
+  @param  bat
+          The current battery level as a percentage (0-100).
+  @param  mqtt_status
+          The current MQTT connection status.
+*/
+  void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_status) override {
+    if (!_display)
+      return;
+
+    // TODO - needs to be implemented!
+  }
+
+  /*!
       @brief  Writes a message to the display.
       @param  message
               The message to write to the display.
@@ -111,7 +209,7 @@ public:
 
     // Start with a fresh display buffer
     _display->fillScreen(ST77XX_BLACK);
-    int16_t y_idx = 0;
+    int16_t y_idx = _status_bar_height;
     _display->setCursor(0, y_idx);
 
     // Calculate the line height based on the text size (NOTE: base height is
@@ -152,6 +250,12 @@ public:
 
 private:
   Adafruit_ST7789 *_display;
+  uint8_t _status_bar_height;  ///< Height of the status bar, in pixels
+  uint8_t _status_bar_icon_sz; ///< Size of status bar icons, in pixels
+  uint8_t
+      _status_bar_icon_spacing; ///< Spacing between status bar icons, in pixels
+  uint8_t
+      _status_bar_icon_margin; ///< Right margin for status bar icons, in pixels
 };
 
 #endif // WS_DISP_DRV_ST7789

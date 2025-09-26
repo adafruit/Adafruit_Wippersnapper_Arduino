@@ -18,8 +18,9 @@
 
 #include "dispDrvBase.h"
 
-#define STATUS_BAR_HEIGHT 20 ///< Height of the status bar in pixels, assumes 16px icons
-#define STATUS_BAR_BORDER 1 ///< Border around the status bar in pixels
+#define STATUS_BAR_HEIGHT                                                      \
+  20 ///< Height of the status bar in pixels, assumes 16px icons
+#define STATUS_BAR_BORDER 1   ///< Border around the status bar in pixels
 #define STATUS_BAR_ICON_SZ 16 ///< Size of status bar icons in pixels
 
 /*!
@@ -115,84 +116,69 @@ public:
     // Calculate icon positions and center vertically
     int iconSpacing = 4;
     int rightMargin = 5;
-    int iconY = STATUS_BAR_BORDER + ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) / 2);
+    int iconY =
+        STATUS_BAR_BORDER +
+        ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) / 2);
     int batteryX = _display->width() - STATUS_BAR_ICON_SZ - rightMargin;
     int wifiX = batteryX - STATUS_BAR_ICON_SZ - iconSpacing;
     int cloudX = wifiX - STATUS_BAR_ICON_SZ - iconSpacing;
     // Draw icons on right side of the status bar
-    _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
-    _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_full, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
-    _display->drawBitmap(batteryX, iconY, epd_bmp_bat_full, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
+    _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
+                         STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
+    _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_full, STATUS_BAR_ICON_SZ,
+                         STATUS_BAR_ICON_SZ, EPD_BLACK);
+    _display->drawBitmap(batteryX, iconY, epd_bmp_bat_full, STATUS_BAR_ICON_SZ,
+                         STATUS_BAR_ICON_SZ, EPD_BLACK);
 
     _display->display();
   }
 
-    /*!
-    @brief  Updates the status bar with current information (battery level,
-    connectivity status, etc).
-    @param  rssi
-            The current WiFi RSSI (signal strength) in dB.
-    @param  bat
-            The current battery level as a percentage (0-100).
-    @param  mqtt_status
-            The current MQTT connection status.
-  */
+  /*!
+  @brief  Updates the status bar with current information (battery level,
+  connectivity status, etc).
+  @param  rssi
+          The current WiFi RSSI (signal strength) in dB.
+  @param  bat
+          The current battery level as a percentage (0-100).
+  @param  mqtt_status
+          The current MQTT connection status.
+*/
   void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_status) override {
     if (!_display)
       return;
 
-  bool do_update = false;
-  // Update cloud icon only if it changed
-  if (mqtt_status != _statusbar_mqtt_connected) {
-    int iconSpacing = 4;
-    int rightMargin = 5;
-    int iconY = STATUS_BAR_BORDER + ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) / 2);
-    int batteryX = _display->width() - STATUS_BAR_ICON_SZ - rightMargin;
-    int wifiX = batteryX - STATUS_BAR_ICON_SZ - iconSpacing;
-    int cloudX = wifiX - STATUS_BAR_ICON_SZ - iconSpacing;
+    bool do_update = false;
 
-    // Clear and draw the new cloud icon, based on MQTT connection status
-    _display->fillRect(cloudX, iconY, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_WHITE);
-    if (mqtt_status == 21) {
-      _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ,
-                           EPD_BLACK);
-    } else {
-      _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_offline, STATUS_BAR_ICON_SZ,
-                           STATUS_BAR_ICON_SZ, EPD_BLACK);
-    }
-    _statusbar_mqtt_connected = mqtt_status;
-    do_update = true;
-  }
+    // For EPD - redraws take 1-2 seconds, so only update the cloud state
 
-/*     // Update WiFi icon only if it changed significantly (+/- 3 dB)
-    if (abs(rssi - _statusbar_rssi) >= 3 || rssi == 0 || _statusbar_rssi == 0) {
+    // Update cloud icon only if it changed state
+    if (mqtt_status != _statusbar_mqtt_connected) {
       int iconSpacing = 4;
       int rightMargin = 5;
-      int iconY = STATUS_BAR_BORDER + ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) / 2);
+      int iconY =
+          STATUS_BAR_BORDER +
+          ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) /
+           2);
       int batteryX = _display->width() - STATUS_BAR_ICON_SZ - rightMargin;
       int wifiX = batteryX - STATUS_BAR_ICON_SZ - iconSpacing;
+      int cloudX = wifiX - STATUS_BAR_ICON_SZ - iconSpacing;
 
-      // Clear and draw the new WiFi icon, based on RSSI
-      _display->fillRect(wifiX, iconY, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_WHITE);
-      if (rssi == 0) {
-        _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_no_signal, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
-      } else if (rssi > -50) {
-        _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_full, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
-      } else if (rssi > -60) {
-        _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_fair, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
-      } else if (rssi > -70) {
-        _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_weak, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
+      // Clear and draw the new cloud icon, based on MQTT connection status
+      _display->fillRect(cloudX, iconY, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ,
+                         EPD_WHITE);
+      if (mqtt_status == 21) {
+        _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
+                             STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
       } else {
-        _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_weak, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
+        _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_offline,
+                             STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
       }
-      _statusbar_rssi = rssi;
+      _statusbar_mqtt_connected = mqtt_status;
       do_update = true;
-    } */
+    }
 
-    // Temporarily removed while I get clarification on how often to refresh the epd
-  /*   if (do_update)
-      _display->display(); */
-
+    if (do_update)
+      _display->display();
   }
 
   /*!
@@ -206,9 +192,10 @@ public:
     if (_display == nullptr)
       return;
 
-    // Start with a fresh display buffer
-    _display->clearBuffer();
-    int16_t y_idx = 0;
+    // Clear only the area below the status bar
+    _display->fillRect(0, STATUS_BAR_HEIGHT, _display->width(),
+                       _display->height() - STATUS_BAR_HEIGHT, EPD_WHITE);
+    int16_t y_idx = STATUS_BAR_HEIGHT;
     _display->setCursor(0, y_idx);
 
     // Calculate the line height based on the text size (NOTE: base height is

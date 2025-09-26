@@ -2826,7 +2826,7 @@ void Wippersnapper::connect() {
   WS._analogIO = new Wippersnapper_AnalogIO(5, 3.3);
 
   // Configure hardware
-  WS.pinCfgCompleted = true;
+  // WS.pinCfgCompleted = true;
   while (!WS.pinCfgCompleted) {
     WS_DEBUG_PRINTLN(
         "Polling for message containing hardware configuration...");
