@@ -4,6 +4,8 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_SGP30.h>
 
+#define SGP30_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz cadence
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a SGP30 sensor.
@@ -54,6 +56,7 @@ public:
     }
     _sgp30->IAQinit(); // start IAQ algorithm
     _did_measure = false;
+    _lastFastMs = millis() - SGP30_FASTTICK_INTERVAL_MS;
     return true;
   }
 
@@ -87,10 +90,22 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief  Performs a lightweight background poll for the SGP30.
-              Calls IAQmeasure() once and caches whether it succeeded.
-              Cached values (eCO2, TVOC) are then available via getEvent*().
-              No averaging or delay; must be non-blocking.
+      @brief  Performs background sampling for the SGP30.
+
+              This method enforces a ~1 Hz cadence recommended by the sensor
+              datasheet. On each call, it checks the elapsed time since the
+              last poll using `millis()`. If at least
+              SGP30_FASTTICK_INTERVAL_MS have passed, it performs a single
+              IAQ measurement and caches the result in `_did_measure`.
+
+              Cached values (eCO2, TVOC) are later returned by
+              `getEventECO2()` and `getEventTVOC()` without re-triggering I2C
+              traffic.
+
+      @note   Called automatically from
+              `WipperSnapper_Component_I2C::update()` once per loop iteration.
+              Must be non-blocking (no delays). The millis-based guard ensures
+              the sensor is not over-polled.
   */
   /*******************************************************************************/
   void fastTick() override {
@@ -99,8 +114,11 @@ public:
     if (!iaqEnabled())
       return;
 
-    // Only perform a single IAQ measurement and cache the result
-    _did_measure = _sgp30->IAQmeasure();
+    uint32_t now = millis();
+    if (now - _lastFastMs >= SGP30_FASTTICK_INTERVAL_MS) {
+      _did_measure = _sgp30->IAQmeasure();
+      _lastFastMs = now;
+    }
   }
 
 protected:
@@ -108,6 +126,9 @@ protected:
 
   /** Whether we have a fresh IAQ measurement ready. */
   bool _did_measure = false;
+
+  /** Timestamp of last poll to enforce 1 Hz cadence. */
+  uint32_t _lastFastMs = 0;
 
   /*******************************************************************************/
   /*!

@@ -20,6 +20,8 @@
 #include <Adafruit_SGP40.h>
 #include <Wire.h>
 
+#define SGP40_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz cadence
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the SGP40 sensor.
@@ -73,6 +75,7 @@ public:
     // Initialize cached values
     _rawValue = 0;
     _vocIdx = 0;
+    _lastFastMs = millis() - SGP40_FASTTICK_INTERVAL_MS;
     return true;
   }
 
@@ -110,9 +113,21 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Performs background sampling for the SGP40.
-                single poll (no averaging) and cache
-                results for getEventRaw()/getEventVOCIndex().
+      @brief  Performs background sampling for the SGP40.
+
+              This method enforces a ~1 Hz cadence recommended by the sensor
+              datasheet. On each call, it checks the elapsed time since the last
+              poll using `millis()`. If at least SGP40_FASTTICK_INTERVAL_MS ms
+              have passed, it reads a new raw value and VOC index from the
+     sensor and caches them in `_rawValue` and `_vocIdx`.
+
+              Cached results are later returned by `getEventRaw()` and
+              `getEventVOCIndex()` without re-triggering I2C traffic.
+
+      @note   Called automatically from
+              `WipperSnapper_Component_I2C::update()` once per loop iteration.
+              Must be non-blocking (no delays). The millis-based guard ensures
+              the sensor is not over-polled.
   */
   /*******************************************************************************/
   void fastTick() override {
@@ -121,17 +136,25 @@ public:
     if (!vocEnabled())
       return;
 
-    // Single poll and cache latest values (no cadence/averaging)
-    _rawValue = _sgp40->measureRaw();
-    _vocIdx = (uint16_t)_sgp40->measureVocIndex();
+    uint32_t now = millis();
+    if (now - _lastFastMs >= SGP40_FASTTICK_INTERVAL_MS) {
+      _rawValue = _sgp40->measureRaw();
+      _vocIdx = (int32_t)_sgp40->measureVocIndex();
+      _lastFastMs = now;
+    }
   }
 
 protected:
-  Adafruit_SGP40 *_sgp40; ///< SGP40
+  Adafruit_SGP40 *_sgp40; ///< Pointer to SGP40 sensor object
 
-  /** Cached latest measurements (no averaging). */
-  uint16_t _rawValue = 0;
-  uint16_t _vocIdx = 0; ///< VOC index value (0–500)
+  /**
+   * Cached latest measurements from the sensor.
+   * - _rawValue: raw sensor output (ticks)
+   * - _vocIdx: VOC Index (signed, per datasheet)
+   */
+  uint16_t _rawValue = 0;   ///< Raw sensor output (ticks)
+  int32_t _vocIdx = 0;      ///< VOC Index (signed, per datasheet)
+  uint32_t _lastFastMs = 0; ///< Last poll timestamp to enforce 1 Hz cadence
 
   /*******************************************************************************/
   /*!
