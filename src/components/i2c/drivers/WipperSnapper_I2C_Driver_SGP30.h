@@ -34,7 +34,7 @@ public:
       @brief    Destructor for an SGP30 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_SGP30() override {
+  ~WipperSnapper_I2C_Driver_SGP30() {
     if (_sgp30) {
       delete _sgp30;
       _sgp30 = nullptr;

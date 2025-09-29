@@ -52,7 +52,7 @@ public:
                 when the driver is destroyed.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_SGP40() override {
+  ~WipperSnapper_I2C_Driver_SGP40() {
     if (_sgp40) {
       delete _sgp40;
       _sgp40 = nullptr;
