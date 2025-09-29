@@ -52,7 +52,9 @@ public:
       delete _display;
       _display = nullptr;
     }
-    //digitalWrite(TFT_BACKLIGHT, LOW);
+#if defined(ARDUINO_FUNHOUSE_ESP32S2)
+    digitalWrite(TFT_BACKLIGHT, LOW);
+#endif
   }
 
   /*!
@@ -68,13 +70,14 @@ public:
     _display->init(_width, _height);
     _display->setRotation(_rotation);
     setTextSize(ST7789_TEXT_SZ_DEFAULT);
-    _display->fillScreen(ST77XX_WHITE);
+    _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
 
-/*     #ifdef TFT_BACKLIGHT
+#if defined(ARDUINO_FUNHOUSE_ESP32S2)
+    // Turn backlight on
     pinMode(TFT_BACKLIGHT, OUTPUT);
-    digitalWrite(TFT_BACKLIGHT, HIGH); // Backlight on
-    #endif */
+    digitalWrite(TFT_BACKLIGHT, HIGH);
+#endif
 
     return true;
   }
@@ -102,7 +105,7 @@ public:
 
     // Display the appropriate splash screen based on resolution
     if (_width == 240 && _height == 240) {
-      _display->drawBitmap(0, 0, tft_bmp_logo_240240, 240, 240, ST77XX_BLACK);
+      _display->drawBitmap(0, 0, tft_bmp_logo_240240, 240, 240, ST77XX_WHITE);
     } else if (_width == 240 && _height == 135) {
       _display->drawBitmap(0, 0, tft_bmp_logo_240135, 240, 135, EPD_BLACK);
     } else {
@@ -110,7 +113,7 @@ public:
       return;
     }
 
-    delay(1500); // Pause for 1.5 seconds
+    delay(1000);
   }
 
   /*!
@@ -141,10 +144,8 @@ public:
     _display->fillScreen(ST77XX_BLACK);
 
     // Draw status bar
-    // TODO: We are not drawing a border here because it isnt
-    // required on a color display, I think.
     _display->fillRect(0, 0, _display->width(), _status_bar_height,
-                       ST77XX_BLACK);
+                       ST77XX_WHITE);
 
     // Draw username on left side of the status bar
     _display->setTextSize(1);
@@ -202,8 +203,11 @@ public:
     if (_display == nullptr)
       return;
 
-    // Start with a fresh display buffer
-    _display->fillScreen(ST77XX_BLACK);
+    _display->setTextColor(ST77XX_WHITE);
+
+    // Clear only the area below the status bar
+    _display->fillRect(0, _status_bar_height, _width,
+                       _height - _status_bar_height, ST77XX_BLACK);
     int16_t y_idx = _status_bar_height;
     _display->setCursor(0, y_idx);
 
