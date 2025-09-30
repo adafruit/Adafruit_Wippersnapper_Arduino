@@ -55,36 +55,55 @@ public:
       return false;
     }
     _sgp30->IAQinit(); // start IAQ algorithm
-    _did_measure = false;
+
+    // Initialize cached values and cadence
+    _eco2 = 0;
+    _tvoc = 0;
     _lastFastMs = millis() - SGP30_FASTTICK_INTERVAL_MS;
     return true;
   }
 
+/*******************************************************************************/
+/*!
+    @brief    Gets the most recently cached eCO2 reading.
+
+              This value is updated in `fastTick()` at a ~1 Hz cadence
+              and returned directly here without re-triggering an I2C
+              transaction.
+
+    @param    senseEvent
+              Pointer to an Adafruit Sensor event that will be populated
+              with the cached eCO2 value (in ppm).
+
+    @returns  True if a cached value is available, False otherwise.
+*/
+/*******************************************************************************/
   bool getEventECO2(sensors_event_t *senseEvent) override {
     if (!_sgp30)
       return false;
-    if (!_did_measure) {
-      _did_measure = _sgp30->IAQmeasure();
-    }
-    if (!_did_measure)
-      return false;
-
-    senseEvent->eCO2 = (uint16_t)_sgp30->eCO2;
-    _did_measure = false; // consume cached reading
+    senseEvent->eCO2 = _eco2;
     return true;
   }
 
+/*******************************************************************************/
+/*!
+    @brief    Gets the most recently cached TVOC reading.
+
+              This value is updated in `fastTick()` at a ~1 Hz cadence
+              and returned directly here without re-triggering an I2C
+              transaction.
+
+    @param    senseEvent
+              Pointer to an Adafruit Sensor event that will be populated
+              with the cached TVOC value (in ppb).
+
+    @returns  True if a cached value is available, False otherwise.
+*/
+/*******************************************************************************/
   bool getEventTVOC(sensors_event_t *senseEvent) override {
     if (!_sgp30)
       return false;
-    if (!_did_measure) {
-      _did_measure = _sgp30->IAQmeasure();
-    }
-    if (!_did_measure)
-      return false;
-
-    senseEvent->tvoc = (uint16_t)_sgp30->TVOC;
-    _did_measure = false; // consume cached reading
+    senseEvent->tvoc = _tvoc;
     return true;
   }
 
@@ -96,11 +115,10 @@ public:
               datasheet. On each call, it checks the elapsed time since the
               last poll using `millis()`. If at least
               SGP30_FASTTICK_INTERVAL_MS have passed, it performs a single
-              IAQ measurement and caches the result in `_did_measure`.
+              IAQ measurement and caches the results in `_eco2` and `_tvoc`.
 
-              Cached values (eCO2, TVOC) are later returned by
-              `getEventECO2()` and `getEventTVOC()` without re-triggering I2C
-              traffic.
+              Cached values are then returned by `getEventECO2()` and
+              `getEventTVOC()` without re-triggering I2C traffic.
 
       @note   Called automatically from
               `WipperSnapper_Component_I2C::update()` once per loop iteration.
@@ -116,7 +134,10 @@ public:
 
     uint32_t now = millis();
     if (now - _lastFastMs >= SGP30_FASTTICK_INTERVAL_MS) {
-      _did_measure = _sgp30->IAQmeasure();
+      if (_sgp30->IAQmeasure()) {
+        _eco2 = (uint16_t)_sgp30->eCO2;
+        _tvoc = (uint16_t)_sgp30->TVOC;
+      }
       _lastFastMs = now;
     }
   }
@@ -124,8 +145,9 @@ public:
 protected:
   Adafruit_SGP30 *_sgp30; ///< Pointer to SGP30 sensor object
 
-  /** Whether we have a fresh IAQ measurement ready. */
-  bool _did_measure = false;
+  /** Cached latest measurements (no averaging). */
+  uint16_t _eco2 = 0; ///< eCO2, in ppm
+  uint16_t _tvoc = 0; ///< TVOC, in ppb
 
   /** Timestamp of last poll to enforce 1 Hz cadence. */
   uint32_t _lastFastMs = 0;
