@@ -17,7 +17,7 @@
     defined(ARDUINO_ADAFRUIT_ITSYBITSY_ESP32) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2) ||                              \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
-    defined(ARDUINO_ESP32C3_DEV) ||                                            \
+    defined(ARDUINO_ESP32C3_DEV) || defined(ARDUINO_SPARKLEMOTION_ESP32) ||    \
     defined(ARDUINO_SPARKLEMOTIONMINI_ESP32) ||                                \
     defined(ARDUINO_SPARKLEMOTIONSTICK_ESP32) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) ||                                  \
@@ -89,7 +89,6 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
     } else if (doc["network_type_wifi"]["alternative_networks"]
                    .is<JsonArray>()) {
-
       WS_DEBUG_PRINTLN("Found multiple wifi networks in secrets.json");
       // Parse network credentials from array in secrets
       JsonArray altnetworks = doc["network_type_wifi"]["alternative_networks"];
