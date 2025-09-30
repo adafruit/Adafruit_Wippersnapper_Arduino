@@ -63,21 +63,21 @@ public:
     return true;
   }
 
-/*******************************************************************************/
-/*!
-    @brief    Gets the most recently cached eCO2 reading.
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the most recently cached eCO2 reading.
 
-              This value is updated in `fastTick()` at a ~1 Hz cadence
-              and returned directly here without re-triggering an I2C
-              transaction.
+                This value is updated in `fastTick()` at a ~1 Hz cadence
+                and returned directly here without re-triggering an I2C
+                transaction.
 
-    @param    senseEvent
-              Pointer to an Adafruit Sensor event that will be populated
-              with the cached eCO2 value (in ppm).
+      @param    senseEvent
+                Pointer to an Adafruit_Sensor event that will be populated
+                with the cached eCO2 value (in ppm).
 
-    @returns  True if a cached value is available, False otherwise.
-*/
-/*******************************************************************************/
+      @returns  True if a cached value is available, False otherwise.
+  */
+  /*******************************************************************************/
   bool getEventECO2(sensors_event_t *senseEvent) override {
     if (!_sgp30)
       return false;
@@ -85,21 +85,21 @@ public:
     return true;
   }
 
-/*******************************************************************************/
-/*!
-    @brief    Gets the most recently cached TVOC reading.
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the most recently cached TVOC reading.
 
-              This value is updated in `fastTick()` at a ~1 Hz cadence
-              and returned directly here without re-triggering an I2C
-              transaction.
+                This value is updated in `fastTick()` at a ~1 Hz cadence
+                and returned directly here without re-triggering an I2C
+                transaction.
 
-    @param    senseEvent
-              Pointer to an Adafruit Sensor event that will be populated
-              with the cached TVOC value (in ppb).
+      @param    senseEvent
+                Pointer to an Adafruit_Sensor event that will be populated
+                with the cached TVOC value (in ppb).
 
-    @returns  True if a cached value is available, False otherwise.
-*/
-/*******************************************************************************/
+      @returns  True if a cached value is available, False otherwise.
+  */
+  /*******************************************************************************/
   bool getEventTVOC(sensors_event_t *senseEvent) override {
     if (!_sgp30)
       return false;
