@@ -429,7 +429,6 @@ jobs:
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
-          ref: add-sparkle-motion
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
