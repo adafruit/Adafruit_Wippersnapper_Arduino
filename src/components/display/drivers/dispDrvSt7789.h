@@ -107,13 +107,13 @@ public:
     if (_width == 240 && _height == 240) {
       _display->drawBitmap(0, 0, tft_bmp_logo_240240, 240, 240, ST77XX_WHITE);
     } else if (_width == 240 && _height == 135) {
-      _display->drawBitmap(0, 0, tft_bmp_logo_240135, 240, 135, EPD_BLACK);
+      _display->drawBitmap(0, 0, tft_bmp_logo_240135, 240, 135, ST77XX_BLACK);
     } else {
       // Unsupported resolution
       return;
     }
 
-    delay(1000);
+    delay(500);
   }
 
   /*!
@@ -149,7 +149,7 @@ public:
 
     // Draw username on left side of the status bar
     _display->setTextSize(1);
-    _display->setTextColor(EPD_BLACK);
+    _display->setTextColor(ST77XX_BLACK);
     _display->setCursor(5, 6);
     _display->print(io_username);
 
@@ -162,11 +162,11 @@ public:
     if (_height == 240) {
       // Draw 16px icons on right side of the status bar
       _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
-                           _status_bar_icon_sz, _status_bar_icon_sz, EPD_BLACK);
+                           _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
       _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_full, _status_bar_icon_sz,
-                           _status_bar_icon_sz, EPD_BLACK);
+                           _status_bar_icon_sz, ST77XX_BLACK);
       _display->drawBitmap(batteryX, iconY, epd_bmp_bat_full,
-                           _status_bar_icon_sz, _status_bar_icon_sz, EPD_BLACK);
+                           _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
     } else if (_height == 135) {
       // TODO: Draw 12px icons on right side of the status bar
     } else {
@@ -189,7 +189,41 @@ public:
     if (!_display)
       return;
 
-    // TODO - needs to be implemented!
+      WS_DEBUG_PRINTLN("Updating ST7789 status bar");
+
+      int iconY = (_status_bar_height - _status_bar_icon_sz) / 2;
+      int batteryX = _display->width() - _status_bar_icon_sz - _status_bar_icon_margin;
+      int wifiX = batteryX - _status_bar_icon_sz - _status_bar_icon_spacing;
+      int cloudX = wifiX - _status_bar_icon_sz - _status_bar_icon_spacing;
+
+      // Clear and draw the new cloud icon, based on MQTT connection status
+      _display->fillRect(cloudX, iconY, _status_bar_icon_sz, _status_bar_icon_sz,
+                         ST77XX_WHITE);
+      if (mqtt_status == 21) {
+        _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
+                             _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
+      } else {
+        _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_offline,
+                             _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
+      }
+
+      // Update WiFi icon only if RSSI has changed significantly (+/-3dB)
+      const unsigned char* wifi_icon = epd_bmp_wifi_no_signal;
+        if (rssi >= -50) {
+            wifi_icon = epd_bmp_wifi_full;
+        } else if (rssi < -50 && rssi >= -60) {
+            wifi_icon = epd_bmp_wifi_fair;
+        } else if (rssi < -60 && rssi >= -70) {
+            wifi_icon = epd_bmp_wifi_weak;
+        } else if (rssi < -70 && rssi >= -80) {
+            wifi_icon = epd_bmp_wifi_no_signal;
+        } else {
+            wifi_icon = epd_bmp_wifi_no_signal;
+        }
+        // Clear and draw the new WiFi icon, based on RSSI
+        _display->fillRect(wifiX, iconY, _status_bar_icon_sz, _status_bar_icon_sz,
+                           ST77XX_WHITE);
+        _display->drawBitmap(wifiX, iconY, wifi_icon, _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
   }
 
   /*!

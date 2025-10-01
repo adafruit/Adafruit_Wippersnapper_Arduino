@@ -423,7 +423,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       is_success = false;
       WS.pinCfgCompleted = false;
     }
-    // If this is the initial configuration
+    // Is this the initial configuration?
     if (!WS.pinCfgCompleted) {
       WS_DEBUG_PRINTLN("Initial Pin Configuration Complete!");
       WS.pinCfgCompleted = true;
@@ -520,10 +520,10 @@ void publishI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
   size_t msgSz;
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                       msgi2cResponse);
-  WS_DEBUG_PRINT("Publishing Message: I2CResponse...");
+  WS_DEBUG_PRINTLN("Publishing Message: I2CResponse...");
   if (!WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing,
-                         msgSz, 1)) {
-    WS_DEBUG_PRINTLN("ERROR: Failed to publish I2C Response!");
+                         msgSz, 0)) {
+    WS_DEBUG_PRINTLN("\tERROR: Failed to publish I2C Response!");
   } else {
     WS_DEBUG_PRINTLN("Published!");
   }
@@ -1579,10 +1579,10 @@ bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field,
     size_t msgSz;
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_DisplayResponse_fields,
                         &msgResp);
-    WS_DEBUG_PRINT("Publishing DisplayResponse Message...");
+    WS_DEBUG_PRINTLN("Publishing DisplayResponse Message...");
     if (!WS._mqtt->publish(WS._topic_signal_display_device, WS._buffer_outgoing,
-                           msgSz, 1)) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to DisplayResponse Response!");
+                           msgSz, 0)) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to Publish DisplayResponse!");
     } else {
       WS_DEBUG_PRINTLN("Published!");
     }
@@ -2826,7 +2826,6 @@ void Wippersnapper::connect() {
   WS._analogIO = new Wippersnapper_AnalogIO(5, 3.3);
 
   // Configure hardware
-  // WS.pinCfgCompleted = true;
   while (!WS.pinCfgCompleted) {
     WS_DEBUG_PRINTLN(
         "Polling for message containing hardware configuration...");
@@ -2873,8 +2872,12 @@ void Wippersnapper::publishPinConfigComplete() {
 
   // Publish message
   WS_DEBUG_PRINTLN("Publishing to pin config complete...");
-  WS.publish(WS._topic_device_pin_config_complete, _message_buffer,
-             _message_len, 1);
+  if (!WS._mqtt->publish(WS._topic_device_pin_config_complete, _message_buffer,
+                        _message_len, 0)) {
+    WS_DEBUG_PRINTLN("Failed to publish pin config complete message!");
+  } else {
+    WS_DEBUG_PRINTLN("Published pin config complete message!");
+  }
 }
 
 /**************************************************************************/
@@ -2915,7 +2918,7 @@ ws_status_t Wippersnapper::run() {
   WS.feedWDT();
 
   // Process display controller events, if initialized
-  //WS._displayController->update(getRSSI(), networkStatus() == WS_CONNECTED);
+  WS._displayController->update(getRSSI(), networkStatus() == WS_CONNECTED);
   WS.feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!

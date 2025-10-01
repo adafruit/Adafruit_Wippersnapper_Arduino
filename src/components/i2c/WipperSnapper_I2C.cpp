@@ -103,6 +103,8 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     _portNum = msgInitRequest->i2c_port_number;
     _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
   }
+
+  WS.runNetFSM();
 }
 
 /*************************************************************/
@@ -1067,6 +1069,7 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
 
   // set response OK
   _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
+  WS.runNetFSM();
 }
 
 /*******************************************************************************/

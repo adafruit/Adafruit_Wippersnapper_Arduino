@@ -175,10 +175,6 @@ protected:
   int16_t _height;        ///< Height of the display
   int16_t _width;         ///< Width of the display
   uint8_t _rotation;      ///< Rotation of the display
-  int8_t _statusbar_rssi; ///< RSSI value for status bar
-  uint8_t
-      _statusbar_bat; ///< Battery level, as a percentage, for the status bar
-  bool _statusbar_mqtt_connected; ///< MQTT connection status for the status bar
 };
 
 #endif // WS_DISP_DRV_BASE_H

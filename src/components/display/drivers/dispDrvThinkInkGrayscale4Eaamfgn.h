@@ -152,7 +152,6 @@ public:
     // For EPD - redraws take 1-2 seconds, so only update the cloud state
 
     // Update cloud icon only if it changed state
-    if (mqtt_status != _statusbar_mqtt_connected) {
       int iconSpacing = 4;
       int rightMargin = 5;
       int iconY =
@@ -173,12 +172,8 @@ public:
         _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_offline,
                              STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
       }
-      _statusbar_mqtt_connected = mqtt_status;
-      do_update = true;
-    }
 
-    if (do_update)
-      _display->display();
+    _display->display();
   }
 
   /*!

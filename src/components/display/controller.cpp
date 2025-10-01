@@ -17,7 +17,9 @@
 /*!
     @brief  Constructs a new DisplayController object
 */
-DisplayController::DisplayController() {}
+DisplayController::DisplayController() {
+  _last_bar_update = 0;
+}
 
 /*!
     @brief  Destructor
@@ -77,6 +79,8 @@ bool DisplayController::Handle_Display_AddOrReplace(
 
   _hw_instances.push_back(display); // Store the display instance
   WS_DEBUG_PRINTLN("[display] Display added or replaced successfully!");
+  WS.feedWDT();
+  WS.runNetFSM();
   return true;
 }
 
@@ -128,19 +132,47 @@ bool DisplayController::Handle_Display_Write(
   WS_DEBUG_PRINT("[display] Writing message to display: ");
   WS_DEBUG_PRINTLN(msgWrite->message);
   display->writeMessage(msgWrite->message);
+  WS.feedWDT();
+  WS.runNetFSM();
   return true;
 }
 
+/*!
+    @brief  Updates the status bar on all managed displays.
+    @param  rssi
+            The current WiFi RSSI value.
+    @param  is_connected
+            The current MQTT connection status.
+*/
 void DisplayController::update(int32_t rssi, bool is_connected) {
   // if _hw_instances is empty, early out
   if (_hw_instances.size() == 0)
     return;
 
+  // Only update the status bar every 60 seconds
+  unsigned long now = millis();
+  if (now - _last_bar_update < 60000)
+      return;
+  _last_bar_update = now;
+
+  // Early-out if nothing has changed
+  // and only consider WiFi changes +/-3dB
+  bool rssi_changed = abs(rssi - _statusbar_rssi) >= 3;
+  if (!rssi_changed &&  is_connected == _statusbar_mqtt_connected && 100 == _statusbar_bat) {
+      return;
+  }
+
   // Get the driver instance for the display
-  DisplayHardware *display = nullptr;
-  for (auto &hw_instance : _hw_instances) {
+  for (DisplayHardware *hw_instance : _hw_instances) {
     // Note: For now, battery is always 100% as we don't have a way to read it
     // yet.
     hw_instance->updateStatusBar(rssi, 100, is_connected);
   }
+
+  // Update the cached status bar values
+  _statusbar_rssi = rssi;
+  _statusbar_mqtt_connected = is_connected;
+  _statusbar_bat = 100; // NOTE: Always 100%, for now
+  WS.feedWDT();
+  WS.runNetFSM();
 }

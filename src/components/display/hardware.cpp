@@ -329,45 +329,15 @@ bool DisplayHardware::beginTft(
     miso = parsePin(spi_config->pin_miso);
   }
 
-  // Configure text size based on suffix in driver name
+  // TODO: Implement Text_size based on future Protobuf that includes it
   uint8_t text_sz; // Default text size
-  if (strstr(_name, "-lg") != nullptr) {
-    // Larger text size for displays with -lg suffix
-    text_sz = 4;
-    removeSuffix("-lg");
-  } else if (strstr(_name, "-md") != nullptr) {
-    // Larger text size for displays with -md suffix
-    text_sz = 3;
-    removeSuffix("-md");
-  } else {
-    text_sz = 1;
-  }
 
   // Create display driver object using the factory function
-  WS_DEBUG_PRINTLN("[display] Creating TFT display driver with pinout: ");
-    WS_DEBUG_PRINT("  CS: D");  WS_DEBUG_PRINTLN(cs);
-    WS_DEBUG_PRINT("  DC: D");  WS_DEBUG_PRINTLN(dc);
-    WS_DEBUG_PRINT("  MOSI: D");WS_DEBUG_PRINTLN(mosi);
-    WS_DEBUG_PRINT("  SCK: D"); WS_DEBUG_PRINTLN(sck);
-    if (rst != -1) {
-        WS_DEBUG_PRINT("  RST: D"); WS_DEBUG_PRINTLN(rst);
-    }
-    if (miso != -1) {
-        WS_DEBUG_PRINT("  MISO: D"); WS_DEBUG_PRINTLN(miso);
-    }
   _drvDisp = CreateDrvDispTft(_name, cs, dc, mosi, sck, rst, miso);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false;
   }
-
-  // Print configuration
-    WS_DEBUG_PRINTLN("[display] Successfully created tft display driver!");
-    WS_DEBUG_PRINTLN("[display] TFT configuration:");
-    WS_DEBUG_PRINT("  Width: "); WS_DEBUG_PRINTLN(config->width);
-    WS_DEBUG_PRINT("  Height: ");WS_DEBUG_PRINTLN(config->height);
-    WS_DEBUG_PRINT("  Rotation: ");WS_DEBUG_PRINTLN(config->rotation);
-    WS_DEBUG_PRINT("  Text Size: ");WS_DEBUG_PRINTLN(text_sz);
 
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
