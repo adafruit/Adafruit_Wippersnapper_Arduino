@@ -199,7 +199,7 @@ public:
       // Clear and draw the new cloud icon, based on MQTT connection status
       _display->fillRect(cloudX, iconY, _status_bar_icon_sz, _status_bar_icon_sz,
                          ST77XX_WHITE);
-      if (mqtt_status == 21) {
+      if (mqtt_status) {
         _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
                              _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
       } else {
@@ -243,13 +243,15 @@ public:
     _display->fillRect(0, _status_bar_height, _width,
                        _height - _status_bar_height, ST77XX_BLACK);
     int16_t y_idx = _status_bar_height;
-    _display->setCursor(0, y_idx);
 
     // Calculate the line height based on the text size (NOTE: base height is
     // 8px)
     int16_t line_height = 8 * _text_sz;
     uint16_t c_idx = 0;
     size_t msg_size = strlen(message);
+    // Begin with a small offset from status bar
+    y_idx += 5;
+    _display->setCursor(0, y_idx);
     for (size_t i = 0; i < msg_size && c_idx < msg_size; i++) {
       if (y_idx + line_height > _height)
         break;

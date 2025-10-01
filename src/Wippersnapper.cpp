@@ -2918,7 +2918,7 @@ ws_status_t Wippersnapper::run() {
   WS.feedWDT();
 
   // Process display controller events, if initialized
-  WS._displayController->update(getRSSI(), networkStatus() == WS_CONNECTED);
+  WS._displayController->update(getRSSI(), WS._mqtt->connected());
   WS.feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
