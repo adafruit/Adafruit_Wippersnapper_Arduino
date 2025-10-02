@@ -40,9 +40,6 @@ public:
 private:
   std::vector<DisplayHardware *>
       _hw_instances; ///< Holds pointers to DisplayHardware instances
-  int8_t _statusbar_rssi; ///< RSSI value for status bar
-  uint8_t _statusbar_bat; ///< Battery level, as a percentage, for the status bar
-  bool _statusbar_mqtt_connected; ///< MQTT connection status for the status bar
   unsigned long _last_bar_update; ///< Timestamp of last status bar update
 };
 extern Wippersnapper Ws; ///< Global WS instance

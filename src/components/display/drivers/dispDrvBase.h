@@ -175,6 +175,14 @@ protected:
   int16_t _height;        ///< Height of the display
   int16_t _width;         ///< Width of the display
   uint8_t _rotation;      ///< Rotation of the display
+  // statusbar properties
+  int _statusbar_icons_y; ///< Y position of status bar icons
+  int _statusbar_icon_battery_x; ///< X position of battery icon
+  int _statusbar_icon_wifi_x; ///< X position of WiFi icon
+  int _statusbar_icon_cloud_x; ///< X position of cloud icon
+  int8_t _statusbar_rssi; ///< RSSI value for status bar
+  uint8_t _statusbar_bat; ///< Battery level, as a percentage, for the status bar
+  bool _statusbar_mqtt_connected; ///< MQTT connection status for the status bar
 };
 
 #endif // WS_DISP_DRV_BASE_H

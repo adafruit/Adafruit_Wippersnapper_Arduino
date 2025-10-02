@@ -22,6 +22,8 @@
   20 ///< Height of the status bar in pixels, assumes 16px icons
 #define STATUS_BAR_BORDER 1   ///< Border around the status bar in pixels
 #define STATUS_BAR_ICON_SZ 16 ///< Size of status bar icons in pixels
+#define STATUS_BAR_ICON_SPACING 4 ///< Spacing between status bar icons in pixels
+#define STATUS_BAR_ICON_MARGIN 5 ///< Margin from edge of display to status bar icons in pixels
 
 /*!
     @brief  Driver for a ThinkInk 2.9" Grayscale 4-level EAAMFGN display.
@@ -113,21 +115,17 @@ public:
     _display->setCursor(5, 6);
     _display->print(io_username);
 
-    // Calculate icon positions and center vertically
-    int iconSpacing = 4;
-    int rightMargin = 5;
-    int iconY =
-        STATUS_BAR_BORDER +
-        ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) / 2);
-    int batteryX = _display->width() - STATUS_BAR_ICON_SZ - rightMargin;
-    int wifiX = batteryX - STATUS_BAR_ICON_SZ - iconSpacing;
-    int cloudX = wifiX - STATUS_BAR_ICON_SZ - iconSpacing;
+    // Calculate status bar icon positions and center vertically
+    _statusbar_icons_y = STATUS_BAR_BORDER + ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) / 2);
+    _statusbar_icon_battery_x = _display->width() - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_MARGIN;
+    _statusbar_icon_wifi_x = _statusbar_icon_battery_x - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_SPACING;
+    _statusbar_icon_cloud_x = _statusbar_icon_wifi_x - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_SPACING;
     // Draw icons on right side of the status bar
-    _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
+    _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_online,
                          STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
-    _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_full, STATUS_BAR_ICON_SZ,
+    _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y, epd_bmp_wifi_full, STATUS_BAR_ICON_SZ,
                          STATUS_BAR_ICON_SZ, EPD_BLACK);
-    _display->drawBitmap(batteryX, iconY, epd_bmp_bat_full, STATUS_BAR_ICON_SZ,
+    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y, epd_bmp_bat_full, STATUS_BAR_ICON_SZ,
                          STATUS_BAR_ICON_SZ, EPD_BLACK);
 
     _display->display();
@@ -152,24 +150,14 @@ public:
     // For EPD - redraws take 1-2 seconds, so only update the cloud state
 
     // Update cloud icon only if it changed state
-      int iconSpacing = 4;
-      int rightMargin = 5;
-      int iconY =
-          STATUS_BAR_BORDER +
-          ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) /
-           2);
-      int batteryX = _display->width() - STATUS_BAR_ICON_SZ - rightMargin;
-      int wifiX = batteryX - STATUS_BAR_ICON_SZ - iconSpacing;
-      int cloudX = wifiX - STATUS_BAR_ICON_SZ - iconSpacing;
-
       // Clear and draw the new cloud icon, based on MQTT connection status
-      _display->fillRect(cloudX, iconY, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ,
+      _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ,
                          EPD_WHITE);
       if (mqtt_status == 21) {
-        _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
+        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_online,
                              STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
       } else {
-        _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_offline,
+        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_offline,
                              STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
       }
 

@@ -18,7 +18,13 @@
 #include "dispDrvBase.h"
 #include <Adafruit_ST7789.h>
 
-#define ST7789_TEXT_SZ_DEFAULT 2 ///< Default text size for ST7789 displays
+#define ST7789_TEXT_SZ_DEFAULT 2    ///< Default text size for ST7789 displays
+#define ST7789_STATUSBAR_HEIGHT 20  ///< Default status bar height
+#define ST7789_STATUSBAR_ICON_SZ 16 ///< Default status bar icon size
+#define ST7789_STATUSBAR_ICON_SPACING                                          \
+  4 ///< Default spacing between status bar icons
+#define ST7789_STATUSBAR_ICON_MARGIN                                           \
+  5 ///< Default margin from edge of display to status bar icons
 
 /*!
     @brief  Driver for ST7789-based TFT displays.
@@ -52,8 +58,14 @@ public:
       delete _display;
       _display = nullptr;
     }
+// Turn off backlight
 #if defined(ARDUINO_FUNHOUSE_ESP32S2)
     digitalWrite(TFT_BACKLIGHT, LOW);
+#elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                      \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) ||                           \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+    digitalWrite(TFT_BACKLITE, LOW);
 #endif
   }
 
@@ -73,10 +85,16 @@ public:
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
 
+    // Turn on backlight
 #if defined(ARDUINO_FUNHOUSE_ESP32S2)
-    // Turn backlight on
     pinMode(TFT_BACKLIGHT, OUTPUT);
     digitalWrite(TFT_BACKLIGHT, HIGH);
+#elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                      \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) ||                           \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+    pinMode(TFT_BACKLITE, OUTPUT);
+    digitalWrite(TFT_BACKLITE, HIGH);
 #endif
 
     return true;
@@ -106,8 +124,8 @@ public:
     // Display the appropriate splash screen based on resolution
     if (_width == 240 && _height == 240) {
       _display->drawBitmap(0, 0, tft_bmp_logo_240240, 240, 240, ST77XX_WHITE);
-    } else if (_width == 240 && _height == 135) {
-      _display->drawBitmap(0, 0, tft_bmp_logo_240135, 240, 135, ST77XX_BLACK);
+    } else if (_width == 135 && _height == 240) {
+      _display->drawBitmap(0, 0, tft_bmp_logo_240135, 240, 135, ST77XX_WHITE);
     } else {
       // Unsupported resolution
       return;
@@ -123,28 +141,11 @@ public:
     if (!_display)
       return;
 
-    // Configure status bar parameters based on resolution
-    if (_width == 240 && _height == 240) {
-      _status_bar_height = 20;
-      _status_bar_icon_sz = 16;
-      _status_bar_icon_spacing = 4;
-      _status_bar_icon_margin = 5;
-    } else if (_width == 240 && _height == 135) {
-      // TODO: The required icons are not added/implemented for 12px icons
-      _status_bar_height = 16;
-      _status_bar_icon_sz = 12;
-      _status_bar_icon_spacing = 3;
-      _status_bar_icon_margin = 4;
-    } else {
-      // Unsupported resolution
-      return;
-    }
-
     // Clear the entire display buffer to remove splash screen
     _display->fillScreen(ST77XX_BLACK);
 
     // Draw status bar
-    _display->fillRect(0, 0, _display->width(), _status_bar_height,
+    _display->fillRect(0, 0, _display->width(), ST7789_STATUSBAR_HEIGHT,
                        ST77XX_WHITE);
 
     // Draw username on left side of the status bar
@@ -153,26 +154,23 @@ public:
     _display->setCursor(5, 6);
     _display->print(io_username);
 
-    // Calculate icon positions and center vertically
-    int iconY = (_status_bar_height - _status_bar_icon_sz) / 2;
-    int batteryX =
-        _display->width() - _status_bar_icon_sz - _status_bar_icon_margin;
-    int wifiX = batteryX - _status_bar_icon_sz - _status_bar_icon_spacing;
-    int cloudX = wifiX - _status_bar_icon_sz - _status_bar_icon_spacing;
-    if (_height == 240) {
-      // Draw 16px icons on right side of the status bar
-      _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
-                           _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
-      _display->drawBitmap(wifiX, iconY, epd_bmp_wifi_full, _status_bar_icon_sz,
-                           _status_bar_icon_sz, ST77XX_BLACK);
-      _display->drawBitmap(batteryX, iconY, epd_bmp_bat_full,
-                           _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
-    } else if (_height == 135) {
-      // TODO: Draw 12px icons on right side of the status bar
-    } else {
-      // Unsupported resolution
-      return;
-    }
+    // Calculate icon positions (rightmost side of status bar), center
+    // vertically
+    _statusbar_icons_y = (ST7789_STATUSBAR_HEIGHT - ST7789_STATUSBAR_ICON_SZ) / 2;
+    _statusbar_icon_battery_x = _display->width() - ST7789_STATUSBAR_ICON_SZ -
+                   ST7789_STATUSBAR_ICON_MARGIN;
+    _statusbar_icon_wifi_x = _statusbar_icon_battery_x - ST7789_STATUSBAR_ICON_SZ - ST7789_STATUSBAR_ICON_SPACING;
+    _statusbar_icon_cloud_x = _statusbar_icon_wifi_x - ST7789_STATUSBAR_ICON_SZ - ST7789_STATUSBAR_ICON_SPACING;
+    // Draw icons
+    _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_online,
+                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                         ST77XX_BLACK);
+    _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y, epd_bmp_wifi_full,
+                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                         ST77XX_BLACK);
+    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y, epd_bmp_bat_full,
+                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                         ST77XX_BLACK);
   }
 
   /*!
@@ -189,41 +187,52 @@ public:
     if (!_display)
       return;
 
-      WS_DEBUG_PRINTLN("Updating ST7789 status bar");
+    // Only update wifi icon if the RSSI has changed significantly (+/-3dB)
+    bool update_rssi = abs(rssi - _statusbar_rssi) >= 3;
+    // Only update cloud icon if MQTT status has changed
+    bool update_mqtt = mqtt_status != _statusbar_mqtt_connected;
 
-      int iconY = (_status_bar_height - _status_bar_icon_sz) / 2;
-      int batteryX = _display->width() - _status_bar_icon_sz - _status_bar_icon_margin;
-      int wifiX = batteryX - _status_bar_icon_sz - _status_bar_icon_spacing;
-      int cloudX = wifiX - _status_bar_icon_sz - _status_bar_icon_spacing;
+    // No need to update if nothing has changed
+    if (!update_rssi && !update_mqtt)
+      return;
 
+    if (update_mqtt) {
       // Clear and draw the new cloud icon, based on MQTT connection status
-      _display->fillRect(cloudX, iconY, _status_bar_icon_sz, _status_bar_icon_sz,
-                         ST77XX_WHITE);
+      _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y, ST7789_STATUSBAR_ICON_SZ,
+                         ST7789_STATUSBAR_ICON_SZ, ST77XX_WHITE);
       if (mqtt_status) {
-        _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_online,
-                             _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
+        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_online,
+                             ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                             ST77XX_BLACK);
       } else {
-        _display->drawBitmap(cloudX, iconY, epd_bmp_cloud_offline,
-                             _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
+        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_offline,
+                             ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                             ST77XX_BLACK);
       }
+      _statusbar_mqtt_connected = mqtt_status;
+    }
 
-      // Update WiFi icon only if RSSI has changed significantly (+/-3dB)
-      const unsigned char* wifi_icon = epd_bmp_wifi_no_signal;
-        if (rssi >= -50) {
-            wifi_icon = epd_bmp_wifi_full;
-        } else if (rssi < -50 && rssi >= -60) {
-            wifi_icon = epd_bmp_wifi_fair;
-        } else if (rssi < -60 && rssi >= -70) {
-            wifi_icon = epd_bmp_wifi_weak;
-        } else if (rssi < -70 && rssi >= -80) {
-            wifi_icon = epd_bmp_wifi_no_signal;
-        } else {
-            wifi_icon = epd_bmp_wifi_no_signal;
-        }
-        // Clear and draw the new WiFi icon, based on RSSI
-        _display->fillRect(wifiX, iconY, _status_bar_icon_sz, _status_bar_icon_sz,
-                           ST77XX_WHITE);
-        _display->drawBitmap(wifiX, iconY, wifi_icon, _status_bar_icon_sz, _status_bar_icon_sz, ST77XX_BLACK);
+    // Update WiFi icon only if RSSI has changed significantly (+/-3dB)
+    if (update_rssi) {
+      const unsigned char *wifi_icon = epd_bmp_wifi_no_signal;
+      if (rssi >= -50) {
+        wifi_icon = epd_bmp_wifi_full;
+      } else if (rssi < -50 && rssi >= -60) {
+        wifi_icon = epd_bmp_wifi_fair;
+      } else if (rssi < -60 && rssi >= -70) {
+        wifi_icon = epd_bmp_wifi_weak;
+      } else if (rssi < -70 && rssi >= -80) {
+        wifi_icon = epd_bmp_wifi_no_signal;
+      } else {
+        wifi_icon = epd_bmp_wifi_no_signal;
+      }
+      // Clear and draw the new WiFi icon, based on RSSI
+      _display->fillRect(_statusbar_icon_wifi_x, _statusbar_icons_y, ST7789_STATUSBAR_ICON_SZ,
+                         ST7789_STATUSBAR_ICON_SZ, ST77XX_WHITE);
+      _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y, wifi_icon, ST7789_STATUSBAR_ICON_SZ,
+                           ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+      _statusbar_rssi = rssi;
+    }
   }
 
   /*!
@@ -240,9 +249,9 @@ public:
     _display->setTextColor(ST77XX_WHITE);
 
     // Clear only the area below the status bar
-    _display->fillRect(0, _status_bar_height, _width,
-                       _height - _status_bar_height, ST77XX_BLACK);
-    int16_t y_idx = _status_bar_height;
+    _display->fillRect(0, ST7789_STATUSBAR_HEIGHT, _width,
+                       _height - ST7789_STATUSBAR_HEIGHT, ST77XX_BLACK);
+    int16_t y_idx = ST7789_STATUSBAR_HEIGHT;
 
     // Calculate the line height based on the text size (NOTE: base height is
     // 8px)
@@ -285,12 +294,6 @@ public:
 
 private:
   Adafruit_ST7789 *_display;
-  uint8_t _status_bar_height;  ///< Height of the status bar, in pixels
-  uint8_t _status_bar_icon_sz; ///< Size of status bar icons, in pixels
-  uint8_t
-      _status_bar_icon_spacing; ///< Spacing between status bar icons, in pixels
-  uint8_t
-      _status_bar_icon_margin; ///< Right margin for status bar icons, in pixels
 };
 
 #endif // WS_DISP_DRV_ST7789

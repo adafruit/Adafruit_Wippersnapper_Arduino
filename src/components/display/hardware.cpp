@@ -49,7 +49,7 @@ static const std::map<std::string, FnCreateDispDrvTft> FactoryDrvDispTft = {
         int16_t miso) -> dispDrvBase * {
        return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
      }},
-    {"tft-154-wide-angle",
+    {"tft-114",
      [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
         int16_t miso) -> dispDrvBase * {
        return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
@@ -341,7 +341,13 @@ bool DisplayHardware::beginTft(
 
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
+  WS_DEBUG_PRINT("[display] TFT Resolution: ");
+  WS_DEBUG_PRINT(config->width);
+  WS_DEBUG_PRINT("x");
+  WS_DEBUG_PRINTLN(config->height);
   _drvDisp->setRotation(config->rotation);
+  WS_DEBUG_PRINT("[display] TFT Rotation: ");
+  WS_DEBUG_PRINTLN(config->rotation);
   _drvDisp->begin();
 
   return true;
