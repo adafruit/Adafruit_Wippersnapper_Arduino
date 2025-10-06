@@ -46,13 +46,17 @@ bool DisplayController::Handle_Display_AddOrReplace(
   WS_DEBUG_PRINTLN(msgAdd->name);
 
   // Does this display hw instance already exist?
-  for (auto it = _hw_instances.begin(); it != _hw_instances.end(); ++it) {
-      if (strcmp((*it)->getName(), msgAdd->name) == 0) {
-      WS_DEBUG_PRINTLN("[display] Display instance already exists, removing...");
-      delete *it;
-      _hw_instances.erase(it);
-      break;
+  DisplayHardware *existingDisplay = findDisplay(msgAdd->name);
+  if (existingDisplay != nullptr) {
+    WS_DEBUG_PRINTLN("[display] Display exists, removing...");
+    for (std::vector<DisplayHardware *>::iterator it = _hw_instances.begin();
+         it != _hw_instances.end(); ++it) {
+      if (*it == existingDisplay) {
+        delete *it;
+        _hw_instances.erase(it);
+        break;
       }
+    }
   }
 
   // Configure display type
@@ -102,16 +106,25 @@ bool DisplayController::Handle_Display_AddOrReplace(
 */
 bool DisplayController::Handle_Display_Remove(
     wippersnapper_display_v1_DisplayRemove *msgRemove) {
-  // Find the display instance by name
-  for (auto it = _hw_instances.begin(); it != _hw_instances.end(); ++it) {
-    if (strcmp((*it)->getName(), msgRemove->name) == 0) {
+  if (!msgRemove || !msgRemove->name)
+    return false;
+
+  DisplayHardware *display = findDisplay(msgRemove->name);
+  
+  if (display == nullptr)
+      return false; // Display not found
+  
+  // Remove from vector
+  for (std::vector<DisplayHardware*>::iterator it = _hw_instances.begin(); 
+       it != _hw_instances.end(); ++it) {
+    if (*it == display) {
       delete *it;
       _hw_instances.erase(it);
       WS_DEBUG_PRINTLN("[display] Display removed successfully!");
       return true;
     }
   }
-  WS_DEBUG_PRINTLN("[display] Could not remove display, not found!");
+  
   return false;
 }
 
@@ -124,13 +137,7 @@ bool DisplayController::Handle_Display_Remove(
 bool DisplayController::Handle_Display_Write(
     wippersnapper_display_v1_DisplayWrite *msgWrite) {
   // Get the driver instance for the display
-  DisplayHardware *display = nullptr;
-  for (auto &hw_instance : _hw_instances) {
-    if (strcmp(hw_instance->getName(), msgWrite->name) == 0) {
-      display = hw_instance;
-      break;
-    }
-  }
+  DisplayHardware *display = findDisplay(msgWrite->name);
 
   // Early-out if driver instance not found
   if (!display) {
@@ -175,4 +182,22 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
 
   WS.feedWDT();
   WS.runNetFSM();
+}
+
+/*!
+ * @brief Finds a DisplayHardware instance by its name.
+ * @param name The name of the display to find.
+ * @return Pointer to the DisplayHardware instance if found, nullptr otherwise.
+ */
+DisplayHardware* DisplayController::findDisplay(const char* name) {
+  if (name == nullptr)
+    return nullptr;
+  
+  for (std::vector<DisplayHardware*>::iterator it = _hw_instances.begin(); it != _hw_instances.end(); ++it) {
+    if (*it != nullptr && strcmp((*it)->getName(), name) == 0) {
+      return *it;
+    }
+  }
+
+  return nullptr;
 }
