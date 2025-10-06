@@ -163,8 +163,6 @@ public:
     
     // Reset text color and size for main text area
     _display->setTextColor(ST77XX_WHITE);
-    WS_DEBUG_PRINTLN("SB Text Size:");
-    WS_DEBUG_PRINTLN(_text_sz);
     _display->setTextSize(_text_sz);
   }
 
