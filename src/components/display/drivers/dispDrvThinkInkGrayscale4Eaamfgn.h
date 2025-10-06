@@ -22,8 +22,10 @@
   20 ///< Height of the status bar in pixels, assumes 16px icons
 #define STATUS_BAR_BORDER 1   ///< Border around the status bar in pixels
 #define STATUS_BAR_ICON_SZ 16 ///< Size of status bar icons in pixels
-#define STATUS_BAR_ICON_SPACING 4 ///< Spacing between status bar icons in pixels
-#define STATUS_BAR_ICON_MARGIN 5 ///< Margin from edge of display to status bar icons in pixels
+#define STATUS_BAR_ICON_SPACING                                                \
+  4 ///< Spacing between status bar icons in pixels
+#define STATUS_BAR_ICON_MARGIN                                                 \
+  5 ///< Margin from edge of display to status bar icons in pixels
 
 /*!
     @brief  Driver for a ThinkInk 2.9" Grayscale 4-level EAAMFGN display.
@@ -73,7 +75,6 @@ public:
     // Initialize the display
     _display->begin(mode);
     // Configure display settings
-    _text_sz = 3;
     _display->setTextSize(_text_sz);
     _display->setTextColor(EPD_BLACK);
     _display->setTextWrap(false);
@@ -116,16 +117,24 @@ public:
     _display->print(io_username);
 
     // Calculate status bar icon positions and center vertically
-    _statusbar_icons_y = STATUS_BAR_BORDER + ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) / 2);
-    _statusbar_icon_battery_x = _display->width() - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_MARGIN;
-    _statusbar_icon_wifi_x = _statusbar_icon_battery_x - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_SPACING;
-    _statusbar_icon_cloud_x = _statusbar_icon_wifi_x - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_SPACING;
+    _statusbar_icons_y =
+        STATUS_BAR_BORDER +
+        ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) / 2);
+    _statusbar_icon_battery_x =
+        _display->width() - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_MARGIN;
+    _statusbar_icon_wifi_x = _statusbar_icon_battery_x - STATUS_BAR_ICON_SZ -
+                             STATUS_BAR_ICON_SPACING;
+    _statusbar_icon_cloud_x =
+        _statusbar_icon_wifi_x - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_SPACING;
     // Draw icons on right side of the status bar
-    _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_online,
-                         STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
-    _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y, epd_bmp_wifi_full, STATUS_BAR_ICON_SZ,
+    _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
+                         epd_bmp_cloud_online, STATUS_BAR_ICON_SZ,
                          STATUS_BAR_ICON_SZ, EPD_BLACK);
-    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y, epd_bmp_bat_full, STATUS_BAR_ICON_SZ,
+    _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
+                         epd_bmp_wifi_full, STATUS_BAR_ICON_SZ,
+                         STATUS_BAR_ICON_SZ, EPD_BLACK);
+    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
+                         epd_bmp_bat_full, STATUS_BAR_ICON_SZ,
                          STATUS_BAR_ICON_SZ, EPD_BLACK);
 
     _display->display();
@@ -145,21 +154,54 @@ public:
     if (!_display)
       return;
 
-    bool do_update = false;
+    // Only update wifi icon if the RSSI has changed significantly (+/- 5dB)
+    bool update_rssi = abs(rssi - _statusbar_rssi) >= 5;
+    // Only update cloud icon if MQTT status has changed
+    bool update_mqtt = mqtt_status != _statusbar_mqtt_connected;
 
-    // For EPD - redraws take 1-2 seconds, so only update the cloud state
+    // No need to update if nothing has changed
+    if (!update_rssi && !update_mqtt)
+      return;
 
-    // Update cloud icon only if it changed state
-      // Clear and draw the new cloud icon, based on MQTT connection status
-      _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ,
-                         EPD_WHITE);
-      if (mqtt_status == 21) {
-        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_online,
-                             STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
+    if (update_mqtt) {
+      // updating the RSSI occurs too frequently to be practical
+      _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y,
+                         STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_WHITE);
+      if (mqtt_status) {
+        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
+                             epd_bmp_cloud_online, STATUS_BAR_ICON_SZ,
+                             STATUS_BAR_ICON_SZ, EPD_BLACK);
       } else {
-        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_offline,
-                             STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
+        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
+                             epd_bmp_cloud_offline, STATUS_BAR_ICON_SZ,
+                             STATUS_BAR_ICON_SZ, EPD_BLACK);
       }
+      _statusbar_mqtt_connected = mqtt_status;
+    }
+
+    // Update WiFi icon only if RSSI has changed significantly (+/-3dB)
+    if (update_rssi) {
+      const unsigned char *wifi_icon = epd_bmp_wifi_no_signal;
+      if (rssi >= -50) {
+        wifi_icon = epd_bmp_wifi_full;
+      } else if (rssi < -50 && rssi >= -60) {
+        wifi_icon = epd_bmp_wifi_fair;
+      } else if (rssi < -60 && rssi >= -70) {
+        wifi_icon = epd_bmp_wifi_weak;
+      } else if (rssi < -70 && rssi >= -80) {
+        wifi_icon = epd_bmp_wifi_no_signal;
+      } else {
+        wifi_icon = epd_bmp_wifi_no_signal;
+      }
+      // Clear and draw the new WiFi icon, based on RSSI
+      _display->fillRect(_statusbar_icon_wifi_x, _statusbar_icons_y,
+                         STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ,
+                         EPD_WHITE);
+      _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
+                           wifi_icon, STATUS_BAR_ICON_SZ,
+                           STATUS_BAR_ICON_SZ, EPD_BLACK);
+      _statusbar_rssi = rssi;
+    }
 
     _display->display();
   }
@@ -178,7 +220,8 @@ public:
     // Clear only the area below the status bar
     _display->fillRect(0, STATUS_BAR_HEIGHT, _display->width(),
                        _display->height() - STATUS_BAR_HEIGHT, EPD_WHITE);
-    int16_t y_idx = STATUS_BAR_HEIGHT;
+    // Add padding between status bar and text content
+    int16_t y_idx = STATUS_BAR_HEIGHT + 4;
     _display->setCursor(0, y_idx);
 
     // Calculate the line height based on the text size (NOTE: base height is
@@ -186,6 +229,10 @@ public:
     int16_t line_height = 8 * _text_sz;
     uint16_t c_idx = 0;
     size_t msg_size = strlen(message);
+
+    // Reset the text size to the configured value before we write
+    _display->setTextSize(_text_sz);
+
     for (size_t i = 0; i < msg_size && c_idx < msg_size; i++) {
       if (y_idx + line_height > _height)
         break;

@@ -159,6 +159,7 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
   for (DisplayHardware *hw_instance : _hw_instances) {
     // Note: For now, battery is always 100% as we don't have a way to read it
     // yet.
+    WS_DEBUG_PRINTLN("[display] Updating status bar...");
     hw_instance->updateStatusBar(rssi, 100, is_connected);
   }
 

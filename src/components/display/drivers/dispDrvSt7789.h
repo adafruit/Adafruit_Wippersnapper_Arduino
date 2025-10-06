@@ -127,7 +127,7 @@ public:
     } else if (_width == 135 && _height == 240) {
       _display->drawBitmap(0, 0, tft_bmp_logo_240135, 240, 135, ST77XX_WHITE);
     } else {
-      // Unsupported resolution
+      // Unsupported resolution detected, skip splash screen
       return;
     }
 
@@ -156,21 +156,26 @@ public:
 
     // Calculate icon positions (rightmost side of status bar), center
     // vertically
-    _statusbar_icons_y = (ST7789_STATUSBAR_HEIGHT - ST7789_STATUSBAR_ICON_SZ) / 2;
+    _statusbar_icons_y =
+        (ST7789_STATUSBAR_HEIGHT - ST7789_STATUSBAR_ICON_SZ) / 2;
     _statusbar_icon_battery_x = _display->width() - ST7789_STATUSBAR_ICON_SZ -
-                   ST7789_STATUSBAR_ICON_MARGIN;
-    _statusbar_icon_wifi_x = _statusbar_icon_battery_x - ST7789_STATUSBAR_ICON_SZ - ST7789_STATUSBAR_ICON_SPACING;
-    _statusbar_icon_cloud_x = _statusbar_icon_wifi_x - ST7789_STATUSBAR_ICON_SZ - ST7789_STATUSBAR_ICON_SPACING;
+                                ST7789_STATUSBAR_ICON_MARGIN;
+    _statusbar_icon_wifi_x = _statusbar_icon_battery_x -
+                             ST7789_STATUSBAR_ICON_SZ -
+                             ST7789_STATUSBAR_ICON_SPACING;
+    _statusbar_icon_cloud_x = _statusbar_icon_wifi_x -
+                              ST7789_STATUSBAR_ICON_SZ -
+                              ST7789_STATUSBAR_ICON_SPACING;
     // Draw icons
-    _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_online,
-                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
-                         ST77XX_BLACK);
-    _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y, epd_bmp_wifi_full,
-                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
-                         ST77XX_BLACK);
-    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y, epd_bmp_bat_full,
-                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
-                         ST77XX_BLACK);
+    _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
+                         epd_bmp_cloud_online, ST7789_STATUSBAR_ICON_SZ,
+                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+    _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
+                         epd_bmp_wifi_full, ST7789_STATUSBAR_ICON_SZ,
+                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
+                         epd_bmp_bat_full, ST7789_STATUSBAR_ICON_SZ,
+                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
   }
 
   /*!
@@ -198,16 +203,17 @@ public:
 
     if (update_mqtt) {
       // Clear and draw the new cloud icon, based on MQTT connection status
-      _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y, ST7789_STATUSBAR_ICON_SZ,
-                         ST7789_STATUSBAR_ICON_SZ, ST77XX_WHITE);
+      _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y,
+                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                         ST77XX_WHITE);
       if (mqtt_status) {
-        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_online,
-                             ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
-                             ST77XX_BLACK);
+        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
+                             epd_bmp_cloud_online, ST7789_STATUSBAR_ICON_SZ,
+                             ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
       } else {
-        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y, epd_bmp_cloud_offline,
-                             ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
-                             ST77XX_BLACK);
+        _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
+                             epd_bmp_cloud_offline, ST7789_STATUSBAR_ICON_SZ,
+                             ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
       }
       _statusbar_mqtt_connected = mqtt_status;
     }
@@ -227,9 +233,11 @@ public:
         wifi_icon = epd_bmp_wifi_no_signal;
       }
       // Clear and draw the new WiFi icon, based on RSSI
-      _display->fillRect(_statusbar_icon_wifi_x, _statusbar_icons_y, ST7789_STATUSBAR_ICON_SZ,
-                         ST7789_STATUSBAR_ICON_SZ, ST77XX_WHITE);
-      _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y, wifi_icon, ST7789_STATUSBAR_ICON_SZ,
+      _display->fillRect(_statusbar_icon_wifi_x, _statusbar_icons_y,
+                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                         ST77XX_WHITE);
+      _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
+                           wifi_icon, ST7789_STATUSBAR_ICON_SZ,
                            ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
       _statusbar_rssi = rssi;
     }

@@ -248,6 +248,9 @@ bool DisplayHardware::beginEPD(
     _drvDisp = nullptr;
     return false;
   }
+  WS_DEBUG_PRINTLN("[display] Text Magnification: ");
+  WS_DEBUG_PRINTLN(config->text_size);
+  _drvDisp->setTextSize(config->text_size);
 
   if (!_drvDisp->begin(epd_mode)) {
     WS_DEBUG_PRINTLN("[display] Failed to begin display driver!");
@@ -341,13 +344,8 @@ bool DisplayHardware::beginTft(
 
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
-  WS_DEBUG_PRINT("[display] TFT Resolution: ");
-  WS_DEBUG_PRINT(config->width);
-  WS_DEBUG_PRINT("x");
-  WS_DEBUG_PRINTLN(config->height);
   _drvDisp->setRotation(config->rotation);
-  WS_DEBUG_PRINT("[display] TFT Rotation: ");
-  WS_DEBUG_PRINTLN(config->rotation);
+  _drvDisp->setTextSize(config->text_size);
   _drvDisp->begin();
 
   return true;
