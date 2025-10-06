@@ -195,7 +195,7 @@ public:
   */
   /********************************************************/
   bool firmwareCheck() {
-    _fv = WiFi.firmwareVersion();
+    WS._airlift_version = _fv = WiFi.firmwareVersion();
     return compareVersions(_fv, NINAFWVER);
   }
 
@@ -242,6 +242,9 @@ public:
   */
   /********************************************************/
   void getMacAddr() {
+    if (_fv == "0.0.1") {
+      (void)firmwareCheck(); // ensure _fv is set in bootlog
+    }
     byte mac[6] = {0};
     WiFi.macAddress(mac);
     memcpy(WS._macAddr, mac, sizeof(mac));

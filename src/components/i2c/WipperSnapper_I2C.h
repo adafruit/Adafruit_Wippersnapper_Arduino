@@ -65,6 +65,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_Out_Ssd1306.h"
 #include "drivers/WipperSnapper_I2C_Driver_PCT2075.h"
 #include "drivers/WipperSnapper_I2C_Driver_PM25.h"
+#include "drivers/WipperSnapper_I2C_Driver_QMC5883P.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD4X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SEN5X.h"
@@ -75,6 +76,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_SHT4X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHTC3.h"
 #include "drivers/WipperSnapper_I2C_Driver_SI7021.h"
+#include "drivers/WipperSnapper_I2C_Driver_SPA06_003.h"
 #include "drivers/WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor.h"
 #include "drivers/WipperSnapper_I2C_Driver_TMP117.h"
 #include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
@@ -96,6 +98,7 @@ class WipperSnapper_I2C_Driver_INA260;
 class WipperSnapper_I2C_Driver_INA237;
 class WipperSnapper_I2C_Driver_INA238;
 class WipperSnapper_I2C_Driver_INA228;
+class WipperSnapper_I2C_Driver_QMC5883P;
 
 /**************************************************************************/
 /*!
@@ -202,8 +205,10 @@ private:
   WipperSnapper_I2C_Driver_SEN6X *_sen6x = nullptr;
   WipperSnapper_I2C_Driver_SGP30 *_sgp30 = nullptr;
   WipperSnapper_I2C_Driver_SGP40 *_sgp40 = nullptr;
+  WipperSnapper_I2C_Driver_SPA06_003 *_spa06_003 = nullptr;
   WipperSnapper_I2C_Driver_PCT2075 *_pct2075 = nullptr;
   WipperSnapper_I2C_Driver_PM25 *_pm25 = nullptr;
+  WipperSnapper_I2C_Driver_QMC5883P *_qmc5883p = nullptr;
   WipperSnapper_I2C_Driver_SI7021 *_si7021 = nullptr;
   WipperSnapper_I2C_Driver_SHT4X *_sht4x = nullptr;
   WipperSnapper_I2C_Driver_SHT3X *_sht3x = nullptr;

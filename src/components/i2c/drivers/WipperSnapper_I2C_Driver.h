@@ -34,7 +34,7 @@ class WipperSnapper_I2C_Driver {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Instanciates an I2C sensor.
+      @brief    Instantiates an I2C sensor.
       @param    i2c
                 The I2C hardware interface, default is Wire.
       @param    sensorAddress
@@ -52,6 +52,21 @@ public:
   */
   /*******************************************************************************/
   virtual ~WipperSnapper_I2C_Driver() {}
+
+  /*******************************************************************************/
+  /*!
+      @brief    Lightweight, per-update background hook for drivers that need
+                more frequent internal polling than the publish interval.
+                Default is a no-op; concrete drivers (e.g., SGP30/40) may
+                override this to perform a single non-blocking read and cache
+                results for later retrieval by getEvent*().
+      @note     Call site: WipperSnapper_Component_I2C::update() invokes this
+                once per loop for each driver. Implementations must be
+                non-blocking (do not delay); use millis()-based timing if
+                cadence is required.
+  */
+  /*******************************************************************************/
+  virtual void fastTick() {}
 
   /*******************************************************************************/
   /*!
@@ -1312,7 +1327,7 @@ public:
       @brief    Updates the properties of a proximity sensor.
       @param    period
                 The time interval at which to return new data from the
-                proimity sensor.
+                proximity sensor.
   */
   /*******************************************************************************/
   virtual void updateSensorProximity(float period) {

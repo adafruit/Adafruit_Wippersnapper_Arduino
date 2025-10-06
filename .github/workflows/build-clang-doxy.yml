@@ -360,6 +360,7 @@ jobs:
           [
             "wippersnapper_feather_esp32",
             "qtpy_esp32",
+            "sparklemotion_esp32",
             "sparklemotionmini_esp32",
             "sparklemotionstick_esp32",
             "feather_esp32_v2",
@@ -648,6 +649,7 @@ jobs:
         # manually install OneWireNG/TempControlLib for OneWireNg (RP2040 Supported OneWire w/backwards compat.)
       - name: Install extra Arduino libraries
         run: |
+          git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino

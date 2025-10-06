@@ -193,6 +193,12 @@
 #define USE_LITTLEFS
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
+#elif defined(ARDUINO_SPARKLEMOTION_ESP32)
+#define BOARD_ID "sparklemotion-esp32"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
 #elif defined(ARDUINO_SPARKLEMOTIONMINI_ESP32)
 #define BOARD_ID "sparklemotionmini-esp32"
 #define USE_LITTLEFS

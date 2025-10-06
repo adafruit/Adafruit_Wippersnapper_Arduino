@@ -540,6 +540,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _si7021->configureDriver(msgDeviceInitReq);
     drivers.push_back(_si7021);
     WS_DEBUG_PRINTLN("SI7021/SHT20 Initialized Successfully!");
+  } else if (strcmp("spa06_003", msgDeviceInitReq->i2c_device_name) == 0) {
+    _spa06_003 = new WipperSnapper_I2C_Driver_SPA06_003(this->_i2c, i2cAddress);
+    if (!_spa06_003->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize SPA06-003!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _spa06_003->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_spa06_003);
+    WS_DEBUG_PRINTLN("SPA06-003 Initialized Successfully!");
   } else if (strcmp("mcp3421", msgDeviceInitReq->i2c_device_name) == 0) {
     _mcp3421 = new WipperSnapper_I2C_Driver_MCP3421(this->_i2c, i2cAddress);
     if (!_mcp3421->begin()) {
@@ -789,6 +800,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _pm25->configureDriver(msgDeviceInitReq);
     drivers.push_back(_pm25);
     WS_DEBUG_PRINTLN("PM2.5 AQI Sensor Initialized Successfully!");
+  } else if (strcmp("qmc5883p", msgDeviceInitReq->i2c_device_name) == 0) {
+    _qmc5883p = new WipperSnapper_I2C_Driver_QMC5883P(this->_i2c, i2cAddress);
+    if (!_qmc5883p->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize QMC5883P Sensor!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _qmc5883p->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_qmc5883p);
+    WS_DEBUG_PRINTLN("QMC5883P Sensor Initialized Successfully!");
   } else if (strcmp("lc709203f", msgDeviceInitReq->i2c_device_name) == 0) {
     _lc = new WipperSnapper_I2C_Driver_LC709203F(this->_i2c, i2cAddress);
     if (!_lc->begin()) {
@@ -1034,7 +1056,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _drivers_out.push_back(_ssd1306);
     WS_DEBUG_PRINTLN("SSD1306 display initialized Successfully!");
   } else {
-    WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
+    WS_DEBUG_PRINTLN("ERROR: I2C device type not found!");
     _busStatusResponse =
         wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR;
     return false;
@@ -1354,9 +1376,13 @@ void WipperSnapper_Component_I2C::update() {
   while (sensorsReturningFalse && retries > 0) {
     sensorsReturningFalse = false;
     retries--;
+    curTime = millis();
 
     std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
     for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
+      // Per-driver fast tick (non-blocking)
+      (*iter)->fastTick();
+
       // Number of events which occurred for this driver
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
 

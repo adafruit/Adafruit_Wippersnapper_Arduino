@@ -19,6 +19,8 @@
 #define WIPPERSNAPPER_H
 
 // Cpp STD
+#include <math.h>
+
 #include <vector>
 
 // Nanopb dependencies
@@ -137,7 +139,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.112" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.117" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -360,10 +362,11 @@ public:
       *_displayController; ///< Instance of display controller class
 
   // TODO: does this really need to be global?
-  uint8_t _macAddr[6];  /*!< Unique network iface identifier */
-  char sUID[13];        /*!< Unique network iface identifier */
-  const char *_boardId; /*!< Adafruit IO+ board string */
-  Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
+  uint8_t _macAddr[6];          /*!< Unique network iface identifier */
+  char sUID[13];                /*!< Unique network iface identifier */
+  const char *_airlift_version; /*!< AirLift Firmware version */
+  const char *_boardId;         /*!< Adafruit IO+ board string */
+  Adafruit_MQTT *_mqtt;         /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   secretsConfig _config; /*!< Wippersnapper secrets.json as a struct. */
   networkConfig _multiNetworks[3]; /*!< Wippersnapper networks as structs. */
