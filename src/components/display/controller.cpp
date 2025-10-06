@@ -45,6 +45,16 @@ bool DisplayController::Handle_Display_AddOrReplace(
   WS_DEBUG_PRINT("[display] Adding or replacing display: ");
   WS_DEBUG_PRINTLN(msgAdd->name);
 
+  // Does this display hw instance already exist?
+  for (auto it = _hw_instances.begin(); it != _hw_instances.end(); ++it) {
+      if (strcmp((*it)->getName(), msgAdd->name) == 0) {
+      WS_DEBUG_PRINTLN("[display] Display instance already exists, removing...");
+      delete *it;
+      _hw_instances.erase(it);
+      break;
+      }
+  }
+
   // Configure display type
   display->setType(msgAdd->type);
 

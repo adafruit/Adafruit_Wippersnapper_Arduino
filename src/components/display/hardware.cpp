@@ -216,19 +216,6 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
-/*   // For "magtag" component name, attempt to autodetect the driver type
-  if (strncmp(_name, "eink-29-grayscale-ssd1680", 6) == 0) {
-    if (detect_ssd1680(cs, dc, rst)) {
-      // Detected SSD1680, use EAAMFGN driver
-      strncpy(_name, "thinkink-gs4-eaamfgn", sizeof(_name) - 1);
-      _name[sizeof(_name) - 1] = '\0';
-    } else {
-      // Did not detect SSD1680, use IL0373 driver
-      strncpy(_name, "thinkink-gs4-t5", sizeof(_name) - 1);
-      _name[sizeof(_name) - 1] = '\0';
-    }
-  } */
-
   // Create display driver object using the factory function
   _drvDisp = CreateDrvDispEpd(_name, dc, rst, cs, srcs, busy);
   if (!_drvDisp) {
@@ -331,9 +318,6 @@ bool DisplayHardware::beginTft(
   if (strlen(spi_config->pin_miso) >= 2) {
     miso = parsePin(spi_config->pin_miso);
   }
-
-  // TODO: Implement Text_size based on future Protobuf that includes it
-  uint8_t text_sz; // Default text size
 
   // Create display driver object using the factory function
   _drvDisp = CreateDrvDispTft(_name, cs, dc, mosi, sck, rst, miso);

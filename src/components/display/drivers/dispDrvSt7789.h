@@ -18,7 +18,6 @@
 #include "dispDrvBase.h"
 #include <Adafruit_ST7789.h>
 
-#define ST7789_TEXT_SZ_DEFAULT 2    ///< Default text size for ST7789 displays
 #define ST7789_STATUSBAR_HEIGHT 20  ///< Default status bar height
 #define ST7789_STATUSBAR_ICON_SZ 16 ///< Default status bar icon size
 #define ST7789_STATUSBAR_ICON_SPACING                                          \
@@ -81,7 +80,6 @@ public:
 
     _display->init(_width, _height);
     _display->setRotation(_rotation);
-    setTextSize(ST7789_TEXT_SZ_DEFAULT);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
 
@@ -98,20 +96,6 @@ public:
 #endif
 
     return true;
-  }
-
-  /*!
-      @brief  Sets the text size for the display.
-      @param  s
-              The text size to set.
-      @note   This method overrides the base class method to provide specific
-              functionality for the ST7789 driver.
-  */
-  void setTextSize(uint8_t s) override {
-    if (!_display)
-      return;
-    _text_sz = s;
-    _display->setTextSize(s);
   }
 
   /*!
@@ -176,6 +160,12 @@ public:
     _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
                          epd_bmp_bat_full, ST7789_STATUSBAR_ICON_SZ,
                          ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+    
+    // Reset text color and size for main text area
+    _display->setTextColor(ST77XX_WHITE);
+    WS_DEBUG_PRINTLN("SB Text Size:");
+    WS_DEBUG_PRINTLN(_text_sz);
+    _display->setTextSize(_text_sz);
   }
 
   /*!
@@ -253,8 +243,6 @@ public:
   virtual void writeMessage(const char *message) override {
     if (_display == nullptr)
       return;
-
-    _display->setTextColor(ST77XX_WHITE);
 
     // Clear only the area below the status bar
     _display->fillRect(0, ST7789_STATUSBAR_HEIGHT, _width,
