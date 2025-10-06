@@ -2873,7 +2873,7 @@ void Wippersnapper::publishPinConfigComplete() {
   // Publish message
   WS_DEBUG_PRINTLN("Publishing to pin config complete...");
   if (!WS._mqtt->publish(WS._topic_device_pin_config_complete, _message_buffer,
-                        _message_len, 0)) {
+                         _message_len, 0)) {
     WS_DEBUG_PRINTLN("Failed to publish pin config complete message!");
   } else {
     WS_DEBUG_PRINTLN("Published pin config complete message!");

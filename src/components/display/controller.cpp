@@ -17,9 +17,7 @@
 /*!
     @brief  Constructs a new DisplayController object
 */
-DisplayController::DisplayController() {
-  _last_bar_update = 0;
-}
+DisplayController::DisplayController() { _last_bar_update = 0; }
 
 /*!
     @brief  Destructor
@@ -110,12 +108,12 @@ bool DisplayController::Handle_Display_Remove(
     return false;
 
   DisplayHardware *display = findDisplay(msgRemove->name);
-  
+
   if (display == nullptr)
-      return false; // Display not found
-  
+    return false; // Display not found
+
   // Remove from vector
-  for (std::vector<DisplayHardware*>::iterator it = _hw_instances.begin(); 
+  for (std::vector<DisplayHardware *>::iterator it = _hw_instances.begin();
        it != _hw_instances.end(); ++it) {
     if (*it == display) {
       delete *it;
@@ -124,7 +122,7 @@ bool DisplayController::Handle_Display_Remove(
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -169,7 +167,7 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
   // Only update the status bar every 60 seconds
   unsigned long now = millis();
   if (now - _last_bar_update < 60000)
-      return;
+    return;
   _last_bar_update = now;
 
   // Get the driver instance for the display
@@ -189,11 +187,12 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
  * @param name The name of the display to find.
  * @return Pointer to the DisplayHardware instance if found, nullptr otherwise.
  */
-DisplayHardware* DisplayController::findDisplay(const char* name) {
+DisplayHardware *DisplayController::findDisplay(const char *name) {
   if (name == nullptr)
     return nullptr;
-  
-  for (std::vector<DisplayHardware*>::iterator it = _hw_instances.begin(); it != _hw_instances.end(); ++it) {
+
+  for (std::vector<DisplayHardware *>::iterator it = _hw_instances.begin();
+       it != _hw_instances.end(); ++it) {
     if (*it != nullptr && strcmp((*it)->getName(), name) == 0) {
       return *it;
     }

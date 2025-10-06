@@ -160,7 +160,7 @@ public:
     _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
                          epd_bmp_bat_full, ST7789_STATUSBAR_ICON_SZ,
                          ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
-    
+
     // Reset text color and size for main text area
     _display->setTextColor(ST77XX_WHITE);
     _display->setTextSize(_text_sz);

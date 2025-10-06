@@ -195,11 +195,10 @@ public:
       }
       // Clear and draw the new WiFi icon, based on RSSI
       _display->fillRect(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                         STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ,
-                         EPD_WHITE);
+                         STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_WHITE);
       _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                           wifi_icon, STATUS_BAR_ICON_SZ,
-                           STATUS_BAR_ICON_SZ, EPD_BLACK);
+                           wifi_icon, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ,
+                           EPD_BLACK);
       _statusbar_rssi = rssi;
     }
 
