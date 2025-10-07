@@ -96,6 +96,8 @@ public:
 
   /*!
       @brief  Draws a status bar at the top of the display.
+        @param  io_username
+                The Adafruit IO username to display on the status bar.
   */
   virtual void drawStatusBar(const char *io_username) override {
     if (!_display)

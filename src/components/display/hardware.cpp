@@ -152,7 +152,7 @@ wippersnapper_display_v1_DisplayType DisplayHardware::getType() {
 }
 
 /*!
-    @brief  Parses a pin string (e.g., "D5") and returns the corresponding pin
+@brief  Parses a pin string (e.g., "D5") and returns the corresponding pin
    number.
     @param  pinStr
             The pin string to parse.
@@ -250,18 +250,36 @@ bool DisplayHardware::beginEPD(
   return true;
 }
 
+/*!
+    @brief  Displays the splash screen on the display.
+*/
 void DisplayHardware::showSplash() {
   if (!_drvDisp)
     return;
   _drvDisp->showSplash();
 }
 
+/*!
+    @brief  Draws a status bar at the top of the display.
+    @param  io_username
+            The Adafruit IO username to display on the status bar.
+*/
 void DisplayHardware::drawStatusBar(const char *io_username) {
   if (!_drvDisp)
     return;
   _drvDisp->drawStatusBar(io_username);
 }
 
+/*!
+    @brief  Updates the status bar with the latest RSSI, battery, and MQTT
+   connection status.
+    @param  rssi
+            The current WiFi RSSI value.
+    @param  bat
+            The current battery percentage (0-100).
+    @param  mqtt_connected
+            True if connected to MQTT, False otherwise.
+*/
 void DisplayHardware::updateStatusBar(int8_t rssi, uint8_t bat,
                                       bool mqtt_connected) {
   if (!_drvDisp)
