@@ -2820,11 +2820,6 @@ void Wippersnapper::connect() {
   runNetFSM();
   WS.feedWDT();
 
-  // Initialize Digital IO class
-  WS._digitalGPIO = new Wippersnapper_DigitalGPIO(20);
-  // Initialize Analog IO class
-  WS._analogIO = new Wippersnapper_AnalogIO(5, 3.3);
-
   // Configure hardware
   while (!WS.pinCfgCompleted) {
     WS_DEBUG_PRINTLN(

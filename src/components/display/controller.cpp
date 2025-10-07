@@ -83,9 +83,9 @@ bool DisplayController::Handle_Display_AddOrReplace(
     return false;
   }
 
-  WS.feedWDT();
+  WS.runNetFSM();
   display->showSplash();
-  WS.feedWDT();
+  WS.runNetFSM();
   display->drawStatusBar(WS._config.aio_user);
   WS.feedWDT();
 
@@ -146,8 +146,8 @@ bool DisplayController::Handle_Display_Write(
   // Write the message to the display
   WS_DEBUG_PRINT("[display] Writing message to display: ");
   WS_DEBUG_PRINTLN(msgWrite->message);
+  WS.runNetFSM();
   display->writeMessage(msgWrite->message);
-  WS.feedWDT();
   WS.runNetFSM();
   return true;
 }
