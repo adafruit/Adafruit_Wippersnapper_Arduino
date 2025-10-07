@@ -157,31 +157,31 @@ public:
     @note   This method can be overridden by derived classes to provide
             specific functionality.
   */
-  virtual void updateStatusBar(int8_t rssi, uint8_t bat,
-                               bool mqtt_status) {
+  virtual void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_status) {
     // No-op for base class
   }
 
 protected:
-  int16_t _pin_dc;        ///< Data/Command pin
-  int16_t _pin_rst;       ///< Reset pin
-  int16_t _pin_cs;        ///< Chip Select pin
-  int16_t _pin_busy;      ///< Optional Busy pin
-  int16_t _pin_sram_cs;   ///< Optional EPD SRAM chip select pin
-  uint16_t _pin_mosi;     ///< Optional MOSI pin for SPI TFT displays
-  uint16_t _pin_miso;     ///< Optional MISO pin for SPI TFT displays
-  uint16_t _pin_sck;      ///< Optional SCK pin for SPI TFT displays
-  uint8_t _text_sz = 1;   ///< Text size for displaying a message
-  int16_t _height;        ///< Height of the display
-  int16_t _width;         ///< Width of the display
-  uint8_t _rotation;      ///< Rotation of the display
+  int16_t _pin_dc;      ///< Data/Command pin
+  int16_t _pin_rst;     ///< Reset pin
+  int16_t _pin_cs;      ///< Chip Select pin
+  int16_t _pin_busy;    ///< Optional Busy pin
+  int16_t _pin_sram_cs; ///< Optional EPD SRAM chip select pin
+  uint16_t _pin_mosi;   ///< Optional MOSI pin for SPI TFT displays
+  uint16_t _pin_miso;   ///< Optional MISO pin for SPI TFT displays
+  uint16_t _pin_sck;    ///< Optional SCK pin for SPI TFT displays
+  uint8_t _text_sz = 1; ///< Text size for displaying a message
+  int16_t _height;      ///< Height of the display
+  int16_t _width;       ///< Width of the display
+  uint8_t _rotation;    ///< Rotation of the display
   // statusbar properties
-  int _statusbar_icons_y; ///< Y position of status bar icons
+  int _statusbar_icons_y;        ///< Y position of status bar icons
   int _statusbar_icon_battery_x; ///< X position of battery icon
-  int _statusbar_icon_wifi_x; ///< X position of WiFi icon
-  int _statusbar_icon_cloud_x; ///< X position of cloud icon
-  int8_t _statusbar_rssi; ///< RSSI value for status bar
-  uint8_t _statusbar_bat; ///< Battery level, as a percentage, for the status bar
+  int _statusbar_icon_wifi_x;    ///< X position of WiFi icon
+  int _statusbar_icon_cloud_x;   ///< X position of cloud icon
+  int8_t _statusbar_rssi;        ///< RSSI value for status bar
+  uint8_t
+      _statusbar_bat; ///< Battery level, as a percentage, for the status bar
   bool _statusbar_mqtt_connected; ///< MQTT connection status for the status bar
 };
 

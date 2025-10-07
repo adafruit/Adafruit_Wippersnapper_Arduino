@@ -36,8 +36,9 @@ public:
   bool Handle_Display_Remove(wippersnapper_display_v1_DisplayRemove *msgRemove);
   bool Handle_Display_Write(wippersnapper_display_v1_DisplayWrite *msgWrite);
   void update(int32_t rssi, bool is_connected);
+
 private:
-  DisplayHardware* findDisplay(const char* name);
+  DisplayHardware *findDisplay(const char *name);
   std::vector<DisplayHardware *>
       _hw_instances; ///< Holds pointers to DisplayHardware instances
   unsigned long _last_bar_update; ///< Timestamp of last status bar update
