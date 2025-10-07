@@ -245,8 +245,9 @@ public:
       return;
 
     // Clear only the area below the status bar
-    _display->fillRect(0, ST7789_STATUSBAR_HEIGHT, _width,
-                       _height - ST7789_STATUSBAR_HEIGHT, ST77XX_BLACK);
+    _display->fillRect(0, ST7789_STATUSBAR_HEIGHT, _display->width(),
+                       _display->height() - ST7789_STATUSBAR_HEIGHT,
+                       ST77XX_BLACK);
     int16_t y_idx = ST7789_STATUSBAR_HEIGHT;
 
     // Calculate the line height based on the text size (NOTE: base height is
