@@ -82,6 +82,7 @@ public:
     _display->setRotation(_rotation);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
+    _display->setTextWrap(false);
 
     // Turn on backlight
 #if defined(ARDUINO_FUNHOUSE_ESP32S2)
