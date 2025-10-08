@@ -123,12 +123,7 @@
 #include <Esp.h>
 #endif
 
-// Display
-#ifdef USE_DISPLAY
-#include "display/ws_display_driver.h"
-#include "display/ws_display_ui_helper.h"
-#endif
-
+#include "components/display/controller.h"
 #include "components/ds18x20/ws_ds18x20.h"
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
@@ -144,7 +139,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.117" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.119" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -155,6 +150,7 @@
 #define TOPIC_INFO "/info/"       ///< Registration sub-topic
 #define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
 #define TOPIC_I2C "/i2c"          ///< I2C sub-topic
+#define TOPIC_DISPLAY "/display"  ///< Display sub-topic (EPD, OLED, TFT, etc.)
 #define MQTT_TOPIC_PIXELS_DEVICE                                               \
   "/signals/device/pixel" ///< Pixels device->broker topic
 #define MQTT_TOPIC_PIXELS_BROKER                                               \
@@ -234,10 +230,6 @@ class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
-#ifdef USE_DISPLAY
-class ws_display_driver;
-class ws_display_ui_helper;
-#endif
 #ifdef ARDUINO_ARCH_ESP32
 class ws_ledc;
 #endif
@@ -247,6 +239,7 @@ class ws_pwm;
 class ws_ds18x20;
 class ws_pixels;
 class ws_uart;
+class DisplayController;
 
 /**************************************************************************/
 /*!
@@ -360,16 +353,13 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-#ifdef USE_DISPLAY
-  ws_display_driver *_display = nullptr; ///< Instance of display driver class
-  ws_display_ui_helper *_ui_helper =
-      nullptr; ///< Instance of display UI helper class
-#endif
   ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
   ws_servo *_servoComponent;      ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
   ws_uart *_uartComponent;        ///< Instance of UART class
+  DisplayController
+      *_displayController; ///< Instance of display controller class
 
   // TODO: does this really need to be global?
   uint8_t _macAddr[6];          /*!< Unique network iface identifier */
@@ -407,6 +397,10 @@ public:
   char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
   char *_topic_signal_uart_brkr = NULL;     /*!< Topic carries UART messages */
   char *_topic_signal_uart_device = NULL;   /*!< Topic carries UART messages */
+  char *_topic_signal_display_brkr =
+      NULL; /*!< Topic carries messages from a device to a broker. */
+  char *_topic_signal_display_device =
+      NULL; /*!< Topic carries messages from a broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -432,6 +426,9 @@ public:
 
   wippersnapper_signal_v1_UARTRequest
       msgSignalUART; ///< UARTReq wrapper message
+
+  wippersnapper_signal_v1_DisplayRequest
+      msgSignalDisplay; ///< DisplayRequest wrapper message
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -493,6 +490,8 @@ protected:
       *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_uart_sub; /*!< Subscribes to signal's UART topic. */
+  Adafruit_MQTT_Subscribe *_topic_signal_display_sub; /*!< Subscription callback
+                                                         for display topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

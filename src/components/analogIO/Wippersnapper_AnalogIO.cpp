@@ -285,11 +285,6 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
             pinValVolts);
     snprintf(buffer, 100, "[Pin] A%d read: %0.2f\n", pinName, pinValVolts);
   }
-// display analog pin read on terminal
-#ifdef USE_DISPLAY
-  WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
   // Encode signal message
   pb_ostream_t stream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
