@@ -15,6 +15,7 @@
 #ifndef WS_DISPLAY_CONTROLLER_H
 #define WS_DISPLAY_CONTROLLER_H
 #include "Wippersnapper.h"
+#include "Wippersnapper_Networking.h" // Include networking to call WS.runNetFSM()
 #include "hardware.h"
 
 class Wippersnapper_V2; ///< Forward declaration
