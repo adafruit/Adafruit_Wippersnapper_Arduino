@@ -17,8 +17,8 @@
 #include "Wippersnapper.h"
 #include "hardware.h"
 
-class Wippersnapper; ///< Forward declaration
-class DisplayHardware;  ///< Forward declaration
+class Wippersnapper;   ///< Forward declaration
+class DisplayHardware; ///< Forward declaration
 
 /**************************************************************************/
 /*!
