@@ -18,7 +18,7 @@
 #include "Wippersnapper_Networking.h" // Include networking to call WS.runNetFSM()
 #include "hardware.h"
 
-class Wippersnapper_V2; ///< Forward declaration
+class Wippersnapper; ///< Forward declaration
 class DisplayHardware;  ///< Forward declaration
 
 /**************************************************************************/
