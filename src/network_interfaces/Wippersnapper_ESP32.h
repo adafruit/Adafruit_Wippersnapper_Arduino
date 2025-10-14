@@ -28,6 +28,9 @@
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
 
+class Wippersnapper_ESP32;
+extern Wippersnapper_ESP32 WS;
+
 /****************************************************************************/
 /*!
     @brief  Class for using the ESP32 network interface.
@@ -357,6 +360,7 @@ protected:
     delay(500);
   }
 };
+
 
 #endif // ARDUINO_ARCH_ESP32_H
 #endif // Wippersnapper_ESP32_H
