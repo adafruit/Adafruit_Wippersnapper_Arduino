@@ -59,7 +59,7 @@ static const std::map<wippersnapper_display_v1_DisplayDriver,
     @brief  Creates a new E-Ink display driver instance based on the driver
    name.
     @param  driver
-            The name of the EPD display driver to create.
+            The name of the DisplayDriver.
     @param  dc
             Data/Command pin number.
     @param  rst
@@ -87,7 +87,7 @@ dispDrvBase *CreateDrvDispEpd(wippersnapper_display_v1_DisplayDriver driver,
     @brief  Creates a new SPI TFT display driver instance based on the driver
    name.
     @param  driver
-            The name of the SPI TFT display driver to create.
+            The name of the DisplayDriver.
     @param  cs
             Chip Select pin number.
     @param  dc
@@ -168,7 +168,7 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
 /*!
     @brief  Configures the EPD display with the provided configuration.
     @param driver
-            Pointer to the display driver configuration structure.
+            Pointer to a DisplayDriver enum value.
     @param  config
             Pointer to the EPD configuration structure.
     @param  spi_config
@@ -305,7 +305,7 @@ void DisplayHardware::removeSuffix(const char *suffix) {
 /*!
     @brief  Attempts to configure and initialize a TFT display
     @param driver
-            Pointer to the display driver configuration structure.
+            Pointer to a DisplayDriver enum value.
     @param  config
             Pointer to the TFT configuration structure.
     @param  spi_config
