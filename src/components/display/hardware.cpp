@@ -20,19 +20,22 @@
 using FnCreateDispDrvEpd =
     std::function<dispDrvBase *(int16_t, int16_t, int16_t, int16_t, int16_t)>;
 
-// Factory for creating a new display drivers
+// Factory for creating new display drivers
 // NOTE: When you add a new display driver, make sure to add it to the factory!
-static const std::map<std::string, FnCreateDispDrvEpd> FactoryDrvDispEpd = {
-    {"eink-29-grayscale-ssd1680",
-     [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
-        int16_t busy) -> dispDrvBase * {
-       return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
-     }},
-    {"thinkink-gs4-t5",
-     [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
-        int16_t busy) -> dispDrvBase * {
-       return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
-     }}};
+static const std::map<wippersnapper_display_v1_DisplayDriver,
+                      FnCreateDispDrvEpd>
+    FactoryDrvDispEpd = {
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1680,
+         [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+            int16_t busy) -> dispDrvBase * {
+           return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs,
+                                                       busy);
+         }},
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373,
+         [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+            int16_t busy) -> dispDrvBase * {
+           return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+         }}};
 
 /*!
     @brief  Lambda function to create a dispDrvBase SPI TFT instance
@@ -43,23 +46,20 @@ using FnCreateDispDrvTft = std::function<dispDrvBase *(
 // Factory for creating a new SPI TFT display driver
 // NOTE: When you add a new SPI TFT display driver, make sure to add it to the
 // factory!
-static const std::map<std::string, FnCreateDispDrvTft> FactoryDrvDispTft = {
-    {"tft-154-wide-angle",
-     [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
-        int16_t miso) -> dispDrvBase * {
-       return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
-     }},
-    {"tft-114",
-     [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
-        int16_t miso) -> dispDrvBase * {
-       return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
-     }}};
+static const std::map<wippersnapper_display_v1_DisplayDriver,
+                      FnCreateDispDrvTft>
+    FactoryDrvDispTft = {
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_TFT_ST7789,
+         [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
+            int16_t miso) -> dispDrvBase * {
+           return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
+         }}};
 
 /*!
     @brief  Creates a new E-Ink display driver instance based on the driver
    name.
-    @param  driver_name
-            The name of the display driver to create.
+    @param  driver
+            The name of the EPD display driver to create.
     @param  dc
             Data/Command pin number.
     @param  rst
@@ -73,10 +73,10 @@ static const std::map<std::string, FnCreateDispDrvTft> FactoryDrvDispTft = {
     @return Pointer to the created display driver instance, or nullptr if the
             driver name is not recognized.
 */
-dispDrvBase *CreateDrvDispEpd(const char *driver_name, int16_t dc, int16_t rst,
-                              int16_t cs, int16_t sram_cs = -1,
-                              int16_t busy = -1) {
-  auto it = FactoryDrvDispEpd.find(driver_name);
+dispDrvBase *CreateDrvDispEpd(wippersnapper_display_v1_DisplayDriver driver,
+                              int16_t dc, int16_t rst, int16_t cs,
+                              int16_t sram_cs = -1, int16_t busy = -1) {
+  auto it = FactoryDrvDispEpd.find(driver);
   if (it == FactoryDrvDispEpd.end())
     return nullptr;
 
@@ -86,7 +86,7 @@ dispDrvBase *CreateDrvDispEpd(const char *driver_name, int16_t dc, int16_t rst,
 /*!
     @brief  Creates a new SPI TFT display driver instance based on the driver
    name.
-    @param  driver_name
+    @param  driver
             The name of the SPI TFT display driver to create.
     @param  cs
             Chip Select pin number.
@@ -103,10 +103,10 @@ dispDrvBase *CreateDrvDispEpd(const char *driver_name, int16_t dc, int16_t rst,
     @return Pointer to the created display driver instance, or nullptr if the
             driver name is not recognized.
 */
-dispDrvBase *CreateDrvDispTft(const char *driver_name, int16_t cs, int16_t dc,
-                              int16_t mosi, int16_t sck, int16_t rst = -1,
-                              int16_t miso = -1) {
-  auto it = FactoryDrvDispTft.find(driver_name);
+dispDrvBase *CreateDrvDispTft(wippersnapper_display_v1_DisplayDriver driver,
+                              int16_t cs, int16_t dc, int16_t mosi, int16_t sck,
+                              int16_t rst = -1, int16_t miso = -1) {
+  auto it = FactoryDrvDispTft.find(driver);
   if (it == FactoryDrvDispTft.end())
     return nullptr;
 
@@ -174,6 +174,7 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
     @return True if configuration was successful, False otherwise.
 */
 bool DisplayHardware::beginEPD(
+    wippersnapper_display_v1_DisplayDriver *driver,
     wippersnapper_display_v1_EPDConfig *config,
     wippersnapper_display_v1_EpdSpiConfig *spi_config) {
   // Validate pointers
@@ -217,7 +218,7 @@ bool DisplayHardware::beginEPD(
   }
 
   // Create display driver object using the factory function
-  _drvDisp = CreateDrvDispEpd(_name, dc, rst, cs, srcs, busy);
+  _drvDisp = CreateDrvDispEpd(*driver, dc, rst, cs, srcs, busy);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false; // Failed to create display driver
@@ -308,6 +309,7 @@ void DisplayHardware::removeSuffix(const char *suffix) {
     @return True if configuration was successful, False otherwise.
 */
 bool DisplayHardware::beginTft(
+    wippersnapper_display_v1_DisplayDriver *driver,
     wippersnapper_display_v1_TftConfig *config,
     wippersnapper_display_v1_TftSpiConfig *spi_config) {
   // Validate pointers
@@ -338,7 +340,7 @@ bool DisplayHardware::beginTft(
   }
 
   // Create display driver object using the factory function
-  _drvDisp = CreateDrvDispTft(_name, cs, dc, mosi, sck, rst, miso);
+  _drvDisp = CreateDrvDispTft(*driver, cs, dc, mosi, sck, rst, miso);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false;

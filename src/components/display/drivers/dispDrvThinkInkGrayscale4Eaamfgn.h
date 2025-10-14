@@ -52,6 +52,9 @@ public:
 
   ~drvDispThinkInkGrayscale4Eaamfgn() {
     if (_display) {
+      // Clear the display buffer before deleting
+      _display->clearBuffer();
+      _display->display();
       delete _display;
       _display = nullptr;
     }

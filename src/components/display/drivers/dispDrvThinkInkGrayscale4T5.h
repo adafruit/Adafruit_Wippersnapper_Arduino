@@ -44,6 +44,9 @@ public:
 
   ~dispDrvThinkInkGrayscale4T5() {
     if (_display) {
+      // Clear the display buffer before deleting
+      _display->clearBuffer();
+      _display->display();
       delete _display;
       _display = nullptr;
     }

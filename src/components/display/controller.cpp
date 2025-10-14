@@ -64,11 +64,11 @@ bool DisplayController::Handle_Display_AddOrReplace(
   bool did_begin = false;
   if (msgAdd->which_config ==
       wippersnapper_display_v1_DisplayAddOrReplace_config_epd_tag) {
-    did_begin = display->beginEPD(&msgAdd->config.config_epd,
+    did_begin = display->beginEPD(&msgAdd->driver, &msgAdd->config.config_epd,
                                   &msgAdd->interface_type.spi_epd);
   } else if (msgAdd->which_config ==
              wippersnapper_display_v1_DisplayAddOrReplace_config_tft_tag) {
-    did_begin = display->beginTft(&msgAdd->config.config_tft,
+    did_begin = display->beginTft(&msgAdd->driver, &msgAdd->config.config_tft,
                                   &msgAdd->interface_type.spi_tft);
   } else {
     WS_DEBUG_PRINTLN("[display] Unsupported display configuration type!");
