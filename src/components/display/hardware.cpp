@@ -167,6 +167,8 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
 
 /*!
     @brief  Configures the EPD display with the provided configuration.
+    @param driver
+            Pointer to the display driver configuration structure.
     @param  config
             Pointer to the EPD configuration structure.
     @param  spi_config
@@ -302,6 +304,8 @@ void DisplayHardware::removeSuffix(const char *suffix) {
 
 /*!
     @brief  Attempts to configure and initialize a TFT display
+    @param driver
+            Pointer to the display driver configuration structure.
     @param  config
             Pointer to the TFT configuration structure.
     @param  spi_config
