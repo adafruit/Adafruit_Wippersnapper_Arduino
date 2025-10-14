@@ -501,6 +501,9 @@ protected:
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
 };
+
+// Forward declaration - actual type is platform-specific (Wippersnapper_WiFi)
+// but we declare as base class here to avoid circular dependencies
 extern Wippersnapper WS; ///< Global member variable for callbacks
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H

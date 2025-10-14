@@ -32,8 +32,11 @@
  */
 
 #include "Wippersnapper.h"
+#include "Wippersnapper_Networking.h"
 
-Wippersnapper WS;
+// Define the global WS instance as the platform-specific derived class
+// This ensures virtual methods like _connect() route to the correct implementation
+Wippersnapper_WiFi WS;
 
 Wippersnapper::Wippersnapper() {
   _mqtt = 0; // MQTT Client object

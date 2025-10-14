@@ -13,6 +13,11 @@
  *
  */
 #include "controller.h"
+#include "Wippersnapper_Networking.h"
+
+// Forward declaration of the global WS instance
+// Use the platform-specific type so virtual methods resolve correctly
+extern Wippersnapper_WiFi WS;
 
 /*!
     @brief  Constructs a new DisplayController object
