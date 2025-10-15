@@ -54,6 +54,8 @@ public:
   */
   ~dispDrvSt7789() {
     if (_display) {
+      // "Clear" the display before deleting
+      _display->fillScreen(ST77XX_BLACK);
       delete _display;
       _display = nullptr;
     }
@@ -282,7 +284,8 @@ public:
           i++;
         }
       } else if (message[i] == 0xC2 && message[i + 1] == 0xB0) {
-        _display->write(char(248));
+        // Degree symbol - tested on Feather RevTFT S3
+        _display->write(char(247));
         i++;
       } else {
         _display->print(message[i]);
