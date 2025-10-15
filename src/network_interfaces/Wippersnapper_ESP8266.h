@@ -39,8 +39,6 @@
 // static const char *fingerprint PROGMEM =  "47 D2 CB 14 DF 38 97 59 C6 65 1A
 // 1F 3E 00 1E 53 CC A5 17 E0";
 
-extern Wippersnapper WS;
-
 /******************************************************************************/
 /*!
     @brief  Class for interacting with the Espressif ESP8266's network

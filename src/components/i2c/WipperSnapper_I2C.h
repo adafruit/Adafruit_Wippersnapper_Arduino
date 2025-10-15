@@ -232,6 +232,5 @@ private:
   WipperSnapper_I2C_Driver_Out_SH1107 *_sh1107 = nullptr;
   WipperSnapper_I2C_Driver_Out_Ssd1306 *_ssd1306 = nullptr;
 };
-extern Wippersnapper WS;
 
 #endif // WipperSnapper_Component_I2C_H
