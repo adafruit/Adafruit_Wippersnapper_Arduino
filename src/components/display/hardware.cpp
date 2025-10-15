@@ -238,8 +238,7 @@ bool DisplayHardware::beginEPD(
     _drvDisp = nullptr;
     return false;
   }
-  WS_DEBUG_PRINTLN("[display] Text Magnification: ");
-  WS_DEBUG_PRINTLN(config->text_size);
+
   _drvDisp->setTextSize(config->text_size);
 
   if (!_drvDisp->begin(epd_mode)) {

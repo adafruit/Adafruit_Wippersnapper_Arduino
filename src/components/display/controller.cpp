@@ -87,11 +87,10 @@ bool DisplayController::Handle_Display_AddOrReplace(
   display->showSplash();
   WS.runNetFSM();
   display->drawStatusBar(WS._config.aio_user);
-  WS.feedWDT();
+  WS.runNetFSM();
 
   _hw_instances.push_back(display); // Store the display instance
   WS_DEBUG_PRINTLN("[display] Display added or replaced successfully!");
-  WS.feedWDT();
   WS.runNetFSM();
   return true;
 }
@@ -176,10 +175,8 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     // yet.
     WS_DEBUG_PRINTLN("[display] Updating status bar...");
     hw_instance->updateStatusBar(rssi, 100, is_connected);
+    WS.runNetFSM();
   }
-
-  WS.feedWDT();
-  WS.runNetFSM();
 }
 
 /*!

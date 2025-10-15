@@ -25,8 +25,7 @@
 class dispDrvThinkInkGrayscale4T5 : public dispDrvBase {
 public:
   /*!
-      @brief  Constructor for the ThinkInk Grayscale 4-level EAAMFGN display
-               driver.
+      @brief  Constructor for the ThinkInk Grayscale T5 EPD display driver.
       @param  dc
               Data/Command pin for the display.
       @param  rst
@@ -53,7 +52,7 @@ public:
   }
 
   /*!
-      @brief  Attempts to initialize the ThinkInk Grayscale 4-level EAAMFGN
+      @brief  Attempts to initialize the ThinkInk Grayscale 4 T5 EPD
               display driver.
       @param  mode
               The ThinkInk mode to use for the display.
@@ -70,7 +69,6 @@ public:
     // Initialize the display
     _display->begin(mode);
     // Configure display settings
-    _text_sz = 3;
     _display->setTextSize(_text_sz);
     _display->setTextColor(EPD_BLACK);
     _display->setTextWrap(false);

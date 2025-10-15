@@ -17,8 +17,8 @@
 #include "Wippersnapper.h"
 #include "hardware.h"
 
-class Wippersnapper_V2; ///< Forward declaration
-class DisplayHardware;  ///< Forward declaration
+class Wippersnapper;   ///< Forward declaration
+class DisplayHardware; ///< Forward declaration
 
 /**************************************************************************/
 /*!
@@ -43,5 +43,5 @@ private:
       _hw_instances; ///< Holds pointers to DisplayHardware instances
   unsigned long _last_bar_update; ///< Timestamp of last status bar update
 };
-extern Wippersnapper Ws; ///< Global WS instance
+extern Wippersnapper WS; ///< Global WS instance
 #endif
