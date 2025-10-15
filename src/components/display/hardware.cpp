@@ -185,12 +185,6 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
-  // Validate mode is a correct EPD mode
-  if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
-    WS_DEBUG_PRINTLN("[display] Unsupported EPD mode!");
-    return false;
-  }
-
   // If we already have a display driver assigned to this hardware instance,
   // clean it up!
   if (_drvDisp) {
@@ -217,6 +211,21 @@ bool DisplayHardware::beginEPD(
     WS_DEBUG_PRINTLN(
         "[display] ERROR: Non-default SPI buses are currently not supported!");
     return false;
+  }
+
+  // For MagTag "Generic" display component, attempt to auto-detect SSD1680 EPD
+  if (strncmp(_name, "eink-magtag", 13) == 0) {
+    if (detect_ssd1680(cs, dc, rst)) {
+      WS_DEBUG_PRINTLN("[display] Detected SSD1680 EPD driver");
+      *driver =
+          wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1680;
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_MONO;
+    } else {
+      WS_DEBUG_PRINTLN("[display] Detected ILI0373 EPD driver");
+      *driver =
+          wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373;
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4;
+    }
   }
 
   // Create display driver object using the factory function
@@ -387,8 +396,6 @@ void DisplayHardware::writeMessage(const char *message) {
    EPD).
 */
 bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
-  // note: for a complete implementation reference, see
-  // https://github.com/adafruit/circuitpython/commit/f4316cb2491c815b128acca47f1bb75519fe306e
   // Configure SPI pins to bit-bang
   pinMode(MOSI, OUTPUT);
   pinMode(SCK, OUTPUT);
@@ -396,11 +403,21 @@ bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
   pinMode(dc, OUTPUT);
   pinMode(rst, OUTPUT);
 
+  // Reset the display
+  digitalWrite(cs, HIGH);
+  digitalWrite(rst, HIGH);
+  delay(10);
+  digitalWrite(rst, LOW);
+  delay(10);
+  digitalWrite(rst, HIGH);
+  delay(200);
+
   // Begin transaction by pulling cs and dc LOW
   digitalWrite(cs, LOW);
   digitalWrite(dc, LOW);
-  digitalWrite(SCK, LOW);
+  digitalWrite(MOSI, LOW);
   digitalWrite(rst, HIGH);
+  digitalWrite(SCK, LOW);
 
   // Write to read register 0x71
   uint8_t cmd = 0x71;
@@ -412,10 +429,8 @@ bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
 
   // Set DC high to indicate data and switch MOSI to input with PUR in case
   // SSD1680 does not send data back
-  digitalWrite(dc, HIGH);
-  delayMicroseconds(1);
   pinMode(MOSI, INPUT_PULLUP);
-  delayMicroseconds(1);
+  digitalWrite(dc, HIGH);
 
   // Read response from register
   uint8_t status = 0;
@@ -424,20 +439,12 @@ bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
     if (digitalRead(MOSI)) {
       status |= 1;
     }
+
     digitalWrite(SCK, HIGH);
-    delayMicroseconds(1);
     digitalWrite(SCK, LOW);
-    delayMicroseconds(1);
   }
-
-  // End transaction by pulling CS high
   digitalWrite(cs, HIGH);
-
-  // Put back MOSI pin as an output
   pinMode(MOSI, OUTPUT);
-
-  WS_DEBUG_PRINT("[display] Bitbang read 0x71: 0x");
-  WS_DEBUG_PRINTLN(status, HEX);
 
   return status == 0xFF;
 }
