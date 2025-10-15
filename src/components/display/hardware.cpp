@@ -216,16 +216,20 @@ bool DisplayHardware::beginEPD(
   // For MagTag "Generic" display component, attempt to auto-detect SSD1680 EPD
   if (strncmp(_name, "eink-magtag", 13) == 0) {
     if (detect_ssd1680(cs, dc, rst)) {
-      WS_DEBUG_PRINTLN("[display] Detected SSD1680 EPD driver");
       *driver =
           wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1680;
       config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_MONO;
     } else {
-      WS_DEBUG_PRINTLN("[display] Detected ILI0373 EPD driver");
       *driver =
           wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373;
       config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4;
     }
+  }
+
+  // Validate mode
+  if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
+    WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
+    return false;
   }
 
   // Create display driver object using the factory function
