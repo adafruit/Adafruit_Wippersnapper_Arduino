@@ -176,7 +176,7 @@ public:
           i++;
         }
       } else if (message[i] == 0xC2 && message[i + 1] == 0xB0) {
-        _display->write(char(248));
+        _display->write(char(247)); // Tested on SH1107 128x64 wing
         _display->display();
         i++;
       } else {
