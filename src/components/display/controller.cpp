@@ -64,11 +64,11 @@ bool DisplayController::Handle_Display_AddOrReplace(
   bool did_begin = false;
   if (msgAdd->which_config ==
       wippersnapper_display_v1_DisplayAddOrReplace_config_epd_tag) {
-    did_begin = display->beginEPD(&msgAdd->config.config_epd,
+    did_begin = display->beginEPD(&msgAdd->driver, &msgAdd->config.config_epd,
                                   &msgAdd->interface_type.spi_epd);
   } else if (msgAdd->which_config ==
              wippersnapper_display_v1_DisplayAddOrReplace_config_tft_tag) {
-    did_begin = display->beginTft(&msgAdd->config.config_tft,
+    did_begin = display->beginTft(&msgAdd->driver, &msgAdd->config.config_tft,
                                   &msgAdd->interface_type.spi_tft);
   } else {
     WS_DEBUG_PRINTLN("[display] Unsupported display configuration type!");
@@ -87,11 +87,10 @@ bool DisplayController::Handle_Display_AddOrReplace(
   display->showSplash();
   WS.runNetFSM();
   display->drawStatusBar(WS._config.aio_user);
-  WS.feedWDT();
+  WS.runNetFSM();
 
   _hw_instances.push_back(display); // Store the display instance
   WS_DEBUG_PRINTLN("[display] Display added or replaced successfully!");
-  WS.feedWDT();
   WS.runNetFSM();
   return true;
 }
@@ -176,10 +175,8 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     // yet.
     WS_DEBUG_PRINTLN("[display] Updating status bar...");
     hw_instance->updateStatusBar(rssi, 100, is_connected);
+    WS.runNetFSM();
   }
-
-  WS.feedWDT();
-  WS.runNetFSM();
 }
 
 /*!

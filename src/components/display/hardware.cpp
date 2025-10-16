@@ -20,19 +20,22 @@
 using FnCreateDispDrvEpd =
     std::function<dispDrvBase *(int16_t, int16_t, int16_t, int16_t, int16_t)>;
 
-// Factory for creating a new display drivers
+// Factory for creating new display drivers
 // NOTE: When you add a new display driver, make sure to add it to the factory!
-static const std::map<std::string, FnCreateDispDrvEpd> FactoryDrvDispEpd = {
-    {"eink-29-grayscale-ssd1680",
-     [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
-        int16_t busy) -> dispDrvBase * {
-       return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
-     }},
-    {"thinkink-gs4-t5",
-     [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
-        int16_t busy) -> dispDrvBase * {
-       return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
-     }}};
+static const std::map<wippersnapper_display_v1_DisplayDriver,
+                      FnCreateDispDrvEpd>
+    FactoryDrvDispEpd = {
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1680,
+         [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+            int16_t busy) -> dispDrvBase * {
+           return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs,
+                                                       busy);
+         }},
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373,
+         [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+            int16_t busy) -> dispDrvBase * {
+           return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+         }}};
 
 /*!
     @brief  Lambda function to create a dispDrvBase SPI TFT instance
@@ -43,23 +46,20 @@ using FnCreateDispDrvTft = std::function<dispDrvBase *(
 // Factory for creating a new SPI TFT display driver
 // NOTE: When you add a new SPI TFT display driver, make sure to add it to the
 // factory!
-static const std::map<std::string, FnCreateDispDrvTft> FactoryDrvDispTft = {
-    {"tft-154-wide-angle",
-     [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
-        int16_t miso) -> dispDrvBase * {
-       return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
-     }},
-    {"tft-114",
-     [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
-        int16_t miso) -> dispDrvBase * {
-       return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
-     }}};
+static const std::map<wippersnapper_display_v1_DisplayDriver,
+                      FnCreateDispDrvTft>
+    FactoryDrvDispTft = {
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_TFT_ST7789,
+         [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
+            int16_t miso) -> dispDrvBase * {
+           return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
+         }}};
 
 /*!
     @brief  Creates a new E-Ink display driver instance based on the driver
    name.
-    @param  driver_name
-            The name of the display driver to create.
+    @param  driver
+            The name of the DisplayDriver.
     @param  dc
             Data/Command pin number.
     @param  rst
@@ -73,10 +73,10 @@ static const std::map<std::string, FnCreateDispDrvTft> FactoryDrvDispTft = {
     @return Pointer to the created display driver instance, or nullptr if the
             driver name is not recognized.
 */
-dispDrvBase *CreateDrvDispEpd(const char *driver_name, int16_t dc, int16_t rst,
-                              int16_t cs, int16_t sram_cs = -1,
-                              int16_t busy = -1) {
-  auto it = FactoryDrvDispEpd.find(driver_name);
+dispDrvBase *CreateDrvDispEpd(wippersnapper_display_v1_DisplayDriver driver,
+                              int16_t dc, int16_t rst, int16_t cs,
+                              int16_t sram_cs = -1, int16_t busy = -1) {
+  auto it = FactoryDrvDispEpd.find(driver);
   if (it == FactoryDrvDispEpd.end())
     return nullptr;
 
@@ -86,8 +86,8 @@ dispDrvBase *CreateDrvDispEpd(const char *driver_name, int16_t dc, int16_t rst,
 /*!
     @brief  Creates a new SPI TFT display driver instance based on the driver
    name.
-    @param  driver_name
-            The name of the SPI TFT display driver to create.
+    @param  driver
+            The name of the DisplayDriver.
     @param  cs
             Chip Select pin number.
     @param  dc
@@ -103,10 +103,10 @@ dispDrvBase *CreateDrvDispEpd(const char *driver_name, int16_t dc, int16_t rst,
     @return Pointer to the created display driver instance, or nullptr if the
             driver name is not recognized.
 */
-dispDrvBase *CreateDrvDispTft(const char *driver_name, int16_t cs, int16_t dc,
-                              int16_t mosi, int16_t sck, int16_t rst = -1,
-                              int16_t miso = -1) {
-  auto it = FactoryDrvDispTft.find(driver_name);
+dispDrvBase *CreateDrvDispTft(wippersnapper_display_v1_DisplayDriver driver,
+                              int16_t cs, int16_t dc, int16_t mosi, int16_t sck,
+                              int16_t rst = -1, int16_t miso = -1) {
+  auto it = FactoryDrvDispTft.find(driver);
   if (it == FactoryDrvDispTft.end())
     return nullptr;
 
@@ -167,6 +167,8 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
 
 /*!
     @brief  Configures the EPD display with the provided configuration.
+    @param driver
+            Pointer to a DisplayDriver enum value.
     @param  config
             Pointer to the EPD configuration structure.
     @param  spi_config
@@ -174,17 +176,12 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
     @return True if configuration was successful, False otherwise.
 */
 bool DisplayHardware::beginEPD(
+    wippersnapper_display_v1_DisplayDriver *driver,
     wippersnapper_display_v1_EPDConfig *config,
     wippersnapper_display_v1_EpdSpiConfig *spi_config) {
   // Validate pointers
   if (config == nullptr || spi_config == nullptr) {
     WS_DEBUG_PRINTLN("[display] EPD config or SPI config is null!");
-    return false;
-  }
-
-  // Validate mode is a correct EPD mode
-  if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
-    WS_DEBUG_PRINTLN("[display] Unsupported EPD mode!");
     return false;
   }
 
@@ -216,8 +213,27 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
+  // For MagTag "Generic" display component, attempt to auto-detect SSD1680 EPD
+  if (strncmp(_name, "eink-magtag", 13) == 0) {
+    if (detect_ssd1680(cs, dc, rst)) {
+      *driver =
+          wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1680;
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_MONO;
+    } else {
+      *driver =
+          wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373;
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4;
+    }
+  }
+
+  // Validate mode
+  if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
+    WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
+    return false;
+  }
+
   // Create display driver object using the factory function
-  _drvDisp = CreateDrvDispEpd(_name, dc, rst, cs, srcs, busy);
+  _drvDisp = CreateDrvDispEpd(*driver, dc, rst, cs, srcs, busy);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false; // Failed to create display driver
@@ -235,8 +251,7 @@ bool DisplayHardware::beginEPD(
     _drvDisp = nullptr;
     return false;
   }
-  WS_DEBUG_PRINTLN("[display] Text Magnification: ");
-  WS_DEBUG_PRINTLN(config->text_size);
+
   _drvDisp->setTextSize(config->text_size);
 
   if (!_drvDisp->begin(epd_mode)) {
@@ -301,6 +316,8 @@ void DisplayHardware::removeSuffix(const char *suffix) {
 
 /*!
     @brief  Attempts to configure and initialize a TFT display
+    @param driver
+            Pointer to a DisplayDriver enum value.
     @param  config
             Pointer to the TFT configuration structure.
     @param  spi_config
@@ -308,6 +325,7 @@ void DisplayHardware::removeSuffix(const char *suffix) {
     @return True if configuration was successful, False otherwise.
 */
 bool DisplayHardware::beginTft(
+    wippersnapper_display_v1_DisplayDriver *driver,
     wippersnapper_display_v1_TftConfig *config,
     wippersnapper_display_v1_TftSpiConfig *spi_config) {
   // Validate pointers
@@ -338,7 +356,7 @@ bool DisplayHardware::beginTft(
   }
 
   // Create display driver object using the factory function
-  _drvDisp = CreateDrvDispTft(_name, cs, dc, mosi, sck, rst, miso);
+  _drvDisp = CreateDrvDispTft(*driver, cs, dc, mosi, sck, rst, miso);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false;
@@ -382,20 +400,32 @@ void DisplayHardware::writeMessage(const char *message) {
    EPD).
 */
 bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
-  // note: for a complete implementation reference, see
-  // https://github.com/adafruit/circuitpython/commit/f4316cb2491c815b128acca47f1bb75519fe306e
   // Configure SPI pins to bit-bang
   pinMode(MOSI, OUTPUT);
   pinMode(SCK, OUTPUT);
   pinMode(cs, OUTPUT);
   pinMode(dc, OUTPUT);
-  pinMode(rst, OUTPUT);
+  if (rst >= 0)
+    pinMode(rst, OUTPUT);
+
+  // Reset the display
+  digitalWrite(cs, HIGH);
+  if (rst >= 0) {
+    digitalWrite(rst, HIGH);
+    delay(10);
+    digitalWrite(rst, LOW);
+    delay(10);
+    digitalWrite(rst, HIGH);
+    delay(200);
+  }
 
   // Begin transaction by pulling cs and dc LOW
   digitalWrite(cs, LOW);
   digitalWrite(dc, LOW);
+  digitalWrite(MOSI, LOW);
+  if (rst >= 0)
+    digitalWrite(rst, HIGH);
   digitalWrite(SCK, LOW);
-  digitalWrite(rst, HIGH);
 
   // Write to read register 0x71
   uint8_t cmd = 0x71;
@@ -407,10 +437,8 @@ bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
 
   // Set DC high to indicate data and switch MOSI to input with PUR in case
   // SSD1680 does not send data back
-  digitalWrite(dc, HIGH);
-  delayMicroseconds(1);
   pinMode(MOSI, INPUT_PULLUP);
-  delayMicroseconds(1);
+  digitalWrite(dc, HIGH);
 
   // Read response from register
   uint8_t status = 0;
@@ -419,20 +447,12 @@ bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
     if (digitalRead(MOSI)) {
       status |= 1;
     }
+
     digitalWrite(SCK, HIGH);
-    delayMicroseconds(1);
     digitalWrite(SCK, LOW);
-    delayMicroseconds(1);
   }
-
-  // End transaction by pulling CS high
   digitalWrite(cs, HIGH);
-
-  // Put back MOSI pin as an output
   pinMode(MOSI, OUTPUT);
-
-  WS_DEBUG_PRINT("[display] Bitbang read 0x71: 0x");
-  WS_DEBUG_PRINTLN(status, HEX);
 
   return status == 0xFF;
 }

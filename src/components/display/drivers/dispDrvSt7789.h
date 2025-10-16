@@ -54,6 +54,8 @@ public:
   */
   ~dispDrvSt7789() {
     if (_display) {
+      // "Clear" the display before deleting
+      _display->fillScreen(ST77XX_BLACK);
       delete _display;
       _display = nullptr;
     }
