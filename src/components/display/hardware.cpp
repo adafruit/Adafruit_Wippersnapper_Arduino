@@ -405,22 +405,26 @@ bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
   pinMode(SCK, OUTPUT);
   pinMode(cs, OUTPUT);
   pinMode(dc, OUTPUT);
-  pinMode(rst, OUTPUT);
+  if (rst >= 0)
+    pinMode(rst, OUTPUT);
 
   // Reset the display
   digitalWrite(cs, HIGH);
-  digitalWrite(rst, HIGH);
-  delay(10);
-  digitalWrite(rst, LOW);
-  delay(10);
-  digitalWrite(rst, HIGH);
-  delay(200);
+  if (rst >= 0) {
+    digitalWrite(rst, HIGH);
+    delay(10);
+    digitalWrite(rst, LOW);
+    delay(10);
+    digitalWrite(rst, HIGH);
+    delay(200);
+  }
 
   // Begin transaction by pulling cs and dc LOW
   digitalWrite(cs, LOW);
   digitalWrite(dc, LOW);
   digitalWrite(MOSI, LOW);
-  digitalWrite(rst, HIGH);
+  if (rst >= 0)
+    digitalWrite(rst, HIGH);
   digitalWrite(SCK, LOW);
 
   // Write to read register 0x71
