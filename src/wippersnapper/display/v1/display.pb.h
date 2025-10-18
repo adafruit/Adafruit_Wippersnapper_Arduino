@@ -27,7 +27,8 @@ typedef enum _wippersnapper_display_v1_DisplayDriver {
     wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_UNSPECIFIED = 0,
     wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1680 = 1,
     wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373 = 2,
-    wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_TFT_ST7789 = 3
+    wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_TFT_ST7789 = 3,
+    wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8253 = 4
 } wippersnapper_display_v1_DisplayDriver;
 
 /* Struct definitions */
