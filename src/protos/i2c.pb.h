@@ -55,13 +55,6 @@ typedef struct _wippersnapper_i2c_I2cBusDescriptor {
 
 /* *
  I2cBusScan represents a command for a device to perform an i2c scan. */
-typedef struct _wippersnapper_i2c_I2cBusDescriptor {
-    char i2c_bus_sda[15]; /* * SDA pin for an i2c bus.* */
-    char i2c_bus_scl[15]; /* * SCL pin for an i2c bus.* */
-} wippersnapper_i2c_I2cBusDescriptor;
-
-/* *
- I2cBusScan represents a command for a device to perform an i2c scan. */
 typedef struct _wippersnapper_i2c_I2cBusScan {
     bool scan_default_bus; /* * Default - Scan for i2c devices on the hardware's default I2C bus.* */
     bool scan_alt_bus; /* * Optional - Scan for i2c devices on an alternative I2C bus.* */
