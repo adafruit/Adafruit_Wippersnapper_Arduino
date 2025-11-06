@@ -418,6 +418,7 @@ jobs:
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
+          ref: add-c5devkit
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
@@ -957,6 +958,7 @@ jobs:
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
+          ref: add-c5devkit
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
