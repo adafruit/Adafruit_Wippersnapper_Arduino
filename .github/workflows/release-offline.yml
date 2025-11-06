@@ -6,7 +6,6 @@ on:
     push:
       branches:
         - offline-mode
-        - offline-mode-*
     release:
       types: [published]
       branches:
@@ -166,8 +165,8 @@ jobs:
           tree
       - name: Rename build artifacts to reflect the platform name
         run: |
-          mv examples/*/build/*/Wippersnapper_demo_offline_netiface.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-          mv examples/*/build/*/Wippersnapper_demo_offline_netiface.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
+          mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
+          mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
       - name: upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -184,10 +183,10 @@ jobs:
       fail-fast: false
       matrix:
         arduino-platform: ["pico_rp2040_tinyusb",
-                        "pico_rp2350_tinyusb",
-                        "feather_rp2040_adalogger_tinyusb",
-                        "metro_rp2350_tinyusb"
-                        ]
+                           "pico_rp2350_tinyusb",
+                           "feather_rp2040_adalogger_tinyusb",
+                           "metro_rp2350_tinyusb"
+                           ]
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -245,7 +244,7 @@ jobs:
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: Rename build artifacts to reflect the platform name
         run: |
-          mv examples/*/build/*/Wippersnapper_demo_offline_nonetiface.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
+          mv examples/*/build/*/Wippersnapper_demo_offline.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
       - name: upload build artifacts
         uses: actions/upload-artifact@v4
         with:

@@ -274,16 +274,6 @@ public:
     return true;
   }
 
-  void ConfigureDefaultSensorTypes() override {
-    _default_sensor_types_count = 3;
-    _default_sensor_types[0] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD;
-    _default_sensor_types[1] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD;
-    _default_sensor_types[2] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD;
-  }
-
 protected:
   SensirionI2CSen5x *_sen; ///< SEN5X driver object
 };

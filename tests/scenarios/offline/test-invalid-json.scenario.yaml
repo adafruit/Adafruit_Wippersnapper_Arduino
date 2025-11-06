@@ -6,4 +6,4 @@ steps:
   - wait-serial: '[SD] Waiting for incoming JSON string...'
   - write-serial: '{"exportVersion":"1.0.0",'
   - write-serial: '\n'
-  - wait-serial: '[SD] Error: Unable to deserialize config.json'
+  - wait-serial: '[SD] Runtime Error: Unable to deserialize config.json'

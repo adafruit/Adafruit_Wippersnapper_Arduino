@@ -19,7 +19,7 @@
     @brief    Creates a new WipperSnapper display driver object from a
               configuration struct.
     @param    config
-              Configuration struct., from FS.ParseFileDisplayCfg();
+              Configuration struct., from FS.parseDisplayConfig();
 */
 ws_display_driver::ws_display_driver(displayConfig config) {
   // dynamically create the display driver from the configuration file

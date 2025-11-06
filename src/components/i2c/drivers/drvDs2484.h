@@ -24,16 +24,13 @@
 #include "drvBase.h"
 #include <Adafruit_DS248x.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the DS2484 I2C OneWire
             converter hosting a DS18b20 temperature sensor.
 */
-/**************************************************************************/
 class drvDs2484 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a DS2484 sensor.
       @param    i2c
@@ -45,26 +42,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvDs2484(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an DS2484 sensor.
   */
-  /*******************************************************************************/
   ~drvDs2484() { delete _ds2484; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the DS2484 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     // initialize DS2484
     _ds2484 = new Adafruit_DS248x();
@@ -91,7 +83,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Processes a temperature event.
       @param    tempEvent
@@ -139,7 +130,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the DS2484's current temperature.
       @param    tempEvent
@@ -147,17 +137,8 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     return processTemperatureEvent(tempEvent);
-  }
-
-  void ConfigureDefaultSensorTypes() override {
-    _default_sensor_types_count = 2;
-    _default_sensor_types[0] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
-    _default_sensor_types[1] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
   }
 
 protected:

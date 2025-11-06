@@ -117,12 +117,6 @@ public:
     return true;
   }
 
-  void ConfigureDefaultSensorTypes() override {
-    _default_sensor_types_count = 2;
-    _default_sensor_types[0] = wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
-    _default_sensor_types[1] = wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC;
-  }
-
 protected:
   ScioSense_ENS160 *_ens160; ///< ENS160 object
 };

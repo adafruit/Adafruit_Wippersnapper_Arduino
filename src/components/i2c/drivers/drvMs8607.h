@@ -107,18 +107,6 @@ public:
     return true;
   }
 
-  void ConfigureDefaultSensorTypes() override {
-    _default_sensor_types_count = 4;
-    _default_sensor_types[0] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
-    _default_sensor_types[1] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
-    _default_sensor_types[2] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
-    _default_sensor_types[3] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
-  }
-
 protected:
   Adafruit_MS8607 *_ms8607; ///< MS8607  object
   Adafruit_Sensor *_ms8607_temp =

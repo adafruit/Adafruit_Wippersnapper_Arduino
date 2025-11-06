@@ -22,21 +22,14 @@
 #if defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                      \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT)
-#define SD_CS_PIN 10
 #include "adapters/wifi/ws_wifi_airlift.h"
 typedef ws_wifi_airlift ws_adapter_wifi;
 // ESP8266 networking adapter
 #elif defined(ARDUINO_ARCH_ESP8266)
-#define SD_CS_PIN 15
 #include "adapters/wifi/ws_wifi_esp8266.h"
 typedef ws_wifi_esp8266 ws_adapter_wifi;
-#elif defined(ARDUINO_ESP32_DEV) || defined(ESP32_DEV)
-#define SD_CS_PIN 15
-#include "adapters/wifi/ws_wifi_esp32.h"
-typedef ws_wifi_esp32 ws_adapter_wifi;
 // ESP32 networking adapter
 #elif defined(ARDUINO_ARCH_ESP32)
-#define SD_CS_PIN 33
 #include "adapters/wifi/ws_wifi_esp32.h"
 typedef ws_wifi_esp32 ws_adapter_wifi;
 // Networking adapters for Raspberry Pi Pico W-series
@@ -46,7 +39,6 @@ typedef ws_wifi_esp32 ws_adapter_wifi;
 typedef ws_wifi_pico ws_adapter_wifi;
 // Networking adapter for Arduino Nano 33 IoT and MKR WiFi 1010
 #elif defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_SAMD_MKRWIFI1010)
-#define SD_CS_PIN 33
 #include "adapters/wifi/ws_wifi_ninafw.h"
 typedef ws_wifi_ninafw ws_adapter_wifi;
 /**
@@ -56,7 +48,6 @@ typedef ws_wifi_ninafw ws_adapter_wifi;
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
     defined(ARDUINO_ADAFRUIT_METRO_RP2350)
-#define SD_CS_PIN 23
 #include "adapters/offline/ws_offline_pico.h"
 typedef ws_offline_pico ws_adapter_offline;
 #else
