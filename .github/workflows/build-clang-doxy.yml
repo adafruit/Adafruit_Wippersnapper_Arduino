@@ -145,6 +145,8 @@ jobs:
           board_name=${board_name%_noota}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
+          # Remove 'espressif_' prefix if present
+          board_name=${board_name#espressif_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
@@ -485,6 +487,8 @@ jobs:
           board_name=${board_name%_noota}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
+          # Remove 'espressif_' prefix if present
+          board_name=${board_name#espressif_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
@@ -1024,6 +1028,8 @@ jobs:
           board_name=${board_name%_debug}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
+          # Remove 'espressif_' prefix if present
+          board_name=${board_name#espressif_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
