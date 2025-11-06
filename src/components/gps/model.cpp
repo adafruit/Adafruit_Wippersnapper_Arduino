@@ -57,8 +57,7 @@ wippersnapper_gps_GPSConfig *GPSModel::GetGPSConfigMsg() {
 void GPSModel::CreateGPSEvent() {
   // Zero-out whatever was previously in the GPSEvent message
   memset(&_msg_gps_event, 0, sizeof(_msg_gps_event));
-  // Create new GPSEvent message with initializer
-  _msg_gps_event = wippersnapper_gps_GPSEvent_init_zero;
+  // Already zeroed out by memset, just set the counts
   _msg_gps_event.gga_responses_count = 0;
   _msg_gps_event.rmc_responses_count = 0;
 }
@@ -124,7 +123,7 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
 
   // Always store at index 0, overwriting any previous response
   wippersnapper_gps_GPSRMCResponse rmc_response;
-  rmc_response = wippersnapper_gps_GPSRMCResponse_init_zero;
+  memset(&rmc_response, 0, sizeof(rmc_response));
   rmc_response.has_datetime = true;
   rmc_response.datetime = datetime;
 
@@ -164,7 +163,7 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
     return false;
 
   wippersnapper_gps_GPGGAResponse gga_response;
-  gga_response = wippersnapper_gps_GPGGAResponse_init_zero;
+  memset(&gga_response, 0, sizeof(gga_response));
   gga_response.has_datetime = true;
   gga_response.datetime = datetime;
 

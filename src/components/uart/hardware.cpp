@@ -144,7 +144,13 @@ bool UARTHardware::ConfigureSerial() {
 #else
     // ESP8266, SAMD, and other platforms
     // take the default Arduino/Wiring API arguments
+    #ifdef ARDUINO_ARCH_ESP8266
+    // We want to pass the cfg as an enum for ESP8266
+    _hwSerial->begin((unsigned long)_config.baud_rate, (SerialConfig)cfg);
+    #else
+    // We want to cast the cfg for other platforms
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
+    #endif
 #endif
     _baud_rate = _config.baud_rate;
   }
