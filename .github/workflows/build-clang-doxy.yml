@@ -908,14 +908,14 @@ jobs:
         arduino-platform:
           [
             "wippersnapper_feather_esp32c6_debug",
-            "esp32c5_devkitc_1_n8r4_debug",
+            "espressif_esp32c5_devkitc_1_n8r4_debug",
           ]
         include:
           - offset: "0x1000"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
           - offset: "0x0"
-            arduino-platform: "esp32c5_devkitc_1_n8r4_debug"
+            arduino-platform: "espressif_esp32c5_devkitc_1_n8r4_debug"
 
     steps:
       - name: "skip if unwanted"
