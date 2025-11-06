@@ -18,9 +18,7 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_SAMD) ||              \
-    defined(ARDUINO_ARCH_ESP8266)
-// SAMD supports native Arduino SoftwareSerial API
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_ESP8266)
 // ESP8266 supports SoftwareSerial in the ESP8266 Arduino core
 // RP2040/RP2350 supports a wrapper around SoftwareSerial and emulation via
 // PIOUART (see:
