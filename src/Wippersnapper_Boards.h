@@ -175,7 +175,8 @@
 #define BOARD_ID "esp32c5-devkitc-1-n8r4"
 #define USE_LITTLEFS
 #define USE_STATUS_NEOPIXEL
-#define STATUS_NEOPIXEL_PIN PIN_RGB_LED // 27, or GPIO_NUM+27 if using RGBwrite()
+#define STATUS_NEOPIXEL_PIN PIN_RGB_LED 
+// PIN_RGB_LED = 27, or GPIO_NUM+27 if using RGBwrite()
 #define STATUS_NEOPIXEL_NUM 1
 #ifdef BOARD_HAS_PSRAM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
