@@ -357,7 +357,13 @@ bool GPSHardware::DetectMtkUart() {
 
   // Attempt to use Adafruit_GPS
   _ada_gps = new Adafruit_GPS(_hw_serial);
-  if (!_ada_gps->begin(_hw_serial->baudRate())) {
+  int baud_rate;
+  #if defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+  baud_rate = 9600; // Pico SDK does not support getting baud rate from serial, default to 9600
+  #else
+  baud_rate = _hw_serial->baudRate();
+  #endif
+  if (!_ada_gps->begin(baud_rate)) {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
     return false;
   }

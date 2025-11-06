@@ -126,8 +126,19 @@ bool UARTHardware::ConfigureSerial() {
     _baud_rate = _config.baud_rate;
 #endif // HAS_SW_SERIAL
   } else {
+    #ifdef ARDUINO_ARCH_RP2040
+    if (_config.uart_nbr == 1) {
+      _hwSerial = &Serial1;
+    } else if (_config.uart_nbr == 2) {
+      _hwSerial = &Serial2;
+    } else {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Invalid UART number for ESP32!");
+      return false;
+    }
+    #else
     // Create a new HardwareSerial instance
     _hwSerial = new HardwareSerial(_config.uart_nbr);
+    #endif
     if (_hwSerial == nullptr) {
       WS_DEBUG_PRINTLN(
           "[uart] ERROR: Failed to allocate HardwareSerial instance!");
@@ -138,8 +149,7 @@ bool UARTHardware::ConfigureSerial() {
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg, rx_pin,
                      tx_pin, false, (unsigned long)_config.timeout);
 #elif ARDUINO_ARCH_RP2040
-    _hwSerial->setRx(rx_pin);
-    _hwSerial->setTx(tx_pin);
+    // Pins are already defined by the Serial1/Serial2 instances
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
 #else
     // ESP8266, SAMD, and other platforms
