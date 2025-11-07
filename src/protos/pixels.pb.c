@@ -6,6 +6,12 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
+PB_BIND(wippersnapper_pixels_PixelsB2D, wippersnapper_pixels_PixelsB2D, AUTO)
+
+
+PB_BIND(wippersnapper_pixels_PixelsD2B, wippersnapper_pixels_PixelsD2B, AUTO)
+
+
 PB_BIND(wippersnapper_pixels_PixelsAdd, wippersnapper_pixels_PixelsAdd, AUTO)
 
 

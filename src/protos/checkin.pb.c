@@ -6,10 +6,22 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
+PB_BIND(wippersnapper_checkin_CheckinB2D, wippersnapper_checkin_CheckinB2D, AUTO)
+
+
+PB_BIND(wippersnapper_checkin_CheckinD2B, wippersnapper_checkin_CheckinD2B, AUTO)
+
+
 PB_BIND(wippersnapper_checkin_CheckinRequest, wippersnapper_checkin_CheckinRequest, AUTO)
 
 
 PB_BIND(wippersnapper_checkin_CheckinResponse, wippersnapper_checkin_CheckinResponse, AUTO)
+
+
+PB_BIND(wippersnapper_checkin_ComponentAdd, wippersnapper_checkin_ComponentAdd, 2)
+
+
+PB_BIND(wippersnapper_checkin_CheckinComplete, wippersnapper_checkin_CheckinComplete, AUTO)
 
 
 

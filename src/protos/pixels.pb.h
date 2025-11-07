@@ -55,6 +55,15 @@ typedef struct _wippersnapper_pixels_PixelsAdded {
 } wippersnapper_pixels_PixelsAdded;
 
 /* *
+ DeviceToBroker message envelope */
+typedef struct _wippersnapper_pixels_PixelsD2B {
+    pb_size_t which_payload;
+    union {
+        wippersnapper_pixels_PixelsAdded pixels_added;
+    } payload;
+} wippersnapper_pixels_PixelsD2B;
+
+/* *
  PixelAdd represents a call from IO to a device
  Removes a strand of addressable pixels and release the resources and pin. */
 typedef struct _wippersnapper_pixels_PixelsRemove {
@@ -70,6 +79,17 @@ typedef struct _wippersnapper_pixels_PixelsWrite {
 next is red, then green, and least significant byte is blue. */
 } wippersnapper_pixels_PixelsWrite;
 
+/* *
+ BrokerToDevice message envelope */
+typedef struct _wippersnapper_pixels_PixelsB2D {
+    pb_size_t which_payload;
+    union {
+        wippersnapper_pixels_PixelsAdd pixels_add;
+        wippersnapper_pixels_PixelsRemove pixels_remove;
+        wippersnapper_pixels_PixelsWrite pixels_write;
+    } payload;
+} wippersnapper_pixels_PixelsB2D;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,6 +104,8 @@ extern "C" {
 #define _wippersnapper_pixels_PixelsOrder_MAX wippersnapper_pixels_PixelsOrder_PIXELS_ORDER_BGR
 #define _wippersnapper_pixels_PixelsOrder_ARRAYSIZE ((wippersnapper_pixels_PixelsOrder)(wippersnapper_pixels_PixelsOrder_PIXELS_ORDER_BGR+1))
 
+
+
 #define wippersnapper_pixels_PixelsAdd_pixels_type_ENUMTYPE wippersnapper_pixels_PixelsType
 #define wippersnapper_pixels_PixelsAdd_pixels_ordering_ENUMTYPE wippersnapper_pixels_PixelsOrder
 
@@ -92,10 +114,14 @@ extern "C" {
 
 
 /* Initializer values for message structs */
+#define wippersnapper_pixels_PixelsB2D_init_default {0, {wippersnapper_pixels_PixelsAdd_init_default}}
+#define wippersnapper_pixels_PixelsD2B_init_default {0, {wippersnapper_pixels_PixelsAdded_init_default}}
 #define wippersnapper_pixels_PixelsAdd_init_default {_wippersnapper_pixels_PixelsType_MIN, 0, _wippersnapper_pixels_PixelsOrder_MIN, 0, "", ""}
 #define wippersnapper_pixels_PixelsAdded_init_default {0, ""}
 #define wippersnapper_pixels_PixelsRemove_init_default {""}
 #define wippersnapper_pixels_PixelsWrite_init_default {"", 0}
+#define wippersnapper_pixels_PixelsB2D_init_zero {0, {wippersnapper_pixels_PixelsAdd_init_zero}}
+#define wippersnapper_pixels_PixelsD2B_init_zero {0, {wippersnapper_pixels_PixelsAdded_init_zero}}
 #define wippersnapper_pixels_PixelsAdd_init_zero {_wippersnapper_pixels_PixelsType_MIN, 0, _wippersnapper_pixels_PixelsOrder_MIN, 0, "", ""}
 #define wippersnapper_pixels_PixelsAdded_init_zero {0, ""}
 #define wippersnapper_pixels_PixelsRemove_init_zero {""}
@@ -110,11 +136,31 @@ extern "C" {
 #define wippersnapper_pixels_PixelsAdd_pixels_pin_dotstar_clock_tag 6
 #define wippersnapper_pixels_PixelsAdded_is_success_tag 1
 #define wippersnapper_pixels_PixelsAdded_pixels_pin_data_tag 2
+#define wippersnapper_pixels_PixelsD2B_pixels_added_tag 10
 #define wippersnapper_pixels_PixelsRemove_pixels_pin_data_tag 1
 #define wippersnapper_pixels_PixelsWrite_pixels_pin_data_tag 1
 #define wippersnapper_pixels_PixelsWrite_pixels_color_tag 2
+#define wippersnapper_pixels_PixelsB2D_pixels_add_tag 10
+#define wippersnapper_pixels_PixelsB2D_pixels_remove_tag 11
+#define wippersnapper_pixels_PixelsB2D_pixels_write_tag 12
 
 /* Struct field encoding specification for nanopb */
+#define wippersnapper_pixels_PixelsB2D_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pixels_add,payload.pixels_add),  10) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pixels_remove,payload.pixels_remove),  11) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pixels_write,payload.pixels_write),  12)
+#define wippersnapper_pixels_PixelsB2D_CALLBACK NULL
+#define wippersnapper_pixels_PixelsB2D_DEFAULT NULL
+#define wippersnapper_pixels_PixelsB2D_payload_pixels_add_MSGTYPE wippersnapper_pixels_PixelsAdd
+#define wippersnapper_pixels_PixelsB2D_payload_pixels_remove_MSGTYPE wippersnapper_pixels_PixelsRemove
+#define wippersnapper_pixels_PixelsB2D_payload_pixels_write_MSGTYPE wippersnapper_pixels_PixelsWrite
+
+#define wippersnapper_pixels_PixelsD2B_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pixels_added,payload.pixels_added),  10)
+#define wippersnapper_pixels_PixelsD2B_CALLBACK NULL
+#define wippersnapper_pixels_PixelsD2B_DEFAULT NULL
+#define wippersnapper_pixels_PixelsD2B_payload_pixels_added_MSGTYPE wippersnapper_pixels_PixelsAdded
+
 #define wippersnapper_pixels_PixelsAdd_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    pixels_type,       1) \
 X(a, STATIC,   SINGULAR, UINT32,   pixels_num,        2) \
@@ -142,21 +188,27 @@ X(a, STATIC,   SINGULAR, UINT32,   pixels_color,      2)
 #define wippersnapper_pixels_PixelsWrite_CALLBACK NULL
 #define wippersnapper_pixels_PixelsWrite_DEFAULT NULL
 
+extern const pb_msgdesc_t wippersnapper_pixels_PixelsB2D_msg;
+extern const pb_msgdesc_t wippersnapper_pixels_PixelsD2B_msg;
 extern const pb_msgdesc_t wippersnapper_pixels_PixelsAdd_msg;
 extern const pb_msgdesc_t wippersnapper_pixels_PixelsAdded_msg;
 extern const pb_msgdesc_t wippersnapper_pixels_PixelsRemove_msg;
 extern const pb_msgdesc_t wippersnapper_pixels_PixelsWrite_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
+#define wippersnapper_pixels_PixelsB2D_fields &wippersnapper_pixels_PixelsB2D_msg
+#define wippersnapper_pixels_PixelsD2B_fields &wippersnapper_pixels_PixelsD2B_msg
 #define wippersnapper_pixels_PixelsAdd_fields &wippersnapper_pixels_PixelsAdd_msg
 #define wippersnapper_pixels_PixelsAdded_fields &wippersnapper_pixels_PixelsAdded_msg
 #define wippersnapper_pixels_PixelsRemove_fields &wippersnapper_pixels_PixelsRemove_msg
 #define wippersnapper_pixels_PixelsWrite_fields &wippersnapper_pixels_PixelsWrite_msg
 
 /* Maximum encoded size of messages (where known) */
-#define WIPPERSNAPPER_PIXELS_PIXELS_PB_H_MAX_SIZE wippersnapper_pixels_PixelsAdd_size
+#define WIPPERSNAPPER_PIXELS_PIXELS_PB_H_MAX_SIZE wippersnapper_pixels_PixelsB2D_size
 #define wippersnapper_pixels_PixelsAdd_size      30
 #define wippersnapper_pixels_PixelsAdded_size    9
+#define wippersnapper_pixels_PixelsB2D_size      32
+#define wippersnapper_pixels_PixelsD2B_size      11
 #define wippersnapper_pixels_PixelsRemove_size   7
 #define wippersnapper_pixels_PixelsWrite_size    13
 

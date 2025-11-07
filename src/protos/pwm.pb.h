@@ -29,6 +29,15 @@ typedef struct _wippersnapper_pwm_PWMAdded {
 } wippersnapper_pwm_PWMAdded;
 
 /* *
+ DeviceToBroker message envelope */
+typedef struct _wippersnapper_pwm_PWMD2B {
+    pb_size_t which_payload;
+    union {
+        wippersnapper_pwm_PWMAdded pwm_added;
+    } payload;
+} wippersnapper_pwm_PWMD2B;
+
+/* *
  PWMRemove represents a  to stop PWM'ing and release the pin for re-use.
  On ESP32, this will "detach" a pin from a LEDC channel/timer group.
  On non-ESP32 Arduino, this calls digitalWrite(LOW) on the pin */
@@ -37,29 +46,29 @@ typedef struct _wippersnapper_pwm_PWMRemove {
 } wippersnapper_pwm_PWMRemove;
 
 /* *
- PWMWriteDutyCycle represents a  to write a duty cycle to a pin with a frequency (fixed).
- This is used for controlling LEDs. */
-typedef struct _wippersnapper_pwm_PWMWriteDutyCycle {
+ PWMWrite represents writing to a pin either:
+ - a duty cycle (frequency is fixed) This is used for controlling LEDs.
+ - a frequency in Hz (duty cycle fixed at 50%) This is used for playing tones using a piezo buzzer or speaker
+ This value will be changed by the slider on Adafruit IO. */
+typedef struct _wippersnapper_pwm_PWMWrite {
     char pin[6]; /* * The pin to write to. */
-    int32_t duty_cycle; /* * The desired duty cycle to write (range is from 0 to (2 ** duty_resolution)).
-This value will be changed by the slider on Adafruit IO. * */
-} wippersnapper_pwm_PWMWriteDutyCycle;
+    pb_size_t which_payload;
+    union {
+        int32_t duty_cycle; /* * The desired duty cycle (range is from 0 to (2 ** duty_resolution)). * */
+        int32_t frequency; /* * The desired PWM frequency, in Hz. * */
+    } payload;
+} wippersnapper_pwm_PWMWrite;
 
 /* *
- PWMWriteDutyCycleMulti represents a wrapper  to write duty cycles to multiple pins.
- This is used for controlling RGB/RGBW LEDs. */
-typedef struct _wippersnapper_pwm_PWMWriteDutyCycleMulti {
-    pb_size_t write_duty_cycle_reqs_count;
-    wippersnapper_pwm_PWMWriteDutyCycle write_duty_cycle_reqs[4]; /* * Multiple duty cycles to write, one per pin of a RGB LED. * */
-} wippersnapper_pwm_PWMWriteDutyCycleMulti;
-
-/* *
- PWMWriteFrequency represents a  to write a Frequency, in Hz, to a pin with a duty cycle of 50%.
- This is used for playing tones using a piezo buzzer or speaker. */
-typedef struct _wippersnapper_pwm_PWMWriteFrequency {
-    char pin[6]; /* * The pin to write to. */
-    int32_t frequency; /* * The desired PWM frequency, in Hz. This value will be changed by the slider on Adafruit IO. * */
-} wippersnapper_pwm_PWMWriteFrequency;
+ BrokerToDevice message envelope */
+typedef struct _wippersnapper_pwm_PWMB2D {
+    pb_size_t which_payload;
+    union {
+        wippersnapper_pwm_PWMAdd pwm_add;
+        wippersnapper_pwm_PWMRemove pwm_remove;
+        wippersnapper_pwm_PWMWrite pwm_write;
+    } payload;
+} wippersnapper_pwm_PWMB2D;
 
 
 #ifdef __cplusplus
@@ -67,18 +76,18 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
+#define wippersnapper_pwm_PWMB2D_init_default    {0, {wippersnapper_pwm_PWMAdd_init_default}}
+#define wippersnapper_pwm_PWMD2B_init_default    {0, {wippersnapper_pwm_PWMAdded_init_default}}
 #define wippersnapper_pwm_PWMAdd_init_default    {"", 0, 0}
 #define wippersnapper_pwm_PWMAdded_init_default  {"", 0}
 #define wippersnapper_pwm_PWMRemove_init_default {""}
-#define wippersnapper_pwm_PWMWriteDutyCycle_init_default {"", 0}
-#define wippersnapper_pwm_PWMWriteDutyCycleMulti_init_default {0, {wippersnapper_pwm_PWMWriteDutyCycle_init_default, wippersnapper_pwm_PWMWriteDutyCycle_init_default, wippersnapper_pwm_PWMWriteDutyCycle_init_default, wippersnapper_pwm_PWMWriteDutyCycle_init_default}}
-#define wippersnapper_pwm_PWMWriteFrequency_init_default {"", 0}
+#define wippersnapper_pwm_PWMWrite_init_default  {"", 0, {0}}
+#define wippersnapper_pwm_PWMB2D_init_zero       {0, {wippersnapper_pwm_PWMAdd_init_zero}}
+#define wippersnapper_pwm_PWMD2B_init_zero       {0, {wippersnapper_pwm_PWMAdded_init_zero}}
 #define wippersnapper_pwm_PWMAdd_init_zero       {"", 0, 0}
 #define wippersnapper_pwm_PWMAdded_init_zero     {"", 0}
 #define wippersnapper_pwm_PWMRemove_init_zero    {""}
-#define wippersnapper_pwm_PWMWriteDutyCycle_init_zero {"", 0}
-#define wippersnapper_pwm_PWMWriteDutyCycleMulti_init_zero {0, {wippersnapper_pwm_PWMWriteDutyCycle_init_zero, wippersnapper_pwm_PWMWriteDutyCycle_init_zero, wippersnapper_pwm_PWMWriteDutyCycle_init_zero, wippersnapper_pwm_PWMWriteDutyCycle_init_zero}}
-#define wippersnapper_pwm_PWMWriteFrequency_init_zero {"", 0}
+#define wippersnapper_pwm_PWMWrite_init_zero     {"", 0, {0}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_pwm_PWMAdd_pin_tag         1
@@ -86,14 +95,32 @@ extern "C" {
 #define wippersnapper_pwm_PWMAdd_resolution_tag  3
 #define wippersnapper_pwm_PWMAdded_pin_tag       1
 #define wippersnapper_pwm_PWMAdded_did_attach_tag 2
+#define wippersnapper_pwm_PWMD2B_pwm_added_tag   10
 #define wippersnapper_pwm_PWMRemove_pin_tag      1
-#define wippersnapper_pwm_PWMWriteDutyCycle_pin_tag 1
-#define wippersnapper_pwm_PWMWriteDutyCycle_duty_cycle_tag 2
-#define wippersnapper_pwm_PWMWriteDutyCycleMulti_write_duty_cycle_reqs_tag 1
-#define wippersnapper_pwm_PWMWriteFrequency_pin_tag 1
-#define wippersnapper_pwm_PWMWriteFrequency_frequency_tag 2
+#define wippersnapper_pwm_PWMWrite_pin_tag       1
+#define wippersnapper_pwm_PWMWrite_duty_cycle_tag 2
+#define wippersnapper_pwm_PWMWrite_frequency_tag 3
+#define wippersnapper_pwm_PWMB2D_pwm_add_tag     10
+#define wippersnapper_pwm_PWMB2D_pwm_remove_tag  11
+#define wippersnapper_pwm_PWMB2D_pwm_write_tag   12
 
 /* Struct field encoding specification for nanopb */
+#define wippersnapper_pwm_PWMB2D_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pwm_add,payload.pwm_add),  10) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pwm_remove,payload.pwm_remove),  11) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pwm_write,payload.pwm_write),  12)
+#define wippersnapper_pwm_PWMB2D_CALLBACK NULL
+#define wippersnapper_pwm_PWMB2D_DEFAULT NULL
+#define wippersnapper_pwm_PWMB2D_payload_pwm_add_MSGTYPE wippersnapper_pwm_PWMAdd
+#define wippersnapper_pwm_PWMB2D_payload_pwm_remove_MSGTYPE wippersnapper_pwm_PWMRemove
+#define wippersnapper_pwm_PWMB2D_payload_pwm_write_MSGTYPE wippersnapper_pwm_PWMWrite
+
+#define wippersnapper_pwm_PWMD2B_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pwm_added,payload.pwm_added),  10)
+#define wippersnapper_pwm_PWMD2B_CALLBACK NULL
+#define wippersnapper_pwm_PWMD2B_DEFAULT NULL
+#define wippersnapper_pwm_PWMD2B_payload_pwm_added_MSGTYPE wippersnapper_pwm_PWMAdded
+
 #define wippersnapper_pwm_PWMAdd_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   pin,               1) \
 X(a, STATIC,   SINGULAR, INT32,    frequency,         2) \
@@ -112,47 +139,36 @@ X(a, STATIC,   SINGULAR, STRING,   pin,               1)
 #define wippersnapper_pwm_PWMRemove_CALLBACK NULL
 #define wippersnapper_pwm_PWMRemove_DEFAULT NULL
 
-#define wippersnapper_pwm_PWMWriteDutyCycle_FIELDLIST(X, a) \
+#define wippersnapper_pwm_PWMWrite_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   pin,               1) \
-X(a, STATIC,   SINGULAR, INT32,    duty_cycle,        2)
-#define wippersnapper_pwm_PWMWriteDutyCycle_CALLBACK NULL
-#define wippersnapper_pwm_PWMWriteDutyCycle_DEFAULT NULL
+X(a, STATIC,   ONEOF,    INT32,    (payload,duty_cycle,payload.duty_cycle),   2) \
+X(a, STATIC,   ONEOF,    INT32,    (payload,frequency,payload.frequency),   3)
+#define wippersnapper_pwm_PWMWrite_CALLBACK NULL
+#define wippersnapper_pwm_PWMWrite_DEFAULT NULL
 
-#define wippersnapper_pwm_PWMWriteDutyCycleMulti_FIELDLIST(X, a) \
-X(a, STATIC,   REPEATED, MESSAGE,  write_duty_cycle_reqs,   1)
-#define wippersnapper_pwm_PWMWriteDutyCycleMulti_CALLBACK NULL
-#define wippersnapper_pwm_PWMWriteDutyCycleMulti_DEFAULT NULL
-#define wippersnapper_pwm_PWMWriteDutyCycleMulti_write_duty_cycle_reqs_MSGTYPE wippersnapper_pwm_PWMWriteDutyCycle
-
-#define wippersnapper_pwm_PWMWriteFrequency_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, STRING,   pin,               1) \
-X(a, STATIC,   SINGULAR, INT32,    frequency,         2)
-#define wippersnapper_pwm_PWMWriteFrequency_CALLBACK NULL
-#define wippersnapper_pwm_PWMWriteFrequency_DEFAULT NULL
-
+extern const pb_msgdesc_t wippersnapper_pwm_PWMB2D_msg;
+extern const pb_msgdesc_t wippersnapper_pwm_PWMD2B_msg;
 extern const pb_msgdesc_t wippersnapper_pwm_PWMAdd_msg;
 extern const pb_msgdesc_t wippersnapper_pwm_PWMAdded_msg;
 extern const pb_msgdesc_t wippersnapper_pwm_PWMRemove_msg;
-extern const pb_msgdesc_t wippersnapper_pwm_PWMWriteDutyCycle_msg;
-extern const pb_msgdesc_t wippersnapper_pwm_PWMWriteDutyCycleMulti_msg;
-extern const pb_msgdesc_t wippersnapper_pwm_PWMWriteFrequency_msg;
+extern const pb_msgdesc_t wippersnapper_pwm_PWMWrite_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
+#define wippersnapper_pwm_PWMB2D_fields &wippersnapper_pwm_PWMB2D_msg
+#define wippersnapper_pwm_PWMD2B_fields &wippersnapper_pwm_PWMD2B_msg
 #define wippersnapper_pwm_PWMAdd_fields &wippersnapper_pwm_PWMAdd_msg
 #define wippersnapper_pwm_PWMAdded_fields &wippersnapper_pwm_PWMAdded_msg
 #define wippersnapper_pwm_PWMRemove_fields &wippersnapper_pwm_PWMRemove_msg
-#define wippersnapper_pwm_PWMWriteDutyCycle_fields &wippersnapper_pwm_PWMWriteDutyCycle_msg
-#define wippersnapper_pwm_PWMWriteDutyCycleMulti_fields &wippersnapper_pwm_PWMWriteDutyCycleMulti_msg
-#define wippersnapper_pwm_PWMWriteFrequency_fields &wippersnapper_pwm_PWMWriteFrequency_msg
+#define wippersnapper_pwm_PWMWrite_fields &wippersnapper_pwm_PWMWrite_msg
 
 /* Maximum encoded size of messages (where known) */
-#define WIPPERSNAPPER_PWM_PWM_PB_H_MAX_SIZE      wippersnapper_pwm_PWMWriteDutyCycleMulti_size
+#define WIPPERSNAPPER_PWM_PWM_PB_H_MAX_SIZE      wippersnapper_pwm_PWMB2D_size
 #define wippersnapper_pwm_PWMAdd_size            29
 #define wippersnapper_pwm_PWMAdded_size          9
+#define wippersnapper_pwm_PWMB2D_size            31
+#define wippersnapper_pwm_PWMD2B_size            11
 #define wippersnapper_pwm_PWMRemove_size         7
-#define wippersnapper_pwm_PWMWriteDutyCycleMulti_size 80
-#define wippersnapper_pwm_PWMWriteDutyCycle_size 18
-#define wippersnapper_pwm_PWMWriteFrequency_size 18
+#define wippersnapper_pwm_PWMWrite_size          18
 
 #ifdef __cplusplus
 } /* extern "C" */

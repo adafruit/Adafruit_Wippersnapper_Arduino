@@ -6,6 +6,12 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
+PB_BIND(wippersnapper_i2c_I2cB2D, wippersnapper_i2c_I2cB2D, 2)
+
+
+PB_BIND(wippersnapper_i2c_I2cD2B, wippersnapper_i2c_I2cD2B, 4)
+
+
 PB_BIND(wippersnapper_i2c_I2cDeviceDescriptor, wippersnapper_i2c_I2cDeviceDescriptor, AUTO)
 
 

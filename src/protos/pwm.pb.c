@@ -6,6 +6,12 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
+PB_BIND(wippersnapper_pwm_PWMB2D, wippersnapper_pwm_PWMB2D, AUTO)
+
+
+PB_BIND(wippersnapper_pwm_PWMD2B, wippersnapper_pwm_PWMD2B, AUTO)
+
+
 PB_BIND(wippersnapper_pwm_PWMAdd, wippersnapper_pwm_PWMAdd, AUTO)
 
 
@@ -15,13 +21,7 @@ PB_BIND(wippersnapper_pwm_PWMAdded, wippersnapper_pwm_PWMAdded, AUTO)
 PB_BIND(wippersnapper_pwm_PWMRemove, wippersnapper_pwm_PWMRemove, AUTO)
 
 
-PB_BIND(wippersnapper_pwm_PWMWriteDutyCycle, wippersnapper_pwm_PWMWriteDutyCycle, AUTO)
-
-
-PB_BIND(wippersnapper_pwm_PWMWriteDutyCycleMulti, wippersnapper_pwm_PWMWriteDutyCycleMulti, AUTO)
-
-
-PB_BIND(wippersnapper_pwm_PWMWriteFrequency, wippersnapper_pwm_PWMWriteFrequency, AUTO)
+PB_BIND(wippersnapper_pwm_PWMWrite, wippersnapper_pwm_PWMWrite, AUTO)
 
 
 

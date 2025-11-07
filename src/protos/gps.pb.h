@@ -10,6 +10,14 @@
 #endif
 
 /* Struct definitions */
+/* *
+ BrokerToDevice message envelope */
+typedef struct _wippersnapper_gps_GPSB2D { /* oneof payload {
+
+ } */
+    char dummy_field;
+} wippersnapper_gps_GPSB2D;
+
 typedef PB_BYTES_ARRAY_T(128) wippersnapper_gps_GPSConfig_commands_ubxes_t;
 /* *
  GPSConfig represents a message containing configuration data to set up and configure a GPS.
@@ -71,17 +79,30 @@ typedef struct _wippersnapper_gps_GPSEvent {
     wippersnapper_gps_GPGGAResponse gga_responses[10]; /* * List of GGA responses * */
 } wippersnapper_gps_GPSEvent;
 
+/* *
+ DeviceToBroker message envelope */
+typedef struct _wippersnapper_gps_GPSD2B {
+    pb_size_t which_payload;
+    union {
+        wippersnapper_gps_GPSEvent gps_event;
+    } payload;
+} wippersnapper_gps_GPSD2B;
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Initializer values for message structs */
+#define wippersnapper_gps_GPSB2D_init_default    {0}
+#define wippersnapper_gps_GPSD2B_init_default    {0, {wippersnapper_gps_GPSEvent_init_default}}
 #define wippersnapper_gps_GPSConfig_init_default {0, {"", "", "", "", "", "", "", ""}, 0, {{0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}}, 0}
 #define wippersnapper_gps_GPSDateTime_init_default {0, 0, 0, 0, 0, 0, 0}
 #define wippersnapper_gps_GPSRMCResponse_init_default {false, wippersnapper_gps_GPSDateTime_init_default, "", "", "", "", "", "", ""}
 #define wippersnapper_gps_GPGGAResponse_init_default {false, wippersnapper_gps_GPSDateTime_init_default, "", "", "", "", 0, 0, "", "", ""}
 #define wippersnapper_gps_GPSEvent_init_default  {0, {wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default}, 0, {wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default}}
+#define wippersnapper_gps_GPSB2D_init_zero       {0}
+#define wippersnapper_gps_GPSD2B_init_zero       {0, {wippersnapper_gps_GPSEvent_init_zero}}
 #define wippersnapper_gps_GPSConfig_init_zero    {0, {"", "", "", "", "", "", "", ""}, 0, {{0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}}, 0}
 #define wippersnapper_gps_GPSDateTime_init_zero  {0, 0, 0, 0, 0, 0, 0}
 #define wippersnapper_gps_GPSRMCResponse_init_zero {false, wippersnapper_gps_GPSDateTime_init_zero, "", "", "", "", "", "", ""}
@@ -119,8 +140,20 @@ extern "C" {
 #define wippersnapper_gps_GPGGAResponse_geoid_height_tag 10
 #define wippersnapper_gps_GPSEvent_rmc_responses_tag 1
 #define wippersnapper_gps_GPSEvent_gga_responses_tag 2
+#define wippersnapper_gps_GPSD2B_gps_event_tag   10
 
 /* Struct field encoding specification for nanopb */
+#define wippersnapper_gps_GPSB2D_FIELDLIST(X, a) \
+
+#define wippersnapper_gps_GPSB2D_CALLBACK NULL
+#define wippersnapper_gps_GPSB2D_DEFAULT NULL
+
+#define wippersnapper_gps_GPSD2B_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,gps_event,payload.gps_event),  10)
+#define wippersnapper_gps_GPSD2B_CALLBACK NULL
+#define wippersnapper_gps_GPSD2B_DEFAULT NULL
+#define wippersnapper_gps_GPSD2B_payload_gps_event_MSGTYPE wippersnapper_gps_GPSEvent
+
 #define wippersnapper_gps_GPSConfig_FIELDLIST(X, a) \
 X(a, STATIC,   REPEATED, STRING,   commands_pmtks,    1) \
 X(a, STATIC,   REPEATED, BYTES,    commands_ubxes,    2) \
@@ -175,6 +208,8 @@ X(a, STATIC,   REPEATED, MESSAGE,  gga_responses,     2)
 #define wippersnapper_gps_GPSEvent_rmc_responses_MSGTYPE wippersnapper_gps_GPSRMCResponse
 #define wippersnapper_gps_GPSEvent_gga_responses_MSGTYPE wippersnapper_gps_GPGGAResponse
 
+extern const pb_msgdesc_t wippersnapper_gps_GPSB2D_msg;
+extern const pb_msgdesc_t wippersnapper_gps_GPSD2B_msg;
 extern const pb_msgdesc_t wippersnapper_gps_GPSConfig_msg;
 extern const pb_msgdesc_t wippersnapper_gps_GPSDateTime_msg;
 extern const pb_msgdesc_t wippersnapper_gps_GPSRMCResponse_msg;
@@ -182,6 +217,8 @@ extern const pb_msgdesc_t wippersnapper_gps_GPGGAResponse_msg;
 extern const pb_msgdesc_t wippersnapper_gps_GPSEvent_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
+#define wippersnapper_gps_GPSB2D_fields &wippersnapper_gps_GPSB2D_msg
+#define wippersnapper_gps_GPSD2B_fields &wippersnapper_gps_GPSD2B_msg
 #define wippersnapper_gps_GPSConfig_fields &wippersnapper_gps_GPSConfig_msg
 #define wippersnapper_gps_GPSDateTime_fields &wippersnapper_gps_GPSDateTime_msg
 #define wippersnapper_gps_GPSRMCResponse_fields &wippersnapper_gps_GPSRMCResponse_msg
@@ -189,9 +226,11 @@ extern const pb_msgdesc_t wippersnapper_gps_GPSEvent_msg;
 #define wippersnapper_gps_GPSEvent_fields &wippersnapper_gps_GPSEvent_msg
 
 /* Maximum encoded size of messages (where known) */
-#define WIPPERSNAPPER_GPS_GPS_PB_H_MAX_SIZE      wippersnapper_gps_GPSEvent_size
+#define WIPPERSNAPPER_GPS_GPS_PB_H_MAX_SIZE      wippersnapper_gps_GPSD2B_size
 #define wippersnapper_gps_GPGGAResponse_size     168
+#define wippersnapper_gps_GPSB2D_size            0
 #define wippersnapper_gps_GPSConfig_size         1787
+#define wippersnapper_gps_GPSD2B_size            3133
 #define wippersnapper_gps_GPSDateTime_size       77
 #define wippersnapper_gps_GPSEvent_size          3130
 #define wippersnapper_gps_GPSRMCResponse_size    139

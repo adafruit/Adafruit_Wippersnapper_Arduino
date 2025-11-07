@@ -6,6 +6,12 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
+PB_BIND(wippersnapper_analogio_AnalogIOB2D, wippersnapper_analogio_AnalogIOB2D, AUTO)
+
+
+PB_BIND(wippersnapper_analogio_AnalogIOD2B, wippersnapper_analogio_AnalogIOD2B, AUTO)
+
+
 PB_BIND(wippersnapper_analogio_AnalogIOAdd, wippersnapper_analogio_AnalogIOAdd, AUTO)
 
 

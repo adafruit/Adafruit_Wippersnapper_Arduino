@@ -27,6 +27,15 @@ typedef struct _wippersnapper_servo_ServoAdded {
 } wippersnapper_servo_ServoAdded;
 
 /* *
+ DeviceToBroker message envelope */
+typedef struct _wippersnapper_servo_ServoD2B {
+    pb_size_t which_payload;
+    union {
+        wippersnapper_servo_ServoAdded servo_added;
+    } payload;
+} wippersnapper_servo_ServoD2B;
+
+/* *
  ServoRemove represents a request to detach a servo from a pin and de-initialize the pin for other uses. */
 typedef struct _wippersnapper_servo_ServoRemove {
     char servo_pin[6]; /* * The name of pin to use as a servo pin. */
@@ -43,16 +52,31 @@ typedef struct _wippersnapper_servo_ServoWrite {
     int32_t pulse_width; /* * The pulse width to write to the servo, in uS * */
 } wippersnapper_servo_ServoWrite;
 
+/* *
+ BrokerToDevice message envelope */
+typedef struct _wippersnapper_servo_ServoB2D {
+    pb_size_t which_payload;
+    union {
+        wippersnapper_servo_ServoAdd servo_add;
+        wippersnapper_servo_ServoRemove servo_remove;
+        wippersnapper_servo_ServoWrite servo_write;
+    } payload;
+} wippersnapper_servo_ServoB2D;
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Initializer values for message structs */
+#define wippersnapper_servo_ServoB2D_init_default {0, {wippersnapper_servo_ServoAdd_init_default}}
+#define wippersnapper_servo_ServoD2B_init_default {0, {wippersnapper_servo_ServoAdded_init_default}}
 #define wippersnapper_servo_ServoAdd_init_default {"", 0, 0, 0}
 #define wippersnapper_servo_ServoAdded_init_default {0, ""}
 #define wippersnapper_servo_ServoRemove_init_default {""}
 #define wippersnapper_servo_ServoWrite_init_default {"", 0}
+#define wippersnapper_servo_ServoB2D_init_zero   {0, {wippersnapper_servo_ServoAdd_init_zero}}
+#define wippersnapper_servo_ServoD2B_init_zero   {0, {wippersnapper_servo_ServoAdded_init_zero}}
 #define wippersnapper_servo_ServoAdd_init_zero   {"", 0, 0, 0}
 #define wippersnapper_servo_ServoAdded_init_zero {0, ""}
 #define wippersnapper_servo_ServoRemove_init_zero {""}
@@ -65,11 +89,31 @@ extern "C" {
 #define wippersnapper_servo_ServoAdd_max_pulse_width_tag 4
 #define wippersnapper_servo_ServoAdded_attach_success_tag 1
 #define wippersnapper_servo_ServoAdded_servo_pin_tag 2
+#define wippersnapper_servo_ServoD2B_servo_added_tag 10
 #define wippersnapper_servo_ServoRemove_servo_pin_tag 1
 #define wippersnapper_servo_ServoWrite_servo_pin_tag 1
 #define wippersnapper_servo_ServoWrite_pulse_width_tag 2
+#define wippersnapper_servo_ServoB2D_servo_add_tag 10
+#define wippersnapper_servo_ServoB2D_servo_remove_tag 11
+#define wippersnapper_servo_ServoB2D_servo_write_tag 12
 
 /* Struct field encoding specification for nanopb */
+#define wippersnapper_servo_ServoB2D_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,servo_add,payload.servo_add),  10) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,servo_remove,payload.servo_remove),  11) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,servo_write,payload.servo_write),  12)
+#define wippersnapper_servo_ServoB2D_CALLBACK NULL
+#define wippersnapper_servo_ServoB2D_DEFAULT NULL
+#define wippersnapper_servo_ServoB2D_payload_servo_add_MSGTYPE wippersnapper_servo_ServoAdd
+#define wippersnapper_servo_ServoB2D_payload_servo_remove_MSGTYPE wippersnapper_servo_ServoRemove
+#define wippersnapper_servo_ServoB2D_payload_servo_write_MSGTYPE wippersnapper_servo_ServoWrite
+
+#define wippersnapper_servo_ServoD2B_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,servo_added,payload.servo_added),  10)
+#define wippersnapper_servo_ServoD2B_CALLBACK NULL
+#define wippersnapper_servo_ServoD2B_DEFAULT NULL
+#define wippersnapper_servo_ServoD2B_payload_servo_added_MSGTYPE wippersnapper_servo_ServoAdded
+
 #define wippersnapper_servo_ServoAdd_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   servo_pin,         1) \
 X(a, STATIC,   SINGULAR, INT32,    servo_freq,        2) \
@@ -95,21 +139,27 @@ X(a, STATIC,   SINGULAR, INT32,    pulse_width,       2)
 #define wippersnapper_servo_ServoWrite_CALLBACK NULL
 #define wippersnapper_servo_ServoWrite_DEFAULT NULL
 
+extern const pb_msgdesc_t wippersnapper_servo_ServoB2D_msg;
+extern const pb_msgdesc_t wippersnapper_servo_ServoD2B_msg;
 extern const pb_msgdesc_t wippersnapper_servo_ServoAdd_msg;
 extern const pb_msgdesc_t wippersnapper_servo_ServoAdded_msg;
 extern const pb_msgdesc_t wippersnapper_servo_ServoRemove_msg;
 extern const pb_msgdesc_t wippersnapper_servo_ServoWrite_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
+#define wippersnapper_servo_ServoB2D_fields &wippersnapper_servo_ServoB2D_msg
+#define wippersnapper_servo_ServoD2B_fields &wippersnapper_servo_ServoD2B_msg
 #define wippersnapper_servo_ServoAdd_fields &wippersnapper_servo_ServoAdd_msg
 #define wippersnapper_servo_ServoAdded_fields &wippersnapper_servo_ServoAdded_msg
 #define wippersnapper_servo_ServoRemove_fields &wippersnapper_servo_ServoRemove_msg
 #define wippersnapper_servo_ServoWrite_fields &wippersnapper_servo_ServoWrite_msg
 
 /* Maximum encoded size of messages (where known) */
-#define WIPPERSNAPPER_SERVO_SERVO_PB_H_MAX_SIZE  wippersnapper_servo_ServoAdd_size
+#define WIPPERSNAPPER_SERVO_SERVO_PB_H_MAX_SIZE  wippersnapper_servo_ServoB2D_size
 #define wippersnapper_servo_ServoAdd_size        40
 #define wippersnapper_servo_ServoAdded_size      9
+#define wippersnapper_servo_ServoB2D_size        42
+#define wippersnapper_servo_ServoD2B_size        11
 #define wippersnapper_servo_ServoRemove_size     7
 #define wippersnapper_servo_ServoWrite_size      18
 

@@ -6,6 +6,12 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
+PB_BIND(wippersnapper_uart_UartB2D, wippersnapper_uart_UartB2D, 2)
+
+
+PB_BIND(wippersnapper_uart_UartD2B, wippersnapper_uart_UartD2B, 2)
+
+
 PB_BIND(wippersnapper_uart_UartSerialConfig, wippersnapper_uart_UartSerialConfig, AUTO)
 
 
