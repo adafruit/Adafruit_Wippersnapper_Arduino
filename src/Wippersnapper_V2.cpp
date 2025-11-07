@@ -751,7 +751,7 @@ bool Wippersnapper_V2::generateWSTopics() {
     @param    error
               The error message to write to the serial and filesystem.
 */
-void Wippersnapper_V2::errorWriteHangV2(const char* error) {
+void Wippersnapper_V2::errorWriteHangV2(const char *error) {
   // Print error
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
@@ -919,7 +919,8 @@ void Wippersnapper_V2::runNetFSMV2() {
               If false, the device will not allow the WDT to bite and
               instead hang indefinitely, holding the WIPPER drive open
 */
-void Wippersnapper_V2::haltErrorV2(const char* error, ws_led_status_t ledStatusColor,
+void Wippersnapper_V2::haltErrorV2(const char *error,
+                                   ws_led_status_t ledStatusColor,
                                    bool reboot) {
   WS_DEBUG_PRINT("ERROR ");
   if (reboot) {

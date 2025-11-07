@@ -32,8 +32,7 @@
 class UARTDevice {
 public:
   UARTDevice(Stream *serial) { _serial_dev = serial; }
-  ~UARTDevice() { /* no-op destructor */
-  }
+  ~UARTDevice() { /* no-op destructor */ }
 
   bool CreateDevice() {
     if (_generic_dev != nullptr) {
