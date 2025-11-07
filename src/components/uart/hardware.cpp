@@ -126,7 +126,9 @@ bool UARTHardware::ConfigureSerial() {
     _baud_rate = _config.baud_rate;
 #endif // HAS_SW_SERIAL
   } else {
-    #ifdef ARDUINO_ARCH_RP2040
+#ifdef ARDUINO_ARCH_RP2040 || defined(ADAFRUIT_METRO_M4_EXPRESS) ||            \
+    defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
+    defined(ADAFRUIT_PYPORTAL_M4_TITANO)
     if (_config.uart_nbr == 1) {
       _hwSerial = &Serial1;
     } else if (_config.uart_nbr == 2) {
@@ -135,10 +137,10 @@ bool UARTHardware::ConfigureSerial() {
       WS_DEBUG_PRINTLN("[uart] ERROR: Invalid UART number for ESP32!");
       return false;
     }
-    #else
+#else
     // Create a new HardwareSerial instance
     _hwSerial = new HardwareSerial(_config.uart_nbr);
-    #endif
+#endif
     if (_hwSerial == nullptr) {
       WS_DEBUG_PRINTLN(
           "[uart] ERROR: Failed to allocate HardwareSerial instance!");
@@ -152,15 +154,15 @@ bool UARTHardware::ConfigureSerial() {
     // Pins are already defined by the Serial1/Serial2 instances
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
 #else
-    // ESP8266, SAMD, and other platforms
-    // take the default Arduino/Wiring API arguments
-    #ifdef ARDUINO_ARCH_ESP8266
+// ESP8266, SAMD, and other platforms
+// take the default Arduino/Wiring API arguments
+#ifdef ARDUINO_ARCH_ESP8266
     // We want to pass the cfg as an enum for ESP8266
     _hwSerial->begin((unsigned long)_config.baud_rate, (SerialConfig)cfg);
-    #else
+#else
     // We want to cast the cfg for other platforms
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
-    #endif
+#endif
 #endif
     _baud_rate = _config.baud_rate;
   }
