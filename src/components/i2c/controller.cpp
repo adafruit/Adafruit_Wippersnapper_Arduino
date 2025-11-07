@@ -544,9 +544,9 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
   // If we're in offline mode, don't publish out to IO
   if (WsV2._sdCardV2->isModeOffline())
     return true; // Back out if we're in offline mode
-  
+
   // Encode the I2cDeviceAddedorReplaced message and publish it to IO
-    if (!_i2c_model->encodeMsgI2cDeviceAddedorReplaced(
+  if (!_i2c_model->encodeMsgI2cDeviceAddedorReplaced(
           device_descriptor, _i2c_bus_default->GetBusStatus(), device_status)) {
     WS_DEBUG_PRINTLN(
         "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
@@ -967,7 +967,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("OK!");
   } else if (is_gps) {
     WS_DEBUG_PRINT("[i2c] Creating a GPS driver...");
-    if (!WsV2._gps_controller->AddGPS(bus, device_descriptor.i2c_device_address, &_i2c_model->GetI2cDeviceAddOrReplaceMsg()->gps_config)) {
+    if (!WsV2._gps_controller->AddGPS(
+            bus, device_descriptor.i2c_device_address,
+            &_i2c_model->GetI2cDeviceAddOrReplaceMsg()->gps_config)) {
       did_init = false;
       WS_DEBUG_PRINTLN("FAILURE!");
     } else {
