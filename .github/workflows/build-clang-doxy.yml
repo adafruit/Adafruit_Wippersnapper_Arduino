@@ -501,7 +501,7 @@ jobs:
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
             --flash-mode keep --flash-freq keep --flash-size keep \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
@@ -1041,7 +1041,7 @@ jobs:
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
             --flash-mode keep --flash-freq keep --flash-size keep \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
