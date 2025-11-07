@@ -29,7 +29,7 @@ class drvUartBase {
 public:
   /*!
       @brief    Instantiates a UART device.
-      @param    HardwareSerial
+      @param    hw_serial
                 Pointer to a HardwareSerial instance.
       @param    driver_name
                 The name of the driver.

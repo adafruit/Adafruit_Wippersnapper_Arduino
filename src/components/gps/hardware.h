@@ -36,26 +36,36 @@
 class Wippersnapper_V2; ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
 
+/**
+ * @brief Type of interface used by GPS.
+ */
 enum GpsInterfaceType {
   GPS_IFACE_NONE,    ///< No interface/undefined
   GPS_IFACE_UART_HW, ///< UART hardware interface
   GPS_IFACE_UART_SW, ///< UART software interface
   GPS_IFACE_I2C      ///< I2C interface
-}; ///< Type of interface used by GPS
+};
 
+/**
+ * @brief Type of GPS driver used.
+ */
 enum GpsDriverType {
   GPS_DRV_NONE,        ///< No driver/undefined
   GPS_DRV_MTK,         ///< MediaTek GPS driver
   GPS_DRV_UBLOX,       ///< u-blox GPS driver
   GPS_DRV_GENERIC_NMEA ///< Generic NMEA GPS driver
-}; ///< Type of GPS driver used
+};
 
+/**
+ * @brief NMEA sentence ring buffer (FIFO).
+ */
 typedef struct {
-  char sentences[MAX_NMEA_SENTENCES][MAX_LEN_NMEA_SENTENCE];
-  int head;
-  int tail;
-  int maxlen;
-} nmea_buffer_t; ///< NMEA sentence ring buffer structure
+  char sentences[MAX_NMEA_SENTENCES]
+                [MAX_LEN_NMEA_SENTENCE]; ///< Array of NMEA sentences
+  int head;                              ///< Index of the head of the buffer
+  int tail;                              ///< Index of the tail of the buffer
+  int maxlen; ///< Maximum number of sentences the buffer can hold
+} nmea_buffer_t;
 
 /*!
     @brief  Low-level hardware interface for WipperSnapper's generic GPS
@@ -93,7 +103,6 @@ public:
   void ReadDiscardBuffer();
   void PollStoreSentences();
   bool ParseNMEASentence(char *sentence);
-  void HandleNmeaChar(char incoming);
   // Datetime getters
   uint8_t GetHour();
   uint8_t GetMinute();

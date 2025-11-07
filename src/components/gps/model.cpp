@@ -51,7 +51,7 @@ wippersnapper_gps_GPSConfig *GPSModel::GetGPSConfigMsg() {
 
 /*!
  * @brief Creates a new GPSEvent message and initializes it.
- * @NOTE: This function will clear an existing GPSEvent message. Only call when
+ * This function will clear an existing GPSEvent message. Only call when
  * you are creating a NEW gps event, not modifying an existing one.
  */
 void GPSModel::CreateGPSEvent() {
@@ -113,6 +113,21 @@ GPSModel::CreateGpsDatetime(uint8_t hour, uint8_t minute, uint8_t seconds,
   return datetime;
 }
 
+/*!
+ * @brief Adds an RMC response to the GPSEvent message.
+ * @param datetime A wippersnapper_gps_GPSDateTime message representing the
+ * date and time.
+ * @param fix_status The fix status (1 = valid, 0 = invalid).
+ * @param lat Latitude in decimal degrees.
+ * @param lat_dir Pointer to a string representing latitude direction ("N" or
+ * "S").
+ * @param lon Longitude in decimal degrees.
+ * @param lon_dir Pointer to a string representing longitude direction ("E" or
+ * "W").
+ * @param speed Speed over ground in knots.
+ * @param angle Course/heading angle in degrees.
+ * @returns True if the RMC response was added successfully, False otherwise.
+ */
 bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
                               uint8_t fix_status, float lat, char *lat_dir,
                               float lon, char *lon_dir, float speed,
@@ -154,6 +169,23 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
   return true;
 }
 
+/*!
+ * @brief Adds a GGA response to the GPSEvent message.
+ * @param datetime A wippersnapper_gps_GPSDateTime message representing the
+ * date and time.
+ * @param fix_status The fix status (1 = valid, 0 = invalid).
+ * @param lat Latitude in decimal degrees.
+ * @param lat_dir Pointer to a string representing latitude direction ("N" or
+ * "S").
+ * @param lon Longitude in decimal degrees.
+ * @param lon_dir Pointer to a string representing longitude direction ("E" or
+ * "W").
+ * @param num_sats Number of satellites in use.
+ * @param hdop Horizontal dilution of precision.
+ * @param alt Altitude in meters above mean sea level.
+ * @param geoid_height Geoid height in meters.
+ * @returns True if the GGA response was added successfully, False otherwise.
+ */
 bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
                               uint8_t fix_status, float lat, char *lat_dir,
                               float lon, char *lon_dir, uint8_t num_sats,
@@ -194,6 +226,12 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
   return true;
 }
 
+/*!
+ * @brief Processes an NMEA sentence and adds it to the GPSEvent message.
+ * @param sentence Pointer to the NMEA sentence string.
+ * @param drv Pointer to the GPSHardware driver instance.
+ * @returns True if the sentence was processed successfully, False otherwise.
+ */
 bool GPSModel::ProcessNMEASentence(char *sentence, GPSHardware *drv) {
   // Check for prefix: $GP or $GN
   if (strncmp(sentence, "$GP", 3) != 0 && strncmp(sentence, "$GN", 3) != 0)

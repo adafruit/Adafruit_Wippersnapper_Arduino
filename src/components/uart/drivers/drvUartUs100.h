@@ -31,9 +31,21 @@
 
 class UARTDevice {
 public:
+  /*!
+      @brief    Instantiates a UARTDevice object.
+      @param    serial
+                Pointer to a Stream instance (HardwareSerial or SoftwareSerial).
+  */
   UARTDevice(Stream *serial) { _serial_dev = serial; }
+  /*!
+      @brief    Destructor for a UARTDevice object.
+  */
   ~UARTDevice() { /* no-op destructor */ }
 
+  /*!
+      @brief    Creates the Adafruit_GenericDevice instance.
+      @returns  True if created successfully, False otherwise.
+  */
   bool CreateDevice() {
     if (_generic_dev != nullptr) {
       return false; // already initialized
@@ -42,12 +54,32 @@ public:
     return _generic_dev->begin();
   }
 
+  /*!
+      @brief    Destroys the Adafruit_GenericDevice instance.
+      @param   thiz
+                Pointer to the UARTDevice instance.
+      @param   buffer
+                Pointer to the buffer containing data to write.
+        @param   len
+                Number of bytes to write.
+      @returns  True if written successfully, False otherwise.
+  */
   static bool uart_write(void *thiz, const uint8_t *buffer, size_t len) {
     UARTDevice *dev = (UARTDevice *)thiz;
     dev->_serial_dev->write(buffer, len);
     return true;
   }
 
+  /*!
+      @brief    Reads data from the UART device.
+      @param    thiz
+                Pointer to the UARTDevice instance.
+      @param    buffer
+                Pointer to the buffer to store read data.
+      @param    len
+                Number of bytes to read.
+      @returns  True if read successfully, False otherwise.
+  */
   static bool uart_read(void *thiz, uint8_t *buffer, size_t len) {
     UARTDevice *dev = (UARTDevice *)thiz;
     uint16_t timeout = 100;
@@ -63,6 +95,10 @@ public:
     return true;
   }
 
+  /*!
+      @brief    Gets the GenericDevice instance.
+      @returns  Pointer to the Adafruit_GenericDevice instance.
+  */
   Adafruit_GenericDevice *getGenericDevice() { return _generic_dev; }
 
 private:
