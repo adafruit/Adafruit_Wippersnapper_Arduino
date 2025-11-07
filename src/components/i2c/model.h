@@ -22,12 +22,10 @@
   15 ///< Maximum number of SensorEvents within I2cDeviceEvent
 #define MAX_I2C_SCAN_DEVICES 120 ///< Maximum number of devices found on the bus
 
-/**************************************************************************/
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from i2c.proto.
 */
-/**************************************************************************/
 class I2cModel {
 public:
   I2cModel();
@@ -78,12 +76,10 @@ private:
   wippersnapper_i2c_I2cDeviceOutputWrite _msg_i2c_device_output_write;
 };
 
-/**************************************************************************/
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from i2c_output.proto.
 */
-/**************************************************************************/
 class I2cOutputModel {
 public:
   I2cOutputModel();

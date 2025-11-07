@@ -16,12 +16,10 @@
 #define WS_PIXELS_HARDWARE_H
 #include "Wippersnapper_V2.h"
 
-/**************************************************************************/
 /*!
     @brief  Interface for interacting with NeoPixel or Dotstar
             pixel strands
 */
-/**************************************************************************/
 class PixelsHardware {
 public:
   PixelsHardware();

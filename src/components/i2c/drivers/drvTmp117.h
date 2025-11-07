@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_TMP117.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a TMP117 sensor.
 */
-/**************************************************************************/
 class drvTmp117 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a TMP117 sensor.
       @param    i2c
@@ -37,35 +34,29 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvTmp117(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an TMP117 sensor.
   */
-  /*******************************************************************************/
   ~drvTmp117() {
     // Called when a TMP117 component is deleted.
     delete _tmp117;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the TMP117 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _tmp117 = new Adafruit_TMP117();
     return _tmp117->begin((uint8_t)_address, _i2c);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the TMP117's current temperature.
       @param    tempEvent
@@ -73,7 +64,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     return _tmp117->getEvent(tempEvent);
   }

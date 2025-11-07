@@ -14,21 +14,16 @@
  */
 #include "hardware.h"
 
-/***********************************************************************/
 /*!
     @brief  DigitalIOHardware constructor
 */
-/***********************************************************************/
 DigitalIOHardware::DigitalIOHardware() {}
 
-/***********************************************************************/
 /*!
     @brief  DigitalIOHardware destructor
 */
-/***********************************************************************/
 DigitalIOHardware::~DigitalIOHardware() {}
 
-/***********************************************************************/
 /*!
     @brief  Configures a digital pin.
     @param  name
@@ -37,7 +32,6 @@ DigitalIOHardware::~DigitalIOHardware() {}
             The pin's direction.
     @return True if the pin was successfully configured. False otherwise.
 */
-/***********************************************************************/
 bool DigitalIOHardware::ConfigurePin(
     uint8_t name, wippersnapper_digitalio_DigitalIODirection direction) {
   // Configure an output pin
@@ -68,13 +62,11 @@ bool DigitalIOHardware::ConfigurePin(
   return true;
 }
 
-/***********************************************************************/
 /*!
     @brief  Deinitializes a digital pin.
     @param  pin_name
             The digital pin to deinitialize.
 */
-/***********************************************************************/
 void DigitalIOHardware::deinit(uint8_t pin_name) {
   // Turn off pin output and reset mode to hi-z floating state
   digitalWrite(pin_name, LOW);
@@ -86,7 +78,6 @@ void DigitalIOHardware::deinit(uint8_t pin_name) {
   }
 }
 
-/***********************************************************************/
 /*!
     @brief  Sets a digital pin's value.
     @param  pin_name
@@ -94,31 +85,26 @@ void DigitalIOHardware::deinit(uint8_t pin_name) {
     @param  pin_value
             The pin's value.
 */
-/***********************************************************************/
 void DigitalIOHardware::SetValue(uint8_t pin_name, bool pin_value) {
   digitalWrite(pin_name, pin_value ? HIGH : LOW);
 }
 
-/***********************************************************************/
 /*!
     @brief  Gets a digital pin's value.
     @param  pin_name
             The pin's name.
     @return The pin's value.
 */
-/***********************************************************************/
 bool DigitalIOHardware::GetValue(uint8_t pin_name) {
   return digitalRead(pin_name);
 }
 
-/***********************************************************************/
 /*!
     @brief  Checks if a pin is the status LED pin.
     @param  pin_name
             The pin's name.
     @return True if the pin is the status LED pin.
 */
-/***********************************************************************/
 bool DigitalIOHardware::IsStatusLEDPin(uint8_t pin_name) {
 #ifdef STATUS_LED_PIN
   return pin_name == STATUS_LED_PIN;

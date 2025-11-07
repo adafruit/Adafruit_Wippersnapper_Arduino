@@ -24,11 +24,9 @@
 
 #define I2C_WDT_TIMEOUT_MS 50
 
-/**************************************************************************/
 /*!
     @brief  Interfaces with the I2C bus via the Arduino "Wire" API.
 */
-/**************************************************************************/
 class I2cHardware {
 public:
   I2cHardware();

@@ -23,14 +23,11 @@
 #define VL53_READING_DELAY 250       ///< Delay for reading data attempts
 #define VL53_TIMING_BUDGET_NS 200000 ///< Timing budget for VL53L4CX sensor
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a VL53L4CX sensor.
 */
-/**************************************************************************/
 class drvVl53l4cx : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a VL53L4CX sensor.
       @param    i2c
@@ -42,29 +39,24 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvVl53l4cx(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an VL53L4CX sensor.
   */
-  /*******************************************************************************/
   ~drvVl53l4cx() {
     // Called when a VL53L4CX component is deleted.
     delete _VL53L4CX;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the VL53L4CX sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() {
     _VL53L4CX = new VL53L4CX(_i2c, VL53_SHUTDOWN_PIN);
 
@@ -93,7 +85,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the VL53L4CX's current proximity for first object if found.
       @param    proximityEvent
@@ -101,12 +92,10 @@ public:
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
     return getProximity(proximityEvent, 0);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the VL53L4CX's current proximity for second object if
      found.
@@ -115,12 +104,10 @@ public:
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRaw(sensors_event_t *proximityEvent) {
     return getProximity(proximityEvent, 1);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the VL53L4CX's current proximity (first or second object).
       @param    proximityEvent
@@ -131,7 +118,6 @@ public:
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getProximity(sensors_event_t *proximityEvent, int whichObject = 0) {
     VL53L4CX_MultiRangingData_t MultiRangingData;
     VL53L4CX_MultiRangingData_t *pMultiRangingData = &MultiRangingData;
@@ -181,7 +167,6 @@ public:
                                   proximityEvent);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Checks the VL53L4CX's proximity result and sets event value.
       @param    rangingData
@@ -191,7 +176,6 @@ public:
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool updateDataPointIfValid(VL53L4CX_TargetRangeData_t rangingData,
                               sensors_event_t *proximityEvent) {
     if (rangingData.RangeStatus == VL53L4CX_RANGESTATUS_RANGE_VALID) {

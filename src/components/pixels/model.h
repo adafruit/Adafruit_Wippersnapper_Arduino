@@ -16,12 +16,10 @@
 #define WS_PIXELS_MODEL_H
 #include "Wippersnapper_V2.h"
 
-/**************************************************************************/
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from pixels.proto.
 */
-/**************************************************************************/
 class PixelsModel {
 public:
   PixelsModel();

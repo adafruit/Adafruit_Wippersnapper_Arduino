@@ -10,16 +10,13 @@
 #include "drvBase.h"
 #include <Adafruit_HTS221.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the HTS221 humidity and
             temperature sensor. This implementation uses the 1 Hz data rate.
 */
-/**************************************************************************/
 class drvHts221 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an HTS221 sensor.
       @param    i2c
@@ -31,27 +28,22 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvHts221(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an HTS221 sensor.
   */
-  /*******************************************************************************/
   ~drvHts221() { delete _hts221; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the HTS221 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
 
   */
-  /*******************************************************************************/
   bool begin() override {
     // attempt to initialize the HTS221 using the I2C interface
     _hts221 = new Adafruit_HTS221();
@@ -73,7 +65,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the HTS221's current temperature.
       @param    tempEvent
@@ -81,12 +72,10 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     return _hts221_temp->getEvent(tempEvent);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the HTS221's current humidity.
       @param    humidEvent
@@ -94,7 +83,6 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     return _hts221_humidity->getEvent(humidEvent);
   }

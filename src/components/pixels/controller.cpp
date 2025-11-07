@@ -14,21 +14,17 @@
  */
 #include "controller.h"
 
-/**************************************************************************/
 /*!
     @brief  Constructs a new PixelsController object
 */
-/**************************************************************************/
 PixelsController::PixelsController() {
   _pixels_model = new PixelsModel();
   _num_strands = 0;
 }
 
-/**************************************************************************/
 /*!
     @brief  Destructs a PixelsController object
 */
-/**************************************************************************/
 PixelsController::~PixelsController() {
   for (int i = 0; i < _num_strands; i++) {
     delete _pixel_strands[i];
@@ -37,14 +33,12 @@ PixelsController::~PixelsController() {
   delete _pixels_model;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles a request to add a pixel strand
     @param  stream
             Protocol buffer input stream
     @returns True if successful, False otherwise
 */
-/**************************************************************************/
 bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
   // Attempt to decode the istream into a PixelsAdd message
   if (!_pixels_model->DecodePixelsAdd(stream)) {
@@ -82,14 +76,12 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles a request to write to a pixel strand
     @param  stream
             Protocol buffer input stream
     @returns True if successful, False otherwise
 */
-/**************************************************************************/
 bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {
   // Decode the PixelsWrite message
   if (!_pixels_model->DecodePixelsWrite(stream)) {
@@ -111,14 +103,12 @@ bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles a request to remove a pixel strand
     @param  stream
             Protocol buffer input stream
     @returns True if successful, False otherwise
 */
-/**************************************************************************/
 bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {
   // Decode the PixelsRemove message
   if (!_pixels_model->DecodePixelsRemove(stream)) {
@@ -140,14 +130,12 @@ bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Gets the index of a strand by its data pin
     @param  pin_data
             The desired data pin
     @returns Desired strand index, or STRAND_NOT_FOUND if not found.
 */
-/**************************************************************************/
 uint16_t PixelsController::GetStrandIndex(uint16_t pin_data) {
   for (uint8_t i = 0; i < _num_strands; i++) {
     if (_pixel_strands[i]->GetPinData() == pin_data) {

@@ -77,12 +77,10 @@ class I2cModel;         ///< Forward declaration
 class I2cOutputModel;   ///< Forward declaration
 class I2cHardware;      ///< Forward declaration
 
-/**************************************************************************/
 /*!
     @brief  Routes messages using the i2c.proto API to the
             appropriate hardware, model, and device driver classes.
 */
-/**************************************************************************/
 class I2cController {
 public:
   I2cController();

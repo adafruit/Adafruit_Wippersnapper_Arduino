@@ -26,12 +26,10 @@
   1 ///< 4 drivers handled by PIO1, 4 drivers handled by PIO2
 #endif
 
-/**************************************************************************/
 /*!
     @brief  Interface for interacting with the's DallasTemp
             and OneWire APIs.
 */
-/**************************************************************************/
 class DS18X20Hardware {
 public:
   DS18X20Hardware(uint8_t onewire_pin, int sensor_num);

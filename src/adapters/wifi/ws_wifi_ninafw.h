@@ -28,15 +28,12 @@
   SPI /*!< Instance of SPI interface used by an external uBlox module. */
 
 extern Wippersnapper WS; ///< Global Wippersnapper instance
-/****************************************************************************/
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
 */
-/****************************************************************************/
 class ws_wifi_ninafw : public Wippersnapper {
 
 public:
-  /**************************************************************************/
   /*!
   @brief  Initializes the Adafruit IO class for ublox devices.
   @param  aioUsername
@@ -48,7 +45,6 @@ public:
   @param  netPass
           Wireless Network password
   */
-  /**************************************************************************/
   ws_wifi_ninafw(const char *aioUsername, const char *aioKey,
                  const char *netSSID, const char *netPass)
       : Wippersnapper() {
@@ -61,29 +57,24 @@ public:
     _mqtt_client = new WiFiSSLClient;
   }
 
-  /**************************************************************************/
   /*!
   @brief  Destructor for the Adafruit IO ublox class.
   */
-  /**************************************************************************/
   ~ws_wifi_ninafw() {
     if (_mqtt)
       delete _mqtt;
   }
 
-  /****************************************************************************/
   /*!
       @brief    Configures the device's Adafruit IO credentials. This method
                 should be used only if filesystem-backed provisioning is
                 not avaliable.
   */
-  /****************************************************************************/
   void set_user_key() {
     strlcpy(WS._config.aio_user, _username, sizeof(WS._config.aio_user));
     strlcpy(WS._config.aio_key, _key, sizeof(WS._config.aio_key));
   }
 
-  /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password.
   @param  ssid
@@ -91,30 +82,25 @@ public:
   @param  ssidPassword
             Wireless network's password.
   */
-  /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     strlcpy(WS._config.network.ssid, ssid, sizeof(WS._config.network.ssid));
     strlcpy(WS._config.network.pass, ssidPassword,
             sizeof(WS._config.network.pass));
   }
 
-  /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password from the
           header file's credentials.
   */
-  /**********************************************************/
   void set_ssid_pass() {
     strlcpy(WS._config.network.ssid, _ssid, sizeof(WS._config.network.ssid));
     strlcpy(WS._config.network.pass, _pass, sizeof(WS._config.network.pass));
   }
 
-  /***********************************************************/
   /*!
   @brief   Performs a scan of local WiFi networks.
   @returns True if `_network_ssid` is found, False otherwise.
   */
-  /***********************************************************/
   bool check_valid_ssid() {
     // Set WiFi to station mode and disconnect from an AP if it was previously
     // connected
@@ -150,25 +136,21 @@ public:
     return false;
   }
 
-  /********************************************************/
   /*!
   @brief  Sets the WiFi client.
   @param  wifi
           Instance of SPIClass.
   */
-  /********************************************************/
   void set_wifi(SPIClass *wifi) {
     _wifi = wifi;
     _mqtt_client = new WiFiSSLClient;
   }
 
-  /***********************************************************/
   /*!
   @brief   Checks the nina-fw version on the module.
   @return  True if firmware on the ublox module matches
            the latest version of the library, False otherwise.
   */
-  /***********************************************************/
   bool firmwareCheck() {
     String fv = WiFi.firmwareVersion();
     if (fv < WIFI_FIRMWARE_LATEST_VERSION)
@@ -176,45 +158,37 @@ public:
     return true;
   }
 
-  /********************************************************/
   /*!
   @brief  Gets the ESP32's unique client identifier.
   @note   For the ESP32, the UID is the MAC address.
   */
-  /********************************************************/
   void getMacAddr() {
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
     memcpy(WS._macAddr, mac, sizeof(mac));
   }
 
-  /********************************************************/
   /*!
   @brief  Gets the current network RSSI value
   @return int32_t RSSI value
   */
-  /********************************************************/
   int32_t getRSSI() { return WiFi.RSSI(); }
 
-  /********************************************************/
   /*!
   @brief  Initializes the MQTT client.
   @param  clientID
           MQTT client identifier
   */
-  /********************************************************/
   void setupMQTTClient(const char *clientID) {
     WS._mqtt = new Adafruit_MQTT_Client(
         _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
         WS._config.aio_user, WS._config.aio_key);
   }
 
-  /********************************************************/
   /*!
   @brief  Returns the network status of an ESP32 module.
   @return ws_status_t
   */
-  /********************************************************/
   ws_status_t networkStatus() {
     switch (WiFi.status()) {
     case WL_CONNECTED:
@@ -228,12 +202,10 @@ public:
     }
   }
 
-  /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper
   @return AIRLIFT
   */
-  /*******************************************************************/
   const char *connectionType() { return "AIRLIFT"; }
 
 protected:
@@ -245,11 +217,9 @@ protected:
   WiFiSSLClient *_mqtt_client; /*!< Instance of a secure WiFi client. */
   SPIClass *_wifi; /*!< Instance of the SPI bus used by the ublox. */
 
-  /**************************************************************************/
   /*!
   @brief  Establishes a connection with the wireless network.
   */
-  /**************************************************************************/
   void _connect() {
 
     // check if co-processor connected first
@@ -272,11 +242,9 @@ protected:
     }
   }
 
-  /**************************************************************************/
   /*!
       @brief  Disconnects from the wireless network.
   */
-  /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
     delay(500);

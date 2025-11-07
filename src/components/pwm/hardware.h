@@ -20,11 +20,9 @@
 #include "esp_err.h"
 #endif
 
-/**************************************************************************/
 /*!
     @brief  Interface for interacting with hardware's PWM API.
 */
-/**************************************************************************/
 class PWMHardware {
 public:
   PWMHardware();

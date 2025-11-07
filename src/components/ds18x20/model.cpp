@@ -14,11 +14,9 @@
  */
 #include "model.h"
 
-/***********************************************************************/
 /*!
     @brief  DS18X20Model constructor
 */
-/***********************************************************************/
 DS18X20Model::DS18X20Model() {
   memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
   memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
@@ -26,11 +24,9 @@ DS18X20Model::DS18X20Model() {
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
 }
 
-/***********************************************************************/
 /*!
     @brief  DS18X20Model destructor
 */
-/***********************************************************************/
 DS18X20Model::~DS18X20Model() {
   memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
   memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
@@ -38,14 +34,12 @@ DS18X20Model::~DS18X20Model() {
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
 }
 
-/***********************************************************************/
 /*!
     @brief  Attempts to decode a Ds18x20Add message from the broker.
     @param  stream
             The nanopb input stream.
     @return True if the message was successfully decoded, False otherwise.
 */
-/***********************************************************************/
 bool DS18X20Model::DecodeDS18x20Add(pb_istream_t *stream) {
   memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
   // Attempt to decode the stream into a Ds18x20Add message
@@ -53,27 +47,22 @@ bool DS18X20Model::DecodeDS18x20Add(pb_istream_t *stream) {
                    &_msg_DS18x20Add);
 }
 
-/***********************************************************************/
 /*!
     @brief  Gets a pointer to the Ds18x20Add message.
     @return Pointer to the Ds18x20Add message.
 */
-/***********************************************************************/
 wippersnapper_ds18x20_Ds18x20Add *DS18X20Model::GetDS18x20AddMsg() {
   return &_msg_DS18x20Add;
 }
 
-/***********************************************************************/
 /*!
     @brief  Returns a pointer to the Ds18x20Added message.
     @return Pointer to the Ds18x20Added message.
 */
-/***********************************************************************/
 wippersnapper_ds18x20_Ds18x20Added *DS18X20Model::GetDS18x20AddedMsg() {
   return &_msg_DS18x20Added;
 }
 
-/***********************************************************************/
 /*!
     @brief  Encodes a Ds18x20Added message.
     @param  onewire_pin
@@ -84,7 +73,6 @@ wippersnapper_ds18x20_Ds18x20Added *DS18X20Model::GetDS18x20AddedMsg() {
     @return True if the message was successfully encoded,
             False otherwise.
 */
-/***********************************************************************/
 bool DS18X20Model::EncodeDS18x20Added(char *onewire_pin, bool is_init) {
   // Fill the Ds18x20Added message
   memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
@@ -103,46 +91,38 @@ bool DS18X20Model::EncodeDS18x20Added(char *onewire_pin, bool is_init) {
                    &_msg_DS18x20Added);
 }
 
-/*************************************************************************/
 /*!
     @brief  Attempts to decode a Ds18x20Remove message from the broker.
     @param  stream
             The nanopb input stream.
     @return True if the message was successfully decoded, False otherwise.
 */
-/*************************************************************************/
 bool DS18X20Model::DecodeDS18x20Remove(pb_istream_t *stream) {
   memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
   return pb_decode(stream, wippersnapper_ds18x20_Ds18x20Remove_fields,
                    &_msg_DS18x20Remove);
 }
 
-/*************************************************************************/
 /*!
     @brief  Gets a pointer to the Ds18x20Remove message.
     @return Pointer to the Ds18x20Remove message.
 */
-/*************************************************************************/
 wippersnapper_ds18x20_Ds18x20Remove *DS18X20Model::GetDS18x20RemoveMsg() {
   return &_msg_DS18x20Remove;
 }
 
-/*************************************************************************/
 /*!
     @brief  Gets a pointer to the Ds18x20Event message.
     @return Pointer to the Ds18x20Event message.
 */
-/*************************************************************************/
 wippersnapper_ds18x20_Ds18x20Event *DS18X20Model::GetDS18x20EventMsg() {
   return &_msg_DS18x20Event;
 }
 
-/*************************************************************************/
 /*!
     @brief  Encodes a Ds18x20Event message.
     @return True if the message was successfully encoded, False otherwise.
 */
-/*************************************************************************/
 bool DS18X20Model::EncodeDs18x20Event() {
   // take the filled _msg_DS18x20Event we built in the controller and encode it
   size_t sz_msg;
@@ -156,20 +136,17 @@ bool DS18X20Model::EncodeDs18x20Event() {
                    &_msg_DS18x20Event);
 }
 
-/*************************************************************************/
 /*!
     @brief  Initializes the Ds18x20Event message.
     @param  ow_pin_name
             The OneWire bus pin name.
 */
-/*************************************************************************/
 void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
   _msg_DS18x20Event.sensor_events_count = 0;
   strcpy(_msg_DS18x20Event.onewire_pin, ow_pin_name);
 }
 
-/*************************************************************************/
 /*!
     @brief  Adds a "sensor event" to the Ds18x20Event message.
     @param  sensor_type
@@ -177,7 +154,6 @@ void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
     @param  sensor_value
             The event's value.
 */
-/*************************************************************************/
 void DS18X20Model::addSensorEvent(wippersnapper_sensor_SensorType sensor_type,
                                   float sensor_value) {
   _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count].type =

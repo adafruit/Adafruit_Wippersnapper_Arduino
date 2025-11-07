@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_MCP3421.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a MCP3421 sensor.
 */
-/**************************************************************************/
 class drvMcp3421 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for the MCP3421 sensor.
       @param    i2c
@@ -37,26 +34,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvMcp3421(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an MCP3421 sensor.
   */
-  /*******************************************************************************/
   ~drvMcp3421() { delete _mcp3421; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the MCP3421 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _mcp3421 = new Adafruit_MCP3421();
     if (!_mcp3421->begin((uint8_t)_address, _i2c))
@@ -65,12 +57,10 @@ public:
     return configureSensor();
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Configures the MCP3421 sensor.
       @returns  True if the sensor was configured successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool configureSensor() {
     // NOTE: We should allow the gain to be set in future, like resolution
     //  12_BIT (240 SPS), 14_BIT (60 SPS), 16_BIT (15 SPS), 18_BIT (3.75 SPS)
@@ -94,7 +84,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads the ADC sensor with short wait for data.
       @param    rawEvent
@@ -102,7 +91,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
     ulong start = millis();
     if (!_mcp3421->startOneShotConversion()) {

@@ -21,14 +21,11 @@
 
 #define NAU7802_TIMEOUT_MS 250 ///< Timeout waiting for data from NAU7802
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the NAU7802.
 */
-/**************************************************************************/
 class drvNau7802 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an NAU7802.
       @param    i2c
@@ -40,34 +37,27 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvNau7802(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an NAU7802.
   */
-  /*******************************************************************************/
   ~drvNau7802() { _nau7802 = nullptr; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the NAU7802 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override { return _nau7802->begin(_i2c) && configure_nau7802(); }
 
-  /*******************************************************************************/
   /*!
       @brief    Configures the NAU7802 sensor.
       @returns  True if configured successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool configure_nau7802() {
     if (!_nau7802->setLDO(NAU7802_3V0)) {
       // WS_DEBUG_PRINTLN("Failed to set LDO to 3V0");
@@ -101,13 +91,11 @@ public:
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets datapoints from sensor and discards (flushes old data).
       @param    count
                 Number of readings to discard.
   */
-  /*******************************************************************************/
   void flushNAU7802(uint8_t count) {
     for (uint8_t skipCounter = 0; skipCounter < count; skipCounter++) {
       while (!_nau7802->available())
@@ -116,14 +104,12 @@ public:
     }
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the sensor's raw "force" value.
       @param    rawEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the reading was obtained successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
     unsigned long start = millis();
 

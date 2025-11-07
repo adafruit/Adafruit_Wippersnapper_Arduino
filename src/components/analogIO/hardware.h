@@ -16,11 +16,9 @@
 #define WS_ANALOGIO_HARDWARE_H
 #include "Wippersnapper_V2.h"
 
-/**************************************************************************/
 /*!
     @brief  Interface for interacting with hardware's analog i/o pin API.
 */
-/**************************************************************************/
 class AnalogIOHardware {
 public:
   AnalogIOHardware();

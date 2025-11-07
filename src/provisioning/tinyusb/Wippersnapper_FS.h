@@ -33,12 +33,10 @@ int32_t qspi_msc_write_cb_v2(uint32_t lba, uint8_t *buffer, uint32_t bufsize);
 int32_t qspi_msc_read_cb_v2(uint32_t lba, void *buffer, uint32_t bufsize);
 void qspi_msc_flush_cb_v2(void);
 
-/***************************************************************************/
 /*!
     @brief  Class that handles Wippersnapper's optional filesystem commands
                 and storage.
 */
-/***************************************************************************/
 class Wippersnapper_FS {
 public:
   Wippersnapper_FS();

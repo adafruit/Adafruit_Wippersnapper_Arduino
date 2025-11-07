@@ -57,26 +57,22 @@ static const char *loading_tips[4] = {
     WS_LOADING_TIP_1, WS_LOADING_TIP_2, WS_LOADING_TIP_3,
     WS_LOADING_TIP_4}; ///< Holds the loading "tips"
 
-/**************************************************************************/
 /*!
     @brief    Changes a label every 2 seconds to a new, random, tip.
     @param    timer
               The lv_timer tied to this callback, timerLoadTips.
 */
-/**************************************************************************/
 void lv_timer_tips_cb(lv_timer_t *timer) {
   Serial.println("Timer tips cb called");
   long tipNum = random(0, sizeof(loading_tips) / sizeof(loading_tips[0]));
   lv_label_set_text(lblTipText, loading_tips[tipNum]);
 }
 
-/**************************************************************************/
 /*!
     @brief    Callback for updating the status label on the loading screen.
     @param    event
               Callback data.
 */
-/**************************************************************************/
 static void label_status_cb(lv_event_t *event) {
   Serial.println("eventcb called!");
   const char **charPtr{static_cast<const char **>(lv_event_get_param(event))};
@@ -85,13 +81,11 @@ static void label_status_cb(lv_event_t *event) {
   lv_label_set_text(lblStatusText, *charPtr);
 }
 
-/**************************************************************************/
 /*!
     @brief    Sets the text of the status label on the loading screen.
     @param    text
               Desired text to write to the status label.
 */
-/**************************************************************************/
 void ws_display_ui_helper::set_label_status(const char *text) {
   Serial.print("set_label_status (text): ");
   Serial.println(text);
@@ -100,34 +94,28 @@ void ws_display_ui_helper::set_label_status(const char *text) {
   _dispDriver->esp32_lvgl_release();
 }
 
-/**************************************************************************/
 /*!
     @brief    Pauses and deletes the loading tip callback timer.
 */
-/**************************************************************************/
 void ws_display_ui_helper::remove_tip_timer() {
   lv_timer_pause(timerLoadTips);
   lv_timer_del(timerLoadTips);
 }
 
-/**************************************************************************/
 /*!
     @brief    Sets the screen's background to a black color.
 */
-/**************************************************************************/
 void ws_display_ui_helper::set_bg_black() {
   _dispDriver->esp32_lvgl_acquire();
   lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), LV_STATE_DEFAULT);
   _dispDriver->esp32_lvgl_release();
 }
 
-/**************************************************************************/
 /*!
     @brief    Sets the color of an icon on the loading screen to green.
     @param    iconType
               Desired icon.
 */
-/**************************************************************************/
 void ws_display_ui_helper::set_load_bar_icon_complete(loadBarIcons iconType) {
   static lv_style_t *styleIcon;
   static lv_obj_t *objIcon;
@@ -160,20 +148,16 @@ void ws_display_ui_helper::set_load_bar_icon_complete(loadBarIcons iconType) {
   _dispDriver->esp32_lvgl_release();
 }
 
-/**************************************************************************/
 /*!
     @brief    Returns the loading screen's state.
     @returns  The loading state, True if loading screen is active,
               False otherwise.
 */
-/**************************************************************************/
 bool ws_display_ui_helper::getLoadingState() { return _loadingState; }
 
-/**************************************************************************/
 /*!
     @brief    Builds and displays the loading screen.
 */
-/**************************************************************************/
 void ws_display_ui_helper::show_scr_load() {
   _dispDriver->esp32_lvgl_acquire();
   // Icon bar
@@ -248,12 +232,10 @@ void ws_display_ui_helper::show_scr_load() {
   _loadingState = true; // using the loading screen state
 }
 
-/**************************************************************************/
 /*!
     @brief    Deletes all objects/styles off the load screen and frees
               their resources.
 */
-/**************************************************************************/
 void ws_display_ui_helper::clear_scr_load() {
   Serial.println("clear_scr_load");
   _dispDriver->esp32_lvgl_acquire();
@@ -275,7 +257,6 @@ void ws_display_ui_helper::clear_scr_load() {
   _loadingState = false; // no longer using the loading screen state
 }
 
-/**************************************************************************/
 /*!
     @brief    Build and display an error screen.
     @param    lblError
@@ -283,7 +264,6 @@ void ws_display_ui_helper::clear_scr_load() {
     @param    lblDesc
               Instructions or steps to resolve the error.
 */
-/**************************************************************************/
 void ws_display_ui_helper::show_scr_error(const char *lblError,
                                           const char *lblDesc) {
   Serial.println("show_scr_error");
@@ -329,11 +309,9 @@ void ws_display_ui_helper::show_scr_error(const char *lblError,
   _dispDriver->esp32_lvgl_release();
 }
 
-/**************************************************************************/
 /*!
     @brief    Build and display the monitor screen
 */
-/**************************************************************************/
 void ws_display_ui_helper::build_scr_monitor() {
   _dispDriver->esp32_lvgl_acquire();
 
@@ -395,13 +373,11 @@ void ws_display_ui_helper::build_scr_monitor() {
   _dispDriver->esp32_lvgl_release();
 }
 
-/**************************************************************************/
 /*!
     @brief    Add text on the terminal label and displays it.
     @param    text
               Text to display on the terminal, should end in "\n"
 */
-/**************************************************************************/
 void ws_display_ui_helper::add_text_to_terminal(const char *text) {
   Serial.println("add_text_to_terminal");
   /*   char txtBuffer[256]; // temporary text buffer for snprintf
@@ -409,7 +385,6 @@ void ws_display_ui_helper::add_text_to_terminal(const char *text) {
     addToTerminal(txtBuffer); */
 }
 
-/**************************************************************************/
 /*!
     @brief    Adds a line of text on the terminal label and displays it.
     @param    text
@@ -417,7 +392,6 @@ void ws_display_ui_helper::add_text_to_terminal(const char *text) {
     @note     Reference:
    https://github.com/lvgl/lv_demos/blob/release/v6/lv_apps/terminal/terminal.c
 */
-/**************************************************************************/
 void ws_display_ui_helper::addToTerminal(const char *txt_in) {
   // Calculate text size
   size_t txt_len = strlen(txt_in);

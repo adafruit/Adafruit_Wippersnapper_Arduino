@@ -16,12 +16,10 @@
 #define WS_SERVO_MODEL_H
 #include "Wippersnapper_V2.h"
 
-/**************************************************************************/
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from servo.proto.
 */
-/**************************************************************************/
 class ServoModel {
 public:
   ServoModel();

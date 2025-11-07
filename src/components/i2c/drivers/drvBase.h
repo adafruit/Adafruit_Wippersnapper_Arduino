@@ -21,15 +21,12 @@
 
 #define NO_MUX_CH 0xFFFF; ///< No MUX channel specified
 
-/**************************************************************************/
 /*!
     @brief  Base class for I2C Drivers.
 */
-/**************************************************************************/
 class drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Instanciates an I2C sensor.
       @param    i2c
@@ -42,7 +39,6 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvBase(TwoWire *i2c, uint16_t address, uint32_t mux_channel,
           const char *driver_name) {
     _i2c = i2c;
@@ -56,47 +52,36 @@ public:
     strcpy(_pin_sda, "default");
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an I2C sensor.
   */
-  /*******************************************************************************/
   virtual ~drvBase() {}
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the name of the driver.
       @returns  The driver's name.
   */
-  /*******************************************************************************/
   const char *GetDrvName() { return _name; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the I2C device's address.
       @returns  The I2C device's unique i2c address.
   */
-  /*******************************************************************************/
   uint16_t GetAddress() { return _address; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the I2C MUX address.
       @returns  The I2C MUX address.
   */
-  /*******************************************************************************/
   uint32_t GetMuxAddress() { return _i2c_mux_addr; }
 
-  /*******************************************************************************/
   /*!
       @brief    Sets the I2C MUX address.
       @param    mux_address
                 The I2C MUX address.
   */
-  /*******************************************************************************/
   void SetMuxAddress(uint32_t mux_address) { _i2c_mux_addr = mux_address; }
 
-  /*******************************************************************************/
   /*!
       @brief    Set if the I2C driver has an alternative I2C bus.
       @param   scl_pin
@@ -104,55 +89,43 @@ public:
       @param   sda_pin
                 The SDA pin for the alternative I2C bus.
   */
-  /*******************************************************************************/
   void EnableAltI2CBus(char *scl_pin, char *sda_pin) {
     strcpy(_pin_scl, scl_pin);
     strcpy(_pin_sda, sda_pin);
     _has_alt_i2c_bus = true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SCL pin for the alternative I2C bus.
       @returns  The SCL pin for the alternative I2C bus.
   */
-  /*******************************************************************************/
   const char *GetPinSCL() { return _pin_scl; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SDA pin for the alternative I2C bus.
       @returns  The SDA pin for the alternative I2C bus.
   */
-  /*******************************************************************************/
   const char *GetPinSDA() { return _pin_sda; }
 
-  /*******************************************************************************/
   /*!
       @brief    Checks if the I2C driver uses an alternative I2C bus.
       @returns  True if the I2C driver uses an alternative I2C bus, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool HasAltI2CBus() { return _has_alt_i2c_bus; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the I2C MUX channel connected to the I2C device.
       @returns  The desired MUX channel.
   */
-  /*******************************************************************************/
   uint32_t GetMuxChannel() { return _i2c_mux_channel; }
 
-  /*******************************************************************************/
   /*!
       @brief    Checks if the I2C driver is attached to an I2C MUX.
       @returns  True if the I2C driver uses an I2C MUX, False otherwise.
   */
-  /*******************************************************************************/
   bool HasMux() { return _i2c_mux_channel != NO_MUX_CH; }
 
-  /*******************************************************************************/
   /*!
       @brief    Configures an i2c device's sensors.
       @param    sensor_types
@@ -160,7 +133,6 @@ public:
       @param    sensor_types_count
                 The number of active sensors to read from the device.
   */
-  /*******************************************************************************/
   void EnableSensorReads(wippersnapper_sensor_SensorType *sensor_types,
                          size_t sensor_types_count) {
     _sensors_count = sensor_types_count;
@@ -169,30 +141,24 @@ public:
     }
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the number of enabled sensors.
       @returns  The number of enabled sensors.
   */
-  /*******************************************************************************/
   size_t GetEnabledSensorCnt() { return _sensors_count; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the I2C sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   virtual bool begin() = 0;
 
-  /*******************************************************************************/
   /*!
       @brief    Sets the sensor's period and converts from seconds to
                 milliseconds.
       @param    period The period for the sensor to return values within, in
                 seconds.
   */
-  /*******************************************************************************/
   void SetSensorPeriod(float period) {
     if (period < 0) {
       _sensor_period = 0;
@@ -201,33 +167,26 @@ public:
     _sensor_period = (unsigned long)(period * 1000.0f);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Sets the sensor's previous period and converts from seconds
                 to milliseconds.
       @param    period The period for the sensor to return values within, in
                 seconds.
   */
-  /*******************************************************************************/
   void SetSensorPeriodPrv(ulong period) { _sensor_period_prv = period; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the sensor's period.
       @returns  The sensor's period, in milliseconds.
   */
-  /*******************************************************************************/
   ulong GetSensorPeriod() { return _sensor_period; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the sensor's previous period.
       @returns  The sensor's previous period, in milliseconds.
   */
-  /*******************************************************************************/
   ulong GetSensorPeriodPrv() { return _sensor_period_prv; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets a sensor's CO2 value.
       @param    co2Event
@@ -235,10 +194,8 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventCO2(sensors_event_t *co2Event) { return false; };
 
-  /*******************************************************************************/
   /*!
       @brief    Gets a sensor's eCO2 value.
       @param    eco2Event
@@ -246,10 +203,8 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventECO2(sensors_event_t *eco2Event) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets a sensor's TVOC value.
       @param    tvocEvent
@@ -257,10 +212,8 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventTVOC(sensors_event_t *tvocEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads an ambient temperature sensor (°C).
                 Expects value to return in the proper SI unit.
@@ -269,10 +222,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a humidity sensor and converts
                 the reading into the expected SI unit.
@@ -281,12 +232,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a pressure sensor and converts
                 the reading into the expected SI unit.
@@ -295,12 +244,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventPressure(sensors_event_t *pressureEvent) {
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a Altitude sensor and converts
                 the reading into the expected SI unit.
@@ -309,12 +256,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventAltitude(sensors_event_t *altitudeEvent) {
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a object temperature sensor and
                 converts the reading into the expected SI unit.
@@ -323,12 +268,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventObjectTemp(sensors_event_t *objectTempEvent) {
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Selects a MUX channel for use with the
                 I2C device.
@@ -337,7 +280,6 @@ public:
   */
   virtual void SelectMUXChannel(uint8_t channel) { return; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a object light sensor and
                 converts the reading into the expected SI unit.
@@ -346,10 +288,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventLight(sensors_event_t *lightEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a object pm10 std. sensor and
                 converts the reading into the expected SI unit.
@@ -358,10 +298,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a object pm10 env. sensor and
                 converts the reading into the expected SI unit.
@@ -370,10 +308,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventPM10_Env(sensors_event_t *pm10EnvEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a object pm25 std. sensor and
                 converts the reading into the expected SI unit.
@@ -382,10 +318,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventPM25_STD(sensors_event_t *pm25StdEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a object pm25 env. sensor and
                 converts the reading into the expected SI unit.
@@ -394,10 +328,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventPM25_Env(sensors_event_t *pm25EnvEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a object pm100 std. sensor and
                 converts the reading into the expected SI unit.
@@ -406,12 +338,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a object pm100 env. sensor and
                 converts the reading into the expected SI unit.
@@ -420,12 +350,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventPM100_Env(sensors_event_t *pm100EnvEvent) {
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a object unitless % std. sensor and
                 converts the reading into the expected SI unit.
@@ -434,12 +362,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a voltage sensor and converts the
                 reading into the expected SI unit.
@@ -448,10 +374,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventVoltage(sensors_event_t *voltageEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a current sensor and converts the
                 reading into the expected SI unit.
@@ -460,10 +384,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventCurrent(sensors_event_t *currentEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets a sensor's Raw value.
       @param    rawEvent
@@ -471,10 +393,8 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventRaw(sensors_event_t *rawEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Helper function to obtain a sensor's ambient temperature value
                 in °F. Requires `getEventAmbientTemp()` to be fully
@@ -484,7 +404,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventAmbientTempF(sensors_event_t *AmbientTempFEvent) {
     // obtain ambient temp. in °C
     if (!getEventAmbientTemp(AmbientTempFEvent)) {
@@ -496,7 +415,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Helper function to obtain a sensor's object temperature value
                 in °F. Requires `getEventObjectTemp()` to be fully
@@ -506,7 +424,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventObjectTempF(sensors_event_t *objectTempFEvent) {
     // obtain ambient temp. in °C
     if (!getEventObjectTemp(objectTempFEvent))
@@ -520,7 +437,6 @@ public:
   /****************************** SENSOR_TYPE: Gas Resistance (ohms)
    * *******************************/
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a gas resistance sensor and converts
                 the reading into the expected SI unit.
@@ -529,12 +445,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a NOx Index sensor and converts
                 the reading into the expected SI unit.
@@ -543,10 +457,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventNOxIndex(sensors_event_t *gasEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a VOC Index sensor and converts
                 the reading into the expected SI unit.
@@ -555,10 +467,8 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventVOCIndex(sensors_event_t *gasEvent) { return false; }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a proximity sensor and
                 converts the reading into the expected SI unit.
@@ -567,12 +477,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventProximity(sensors_event_t *proximityEvent) {
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief   Reads a sensor's event from the i2c driver.
       @param   sensor_type
@@ -582,7 +490,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool GetSensorEvent(wippersnapper_sensor_SensorType sensor_type,
                       sensors_event_t *sensors_event) {
     auto it = SensorEventHandlers.find(sensor_type);
@@ -591,14 +498,12 @@ public:
     return it->second(sensors_event);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Function type for sensor event handlers
       @param    sensors_event_t*
                 Pointer to the sensor event structure to be filled
       @returns  True if event was successfully read, False otherwise
   */
-  /*******************************************************************************/
   using fnGetEvent = std::function<bool(sensors_event_t *)>;
 
   // Maps SensorType to function calls

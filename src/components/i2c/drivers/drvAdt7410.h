@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_ADT7410.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a ADT7410 sensor.
 */
-/**************************************************************************/
 class drvAdt7410 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a ADT7410 sensor.
       @param    i2c
@@ -37,35 +34,29 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvAdt7410(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an ADT7410 sensor.
   */
-  /*******************************************************************************/
   ~drvAdt7410() {
     // Called when a ADT7410 component is deleted.
     delete _ADT7410;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the ADT7410 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _ADT7410 = new Adafruit_ADT7410();
     return _ADT7410->begin((uint8_t)_address, _i2c);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the ADT7410's current temperature.
       @param    tempEvent
@@ -73,7 +64,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     tempEvent->temperature = _ADT7410->readTempC();
     return true;

@@ -33,13 +33,11 @@ struct analogioPin {
   wippersnapper_sensor_SensorType read_mode; ///< Type of analog read to perform
 };
 
-/**************************************************************************/
 /*!
     @brief  Routes messages using the analogio.proto API to the
             appropriate hardware and model classes, controls and tracks
             the state of the hardware's digital I/O pins.
 */
-/**************************************************************************/
 class AnalogIOController {
 public:
   AnalogIOController();

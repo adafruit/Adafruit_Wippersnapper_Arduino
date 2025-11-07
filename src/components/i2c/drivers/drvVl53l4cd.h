@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <vl53l4cd_class.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a VL53L4CD sensor.
 */
-/**************************************************************************/
 class drvVl53l4cd : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a VL53L4CD sensor.
       @param    i2c
@@ -37,29 +34,24 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvVl53l4cd(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an VL53L4CD sensor.
   */
-  /*******************************************************************************/
   ~drvVl53l4cd() {
     // Called when a VL53L4CD component is deleted.
     delete _VL53L4CD;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the VL53L4CD sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() {
     _VL53L4CD = new VL53L4CD(_i2c, -1);
 
@@ -105,7 +97,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the VL53L4CD's current proximity.
       @param    proximityEvent
@@ -113,7 +104,6 @@ public:
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
     uint8_t NewDataReady = 0;
     VL53L4CD_Result_t results;

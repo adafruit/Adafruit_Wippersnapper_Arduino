@@ -21,15 +21,12 @@
 
 #define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the BMP3XX temperature
             and pressure sensor.
 */
-/**************************************************************************/
 class drvBmp3xx : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an BMP3XX sensor.
       @param    i2c
@@ -41,26 +38,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvBmp3xx(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an BMP3XX sensor.
   */
-  /*******************************************************************************/
   ~drvBmp3xx() { delete _bmp3xx; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the BMP3XX sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _bmp3xx = new Adafruit_BMP3XX();
     // attempt to initialize BMP3XX
@@ -80,7 +72,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the BMP3XX's current temperature.
       @param    tempEvent
@@ -88,7 +79,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     if (!_bmp3xx->performReading())
       return false;
@@ -96,7 +86,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a pressure sensor and converts
                 the reading into the expected SI unit.
@@ -105,7 +94,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
     if (!_bmp3xx->performReading())
       return false;
@@ -113,7 +101,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a the BMP3XX's altitude sensor into an event.
       @param    altitudeEvent
@@ -121,7 +108,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
     if (!_bmp3xx->performReading())
       return false;
