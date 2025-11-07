@@ -126,15 +126,15 @@ bool UARTHardware::ConfigureSerial() {
     _baud_rate = _config.baud_rate;
 #endif // HAS_SW_SERIAL
   } else {
-#ifdef ARDUINO_ARCH_RP2040 || defined(ADAFRUIT_METRO_M4_EXPRESS) ||            \
-    defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
-    defined(ADAFRUIT_PYPORTAL_M4_TITANO)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ADAFRUIT_METRO_M4_EXPRESS) || \
+    defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) || \
+    defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(ARDUINO_ARCH_SAMD)
     if (_config.uart_nbr == 1) {
       _hwSerial = &Serial1;
     } else if (_config.uart_nbr == 2) {
       _hwSerial = &Serial2;
     } else {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Invalid UART number for ESP32!");
+      WS_DEBUG_PRINTLN("[uart] ERROR: Invalid UART number!");
       return false;
     }
 #else
