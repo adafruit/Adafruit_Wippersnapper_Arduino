@@ -2757,6 +2757,12 @@ void printDeviceInfo() {
   WS_DEBUG_PRINTLN(BOARD_ID);
   WS_DEBUG_PRINT("Adafruit.io User: ");
   WS_DEBUG_PRINTLN(WS._config.aio_user);
+  if (strncmp(WS._config.aio_url, "io.adafruit.com", 16) != 0) {
+    WS_DEBUG_PRINT("Adafruit.io URL: ");
+    WS_DEBUG_PRINTLN(WS._config.aio_url);
+    WS_DEBUG_PRINT("Adafruit.io Port: ");
+    WS_DEBUG_PRINTLN(WS._config.io_port);
+  }
   WS_DEBUG_PRINT("WiFi Network: ");
   WS_DEBUG_PRINTLN(WS._config.network.ssid);
 
