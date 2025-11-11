@@ -200,8 +200,8 @@ public:
         _mqtt_client_secure = new NetworkClientSecure();
         _mqtt_client_secure->setInsecure();
         WS._mqtt = new Adafruit_MQTT_Client(
-          _mqtt_client_secure, WS._config.aio_url, WS._config.io_port,
-          clientID, WS._config.aio_user, WS._config.aio_key);
+            _mqtt_client_secure, WS._config.aio_url, WS._config.io_port,
+            clientID, WS._config.aio_user, WS._config.aio_key);
       } else {
         // Insecure connections require a NetworkClient object rather than a
         // NetworkClientSecure object
@@ -210,7 +210,6 @@ public:
             _mqtt_client_insecure, WS._config.aio_url, WS._config.io_port,
             clientID, WS._config.aio_user, WS._config.aio_key);
       }
-        
     }
   }
 
