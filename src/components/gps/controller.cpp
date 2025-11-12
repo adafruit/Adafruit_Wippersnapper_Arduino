@@ -161,13 +161,13 @@ void GPSController::update() {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");
       } else {
         // Publish the GPSEvent to IO
-        if (!WsV2.PublishSignal(
+/*         if (!WsV2.PublishSignal(
                 wippersnapper_signal_DeviceToBroker_gps_event_tag,
                 _gps_model->GetGPSEvent())) {
           WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
         } else {
           WS_DEBUG_PRINTLN("...ok!");
-        }
+        } */
       }
       drv->SetPollPeriodPrv(cur_time);
     }

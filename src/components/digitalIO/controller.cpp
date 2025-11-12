@@ -295,13 +295,13 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     }
 
     // Publish the DigitalIOEvent message to the broker
-    if (!WsV2.PublishSignal(
+/*     if (!WsV2.PublishSignal(
             wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
             _dio_model->GetDigitalIOEventMsg())) {
       WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to publish event message, "
                        "moving onto the next pin!");
       return false;
-    }
+    } */
     WS_DEBUG_PRINTLN("[digitalio] Published DigitalIOEvent to broker!")
   } else {
     // let's log the event to the SD card

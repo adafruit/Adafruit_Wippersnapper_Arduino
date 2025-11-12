@@ -140,13 +140,13 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
       return false;
     }
 
-    if (!WsV2.PublishSignal(
+/*     if (!WsV2.PublishSignal(
             wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
             _DS18X20_model->GetDS18x20AddedMsg())) {
       WS_DEBUG_PRINTLN(
           "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
       return false;
-    }
+    } */
   }
 
   return true;
@@ -260,13 +260,13 @@ void DS18X20Controller::update() {
       }
       // Publish the Ds18x20Event message to the broker
       WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
-      if (!WsV2.PublishSignal(
+/*       if (!WsV2.PublishSignal(
               wippersnapper_signal_DeviceToBroker_ds18x20_event_tag,
               _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to publish Ds18x20Event message");
         continue;
-      }
+      } */
       WS_DEBUG_PRINTLN("Published!");
     } else {
       if (!WsV2._sdCardV2->LogDS18xSensorEventToSD(

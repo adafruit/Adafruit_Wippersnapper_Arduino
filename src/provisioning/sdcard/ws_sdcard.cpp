@@ -731,9 +731,9 @@ bool ws_sdcard::parseConfigFile() {
         return false;
       }
 
-      msg_signal_b2d.which_payload =
+/*       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
-      msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
+      msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd; */
     } else if (strcmp(component_api_type, "analogio") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
       wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =

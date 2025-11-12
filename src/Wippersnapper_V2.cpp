@@ -303,7 +303,7 @@ bool handleCheckinResponse(pb_istream_t *stream) {
 bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
                             void **arg) {
   (void)arg; // marking unused parameters to avoid compiler warning
-
+/* 
   switch (field->tag) {
   case wippersnapper_signal_BrokerToDevice_checkin_response_tag:
     WS_DEBUG_PRINTLN("-> Checkin Response Message Type");
@@ -460,7 +460,7 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
-  }
+  } */
   // once this is returned, pb_dec_submessage()
   // decodes the submessage contents.
   return true;
@@ -965,7 +965,7 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
   size_t szMessageBuf;
   wippersnapper_signal_DeviceToBroker MsgSignal =
       wippersnapper_signal_DeviceToBroker_init_default;
-
+/* 
   // Fill generic signal payload with the payload from the args.
   WS_DEBUG_PRINT("Signal Payload Type: ");
   switch (which_payload) {
@@ -1043,7 +1043,7 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;
-  }
+  } */
 
   // Get the encoded size of the signal message
   if (!pb_get_encoded_size(&szMessageBuf,
@@ -1118,9 +1118,9 @@ bool Wippersnapper_V2::CreateCheckinRequest() {
   WS_DEBUG_PRINTLN("Encoded!");
 
   WS_DEBUG_PRINT("Publishing Checkin Request...");
-  if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
+/*   if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
                      WsV2.CheckInModel->getCheckinRequest()))
-    return false;
+    return false; */
   WS_DEBUG_PRINTLN("Published!");
 
   return true;

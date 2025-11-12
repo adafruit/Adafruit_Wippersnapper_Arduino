@@ -21,8 +21,8 @@ PWMModel::PWMModel() {
   memset(&_msg_pwm_add, 0, sizeof(_msg_pwm_add));
   memset(&_msg_pwm_added, 0, sizeof(_msg_pwm_added));
   memset(&_msg_pwm_remove, 0, sizeof(_msg_pwm_remove));
-  memset(&_msg_pwm_write_duty_cycle, 0, sizeof(_msg_pwm_write_duty_cycle));
-  memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency));
+  /* memset(&_msg_pwm_write_duty_cycle, 0, sizeof(_msg_pwm_write_duty_cycle)); */
+  /* memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency)); */
 }
 
 /*!
@@ -32,8 +32,8 @@ PWMModel::~PWMModel() {
   memset(&_msg_pwm_add, 0, sizeof(_msg_pwm_add));
   memset(&_msg_pwm_added, 0, sizeof(_msg_pwm_added));
   memset(&_msg_pwm_remove, 0, sizeof(_msg_pwm_remove));
-  memset(&_msg_pwm_write_duty_cycle, 0, sizeof(_msg_pwm_write_duty_cycle));
-  memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency));
+  /* memset(&_msg_pwm_write_duty_cycle, 0, sizeof(_msg_pwm_write_duty_cycle)); */
+  /* memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency)); */
 }
 
 /*!
@@ -109,18 +109,19 @@ wippersnapper_pwm_PWMRemove *PWMModel::GetPWMRemoveMsg() {
     @return true if successful, false otherwise.
 */
 bool PWMModel::DecodePWMWriteDutyCycle(pb_istream_t *stream) {
-  memset(&_msg_pwm_write_duty_cycle, 0, sizeof(_msg_pwm_write_duty_cycle));
+/*   memset(&_msg_pwm_write_duty_cycle, 0, sizeof(_msg_pwm_write_duty_cycle));
   return pb_decode(stream, wippersnapper_pwm_PWMWriteDutyCycle_fields,
-                   &_msg_pwm_write_duty_cycle);
+                   &_msg_pwm_write_duty_cycle); */
+                   return false; // TODO: Remove once re-implemented
 }
 
 /*!
     @brief  Returns a pointer to the PWMWriteDutyCycle message.
     @return Pointer to the PWMWriteDutyCycle message.
 */
-wippersnapper_pwm_PWMWriteDutyCycle *PWMModel::GetPWMWriteDutyCycleMsg() {
+/* wippersnapper_pwm_PWMWriteDutyCycle *PWMModel::GetPWMWriteDutyCycleMsg() {
   return &_msg_pwm_write_duty_cycle;
-}
+} */
 
 /*!
     @brief  Decodes a PWMWriteFrequency message from an input stream.
@@ -128,15 +129,16 @@ wippersnapper_pwm_PWMWriteDutyCycle *PWMModel::GetPWMWriteDutyCycleMsg() {
     @return true if successful, false otherwise.
 */
 bool PWMModel::DecodePWMWriteFrequency(pb_istream_t *stream) {
-  memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency));
+/*   memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency));
   return pb_decode(stream, wippersnapper_pwm_PWMWriteFrequency_fields,
-                   &_msg_pwm_write_frequency);
+                   &_msg_pwm_write_frequency); */
+  return false;// TODO: Remove once re-implemented
 }
 
 /*!
     @brief  Returns a pointer to the PWMWriteFrequency message.
     @return Pointer to the PWMWriteFrequency message.
 */
-wippersnapper_pwm_PWMWriteFrequency *PWMModel::GetPWMWriteFrequencyMsg() {
+/* wippersnapper_pwm_PWMWriteFrequency *PWMModel::GetPWMWriteFrequencyMsg() {
   return &_msg_pwm_write_frequency;
-}
+} */
