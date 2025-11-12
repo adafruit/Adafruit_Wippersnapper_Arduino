@@ -465,6 +465,7 @@ jobs:
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
+          ## We manually merge our own binary instead of relying on the arduino-cli auto-merged one. Uncomment to diagnose differences.
           # mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.merged.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.auto-merge.bin
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.elf
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
