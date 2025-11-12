@@ -172,8 +172,8 @@ bool PWMController::Handle_PWM_Write_Frequency(pb_istream_t *stream) {
 /*   wippersnapper_pwm_PWMWriteFrequency msg_write_frequency =
       *_pwm_model->GetPWMWriteFrequencyMsg();
   uint8_t pin = atoi(msg_write_frequency.pin + 1); */
-  //int pin_idx;
-  pin_idx = GetPWMHardwareIdx(pin);
+  int pin_idx;
+  //pin_idx = GetPWMHardwareIdx(pin);
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;

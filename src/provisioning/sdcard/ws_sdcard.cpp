@@ -748,9 +748,9 @@ bool ws_sdcard::parseConfigFile() {
         return false;
       }
 
-      msg_signal_b2d.which_payload =
+/*       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_analogio_add_tag;
-      msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
+      msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd; */
     } else if (strcmp(component_api_type, "ds18x20") == 0) {
       WS_DEBUG_PRINTLN("[SD] Ds18x20 component found, decoding JSON to PB...");
       wippersnapper_ds18x20_Ds18x20Add msg_DS18X20Add =
@@ -766,9 +766,9 @@ bool ws_sdcard::parseConfigFile() {
         WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
-      msg_signal_b2d.which_payload =
+/*       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
-      msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
+      msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add; */
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
       wippersnapper_i2c_I2cDeviceAddOrReplace msg_i2c_add_replace =
@@ -777,9 +777,9 @@ bool ws_sdcard::parseConfigFile() {
         WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to parse I2C Component");
         return false;
       }
-      msg_signal_b2d.which_payload =
+/*       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
-      msg_signal_b2d.payload.i2c_device_add_replace = msg_i2c_add_replace;
+      msg_signal_b2d.payload.i2c_device_add_replace = msg_i2c_add_replace; */
     } else {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown Component API Type: " +
                        String(component_api_type));
