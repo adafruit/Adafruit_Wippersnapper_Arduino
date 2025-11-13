@@ -52,11 +52,11 @@ bool ServoController::PublishServoAddedMsg(
     const char *servo_pin, bool did_attach,
     wippersnapper_servo_ServoAdd *msg_add) {
   _servo_model->EncodeServoAdded(msg_add->servo_pin, did_attach);
-  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_servo_added_tag,
+/*   if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_servo_added_tag,
                           _servo_model->GetServoAddedMsg())) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed publishing a ServoAdded message!");
     return false;
-  }
+  } */
   return true;
 }
 

@@ -58,11 +58,11 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pwm]: Failed to encode PWMAdded message!");
     return false;
   }
-  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_pwm_added_tag,
+/*   if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_pwm_added_tag,
                           _pwm_model->GetPWMAddedMsg())) {
     WS_DEBUG_PRINTLN("[PWM]: Unable to publish PWMAdded message!");
     return false;
-  }
+  } */
   WS_DEBUG_PRINTLN("...attached!");
   return true;
 }
@@ -136,25 +136,25 @@ bool PWMController::Handle_PWM_Write_DutyCycle(pb_istream_t *stream) {
     return false;
   }
 
-  wippersnapper_pwm_PWMWriteDutyCycle msg_write_duty_cycle =
+/*   wippersnapper_pwm_PWMWriteDutyCycle msg_write_duty_cycle =
       *_pwm_model->GetPWMWriteDutyCycleMsg();
-  uint8_t pin = atoi(msg_write_duty_cycle.pin + 1);
-  int pin_idx = GetPWMHardwareIdx(pin);
-  if (pin_idx == -1) {
+  uint8_t pin = atoi(msg_write_duty_cycle.pin + 1); */
+  /* int pin_idx = GetPWMHardwareIdx(pin); */
+/*   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;
-  }
+  } */
 
   // Write the duty cycle to the pin
-  if (!_pwm_hardware[pin_idx]->WriteDutyCycle(
+/*   if (!_pwm_hardware[pin_idx]->WriteDutyCycle(
           msg_write_duty_cycle.duty_cycle)) {
     WS_DEBUG_PRINTLN("[pwm] Error: Failed to write duty cycle!");
     return false;
-  }
+  } */
   WS_DEBUG_PRINTLN("[pwm] Wrote duty cycle: ");
-  WS_DEBUG_PRINT(msg_write_duty_cycle.duty_cycle);
+  /* WS_DEBUG_PRINT(msg_write_duty_cycle.duty_cycle); */
   WS_DEBUG_PRINTLN(" to pin: ");
-  WS_DEBUG_PRINT(msg_write_duty_cycle.pin);
+  /* WS_DEBUG_PRINT(msg_write_duty_cycle.pin); */
   return true;
 }
 
@@ -169,23 +169,24 @@ bool PWMController::Handle_PWM_Write_Frequency(pb_istream_t *stream) {
         "[pwm] Error: Failed to decode PWMWriteFrequency message!");
     return false;
   }
-  wippersnapper_pwm_PWMWriteFrequency msg_write_frequency =
+/*   wippersnapper_pwm_PWMWriteFrequency msg_write_frequency =
       *_pwm_model->GetPWMWriteFrequencyMsg();
-  uint8_t pin = atoi(msg_write_frequency.pin + 1);
-  int pin_idx = GetPWMHardwareIdx(pin);
+  uint8_t pin = atoi(msg_write_frequency.pin + 1); */
+  int pin_idx;
+  //pin_idx = GetPWMHardwareIdx(pin);
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;
   }
 
-  if (_pwm_hardware[pin_idx]->WriteTone(msg_write_frequency.frequency) !=
+/*   if (_pwm_hardware[pin_idx]->WriteTone(msg_write_frequency.frequency) !=
       msg_write_frequency.frequency) {
     WS_DEBUG_PRINTLN("[pwm] Error: Failed to write frequency!");
     return false;
-  }
+  } */
   WS_DEBUG_PRINTLN("[pwm] Wrote frequency: ");
-  WS_DEBUG_PRINT(msg_write_frequency.frequency);
+  /* WS_DEBUG_PRINT(msg_write_frequency.frequency); */
   WS_DEBUG_PRINTLN(" to pin: ");
-  WS_DEBUG_PRINT(msg_write_frequency.pin);
+  /* WS_DEBUG_PRINT(msg_write_frequency.pin); */
   return true;
 }

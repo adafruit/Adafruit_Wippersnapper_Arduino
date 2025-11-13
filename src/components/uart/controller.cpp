@@ -87,9 +87,9 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
       uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
                                      cfg_device.device_id, cfg_serial.uart_nbr);
       uart_driver->ConfigureDriver(cfg_device);
-      uart_driver->EnableSensorEvents(
+/*       uart_driver->EnableSensorEvents(
           cfg_device.config.generic_uart_input.i2c_device_sensor_types,
-          cfg_device.config.generic_uart_input.i2c_device_sensor_types_count);
+          cfg_device.config.generic_uart_input.i2c_device_sensor_types_count); */
       uart_driver->SetSensorPeriod(cfg_device.config.generic_uart_input.period);
       WS_DEBUG_PRINT("added!");
     } else {
@@ -121,9 +121,9 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
                                   cfg_device.device_id, cfg_serial.uart_nbr);
     uart_driver->ConfigureDriver(cfg_device);
-    uart_driver->EnableSensorEvents(
+/*     uart_driver->EnableSensorEvents(
         cfg_device.config.pm25aqi.i2c_device_sensor_types,
-        cfg_device.config.pm25aqi.i2c_device_sensor_types_count);
+        cfg_device.config.pm25aqi.i2c_device_sensor_types_count); */
     uart_driver->SetSensorPeriod(cfg_device.config.pm25aqi.period);
     WS_DEBUG_PRINT("added!");
     break;
@@ -286,12 +286,12 @@ void UARTController::update() {
         } */
       } else {
         // In online mode, publish to Adafruit IO
-        if (!WsV2.PublishSignal(
+/*         if (!WsV2.PublishSignal(
                 wippersnapper_signal_DeviceToBroker_uart_input_event_tag,
                 _uart_model->GetUartInputEventMsg())) {
           WS_DEBUG_PRINTLN(
               "[uart] ERROR: Unable to publish UartInputEvent to IO!");
-        }
+        } */
       }
     } else {
       WS_DEBUG_PRINTLN(

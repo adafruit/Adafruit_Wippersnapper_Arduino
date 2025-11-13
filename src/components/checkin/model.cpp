@@ -31,6 +31,116 @@ CheckinModel::~CheckinModel() {
   memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
 }
 
+bool CheckinModel::EncodeD2bCheckinRequest(const char *hw_uid,
+                                           const char *fw_ver) {
+  // Validate input len
+  if (strlen(hw_uid) >=
+          sizeof(_CheckinD2B.payload.checkin_request.hardware_uid) ||
+      strlen(fw_ver) >=
+          sizeof(_CheckinD2B.payload.checkin_request.firmware_version)) {
+    return false;
+  }
+
+  // Zero-out the message envelope
+  memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
+  // Set which_payload
+  _CheckinD2B.which_payload =
+      wippersnapper_checkin_CheckinD2B_checkin_request_tag;
+  // Safely fill the CheckinRequest sub-message payload
+  strncpy(_CheckinD2B.payload.checkin_request.hardware_uid, hw_uid,
+          sizeof(_CheckinD2B.payload.checkin_request.hardware_uid) - 1);
+  _CheckinD2B.payload.checkin_request
+      .hardware_uid[sizeof(_CheckinD2B.payload.checkin_request.hardware_uid) -
+                    1] = '\0';
+  strncpy(_CheckinD2B.payload.checkin_request.firmware_version, fw_ver,
+          sizeof(_CheckinD2B.payload.checkin_request.firmware_version) - 1);
+  _CheckinD2B.payload.checkin_request.firmware_version
+      [sizeof(_CheckinD2B.payload.checkin_request.firmware_version) - 1] = '\0';
+
+  // Obtain size of the CheckinD2B message
+  size_t CheckinD2BSz;
+  if (!pb_get_encoded_size(
+          &CheckinD2BSz, wippersnapper_checkin_CheckinD2B_fields, &_CheckinD2B))
+    return false;
+  // Create a temporary buffer for holding the CheckinD2B message
+  uint8_t buf[CheckinD2BSz];
+  // Create a stream that will write to buf
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  // Attempt to encode the message
+  return pb_encode(&msg_stream, wippersnapper_checkin_CheckinD2B_fields,
+                   &_CheckinD2B);
+}
+
+
+bool CheckinModel::EncodeD2bCheckinComplete(bool success) {
+  // Zero-out the message envelope
+  memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
+  // Set which_payload
+  _CheckinD2B.which_payload =
+      wippersnapper_checkin_CheckinD2B_checkin_complete_tag;
+
+  // Obtain size of the CheckinD2B message
+  size_t CheckinD2BSz;
+  if (!pb_get_encoded_size(
+          &CheckinD2BSz, wippersnapper_checkin_CheckinD2B_fields, &_CheckinD2B))
+    return false;
+  // Create a temporary buffer for holding the CheckinD2B message
+  uint8_t buf[CheckinD2BSz];
+  // Create a stream that will write to buf
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  // Attempt to encode the message
+  return pb_encode(&msg_stream, wippersnapper_checkin_CheckinD2B_fields,
+                   &_CheckinD2B);
+}
+
+
+wippersnapper_checkin_CheckinD2B*CheckinModel::getD2bCheckinComplete() {
+  return &_CheckinD2B;
+}
+
+
+bool CheckinModel::DecodeB2d(pb_istream_t *stream) {
+    // Zero-out the CheckinB2D message
+    memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+    // Decode the message
+    if (!pb_decode(stream, wippersnapper_checkin_CheckinB2D_fields, &_CheckinB2D))
+      return false;
+
+    // Attempt to get the payload and dispatch to the appropriate handler
+    if (_CheckinB2D.which_payload == wippersnapper_checkin_CheckinB2D_checkin_response_tag) {
+      // Validate IO found the board's definition file
+      if (_CheckinB2D.payload.checkin_response.response != wippersnapper_checkin_CheckinResponse_Response_RESPONSE_OK) {
+        // TODO - Fix: raise and halt the app from continuing
+        WS_DEBUG_PRINTLN("ERROR: CheckinResponse indicates board not found!");
+        return false;
+      }
+
+      // TODO - Refactor
+      // Parse the CheckinResponse sub-message
+      _total_analog_pins = _CheckinB2D.payload.checkin_response.total_analog_pins;
+      _total_gpio_pins = _CheckinB2D.payload.checkin_response.total_gpio_pins;
+      _reference_voltage = _CheckinB2D.payload.checkin_response.reference_voltage;
+      WsV2.digital_io_controller->SetMaxDigitalPins(_total_gpio_pins);
+      WsV2.analogio_controller->SetRefVoltage(_reference_voltage);
+      WsV2.analogio_controller->SetTotalAnalogPins(_total_analog_pins);
+
+      // Okay, now let's look at component_adds[32] array
+      for (pb_size_t i = 0; i < _CheckinB2D.payload.checkin_response.component_adds_count; i++) {
+        // For now, just print out what component_adds we have
+        wippersnapper_checkin_ComponentAdd *compAdd = &_CheckinB2D.payload.checkin_response.component_adds[i];
+        if (compAdd->which_payload == wippersnapper_checkin_ComponentAdd_digitalio_tag) {
+          // Process a DigitalIOAdd component add message
+          WS_DEBUG_PRINTLN("INFO: Found DigitalIOAdd component_add in CheckinResponse.");
+          WsV2.digital_io_controller->Handle_DigitalIO_Add(&compAdd->payload.digitalio);
+        } else {
+          // Component type not found
+          WS_DEBUG_PRINTLN("WARNING: Unknown component_add type in CheckinResponse!");
+        }
+      }
+    }
+    return true;
+}
+
 /*!
     @brief  Fills and creates a CheckinRequest message
     @param  hardware_uid
@@ -114,6 +224,14 @@ CheckinModel::getCheckinResponse() {
 */
 wippersnapper_checkin_CheckinRequest *CheckinModel::getCheckinRequest() {
   return &_CheckinRequest;
+}
+
+/*!
+    @brief  Gets the CheckinD2B message
+    @returns CheckinD2B message pointer.
+*/
+wippersnapper_checkin_CheckinD2B *CheckinModel::getD2bCheckinRequest() {
+  return &_CheckinD2B;
 }
 
 /*!
