@@ -31,6 +31,46 @@ CheckinModel::~CheckinModel() {
   memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
 }
 
+bool CheckinModel::EncodeD2bCheckinRequest(const char *hw_uid,
+                                           const char *fw_ver) {
+  // Validate input len
+  if (strlen(hw_uid) >=
+          sizeof(_CheckinD2B.payload.checkin_request.hardware_uid) ||
+      strlen(fw_ver) >=
+          sizeof(_CheckinD2B.payload.checkin_request.firmware_version)) {
+    return false;
+  }
+
+  // Zero-out the message envelope
+  memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
+  // Set which_payload
+  _CheckinD2B.which_payload =
+      wippersnapper_checkin_CheckinD2B_checkin_request_tag;
+  // Safely fill the CheckinRequest sub-message payload
+  strncpy(_CheckinD2B.payload.checkin_request.hardware_uid, hw_uid,
+          sizeof(_CheckinD2B.payload.checkin_request.hardware_uid) - 1);
+  _CheckinD2B.payload.checkin_request
+      .hardware_uid[sizeof(_CheckinD2B.payload.checkin_request.hardware_uid) -
+                    1] = '\0';
+  strncpy(_CheckinD2B.payload.checkin_request.firmware_version, fw_ver,
+          sizeof(_CheckinD2B.payload.checkin_request.firmware_version) - 1);
+  _CheckinD2B.payload.checkin_request.firmware_version
+      [sizeof(_CheckinD2B.payload.checkin_request.firmware_version) - 1] = '\0';
+
+  // Obtain size of the CheckinD2B message
+  size_t CheckinD2BSz;
+  if (!pb_get_encoded_size(
+          &CheckinD2BSz, wippersnapper_checkin_CheckinD2B_fields, &_CheckinD2B))
+    return false;
+  // Create a temporary buffer for holding the CheckinD2B message
+  uint8_t buf[CheckinD2BSz];
+  // Create a stream that will write to buf
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  // Attempt to encode the message
+  return pb_encode(&msg_stream, wippersnapper_checkin_CheckinD2B_fields,
+                   &_CheckinD2B);
+}
+
 /*!
     @brief  Fills and creates a CheckinRequest message
     @param  hardware_uid
@@ -114,6 +154,14 @@ CheckinModel::getCheckinResponse() {
 */
 wippersnapper_checkin_CheckinRequest *CheckinModel::getCheckinRequest() {
   return &_CheckinRequest;
+}
+
+/*!
+    @brief  Gets the CheckinD2B message
+    @returns CheckinD2B message pointer.
+*/
+wippersnapper_checkin_CheckinD2B *CheckinModel::getD2bCheckinRequest() {
+  return &_CheckinD2B;
 }
 
 /*!

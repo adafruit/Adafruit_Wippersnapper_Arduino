@@ -24,6 +24,10 @@ class CheckinModel {
 public:
   CheckinModel();
   ~CheckinModel();
+  // DeviceToBroker Message Envelope
+  bool EncodeD2bCheckinRequest(const char *hw_uid, const char *fw_ver);
+  wippersnapper_checkin_CheckinD2B *getD2bCheckinRequest();
+
   // Request Message
   void CreateCheckinRequest(const char *hardware_uid,
                             const char *firmware_version);
@@ -43,6 +47,8 @@ public:
   float getReferenceVoltage();
 
 private:
+  wippersnapper_checkin_CheckinD2B
+      _CheckinD2B; ///< DeviceToBroker message envelope
   wippersnapper_checkin_CheckinRequest _CheckinRequest;
   wippersnapper_checkin_CheckinResponse _CheckinResponse;
   wippersnapper_checkin_CheckinResponse_Response _response;
