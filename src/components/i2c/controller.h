@@ -40,6 +40,7 @@
 #include "drivers/drvIna238.h"
 #include "drivers/drvIna260.h"
 #include "drivers/drvLc709203f.h"
+#include "drivers/drvLis3dh.h"
 #include "drivers/drvLps22hb.h"
 #include "drivers/drvLps25hb.h"
 #include "drivers/drvLps3xhw.h"
