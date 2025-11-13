@@ -71,6 +71,39 @@ bool CheckinModel::EncodeD2bCheckinRequest(const char *hw_uid,
                    &_CheckinD2B);
 }
 
+
+bool CheckinModel::DecodeB2d(pb_istream_t *stream) {
+    // Zero-out the CheckinB2D message
+    memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+    // Decode the message
+    if (!pb_decode(stream, wippersnapper_checkin_CheckinB2D_fields, &_CheckinB2D))
+      return false;
+
+    // Attempt to get the payload and dispatch to the appropriate handler
+    if (_CheckinB2D.which_payload == wippersnapper_checkin_CheckinB2D_checkin_response_tag) {
+      // TODO: Refactor this code outwards to a handler func.
+      // Parse the CheckinResponse sub-message
+      _total_analog_pins = _CheckinB2D.payload.checkin_response.total_analog_pins;
+      _total_gpio_pins = _CheckinB2D.payload.checkin_response.total_gpio_pins;
+      _reference_voltage = _CheckinB2D.payload.checkin_response.reference_voltage;
+      // Okay, now let's look at component_adds[32] array
+      for (pb_size_t i = 0; i < _CheckinB2D.payload.checkin_response.component_adds_count; i++) {
+        // For now, just print out what component_adds we have
+        wippersnapper_checkin_ComponentAdd *compAdd = &_CheckinB2D.payload.checkin_response.component_adds[i];
+        if (compAdd->which_payload == wippersnapper_checkin_ComponentAdd_digitalio_tag) {
+          // Process a DigitalIOAdd component add message
+          WS_DEBUG_PRINTLN("INFO: Found DigitalIOAdd component_add in CheckinResponse.");
+          WsV2.digital_io_controller->Handle_DigitalIO_Add(&compAdd->payload.digitalio);
+        } else {
+          // Component type not found
+          WS_DEBUG_PRINTLN("WARNING: Unknown component_add type in CheckinResponse!");
+        }
+      }
+    }
+
+    return true;
+}
+
 /*!
     @brief  Fills and creates a CheckinRequest message
     @param  hardware_uid

@@ -304,6 +304,20 @@ bool handleCheckinResponse(pb_istream_t *stream) {
 bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
                             void **arg) {
   (void)arg; // marking unused parameters to avoid compiler warning
+
+  // TODO: Refactored switch-case
+  switch(field->tag) {
+    case wippersnapper_signal_BrokerToDevice_checkin_tag: {
+      WS_DEBUG_PRINTLN("-> Checkin Message");
+      if (!handleCheckinResponse(stream)) {
+        return false;
+      }
+      break;
+    default:
+      WS_DEBUG_PRINTLN("-> Unhandled B2D Message Type");
+      break;
+  }
+
              /*
                switch (field->tag) {
                case wippersnapper_signal_BrokerToDevice_checkin_response_tag:

@@ -42,13 +42,66 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
   _max_digitalio_pins = max_digital_pins;
 }
 
+
+bool DigitalIOController::Handle_DigitalIO_Add(wippersnapper_digitalio_DigitalIOAdd *msg_dio_add) {
+  // Early-out if we have reached the maximum number of digital pins
+  if (_digitalio_pins.size() >= _max_digitalio_pins) {
+    WS_DEBUG_PRINTLN("[digitalio] ERROR: Can not add new pin, all pins have "
+                     "already been allocated!");
+    return false;
+  }
+
+  // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
+  int pin_name = atoi(msg_dio_add->pin_name + 1);
+
+  // Check if the provided pin is also the status LED pin
+  if (_dio_hardware->IsStatusLEDPin(pin_name))
+    ReleaseStatusPixel();
+
+  // Deinit the pin if it's already in use
+  if (GetPinIdx(pin_name) != -1)
+    _dio_hardware->deinit(pin_name);
+
+  // Attempt to configure the pin
+  if (!_dio_hardware->ConfigurePin(
+          pin_name, msg_dio_add->gpio_direction)) {
+    WS_DEBUG_PRINTLN(
+        "[digitalio] ERROR: Pin provided an invalid protobuf direction!");
+    return false;
+  }
+
+  ulong period = msg_dio_add->period;
+  // Create the digital pin and add it to the vector
+  DigitalIOPin new_pin = {
+      .pin_name = pin_name,
+      .pin_direction = msg_dio_add->gpio_direction,
+      .sample_mode = msg_dio_add->sample_mode,
+      .pin_value = msg_dio_add->value,
+      .pin_period = period * 1000,
+      .prv_pin_time = (millis() - 1) - period};
+  _digitalio_pins.push_back(new_pin);
+
+  // Print out the pin's details
+  WS_DEBUG_PRINTLN("[digitalio] Added new pin:");
+  WS_DEBUG_PRINT("Pin Name: ");
+  WS_DEBUG_PRINTLN(new_pin.pin_name);
+  WS_DEBUG_PRINT("Period: ");
+  WS_DEBUG_PRINTLN(new_pin.pin_period);
+  WS_DEBUG_PRINT("Sample Mode: ");
+  WS_DEBUG_PRINTLN(new_pin.sample_mode);
+  WS_DEBUG_PRINT("Direction: ");
+  WS_DEBUG_PRINTLN(new_pin.pin_direction);
+
+  return true;
+}
+
 /*!
     @brief  Add a new digital pin to the controller
     @param  stream
             The nanopb input stream.
     @return True if the digital pin was successfully added.
 */
-bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
+/* bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
   // Early-out if we have reached the maximum number of digital pins
   if (_digitalio_pins.size() >= _max_digitalio_pins) {
     WS_DEBUG_PRINTLN("[digitalio] ERROR: Can not add new pin, all pins have "
@@ -105,7 +158,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN(new_pin.pin_direction);
 
   return true;
-}
+} */
 
 /*!
     @brief  Removes a digital pin from the controller, if it exists

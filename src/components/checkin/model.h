@@ -16,6 +16,8 @@
 #define WS_CHECKIN_MODEL_H
 #include "Wippersnapper_V2.h"
 
+class Wippersnapper_V2; ///< Forward declaration
+
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from checkin.proto.
@@ -27,6 +29,9 @@ public:
   // DeviceToBroker Message Envelope
   bool EncodeD2bCheckinRequest(const char *hw_uid, const char *fw_ver);
   wippersnapper_checkin_CheckinD2B *getD2bCheckinRequest();
+
+  // BrokerToDevice Message Envelope
+  bool DecodeB2d(pb_istream_t *stream);
 
   // Request Message
   void CreateCheckinRequest(const char *hardware_uid,
@@ -47,8 +52,8 @@ public:
   float getReferenceVoltage();
 
 private:
-  wippersnapper_checkin_CheckinD2B
-      _CheckinD2B; ///< DeviceToBroker message envelope
+  wippersnapper_checkin_CheckinD2B _CheckinD2B; ///< DeviceToBroker message envelope
+  wippersnapper_checkin_CheckinB2D _CheckinB2D; ///< BrokerToDevice message envelope
   wippersnapper_checkin_CheckinRequest _CheckinRequest;
   wippersnapper_checkin_CheckinResponse _CheckinResponse;
   wippersnapper_checkin_CheckinResponse_Response _response;
@@ -56,4 +61,5 @@ private:
   int32_t _total_analog_pins;
   float _reference_voltage;
 };
+extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif // WS_CHECKIN_H

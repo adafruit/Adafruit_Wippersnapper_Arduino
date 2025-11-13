@@ -48,8 +48,10 @@ class DigitalIOController {
 public:
   DigitalIOController();
   ~DigitalIOController();
+  // NEW: Handler for wippersnapper_digitalio_DigitalIOAdd struct rather than stream
+  bool Handle_DigitalIO_Add(wippersnapper_digitalio_DigitalIOAdd *msg_dio_add);
   // Called by the cbDecodeBrokerToDevice router function
-  bool Handle_DigitalIO_Add(pb_istream_t *stream);
+  // bool Handle_DigitalIO_Add(pb_istream_t *stream);
   bool Handle_DigitalIO_Write(pb_istream_t *stream);
   bool Handle_DigitalIO_Remove(pb_istream_t *stream);
 
