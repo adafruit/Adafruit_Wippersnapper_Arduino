@@ -249,45 +249,6 @@ void Wippersnapper_V2::set_user_key() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-/*!
-    @brief    Handles a Checkin Response message and initializes the
-              device's GPIO classes.
-    @param    stream
-              Incoming data stream from buffer.
-    @returns  True if Checkin Response decoded and parsed successfully,
-              False otherwise.
-*/
-bool handleCheckinResponse(pb_istream_t *stream) {
-  // Decode the Checkin Response message
-  if (!WsV2.CheckInModel->DecodeCheckinResponse(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response message");
-    return false;
-  }
-
-  // Parse the response message
-  WsV2.CheckInModel->ParseCheckinResponse();
-
-  // Validate the checkin response message
-  if (WsV2.CheckInModel->getCheckinResponse() !=
-      wippersnapper_checkin_CheckinResponse_Response_RESPONSE_OK) {
-    WS_DEBUG_PRINTLN("ERROR: CheckinResponse not RESPONSE_OK, backing out!");
-    return false;
-  }
-
-  // Configure GPIO classes based on checkin response message
-  WsV2.digital_io_controller->SetMaxDigitalPins(
-      WsV2.CheckInModel->getTotalGPIOPins());
-
-  WsV2.analogio_controller->SetRefVoltage(
-      WsV2.CheckInModel->getReferenceVoltage());
-  WsV2.analogio_controller->SetTotalAnalogPins(
-      WsV2.CheckInModel->getTotalAnalogPins());
-
-  // set glob flag so we don't keep the polling loop open
-  WsV2.got_checkin_response = true;
-  return true;
-}
-
 // Decoders //
 
 /*!
@@ -1155,6 +1116,35 @@ void Wippersnapper_V2::PollCheckinResponse() {
     WsV2._mqttV2->processPackets(10); // Process incoming packets
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
+}
+
+/*!
+    @brief    Handles a Checkin Response message and initializes the
+              device's GPIO classes.
+    @param    stream
+              Incoming data stream from buffer.
+    @returns  True if Checkin Response decoded and parsed successfully,
+              False otherwise.
+*/
+bool handleCheckinResponse(pb_istream_t *stream) {
+  // Decode and parse the BrokerToDevice message envelope
+  bool did_checkin = WsV2.CheckInModel->DecodeB2d(stream);
+
+  // Publish checkincomplete back to broker after we process the response
+  if (!WsV2.CheckInModel->EncodeD2bCheckinComplete(did_checkin)) {
+    WS_DEBUG_PRINTLN("ERROR: Failed encoding Checkin Complete message!");
+    return false;
+  }
+
+    // Attempt to publish the Device to Broker message to the broker
+  if (!WsV2.PublishSignal(wippersnapper_signal_BrokerToDevice_checkin_tag, WsV2.CheckInModel->getD2bCheckinComplete())) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to publish CheckinRequest message!");
+    return false;
+  }
+
+  // Set flag so we don't keep the polling loop open
+  WsV2.got_checkin_response = true;
+  return true;
 }
 
 /*!

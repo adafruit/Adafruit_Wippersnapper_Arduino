@@ -29,6 +29,8 @@ public:
   // DeviceToBroker Message Envelope
   bool EncodeD2bCheckinRequest(const char *hw_uid, const char *fw_ver);
   wippersnapper_checkin_CheckinD2B *getD2bCheckinRequest();
+  bool EncodeD2bCheckinComplete(bool success);
+  wippersnapper_checkin_CheckinD2B *getD2bCheckinComplete();
 
   // BrokerToDevice Message Envelope
   bool DecodeB2d(pb_istream_t *stream);
