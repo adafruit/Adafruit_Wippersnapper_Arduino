@@ -251,6 +251,9 @@ void Wippersnapper_V2::set_user_key() {
 
 // Decoders //
 
+// Forward declaration
+bool handleCheckinResponse(pb_istream_t *stream);
+
 /*!
     @brief    Decodes a BrokerToDevice message and executes the asscoiated
    callback.
@@ -274,6 +277,7 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
         return false;
       }
       break;
+    }
     default:
       WS_DEBUG_PRINTLN("-> Unhandled B2D Message Type");
       break;
