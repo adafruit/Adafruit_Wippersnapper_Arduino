@@ -936,6 +936,7 @@ void Wippersnapper_V2::haltErrorV2(const char *error,
     if (!reboot) {
       WsV2.feedWDTV2(); // Feed the WDT indefinitely to hold the WIPPER drive
                         // open
+      delay(1000);
     } else {
 // Let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266
@@ -946,6 +947,13 @@ void Wippersnapper_V2::haltErrorV2(const char *error,
       delayMicroseconds(1000000);
 #endif
     }
+    WS_DEBUG_PRINT("ERROR ");
+    if (reboot) {
+      WS_DEBUG_PRINT("[RESET]: ");
+    } else {
+      WS_DEBUG_PRINT("[HANG]: ");
+    }
+    WS_DEBUG_PRINTLN(error);
   }
 }
 
