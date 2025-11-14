@@ -43,6 +43,11 @@ bool drvLis3dh::begin() {
   // Note: some Adafruit_LIS3DH variants offer setDataRate; if present this
   // keeps defaults. Keep configuration minimal to avoid API mismatches.
 
+  // setup interrupt for click detection (boolean event)
+  _lis->setClick(1, LIS3DH_CLICKTHRESHHOLD); // 0-2 clicks, threshold 50
+  delay(100); // ignore any spurious interrupts right after setup
+  _lis->readAndClearInterrupt();
+
   return true;
 }
 
@@ -58,7 +63,7 @@ bool drvLis3dh::begin() {
 bool drvLis3dh::getEventRaw(sensors_event_t *rawEvent) {
   if (!_lis)
     return false;
-
+  WS_DEBUG_PRINTLN("[drvLis3dh] Getting raw event...");
   // Read an Adafruit_Sensor compatible event from the device
   sensors_event_t event;
   _lis->getEvent(&event);
@@ -69,6 +74,43 @@ bool drvLis3dh::getEventRaw(sensors_event_t *rawEvent) {
                      event.acceleration.y * event.acceleration.y +
                      event.acceleration.z * event.acceleration.z);
   rawEvent->data[0] = mag;
+  WS_DEBUG_PRINT("[drvLis3dh] Raw magnitude: ");
+  WS_DEBUG_PRINTLN(mag);
+  return true;
+}
+
+/******************************************************************************/
+/*!
+    @brief    Gets the LIS3DH's boolean sensor event.
+    @param    booleanEvent
+              Pointer to the sensor event.
+    @returns  True if the sensor event was obtained successfully, False
+              otherwise.
+*/
+/******************************************************************************/
+bool drvLis3dh::getEventBoolean(sensors_event_t *booleanEvent) {
+  if (!_lis) {
+    return false;
+  }
+  WS_DEBUG_PRINTLN("[drvLis3dh] Checking for click event...");
+  uint8_t result = _lis->getClick();
+  WS_DEBUG_PRINT(" Click result: ");
+  WS_DEBUG_PRINTHEX(result);
+  WS_DEBUG_PRINTLN("");
+  // does it & 0x30, then 0x20 is double click, 0x10 is single click
+  WS_DEBUG_PRINTLN("[drvLis3dh] Click result & 0x30: ");
+  WS_DEBUG_PRINTHEX(result & 0x30);
+  WS_DEBUG_PRINTLN("");
+  uint8_t interruptReason = _lis->readAndClearInterrupt();
+  WS_DEBUG_PRINTLN("[drvLis3dh] Interrupt reason: ");
+  WS_DEBUG_PRINTHEX(interruptReason);
+  WS_DEBUG_PRINTLN("");
+
+  // todo: switch on interrupt type - needs driver library expanding
+  if (interruptReason == 1 && result == 1) {
+    WS_DEBUG_PRINTLN("[drvLis3dh] Click event detected!");
+  }
+  booleanEvent->data[0] = result ? 1.0f : 0.0f;
   return true;
 }
 
@@ -82,9 +124,10 @@ bool drvLis3dh::getEventRaw(sensors_event_t *rawEvent) {
 */
 /******************************************************************************/
 bool drvLis3dh::getEventAccelerometer(sensors_event_t *accelEvent) {
-  if (!_lis)
+  if (!_lis) {
     return false;
-
+  }
+  WS_DEBUG_PRINTLN("[drvLis3dh] Getting accelerometer event...");
   // Fill the provided event with sensor data
   _lis->getEvent(accelEvent);
   return true;

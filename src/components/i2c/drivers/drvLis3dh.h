@@ -15,10 +15,16 @@
 #ifndef DRV_LIS3DH_H
 #define DRV_LIS3DH_H
 
+#include "Wippersnapper_V2.h"
 #include "drvBase.h"
 #include <Adafruit_LIS3DH.h>
 
 class Adafruit_LIS3DH; // forward
+
+// Adjust this number for the sensitivity of the 'click' force
+// this strongly depend on the range! for 16G, try 5-10
+// for 8G, try 10-20. for 4G try 20-40. for 2G try 40-80
+#define LIS3DH_CLICKTHRESHHOLD 40
 
 /**************************************************************************/
 /*!
@@ -58,6 +64,17 @@ public:
   */
   /*******************************************************************************/
   bool begin() override;
+
+  /******************************************************************************/
+  /*!
+      @brief    Gets the LIS3DH's boolean sensor event.
+      @param    booleanEvent
+                Pointer to the sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /******************************************************************************/
+  bool getEventBoolean(sensors_event_t *booleanEvent) override;
 
   /*******************************************************************************/
   /*!
