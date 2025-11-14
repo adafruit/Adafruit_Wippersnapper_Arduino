@@ -211,6 +211,28 @@ GetValueFromSensorsEventOrientation(wippersnapper_sensor_SensorType sensor_type,
 }
 
 /*!
+    @brief    Returns the boolean event value mapped to a sensor
+   event.
+    @param    sensor_type
+                The SensorType.
+    @param    event
+                The sensors_event_t event.
+    @returns  The value of the SensorType as a boolean.
+*/
+bool
+GetValueFromSensorsEventBoolean(wippersnapper_sensor_SensorType sensor_type,
+                                    sensors_event_t *event) {
+  bool value = false;
+  WS_DEBUG_PRINTLN("[i2c] Getting boolean event value...");
+  WS_DEBUG_PRINT("[i2c] Event data[0]: ");
+  WS_DEBUG_PRINTLN(event->data[0]);
+  value = event->data[0] > 0.0f;
+  WS_DEBUG_PRINT("[i2c] Boolean value (x>0): ");
+  WS_DEBUG_PRINTLN(value);
+  return value;
+}
+
+/*!
     @brief  Decodes a I2cDeviceRemove message from an input stream.
     @param    stream
                 A pointer to the pb_istream_t stream.
@@ -472,6 +494,12 @@ bool I2cModel::AddI2cDeviceSensorEvent(
         .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
         .value.orientation_value.pitch = value_vect.pitch;
     // TODO: Add color RGB(A) vector support
+  } else if (sensor_type ==
+             wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN) {
+    bool value = GetValueFromSensorsEventBoolean(sensor_type, &event);
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.bool_value = value;
   } else {
     float value = GetValueFromSensorsEvent(sensor_type, &event);
     _msg_i2c_device_event
