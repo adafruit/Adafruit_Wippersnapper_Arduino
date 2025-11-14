@@ -44,6 +44,8 @@
 #include "drivers/drvIsm330dhcx.h"
 #include "drivers/drvLis3mdl.h"
 #include "drivers/drvIsm330dlc.h"
+#include "drivers/drvLsm6ds3.h"
+#include "drivers/drvLsm6dso32.h"
 #include "drivers/drvLsm9ds1.h"
 #include "drivers/drvLps22hb.h"
 #include "drivers/drvLps25hb.h"
