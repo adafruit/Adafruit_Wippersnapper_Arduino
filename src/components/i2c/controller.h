@@ -41,6 +41,8 @@
 #include "drivers/drvIna260.h"
 #include "drivers/drvLc709203f.h"
 #include "drivers/drvLis3dh.h"
+#include "drivers/drvIsm330dhcx.h"
+#include "drivers/drvIsm330dlc.h"
 #include "drivers/drvLsm9ds1.h"
 #include "drivers/drvLps22hb.h"
 #include "drivers/drvLps25hb.h"
