@@ -178,6 +178,16 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvLis3mdl(i2c, addr, mux_channel, driver_name);
      }},
+    {"lsm303agr",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm303agr(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm303dlh",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm303dlh(i2c, addr, mux_channel, driver_name);
+     }},
     {"lsm6ds3",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
