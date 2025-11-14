@@ -133,6 +133,12 @@ Functions</h2></td></tr>
 <tr class="memitem:afbca6f75bec609c0af55ff815be2e964"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#afbca6f75bec609c0af55ff815be2e964">cbSignalUARTReq</a> (char *data, uint16_t len)</td></tr>
 <tr class="memdesc:afbca6f75bec609c0af55ff815be2e964"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the signal UART sub-topic receives a new message. Performs decoding.  <a href="#afbca6f75bec609c0af55ff815be2e964">More...</a><br /></td></tr>
 <tr class="separator:afbca6f75bec609c0af55ff815be2e964"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3aa1243ec1df6a4bd41660f415d1a6a1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a3aa1243ec1df6a4bd41660f415d1a6a1">cbDecodeDisplayMsg</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
+<tr class="memdesc:a3aa1243ec1df6a4bd41660f415d1a6a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserializes a DisplayRequest message and sends it to the display component.  <a href="#a3aa1243ec1df6a4bd41660f415d1a6a1">More...</a><br /></td></tr>
+<tr class="separator:a3aa1243ec1df6a4bd41660f415d1a6a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6044ae903a5ec18a1baaf350fd959b69"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a6044ae903a5ec18a1baaf350fd959b69">cbDisplayMessage</a> (char *data, uint16_t len)</td></tr>
+<tr class="memdesc:a6044ae903a5ec18a1baaf350fd959b69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the device receives a new message from the /display/ topic.  <a href="#a6044ae903a5ec18a1baaf350fd959b69">More...</a><br /></td></tr>
+<tr class="separator:a6044ae903a5ec18a1baaf350fd959b69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae010560fd4d00eb3e86a9e3332906a3a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ae010560fd4d00eb3e86a9e3332906a3a">cbRegistrationStatus</a> (char *data, uint16_t len)</td></tr>
 <tr class="memdesc:ae010560fd4d00eb3e86a9e3332906a3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when broker responds to a device's publish across the registration topic.  <a href="#ae010560fd4d00eb3e86a9e3332906a3a">More...</a><br /></td></tr>
 <tr class="separator:ae010560fd4d00eb3e86a9e3332906a3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -153,7 +159,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wip
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:ae26e6d0526376ae51cce14cce3148855"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_wippersnapper.html">Wippersnapper</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ae26e6d0526376ae51cce14cce3148855">WS</a></td></tr>
-<tr class="memdesc:ae26e6d0526376ae51cce14cce3148855"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global member variable for callbacks.  <a href="#ae26e6d0526376ae51cce14cce3148855">More...</a><br /></td></tr>
+<tr class="memdesc:ae26e6d0526376ae51cce14cce3148855"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global WS instance.  <a href="#ae26e6d0526376ae51cce14cce3148855">More...</a><br /></td></tr>
 <tr class="separator:ae26e6d0526376ae51cce14cce3148855"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
@@ -946,6 +952,88 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a3aa1243ec1df6a4bd41660f415d1a6a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3aa1243ec1df6a4bd41660f415d1a6a1">&#9670;&nbsp;</a></span>cbDecodeDisplayMsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool cbDecodeDisplayMsg </td>
+          <td>(</td>
+          <td class="paramtype">pb_istream_t *&#160;</td>
+          <td class="paramname"><em>stream</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const pb_field_t *&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void **&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deserializes a DisplayRequest message and sends it to the display component. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>Incoming data stream from buffer. </td></tr>
+    <tr><td class="paramname">field</td><td>Protobuf message's tag type. </td></tr>
+    <tr><td class="paramname">arg</td><td>Optional arguments from decoder calling function. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if decoded successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a6044ae903a5ec18a1baaf350fd959b69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6044ae903a5ec18a1baaf350fd959b69">&#9670;&nbsp;</a></span>cbDisplayMessage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cbDisplayMessage </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Called when the device receives a new message from the /display/ topic. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Incoming data from MQTT broker. </td></tr>
+    <tr><td class="paramname">len</td><td>Length of incoming data. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ae010560fd4d00eb3e86a9e3332906a3a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae010560fd4d00eb3e86a9e3332906a3a">&#9670;&nbsp;</a></span>cbRegistrationStatus()</h2>
 
@@ -1111,7 +1199,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Global member variable for callbacks. </p>
+<p>Global WS instance. </p>
+<p>Global member variable for callbacks.</p>
 <p><a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> variable. </p>
 
 </div>

@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['topic_5fdisplay',['TOPIC_DISPLAY',['../_wippersnapper_8h.html#a6309b1ed8f4299249a928ae76c2725a2',1,'Wippersnapper.h']]],
   ['topic_5fi2c',['TOPIC_I2C',['../_wippersnapper_8h.html#a32a0a525a3293ab5a136d3cfbb077b87',1,'Wippersnapper.h']]],
   ['topic_5finfo',['TOPIC_INFO',['../_wippersnapper_8h.html#aca5c392d3a0fc61da9336eccb6d590b0',1,'Wippersnapper.h']]],
   ['topic_5fio_5ferrors',['TOPIC_IO_ERRORS',['../_wippersnapper_8h.html#af3c3141789df6bb253e2966887703d5f',1,'Wippersnapper.h']]],

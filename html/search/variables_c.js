@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['tft_5fbmp_5flogo_5f240135',['tft_bmp_logo_240135',['../splash_8h.html#ad3ccc516ccf0e1c28c01bf49c843a075',1,'splash.h']]],
   ['throttlemessage',['throttleMessage',['../class_wippersnapper.html#a4143bb10fd2cc88f19c79cfc61cbf16f',1,'Wippersnapper']]],
   ['throttletime',['throttleTime',['../class_wippersnapper.html#a192df644cf517a81649fe5a4f8b32d4b',1,'Wippersnapper']]],
   ['totaldigitalpins',['totalDigitalPins',['../class_wippersnapper.html#a9e053f9eba8982c74a7df1289a9d64b6',1,'Wippersnapper']]],

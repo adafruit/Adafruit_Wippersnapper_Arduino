@@ -92,8 +92,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="_wipper_snapper___i2_c_8h_source.html">components/i2c/WipperSnapper_I2C.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="ws__ledc_8h_source.html">components/ledc/ws_ledc.h</a>&quot;</code><br />
 <code>#include &lt;Esp.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="ws__display__driver_8h_source.html">display/ws_display_driver.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="ws__display__ui__helper_8h_source.html">display/ws_display_ui_helper.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="controller_8h_source.html">components/display/controller.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="ws__ds18x20_8h_source.html">components/ds18x20/ws_ds18x20.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="ws__pixels_8h_source.html">components/pixels/ws_pixels.h</a>&quot;</code><br />
 <code>#include &quot;components/pwm/ws_pwm.h&quot;</code><br />
@@ -138,7 +137,7 @@ Macros</h2></td></tr>
 <tr class="memdesc:a9a217c765d21043a2ca0fb1260ff6de1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retry a function until a condition is met or a timeout is reached.  <a href="#a9a217c765d21043a2ca0fb1260ff6de1">More...</a><br /></td></tr>
 <tr class="separator:a9a217c765d21043a2ca0fb1260ff6de1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea527b2900703a26fe8c38d065b4f9e7"><td class="memItemLeft" align="right" valign="top"><a id="aea527b2900703a26fe8c38d065b4f9e7"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#aea527b2900703a26fe8c38d065b4f9e7">WS_VERSION</a>&#160;&#160;&#160;&quot;1.0.0-beta.114&quot;</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#aea527b2900703a26fe8c38d065b4f9e7">WS_VERSION</a>&#160;&#160;&#160;&quot;1.0.0-beta.120&quot;</td></tr>
 <tr class="memdesc:aea527b2900703a26fe8c38d065b4f9e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">WipperSnapper app. version (semver-formatted) <br /></td></tr>
 <tr class="separator:aea527b2900703a26fe8c38d065b4f9e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51f191d073d2da08b445e665133b5452"><td class="memItemLeft" align="right" valign="top"><a id="a51f191d073d2da08b445e665133b5452"></a>
@@ -165,6 +164,10 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a32a0a525a3293ab5a136d3cfbb077b87">TOPIC_I2C</a>&#160;&#160;&#160;&quot;/i2c&quot;</td></tr>
 <tr class="memdesc:a32a0a525a3293ab5a136d3cfbb077b87"><td class="mdescLeft">&#160;</td><td class="mdescRight">I2C sub-topic. <br /></td></tr>
 <tr class="separator:a32a0a525a3293ab5a136d3cfbb077b87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6309b1ed8f4299249a928ae76c2725a2"><td class="memItemLeft" align="right" valign="top"><a id="a6309b1ed8f4299249a928ae76c2725a2"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a6309b1ed8f4299249a928ae76c2725a2">TOPIC_DISPLAY</a>&#160;&#160;&#160;&quot;/display&quot;</td></tr>
+<tr class="memdesc:a6309b1ed8f4299249a928ae76c2725a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Display sub-topic (EPD, OLED, TFT, etc.) <br /></td></tr>
+<tr class="separator:a6309b1ed8f4299249a928ae76c2725a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afbe0fa765a3b3027a61cef4823d4a2a1"><td class="memItemLeft" align="right" valign="top"><a id="afbe0fa765a3b3027a61cef4823d4a2a1"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#afbe0fa765a3b3027a61cef4823d4a2a1">MQTT_TOPIC_PIXELS_DEVICE</a>&#160;&#160;&#160;&quot;/signals/device/pixel&quot;</td></tr>
 <tr class="memdesc:afbe0fa765a3b3027a61cef4823d4a2a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pixels device-&gt;broker topic. <br /></td></tr>
@@ -431,6 +434,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Global member variable for callbacks. </p>
+<p>Global member variable for callbacks.</p>
 <p><a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> variable. </p>
 
 </div>

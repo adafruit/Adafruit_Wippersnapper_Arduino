@@ -18,6 +18,7 @@ var searchData=
   ['processdigitalinputs',['processDigitalInputs',['../class_wippersnapper___digital_g_p_i_o.html#a40f98572df4485d5d2d92e613c5fd3aa',1,'Wippersnapper_DigitalGPIO']]],
   ['processpackets',['processPackets',['../class_wippersnapper.html#a260af9fde18168098e30986c442a8d2f',1,'Wippersnapper']]],
   ['processtemperatureevent',['processTemperatureEvent',['../class_wipper_snapper___i2_c___driver___d_s2484.html#aca19d30c56709bfa087b7d23a6ce1049',1,'WipperSnapper_I2C_Driver_DS2484']]],
+  ['progmem',['PROGMEM',['../icons_8h.html#ad2abfd160b0887b88d70a1fc2d0ab18f',1,'PROGMEM():&#160;icons.h'],['../splash_8h.html#a8be98ec7b540443d89333f710a0f634f',1,'PROGMEM():&#160;splash.h']]],
   ['provision',['provision',['../class_wippersnapper.html#ac85607d165af964fbf68f484cbcaa8b4',1,'Wippersnapper']]],
   ['prvperiod',['prvPeriod',['../structanalog_input_pin.html#ab852b1c695230fc21fb3b05b812269a0',1,'analogInputPin::prvPeriod()'],['../structdigital_input_pin.html#a15a04cb811efa54bb861d26e0809ed90',1,'digitalInputPin::prvPeriod()']]],
   ['prvpinval',['prvPinVal',['../structanalog_input_pin.html#ac240f200690bfdcee2b01c1602eadf89',1,'analogInputPin::prvPinVal()'],['../structdigital_input_pin.html#a84786dcb6d77cf4544bee328e0fb32d3',1,'digitalInputPin::prvPinVal()']]],

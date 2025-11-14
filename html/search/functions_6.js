@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['fasttick',['fastTick',['../class_wipper_snapper___i2_c___driver.html#a439d260ded0283377164b43ff7b6bf28',1,'WipperSnapper_I2C_Driver::fastTick()'],['../class_wipper_snapper___i2_c___driver___s_g_p30.html#a4f2490ad60522cd123eedffc363f7c79',1,'WipperSnapper_I2C_Driver_SGP30::fastTick()'],['../class_wipper_snapper___i2_c___driver___s_g_p40.html#ab679cabca28af485dc9dfecddac60b8a',1,'WipperSnapper_I2C_Driver_SGP40::fastTick()']]],
   ['feedwdt',['feedWDT',['../class_wippersnapper.html#ab3e122ca0d602d5ee3e2a0b82bbc32ad',1,'Wippersnapper']]],
   ['filleventmessage',['fillEventMessage',['../class_wipper_snapper___component___i2_c.html#a85c0bb433ab661de67889ef12070c51b',1,'WipperSnapper_Component_I2C']]],
   ['fillstrand',['fillStrand',['../classws__pixels.html#affc6e43365ed7ae568ee26bf492fe11d',1,'ws_pixels']]],

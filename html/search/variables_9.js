@@ -8,6 +8,7 @@ var searchData=
   ['pinname',['pinName',['../structanalog_input_pin.html#acca7db1ecfc1a4711425ac24403f4754',1,'analogInputPin::pinName()'],['../structdigital_input_pin.html#acd1eeec211489ba91ffcdcd0d8c64aec',1,'digitalInputPin::pinName()']]],
   ['pinneopixel',['pinNeoPixel',['../structstrand__s.html#a93233bb8dd2f0d98f3098041fdbad2ca',1,'strand_s']]],
   ['pollinginterval',['pollingInterval',['../classws__uart__drv.html#af2804950dbf08b0c04939ac06abac18a',1,'ws_uart_drv']]],
+  ['progmem',['PROGMEM',['../icons_8h.html#ad2abfd160b0887b88d70a1fc2d0ab18f',1,'PROGMEM():&#160;icons.h'],['../splash_8h.html#a8be98ec7b540443d89333f710a0f634f',1,'PROGMEM():&#160;splash.h']]],
   ['prvperiod',['prvPeriod',['../structanalog_input_pin.html#ab852b1c695230fc21fb3b05b812269a0',1,'analogInputPin::prvPeriod()'],['../structdigital_input_pin.html#a15a04cb811efa54bb861d26e0809ed90',1,'digitalInputPin::prvPeriod()']]],
   ['prvpinval',['prvPinVal',['../structanalog_input_pin.html#ac240f200690bfdcee2b01c1602eadf89',1,'analogInputPin::prvPinVal()'],['../structdigital_input_pin.html#a84786dcb6d77cf4544bee328e0fb32d3',1,'digitalInputPin::prvPinVal()']]]
 ];

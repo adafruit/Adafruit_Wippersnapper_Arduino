@@ -1,9 +1,11 @@
 var searchData=
 [
+  ['tft_5fbmp_5flogo_5f240135',['tft_bmp_logo_240135',['../splash_8h.html#ad3ccc516ccf0e1c28c01bf49c843a075',1,'splash.h']]],
   ['throttlemessage',['throttleMessage',['../class_wippersnapper.html#a4143bb10fd2cc88f19c79cfc61cbf16f',1,'Wippersnapper']]],
   ['throttletime',['throttleTime',['../class_wippersnapper.html#a192df644cf517a81649fe5a4f8b32d4b',1,'Wippersnapper']]],
   ['timerexpired',['timerExpired',['../class_wippersnapper___analog_i_o.html#aa59bc605a9a601452b708d716f43923a',1,'Wippersnapper_AnalogIO']]],
   ['tone',['tone',['../classws__ledc.html#ae30ec473c16e0c787f519dc0fdc81b90',1,'ws_ledc']]],
+  ['topic_5fdisplay',['TOPIC_DISPLAY',['../_wippersnapper_8h.html#a6309b1ed8f4299249a928ae76c2725a2',1,'Wippersnapper.h']]],
   ['topic_5fi2c',['TOPIC_I2C',['../_wippersnapper_8h.html#a32a0a525a3293ab5a136d3cfbb077b87',1,'Wippersnapper.h']]],
   ['topic_5finfo',['TOPIC_INFO',['../_wippersnapper_8h.html#aca5c392d3a0fc61da9336eccb6d590b0',1,'Wippersnapper.h']]],
   ['topic_5fio_5ferrors',['TOPIC_IO_ERRORS',['../_wippersnapper_8h.html#af3c3141789df6bb253e2966887703d5f',1,'Wippersnapper.h']]],

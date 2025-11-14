@@ -1,16 +1,25 @@
 var searchData=
 [
   ['sealevelpressure_5fhpa',['SEALEVELPRESSURE_HPA',['../_wipper_snapper___i2_c___driver___b_m_e280_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_BME280.h'],['../_wipper_snapper___i2_c___driver___b_m_e680_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_BME680.h'],['../_wipper_snapper___i2_c___driver___b_m_p280_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_BMP280.h'],['../_wipper_snapper___i2_c___driver___b_m_p3_x_x_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_BMP3XX.h'],['../_wipper_snapper___i2_c___driver___b_m_p5_x_x_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_BMP5XX.h'],['../_wipper_snapper___i2_c___driver___e_n_s160_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_ENS160.h']]],
+  ['sgp40_5ffasttick_5finterval_5fms',['SGP40_FASTTICK_INTERVAL_MS',['../_wipper_snapper___i2_c___driver___s_g_p40_8h.html#a713c3febfca76bf725159e0dade03c58',1,'WipperSnapper_I2C_Driver_SGP40.h']]],
+  ['spa06_5f003_5fpressure_5fmax',['SPA06_003_PRESSURE_MAX',['../_wipper_snapper___i2_c___driver___s_p_a06__003_8h.html#a25bdcc6d09d64193ed3ee5981a2cdbb8',1,'WipperSnapper_I2C_Driver_SPA06_003.h']]],
+  ['spa06_5f003_5fpressure_5fmin',['SPA06_003_PRESSURE_MIN',['../_wipper_snapper___i2_c___driver___s_p_a06__003_8h.html#acedb78cffc3f0aa80f9d07e5fdb9a5ab',1,'WipperSnapper_I2C_Driver_SPA06_003.h']]],
+  ['spa06_5f003_5ftemp_5fmax',['SPA06_003_TEMP_MAX',['../_wipper_snapper___i2_c___driver___s_p_a06__003_8h.html#aa2f09e3b9b5846e0e2baba2ceffa2e2e',1,'WipperSnapper_I2C_Driver_SPA06_003.h']]],
+  ['spa06_5f003_5ftemp_5fmin',['SPA06_003_TEMP_MIN',['../_wipper_snapper___i2_c___driver___s_p_a06__003_8h.html#a7ebdc94cce8e5896a822d2d3bf3accb7',1,'WipperSnapper_I2C_Driver_SPA06_003.h']]],
   ['spiwifi',['SPIWIFI',['../_wippersnapper___a_i_r_l_i_f_t_8h.html#a02a0537d71f1fad2ceb5cef4950f4f18',1,'Wippersnapper_AIRLIFT.h']]],
+  ['st7789_5fstatusbar_5fheight',['ST7789_STATUSBAR_HEIGHT',['../disp_drv_st7789_8h.html#a0ec16d47bfb2bbdc91d3441d844ab2ff',1,'dispDrvSt7789.h']]],
+  ['st7789_5fstatusbar_5ficon_5fmargin',['ST7789_STATUSBAR_ICON_MARGIN',['../disp_drv_st7789_8h.html#a91695c7e1597b895ba2541c7e95731a5',1,'dispDrvSt7789.h']]],
+  ['st7789_5fstatusbar_5ficon_5fspacing',['ST7789_STATUSBAR_ICON_SPACING',['../disp_drv_st7789_8h.html#ac02ba41ebe1b3dd3b6553bad2299fae4',1,'dispDrvSt7789.h']]],
+  ['st7789_5fstatusbar_5ficon_5fsz',['ST7789_STATUSBAR_ICON_SZ',['../disp_drv_st7789_8h.html#a97e3c07f9caedeb13dad6ff013945132',1,'dispDrvSt7789.h']]],
+  ['status_5fbar_5fborder',['STATUS_BAR_BORDER',['../disp_drv_think_ink_grayscale4_eaamfgn_8h.html#a07d84e4ad4f6eff2e8783c75817c14a0',1,'dispDrvThinkInkGrayscale4Eaamfgn.h']]],
+  ['status_5fbar_5fheight',['STATUS_BAR_HEIGHT',['../disp_drv_think_ink_grayscale4_eaamfgn_8h.html#abc290e96a55964ca09f3eaa7f6719294',1,'dispDrvThinkInkGrayscale4Eaamfgn.h']]],
+  ['status_5fbar_5ficon_5fmargin',['STATUS_BAR_ICON_MARGIN',['../disp_drv_think_ink_grayscale4_eaamfgn_8h.html#a6a0313f10fcaecfac6b167d176a1f3f5',1,'dispDrvThinkInkGrayscale4Eaamfgn.h']]],
+  ['status_5fbar_5ficon_5fspacing',['STATUS_BAR_ICON_SPACING',['../disp_drv_think_ink_grayscale4_eaamfgn_8h.html#ad7c8d8ef7a39574a3edf6def296b5f8e',1,'dispDrvThinkInkGrayscale4Eaamfgn.h']]],
+  ['status_5fbar_5ficon_5fsz',['STATUS_BAR_ICON_SZ',['../disp_drv_think_ink_grayscale4_eaamfgn_8h.html#a14c3541cc5f6ce7a766b1b30f77bd9c0',1,'dispDrvThinkInkGrayscale4Eaamfgn.h']]],
   ['status_5fdotstar_5fcolor_5forder',['STATUS_DOTSTAR_COLOR_ORDER',['../_wippersnapper___boards_8h.html#a8bf6b21e770886d409a5266b34dbc40b',1,'Wippersnapper_Boards.h']]],
   ['status_5fdotstar_5fnum',['STATUS_DOTSTAR_NUM',['../_wippersnapper___boards_8h.html#a064728df19116a95cb2b2672e85c01bc',1,'Wippersnapper_Boards.h']]],
   ['status_5fdotstar_5fpin_5fclk',['STATUS_DOTSTAR_PIN_CLK',['../_wippersnapper___boards_8h.html#a882cdccd2b9725880419c51137a383fd',1,'Wippersnapper_Boards.h']]],
   ['status_5fdotstar_5fpin_5fdata',['STATUS_DOTSTAR_PIN_DATA',['../_wippersnapper___boards_8h.html#aa305e729336f340cfa357a9b05ab73d0',1,'Wippersnapper_Boards.h']]],
   ['status_5fled_5fkat_5fblink_5ftime',['STATUS_LED_KAT_BLINK_TIME',['../_wippersnapper___status_l_e_d_8h.html#a8e55f35b622e41481fb79d87b42a8b81',1,'Wippersnapper_StatusLED.h']]],
-  ['status_5fpixel_5fbrightness_5fdefault',['STATUS_PIXEL_BRIGHTNESS_DEFAULT',['../_wippersnapper___status_l_e_d_8h.html#aafd035c81983f8b3976a192e9305e44d',1,'Wippersnapper_StatusLED.h']]],
-  ['symbol_5fcloud',['SYMBOL_CLOUD',['../ws__display__ui__helper_8h.html#a005ce1b42afb5654f470b62fbc177419',1,'ws_display_ui_helper.h']]],
-  ['symbol_5fcode',['SYMBOL_CODE',['../ws__display__ui__helper_8h.html#a8d270c4be3e764d93079dbbf584b0c16',1,'ws_display_ui_helper.h']]],
-  ['symbol_5ferror_5ftriangle',['SYMBOL_ERROR_TRIANGLE',['../ws__display__ui__helper_8h.html#a5bd91e2f6e5a755636f930b155f34d19',1,'ws_display_ui_helper.h']]],
-  ['symbol_5fturtle30px',['SYMBOL_TURTLE30PX',['../ws__display__ui__helper_8h.html#ab8acf22720da88384cc89d101d7ecd15',1,'ws_display_ui_helper.h']]],
-  ['symbol_5fwifi',['SYMBOL_WIFI',['../ws__display__ui__helper_8h.html#a9c728106dc4c14ca9dfab0997ca76fd9',1,'ws_display_ui_helper.h']]]
+  ['status_5fpixel_5fbrightness_5fdefault',['STATUS_PIXEL_BRIGHTNESS_DEFAULT',['../_wippersnapper___status_l_e_d_8h.html#aafd035c81983f8b3976a192e9305e44d',1,'Wippersnapper_StatusLED.h']]]
 ];

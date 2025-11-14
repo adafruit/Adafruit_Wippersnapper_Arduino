@@ -2,6 +2,7 @@ var searchData=
 [
   ['calculatehysteresis',['calculateHysteresis',['../_wippersnapper___analog_i_o_8cpp.html#a090ac9aa22bca6965e84a97ea3048bc1',1,'Wippersnapper_AnalogIO.cpp']]],
   ['cbdecodedigitalpinwritemsg',['cbDecodeDigitalPinWriteMsg',['../_wippersnapper_8cpp.html#a10bcdf641a00178a2051f9c913c3ce1b',1,'Wippersnapper.cpp']]],
+  ['cbdecodedisplaymsg',['cbDecodeDisplayMsg',['../_wippersnapper_8cpp.html#a3aa1243ec1df6a4bd41660f415d1a6a1',1,'Wippersnapper.cpp']]],
   ['cbdecodeds18x20msg',['cbDecodeDs18x20Msg',['../_wippersnapper_8cpp.html#ae9f35382d74f2d8914948038f9fc6d24',1,'Wippersnapper.cpp']]],
   ['cbdecodei2cdeviceinitrequestlist',['cbDecodeI2CDeviceInitRequestList',['../_wippersnapper_8cpp.html#a847c2a4449caffd9e61983089a72a3ed',1,'Wippersnapper.cpp']]],
   ['cbdecodepinconfigmsg',['cbDecodePinConfigMsg',['../_wippersnapper_8cpp.html#a4119cb829deac63ce5df0ea0dc59b7ba',1,'Wippersnapper.cpp']]],
@@ -9,6 +10,7 @@ var searchData=
   ['cbdecodeservomsg',['cbDecodeServoMsg',['../_wippersnapper_8cpp.html#a1296455612191b75bfe6354d37db47e4',1,'Wippersnapper.cpp']]],
   ['cbdecodesignalrequesti2c',['cbDecodeSignalRequestI2C',['../_wippersnapper_8cpp.html#a6e5ac2f9d4114ef875e1c0d283b94763',1,'Wippersnapper.cpp']]],
   ['cbdecodeuartmessage',['cbDecodeUARTMessage',['../_wippersnapper_8cpp.html#af6bf26cc09b9047de9c6558fc821fad8',1,'Wippersnapper.cpp']]],
+  ['cbdisplaymessage',['cbDisplayMessage',['../_wippersnapper_8cpp.html#a6044ae903a5ec18a1baaf350fd959b69',1,'Wippersnapper.cpp']]],
   ['cberrortopic',['cbErrorTopic',['../_wippersnapper_8cpp.html#a8f075084f2197b1e0925518dff1cecc4',1,'Wippersnapper.cpp']]],
   ['cbpixelsmsg',['cbPixelsMsg',['../_wippersnapper_8cpp.html#a379c5abd8f8e6424fc7a7d695f5d22e8',1,'Wippersnapper.cpp']]],
   ['cbpwmdecodemsg',['cbPWMDecodeMsg',['../_wippersnapper_8cpp.html#a3009e9444bf35743246af165d994675c',1,'Wippersnapper.cpp']]],
@@ -22,7 +24,6 @@ var searchData=
   ['cbsignaluartreq',['cbSignalUARTReq',['../_wippersnapper_8cpp.html#afbca6f75bec609c0af55ff815be2e964',1,'Wippersnapper.cpp']]],
   ['cbthrottletopic',['cbThrottleTopic',['../_wippersnapper_8cpp.html#aa1e37658221dffced66cc9e1548e5be1',1,'Wippersnapper.cpp']]],
   ['check_5fvalid_5fssid',['check_valid_ssid',['../class_wippersnapper___a_i_r_l_i_f_t.html#ad7a4443676e200227a9dc661f263c52a',1,'Wippersnapper_AIRLIFT::check_valid_ssid()'],['../class_wippersnapper___e_s_p32.html#a36994b82d22db88f67777aaf4e097f1b',1,'Wippersnapper_ESP32::check_valid_ssid()'],['../class_wippersnapper.html#a288ccdd64ddcec63c3cd2b7a74182a66',1,'Wippersnapper::check_valid_ssid()']]],
-  ['clear_5fscr_5fload',['clear_scr_load',['../classws__display__ui__helper.html#a9afaed92b8e6de31aa5b87cc58e615d8',1,'ws_display_ui_helper']]],
   ['compareversions',['compareVersions',['../class_wippersnapper___a_i_r_l_i_f_t.html#abc598a748031959da5643da3b9935834',1,'Wippersnapper_AIRLIFT']]],
   ['configanaloginpinreq',['configAnalogInPinReq',['../class_wippersnapper.html#a089cb6c8b641aa22762f00dda783bb12',1,'Wippersnapper']]],
   ['configure_5fnau7802',['configure_nau7802',['../class_wipper_snapper___i2_c___driver___n_a_u7802.html#a6dac8ec40fe4ba4c46f8c3f61a1fcc1f',1,'WipperSnapper_I2C_Driver_NAU7802']]],
@@ -36,5 +37,9 @@ var searchData=
   ['configuressd1306',['ConfigureSSD1306',['../class_wipper_snapper___i2_c___driver___out.html#ad46e37977f1f76287dd67d56c1e17f2d',1,'WipperSnapper_I2C_Driver_Out::ConfigureSSD1306()'],['../class_wipper_snapper___i2_c___driver___out___s_h1107.html#a07a22f94275d70d3da83a4848d8930a1',1,'WipperSnapper_I2C_Driver_Out_SH1107::ConfigureSSD1306()'],['../class_wipper_snapper___i2_c___driver___out___ssd1306.html#ad9b1716a46fca13f41f19c671ae8bff3',1,'WipperSnapper_I2C_Driver_Out_Ssd1306::ConfigureSSD1306()']]],
   ['connect',['connect',['../class_wippersnapper.html#add749b3d330161a132fd7e0114618ec0',1,'Wippersnapper']]],
   ['connectiontype',['connectionType',['../class_wippersnapper___a_i_r_l_i_f_t.html#adf8d75a7530ff367f8a03e8e9afca7b1',1,'Wippersnapper_AIRLIFT::connectionType()'],['../class_wippersnapper___e_s_p32.html#a3ae46effd5e7bd00898ed5967898a58a',1,'Wippersnapper_ESP32::connectionType()']]],
+  ['controller_2ecpp',['controller.cpp',['../controller_8cpp.html',1,'']]],
+  ['controller_2eh',['controller.h',['../controller_8h.html',1,'']]],
+  ['createdrvdispepd',['CreateDrvDispEpd',['../hardware_8cpp.html#a4440693dc62c066bf4702957fcd05318',1,'hardware.cpp']]],
+  ['createdrvdisptft',['CreateDrvDispTft',['../hardware_8cpp.html#aab1be88fc830cd9b60685d5cca70c515',1,'hardware.cpp']]],
   ['cyan',['CYAN',['../_wippersnapper___status_l_e_d_8h.html#ad243f93c16bc4c1d3e0a13b84421d760',1,'Wippersnapper_StatusLED.h']]]
 ];
