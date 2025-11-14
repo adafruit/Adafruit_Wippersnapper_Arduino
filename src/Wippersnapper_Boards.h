@@ -171,6 +171,16 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#elif defined(ARDUINO_ESP32C5_DEV)
+#define BOARD_ID "esp32c5-devkitc-1-n8r4"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_RGB_LED
+// PIN_RGB_LED = 27, or GPIO_NUM+27 if using RGBwrite()
+#define STATUS_NEOPIXEL_NUM 1
+#ifdef BOARD_HAS_PSRAM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#endif
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
 #define BOARD_ID "feather-esp32-v2"
 #define USE_LITTLEFS
