@@ -45,10 +45,8 @@ bool drvLsm9ds1::begin() {
   return true;
 }
 
-bool drvLsm9ds1::readAllEvents(sensors_event_t *accel,
-                               sensors_event_t *mag,
-                               sensors_event_t *gyro,
-                               sensors_event_t *temp) {
+bool drvLsm9ds1::readAllEvents(sensors_event_t *accel, sensors_event_t *mag,
+                               sensors_event_t *gyro, sensors_event_t *temp) {
   if (!_lsm) {
     return false;
   }
@@ -67,7 +65,7 @@ bool drvLsm9ds1::readAllEvents(sensors_event_t *accel,
 */
 /******************************************************************************/
 bool drvLsm9ds1::getEventRaw(sensors_event_t *rawEvent) {
-  //TODO: Not yet, but eventually migrate to providing the temperatre data here
+  // TODO: Not yet, but eventually migrate to providing the temperatre data here
   WS_DEBUG_PRINTLN("[drvLsm9ds1] Getting raw event...");
   sensors_event_t accel, mag, gyro, temp;
   if (!readAllEvents(&accel, &mag, &gyro, &temp)) {
@@ -105,11 +103,11 @@ bool drvLsm9ds1::getEventBoolean(sensors_event_t *booleanEvent) {
 
   bool tap_detected = (mag_accel > LSM9DS1_TAP_THRESHOLD_MSS);
   booleanEvent->data[0] = tap_detected ? 1.0f : 0.0f;
-  
+
   if (tap_detected) {
     WS_DEBUG_PRINTLN("[drvLsm9ds1] Tap event detected!");
   }
-  
+
   return true;
 }
 

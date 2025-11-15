@@ -9,7 +9,7 @@
 #include <math.h>
 
 /******************************************************************************/
-/*! 
+/*!
     @brief    Destructor for a LIS3MDL sensor.
 */
 /******************************************************************************/
@@ -21,7 +21,7 @@ drvLis3mdl::~drvLis3mdl() {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief    Initializes the LIS3MDL sensor and begins I2C.
     @returns  True if initialized successfully, False otherwise.
 */
@@ -51,7 +51,7 @@ bool drvLis3mdl::begin() {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief    Reads the LIS3MDL's magnetometer event.
     @param    event
               Pointer to the magnetometer event to populate.
@@ -65,7 +65,7 @@ bool drvLis3mdl::readMagEvent(sensors_event_t *event) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief    Computes the vector magnitude of a magnetometer reading.
     @param    event
               Magnetometer event to evaluate.
@@ -76,15 +76,14 @@ bool drvLis3mdl::readMagEvent(sensors_event_t *event) {
 /******************************************************************************/
 bool drvLis3mdl::computeMagnitude(const sensors_event_t &event,
                                   float &magnitude) {
-  magnitude =
-      sqrtf(event.magnetic.x * event.magnetic.x +
-            event.magnetic.y * event.magnetic.y +
-            event.magnetic.z * event.magnetic.z);
+  magnitude = sqrtf(event.magnetic.x * event.magnetic.x +
+                    event.magnetic.y * event.magnetic.y +
+                    event.magnetic.z * event.magnetic.z);
   return true;
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief    Gets the LIS3MDL's raw sensor event (magnitude stored in data[0]).
     @param    rawEvent
               Pointer to the sensor event.
@@ -105,7 +104,7 @@ bool drvLis3mdl::getEventRaw(sensors_event_t *rawEvent) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief    Gets the LIS3MDL's boolean sensor event.
     @param    booleanEvent
               Pointer to the sensor event.
@@ -121,7 +120,7 @@ bool drvLis3mdl::getEventBoolean(sensors_event_t *booleanEvent) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief    Gets the LIS3MDL's magnetometer sensor event (x,y,z in uTesla).
     @param    magEvent
               Pointer to the magnetometer sensor event.

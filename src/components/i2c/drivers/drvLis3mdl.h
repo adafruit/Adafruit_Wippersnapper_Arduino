@@ -16,9 +16,8 @@
 #include "drvBase.h"
 #include <Adafruit_LIS3MDL.h>
 
-
 /**************************************************************************/
-/*! 
+/*!
     @brief  Class that provides a driver interface for a LIS3MDL magnetometer.
 */
 /**************************************************************************/

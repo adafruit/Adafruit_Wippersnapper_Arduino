@@ -8,12 +8,10 @@
 
 #include <math.h>
 
-namespace {
-constexpr uint8_t kLis2mdlDefaultAddr = 0x1E;
-}
+#define LIS2MDL_DEFAULT_ADDR 0x1E
 
 /******************************************************************************/
-/*! 
+/*!
     @brief  Destructor for the LIS2MDL driver wrapper.
 */
 /******************************************************************************/
@@ -25,7 +23,7 @@ drvLis2mdl::~drvLis2mdl() {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief  Initializes the LIS2MDL sensor and begins I2C.
     @returns True if initialized successfully, False otherwise.
 */
@@ -44,7 +42,7 @@ bool drvLis2mdl::begin() {
   }
 
   const uint8_t addr =
-      _address == 0 ? kLis2mdlDefaultAddr : static_cast<uint8_t>(_address);
+      _address == 0 ? LIS2MDL_DEFAULT_ADDR : static_cast<uint8_t>(_address);
   if (!_mag->begin(addr, _i2c)) {
     WS_DEBUG_PRINTLN("[drvLis2mdl] Failed to initialise sensor");
     delete _mag;
@@ -61,7 +59,7 @@ bool drvLis2mdl::begin() {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief  Reads the LIS2MDL's magnetometer event.
     @param  event Pointer to the magnetometer event to populate.
     @returns True if the event was obtained successfully.
@@ -75,7 +73,7 @@ bool drvLis2mdl::readMagEvent(sensors_event_t *event) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief  Computes the vector magnitude of a magnetometer reading.
     @param  event Magnetometer event to evaluate.
     @param  magnitude Reference to store the computed magnitude (micro Tesla).
@@ -84,15 +82,14 @@ bool drvLis2mdl::readMagEvent(sensors_event_t *event) {
 /******************************************************************************/
 bool drvLis2mdl::computeMagnitude(const sensors_event_t &event,
                                   float &magnitude) {
-  magnitude =
-      sqrtf(event.magnetic.x * event.magnetic.x +
-            event.magnetic.y * event.magnetic.y +
-            event.magnetic.z * event.magnetic.z);
+  magnitude = sqrtf(event.magnetic.x * event.magnetic.x +
+                    event.magnetic.y * event.magnetic.y +
+                    event.magnetic.z * event.magnetic.z);
   return true;
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief  Gets the LIS2MDL's raw sensor event (magnitude stored in data[0]).
     @param  rawEvent Pointer to the sensor event.
     @returns True if the sensor event was obtained successfully.
@@ -111,7 +108,7 @@ bool drvLis2mdl::getEventRaw(sensors_event_t *rawEvent) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief  Gets the LIS2MDL's boolean sensor event.
     @param  booleanEvent Pointer to the sensor event.
     @returns True once the placeholder value has been populated.
@@ -124,7 +121,7 @@ bool drvLis2mdl::getEventBoolean(sensors_event_t *booleanEvent) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief  Gets the LIS2MDL's magnetometer sensor event (x,y,z in microTesla).
     @param  magEvent Pointer to the magnetometer sensor event.
     @returns True if the sensor event was obtained successfully.
@@ -135,7 +132,7 @@ bool drvLis2mdl::getEventMagneticField(sensors_event_t *magEvent) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
     @brief  Registers the driver's default magnetometer sensor type.
 */
 /******************************************************************************/
