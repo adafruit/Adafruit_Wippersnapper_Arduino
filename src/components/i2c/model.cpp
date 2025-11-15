@@ -219,9 +219,8 @@ GetValueFromSensorsEventOrientation(wippersnapper_sensor_SensorType sensor_type,
                 The sensors_event_t event.
     @returns  The value of the SensorType as a boolean.
 */
-bool
-GetValueFromSensorsEventBoolean(wippersnapper_sensor_SensorType sensor_type,
-                                    sensors_event_t *event) {
+bool GetValueFromSensorsEventBoolean(
+    wippersnapper_sensor_SensorType sensor_type, sensors_event_t *event) {
   bool value = false;
   WS_DEBUG_PRINTLN("[i2c] Getting boolean event value...");
   WS_DEBUG_PRINT("[i2c] Event data[0]: ");
