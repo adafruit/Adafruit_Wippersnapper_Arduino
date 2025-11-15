@@ -1480,6 +1480,13 @@ bool ws_sdcard::LogEventI2c(
       if (!LogJSONDoc(doc))
         return false;
       continue;
+    } else if (msg_device_event->i2c_device_events[i].type ==
+               wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN) {
+      doc["value"] = msg_device_event->i2c_device_events[i].value.bool_value;
+      doc["si_unit"] =
+          SensorTypeToSIUnit(msg_device_event->i2c_device_events[i].type);
+      if (!LogJSONDoc(doc))
+        return false;
     } else { // normal scalar float value
       doc["value"] = msg_device_event->i2c_device_events[i].value.float_value;
       doc["si_unit"] =
