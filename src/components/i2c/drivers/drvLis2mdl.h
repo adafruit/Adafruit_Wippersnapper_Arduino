@@ -18,7 +18,7 @@
 #include <Adafruit_LIS2MDL.h>
 
 /**************************************************************************/
-/*! 
+/*!
     @brief  Class that provides a driver interface for a LIS2MDL magnetometer.
 */
 /**************************************************************************/
@@ -29,14 +29,14 @@ public:
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {}
 
   /**************************************************************************/
-  /*! 
+  /*!
       @brief  Destructor for the LIS2MDL driver wrapper.
   */
   /**************************************************************************/
   ~drvLis2mdl();
 
   /**************************************************************************/
-  /*! 
+  /*!
       @brief  Initializes the LIS2MDL sensor and begins I2C.
       @returns True if initialized successfully, False otherwise.
   */
@@ -44,7 +44,7 @@ public:
   bool begin() override;
 
   /**************************************************************************/
-  /*! 
+  /*!
       @brief  Gets a raw magnetometer magnitude event (micro Tesla).
       @param  rawEvent Pointer to the destination sensor event.
       @returns True if the event was obtained successfully.
@@ -53,7 +53,7 @@ public:
   bool getEventRaw(sensors_event_t *rawEvent) override;
 
   /**************************************************************************/
-  /*! 
+  /*!
       @brief  Placeholder boolean event implementation for compatibility.
       @param  booleanEvent Pointer to the destination sensor event.
       @returns True once the placeholder event has been populated.
@@ -62,7 +62,7 @@ public:
   bool getEventBoolean(sensors_event_t *booleanEvent) override;
 
   /**************************************************************************/
-  /*! 
+  /*!
       @brief  Retrieves the LIS2MDL's magnetometer vector event.
       @param  magEvent Pointer to the destination sensor event.
       @returns True if the event was obtained successfully.
@@ -72,7 +72,7 @@ public:
 
 protected:
   /**************************************************************************/
-  /*! 
+  /*!
       @brief  Registers the default virtual sensors exposed by the driver.
   */
   /**************************************************************************/
@@ -80,7 +80,7 @@ protected:
 
 private:
   /**************************************************************************/
-  /*! 
+  /*!
       @brief  Reads a magnetometer event from the LIS2MDL helper.
       @param  event Pointer to the destination sensor event.
       @returns True if the event was obtained successfully.
@@ -89,7 +89,7 @@ private:
   bool readMagEvent(sensors_event_t *event);
 
   /**************************************************************************/
-  /*! 
+  /*!
       @brief  Computes the vector magnitude of a magnetometer reading.
       @param  event Magnetometer event to evaluate.
       @param  magnitude Reference to store the computed magnitude (micro Tesla).

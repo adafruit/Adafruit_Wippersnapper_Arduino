@@ -123,8 +123,8 @@ public:
 protected:
   Adafruit_LSM9DS1 *_lsm = nullptr; ///< Pointer to LSM9DS1 sensor object
 
-    bool readAllEvents(sensors_event_t *accel, sensors_event_t *mag,
-                                         sensors_event_t *gyro, sensors_event_t *temp);
+  bool readAllEvents(sensors_event_t *accel, sensors_event_t *mag,
+                     sensors_event_t *gyro, sensors_event_t *temp);
 };
 
 #endif // DRV_LSM9DS1_H

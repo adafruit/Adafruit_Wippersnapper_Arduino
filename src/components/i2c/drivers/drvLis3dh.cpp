@@ -71,8 +71,8 @@ bool drvLis3dh::getEventRaw(sensors_event_t *rawEvent) {
   // Calculate magnitude of the acceleration vector (m/s^2) and store in
   // event->data[0] to be consistent with other drivers that expose "raw"
   float mag = sqrtf(event.acceleration.x * event.acceleration.x +
-                     event.acceleration.y * event.acceleration.y +
-                     event.acceleration.z * event.acceleration.z);
+                    event.acceleration.y * event.acceleration.y +
+                    event.acceleration.z * event.acceleration.z);
   rawEvent->data[0] = mag;
   WS_DEBUG_PRINT("[drvLis3dh] Raw magnitude: ");
   WS_DEBUG_PRINTLN(mag);

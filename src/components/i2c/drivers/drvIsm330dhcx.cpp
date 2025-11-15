@@ -54,8 +54,7 @@ bool drvIsm330dhcx::begin() {
   return true;
 }
 
-bool drvIsm330dhcx::readAllEvents(sensors_event_t *accel,
-                                  sensors_event_t *gyro,
+bool drvIsm330dhcx::readAllEvents(sensors_event_t *accel, sensors_event_t *gyro,
                                   sensors_event_t *temp) {
   if (!_imu) {
     return false;

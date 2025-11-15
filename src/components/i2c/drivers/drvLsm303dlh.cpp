@@ -8,20 +8,18 @@
 
 #include <math.h>
 
-namespace {
-constexpr uint8_t kLsm303dlhAccelDefaultAddr = LSM303_ADDRESS_ACCEL;
-constexpr uint8_t kLsm303dlhMagDefaultAddr = 0x1E;
-}
+#define LSM303DLH_ACCEL_DEFAULT_ADDR LSM303_ADDRESS_ACCEL
+#define LSM303DLH_MAG_DEFAULT_ADDR 0x1E
 
 /******************************************************************************/
-/*! 
+/*!
   @brief  Destructor for the legacy LSM303DLH driver wrapper.
 */
 /******************************************************************************/
 drvLsm303dlh::~drvLsm303dlh() { teardown(); }
 
 /******************************************************************************/
-/*! 
+/*!
   @brief  Releases any allocated accelerometer or magnetometer instances.
 */
 /******************************************************************************/
@@ -37,7 +35,7 @@ void drvLsm303dlh::teardown() {
 }
 
 /******************************************************************************/
-/*! 
+/*!
   @brief  Initializes the LSM303DLH accelerometer and magnetometer helpers.
   @returns True if initialization succeeded, False otherwise.
 */
@@ -52,8 +50,10 @@ bool drvLsm303dlh::begin() {
     return false;
   }
 
+  // TODO: if _address isn't default (or alt), shift mag by same offset.
+  // to support adress translators. Alternatively compound components.
   const uint8_t accel_addr =
-      _address == 0 ? kLsm303dlhAccelDefaultAddr : (uint8_t)_address;
+      _address == 0 ? LSM303DLH_ACCEL_DEFAULT_ADDR : (uint8_t)_address;
 
   WS_DEBUG_PRINT("[drvLsm303dlh] Initialising accel @ 0x");
   WS_DEBUG_PRINTHEX(accel_addr);
@@ -67,9 +67,9 @@ bool drvLsm303dlh::begin() {
   _accel->setMode(LSM303_MODE_HIGH_RESOLUTION);
 
   WS_DEBUG_PRINT("[drvLsm303dlh] Initialising magnetometer @ 0x");
-  WS_DEBUG_PRINTHEX(kLsm303dlhMagDefaultAddr);
+  WS_DEBUG_PRINTHEX(LSM303DLH_MAG_DEFAULT_ADDR);
   WS_DEBUG_PRINTLN("...");
-  if (!_mag->begin(kLsm303dlhMagDefaultAddr, _i2c)) {
+  if (!_mag->begin(LSM303DLH_MAG_DEFAULT_ADDR, _i2c)) {
     WS_DEBUG_PRINTLN("[drvLsm303dlh] Failed to initialise LSM303DLH mag");
     teardown();
     return false;
@@ -83,7 +83,7 @@ bool drvLsm303dlh::begin() {
 }
 
 /******************************************************************************/
-/*! 
+/*!
   @brief  Computes the magnitude of the accelerometer vector.
   @param  magnitude Reference to store the computed m/s^2 value.
   @returns True if the accelerometer event was retrieved successfully.
@@ -104,7 +104,7 @@ bool drvLsm303dlh::computeAccelMagnitude(float &magnitude) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
   @brief  Fills the raw event with the accelerometer magnitude in data[0].
   @param  rawEvent Pointer to the destination sensor event.
   @returns True if the magnitude was computed successfully.
@@ -120,7 +120,7 @@ bool drvLsm303dlh::getEventRaw(sensors_event_t *rawEvent) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
   @brief  Retrieves the 3-axis accelerometer event.
   @param  accelEvent Pointer to the destination sensor event.
   @returns True if the event was populated successfully.
@@ -134,7 +134,7 @@ bool drvLsm303dlh::getEventAccelerometer(sensors_event_t *accelEvent) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
   @brief  Retrieves the 3-axis magnetic field event.
   @param  magEvent Pointer to the destination sensor event.
   @returns True if the event was populated successfully.
@@ -148,7 +148,7 @@ bool drvLsm303dlh::getEventMagneticField(sensors_event_t *magEvent) {
 }
 
 /******************************************************************************/
-/*! 
+/*!
   @brief  Registers the driver's default accelerometer and magnetometer types.
 */
 /******************************************************************************/

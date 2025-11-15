@@ -52,8 +52,7 @@ bool drvLsm6dso32::begin() {
   return true;
 }
 
-bool drvLsm6dso32::readAllEvents(sensors_event_t *accel,
-                                 sensors_event_t *gyro,
+bool drvLsm6dso32::readAllEvents(sensors_event_t *accel, sensors_event_t *gyro,
                                  sensors_event_t *temp) {
   if (!_imu) {
     return false;

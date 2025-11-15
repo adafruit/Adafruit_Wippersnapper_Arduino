@@ -1,4 +1,4 @@
-/*! 
+/*!
  * @file drvLsm303dlh.h
  *
  * Driver wrapper for the classic Adafruit LSM303DLH combo sensor.
@@ -19,7 +19,7 @@
 #include <Adafruit_LSM303_Accel.h>
 
 /**************************************************************************/
-/*! 
+/*!
   @brief  Driver interface for the legacy Adafruit LSM303DLH combo sensor.
 */
 /**************************************************************************/
@@ -30,14 +30,14 @@ public:
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {}
 
   /**************************************************************************/
-  /*! 
+  /*!
     @brief  Destructor for the LSM303DLH driver.
   */
   /**************************************************************************/
   ~drvLsm303dlh();
 
   /**************************************************************************/
-  /*! 
+  /*!
     @brief  Initializes the accelerometer and magnetometer peripherals.
     @returns True if initialization succeeded, False otherwise.
   */
@@ -45,7 +45,7 @@ public:
   bool begin() override;
 
   /**************************************************************************/
-  /*! 
+  /*!
     @brief  Populates a raw magnitude reading into a sensor event.
     @param  rawEvent Pointer to the destination sensor event.
     @returns True if the event was populated successfully.
@@ -54,7 +54,7 @@ public:
   bool getEventRaw(sensors_event_t *rawEvent) override;
 
   /**************************************************************************/
-  /*! 
+  /*!
     @brief  Retrieves the accelerometer vector event.
     @param  accelEvent Pointer to the destination sensor event.
     @returns True if the event was populated successfully.
@@ -63,7 +63,7 @@ public:
   bool getEventAccelerometer(sensors_event_t *accelEvent) override;
 
   /**************************************************************************/
-  /*! 
+  /*!
     @brief  Retrieves the magnetic field vector event.
     @param  magEvent Pointer to the destination sensor event.
     @returns True if the event was populated successfully.
@@ -73,7 +73,7 @@ public:
 
 protected:
   /**************************************************************************/
-  /*! 
+  /*!
     @brief  Registers the default set of virtual sensor types.
   */
   /**************************************************************************/
@@ -81,13 +81,13 @@ protected:
 
 private:
   /**************************************************************************/
-  /*! 
+  /*!
     @brief  Releases any allocated sensor instances.
   */
   /**************************************************************************/
   void teardown();
   /**************************************************************************/
-  /*! 
+  /*!
     @brief  Computes the linear acceleration magnitude in m/s^2.
     @param  magnitude Reference to store the computed value.
     @returns True if the magnitude was computed successfully.
