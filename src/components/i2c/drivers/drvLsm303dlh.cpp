@@ -14,10 +14,16 @@ constexpr uint8_t kLsm303dlhMagDefaultAddr = 0x1E;
 }
 
 /******************************************************************************/
-/*! @brief Destructor */
+/*! 
+  @brief  Destructor for the legacy LSM303DLH driver wrapper.
+*/
 /******************************************************************************/
 drvLsm303dlh::~drvLsm303dlh() { teardown(); }
 
+/******************************************************************************/
+/*! 
+  @brief  Releases any allocated accelerometer or magnetometer instances.
+*/
 /******************************************************************************/
 void drvLsm303dlh::teardown() {
   if (_accel) {
@@ -30,6 +36,11 @@ void drvLsm303dlh::teardown() {
   }
 }
 
+/******************************************************************************/
+/*! 
+  @brief  Initializes the LSM303DLH accelerometer and magnetometer helpers.
+  @returns True if initialization succeeded, False otherwise.
+*/
 /******************************************************************************/
 bool drvLsm303dlh::begin() {
   teardown();
@@ -71,6 +82,13 @@ bool drvLsm303dlh::begin() {
   return true;
 }
 
+/******************************************************************************/
+/*! 
+  @brief  Computes the magnitude of the accelerometer vector.
+  @param  magnitude Reference to store the computed m/s^2 value.
+  @returns True if the accelerometer event was retrieved successfully.
+*/
+/******************************************************************************/
 bool drvLsm303dlh::computeAccelMagnitude(float &magnitude) {
   if (!_accel) {
     return false;
@@ -85,6 +103,13 @@ bool drvLsm303dlh::computeAccelMagnitude(float &magnitude) {
   return true;
 }
 
+/******************************************************************************/
+/*! 
+  @brief  Fills the raw event with the accelerometer magnitude in data[0].
+  @param  rawEvent Pointer to the destination sensor event.
+  @returns True if the magnitude was computed successfully.
+*/
+/******************************************************************************/
 bool drvLsm303dlh::getEventRaw(sensors_event_t *rawEvent) {
   float magnitude = 0.0f;
   if (!computeAccelMagnitude(magnitude)) {
@@ -94,6 +119,13 @@ bool drvLsm303dlh::getEventRaw(sensors_event_t *rawEvent) {
   return true;
 }
 
+/******************************************************************************/
+/*! 
+  @brief  Retrieves the 3-axis accelerometer event.
+  @param  accelEvent Pointer to the destination sensor event.
+  @returns True if the event was populated successfully.
+*/
+/******************************************************************************/
 bool drvLsm303dlh::getEventAccelerometer(sensors_event_t *accelEvent) {
   if (!_accel) {
     return false;
@@ -101,6 +133,13 @@ bool drvLsm303dlh::getEventAccelerometer(sensors_event_t *accelEvent) {
   return _accel->getEvent(accelEvent);
 }
 
+/******************************************************************************/
+/*! 
+  @brief  Retrieves the 3-axis magnetic field event.
+  @param  magEvent Pointer to the destination sensor event.
+  @returns True if the event was populated successfully.
+*/
+/******************************************************************************/
 bool drvLsm303dlh::getEventMagneticField(sensors_event_t *magEvent) {
   if (!_mag) {
     return false;
@@ -108,6 +147,11 @@ bool drvLsm303dlh::getEventMagneticField(sensors_event_t *magEvent) {
   return _mag->getEvent(magEvent);
 }
 
+/******************************************************************************/
+/*! 
+  @brief  Registers the driver's default accelerometer and magnetometer types.
+*/
+/******************************************************************************/
 void drvLsm303dlh::ConfigureDefaultSensorTypes() {
   _default_sensor_types_count = 2;
   _default_sensor_types[0] =
