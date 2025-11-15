@@ -1,7 +1,7 @@
-/*! 
- * @file drvLsm303dlh.h
+/*!
+ * @file drvLis2mdl.h
  *
- * Driver wrapper for the classic Adafruit LSM303DLH combo sensor.
+ * Driver wrapper for the Adafruit LIS2MDL 3-axis magnetometer.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -9,64 +9,63 @@
  *
  * MIT license, all text here must be included in any redistribution.
  */
-#ifndef DRV_LSM303DLH_H
-#define DRV_LSM303DLH_H
+#ifndef DRV_LIS2MDL_H
+#define DRV_LIS2MDL_H
 
 #include "Wippersnapper_V2.h"
 #include "drvBase.h"
 
-#include <Adafruit_LSM303DLH_Mag.h>
-#include <Adafruit_LSM303_Accel.h>
+#include <Adafruit_LIS2MDL.h>
 
 /**************************************************************************/
 /*! 
-  @brief  Driver interface for the legacy Adafruit LSM303DLH combo sensor.
+    @brief  Class that provides a driver interface for a LIS2MDL magnetometer.
 */
 /**************************************************************************/
-class drvLsm303dlh : public drvBase {
+class drvLis2mdl : public drvBase {
 public:
-  drvLsm303dlh(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-               const char *driver_name)
+  drvLis2mdl(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {}
 
   /**************************************************************************/
   /*! 
-    @brief  Destructor for the LSM303DLH driver.
+      @brief  Destructor for the LIS2MDL driver wrapper.
   */
   /**************************************************************************/
-  ~drvLsm303dlh();
+  ~drvLis2mdl();
 
   /**************************************************************************/
   /*! 
-    @brief  Initializes the accelerometer and magnetometer peripherals.
-    @returns True if initialization succeeded, False otherwise.
+      @brief  Initializes the LIS2MDL sensor and begins I2C.
+      @returns True if initialized successfully, False otherwise.
   */
   /**************************************************************************/
   bool begin() override;
 
   /**************************************************************************/
   /*! 
-    @brief  Populates a raw magnitude reading into a sensor event.
-    @param  rawEvent Pointer to the destination sensor event.
-    @returns True if the event was populated successfully.
+      @brief  Gets a raw magnetometer magnitude event (micro Tesla).
+      @param  rawEvent Pointer to the destination sensor event.
+      @returns True if the event was obtained successfully.
   */
   /**************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) override;
 
   /**************************************************************************/
   /*! 
-    @brief  Retrieves the accelerometer vector event.
-    @param  accelEvent Pointer to the destination sensor event.
-    @returns True if the event was populated successfully.
+      @brief  Placeholder boolean event implementation for compatibility.
+      @param  booleanEvent Pointer to the destination sensor event.
+      @returns True once the placeholder event has been populated.
   */
   /**************************************************************************/
-  bool getEventAccelerometer(sensors_event_t *accelEvent) override;
+  bool getEventBoolean(sensors_event_t *booleanEvent) override;
 
   /**************************************************************************/
   /*! 
-    @brief  Retrieves the magnetic field vector event.
-    @param  magEvent Pointer to the destination sensor event.
-    @returns True if the event was populated successfully.
+      @brief  Retrieves the LIS2MDL's magnetometer vector event.
+      @param  magEvent Pointer to the destination sensor event.
+      @returns True if the event was obtained successfully.
   */
   /**************************************************************************/
   bool getEventMagneticField(sensors_event_t *magEvent) override;
@@ -74,7 +73,7 @@ public:
 protected:
   /**************************************************************************/
   /*! 
-    @brief  Registers the default set of virtual sensor types.
+      @brief  Registers the default virtual sensors exposed by the driver.
   */
   /**************************************************************************/
   void ConfigureDefaultSensorTypes() override;
@@ -82,21 +81,24 @@ protected:
 private:
   /**************************************************************************/
   /*! 
-    @brief  Releases any allocated sensor instances.
+      @brief  Reads a magnetometer event from the LIS2MDL helper.
+      @param  event Pointer to the destination sensor event.
+      @returns True if the event was obtained successfully.
   */
   /**************************************************************************/
-  void teardown();
+  bool readMagEvent(sensors_event_t *event);
+
   /**************************************************************************/
   /*! 
-    @brief  Computes the linear acceleration magnitude in m/s^2.
-    @param  magnitude Reference to store the computed value.
-    @returns True if the magnitude was computed successfully.
+      @brief  Computes the vector magnitude of a magnetometer reading.
+      @param  event Magnetometer event to evaluate.
+      @param  magnitude Reference to store the computed magnitude (micro Tesla).
+      @returns True if the magnitude was computed successfully.
   */
   /**************************************************************************/
-  bool computeAccelMagnitude(float &magnitude);
+  bool computeMagnitude(const sensors_event_t &event, float &magnitude);
 
-  Adafruit_LSM303_Accel_Unified *_accel = nullptr;
-  Adafruit_LSM303DLH_Mag_Unified *_mag = nullptr;
+  Adafruit_LIS2MDL *_mag = nullptr;
 };
 
-#endif // DRV_LSM303DLH_H
+#endif // DRV_LIS2MDL_H
