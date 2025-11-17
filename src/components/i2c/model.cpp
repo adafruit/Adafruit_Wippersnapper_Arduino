@@ -221,14 +221,7 @@ GetValueFromSensorsEventOrientation(wippersnapper_sensor_SensorType sensor_type,
 */
 bool GetValueFromSensorsEventBoolean(
     wippersnapper_sensor_SensorType sensor_type, sensors_event_t *event) {
-  bool value = false;
-  WS_DEBUG_PRINTLN("[i2c] Getting boolean event value...");
-  WS_DEBUG_PRINT("[i2c] Event data[0]: ");
-  WS_DEBUG_PRINTLN(event->data[0]);
-  value = event->data[0] > 0.0f;
-  WS_DEBUG_PRINT("[i2c] Boolean value (x>0): ");
-  WS_DEBUG_PRINTLN(value);
-  return value;
+  return event->data[0] > 0.0f;
 }
 
 /*!
@@ -477,6 +470,9 @@ bool I2cModel::AddI2cDeviceSensorEvent(
     _msg_i2c_device_event
         .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
         .value.vector_value.z = value_vect.z;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .which_value = wippersnapper_sensor_SensorEvent_vector_value_tag;
   } else if (sensor_type ==
                  wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION ||
              sensor_type ==
@@ -492,6 +488,9 @@ bool I2cModel::AddI2cDeviceSensorEvent(
     _msg_i2c_device_event
         .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
         .value.orientation_value.pitch = value_vect.pitch;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .which_value = wippersnapper_sensor_SensorEvent_orientation_value_tag;
     // TODO: Add color RGB(A) vector support
   } else if (sensor_type ==
              wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN) {
@@ -499,11 +498,17 @@ bool I2cModel::AddI2cDeviceSensorEvent(
     _msg_i2c_device_event
         .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
         .value.bool_value = value;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .which_value = wippersnapper_sensor_SensorEvent_bool_value_tag;
   } else {
     float value = GetValueFromSensorsEvent(sensor_type, &event);
     _msg_i2c_device_event
         .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
         .value.float_value = value;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
   }
 
   _msg_i2c_device_event.i2c_device_events_count++;
