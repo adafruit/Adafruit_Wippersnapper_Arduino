@@ -16,6 +16,8 @@
 #define WS_CHECKIN_MODEL_H
 #include "Wippersnapper_V2.h"
 
+class Wippersnapper_V2; ///< Forward declaration
+
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from checkin.proto.
@@ -24,11 +26,8 @@ class CheckinModel {
 public:
   CheckinModel();
   ~CheckinModel();
-  // Request Message
-  void CreateCheckinRequest(const char *hardware_uid,
-                            const char *firmware_version);
-  bool EncodeCheckinRequest();
-  wippersnapper_checkin_CheckinRequest *getCheckinRequest();
+  bool Checkin(const char *hardware_uid, const char *firmware_version);
+  // TODO: Remove all this cruft and abstract it
   // Response Message
   bool DecodeCheckinResponse(pb_istream_t *stream);
   void ParseCheckinResponse();
@@ -43,11 +42,15 @@ public:
   float getReferenceVoltage();
 
 private:
-  wippersnapper_checkin_CheckinRequest _CheckinRequest;
-  wippersnapper_checkin_CheckinResponse _CheckinResponse;
-  wippersnapper_checkin_CheckinResponse_Response _response;
+  ws_checkin_B2D _CheckinB2D; ///< Broker to Device message wrapper
+  ws_checkin_D2B _CheckinD2B; ///< Device to Broker message wrapper
+  // TODO: Unsure if we actually need copies of these vs using the wrapper
+  // ws_checkin_Request _CheckinRequest; ///< Checkin Request message
+  // ws_checkin_Response _CheckinResponse;
+  // TODO: Do we still need to hold these here if we do extern?
   int32_t _total_gpio_pins;
   int32_t _total_analog_pins;
   float _reference_voltage;
 };
-#endif // WS_CHECKIN_H
+extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+#endif                        // WS_CHECKIN_H

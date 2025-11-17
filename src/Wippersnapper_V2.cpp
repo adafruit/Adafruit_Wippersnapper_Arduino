@@ -48,6 +48,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
 
   // Initialize model classes
   WsV2.sensorModel = new SensorModel();
+  WsV2.CheckInModel = new CheckinModel();
 
   // Initialize controller classes
   WsV2.digital_io_controller = new DigitalIOController();
@@ -1101,32 +1102,6 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
 }
 
 /*!
-    @brief    Creates, fills, encodes and publishes a checkin request
-              message to the broker.
-    @returns  True if the Checkin request message published successfully,
-              False otherwise.
-*/
-bool Wippersnapper_V2::CreateCheckinRequest() {
-  WS_DEBUG_PRINT("Creating the CheckinRequest message...");
-  WsV2.CheckInModel = new CheckinModel();
-  WsV2.CheckInModel->CreateCheckinRequest(WsV2.sUIDV2, WS_VERSION);
-  WS_DEBUG_PRINTLN("Created!");
-
-  WS_DEBUG_PRINT("Encoding the CheckinRequest message...");
-  if (!WsV2.CheckInModel->EncodeCheckinRequest())
-    return false;
-  WS_DEBUG_PRINTLN("Encoded!");
-
-  WS_DEBUG_PRINT("Publishing Checkin Request...");
-  if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
-                     WsV2.CheckInModel->getCheckinRequest()))
-    return false;
-  WS_DEBUG_PRINTLN("Published!");
-
-  return true;
-}
-
-/*!
     @brief    Polls for and handles the checkin response
               message from the broker.
 */
@@ -1327,9 +1302,10 @@ void Wippersnapper_V2::connect() {
 
   WS_DEBUG_PRINTLN("Performing checkin handshake...");
   // Publish the checkin request
-  if (!CreateCheckinRequest()) {
-    haltErrorV2("Unable to publish checkin request");
+  if (!WsV2.CheckInModel->Checkin(sUIDV2, WS_VERSION))
+    haltErrorV2("ERROR: Unable to create and/or checkin request");
   }
+
   // Handle the checkin response
   PollCheckinResponse();
 

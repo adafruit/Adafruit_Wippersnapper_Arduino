@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -18,52 +18,62 @@
     @brief  CheckinModel constructor
 */
 CheckinModel::CheckinModel() {
-  memset(&_CheckinRequest, 0, sizeof(_CheckinRequest));
-  memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
-  // no-op
+  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+  memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
 }
 
 /*!
     @brief  CheckinModel destructor
 */
 CheckinModel::~CheckinModel() {
-  memset(&_CheckinRequest, 0, sizeof(_CheckinRequest));
-  memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
+  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+  memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
 }
 
 /*!
-    @brief  Fills and creates a CheckinRequest message
+    @brief  Creates a ws_checkin_Request message and publishes
+            it to the broker.
     @param  hardware_uid
             Hardware's unique identifier.
     @param  firmware_version
             WipperSnapper firmware version.
+    @returns True if checkin was successful, False otherwise.
 */
-void CheckinModel::CreateCheckinRequest(const char *hardware_uid,
-                                        const char *firmware_version) {
-  strcpy(_CheckinRequest.hardware_uid, hardware_uid);
-  strcpy(_CheckinRequest.firmware_version, firmware_version);
-}
+bool CheckinModel::Checkin(const char *hardware_uid,
+                           const char *firmware_version) {
+  // Zero-out the D2B wrapper message
+  memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
 
-/*!
-    @brief  Encodes a CheckinRequest message
-    @returns True if the message was successfully encoded,
-             False otherwise.
-*/
-bool CheckinModel::EncodeCheckinRequest() {
-  // Obtain size of the CheckinRequest message
-  size_t CheckinRequestSz;
-  if (!pb_get_encoded_size(&CheckinRequestSz,
-                           wippersnapper_checkin_CheckinRequest_fields,
-                           &_CheckinRequest))
+  // Create the CheckinRequest message
+  _CheckinD2B.which_payload = ws_checkin_D2B_request_tag;
+  strncpy(_CheckinD2B.payload.request.hardware_uid, hardware_uid,
+          sizeof(_CheckinD2B.payload.request.hardware_uid) - 1);
+  strncpy(_CheckinD2B.payload.request.firmware_version, firmware_version,
+          sizeof(_CheckinD2B.payload.request.firmware_version) - 1);
+
+  // Encode the D2B wrapper message
+  size_t CheckinD2BSz;
+  if (!pb_get_encoded_size(&CheckinD2BSz, ws_checkin_D2B_fields,
+                           &_CheckinD2B)) {
+    WS_DEBUG_PRINTLN(
+        "[checkin] ERROR: Unable to get encoded size of CheckinD2B message!");
     return false;
-  // Create a buffer for holding the CheckinRequest message
-  uint8_t buf[CheckinRequestSz];
+  }
 
-  // Create a stream that will write to buf
+  uint8_t buf[CheckinD2BSz];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  // Encode the message
-  return pb_encode(&msg_stream, wippersnapper_checkin_CheckinRequest_fields,
-                   &_CheckinRequest);
+  if (!pb_encode(&msg_stream, ws_checkin_D2B_fields, &_CheckinD2B)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to encode CheckinD2B message!");
+    return false;
+  }
+
+  // Publish out
+  if (!WsV2.PublishSignal(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
+    WS_DEBUG_PRINTLN(
+        "[checkin] ERROR: Unable to publish CheckinRequest message!");
+    return false;
+  }
+  return true;
 }
 
 /*!

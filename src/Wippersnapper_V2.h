@@ -195,7 +195,6 @@ public:
   bool PublishSignal(pb_size_t which_payload, void *payload);
 
   // Checkin API
-  bool CreateCheckinRequest();
   void PollCheckinResponse();
 
   // run() loop
