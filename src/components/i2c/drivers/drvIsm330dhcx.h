@@ -25,11 +25,26 @@ public:
   bool getEventGyroscope(sensors_event_t *gyroEvent) override;
 
   void ConfigureDefaultSensorTypes() override;
+  void setInternalPollingInterval(uint32_t interval_ms) { // override {
+    // Polling interval is managed internally.
+    _internalPollPeriod = interval_ms < 0 ? 0 : interval_ms;
+  }
 
 private:
   bool readAllEvents(sensors_event_t *accel, sensors_event_t *gyro,
-                     sensors_event_t *temp);
+                     sensors_event_t *temp, boolean *shake,
+                     uint16_t *steps);
+  bool readAllEvents();
   bool computeAccelMagnitude(float &magnitude);
+
+  bool _has_last_events = false;   ///< Flag to track if last events are stored
+  bool _last_shake = false;        ///< Last state of shake / tap detection
+  sensors_event_t _lastAccelEvent; ///< Last accelerometer event
+  sensors_event_t _lastGyroEvent;  ///< Last gyroscope event
+  sensors_event_t _lastTempEvent;  ///< Last temperature event (raw)
+  uint16_t _last_steps = 0;        ///< Last step count
+  uint32_t _lastPoll = 0;          ///< Last poll time
+  uint32_t _internalPollPeriod = 200; ///< Internal Polling interval in ms
 
   Adafruit_ISM330DHCX *_imu = nullptr; ///< Pointer to the ISM330DHCX sensor
 };
