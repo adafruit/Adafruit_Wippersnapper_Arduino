@@ -33,7 +33,7 @@ bool drvLsm6dso32::begin() {
   WS_DEBUG_PRINTHEX(addr);
   WS_DEBUG_PRINTLN("...");
 
-  if (!_imu->begin_I2C(addr, _i2c)) {
+  if (!_imu->begin_I2C(addr, _i2c)) { // consider 3rd argument of sensor id, ensure we can run two of these. Could pass mux(+255+muxADDR) add 1000 for bus 1 vs 0 and add sensor addr
     WS_DEBUG_PRINTLN("[drvLsm6dso32] Failed to initialise sensor");
     delete _imu;
     _imu = nullptr;
@@ -44,7 +44,7 @@ bool drvLsm6dso32::begin() {
   _imu->setAccelDataRate(LSM6DS_RATE_104_HZ);
   _imu->setGyroRange(LSM6DS_GYRO_RANGE_500_DPS);
   _imu->setGyroDataRate(LSM6DS_RATE_104_HZ);
-  _imu->configInt1(false, false, false, false, true);
+  _imu->configInt1(false, false, false, true, true);
   _imu->configInt2(false, false, false);
   _imu->enableWakeup(true);
 
