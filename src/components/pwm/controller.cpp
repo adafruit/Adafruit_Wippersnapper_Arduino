@@ -38,7 +38,7 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pwm] Failed to decode PWMAdd message!");
     return false;
   }
-  wippersnapper_pwm_PWMAdd msg_add = *_pwm_model->GetPWMAddMsg();
+  ws_pwm_Add msg_add = *_pwm_model->GetPWMAddMsg();
   uint8_t pin = atoi(msg_add.pin + 1);
   _pwm_hardware[_active_pwm_pins] = new PWMHardware();
 
@@ -77,7 +77,7 @@ bool PWMController::Handle_PWM_Remove(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pwm] Error: Failed to decode PWMRemove message!");
     return false;
   }
-  wippersnapper_pwm_PWMRemove msg_remove = *_pwm_model->GetPWMRemoveMsg();
+  ws_pwm_Remove msg_remove = *_pwm_model->GetPWMRemoveMsg();
   uint8_t pin = atoi(msg_remove.pin + 1);
   int pin_idx = GetPWMHardwareIdx(pin);
   if (pin_idx == -1) {
@@ -125,67 +125,52 @@ int PWMController::GetPWMHardwareIdx(uint8_t pin) {
 }
 
 /*!
-    @brief  Handles the PWM_Write_DutyCycle message.
+    @brief  Handles the PWM_Write message.
     @param  stream The stream containing the message data.
     @return True if the message was handled successfully, false otherwise.
 */
-bool PWMController::Handle_PWM_Write_DutyCycle(pb_istream_t *stream) {
-  if (!_pwm_model->DecodePWMWriteDutyCycle(stream)) {
+bool PWMController::Handle_PWM_Write(pb_istream_t *stream) {
+  if (!_pwm_model->DecodePWMWrite(stream)) {
     WS_DEBUG_PRINTLN(
-        "[pwm] Error: Failed to decode PWMWriteDutyCycle message!");
+        "[pwm] Error: Failed to decode PWMWrite message!");
     return false;
   }
 
-  wippersnapper_pwm_PWMWriteDutyCycle msg_write_duty_cycle =
-      *_pwm_model->GetPWMWriteDutyCycleMsg();
-  uint8_t pin = atoi(msg_write_duty_cycle.pin + 1);
+  ws_pwm_Write msg_write = *_pwm_model->GetPWMWriteMsg();
+  uint8_t pin = atoi(msg_write.pin + 1);
   int pin_idx = GetPWMHardwareIdx(pin);
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;
   }
 
-  // Write the duty cycle to the pin
-  if (!_pwm_hardware[pin_idx]->WriteDutyCycle(
-          msg_write_duty_cycle.duty_cycle)) {
-    WS_DEBUG_PRINTLN("[pwm] Error: Failed to write duty cycle!");
+  // Check which payload type we have
+  if (msg_write.which_payload == ws_pwm_Write_duty_cycle_tag) {
+    // Write the duty cycle to the pin
+    if (!_pwm_hardware[pin_idx]->WriteDutyCycle(
+            msg_write.payload.duty_cycle)) {
+      WS_DEBUG_PRINTLN("[pwm] Error: Failed to write duty cycle!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("[pwm] Wrote duty cycle: ");
+    WS_DEBUG_PRINT(msg_write.payload.duty_cycle);
+    WS_DEBUG_PRINTLN(" to pin: ");
+    WS_DEBUG_PRINT(msg_write.pin);
+  } else if (msg_write.which_payload == ws_pwm_Write_frequency_tag) {
+    // Write the frequency to the pin
+    if (_pwm_hardware[pin_idx]->WriteTone(msg_write.payload.frequency) !=
+        msg_write.payload.frequency) {
+      WS_DEBUG_PRINTLN("[pwm] Error: Failed to write frequency!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("[pwm] Wrote frequency: ");
+    WS_DEBUG_PRINT(msg_write.payload.frequency);
+    WS_DEBUG_PRINTLN(" to pin: ");
+    WS_DEBUG_PRINT(msg_write.pin);
+  } else {
+    WS_DEBUG_PRINTLN("[pwm] Error: Invalid payload type!");
     return false;
   }
-  WS_DEBUG_PRINTLN("[pwm] Wrote duty cycle: ");
-  WS_DEBUG_PRINT(msg_write_duty_cycle.duty_cycle);
-  WS_DEBUG_PRINTLN(" to pin: ");
-  WS_DEBUG_PRINT(msg_write_duty_cycle.pin);
-  return true;
-}
-
-/*!
-    @brief  Handles the PWM_Write_Frequency message.
-    @param  stream The stream containing the message data.
-    @return True if the message was handled successfully, false otherwise.
-*/
-bool PWMController::Handle_PWM_Write_Frequency(pb_istream_t *stream) {
-  if (!_pwm_model->DecodePWMWriteFrequency(stream)) {
-    WS_DEBUG_PRINTLN(
-        "[pwm] Error: Failed to decode PWMWriteFrequency message!");
-    return false;
-  }
-  wippersnapper_pwm_PWMWriteFrequency msg_write_frequency =
-      *_pwm_model->GetPWMWriteFrequencyMsg();
-  uint8_t pin = atoi(msg_write_frequency.pin + 1);
-  int pin_idx = GetPWMHardwareIdx(pin);
-  if (pin_idx == -1) {
-    WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
-    return false;
-  }
-
-  if (_pwm_hardware[pin_idx]->WriteTone(msg_write_frequency.frequency) !=
-      msg_write_frequency.frequency) {
-    WS_DEBUG_PRINTLN("[pwm] Error: Failed to write frequency!");
-    return false;
-  }
-  WS_DEBUG_PRINTLN("[pwm] Wrote frequency: ");
-  WS_DEBUG_PRINT(msg_write_frequency.frequency);
-  WS_DEBUG_PRINTLN(" to pin: ");
-  WS_DEBUG_PRINT(msg_write_frequency.pin);
+  
   return true;
 }

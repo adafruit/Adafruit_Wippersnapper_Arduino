@@ -55,7 +55,7 @@ public:
     instance.
 */
   drvUartPm25(SoftwareSerial *sw_serial,
-              wippersnapper_uart_UartDeviceType device_type,
+              ws_uart_DeviceType device_type,
               const char *driver_name, uint32_t port_num)
       : drvUartBase(sw_serial, driver_name, port_num) {
     _device_type = device_type; // Set device type after base constructor

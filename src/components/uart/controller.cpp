@@ -45,7 +45,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   }
   WS_DEBUG_PRINTLN("[uart] UartAdd message decoded successfully!");
   // Get ref. to the UartAdd message within the model
-  wippersnapper_uart_UartAdd *add_msg = _uart_model->GetUartAddMsg();
+  ws_uart_Add *add_msg = _uart_model->GetUartAddMsg();
   // TODO: fix the id field, currently it is a callback and should be a string.
   if (!add_msg->has_cfg_serial && !add_msg->has_cfg_device) {
     WS_DEBUG_PRINTLN(
@@ -56,7 +56,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   // Configure a UART hardware instance using the provided serial configuration
   // TODO: Have we already configured this UART hardware instance?!
   WS_DEBUG_PRINTLN("[uart] Configuring UART hardware instance...");
-  wippersnapper_uart_UartSerialConfig cfg_serial = add_msg->cfg_serial;
+  ws_uart_SerialConfig cfg_serial = add_msg->cfg_serial;
   UARTHardware *uart_hardware = new UARTHardware(cfg_serial);
   if (!uart_hardware->ConfigureSerial()) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to configure UART hardware!");
@@ -73,12 +73,12 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   drvUartBase *uart_driver = nullptr;
   GPSController *drv_uart_gps = nullptr;
   bool is_gps_drv = false;
-  wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
+  ws_uart_DeviceConfig cfg_device = add_msg->cfg_device;
   switch (cfg_device.device_type) {
-  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_UNSPECIFIED:
+  case ws_uart_DeviceType_DT_UNSPECIFIED:
     WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
     return false;
-  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_INPUT:
+  case ws_uart_DeviceType_DT_GENERIC_INPUT:
     // check if device_type is "us100"
     if (strcmp(cfg_device.device_id, "us100") == 0) {
       WS_DEBUG_PRINTLN("[uart] Adding US-100 device..");
@@ -88,9 +88,9 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
                                      cfg_device.device_id, cfg_serial.uart_nbr);
       uart_driver->ConfigureDriver(cfg_device);
       uart_driver->EnableSensorEvents(
-          cfg_device.config.generic_uart_input.i2c_device_sensor_types,
-          cfg_device.config.generic_uart_input.i2c_device_sensor_types_count);
-      uart_driver->SetSensorPeriod(cfg_device.config.generic_uart_input.period);
+          cfg_device.config.generic_input.sensor_types,
+          cfg_device.config.generic_input.sensor_types_count);
+      uart_driver->SetSensorPeriod(cfg_device.config.generic_input.period);
       WS_DEBUG_PRINT("added!");
     } else {
       WS_DEBUG_PRINTLN(
@@ -99,11 +99,11 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
       return false;
     }
     break;
-  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_OUTPUT:
+  case ws_uart_DeviceType_DT_GENERIC_OUTPUT:
     WS_DEBUG_PRINTLN("[uart] Generic Output device type not implemented!");
     delete uart_hardware; // cleanup
     return false;
-  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS:
+  case ws_uart_DeviceType_DT_GPS:
     WS_DEBUG_PRINTLN("[uart] Adding GPS device..");
     if (!WsV2._gps_controller->AddGPS(uart_hardware->GetHardwareSerial(),
                                       &cfg_device.config.gps)) {
@@ -114,7 +114,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[uart] Added GPS driver!");
     is_gps_drv = true; // mark as GPS driver
     break;
-  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI:
+  case ws_uart_DeviceType_DT_PM25AQI:
     WS_DEBUG_PRINTLN("[uart] Adding PM2.5 AQI device..");
     // Create a new PM2.5 AQI driver instance
     // TODO: Support SoftwareSerial as well, currently only HardwareSerial
@@ -122,12 +122,12 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
                                   cfg_device.device_id, cfg_serial.uart_nbr);
     uart_driver->ConfigureDriver(cfg_device);
     uart_driver->EnableSensorEvents(
-        cfg_device.config.pm25aqi.i2c_device_sensor_types,
-        cfg_device.config.pm25aqi.i2c_device_sensor_types_count);
+        cfg_device.config.pm25aqi.sensor_types,
+        cfg_device.config.pm25aqi.sensor_types_count);
     uart_driver->SetSensorPeriod(cfg_device.config.pm25aqi.period);
     WS_DEBUG_PRINT("added!");
     break;
-  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_TM22XX:
+  case ws_uart_DeviceType_DT_TM22XX:
     WS_DEBUG_PRINTLN("[uart] TM22XX device type not implemented!");
     delete uart_hardware; // cleanup
     return false;
@@ -193,18 +193,18 @@ bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
     return false;
   }
   // Get the UartRemove message from the model
-  wippersnapper_uart_UartRemove *remove_msg = _uart_model->GetUartRemoveMsg();
+  ws_uart_Remove *remove_msg = _uart_model->GetUartRemoveMsg();
 
   // Find the corresponding hardware instance for the UART port
-  uint32_t port_num = remove_msg->uart_nbr;
+  uint32_t port_num = remove_msg->descriptor.uart_nbr;
   for (auto it = _uart_ports.begin(); it != _uart_ports.end(); ++it) {
     if ((*it)->GetBusNumber() == port_num) {
       // Find the corresponding driver for the uart port
       for (auto driver_it = _uart_drivers.begin();
            driver_it != _uart_drivers.end(); ++driver_it) {
         if ((*driver_it)->GetPortNum() == port_num &&
-            (*driver_it)->GetDeviceType() == remove_msg->type &&
-            strcmp((*driver_it)->GetName(), remove_msg->device_id) == 0) {
+            (*driver_it)->GetDeviceType() == remove_msg->descriptor.type &&
+            strcmp((*driver_it)->GetName(), remove_msg->descriptor.device_id.arg) == 0) {
           // Driver found, remove it
           WS_DEBUG_PRINT("[uart] Removing UART driver: " +
                          String((*driver_it)->GetName()) + "...");

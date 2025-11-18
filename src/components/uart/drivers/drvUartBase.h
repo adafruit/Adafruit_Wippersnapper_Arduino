@@ -78,27 +78,27 @@ public:
       @param    cfg_device
                 The configuration settings for the UART device.
   */
-  void ConfigureDriver(wippersnapper_uart_UartDeviceConfig &cfg_device) {
+  void ConfigureDriver(ws_uart_DeviceConfig &cfg_device) {
     _device_type = cfg_device.device_type;
 
     switch (_device_type) {
-    case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_INPUT:
+    case ws_uart_DeviceType_DT_GENERIC_INPUT:
       // Handle Generic Input device configuration
       // TODO!
       break;
-    case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_OUTPUT:
+    case ws_uart_DeviceType_DT_GENERIC_OUTPUT:
       // Handle Generic Output device configuration
       // TODO!
       break;
-    case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS:
+    case ws_uart_DeviceType_DT_GPS:
       // Handle GPS device configuration
       // TODO!
       break;
-    case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI:
+    case ws_uart_DeviceType_DT_PM25AQI:
       // Handle PM2.5 AQI device configuration
       WS_DEBUG_PRINTLN("[uart] Configuring PM2.5 AQI device...");
       break;
-    case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_TM22XX:
+    case ws_uart_DeviceType_DT_TM22XX:
       // Handle TM22XX device configuration
       // TODO!
       break;
@@ -112,7 +112,7 @@ public:
       @brief    Gets the UART device type.
       @returns  The UART device type.
   */
-  wippersnapper_uart_UartDeviceType GetDeviceType() { return _device_type; }
+  ws_uart_DeviceType GetDeviceType() { return _device_type; }
 
   /*!
       @brief    Gets the name of the UART driver.
@@ -146,7 +146,7 @@ public:
       @param    sensor_types_count
                 The number of active sensors to read from the device.
   */
-  void EnableSensorEvents(wippersnapper_sensor_SensorType *sensor_types,
+  void EnableSensorEvents(ws_sensor_Type *sensor_types,
                           size_t sensor_types_count) {
     _sensors_count = sensor_types_count;
     for (size_t i = 0; i < _sensors_count; i++) {
@@ -203,7 +203,7 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  bool GetSensorEvent(wippersnapper_sensor_SensorType sensor_type,
+  bool GetSensorEvent(ws_sensor_Type sensor_type,
                       sensors_event_t *sensors_event) {
     auto it = SensorEventHandlers.find(sensor_type);
     if (it == SensorEventHandlers.end())
@@ -291,40 +291,40 @@ public:
   using fnGetEvent = std::function<bool(sensors_event_t *)>;
 
   // Maps SensorType to function calls
-  std::map<wippersnapper_sensor_SensorType, fnGetEvent> SensorEventHandlers = {
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD,
+  std::map<ws_sensor_Type, fnGetEvent> SensorEventHandlers = {
+      {ws_sensor_Type_T_PM10_STD,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM10_STD(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD,
+      {ws_sensor_Type_T_PM25_STD,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM25_STD(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD,
+      {ws_sensor_Type_T_PM100_STD,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM100_STD(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+      {ws_sensor_Type_T_AMBIENT_TEMPERATURE_FAHRENHEIT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventAmbientTempF(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+      {ws_sensor_Type_T_AMBIENT_TEMPERATURE,
        [this](sensors_event_t *event) -> bool {
          return this->getEventAmbientTemp(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW,
+      {ws_sensor_Type_T_RAW,
        [this](sensors_event_t *event) -> bool {
          return this->getEventRaw(event);
        }}}; ///< SensorType to function call map
 
-  wippersnapper_sensor_SensorType
+  ws_sensor_Type
       _sensors[15]; ///< The sensors attached to the device.
 protected:
   HardwareSerial *_hw_serial; ///< Pointer to a HardwareSerial instance
 #if HAS_SW_SERIAL
   SoftwareSerial *_sw_serial; ///< Pointer to a SoftwareSerial instance
 #endif                        // HAS_SW_SERIAL
-  wippersnapper_uart_UartDeviceType _device_type; ///< The UART device type
+  ws_uart_DeviceType _device_type; ///< The UART device type
   char _name[15];                                 ///< The device's name
   uint32_t _port_num = 0; ///< The port number for the UART device
   bool _is_software_serial =

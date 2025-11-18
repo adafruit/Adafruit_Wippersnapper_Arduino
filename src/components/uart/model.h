@@ -30,35 +30,35 @@ public:
   // UartAdd
   bool DecodeUartAdd(pb_istream_t *stream);
   bool DecodeUartDeviceRemove(pb_istream_t *stream);
-  wippersnapper_uart_UartAdd *GetUartAddMsg();
+  ws_uart_Add *GetUartAddMsg();
   // UartAdded
-  bool EncodeUartAdded(int32_t uart_nbr, wippersnapper_uart_UartDeviceType type,
+  bool EncodeUartAdded(int32_t uart_nbr, ws_uart_DeviceType type,
                        const char *id, bool success);
-  wippersnapper_uart_UartAdded *GetUartAddedMsg();
+  ws_uart_Added *GetUartAddedMsg();
   // UartRemove
-  wippersnapper_uart_UartRemove *GetUartRemoveMsg();
+  ws_uart_Remove *GetUartRemoveMsg();
   // UartInputEvent
   bool AddUartInputEvent(sensors_event_t &event,
-                         wippersnapper_sensor_SensorType sensor_type);
+                         ws_sensor_Type sensor_type);
   bool EncodeUartInputEvent();
-  wippersnapper_uart_UartInputEvent *GetUartInputEventMsg();
+  ws_uart_InputEvent *GetUartInputEventMsg();
   void ClearUartInputEventMsg();
   void ConfigureUartInputEventMsg(uint32_t uart_nbr,
-                                  wippersnapper_uart_UartDeviceType type,
+                                  ws_uart_DeviceType type,
                                   const char *device_id);
 
 private:
-  wippersnapper_uart_UartAdd
-      _msg_UartAdd; ///< wippersnapper_uart_UartAdd message
-  wippersnapper_uart_UartAdded
-      _msg_UartAdded; ///< wippersnapper_uart_UartAdded message
-  wippersnapper_uart_UartRemove
-      _msg_UartRemove; ///< wippersnapper_uart_UartRemove message
-  wippersnapper_uart_UartWrite
-      _msg_UartWrite; ///< wippersnapper_uart_UartWrite message
-  wippersnapper_uart_UartWritten
-      _msg_UartWritten; ///< wippersnapper_uart_UartWritten message
-  wippersnapper_uart_UartInputEvent
-      _msg_UartInputEvent; ///< wippersnapper_uart_UartInputEvent message
+  ws_uart_Add
+      _msg_UartAdd; ///< ws_uart_Add message
+  ws_uart_Added
+      _msg_UartAdded; ///< ws_uart_Added message
+  ws_uart_Remove
+      _msg_UartRemove; ///< ws_uart_Remove message
+  ws_uart_Write
+      _msg_UartWrite; ///< ws_uart_Write message
+  ws_uart_Written
+      _msg_UartWritten; ///< ws_uart_Written message
+  ws_uart_InputEvent
+      _msg_UartInputEvent; ///< ws_uart_InputEvent message
 };
 #endif // WS_UART_MODEL_H

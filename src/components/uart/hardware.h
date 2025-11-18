@@ -35,11 +35,11 @@
 */
 class UARTHardware {
 public:
-  UARTHardware(const wippersnapper_uart_UartSerialConfig &config);
+  UARTHardware(const ws_uart_SerialConfig &config);
   ~UARTHardware();
   bool ConfigureSerial();
   uint16_t UartPacketFormatToConfig(
-      const wippersnapper_uart_UartPacketFormat uart_format);
+      const ws_uart_PacketFormat uart_format);
   int GetBusNumber();
   bool isHardwareSerial() const;
   bool isSoftwareSerial() const;
@@ -50,7 +50,7 @@ public:
   uint32_t GetBaudRate();
 
 private:
-  wippersnapper_uart_UartSerialConfig
+  ws_uart_SerialConfig
       _config;                         ///< The UART serial configuration
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance for this bus
 #if HAS_SW_SERIAL

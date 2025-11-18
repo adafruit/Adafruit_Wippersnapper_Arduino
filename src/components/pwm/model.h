@@ -25,23 +25,18 @@ public:
   PWMModel();
   ~PWMModel();
   bool DecodePWMAdd(pb_istream_t *stream);
-  wippersnapper_pwm_PWMAdd *GetPWMAddMsg();
+  ws_pwm_Add *GetPWMAddMsg();
   bool EncodePWMAdded(char *pin_name, bool did_attach);
-  wippersnapper_pwm_PWMAdded *GetPWMAddedMsg();
+  ws_pwm_Added *GetPWMAddedMsg();
   bool DecodePWMRemove(pb_istream_t *stream);
-  wippersnapper_pwm_PWMRemove *GetPWMRemoveMsg();
-  bool DecodePWMWriteDutyCycle(pb_istream_t *stream);
-  wippersnapper_pwm_PWMWriteDutyCycle *GetPWMWriteDutyCycleMsg();
-  bool DecodePWMWriteFrequency(pb_istream_t *stream);
-  wippersnapper_pwm_PWMWriteFrequency *GetPWMWriteFrequencyMsg();
+  ws_pwm_Remove *GetPWMRemoveMsg();
+  bool DecodePWMWrite(pb_istream_t *stream);
+  ws_pwm_Write *GetPWMWriteMsg();
 
 private:
-  wippersnapper_pwm_PWMAdd _msg_pwm_add;       ///< PWMAdd message object
-  wippersnapper_pwm_PWMAdded _msg_pwm_added;   ///< PWMAdded message object
-  wippersnapper_pwm_PWMRemove _msg_pwm_remove; ///< PWMRemove message object
-  wippersnapper_pwm_PWMWriteDutyCycle
-      _msg_pwm_write_duty_cycle; ///< PWMWriteDutyCycle message object
-  wippersnapper_pwm_PWMWriteFrequency
-      _msg_pwm_write_frequency; ///< PWMWriteFrequency message object
+  ws_pwm_Add _msg_pwm_add;       ///< PWMAdd message object
+  ws_pwm_Added _msg_pwm_added;   ///< PWMAdded message object
+  ws_pwm_Remove _msg_pwm_remove; ///< PWMRemove message object
+  ws_pwm_Write _msg_pwm_write;   ///< PWMWrite message object
 };
 #endif // WS_PWM_MODEL_H

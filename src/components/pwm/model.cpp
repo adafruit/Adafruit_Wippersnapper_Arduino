@@ -21,8 +21,7 @@ PWMModel::PWMModel() {
   memset(&_msg_pwm_add, 0, sizeof(_msg_pwm_add));
   memset(&_msg_pwm_added, 0, sizeof(_msg_pwm_added));
   memset(&_msg_pwm_remove, 0, sizeof(_msg_pwm_remove));
-  memset(&_msg_pwm_write_duty_cycle, 0, sizeof(_msg_pwm_write_duty_cycle));
-  memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency));
+  memset(&_msg_pwm_write, 0, sizeof(_msg_pwm_write));
 }
 
 /*!
@@ -32,8 +31,7 @@ PWMModel::~PWMModel() {
   memset(&_msg_pwm_add, 0, sizeof(_msg_pwm_add));
   memset(&_msg_pwm_added, 0, sizeof(_msg_pwm_added));
   memset(&_msg_pwm_remove, 0, sizeof(_msg_pwm_remove));
-  memset(&_msg_pwm_write_duty_cycle, 0, sizeof(_msg_pwm_write_duty_cycle));
-  memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency));
+  memset(&_msg_pwm_write, 0, sizeof(_msg_pwm_write));
 }
 
 /*!
@@ -43,14 +41,14 @@ PWMModel::~PWMModel() {
 */
 bool PWMModel::DecodePWMAdd(pb_istream_t *stream) {
   memset(&_msg_pwm_add, 0, sizeof(_msg_pwm_add));
-  return pb_decode(stream, wippersnapper_pwm_PWMAdd_fields, &_msg_pwm_add);
+  return pb_decode(stream, ws_pwm_Add_fields, &_msg_pwm_add);
 }
 
 /*!
     @brief  Returns a pointer to the PWMAdd message.
     @return Pointer to the PWMAdd message.
 */
-wippersnapper_pwm_PWMAdd *PWMModel::GetPWMAddMsg() { return &_msg_pwm_add; }
+ws_pwm_Add *PWMModel::GetPWMAddMsg() { return &_msg_pwm_add; }
 
 /*!
     @brief  Encodes a PWMAdded message with the given pin name and attach
@@ -67,12 +65,12 @@ bool PWMModel::EncodePWMAdded(char *pin_name, bool did_attach) {
   strncpy(_msg_pwm_added.pin, pin_name, sizeof(_msg_pwm_added.pin));
   // Encode it!
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, wippersnapper_pwm_PWMAdded_fields,
+  if (!pb_get_encoded_size(&sz_msg, ws_pwm_Added_fields,
                            &_msg_pwm_added))
     return false;
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, wippersnapper_pwm_PWMAdded_fields,
+  return pb_encode(&msg_stream, ws_pwm_Added_fields,
                    &_msg_pwm_added);
 }
 
@@ -80,7 +78,7 @@ bool PWMModel::EncodePWMAdded(char *pin_name, bool did_attach) {
     @brief  Returns a pointer to the PWMAdded message.
     @return Pointer to the PWMAdded message.
 */
-wippersnapper_pwm_PWMAdded *PWMModel::GetPWMAddedMsg() {
+ws_pwm_Added *PWMModel::GetPWMAddedMsg() {
   return &_msg_pwm_added;
 }
 
@@ -91,7 +89,7 @@ wippersnapper_pwm_PWMAdded *PWMModel::GetPWMAddedMsg() {
 */
 bool PWMModel::DecodePWMRemove(pb_istream_t *stream) {
   memset(&_msg_pwm_remove, 0, sizeof(_msg_pwm_remove));
-  return pb_decode(stream, wippersnapper_pwm_PWMRemove_fields,
+  return pb_decode(stream, ws_pwm_Remove_fields,
                    &_msg_pwm_remove);
 }
 
@@ -99,44 +97,24 @@ bool PWMModel::DecodePWMRemove(pb_istream_t *stream) {
     @brief  Returns a pointer to the PWMRemove message.
     @return Pointer to the PWMRemove message.
 */
-wippersnapper_pwm_PWMRemove *PWMModel::GetPWMRemoveMsg() {
+ws_pwm_Remove *PWMModel::GetPWMRemoveMsg() {
   return &_msg_pwm_remove;
 }
 
 /*!
-    @brief  Decodes a PWMWriteDutyCycle message from an input stream.
+    @brief  Decodes a PWMWrite message from an input stream.
     @param  stream  The stream to decode from.
     @return true if successful, false otherwise.
 */
-bool PWMModel::DecodePWMWriteDutyCycle(pb_istream_t *stream) {
-  memset(&_msg_pwm_write_duty_cycle, 0, sizeof(_msg_pwm_write_duty_cycle));
-  return pb_decode(stream, wippersnapper_pwm_PWMWriteDutyCycle_fields,
-                   &_msg_pwm_write_duty_cycle);
+bool PWMModel::DecodePWMWrite(pb_istream_t *stream) {
+  memset(&_msg_pwm_write, 0, sizeof(_msg_pwm_write));
+  return pb_decode(stream, ws_pwm_Write_fields, &_msg_pwm_write);
 }
 
 /*!
-    @brief  Returns a pointer to the PWMWriteDutyCycle message.
-    @return Pointer to the PWMWriteDutyCycle message.
+    @brief  Returns a pointer to the PWMWrite message.
+    @return Pointer to the PWMWrite message.
 */
-wippersnapper_pwm_PWMWriteDutyCycle *PWMModel::GetPWMWriteDutyCycleMsg() {
-  return &_msg_pwm_write_duty_cycle;
-}
-
-/*!
-    @brief  Decodes a PWMWriteFrequency message from an input stream.
-    @param  stream  The stream to decode from.
-    @return true if successful, false otherwise.
-*/
-bool PWMModel::DecodePWMWriteFrequency(pb_istream_t *stream) {
-  memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency));
-  return pb_decode(stream, wippersnapper_pwm_PWMWriteFrequency_fields,
-                   &_msg_pwm_write_frequency);
-}
-
-/*!
-    @brief  Returns a pointer to the PWMWriteFrequency message.
-    @return Pointer to the PWMWriteFrequency message.
-*/
-wippersnapper_pwm_PWMWriteFrequency *PWMModel::GetPWMWriteFrequencyMsg() {
-  return &_msg_pwm_write_frequency;
+ws_pwm_Write *PWMModel::GetPWMWriteMsg() {
+  return &_msg_pwm_write;
 }
