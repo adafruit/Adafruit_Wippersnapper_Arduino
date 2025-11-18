@@ -26,24 +26,24 @@ public:
   ~PixelsModel();
   // PixelsAdd
   bool DecodePixelsAdd(pb_istream_t *stream);
-  wippersnapper_pixels_PixelsAdd *GetPixelsAddMsg();
+  ws_pixels_Add *GetPixelsAddMsg();
   // PixelsRemove
   bool DecodePixelsRemove(pb_istream_t *stream);
-  wippersnapper_pixels_PixelsRemove *GetPixelsRemoveMsg();
+  ws_pixels_Remove *GetPixelsRemoveMsg();
   // PixelsWrite
   bool DecodePixelsWrite(pb_istream_t *stream);
-  wippersnapper_pixels_PixelsWrite *GetPixelsWriteMsg();
+  ws_pixels_Write *GetPixelsWriteMsg();
   // PixelsAdded
   bool EncodePixelsAdded(char *pin_data, bool success);
-  wippersnapper_pixels_PixelsAdded *GetPixelsAddedMsg();
+  ws_pixels_Added *GetPixelsAddedMsg();
 
 private:
-  wippersnapper_pixels_PixelsAdd _msg_pixels_add; ///< PixelsAdd message object
-  wippersnapper_pixels_PixelsRemove
+  ws_pixels_Add _msg_pixels_add; ///< PixelsAdd message object
+  ws_pixels_Remove
       _msg_pixels_remove; ///< PixelsRemove message object
-  wippersnapper_pixels_PixelsWrite
+  ws_pixels_Write
       _msg_pixels_write; ///< PixelsWrite message object
-  wippersnapper_pixels_PixelsAdded
+  ws_pixels_Added
       _msg_pixels_added; ///< PixelsAdded message object
 };
 #endif // WS_PIXELS_MODEL_H

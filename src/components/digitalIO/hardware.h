@@ -24,7 +24,7 @@ public:
   DigitalIOHardware();
   ~DigitalIOHardware();
   bool ConfigurePin(uint8_t name,
-                    wippersnapper_digitalio_DigitalIODirection direction);
+                    ws_digitalio_Direction direction);
   void SetValue(uint8_t pin_name, bool pin_value);
   bool GetValue(uint8_t pin_name);
   void deinit(uint8_t pin_name);

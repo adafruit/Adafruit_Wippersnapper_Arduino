@@ -24,8 +24,8 @@ class PixelsHardware {
 public:
   PixelsHardware();
   ~PixelsHardware();
-  bool AddStrand(wippersnapper_pixels_PixelsType type,
-                 wippersnapper_pixels_PixelsOrder order, uint32_t num_pixels,
+  bool AddStrand(ws_pixels_Type type,
+                 ws_pixels_Order order, uint32_t num_pixels,
                  uint32_t brightness, const char *pin_data,
                  const char *pin_clock);
   uint16_t GetPinData();
@@ -35,14 +35,14 @@ public:
 private:
   Adafruit_NeoPixel *_neopixel = nullptr; ///< Used for NeoPixel strands
   Adafruit_DotStar *_dotstar = nullptr;   ///< Used for DotStar strands
-  wippersnapper_pixels_PixelsType _type;  ///< Holds the type of strand
+  ws_pixels_Type _type;  ///< Holds the type of strand
   uint16_t _pin_data;                     ///< Data pin for the strand
   bool AddNeoPixel(uint16_t num_pixels, uint16_t pin_data, neoPixelType order,
                    uint8_t brightness);
   bool AddDotStar(uint16_t num_pixels, uint16_t pin_data, uint16_t pin_clock,
-                  wippersnapper_pixels_PixelsOrder order, uint8_t brightness);
-  neoPixelType GetStrandOrderNeoPixel(wippersnapper_pixels_PixelsOrder order);
-  uint8_t GetStrandOrderDotStar(wippersnapper_pixels_PixelsOrder order);
+                  ws_pixels_Order order, uint8_t brightness);
+  neoPixelType GetStrandOrderNeoPixel(ws_pixels_Order order);
+  uint8_t GetStrandOrderDotStar(ws_pixels_Order order);
   uint32_t ApplyGammaCorrection(uint32_t color);
 };
 #endif // WS_PIXELS_HARDWARE_H

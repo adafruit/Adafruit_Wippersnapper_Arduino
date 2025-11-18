@@ -33,10 +33,10 @@ DigitalIOHardware::~DigitalIOHardware() {}
     @return True if the pin was successfully configured. False otherwise.
 */
 bool DigitalIOHardware::ConfigurePin(
-    uint8_t name, wippersnapper_digitalio_DigitalIODirection direction) {
+    uint8_t name, ws_digitalio_Direction direction) {
   // Configure an output pin
   if (direction ==
-      wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT) {
+      ws_digitalio_Direction_D_OUTPUT) {
     // Set pin mode to OUTPUT
     pinMode(name, OUTPUT);
 // Initialize pin value to LOW
@@ -50,11 +50,11 @@ bool DigitalIOHardware::ConfigurePin(
 #endif
   } else if (
       direction ==
-      wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT) {
+      ws_digitalio_Direction_D_INPUT) {
     pinMode(name, INPUT);
   } else if (
       direction ==
-      wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP) {
+      ws_digitalio_Direction_D_INPUT_PULL_UP) {
     pinMode(name, INPUT_PULLUP);
   } else {
     return false; // Invalid pin configuration

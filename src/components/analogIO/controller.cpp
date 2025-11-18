@@ -149,11 +149,11 @@ bool AnalogIOController::IsPinTimerExpired(analogioPin *pin, ulong cur_time) {
     @return True if the message was successfully encoded and published.
 */
 bool AnalogIOController::EncodePublishPinEvent(
-    uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
+    uint8_t pin, float value, ws_sensor_Type read_type) {
   char c_pin_name[12];
   sprintf(c_pin_name, "A%d", pin);
 
-  if (read_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW) {
+  if (read_type == ws_sensor_Type_T_RAW) {
     if (!_analogio_model->EncodeAnalogIOEventRaw(c_pin_name, value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIO raw adc message!");
       return false;

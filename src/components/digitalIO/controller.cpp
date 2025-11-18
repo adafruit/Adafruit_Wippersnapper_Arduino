@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -220,8 +220,7 @@ bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
   }
 
   // Ensure we got the correct value type
-  if (!_dio_model->GetDigitalIOWriteMsg()->value.which_value ==
-      wippersnapper_sensor_SensorEvent_bool_value_tag) {
+  if (!_dio_model->GetDigitalIOWriteMsg()->value.which_value == ws_sensor_Event_bool_value_tag) {
     WS_DEBUG_PRINTLN("[digitalio] ERROR: controller got invalid value type!");
     return false;
   }
@@ -341,7 +340,7 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
 
     // Publish the DigitalIOEvent message to the broker
     if (!WsV2.PublishD2b(
-            wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
+            ws_signal_DeviceToBroker_digitalio_tag,
             _dio_model->GetDigitalIOEventMsg())) {
       WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to publish event message, "
                        "moving onto the next pin!");
@@ -352,7 +351,7 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     // let's log the event to the SD card
     if (!WsV2._sdCardV2->LogGPIOSensorEventToSD(
             pin_name, pin_value,
-            wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN))
+            ws_sensor_Type_T_BOOLEAN))
       return false;
   }
 
@@ -372,12 +371,10 @@ void DigitalIOController::Update() {
     // Create a pin object for this iteration
     DigitalIOPin &pin = _digitalio_pins[i];
     // Skip if the pin is an output
-    if (pin.pin_direction ==
-        wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT)
+    if (pin.pin_direction == ws_digitalio_Direction_D_OUTPUT)
       continue;
 
-    if (pin.sample_mode ==
-        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT) {
+    if (pin.sample_mode == ws_digitalio_SampleMode_SM_EVENT) {
       // Check if the pin value has changed
       if (!CheckEventPin(&pin))
         continue; // No change in pin value detected, move onto the next pin
@@ -388,8 +385,7 @@ void DigitalIOController::Update() {
         continue;
       }
     } else if (
-        pin.sample_mode ==
-        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER) {
+        pin.sample_mode == ws_digitalio_SampleMode_SM_TIMER) {
       // Check if the timer has expired
       if (!CheckTimerPin(&pin))
         continue; // Timer has not expired yet, move onto the next pin

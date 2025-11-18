@@ -45,7 +45,7 @@ bool AnalogIOModel::DecodeAnalogIOAdd(pb_istream_t *stream) {
   // data
   memset(&_msg_AnalogioAdd, 0, sizeof(_msg_AnalogioAdd));
   // Decode the stream into a AnalogIOAdd message
-  return pb_decode(stream, wippersnapper_analogio_AnalogIOAdd_fields,
+  return pb_decode(stream, ws_analogio_Add_fields,
                    &_msg_AnalogioAdd);
 }
 
@@ -53,7 +53,7 @@ bool AnalogIOModel::DecodeAnalogIOAdd(pb_istream_t *stream) {
     @brief  Gets an AnalogIOAdd message struct.
     @return Pointer to an AnalogIOAdd message struct.
 */
-wippersnapper_analogio_AnalogIOAdd *AnalogIOModel::GetAnalogIOAddMsg() {
+ws_analogio_Add *AnalogIOModel::GetAnalogIOAddMsg() {
   return &_msg_AnalogioAdd;
 }
 

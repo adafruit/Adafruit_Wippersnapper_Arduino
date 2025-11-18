@@ -30,7 +30,7 @@ struct analogioPin {
   uint8_t name;     ///< The pin's name.
   float period;     ///< The pin's period, in milliseconds.
   float prv_period; ///< The pin's previous period, in milliseconds.
-  wippersnapper_sensor_SensorType read_mode; ///< Type of analog read to perform
+  ws_sensor_Type read_mode; ///< Type of analog read to perform
 };
 
 /*!
@@ -49,7 +49,7 @@ public:
   void update();
   // Encoder
   bool EncodePublishPinEvent(uint8_t pin, float value,
-                             wippersnapper_sensor_SensorType read_type);
+                             ws_sensor_Type read_type);
   bool EncodePublishPinValue(uint8_t pin, uint16_t value);
   bool EncodePublishPinVoltage(uint8_t pin, float value);
   // Helpers
