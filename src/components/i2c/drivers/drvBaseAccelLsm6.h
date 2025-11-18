@@ -21,6 +21,7 @@ public:
   bool getEventRaw(sensors_event_t *rawEvent) override;
   bool getEventAccelerometer(sensors_event_t *accelEvent) override;
   bool getEventGyroscope(sensors_event_t *gyroEvent) override;
+  bool getEventAmbientTemp(sensors_event_t *temperatureEvent) override;
 
   void ConfigureDefaultSensorTypes() override;
 
@@ -28,16 +29,26 @@ public:
 
 protected:
   virtual Adafruit_LSM6DS *getLSM6Sensor() const = 0;
+  
+  uint32_t getLsmSensorID() {
+    // allow 4 ids per sensor (acc/mag/gyro/temp)
+    uint32_t sensor_id = 10 * GetAddress();
+    if (GetMuxAddress() != 0x0) {
+      sensor_id += 10000 + GetMuxAddress();
+      sensor_id += 1000 + (1000 * GetMuxChannel());
+    }
+    return sensor_id;
+  }
 
   bool readAllEvents();
-  bool computeAccelMagnitude(float &magnitude);
+  bool computeAccelMagnitude(float *magnitude);
 
   bool _has_last_events = false;   ///< Flag to track if last events are stored
   bool _last_shake = false;        ///< Last state of shake / tap detection
   sensors_event_t _lastAccelEvent; ///< Last accelerometer event
   sensors_event_t _lastGyroEvent;  ///< Last gyroscope event
   sensors_event_t _lastTempEvent;  ///< Last temperature event (raw)
-  uint16_t _last_steps = 0;        ///< Last step count
+//   uint16_t _last_steps = 0;        ///< Last step count
   uint32_t _lastPoll = 0;          ///< Last poll time
   uint32_t _internalPollPeriod = 200; ///< Internal Polling interval in ms
 };

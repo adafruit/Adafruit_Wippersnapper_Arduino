@@ -39,13 +39,14 @@ bool drvLsm6dso32::begin() {
   }
 
   _imu->setAccelRange(LSM6DSO32_ACCEL_RANGE_8_G);
-  _imu->setAccelDataRate(LSM6DS_RATE_104_HZ);
-  _imu->setGyroRange(LSM6DS_GYRO_RANGE_500_DPS);
-  _imu->setGyroDataRate(LSM6DS_RATE_104_HZ);
-  _imu->configInt1(false, false, false, true, true);
-  _imu->configInt2(false, false, false);
-  _imu->enablePedometer(true);
+  _imu->setGyroRange(LSM6DS_GYRO_RANGE_250_DPS);
+  _imu->setAccelDataRate(LSM6DS_RATE_416_HZ);
+  _imu->setGyroDataRate(LSM6DS_RATE_416_HZ);
+  // _imu->highPassFilter(true, LSM6DS_HPF_ODR_DIV_100);
+  _imu->configInt1(false, false, false, false, true);
+  // _imu->configInt2(false, false, false);
   _imu->enableWakeup(true);
+  // _imu->enablePedometer(true);
 
   WS_DEBUG_PRINTLN("[drvLsm6dso32] Sensor initialised successfully");
   return true;
