@@ -44,10 +44,10 @@ bool drvIsm330dhcx::begin() {
   _imu->setAccelDataRate(LSM6DS_RATE_104_HZ);
   _imu->setGyroRange(LSM6DS_GYRO_RANGE_500_DPS);
   _imu->setGyroDataRate(LSM6DS_RATE_104_HZ);
-  _imu->highPassFilter(true, LSM6DS_HPF_ODR_DIV_100);
+  // _imu->highPassFilter(true, LSM6DS_HPF_ODR_DIV_100);
   _imu->configInt1(false, false, false, false, true);
   _imu->configInt2(false, false, false);
-  _imu->enablePedometer(true);
+  // _imu->enablePedometer(true);
   _imu->enableWakeup(true);
 
   WS_DEBUG_PRINTLN("[drvIsm330dhcx] Sensor initialised successfully");

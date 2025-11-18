@@ -50,9 +50,7 @@ bool drvLsm9ds1::readAllEvents(sensors_event_t *accel, sensors_event_t *mag,
   if (!_lsm) {
     return false;
   }
-  _lsm->read();
-  _lsm->getEvent(accel, mag, gyro, temp);
-  return true;
+  return _lsm->getEvent(accel, mag, gyro, temp);
 }
 
 /******************************************************************************/

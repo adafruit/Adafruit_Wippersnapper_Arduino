@@ -46,7 +46,7 @@ bool drvLsm6ds3::begin() {
   _imu->setGyroDataRate(LSM6DS_RATE_104_HZ);
   _imu->configInt1(false, false, false, false, true);
   _imu->configInt2(false, false, false);
-  _imu->enablePedometer(true);
+  // _imu->enablePedometer(true);
   _imu->enableWakeup(true);
 
   WS_DEBUG_PRINTLN("[drvLsm6ds3] Sensor initialised successfully");
