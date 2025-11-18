@@ -26,22 +26,19 @@ public:
   ~AnalogIOModel();
   // AnalogIOAdd
   bool DecodeAnalogIOAdd(pb_istream_t *stream);
-  wippersnapper_analogio_AnalogIOAdd *GetAnalogIOAddMsg();
+  ws_analogio_Add *GetAnalogIOAddMsg();
   // AnalogIORemove
   bool DecodeAnalogIORemove(pb_istream_t *stream);
-  wippersnapper_analogio_AnalogIORemove *GetAnalogIORemoveMsg();
+  ws_analogio_Remove *GetAnalogIORemoveMsg();
   // AnalogIOEvent
-  bool EncodeAnalogIOEvent(char *pin_name, float pin_value,
-                           wippersnapper_sensor_SensorType read_type);
+  bool EncodeAnalogIOEvent(char *pin_name, float pin_value, ws_sensor_Type read_type);
   bool EncodeAnalogIOEventVoltage(char *pin_name, float pin_value);
   bool EncodeAnalogIOEventRaw(char *pin_name, float pin_value);
-  wippersnapper_analogio_AnalogIOEvent *GetAnalogIOEvent();
+  ws_analogio_Event *GetAnalogIOEvent();
 
 private:
-  wippersnapper_analogio_AnalogIOAdd _msg_AnalogioAdd; ///< AnalogIOAdd message
-  wippersnapper_analogio_AnalogIORemove
-      _msg_AnalogioRemove; ///< AnalogIORemove message
-  wippersnapper_analogio_AnalogIOEvent
-      _msg_AnalogioEvent; ///< AnalogIOEvent message
+  ws_analogio_Add _msg_AnalogioAdd;       ///< AnalogIOAdd message
+  ws_analogio_Remove _msg_AnalogioRemove; ///< AnalogIORemove message
+  ws_analogio_Event _msg_AnalogioEvent;   ///< AnalogIOEvent message
 };
 #endif // WS_DIGITALIO_MODEL_H

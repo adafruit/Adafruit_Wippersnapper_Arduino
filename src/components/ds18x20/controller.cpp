@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -86,11 +86,11 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     for (int i = 0; i < _DS18X20_model->GetDS18x20AddMsg()->sensor_types_count;
          i++) {
       if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE) {
+          ws_sensor_Type_T_OBJECT_TEMPERATURE) {
         new_dsx_driver->is_read_temp_c = true;
       } else if (
           _DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT) {
+          ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT) {
         new_dsx_driver->is_read_temp_f = true;
       } else {
         WS_DEBUG_PRINTLN(
@@ -141,7 +141,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     }
 
     if (!WsV2.PublishD2b(
-            wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
+            ws_signal_DeviceToBroker_ds18x20_tag,
             _DS18X20_model->GetDS18x20AddedMsg())) {
       WS_DEBUG_PRINTLN(
           "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
@@ -169,8 +169,7 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
     return false;
   }
   // Create a temp. instance of the Ds18x20Remove message
-  wippersnapper_ds18x20_Ds18x20Remove *msg_remove =
-      _DS18X20_model->GetDS18x20RemoveMsg();
+  ws_ds18x20_Remove *msg_remove = _DS18X20_model->GetDS18x20RemoveMsg();
   uint8_t pin_name = atoi(msg_remove->onewire_pin + 1);
 
   // Find the driver/bus in the vector and remove it
@@ -236,19 +235,18 @@ void DS18X20Controller::update() {
     if (temp_dsx_driver.is_read_temp_c) {
       float temp_c = temp_dsx_driver.GetTemperatureC();
       _DS18X20_model->addSensorEvent(
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE,
+          ws_sensor_Type_T_OBJECT_TEMPERATURE,
           temp_c);
     }
     if (temp_dsx_driver.is_read_temp_f) {
       float temp_f = temp_dsx_driver.GetTemperatureF();
       _DS18X20_model->addSensorEvent(
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT,
+          ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT,
           temp_f);
     }
 
     // Get the Ds18x20Event message
-    wippersnapper_ds18x20_Ds18x20Event *event_msg =
-        _DS18X20_model->GetDS18x20EventMsg();
+    ws_ds18x20_Event *event_msg = _DS18X20_model->GetDS18x20EventMsg();
     pb_size_t event_count = event_msg->sensor_events_count;
 
     if (!WsV2._sdCardV2->isModeOffline()) {
@@ -261,7 +259,7 @@ void DS18X20Controller::update() {
       // Publish the Ds18x20Event message to the broker
       WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
       if (!WsV2.PublishD2b(
-              wippersnapper_signal_DeviceToBroker_ds18x20_event_tag,
+              ws_signal_DeviceToBroker_ds18x20_tag,
               _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to publish Ds18x20Event message");

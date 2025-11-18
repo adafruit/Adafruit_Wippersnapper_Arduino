@@ -26,28 +26,24 @@ public:
   ~DS18X20Model();
   // Ds18x20Add Message API
   bool DecodeDS18x20Add(pb_istream_t *stream);
-  wippersnapper_ds18x20_Ds18x20Add *GetDS18x20AddMsg();
+  ws_ds18x20_Add *GetDS18x20AddMsg();
   // DS18x20Added Message API
   bool EncodeDS18x20Added(char *onewire_pin, bool is_init);
-  wippersnapper_ds18x20_Ds18x20Added *GetDS18x20AddedMsg();
+  ws_ds18x20_Added *GetDS18x20AddedMsg();
   // Ds18x20Remove Message API
   bool DecodeDS18x20Remove(pb_istream_t *stream);
-  wippersnapper_ds18x20_Ds18x20Remove *GetDS18x20RemoveMsg();
+  ws_ds18x20_Remove *GetDS18x20RemoveMsg();
   // Ds18x20Event Message API
   bool EncodeDs18x20Event();
-  wippersnapper_ds18x20_Ds18x20Event *GetDS18x20EventMsg();
+  ws_ds18x20_Event *GetDS18x20EventMsg();
   void InitDS18x20EventMsg(const char *ow_pin_name);
-  void addSensorEvent(wippersnapper_sensor_SensorType sensor_type,
+  void addSensorEvent(ws_sensor_Type sensor_type,
                       float sensor_value);
 
 private:
-  wippersnapper_ds18x20_Ds18x20Add
-      _msg_DS18x20Add; ///< wippersnapper_ds18x20_Ds18x20Add message
-  wippersnapper_ds18x20_Ds18x20Added
-      _msg_DS18x20Added; ///< wippersnapper_ds18x20_Ds18x20Added message
-  wippersnapper_ds18x20_Ds18x20Remove
-      _msg_DS18x20Remove; ///< wippersnapper_ds18x20_Ds18x20Remove message
-  wippersnapper_ds18x20_Ds18x20Event
-      _msg_DS18x20Event; ///< wippersnapper_ds18x20_Ds18x20Event message
+  ws_ds18x20_Add _msg_DS18x20Add;       ///< Add message
+  ws_ds18x20_Added _msg_DS18x20Added;   ///< Added message
+  ws_ds18x20_Remove _msg_DS18x20Remove; ///< Remove message
+  ws_ds18x20_Event _msg_DS18x20Event;   ///< Event message
 };
 #endif // WS_DIGITALIO_MODEL_H

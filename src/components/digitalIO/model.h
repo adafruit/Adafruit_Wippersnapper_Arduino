@@ -26,24 +26,20 @@ public:
   ~DigitalIOModel();
   // DigitalIOAdd
   bool DecodeDigitalIOAdd(pb_istream_t *stream);
-  wippersnapper_digitalio_DigitalIOAdd *GetDigitalIOAddMsg();
+  ws_digitalio_Add *GetDigitalIOAddMsg();
   // DigitalIORemove
   bool DecodeDigitalIORemove(pb_istream_t *stream);
   // DigitalIOWrite
   bool DecodeDigitalIOWrite(pb_istream_t *stream);
-  wippersnapper_digitalio_DigitalIOWrite *GetDigitalIOWriteMsg();
+  ws_digitalio_Write *GetDigitalIOWriteMsg();
   // DigitalIOEvent
   bool EncodeDigitalIOEvent(char *pin_name, bool value);
-  wippersnapper_digitalio_DigitalIOEvent *GetDigitalIOEventMsg();
+  ws_digitalio_Event *GetDigitalIOEventMsg();
 
 private:
-  wippersnapper_digitalio_DigitalIOAdd
-      _msg_dio_add; ///< DigitalIOAdd message object
-  wippersnapper_digitalio_DigitalIORemove
-      _msg_dio_remove; ///< DigitalIORemove message object
-  wippersnapper_digitalio_DigitalIOEvent
-      _msg_dio_event; ///< DigitalIOEvent message object
-  wippersnapper_digitalio_DigitalIOWrite
-      _msg_dio_write; ///< DigitalIOWrite message object
+  ws_digitalio_Add _msg_dio_add;       ///< Add message object
+  ws_digitalio_Remove _msg_dio_remove; ///< Remove message object
+  ws_digitalio_Event _msg_dio_event;   ///< Event message object
+  ws_digitalio_Write _msg_dio_write;   ///< Write message object
 };
 #endif // WS_DIGITALIO_MODEL_H
