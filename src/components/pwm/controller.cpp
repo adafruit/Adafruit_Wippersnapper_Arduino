@@ -58,7 +58,7 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pwm]: Failed to encode PWMAdded message!");
     return false;
   }
-  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_pwm_added_tag,
+  if (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_pwm_added_tag,
                           _pwm_model->GetPWMAddedMsg())) {
     WS_DEBUG_PRINTLN("[PWM]: Unable to publish PWMAdded message!");
     return false;

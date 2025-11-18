@@ -27,30 +27,14 @@ public:
   CheckinModel();
   ~CheckinModel();
   bool Checkin(const char *hardware_uid, const char *firmware_version);
-  // TODO: Remove all this cruft and abstract it
-  // Response Message
-  bool DecodeCheckinResponse(pb_istream_t *stream);
-  void ParseCheckinResponse();
-  void
-  setCheckinResponse(wippersnapper_checkin_CheckinResponse_Response response);
-  wippersnapper_checkin_CheckinResponse_Response getCheckinResponse();
-  void setTotalGPIOPins(int32_t total_gpio_pins);
-  int32_t getTotalGPIOPins();
-  void setTotalAnalogPins(int32_t total_analog_pins);
-  int32_t getTotalAnalogPins();
-  void setReferenceVoltage(float reference_voltage);
-  float getReferenceVoltage();
-
+  bool ProcessResponse(pb_istream_t *stream);
+  void ConfigureControllers();
+  bool AddComponents();
+  bool GotResponse();
 private:
   ws_checkin_B2D _CheckinB2D; ///< Broker to Device message wrapper
   ws_checkin_D2B _CheckinD2B; ///< Device to Broker message wrapper
-  // TODO: Unsure if we actually need copies of these vs using the wrapper
-  // ws_checkin_Request _CheckinRequest; ///< Checkin Request message
-  // ws_checkin_Response _CheckinResponse;
-  // TODO: Do we still need to hold these here if we do extern?
-  int32_t _total_gpio_pins;
-  int32_t _total_analog_pins;
-  float _reference_voltage;
+  bool _got_response;         ///< Flag indicating if response was received
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_CHECKIN_H

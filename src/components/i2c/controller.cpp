@@ -552,7 +552,7 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
         "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
     return false;
   }
-  if (!WsV2.PublishSignal(
+  if (!WsV2.PublishD2b(
           wippersnapper_signal_DeviceToBroker_i2c_device_added_replaced_tag,
           _i2c_model->GetMsgI2cDeviceAddedOrReplaced())) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish I2cDeviceAddedorReplaced "

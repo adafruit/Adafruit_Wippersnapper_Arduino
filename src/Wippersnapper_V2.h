@@ -107,12 +107,6 @@
 #include "components/servo/controller.h"
 #include "components/uart/controller.h"
 
-// Display
-#ifdef USE_DISPLAY
-#include "display/ws_display_driver.h"
-#include "display/ws_display_ui_helper.h"
-#endif
-
 #include "provisioning/ConfigJson.h"
 #include "provisioning/sdcard/ws_sdcard.h"
 #if defined(USE_TINYUSB)
@@ -135,10 +129,6 @@
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class ws_sdcard;
-#ifdef USE_DISPLAY
-class ws_display_driver;
-class ws_display_ui_helper;
-#endif
 class CheckinModel;
 class SensorModel;
 class DigitalIOController;
@@ -171,31 +161,26 @@ public:
       STATUS_PIXEL_BRIGHTNESS_DEFAULT; ///< Global status pixel's brightness
                                        ///< (from 0.0 to 1.0)
 
-  virtual void set_user_key();
-  virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
-  virtual void set_ssid_pass();
-  virtual bool check_valid_ssid();
-
-  virtual void _connect();
-  virtual void _disconnect();
-  void connect();
-  void disconnect();
-
-  virtual void getMacAddr();
-  virtual int32_t getRSSI();
-  virtual void setupMQTTClient(const char *clientID);
-
-  virtual ws_status_t networkStatus();
+  // Pure virtual functions to be defined within network adapter-specific subclass
+  virtual void set_user_key() = 0;
+  virtual void set_ssid_pass(const char *ssid, const char *ssidPassword) = 0;
+  virtual void set_ssid_pass() = 0;
+  virtual bool check_valid_ssid() = 0;
+  virtual void _connect() = 0;
+  virtual void _disconnect() = 0;
+  void connect() = 0;
+  void disconnect() = 0;
+  virtual void getMacAddr() = 0;
+  virtual int32_t getRSSI() = 0;
+  virtual void setupMQTTClient(const char *clientID) = 0;
+  virtual ws_status_t networkStatus() = 0;
 
   // Generators for device UID and MQTT topics
   bool generateDeviceUID();
   bool generateWSTopics();
 
   // High-level MQTT Publish
-  bool PublishSignal(pb_size_t which_payload, void *payload);
-
-  // Checkin API
-  void PollCheckinResponse();
+  bool PublishD2b(pb_size_t which_payload, void *payload);
 
   // run() loop
   ws_status_t run();
@@ -228,11 +213,6 @@ public:
   WipperSnapper_LittleFS
       *_littleFSV2;     ///< Instance of LittleFS Filesystem (non-native USB)
   ws_sdcard *_sdCardV2; ///< Instance of SD card class
-#ifdef USE_DISPLAY
-  ws_display_driver *_displayV2 = nullptr; ///< Instance of display driver class
-  ws_display_ui_helper *_ui_helperV2 =
-      nullptr; ///< Instance of display UI helper class
-#endif
 
   // API v2 Components
   CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
@@ -271,12 +251,6 @@ public:
   int throttleTimeV2;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
 
-  // enable LEDC if esp32
-  // #ifdef ARDUINO_ARCH_ESP32
-  // ws_ledc *_ledcV2 = nullptr; ///< Pointer to LEDC object
-  // #endif
-  bool got_checkin_response; ///< True if a checkin response was received, False
-                             ///< otherwise.
   std::vector<std::vector<uint8_t>>
       _sharedConfigBuffers; ///< Shared JSON config buffers for offline mode
   JsonDocument _config_doc; ///< Storage for the config.json file

@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -48,6 +48,7 @@ class DigitalIOController {
 public:
   DigitalIOController();
   ~DigitalIOController();
+  bool Handle_DigitalIO_Add(ws_digitalio_Add *msg);
   // Called by the cbDecodeBrokerToDevice router function
   bool Handle_DigitalIO_Add(pb_istream_t *stream);
   bool Handle_DigitalIO_Write(pb_istream_t *stream);

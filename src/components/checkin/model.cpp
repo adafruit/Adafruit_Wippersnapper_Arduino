@@ -14,12 +14,15 @@
  */
 #include "model.h"
 
+// TODO: Remove all debug prints after we are confident during testing
+
 /*!
     @brief  CheckinModel constructor
 */
 CheckinModel::CheckinModel() {
   memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
   memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
+  _got_response = false;
 }
 
 /*!
@@ -28,6 +31,7 @@ CheckinModel::CheckinModel() {
 CheckinModel::~CheckinModel() {
   memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
   memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
+  _got_response = false;
 }
 
 /*!
@@ -68,7 +72,7 @@ bool CheckinModel::Checkin(const char *hardware_uid,
   }
 
   // Publish out
-  if (!WsV2.PublishSignal(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
+  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to publish CheckinRequest message!");
     return false;
@@ -77,96 +81,113 @@ bool CheckinModel::Checkin(const char *hardware_uid,
 }
 
 /*!
-    @brief  Decodes a CheckinResponse message
+    @brief  Decodes a ws_checkin_Response message from the broker.
     @param  stream
             Incoming data stream from buffer.
-    @returns True if the message was successfully decoded,
-             False otherwise.
+    @returns True if decoded successfully, False otherwise.
 */
-bool CheckinModel::DecodeCheckinResponse(pb_istream_t *stream) {
-  memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
-  return pb_decode(stream, wippersnapper_checkin_CheckinResponse_fields,
-                   &_CheckinResponse);
+bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
+  // Zero-out the B2D wrapper message
+  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+
+  // Decode the B2d wrapper message
+  if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
+    WS_DEBUG_PRINTLN(
+        "[checkin] ERROR: Unable to decode CheckinB2D message from broker!");
+    return false;
+  }
+
+  // Validate the response message type
+  if (_CheckinB2D.which_payload != ws_checkin_B2D_response_tag) {
+    WS_DEBUG_PRINTLN(
+        "[checkin] ERROR: CheckinB2D message from broker is not a Response!");
+    return false;
+  }
+
+  // Validate the response content
+  if (_CheckinB2D.payload.response.response !=
+      ws_checkin_Response_Response_R_OK) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Invalid checkin_Response!");
+    return false;
+  }
+
+  return true;
 }
 
 /*!
-    @brief  Parses the fields of a CheckinResponse message.
+    @brief  Configures controllers limits based on board definition
 */
-void CheckinModel::ParseCheckinResponse() {
-  setCheckinResponse(_CheckinResponse.response);
-  setTotalGPIOPins(_CheckinResponse.total_gpio_pins);
-  setTotalAnalogPins(_CheckinResponse.total_analog_pins);
-  setReferenceVoltage(_CheckinResponse.reference_voltage);
+void CheckinModel::ConfigureControllers() {
+  WsV2.digital_io_controller->SetMaxDigitalPins(
+      _CheckinB2D.payload.response.total_gpio_pins);
+  WsV2.analogio_controller->SetRefVoltage(
+      _CheckinB2D.payload.response.reference_voltage);
+  WsV2.analogio_controller->SetTotalAnalogPins(
+      _CheckinB2D.payload.response.total_analog_pins);
 }
 
 /*!
-    @brief  Sets the CheckinResponse message's Response field
-    @param  response
-            CheckinResponse message.
+    @brief  Adds components from the broker
+    @returns True if components were added successfully, False otherwise.
 */
-void CheckinModel::setCheckinResponse(
-    wippersnapper_checkin_CheckinResponse_Response response) {
-  _response = _CheckinResponse.response;
+bool CheckinModel::AddComponents() {
+  // early-out if no components to add
+  if (_CheckinB2D.payload.response.component_adds_count == 0) {
+    WS_DEBUG_PRINTLN("[checkin] No components to add!");
+    return true;
+  }
+
+  WS_DEBUG_PRINT("[checkin] Adding ");
+  WS_DEBUG_PRINT(_CheckinB2D.payload.response.component_adds_count);
+  WS_DEBUG_PRINTLN(" components...");
+
+  // Iterate through each component add message
+  for (pb_size_t i = 0;
+       i < _CheckinB2D.payload.response.component_adds_count; i++) {
+    const ws_checkin_ComponentAdd *comp_add = &_CheckinB2D.payload.response.component_adds[i];
+    WS_DEBUG_PRINTLN("[checkin] Adding component from broker...");
+    switch (comp_add->which_payload) {
+    case ws_checkin_ComponentAdd_digitalio_tag:
+      // TODO
+      WS_DEBUG_PRINTLN("[checkin] Adding DigitalIO component...");
+      break;
+    case ws_checkin_ComponentAdd_analogio_tag:
+      // TODO
+      WS_DEBUG_PRINTLN("[checkin] Adding AnalogIO component...");
+      break;
+    case ws_checkin_ComponentAdd_servo_tag:
+      // TODO
+      WS_DEBUG_PRINTLN("[checkin] Adding Servo component...");
+      break;
+    case ws_checkin_ComponentAdd_pwm_tag:
+      // TODO
+      WS_DEBUG_PRINTLN("[checkin] Adding PWM component...");
+      break;
+    case ws_checkin_ComponentAdd_pixels_tag:
+      // TODO
+      WS_DEBUG_PRINTLN("[checkin] Adding Pixels component...");
+      break;
+    case ws_checkin_ComponentAdd_ds18x20_tag:
+      // TODO
+      WS_DEBUG_PRINTLN("[checkin] Adding DS18X20 component...");
+      break;
+    case ws_checkin_ComponentAdd_uart_tag:
+      // TODO
+      WS_DEBUG_PRINTLN("[checkin] Adding UART component...");
+      break;
+    case ws_checkin_ComponentAdd_i2c_tag:
+      // TODO
+      WS_DEBUG_PRINTLN("[checkin] Adding I2C component...");
+      break;
+    default:
+      WS_DEBUG_PRINTLN(
+          "[checkin] WARNING: Unknown component add type from broker!");
+      break;
+    }
 }
 
 /*!
-    @brief  Gets the CheckinResponse message's Response field
-    @returns CheckinResponse message.
+    @brief  Returns whether a checkin response has been received.
+    @returns True if response received, False otherwise.
 */
-wippersnapper_checkin_CheckinResponse_Response
-CheckinModel::getCheckinResponse() {
-  return _response;
-};
-
-/*!
-    @brief  Gets the CheckinRequest message
-    @returns CheckinRequest message.
-*/
-wippersnapper_checkin_CheckinRequest *CheckinModel::getCheckinRequest() {
-  return &_CheckinRequest;
-}
-
-/*!
-    @brief  Sets the CheckinResponse message's total GPIO pins field
-    @param  total_gpio_pins
-            Total number of GPIO pins.
-*/
-void CheckinModel::setTotalGPIOPins(int32_t total_gpio_pins) {
-  _total_gpio_pins = total_gpio_pins;
-}
-
-/*!
-    @brief  Gets the CheckinResponse message's total GPIO pins field
-    @returns Total number of GPIO pins.
-*/
-int32_t CheckinModel::getTotalGPIOPins() { return _total_gpio_pins; }
-
-/*!
-    @brief  Sets the CheckinResponse message's total analog pins field
-    @param  total_analog_pins
-            Total number of analog pins.
-*/
-void CheckinModel::setTotalAnalogPins(int32_t total_analog_pins) {
-  _total_analog_pins = total_analog_pins;
-}
-
-/*!
-    @brief  Gets the CheckinResponse message's total analog pins field
-    @returns Total number of analog pins.
-*/
-int32_t CheckinModel::getTotalAnalogPins() { return _total_analog_pins; }
-
-/*!
-    @brief  Sets the CheckinResponse message's reference voltage field
-    @param  reference_voltage
-            Reference voltage.
-*/
-void CheckinModel::setReferenceVoltage(float reference_voltage) {
-  _reference_voltage = reference_voltage;
-}
-
-/*!
-    @brief  Gets the CheckinResponse message's reference voltage field
-    @returns Reference voltage.
-*/
-float CheckinModel::getReferenceVoltage() { return _reference_voltage; }
+bool CheckinModel::GotResponse() { return _got_response; }

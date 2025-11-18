@@ -171,7 +171,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   // TODO: Unsure why this is causing a crash on GPS, figure out later
   // Currently commented out to prevent crashes
   /*   if
-    (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_uart_added_tag,
+    (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_uart_added_tag,
                             _uart_model->GetUartAddedMsg())) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to
     IO!"); return false;
@@ -286,7 +286,7 @@ void UARTController::update() {
         } */
       } else {
         // In online mode, publish to Adafruit IO
-        if (!WsV2.PublishSignal(
+        if (!WsV2.PublishD2b(
                 wippersnapper_signal_DeviceToBroker_uart_input_event_tag,
                 _uart_model->GetUartInputEventMsg())) {
           WS_DEBUG_PRINTLN(
