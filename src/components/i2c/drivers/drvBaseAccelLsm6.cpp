@@ -39,27 +39,27 @@ bool drvBaseAccelLsm6::readAllEvents() {
     _last_shake = true;
   }
 
-  uint16_t step_change = imu->readPedometer();
-  if (step_change > 0) {
-    WS_DEBUG_PRINT("[");
-    WS_DEBUG_PRINT(_name);
-    WS_DEBUG_PRINT("] Steps detected: ");
-    WS_DEBUG_PRINTLN(step_change);
-    _last_steps += step_change;
-    imu->resetPedometer();
-  }
+//   uint16_t step_change = imu->readPedometer();
+//   if (step_change > 0) {
+//     WS_DEBUG_PRINT("[");
+//     WS_DEBUG_PRINT(_name);
+//     WS_DEBUG_PRINT("] Steps detected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!: ");
+//     WS_DEBUG_PRINTLN(step_change);
+//     _last_steps += step_change;
+//     imu->resetPedometer();
+//   }
 
   bool success = imu->getEvent(&_lastAccelEvent, &_lastGyroEvent, &_lastTempEvent);
   _has_last_events = success;
   return success;
 }
 
-bool drvBaseAccelLsm6::computeAccelMagnitude(float &magnitude) {
+bool drvBaseAccelLsm6::computeAccelMagnitude(float *magnitude) {
   if (!readAllEvents()) {
     return false;
   }
 
-  magnitude = sqrtf(_lastAccelEvent.acceleration.x *
+  *magnitude = sqrtf(_lastAccelEvent.acceleration.x *
                         _lastAccelEvent.acceleration.x +
                     _lastAccelEvent.acceleration.y *
                         _lastAccelEvent.acceleration.y +
@@ -72,12 +72,19 @@ bool drvBaseAccelLsm6::getEventRaw(sensors_event_t *rawEvent) {
   if (!readAllEvents()) {
     return false;
   }
+  return computeAccelMagnitude(&(rawEvent->data[0]));
+}
 
-  rawEvent->data[0] = static_cast<float>(_last_steps);
-  _last_steps = 0;
+bool drvBaseAccelLsm6::getEventAmbientTemp(sensors_event_t *temperatureEvent) {
+  if (!readAllEvents()) {
+    return false;
+  }
+
+  *temperatureEvent = _lastTempEvent;
   return true;
 }
 
+// NO Shake/tap/wakeup for now, using pedometer steps instead on INT1
 bool drvBaseAccelLsm6::getEventBoolean(sensors_event_t *booleanEvent) {
   if (!readAllEvents()) {
     return false;
