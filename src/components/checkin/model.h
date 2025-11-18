@@ -31,6 +31,7 @@ public:
   void ConfigureControllers();
   bool AddComponents();
   bool GotResponse();
+
 private:
   ws_checkin_B2D _CheckinB2D; ///< Broker to Device message wrapper
   ws_checkin_D2B _CheckinD2B; ///< Device to Broker message wrapper

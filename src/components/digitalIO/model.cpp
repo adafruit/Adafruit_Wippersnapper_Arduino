@@ -39,9 +39,7 @@ DigitalIOModel::~DigitalIOModel() {
     @brief  Parses a DigitalIOAdd message.
     @return DigitalIOAdd message object.
 */
-ws_digitalio_Add *DigitalIOModel::GetDigitalIOAddMsg() {
-  return &_msg_dio_add;
-}
+ws_digitalio_Add *DigitalIOModel::GetDigitalIOAddMsg() { return &_msg_dio_add; }
 
 /*!
     @brief  Parses a DigitalIORemove message.
@@ -55,8 +53,7 @@ bool DigitalIOModel::DecodeDigitalIORemove(pb_istream_t *stream) {
   memset(&_msg_dio_remove, 0, sizeof(_msg_dio_remove));
 
   // Decode the stream into a DigitalIORemove message
-  return pb_decode(stream, ws_digitalio_Remove_fields,
-                   &_msg_dio_remove);
+  return pb_decode(stream, ws_digitalio_Remove_fields, &_msg_dio_remove);
 }
 
 /*!
@@ -88,8 +85,7 @@ bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
   memset(&_msg_dio_add, 0, sizeof(_msg_dio_add));
 
   // Decode the stream into a DigitalIOAdd message
-  return pb_decode(stream, ws_digitalio_Add_fields,
-                   &_msg_dio_add);
+  return pb_decode(stream, ws_digitalio_Add_fields, &_msg_dio_add);
 }
 
 /*!
@@ -104,8 +100,7 @@ bool DigitalIOModel::DecodeDigitalIOWrite(pb_istream_t *stream) {
   // data
   memset(&_msg_dio_write, 0, sizeof(_msg_dio_write));
   // Decode the stream into a DigitalIOWrite message
-  return pb_decode(stream, ws_digitalio_Write_fields,
-                   &_msg_dio_write);
+  return pb_decode(stream, ws_digitalio_Write_fields, &_msg_dio_write);
 }
 
 /*!
@@ -131,8 +126,7 @@ bool DigitalIOModel::EncodeDigitalIOEvent(char *pin_name, bool value) {
 
   // Encode the DigitalIOEvent message
   size_t sz_dio_event_msg;
-  if (!pb_get_encoded_size(&sz_dio_event_msg,
-                           ws_digitalio_Event_fields,
+  if (!pb_get_encoded_size(&sz_dio_event_msg, ws_digitalio_Event_fields,
                            &_msg_dio_event))
     return false;
 
@@ -140,6 +134,5 @@ bool DigitalIOModel::EncodeDigitalIOEvent(char *pin_name, bool value) {
   uint8_t buf[sz_dio_event_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
   // Encode the message
-  return pb_encode(&msg_stream, ws_digitalio_Event_fields,
-                   &_msg_dio_event);
+  return pb_encode(&msg_stream, ws_digitalio_Event_fields, &_msg_dio_event);
 }

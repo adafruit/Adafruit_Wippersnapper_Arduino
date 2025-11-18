@@ -133,7 +133,7 @@ public:
       @param    sensor_types_count
                 The number of active sensors to read from the device.
   */
-  void EnableSensorReads(wippersnapper_sensor_SensorType *sensor_types,
+  void EnableSensorReads(ws_sensor_Type *sensor_types,
                          size_t sensor_types_count) {
     _sensors_count = sensor_types_count;
     for (size_t i = 0; i < _sensors_count; i++) {
@@ -490,7 +490,7 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  bool GetSensorEvent(wippersnapper_sensor_SensorType sensor_type,
+  bool GetSensorEvent(ws_sensor_Type sensor_type,
                       sensors_event_t *sensors_event) {
     auto it = SensorEventHandlers.find(sensor_type);
     if (it == SensorEventHandlers.end())
@@ -507,114 +507,113 @@ public:
   using fnGetEvent = std::function<bool(sensors_event_t *)>;
 
   // Maps SensorType to function calls
-  std::map<wippersnapper_sensor_SensorType, fnGetEvent> SensorEventHandlers = {
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED,
+  std::map<ws_sensor_Type, fnGetEvent> SensorEventHandlers = {
+      {ws_sensor_Type_T_UNSPECIFIED,
        [this](sensors_event_t *event) -> bool {
          return this->getEventRaw(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT,
+      {ws_sensor_Type_T_LIGHT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventLight(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE,
+      {ws_sensor_Type_T_PRESSURE,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPressure(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY,
+      {ws_sensor_Type_T_PROXIMITY,
        [this](sensors_event_t *event) -> bool {
          return this->getEventProximity(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY,
+      {ws_sensor_Type_T_RELATIVE_HUMIDITY,
        [this](sensors_event_t *event) -> bool {
          return this->getEventRelativeHumidity(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+      {ws_sensor_Type_T_AMBIENT_TEMPERATURE,
        [this](sensors_event_t *event) -> bool {
          return this->getEventAmbientTemp(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE,
+      {ws_sensor_Type_T_OBJECT_TEMPERATURE,
        [this](sensors_event_t *event) -> bool {
          return this->getEventObjectTemp(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE,
+      {ws_sensor_Type_T_VOLTAGE,
        [this](sensors_event_t *event) -> bool {
          return this->getEventVoltage(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT,
+      {ws_sensor_Type_T_CURRENT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventCurrent(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW,
+      {ws_sensor_Type_T_RAW,
        [this](sensors_event_t *event) -> bool {
          return this->getEventRaw(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD,
+      {ws_sensor_Type_T_PM10_STD,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM10_STD(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD,
+      {ws_sensor_Type_T_PM25_STD,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM25_STD(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD,
+      {ws_sensor_Type_T_PM100_STD,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM100_STD(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV,
+      {ws_sensor_Type_T_PM10_ENV,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM10_Env(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV,
+      {ws_sensor_Type_T_PM25_ENV,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM25_Env(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV,
+      {ws_sensor_Type_T_PM100_ENV,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM100_Env(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2,
+      {ws_sensor_Type_T_CO2,
        [this](sensors_event_t *event) -> bool {
          return this->getEventCO2(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE,
+      {ws_sensor_Type_T_GAS_RESISTANCE,
        [this](sensors_event_t *event) -> bool {
          return this->getEventGasResistance(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE,
+      {ws_sensor_Type_T_ALTITUDE,
        [this](sensors_event_t *event) -> bool {
          return this->getEventAltitude(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2,
+      {ws_sensor_Type_T_ECO2,
        [this](sensors_event_t *event) -> bool {
          return this->getEventECO2(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT,
+      {ws_sensor_Type_T_UNITLESS_PERCENT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventUnitlessPercent(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+      {ws_sensor_Type_T_AMBIENT_TEMPERATURE_FAHRENHEIT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventAmbientTempF(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT,
+      {ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventObjectTempF(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX,
+      {ws_sensor_Type_T_VOC_INDEX,
        [this](sensors_event_t *event) -> bool {
          return this->getEventVOCIndex(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX,
+      {ws_sensor_Type_T_NOX_INDEX,
        [this](sensors_event_t *event) -> bool {
          return this->getEventNOxIndex(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC,
+      {ws_sensor_Type_T_TVOC,
        [this](sensors_event_t *event) -> bool {
          return this->getEventTVOC(event);
        }}}; ///< SensorType to function call map
 
-  wippersnapper_sensor_SensorType
-      _sensors[15]; ///< Sensors attached to the device.
+  ws_sensor_Type _sensors[15]; ///< Sensors attached to the device.
 
 protected:
   TwoWire *_i2c;             ///< Pointer to the I2C bus

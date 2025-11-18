@@ -37,17 +37,14 @@ GPSModel::~GPSModel() {
  * otherwise.
  */
 bool GPSModel::DecodeGPSConfig(pb_istream_t *stream) {
-  return pb_decode(stream, wippersnapper_gps_GPSConfig_fields,
-                   &_msg_gps_config);
+  return pb_decode(stream, ws_gps_Config_fields, &_msg_gps_config);
 }
 
 /*!
  * @brief Returns a pointer to the GPSConfig message.
  * @returns Pointer to the GPSConfig message.
  */
-wippersnapper_gps_GPSConfig *GPSModel::GetGPSConfigMsg() {
-  return &_msg_gps_config;
-}
+ws_gps_Config *GPSModel::GetGPSConfigMsg() { return &_msg_gps_config; }
 
 /*!
  * @brief Creates a new GPSEvent message and initializes it.
@@ -69,22 +66,20 @@ void GPSModel::CreateGPSEvent() {
 bool GPSModel::EncodeGPSEvent() {
   // Calculate the size of the encoded message
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, wippersnapper_gps_GPSEvent_fields,
-                           &_msg_gps_event))
+  if (!pb_get_encoded_size(&sz_msg, ws_gps_Event_fields, &_msg_gps_event))
     return false;
 
   // Attempt to encode the message into a buffer
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, wippersnapper_gps_GPSEvent_fields,
-                   &_msg_gps_event);
+  return pb_encode(&msg_stream, ws_gps_Event_fields, &_msg_gps_event);
 }
 
 /*!
  * @brief Returns a pointer to the GPSEvent message.
  * @returns Pointer to the GPSEvent message.
  */
-wippersnapper_gps_GPSEvent *GPSModel::GetGPSEvent() { return &_msg_gps_event; };
+ws_gps_Event *GPSModel::GetGPSEvent() { return &_msg_gps_event; };
 
 /*!
  * @brief Creates a GPSDateTime message with the provided parameters.
@@ -95,13 +90,13 @@ wippersnapper_gps_GPSEvent *GPSModel::GetGPSEvent() { return &_msg_gps_event; };
  * @param day GMT day of the month (1-31).
  * @param month GMT month of the year (1-12).
  * @param year GMT year (e.g., 25).
- * @returns A wippersnapper_gps_GPSDateTime message.
+ * @returns A ws_gps_DateTime message.
  */
-wippersnapper_gps_GPSDateTime
-GPSModel::CreateGpsDatetime(uint8_t hour, uint8_t minute, uint8_t seconds,
-                            uint8_t milliseconds, uint8_t day, uint8_t month,
-                            uint8_t year) {
-  wippersnapper_gps_GPSDateTime datetime;
+ws_gps_DateTime GPSModel::CreateGpsDatetime(uint8_t hour, uint8_t minute,
+                                            uint8_t seconds,
+                                            uint8_t milliseconds, uint8_t day,
+                                            uint8_t month, uint8_t year) {
+  ws_gps_DateTime datetime;
   // Fill in the datetime structure with the provided values
   datetime.hour = (uint32_t)(hour);
   datetime.minute = (uint32_t)(minute);
@@ -115,7 +110,7 @@ GPSModel::CreateGpsDatetime(uint8_t hour, uint8_t minute, uint8_t seconds,
 
 /*!
  * @brief Adds an RMC response to the GPSEvent message.
- * @param datetime A wippersnapper_gps_GPSDateTime message representing the
+ * @param datetime A ws_gps_DateTime message representing the
  * date and time.
  * @param fix_status The fix status (1 = valid, 0 = invalid).
  * @param lat Latitude in decimal degrees.
@@ -128,16 +123,15 @@ GPSModel::CreateGpsDatetime(uint8_t hour, uint8_t minute, uint8_t seconds,
  * @param angle Course/heading angle in degrees.
  * @returns True if the RMC response was added successfully, False otherwise.
  */
-bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
-                              uint8_t fix_status, float lat, char *lat_dir,
-                              float lon, char *lon_dir, float speed,
-                              float angle) {
+bool GPSModel::AddGpsEventRMC(ws_gps_DateTime datetime, uint8_t fix_status,
+                              float lat, char *lat_dir, float lon,
+                              char *lon_dir, float speed, float angle) {
   // Validate pointers have been provided correctly
   if (!lat_dir || !lon_dir)
     return false;
 
   // Always store at index 0, overwriting any previous response
-  wippersnapper_gps_GPSRMCResponse rmc_response;
+  ws_gps_RMCResponse rmc_response;
   memset(&rmc_response, 0, sizeof(rmc_response));
   rmc_response.has_datetime = true;
   rmc_response.datetime = datetime;
@@ -171,7 +165,7 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
 
 /*!
  * @brief Adds a GGA response to the GPSEvent message.
- * @param datetime A wippersnapper_gps_GPSDateTime message representing the
+ * @param datetime A ws_gps_DateTime message representing the
  * date and time.
  * @param fix_status The fix status (1 = valid, 0 = invalid).
  * @param lat Latitude in decimal degrees.
@@ -186,15 +180,15 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
  * @param geoid_height Geoid height in meters.
  * @returns True if the GGA response was added successfully, False otherwise.
  */
-bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
-                              uint8_t fix_status, float lat, char *lat_dir,
-                              float lon, char *lon_dir, uint8_t num_sats,
-                              float hdop, float alt, float geoid_height) {
+bool GPSModel::AddGpsEventGGA(ws_gps_DateTime datetime, uint8_t fix_status,
+                              float lat, char *lat_dir, float lon,
+                              char *lon_dir, uint8_t num_sats, float hdop,
+                              float alt, float geoid_height) {
   // Validate pointers have been provided correctly
   if (!lat_dir || !lon_dir)
     return false;
 
-  wippersnapper_gps_GPGGAResponse gga_response;
+  ws_gps_GPGGAResponse gga_response;
   memset(&gga_response, 0, sizeof(gga_response));
   gga_response.has_datetime = true;
   gga_response.datetime = datetime;
@@ -237,7 +231,7 @@ bool GPSModel::ProcessNMEASentence(char *sentence, GPSHardware *drv) {
   if (strncmp(sentence, "$GP", 3) != 0 && strncmp(sentence, "$GN", 3) != 0)
     return false;
 
-  wippersnapper_gps_GPSDateTime datetime = CreateGpsDatetime(
+  ws_gps_DateTime datetime = CreateGpsDatetime(
       drv->GetHour(), drv->GetMinute(), drv->GetSeconds(),
       drv->GetMilliseconds(), drv->GetDay(), drv->GetMonth(), drv->GetYear());
   char lat_dir = drv->GetLatDir();

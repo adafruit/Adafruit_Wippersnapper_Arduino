@@ -27,9 +27,9 @@ class AnalogIOHardware; ///< Forward declaration
  * @brief Represents a device's analogio pin.
  */
 struct analogioPin {
-  uint8_t name;     ///< The pin's name.
-  float period;     ///< The pin's period, in milliseconds.
-  float prv_period; ///< The pin's previous period, in milliseconds.
+  uint8_t name;             ///< The pin's name.
+  float period;             ///< The pin's period, in milliseconds.
+  float prv_period;         ///< The pin's previous period, in milliseconds.
   ws_sensor_Type read_mode; ///< Type of analog read to perform
 };
 

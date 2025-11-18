@@ -59,7 +59,7 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
     return false;
   }
   if (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_pwm_added_tag,
-                          _pwm_model->GetPWMAddedMsg())) {
+                       _pwm_model->GetPWMAddedMsg())) {
     WS_DEBUG_PRINTLN("[PWM]: Unable to publish PWMAdded message!");
     return false;
   }
@@ -131,8 +131,7 @@ int PWMController::GetPWMHardwareIdx(uint8_t pin) {
 */
 bool PWMController::Handle_PWM_Write(pb_istream_t *stream) {
   if (!_pwm_model->DecodePWMWrite(stream)) {
-    WS_DEBUG_PRINTLN(
-        "[pwm] Error: Failed to decode PWMWrite message!");
+    WS_DEBUG_PRINTLN("[pwm] Error: Failed to decode PWMWrite message!");
     return false;
   }
 
@@ -147,8 +146,7 @@ bool PWMController::Handle_PWM_Write(pb_istream_t *stream) {
   // Check which payload type we have
   if (msg_write.which_payload == ws_pwm_Write_duty_cycle_tag) {
     // Write the duty cycle to the pin
-    if (!_pwm_hardware[pin_idx]->WriteDutyCycle(
-            msg_write.payload.duty_cycle)) {
+    if (!_pwm_hardware[pin_idx]->WriteDutyCycle(msg_write.payload.duty_cycle)) {
       WS_DEBUG_PRINTLN("[pwm] Error: Failed to write duty cycle!");
       return false;
     }
@@ -171,6 +169,6 @@ bool PWMController::Handle_PWM_Write(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pwm] Error: Invalid payload type!");
     return false;
   }
-  
+
   return true;
 }

@@ -31,9 +31,8 @@ class GPSController {
 public:
   GPSController();
   ~GPSController();
-  bool AddGPS(HardwareSerial *serial, wippersnapper_gps_GPSConfig *gps_config);
-  bool AddGPS(TwoWire *wire, uint32_t i2c_addr,
-              wippersnapper_gps_GPSConfig *gps_config);
+  bool AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config);
+  bool AddGPS(TwoWire *wire, uint32_t i2c_addr, ws_gps_Config *gps_config);
   void update();
 
 private:

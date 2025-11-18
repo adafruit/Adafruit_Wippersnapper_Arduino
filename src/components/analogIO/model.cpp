@@ -45,8 +45,7 @@ bool AnalogIOModel::DecodeAnalogIOAdd(pb_istream_t *stream) {
   // data
   memset(&_msg_AnalogioAdd, 0, sizeof(_msg_AnalogioAdd));
   // Decode the stream into a AnalogIOAdd message
-  return pb_decode(stream, ws_analogio_Add_fields,
-                   &_msg_AnalogioAdd);
+  return pb_decode(stream, ws_analogio_Add_fields, &_msg_AnalogioAdd);
 }
 
 /*!
@@ -136,8 +135,7 @@ bool AnalogIOModel::EncodeAnalogIOEvent(
     @return True if successful, False otherwise.
 */
 bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, float pin_value) {
-  return EncodeAnalogIOEvent(pin_name, pin_value,
-                             wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
+  return EncodeAnalogIOEvent(pin_name, pin_value, ws_sensor_Type_T_RAW);
 }
 
 /*!
@@ -150,6 +148,5 @@ bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, float pin_value) {
 */
 bool AnalogIOModel::EncodeAnalogIOEventVoltage(char *pin_name,
                                                float pin_value) {
-  return EncodeAnalogIOEvent(
-      pin_name, pin_value, wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE);
+  return EncodeAnalogIOEvent(pin_name, pin_value, ws_sensor_Type_T_VOLTAGE);
 }

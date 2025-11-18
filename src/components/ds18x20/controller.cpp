@@ -88,9 +88,8 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
       if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
           ws_sensor_Type_T_OBJECT_TEMPERATURE) {
         new_dsx_driver->is_read_temp_c = true;
-      } else if (
-          _DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
-          ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT) {
+      } else if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
+                 ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT) {
         new_dsx_driver->is_read_temp_f = true;
       } else {
         WS_DEBUG_PRINTLN(
@@ -140,9 +139,8 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
       return false;
     }
 
-    if (!WsV2.PublishD2b(
-            ws_signal_DeviceToBroker_ds18x20_tag,
-            _DS18X20_model->GetDS18x20AddedMsg())) {
+    if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
+                         _DS18X20_model->GetDS18x20AddedMsg())) {
       WS_DEBUG_PRINTLN(
           "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
       return false;
@@ -234,15 +232,13 @@ void DS18X20Controller::update() {
     // Are we reading the temperature in Celsius, Fahrenheit, or both?
     if (temp_dsx_driver.is_read_temp_c) {
       float temp_c = temp_dsx_driver.GetTemperatureC();
-      _DS18X20_model->addSensorEvent(
-          ws_sensor_Type_T_OBJECT_TEMPERATURE,
-          temp_c);
+      _DS18X20_model->addSensorEvent(ws_sensor_Type_T_OBJECT_TEMPERATURE,
+                                     temp_c);
     }
     if (temp_dsx_driver.is_read_temp_f) {
       float temp_f = temp_dsx_driver.GetTemperatureF();
       _DS18X20_model->addSensorEvent(
-          ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT,
-          temp_f);
+          ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT, temp_f);
     }
 
     // Get the Ds18x20Event message
@@ -258,9 +254,8 @@ void DS18X20Controller::update() {
       }
       // Publish the Ds18x20Event message to the broker
       WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
-      if (!WsV2.PublishD2b(
-              ws_signal_DeviceToBroker_ds18x20_tag,
-              _DS18X20_model->GetDS18x20EventMsg())) {
+      if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
+                           _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to publish Ds18x20Event message");
         continue;

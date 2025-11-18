@@ -65,22 +65,18 @@ bool PWMModel::EncodePWMAdded(char *pin_name, bool did_attach) {
   strncpy(_msg_pwm_added.pin, pin_name, sizeof(_msg_pwm_added.pin));
   // Encode it!
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_pwm_Added_fields,
-                           &_msg_pwm_added))
+  if (!pb_get_encoded_size(&sz_msg, ws_pwm_Added_fields, &_msg_pwm_added))
     return false;
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_pwm_Added_fields,
-                   &_msg_pwm_added);
+  return pb_encode(&msg_stream, ws_pwm_Added_fields, &_msg_pwm_added);
 }
 
 /*!
     @brief  Returns a pointer to the PWMAdded message.
     @return Pointer to the PWMAdded message.
 */
-ws_pwm_Added *PWMModel::GetPWMAddedMsg() {
-  return &_msg_pwm_added;
-}
+ws_pwm_Added *PWMModel::GetPWMAddedMsg() { return &_msg_pwm_added; }
 
 /*!
     @brief  Decodes a PWMRemove message from an input stream.
@@ -89,17 +85,14 @@ ws_pwm_Added *PWMModel::GetPWMAddedMsg() {
 */
 bool PWMModel::DecodePWMRemove(pb_istream_t *stream) {
   memset(&_msg_pwm_remove, 0, sizeof(_msg_pwm_remove));
-  return pb_decode(stream, ws_pwm_Remove_fields,
-                   &_msg_pwm_remove);
+  return pb_decode(stream, ws_pwm_Remove_fields, &_msg_pwm_remove);
 }
 
 /*!
     @brief  Returns a pointer to the PWMRemove message.
     @return Pointer to the PWMRemove message.
 */
-ws_pwm_Remove *PWMModel::GetPWMRemoveMsg() {
-  return &_msg_pwm_remove;
-}
+ws_pwm_Remove *PWMModel::GetPWMRemoveMsg() { return &_msg_pwm_remove; }
 
 /*!
     @brief  Decodes a PWMWrite message from an input stream.
@@ -115,6 +108,4 @@ bool PWMModel::DecodePWMWrite(pb_istream_t *stream) {
     @brief  Returns a pointer to the PWMWrite message.
     @return Pointer to the PWMWrite message.
 */
-ws_pwm_Write *PWMModel::GetPWMWriteMsg() {
-  return &_msg_pwm_write;
-}
+ws_pwm_Write *PWMModel::GetPWMWriteMsg() { return &_msg_pwm_write; }

@@ -37,8 +37,7 @@ public:
   bool EncodeDs18x20Event();
   ws_ds18x20_Event *GetDS18x20EventMsg();
   void InitDS18x20EventMsg(const char *ow_pin_name);
-  void addSensorEvent(ws_sensor_Type sensor_type,
-                      float sensor_value);
+  void addSensorEvent(ws_sensor_Type sensor_type, float sensor_value);
 
 private:
   ws_ds18x20_Add _msg_DS18x20Add;       ///< Add message

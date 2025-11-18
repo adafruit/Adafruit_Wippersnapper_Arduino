@@ -57,10 +57,10 @@ void GPSHardware::I2cReadDiscard() {
 /*!
  * @brief Handles a GPSConfig message from the protobuf stream.
  * @param gps_config
- *        Pointer to a wippersnapper_gps_GPSConfig message.
+ *        Pointer to a ws_gps_Config message.
  * @returns True if the message was handled successfully, False otherwise.
  */
-bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
+bool GPSHardware::Handle_GPSConfig(ws_gps_Config *gps_config) {
   WS_DEBUG_PRINTLN("[gps] Handling GPSConfig message...");
   if (gps_config == nullptr)
     return false;

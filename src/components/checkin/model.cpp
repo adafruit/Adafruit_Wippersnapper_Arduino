@@ -142,9 +142,10 @@ bool CheckinModel::AddComponents() {
   WS_DEBUG_PRINTLN(" components...");
 
   // Iterate through each component add message
-  for (pb_size_t i = 0;
-       i < _CheckinB2D.payload.response.component_adds_count; i++) {
-    const ws_checkin_ComponentAdd *comp_add = &_CheckinB2D.payload.response.component_adds[i];
+  for (pb_size_t i = 0; i < _CheckinB2D.payload.response.component_adds_count;
+       i++) {
+    const ws_checkin_ComponentAdd *comp_add =
+        &_CheckinB2D.payload.response.component_adds[i];
     WS_DEBUG_PRINTLN("[checkin] Adding component from broker...");
     switch (comp_add->which_payload) {
     case ws_checkin_ComponentAdd_digitalio_tag:
@@ -184,10 +185,10 @@ bool CheckinModel::AddComponents() {
           "[checkin] WARNING: Unknown component add type from broker!");
       break;
     }
-}
+  }
 
-/*!
-    @brief  Returns whether a checkin response has been received.
-    @returns True if response received, False otherwise.
-*/
-bool CheckinModel::GotResponse() { return _got_response; }
+  /*!
+      @brief  Returns whether a checkin response has been received.
+      @returns True if response received, False otherwise.
+  */
+  bool CheckinModel::GotResponse() { return _got_response; }

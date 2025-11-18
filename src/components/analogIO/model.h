@@ -31,7 +31,8 @@ public:
   bool DecodeAnalogIORemove(pb_istream_t *stream);
   ws_analogio_Remove *GetAnalogIORemoveMsg();
   // AnalogIOEvent
-  bool EncodeAnalogIOEvent(char *pin_name, float pin_value, ws_sensor_Type read_type);
+  bool EncodeAnalogIOEvent(char *pin_name, float pin_value,
+                           ws_sensor_Type read_type);
   bool EncodeAnalogIOEventVoltage(char *pin_name, float pin_value);
   bool EncodeAnalogIOEventRaw(char *pin_name, float pin_value);
   ws_analogio_Event *GetAnalogIOEvent();

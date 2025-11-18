@@ -71,34 +71,30 @@ ws_uart_Add *UARTModel::GetUartAddMsg() { return &_msg_UartAdd; }
    False otherwise.
     @return True if the message was encoded successfully, False otherwise.
 */
-bool UARTModel::EncodeUartAdded(int32_t uart_nbr,
-                                ws_uart_DeviceType type,
+bool UARTModel::EncodeUartAdded(int32_t uart_nbr, ws_uart_DeviceType type,
                                 const char *id, bool success) {
   _msg_UartAdded.has_descriptor = true;
   _msg_UartAdded.descriptor.uart_nbr = uart_nbr;
   _msg_UartAdded.descriptor.type = type;
-  // For now, we'll use the device_id directly - will need callback encoding later
-  _msg_UartAdded.descriptor.device_id.arg = (void*)id;
+  // For now, we'll use the device_id directly - will need callback encoding
+  // later
+  _msg_UartAdded.descriptor.device_id.arg = (void *)id;
   _msg_UartAdded.success = success;
   // Calculate the size of the encoded message
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_uart_Added_fields,
-                           &_msg_UartAdded))
+  if (!pb_get_encoded_size(&sz_msg, ws_uart_Added_fields, &_msg_UartAdded))
     return false;
   // Attempt to encode the message into a buffer
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_uart_Added_fields,
-                   &_msg_UartAdded);
+  return pb_encode(&msg_stream, ws_uart_Added_fields, &_msg_UartAdded);
 }
 
 /*!
     @brief  Gets a pointer to the encoded UartAdded message.
     @return Pointer to the encoded UartAdded message.
 */
-ws_uart_Added *UARTModel::GetUartAddedMsg() {
-  return &_msg_UartAdded;
-}
+ws_uart_Added *UARTModel::GetUartAddedMsg() { return &_msg_UartAdded; }
 
 /*!
     @brief  Decodes a UartDeviceRemove message from an input stream.
@@ -109,17 +105,14 @@ ws_uart_Added *UARTModel::GetUartAddedMsg() {
 */
 bool UARTModel::DecodeUartDeviceRemove(pb_istream_t *stream) {
   memset(&_msg_UartRemove, 0, sizeof(_msg_UartRemove));
-  return pb_decode(stream, ws_uart_Remove_fields,
-                   &_msg_UartRemove);
+  return pb_decode(stream, ws_uart_Remove_fields, &_msg_UartRemove);
 }
 
 /*!
     @brief  Gets a pointer to the UartRemove message.
     @return Pointer to the UartRemove message.
 */
-ws_uart_Remove *UARTModel::GetUartRemoveMsg() {
-  return &_msg_UartRemove;
-}
+ws_uart_Remove *UARTModel::GetUartRemoveMsg() { return &_msg_UartRemove; }
 
 /*!
     @brief  Clears an UartInputEvent message.
@@ -139,15 +132,16 @@ void UARTModel::ClearUartInputEventMsg() {
     @param  device_id
             The unique identifier string for the UART device.
 */
-void UARTModel::ConfigureUartInputEventMsg(
-    uint32_t uart_nbr, ws_uart_DeviceType type,
-    const char *device_id) {
+void UARTModel::ConfigureUartInputEventMsg(uint32_t uart_nbr,
+                                           ws_uart_DeviceType type,
+                                           const char *device_id) {
   // Addressing information
   _msg_UartInputEvent.has_descriptor = true;
   _msg_UartInputEvent.descriptor.uart_nbr = uart_nbr;
   _msg_UartInputEvent.descriptor.type = type;
-  // For now, we'll use the device_id directly - will need callback encoding later
-  _msg_UartInputEvent.descriptor.device_id.arg = (void*)device_id;
+  // For now, we'll use the device_id directly - will need callback encoding
+  // later
+  _msg_UartInputEvent.descriptor.device_id.arg = (void *)device_id;
 }
 
 /*!

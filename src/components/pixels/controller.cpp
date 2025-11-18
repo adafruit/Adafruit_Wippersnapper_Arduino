@@ -68,7 +68,7 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
     return false;
   }
   if (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_pixels_added_tag,
-                          _pixels_model->GetPixelsAddedMsg())) {
+                       _pixels_model->GetPixelsAddedMsg())) {
     WS_DEBUG_PRINTLN("[pixels]: Unable to publish PixelsAdded message!");
     return false;
   }

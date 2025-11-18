@@ -29,28 +29,25 @@ public:
   GPSModel();
   ~GPSModel();
   bool DecodeGPSConfig(pb_istream_t *stream);
-  wippersnapper_gps_GPSConfig *GetGPSConfigMsg();
+  ws_gps_Config *GetGPSConfigMsg();
   // GPSEvent API
   void CreateGPSEvent();
   bool EncodeGPSEvent();
-  wippersnapper_gps_GPSEvent *GetGPSEvent();
+  ws_gps_Event *GetGPSEvent();
   bool ProcessNMEASentence(char *sentence, GPSHardware *drv);
-  wippersnapper_gps_GPSDateTime CreateGpsDatetime(uint8_t hour, uint8_t minute,
-                                                  uint8_t seconds,
-                                                  uint8_t milliseconds,
-                                                  uint8_t day, uint8_t month,
-                                                  uint8_t year);
-  bool AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
-                      uint8_t fix_status, float lat, char *lat_dir, float lon,
-                      char *lon_dir, float speed, float angle);
+  ws_gps_DateTime CreateGpsDatetime(uint8_t hour, uint8_t minute,
+                                    uint8_t seconds, uint8_t milliseconds,
+                                    uint8_t day, uint8_t month, uint8_t year);
+  bool AddGpsEventRMC(ws_gps_DateTime datetime, uint8_t fix_status, float lat,
+                      char *lat_dir, float lon, char *lon_dir, float speed,
+                      float angle);
 
-  bool AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
-                      uint8_t fix_status, float lat, char *lat_dir, float lon,
-                      char *lon_dir, uint8_t num_sats, float hdop, float alt,
-                      float geoid_height);
+  bool AddGpsEventGGA(ws_gps_DateTime datetime, uint8_t fix_status, float lat,
+                      char *lat_dir, float lon, char *lon_dir, uint8_t num_sats,
+                      float hdop, float alt, float geoid_height);
 
 private:
-  wippersnapper_gps_GPSConfig _msg_gps_config; ///< GPS configuration message
-  wippersnapper_gps_GPSEvent _msg_gps_event;   ///< GPS event message
+  ws_gps_Config _msg_gps_config; ///< GPS configuration message
+  ws_gps_Event _msg_gps_event;   ///< GPS event message
 };
 #endif // WS_GPS_MODEL_H

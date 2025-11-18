@@ -32,11 +32,10 @@ DigitalIOHardware::~DigitalIOHardware() {}
             The pin's direction.
     @return True if the pin was successfully configured. False otherwise.
 */
-bool DigitalIOHardware::ConfigurePin(
-    uint8_t name, ws_digitalio_Direction direction) {
+bool DigitalIOHardware::ConfigurePin(uint8_t name,
+                                     ws_digitalio_Direction direction) {
   // Configure an output pin
-  if (direction ==
-      ws_digitalio_Direction_D_OUTPUT) {
+  if (direction == ws_digitalio_Direction_D_OUTPUT) {
     // Set pin mode to OUTPUT
     pinMode(name, OUTPUT);
 // Initialize pin value to LOW
@@ -48,13 +47,9 @@ bool DigitalIOHardware::ConfigurePin(
     pinMode(name, OUTPUT);
     digitalWrite(name, LOW); // initialize LOW
 #endif
-  } else if (
-      direction ==
-      ws_digitalio_Direction_D_INPUT) {
+  } else if (direction == ws_digitalio_Direction_D_INPUT) {
     pinMode(name, INPUT);
-  } else if (
-      direction ==
-      ws_digitalio_Direction_D_INPUT_PULL_UP) {
+  } else if (direction == ws_digitalio_Direction_D_INPUT_PULL_UP) {
     pinMode(name, INPUT_PULLUP);
   } else {
     return false; // Invalid pin configuration

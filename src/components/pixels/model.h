@@ -38,12 +38,9 @@ public:
   ws_pixels_Added *GetPixelsAddedMsg();
 
 private:
-  ws_pixels_Add _msg_pixels_add; ///< PixelsAdd message object
-  ws_pixels_Remove
-      _msg_pixels_remove; ///< PixelsRemove message object
-  ws_pixels_Write
-      _msg_pixels_write; ///< PixelsWrite message object
-  ws_pixels_Added
-      _msg_pixels_added; ///< PixelsAdded message object
+  ws_pixels_Add _msg_pixels_add;       ///< PixelsAdd message object
+  ws_pixels_Remove _msg_pixels_remove; ///< PixelsRemove message object
+  ws_pixels_Write _msg_pixels_write;   ///< PixelsWrite message object
+  ws_pixels_Added _msg_pixels_added;   ///< PixelsAdded message object
 };
 #endif // WS_PIXELS_MODEL_H

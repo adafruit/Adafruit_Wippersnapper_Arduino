@@ -24,9 +24,8 @@ class PixelsHardware {
 public:
   PixelsHardware();
   ~PixelsHardware();
-  bool AddStrand(ws_pixels_Type type,
-                 ws_pixels_Order order, uint32_t num_pixels,
-                 uint32_t brightness, const char *pin_data,
+  bool AddStrand(ws_pixels_Type type, ws_pixels_Order order,
+                 uint32_t num_pixels, uint32_t brightness, const char *pin_data,
                  const char *pin_clock);
   uint16_t GetPinData();
   void FillStrand(uint32_t color);
@@ -35,7 +34,7 @@ public:
 private:
   Adafruit_NeoPixel *_neopixel = nullptr; ///< Used for NeoPixel strands
   Adafruit_DotStar *_dotstar = nullptr;   ///< Used for DotStar strands
-  ws_pixels_Type _type;  ///< Holds the type of strand
+  ws_pixels_Type _type;                   ///< Holds the type of strand
   uint16_t _pin_data;                     ///< Data pin for the strand
   bool AddNeoPixel(uint16_t num_pixels, uint16_t pin_data, neoPixelType order,
                    uint8_t brightness);

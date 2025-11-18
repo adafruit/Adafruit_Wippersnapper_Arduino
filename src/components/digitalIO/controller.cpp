@@ -55,8 +55,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     _dio_hardware->deinit(pin_name);
 
   // Attempt to configure the pin
-  if (!_dio_hardware->ConfigurePin(
-          pin_name, msg->gpio_direction)) {
+  if (!_dio_hardware->ConfigurePin(pin_name, msg->gpio_direction)) {
     WS_DEBUG_PRINTLN(
         "[digitalio] ERROR: Pin provided an invalid protobuf direction!");
     return false;
@@ -220,7 +219,8 @@ bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
   }
 
   // Ensure we got the correct value type
-  if (!_dio_model->GetDigitalIOWriteMsg()->value.which_value == ws_sensor_Event_bool_value_tag) {
+  if (!_dio_model->GetDigitalIOWriteMsg()->value.which_value ==
+      ws_sensor_Event_bool_value_tag) {
     WS_DEBUG_PRINTLN("[digitalio] ERROR: controller got invalid value type!");
     return false;
   }
@@ -339,9 +339,8 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     }
 
     // Publish the DigitalIOEvent message to the broker
-    if (!WsV2.PublishD2b(
-            ws_signal_DeviceToBroker_digitalio_tag,
-            _dio_model->GetDigitalIOEventMsg())) {
+    if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_digitalio_tag,
+                         _dio_model->GetDigitalIOEventMsg())) {
       WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to publish event message, "
                        "moving onto the next pin!");
       return false;
@@ -349,9 +348,8 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     WS_DEBUG_PRINTLN("[digitalio] Published DigitalIOEvent to broker!")
   } else {
     // let's log the event to the SD card
-    if (!WsV2._sdCardV2->LogGPIOSensorEventToSD(
-            pin_name, pin_value,
-            ws_sensor_Type_T_BOOLEAN))
+    if (!WsV2._sdCardV2->LogGPIOSensorEventToSD(pin_name, pin_value,
+                                                ws_sensor_Type_T_BOOLEAN))
       return false;
   }
 
@@ -384,8 +382,7 @@ void DigitalIOController::Update() {
         WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to record pin value!");
         continue;
       }
-    } else if (
-        pin.sample_mode == ws_digitalio_SampleMode_SM_TIMER) {
+    } else if (pin.sample_mode == ws_digitalio_SampleMode_SM_TIMER) {
       // Check if the timer has expired
       if (!CheckTimerPin(&pin))
         continue; // Timer has not expired yet, move onto the next pin

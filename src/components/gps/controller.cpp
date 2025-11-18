@@ -39,7 +39,7 @@ GPSController::~GPSController() {
  * @return True if the GPS was added successfully, false otherwise.
  */
 bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr,
-                           wippersnapper_gps_GPSConfig *gps_config) {
+                           ws_gps_Config *gps_config) {
   GPSHardware *gps_hw = new GPSHardware();
 
   if (!gps_hw->SetInterface(wire)) {
@@ -72,8 +72,7 @@ bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr,
  * @param gps_config Pointer to the GPS configuration message.
  * @return True if the GPS was added successfully, false otherwise.
  */
-bool GPSController::AddGPS(HardwareSerial *serial,
-                           wippersnapper_gps_GPSConfig *gps_config) {
+bool GPSController::AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config) {
   GPSHardware *gps_hw = new GPSHardware();
 
   if (!gps_hw->SetInterface(serial)) {
@@ -161,9 +160,8 @@ void GPSController::update() {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");
       } else {
         // Publish the GPSEvent to IO
-        if (!WsV2.PublishD2b(
-                wippersnapper_signal_DeviceToBroker_gps_event_tag,
-                _gps_model->GetGPSEvent())) {
+        if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_gps_tag,
+                             _gps_model->GetGPSEvent())) {
           WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
         } else {
           WS_DEBUG_PRINTLN("...ok!");

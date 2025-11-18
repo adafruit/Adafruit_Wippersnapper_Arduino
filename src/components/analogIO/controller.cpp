@@ -148,8 +148,8 @@ bool AnalogIOController::IsPinTimerExpired(analogioPin *pin, ulong cur_time) {
             The type of read to perform on the pin.
     @return True if the message was successfully encoded and published.
 */
-bool AnalogIOController::EncodePublishPinEvent(
-    uint8_t pin, float value, ws_sensor_Type read_type) {
+bool AnalogIOController::EncodePublishPinEvent(uint8_t pin, float value,
+                                               ws_sensor_Type read_type) {
   char c_pin_name[12];
   sprintf(c_pin_name, "A%d", pin);
 
@@ -158,7 +158,7 @@ bool AnalogIOController::EncodePublishPinEvent(
       WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIO raw adc message!");
       return false;
     }
-  } else if (read_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE) {
+  } else if (read_type == ws_sensor_Type_T_VOLTAGE) {
     if (!_analogio_model->EncodeAnalogIOEventVoltage(c_pin_name, value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIO voltage message!");
       return false;
@@ -170,9 +170,8 @@ bool AnalogIOController::EncodePublishPinEvent(
 
   // Publish the AnalogIO message to the broker
   WS_DEBUG_PRINTLN("Publishing AnalogIOEvent message to broker...");
-  if (!WsV2.PublishD2b(
-          wippersnapper_signal_DeviceToBroker_analogio_event_tag,
-          _analogio_model->GetAnalogIOEvent())) {
+  if (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_analogio_event_tag,
+                       _analogio_model->GetAnalogIOEvent())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analogio voltage event message, "
                      "moving onto the next pin!");
     return false;
@@ -193,11 +192,10 @@ bool AnalogIOController::EncodePublishPinEvent(
 */
 bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
   if (WsV2._sdCardV2->isModeOffline()) {
-    return WsV2._sdCardV2->LogGPIOSensorEventToSD(
-        pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
+    return WsV2._sdCardV2->LogGPIOSensorEventToSD(pin, value,
+                                                  ws_sensor_Type_T_RAW);
   } else {
-    return EncodePublishPinEvent(
-        pin, (float)value, wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
+    return EncodePublishPinEvent(pin, (float)value, ws_sensor_Type_T_RAW);
   }
 }
 
@@ -212,11 +210,10 @@ bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
 */
 bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
   if (WsV2._sdCardV2->isModeOffline()) {
-    return WsV2._sdCardV2->LogGPIOSensorEventToSD(
-        pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE);
+    return WsV2._sdCardV2->LogGPIOSensorEventToSD(pin, value,
+                                                  ws_sensor_Type_T_VOLTAGE);
   } else {
-    return EncodePublishPinEvent(
-        pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE);
+    return EncodePublishPinEvent(pin, value, ws_sensor_Type_T_VOLTAGE);
   }
 }
 
@@ -239,7 +236,7 @@ void AnalogIOController::update() {
       continue;
 
     // Pins timer has expired, lets read the pin
-    if (pin.read_mode == wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW) {
+    if (pin.read_mode == ws_sensor_Type_T_RAW) {
       // Read the pin's raw value
       uint16_t value = _analogio_hardware->GetPinValue(pin.name);
       // Encode and publish it to the broker
@@ -248,8 +245,7 @@ void AnalogIOController::update() {
         continue;
       }
       pin.prv_period = cur_time; // Reset the pin's period
-    } else if (pin.read_mode ==
-               wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE) {
+    } else if (pin.read_mode == ws_sensor_Type_T_VOLTAGE) {
       // Convert the raw value into voltage
       float pin_value = _analogio_hardware->GetPinVoltage(pin.name);
       // Encode and publish the voltage value to the broker

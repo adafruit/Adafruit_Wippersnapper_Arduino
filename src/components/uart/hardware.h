@@ -38,8 +38,7 @@ public:
   UARTHardware(const ws_uart_SerialConfig &config);
   ~UARTHardware();
   bool ConfigureSerial();
-  uint16_t UartPacketFormatToConfig(
-      const ws_uart_PacketFormat uart_format);
+  uint16_t UartPacketFormatToConfig(const ws_uart_PacketFormat uart_format);
   int GetBusNumber();
   bool isHardwareSerial() const;
   bool isSoftwareSerial() const;
@@ -50,8 +49,7 @@ public:
   uint32_t GetBaudRate();
 
 private:
-  ws_uart_SerialConfig
-      _config;                         ///< The UART serial configuration
+  ws_uart_SerialConfig _config;        ///< The UART serial configuration
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance for this bus
 #if HAS_SW_SERIAL
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance for this bus

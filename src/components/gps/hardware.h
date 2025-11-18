@@ -91,7 +91,7 @@ public:
   void SetNmeaBaudRate(int nmea_baud_rate);
   int GetNmeaBaudRate();
   void SetI2CAddress(uint32_t i2c_address);
-  bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
+  bool Handle_GPSConfig(ws_gps_Config *gps_config);
   Adafruit_GPS *GetAdaGps();
   GpsDriverType GetDriverType();
   GpsInterfaceType GetIfaceType();
