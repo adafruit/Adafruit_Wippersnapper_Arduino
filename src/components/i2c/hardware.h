@@ -35,19 +35,19 @@ public:
   void InitBus(bool is_default, const char *sda = nullptr,
                const char *scl = nullptr);
   TwoWire *GetBus();
-  wippersnapper_i2c_I2cBusStatus GetBusStatus();
-  bool ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results);
+  ws_i2c_BusStatus GetBusStatus();
+  bool ScanBus(ws_i2c_BusScanned *scan_results);
   // MUX
   bool AddMuxToBus(uint32_t address_register, const char *name);
   void RemoveMux();
   bool HasMux();
   void ClearMuxChannel();
   void SelectMuxChannel(uint32_t channel);
-  bool ScanMux(wippersnapper_i2c_I2cBusScanned *scan_results);
+  bool ScanMux(ws_i2c_BusScanned *scan_results);
 
 private:
   void TogglePowerPin();
-  wippersnapper_i2c_I2cBusStatus _bus_status; ///< I2C bus status
+  ws_i2c_BusStatus _bus_status; ///< I2C bus status
   TwoWire *_bus = nullptr;                    ///< I2C bus
   uint8_t _bus_sda;                           ///< SDA pin
   uint8_t _bus_scl;                           ///< SCL pin

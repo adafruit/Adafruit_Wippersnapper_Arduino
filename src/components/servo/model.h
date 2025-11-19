@@ -25,21 +25,18 @@ public:
   ServoModel();
   ~ServoModel();
   bool DecodeServoAdd(pb_istream_t *stream);
-  wippersnapper_servo_ServoAdd *GetServoAddMsg();
+  ws_servo_Add *GetServoAddMsg();
   bool EncodeServoAdded(char *pin_name, bool did_attach);
-  wippersnapper_servo_ServoAdded *GetServoAddedMsg();
+  ws_servo_Added *GetServoAddedMsg();
   bool DecodeServoRemove(pb_istream_t *stream);
-  wippersnapper_servo_ServoRemove *GetServoRemoveMsg();
+  ws_servo_Remove *GetServoRemoveMsg();
   bool DecodeServoWrite(pb_istream_t *stream);
-  wippersnapper_servo_ServoWrite *GetServoWriteMsg();
+  ws_servo_Write *GetServoWriteMsg();
 
 private:
-  wippersnapper_servo_ServoAdd _msg_servo_add; ///< ServoAdd message object
-  wippersnapper_servo_ServoAdded
-      _msg_servo_added; ///< ServoAdded message object
-  wippersnapper_servo_ServoRemove
-      _msg_servo_remove; ///< ServoRemove message object
-  wippersnapper_servo_ServoWrite
-      _msg_servo_write; ///< ServoWrite message object
+  ws_servo_Add _msg_servo_add;       ///< ServoAdd message object
+  ws_servo_Added _msg_servo_added;   ///< ServoAdded message object
+  ws_servo_Remove _msg_servo_remove; ///< ServoRemove message object
+  ws_servo_Write _msg_servo_write;   ///< ServoWrite message object
 };
 #endif // WS_SERVO_MODEL_H

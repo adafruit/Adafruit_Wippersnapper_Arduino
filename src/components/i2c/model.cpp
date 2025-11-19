@@ -54,7 +54,7 @@ I2cModel::~I2cModel() {
                 The sensors_event_t event.
     @returns  The value of the SensorType.
 */
-float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
+float GetValueFromSensorsEvent(ws_sensor_Type sensor_type,
                                sensors_event_t *event) {
   float value = 0.0;
   switch (sensor_type) {
@@ -150,7 +150,7 @@ bool I2cModel::DecodeI2cDeviceRemove(pb_istream_t *stream) {
     @brief    Returns a pointer to the I2cDeviceRemove message.
     @returns  Pointer to the I2cDeviceRemove message.
 */
-wippersnapper_i2c_I2cDeviceRemove *I2cModel::GetI2cDeviceRemoveMsg() {
+ws_i2c_DeviceRemove *I2cModel::GetI2cDeviceRemoveMsg() {
   return &_msg_i2c_device_remove;
 }
 
@@ -171,7 +171,7 @@ bool I2cModel::DecodeI2cBusScan(pb_istream_t *stream) {
     @brief    Returns a pointer to the I2cBusScan message.
     @returns  Pointer to a I2cBusScan message.
 */
-wippersnapper_i2c_I2cBusScan *I2cModel::GetI2cBusScanMsg() {
+ws_i2c_BusScan *I2cModel::GetI2cBusScanMsg() {
   return &_msg_i2c_bus_scan;
 }
 
@@ -179,7 +179,7 @@ wippersnapper_i2c_I2cBusScan *I2cModel::GetI2cBusScanMsg() {
     @brief    Returns a pointer to the I2cBusScanned message.
     @returns  Pointer to a I2cBusScanned message.
 */
-wippersnapper_i2c_I2cBusScanned *I2cModel::GetI2cBusScannedMsg() {
+ws_i2c_BusScanned *I2cModel::GetI2cBusScannedMsg() {
   return &_msg_i2c_bus_scanned;
 }
 
@@ -246,7 +246,7 @@ bool I2cModel::DecodeI2cDeviceAddReplace(pb_istream_t *stream) {
     @brief    Returns a pointer to the I2cDeviceAddOrReplace message.
     @returns  Pointer to the I2cDeviceAddOrReplace message.
 */
-wippersnapper_i2c_I2cDeviceAddOrReplace *
+ws_i2c_DeviceAddedOrReplaced *
 I2cModel::GetI2cDeviceAddOrReplaceMsg() {
   return &_msg_i2c_device_add_replace;
 }
@@ -255,7 +255,7 @@ I2cModel::GetI2cDeviceAddOrReplaceMsg() {
     @brief    Returns a pointer to the I2cOutputAdd message.
     @returns  Pointer to the I2cOutputAdd message.
 */
-wippersnapper_i2c_output_I2cOutputAdd *I2cModel::GetI2cOutputAddMsg() {
+ws_i2c_output_Add *I2cModel::GetI2cOutputAddMsg() {
   return &_msg_i2c_device_add_replace.i2c_output_add;
 }
 
@@ -270,9 +270,9 @@ wippersnapper_i2c_output_I2cOutputAdd *I2cModel::GetI2cOutputAddMsg() {
     @returns  True if the message was encoded successfully, False otherwise.
 */
 bool I2cModel::encodeMsgI2cDeviceAddedorReplaced(
-    wippersnapper_i2c_I2cDeviceDescriptor device_descriptor,
-    wippersnapper_i2c_I2cBusStatus bus_status,
-    wippersnapper_i2c_I2cDeviceStatus device_status) {
+    ws_i2c_DeviceDescriptor device_descriptor,
+    ws_i2c_BusStatus bus_status,
+    ws_i2c_DeviceStatus device_status) {
   size_t sz_msg;
 
   // Fill I2cDeviceAddedOrReplaced message
@@ -300,7 +300,7 @@ bool I2cModel::encodeMsgI2cDeviceAddedorReplaced(
     @brief    Returns a pointer to the I2cDeviceAddedOrReplaced message.
     @returns  Pointer to the I2cDeviceAddedOrReplaced message.
 */
-wippersnapper_i2c_I2cDeviceAddedOrReplaced *
+ws_i2c_DeviceAddedOrReplaced *
 I2cModel::GetMsgI2cDeviceAddedOrReplaced() {
   return &_msg_i2c_device_added_replaced;
 }
@@ -348,7 +348,7 @@ void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
     @returns  True if the SensorEvent was added successfully, False otherwise.
 */
 bool I2cModel::AddI2cDeviceSensorEvent(
-    sensors_event_t &event, wippersnapper_sensor_SensorType sensor_type) {
+    sensors_event_t &event, ws_sensor_Type sensor_type) {
   if (_msg_i2c_device_event.i2c_device_events_count >= MAX_DEVICE_EVENTS)
     return false; // Maximum amount of events reached
 
@@ -384,7 +384,7 @@ bool I2cModel::EncodeI2cDeviceEvent() {
     @brief    Returns a pointer to the I2cDeviceEvent message.
     @returns  Pointer to the I2cDeviceEvent message.
 */
-wippersnapper_i2c_I2cDeviceEvent *I2cModel::GetI2cDeviceEvent() {
+ws_i2c_DeviceEvent *I2cModel::GetI2cDeviceEvent() {
   return &_msg_i2c_device_event;
 }
 
@@ -406,7 +406,7 @@ bool I2cModel::DecodeI2cDeviceOutputWrite(pb_istream_t *stream) {
     @brief    Returns a pointer to the I2cDeviceOutputWrite message.
     @returns  Pointer to the I2cDeviceOutputWrite message.
 */
-wippersnapper_i2c_I2cDeviceOutputWrite *I2cModel::GetI2cDeviceOutputWriteMsg() {
+ws_i2c_DeviceOutputWrite *I2cModel::GetI2cDeviceOutputWriteMsg() {
   return &_msg_i2c_device_output_write;
 }
 
@@ -456,7 +456,7 @@ bool I2cOutputModel::DecodeCharLCDWrite(pb_istream_t *stream) {
     @brief    Returns a pointer to the LedBackpackWrite message.
     @returns  Pointer to the LedBackpackWrite message.
 */
-wippersnapper_i2c_output_LedBackpackWrite *
+ws_i2c_output_LedBackpackWrite *
 I2cOutputModel::GetLedBackpackWriteMsg() {
   return &_msg_led_backpack_write;
 }
@@ -465,6 +465,6 @@ I2cOutputModel::GetLedBackpackWriteMsg() {
     @brief    Returns a pointer to the CharLCDWrite message.
     @returns  Pointer to the CharLCDWrite message.
 */
-wippersnapper_i2c_output_CharLCDWrite *I2cOutputModel::GetCharLCDWriteMsg() {
+ws_i2c_output_CharLCDWrite *I2cOutputModel::GetCharLCDWriteMsg() {
   return &_msg_char_lcd_write;
 }

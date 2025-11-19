@@ -93,8 +93,8 @@ public:
   bool Handle_I2cDeviceOutputWrite(pb_istream_t *stream);
   // Publishing //
   bool PublishI2cDeviceAddedorReplaced(
-      const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,
-      const wippersnapper_i2c_I2cDeviceStatus &device_status);
+      const ws_i2c_DeviceDescriptor &device_descriptor,
+      const ws_i2c_DeviceStatus &device_status);
   // Helpers //
   bool IsBusStatusOK(bool is_alt_bus = false);
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);

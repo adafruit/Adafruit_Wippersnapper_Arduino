@@ -37,19 +37,19 @@ public:
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
   bool encodeMsgI2cDeviceAddedorReplaced(
-      wippersnapper_i2c_I2cDeviceDescriptor i2c_device_description,
-      wippersnapper_i2c_I2cBusStatus i2c_bus_status,
-      wippersnapper_i2c_I2cDeviceStatus i2c_device_status);
+      ws_i2c_DeviceDescriptor i2c_device_description,
+      ws_i2c_BusStatus i2c_bus_status,
+      ws_i2c_DeviceStatus i2c_device_status);
   bool EncodeI2cDeviceEvent();
   // Getters
-  wippersnapper_i2c_I2cDeviceRemove *GetI2cDeviceRemoveMsg();
-  wippersnapper_i2c_I2cDeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
-  wippersnapper_i2c_output_I2cOutputAdd *GetI2cOutputAddMsg();
-  wippersnapper_i2c_I2cDeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
-  wippersnapper_i2c_I2cDeviceEvent *GetI2cDeviceEvent();
-  wippersnapper_i2c_I2cBusScan *GetI2cBusScanMsg();
-  wippersnapper_i2c_I2cBusScanned *GetI2cBusScannedMsg();
-  wippersnapper_i2c_I2cDeviceOutputWrite *GetI2cDeviceOutputWriteMsg();
+  ws_i2c_DeviceRemove *GetI2cDeviceRemoveMsg();
+  ws_i2c_DeviceAddedOrReplaced *GetI2cDeviceAddOrReplaceMsg();
+  ws_i2c_output_Add *GetI2cOutputAddMsg();
+  ws_i2c_DeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
+  ws_i2c_DeviceEvent *GetI2cDeviceEvent();
+  ws_i2c_BusScan *GetI2cBusScanMsg();
+  ws_i2c_BusScanned *GetI2cBusScannedMsg();
+  ws_i2c_DeviceOutputWrite *GetI2cDeviceOutputWriteMsg();
   // I2cBusScanned Message API
   void ClearI2cBusScanned();
   bool AddDeviceToBusScan(const char *bus_scl, const char *bus_sda,
@@ -63,17 +63,17 @@ public:
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
   bool AddI2cDeviceSensorEvent(sensors_event_t &event,
-                               wippersnapper_sensor_SensorType sensor_type);
+                               ws_sensor_Type sensor_type);
 
 private:
-  wippersnapper_i2c_I2cBusScan _msg_i2c_bus_scan;
-  wippersnapper_i2c_I2cBusScanned _msg_i2c_bus_scanned;
-  wippersnapper_i2c_I2cDeviceAddOrReplace _msg_i2c_device_add_replace;
-  wippersnapper_i2c_I2cDeviceAddedOrReplaced _msg_i2c_device_added_replaced;
-  wippersnapper_i2c_I2cDeviceRemove _msg_i2c_device_remove;
-  wippersnapper_i2c_I2cDeviceRemoved _msg_i2c_device_removed;
-  wippersnapper_i2c_I2cDeviceEvent _msg_i2c_device_event;
-  wippersnapper_i2c_I2cDeviceOutputWrite _msg_i2c_device_output_write;
+  ws_i2c_BusScan _msg_i2c_bus_scan;
+  ws_i2c_BusScanned _msg_i2c_bus_scanned;
+  ws_i2c_DeviceAddedOrReplaced _msg_i2c_device_add_replace;
+  ws_i2c_DeviceAddedOrReplaced _msg_i2c_device_added_replaced;
+  ws_i2c_DeviceRemove _msg_i2c_device_remove;
+  ws_i2c_DeviceRemoved _msg_i2c_device_removed;
+  ws_i2c_DeviceEvent _msg_i2c_device_event;
+  ws_i2c_DeviceOutputWrite _msg_i2c_device_output_write;
 };
 
 /*!
@@ -88,11 +88,11 @@ public:
   bool DecodeLedBackpackWrite(pb_istream_t *stream);
   bool DecodeCharLCDWrite(pb_istream_t *stream);
   // Getters
-  wippersnapper_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
-  wippersnapper_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
+  ws_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
+  ws_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
 
 private:
-  wippersnapper_i2c_output_LedBackpackWrite _msg_led_backpack_write;
-  wippersnapper_i2c_output_CharLCDWrite _msg_char_lcd_write;
+  ws_i2c_output_LedBackpackWrite _msg_led_backpack_write;
+  ws_i2c_output_CharLCDWrite _msg_char_lcd_write;
 };
 #endif // WS_I2C_MODEL_H

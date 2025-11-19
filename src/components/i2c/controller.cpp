@@ -398,7 +398,7 @@ static const std::map<std::string, FnCreateI2cOutputDrv> I2cFactoryOutput = {
 */
 drvBase *CreateI2cSensorDrv(const char *driver_name, TwoWire *i2c,
                             uint16_t addr, uint32_t i2c_mux_channel,
-                            wippersnapper_i2c_I2cDeviceStatus &status) {
+                            ws_i2c_DeviceStatus &status) {
   auto it = I2cFactorySensor.find(driver_name);
   if (it == I2cFactorySensor.end()) {
     status =
@@ -426,7 +426,7 @@ drvBase *CreateI2cSensorDrv(const char *driver_name, TwoWire *i2c,
 */
 drvOutputBase *CreateI2cOutputDrv(const char *driver_name, TwoWire *i2c,
                                   uint16_t addr, uint32_t i2c_mux_channel,
-                                  wippersnapper_i2c_I2cDeviceStatus &status) {
+                                  ws_i2c_DeviceStatus &status) {
   auto it = I2cFactoryOutput.find(driver_name);
   if (it == I2cFactoryOutput.end()) {
     status =
@@ -539,8 +539,8 @@ bool I2cController::IsBusStatusOK(bool is_alt_bus) {
               successfully, False otherwise.
 */
 bool I2cController::PublishI2cDeviceAddedorReplaced(
-    const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,
-    const wippersnapper_i2c_I2cDeviceStatus &device_status) {
+    const ws_i2c_DeviceDescriptor &device_descriptor,
+    const ws_i2c_DeviceStatus &device_status) {
   // If we're in offline mode, don't publish out to IO
   if (WsV2._sdCardV2->isModeOffline())
     return true; // Back out if we're in offline mode
@@ -582,7 +582,7 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
   // TODO: Remember to handle removal of a mux device or a device on a mux
   // strlen(descriptor.i2c_bus_sda) == 0
 
-  wippersnapper_i2c_I2cDeviceRemove *msgRemove =
+  ws_i2c_DeviceRemove *msgRemove =
       _i2c_model->GetI2cDeviceRemoveMsg();
   if (!msgRemove->has_i2c_device_description) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2cDeviceRemove message missing required "
@@ -620,7 +620,7 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
       // Case 2: Is the I2C device a MUX?
       if (msgRemove->i2c_device_description.i2c_device_address ==
           msgRemove->i2c_device_description.i2c_mux_address) {
-        wippersnapper_i2c_I2cBusScanned scan_results;
+        ws_i2c_BusScanned scan_results;
         _i2c_bus_default->ScanMux(&scan_results);
         for (int i = 0; i < scan_results.i2c_bus_found_devices_count; i++) {
           // Select the channel and remove the device
@@ -689,7 +689,7 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
   }
 
   _i2c_model->ClearI2cBusScanned();
-  wippersnapper_i2c_I2cBusScanned *scan_results =
+  ws_i2c_BusScanned *scan_results =
       _i2c_model->GetI2cBusScannedMsg();
 
   bool scan_success = true;
@@ -791,7 +791,7 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
                      "message!");
     return false;
   }
-  wippersnapper_i2c_I2cDeviceDescriptor descriptor =
+  ws_i2c_DeviceDescriptor descriptor =
       _i2c_model->GetI2cDeviceOutputWriteMsg()->i2c_device_description;
 
   // Attempt to find the driver
@@ -868,13 +868,13 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     return false;
   }
 
-  wippersnapper_i2c_I2cDeviceStatus device_status =
+  ws_i2c_DeviceStatus device_status =
       wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_UNSPECIFIED;
   // Parse out device name and descriptor
   char device_name[15];
   strcpy(device_name,
          _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name);
-  wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
+  ws_i2c_DeviceDescriptor device_descriptor =
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
 
   // Is this an i2c output device?

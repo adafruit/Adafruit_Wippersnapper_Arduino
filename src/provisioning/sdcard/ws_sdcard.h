@@ -56,13 +56,13 @@ public:
   bool isModeOffline() { return is_mode_offline; }
   void waitForSerialConfig();
   bool LogGPIOSensorEventToSD(uint8_t pin, float value,
-                              wippersnapper_sensor_SensorType read_type);
+                              ws_sensor_Type read_type);
   bool LogGPIOSensorEventToSD(uint8_t pin, bool value,
-                              wippersnapper_sensor_SensorType read_type);
+                              ws_sensor_Type read_type);
   bool LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
-                              wippersnapper_sensor_SensorType read_type);
-  bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
-  bool LogI2cDeviceEvent(wippersnapper_i2c_I2cDeviceEvent *msg_device_event);
+                              ws_sensor_Type read_type);
+  bool LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg);
+  bool LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event);
 
 private:
   void calculateFileLimits();
@@ -78,31 +78,31 @@ private:
   bool InitSoftRTC();
   void TickSoftRTC();
   uint32_t GetSoftRTCTime();
-  wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
+  ws_sensor_Type ParseSensorType(const char *sensor_type);
   bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
                          const char *pin, float period, bool value,
                          const char *sample_mode, const char *direction,
                          const char *pull);
-  bool ParseAnalogIOAdd(wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd,
+  bool ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd,
                         const char *pin, float period, const char *mode);
-  bool ParseDS18X20Add(wippersnapper_ds18x20_Ds18x20Add &msg_DS18X20Add,
+  bool ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add,
                        const char *pin, int resolution, float period,
                        int num_sensors, const char *sensor_type_1,
                        const char *sensor_type_2);
   bool ParseI2cDeviceAddReplace(
       JsonObject &component,
-      wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_device_add_replace);
+      ws_i2c_DeviceAddedOrReplaced &msg_i2c_device_add_replace);
   uint32_t HexStrToInt(const char *hex_str);
 
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
-                    wippersnapper_sensor_SensorType read_type);
+                    ws_sensor_Type read_type);
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
-                    wippersnapper_sensor_SensorType read_type);
+                    ws_sensor_Type read_type);
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
-                    wippersnapper_sensor_SensorType read_type);
+                    ws_sensor_Type read_type);
   bool LogJSONDoc(JsonDocument &doc);
   bool AddSignalMessageToSharedBuffer(
-      wippersnapper_signal_BrokerToDevice &msg_signal);
+      ws_signal_BrokerToDevice &msg_signal);
 
   SdSpiConfig _sd_spi_cfg; ///< SPI configuration for the SD card
   SdFat _sd;               ///< SD object from Adafruit SDFat library

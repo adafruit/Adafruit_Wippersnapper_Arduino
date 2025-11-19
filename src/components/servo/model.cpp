@@ -50,7 +50,7 @@ bool ServoModel::DecodeServoAdd(pb_istream_t *stream) {
     @brief  Returns a pointer to the ServoAdd message
     @returns Pointer to ServoAdd message
 */
-wippersnapper_servo_ServoAdd *ServoModel::GetServoAddMsg() {
+ws_servo_Add *ServoModel::GetServoAddMsg() {
   return &_msg_servo_add;
 }
 
@@ -84,7 +84,7 @@ bool ServoModel::EncodeServoAdded(char *pin_name, bool did_attach) {
     @brief  Returns a pointer to the ServoAdded message
     @returns Pointer to ServoAdded message
 */
-wippersnapper_servo_ServoAdded *ServoModel::GetServoAddedMsg() {
+ws_servo_Added *ServoModel::GetServoAddedMsg() {
   return &_msg_servo_added;
 }
 
@@ -104,7 +104,7 @@ bool ServoModel::DecodeServoRemove(pb_istream_t *stream) {
     @brief  Returns a pointer to the ServoRemove message
     @returns Pointer to ServoRemove message
 */
-wippersnapper_servo_ServoRemove *ServoModel::GetServoRemoveMsg() {
+ws_servo_Remove *ServoModel::GetServoRemoveMsg() {
   return &_msg_servo_remove;
 }
 
@@ -124,6 +124,6 @@ bool ServoModel::DecodeServoWrite(pb_istream_t *stream) {
     @brief  Returns a pointer to the ServoWrite message
     @returns Pointer to ServoWrite message
 */
-wippersnapper_servo_ServoWrite *ServoModel::GetServoWriteMsg() {
+ws_servo_Write *ServoModel::GetServoWriteMsg() {
   return &_msg_servo_write;
 }

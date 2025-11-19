@@ -115,7 +115,7 @@ wippersnapper_ds18x20_Ds18x20Remove *DS18X20Model::GetDS18x20RemoveMsg() {
     @brief  Gets a pointer to the Ds18x20Event message.
     @return Pointer to the Ds18x20Event message.
 */
-wippersnapper_ds18x20_Ds18x20Event *DS18X20Model::GetDS18x20EventMsg() {
+ws_ds18x20_Event *DS18X20Model::GetDS18x20EventMsg() {
   return &_msg_DS18x20Event;
 }
 
@@ -154,7 +154,7 @@ void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
     @param  sensor_value
             The event's value.
 */
-void DS18X20Model::addSensorEvent(wippersnapper_sensor_SensorType sensor_type,
+void DS18X20Model::addSensorEvent(ws_sensor_Type sensor_type,
                                   float sensor_value) {
   _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count].type =
       sensor_type;

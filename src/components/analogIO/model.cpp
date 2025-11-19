@@ -100,29 +100,28 @@ wippersnapper_analogio_AnalogIOEvent *AnalogIOModel::GetAnalogIOEvent() {
 */
 bool AnalogIOModel::EncodeAnalogIOEvent(
     char *pin_name, float pin_value,
-    wippersnapper_sensor_SensorType read_type) {
+    ws_sensor_Type read_type) {
   // Initialize the AnalogIOEvent message to default values
   memset(&_msg_AnalogioEvent, 0, sizeof(_msg_AnalogioEvent));
   // Fill the AnalogIOEvent message's fields
   strncpy(_msg_AnalogioEvent.pin_name, pin_name,
           sizeof(_msg_AnalogioEvent.pin_name));
-  _msg_AnalogioEvent.has_sensor_event = true;
-  _msg_AnalogioEvent.sensor_event.type = read_type;
-  _msg_AnalogioEvent.sensor_event.which_value =
-      wippersnapper_sensor_SensorEvent_float_value_tag;
-  _msg_AnalogioEvent.sensor_event.value.float_value = pin_value;
+  _msg_AnalogioEvent.has_event = true;
+  _msg_AnalogioEvent.event.type = read_type;
+  _msg_AnalogioEvent.event.which_value = ws_sensor_Event_float_value_tag;
+  _msg_AnalogioEvent.event.value.float_value = pin_value;
 
   // Obtain size of an encoded AnalogIOEvent message
   size_t sz_aio_event_msg;
   if (!pb_get_encoded_size(&sz_aio_event_msg,
-                           wippersnapper_analogio_AnalogIOEvent_fields,
+                           ws_analogio_Event_fields,
                            &_msg_AnalogioEvent))
     return false;
 
   // Encode the AnalogIOEvent message
   uint8_t buf[sz_aio_event_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, wippersnapper_analogio_AnalogIOEvent_fields,
+  return pb_encode(&msg_stream, ws_analogio_Event_fields,
                    &_msg_AnalogioEvent);
 }
 

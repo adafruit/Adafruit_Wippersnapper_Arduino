@@ -50,7 +50,7 @@ ServoController::~ServoController() {
 */
 bool ServoController::PublishServoAddedMsg(
     const char *servo_pin, bool did_attach,
-    wippersnapper_servo_ServoAdd *msg_add) {
+    ws_servo_Add *msg_add) {
   _servo_model->EncodeServoAdded(msg_add->servo_pin, did_attach);
   if (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_servo_added_tag,
                        _servo_model->GetServoAddedMsg())) {
@@ -80,7 +80,7 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
     return false;
   }
 
-  wippersnapper_servo_ServoAdd *msg_add = _servo_model->GetServoAddMsg();
+  ws_servo_Add *msg_add = _servo_model->GetServoAddMsg();
   uint8_t pin = atoi(msg_add->servo_pin + 1);
   _servo_hardware[_active_servo_pins] = new ServoHardware(
       pin, (int)msg_add->min_pulse_width, (int)msg_add->max_pulse_width,
@@ -119,7 +119,7 @@ bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoWrite message!");
     return false;
   }
-  wippersnapper_servo_ServoWrite *msg_write = _servo_model->GetServoWriteMsg();
+  ws_servo_Write *msg_write = _servo_model->GetServoWriteMsg();
   uint8_t pin = atoi(msg_write->servo_pin + 1);
   int servo_idx = GetServoIndex(pin);
   if (servo_idx == -1) {
@@ -147,7 +147,7 @@ bool ServoController::Handle_Servo_Remove(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoRemove message!");
     return false;
   }
-  wippersnapper_servo_ServoRemove *msg_remove =
+  ws_servo_Remove *msg_remove =
       _servo_model->GetServoRemoveMsg();
   uint8_t pin = atoi(msg_remove->servo_pin + 1);
   int servo_idx = GetServoIndex(pin);

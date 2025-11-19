@@ -218,7 +218,7 @@ void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
             The sensor type to parse.
     @returns The corresponding SensorType
 */
-wippersnapper_sensor_SensorType
+ws_sensor_Type
 ws_sdcard::ParseSensorType(const char *sensor_type) {
   if (strcmp(sensor_type, "raw") == 0) {
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
@@ -492,7 +492,7 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
 */
 bool ws_sdcard::ParseI2cDeviceAddReplace(
     JsonObject &component,
-    wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_add) {
+    ws_i2c_DeviceAddedOrReplaced &msg_i2c_add) {
   strcpy(msg_i2c_add.i2c_device_name,
          component["i2cDeviceName"] | UNKNOWN_VALUE);
   msg_i2c_add.i2c_device_period = component["period"] | 0.0;
@@ -771,7 +771,7 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
-      wippersnapper_i2c_I2cDeviceAddOrReplace msg_i2c_add_replace =
+      ws_i2c_DeviceAddedOrReplaced msg_i2c_add_replace =
           wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
       if (!ParseI2cDeviceAddReplace(component, msg_i2c_add_replace)) {
         WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to parse I2C Component");
@@ -826,7 +826,7 @@ uint32_t ws_sdcard::GetTimestamp() {
             The SensorType enum to convert.
     @returns A string representation of the SensorType enum.
 */
-const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
+const char *SensorTypeToSIUnit(ws_sensor_Type sensorType) {
   switch (sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED:
     return "UNSPECIFIED";
@@ -919,7 +919,7 @@ const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
             The sensor type.
 */
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
-                             wippersnapper_sensor_SensorType read_type) {
+                             ws_sensor_Type read_type) {
   doc["timestamp"] = GetTimestamp();
   doc["pin"] = "A" + String(pin);
   doc["value"] = value;
@@ -938,7 +938,7 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
             The sensor type.
 */
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
-                             wippersnapper_sensor_SensorType read_type) {
+                             ws_sensor_Type read_type) {
   doc["timestamp"] = GetTimestamp();
   doc["pin"] = "A" + String(pin);
   doc["value"] = value;
@@ -957,7 +957,7 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
             The sensor type.
 */
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
-                             wippersnapper_sensor_SensorType read_type) {
+                             ws_sensor_Type read_type) {
   doc["timestamp"] = GetTimestamp();
   doc["pin"] = "D" + String(pin);
   doc["value"] = value;
@@ -1019,7 +1019,7 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
+    uint8_t pin, float value, ws_sensor_Type read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1038,7 +1038,7 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, uint16_t value, wippersnapper_sensor_SensorType read_type) {
+    uint8_t pin, uint16_t value, ws_sensor_Type read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1057,7 +1057,7 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, bool value, wippersnapper_sensor_SensorType read_type) {
+    uint8_t pin, bool value, ws_sensor_Type read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1076,7 +1076,7 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogDS18xSensorEventToSD(
-    wippersnapper_ds18x20_Ds18x20Event *event_msg) {
+    ws_ds18x20_Event *event_msg) {
   JsonDocument doc;
   // Iterate over the event message's sensor events
   // TODO: Standardize this Event with I2C
@@ -1098,10 +1098,10 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogI2cDeviceEvent(
-    wippersnapper_i2c_I2cDeviceEvent *msg_device_event) {
+    ws_i2c_DeviceEvent *msg_device_event) {
   JsonDocument doc;
   // Pull the DeviceDescriptor out
-  wippersnapper_i2c_I2cDeviceDescriptor descriptor =
+  ws_i2c_DeviceDescriptor descriptor =
       msg_device_event->i2c_device_description;
   char hex_addr[5];
   snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.i2c_device_address);
