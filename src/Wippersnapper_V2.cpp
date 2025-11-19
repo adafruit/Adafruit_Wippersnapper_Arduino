@@ -120,11 +120,6 @@ void Wippersnapper_V2::provision() {
 }
 
 /*!
-    @brief    Disconnects from Adafruit IO+ Wippersnapper_V2.
-*/
-void Wippersnapper_V2::disconnect() { _disconnect(); }
-
-/*!
     @brief    Handles a Checkin Response message and initializes the
               device's GPIO classes.
     @param    stream

@@ -15,7 +15,8 @@
         "unordered_set": "cpp",
         "format": "cpp",
         "text_encoding": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "*.inc": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
     "dotnet.defaultSolution": "disable",
