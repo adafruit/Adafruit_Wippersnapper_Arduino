@@ -43,23 +43,20 @@ DS18X20Model::~DS18X20Model() {
 bool DS18X20Model::DecodeDS18x20Add(pb_istream_t *stream) {
   memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
   // Attempt to decode the stream into a Ds18x20Add message
-  return pb_decode(stream, wippersnapper_ds18x20_Ds18x20Add_fields,
-                   &_msg_DS18x20Add);
+  return pb_decode(stream, ws_ds18x20_Add_fields, &_msg_DS18x20Add);
 }
 
 /*!
     @brief  Gets a pointer to the Ds18x20Add message.
     @return Pointer to the Ds18x20Add message.
 */
-wippersnapper_ds18x20_Ds18x20Add *DS18X20Model::GetDS18x20AddMsg() {
-  return &_msg_DS18x20Add;
-}
+ws_ds18x20_Add *DS18X20Model::GetDS18x20AddMsg() { return &_msg_DS18x20Add; }
 
 /*!
     @brief  Returns a pointer to the Ds18x20Added message.
     @return Pointer to the Ds18x20Added message.
 */
-wippersnapper_ds18x20_Ds18x20Added *DS18X20Model::GetDS18x20AddedMsg() {
+ws_ds18x20_Added *DS18X20Model::GetDS18x20AddedMsg() {
   return &_msg_DS18x20Added;
 }
 
@@ -81,14 +78,13 @@ bool DS18X20Model::EncodeDS18x20Added(char *onewire_pin, bool is_init) {
 
   // Encode the Ds18x20Added message
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, wippersnapper_ds18x20_Ds18x20Added_fields,
+  if (!pb_get_encoded_size(&sz_msg, ws_ds18x20_Added_fields,
                            &_msg_DS18x20Added))
     return false;
 
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, wippersnapper_ds18x20_Ds18x20Added_fields,
-                   &_msg_DS18x20Added);
+  return pb_encode(&msg_stream, ws_ds18x20_Added_fields, &_msg_DS18x20Added);
 }
 
 /*!
@@ -99,15 +95,14 @@ bool DS18X20Model::EncodeDS18x20Added(char *onewire_pin, bool is_init) {
 */
 bool DS18X20Model::DecodeDS18x20Remove(pb_istream_t *stream) {
   memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
-  return pb_decode(stream, wippersnapper_ds18x20_Ds18x20Remove_fields,
-                   &_msg_DS18x20Remove);
+  return pb_decode(stream, ws_ds18x20_Remove_fields, &_msg_DS18x20Remove);
 }
 
 /*!
     @brief  Gets a pointer to the Ds18x20Remove message.
     @return Pointer to the Ds18x20Remove message.
 */
-wippersnapper_ds18x20_Ds18x20Remove *DS18X20Model::GetDS18x20RemoveMsg() {
+ws_ds18x20_Remove *DS18X20Model::GetDS18x20RemoveMsg() {
   return &_msg_DS18x20Remove;
 }
 
@@ -158,7 +153,7 @@ void DS18X20Model::addSensorEvent(ws_sensor_Type sensor_type,
   _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count].type =
       sensor_type;
   _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count]
-      .which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+      .which_value = ws_sensor_Event_float_value_tag;
 
   // Convert the float to 2 decimal places
   sensor_value = roundf(sensor_value * 100) / 100;

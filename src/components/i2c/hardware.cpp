@@ -18,7 +18,7 @@
     @brief  Default I2C bus hardware class constructor
 */
 I2cHardware::I2cHardware() {
-  _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
+  _bus_status = ws_i2c_BusStatus_BS_UNSPECIFIED;
   _has_mux = false;
   InitBus(true); // Init default bus
 }
@@ -31,7 +31,7 @@ I2cHardware::I2cHardware() {
                 The desired SCL pin.
 */
 I2cHardware::I2cHardware(const char *sda, const char *scl) {
-  _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
+  _bus_status = ws_i2c_BusStatus_BS_UNSPECIFIED;
   _has_mux = false;
   InitBus(false, sda, scl); // Init alt. bus
 }
@@ -82,7 +82,7 @@ void I2cHardware::TogglePowerPin() {
 */
 void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   if (!is_default && (sda == nullptr || scl == nullptr)) {
-    _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
+    _bus_status = ws_i2c_BusStatus_BS_UNSPECIFIED;
     return;
   }
 // Some development boards define a pin that controls power
@@ -114,7 +114,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 
   // Is the bus stuck LOW?
   if (digitalRead(_bus_scl) == 0 || digitalRead(_bus_sda) == 0) {
-    _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_PULLUPS;
+    _bus_status = ws_i2c_BusStatus_BS_ERROR_PULLUPS;
     return;
   }
 
@@ -132,7 +132,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
     _bus->setPins(_bus_sda, _bus_scl);
   }
   if (!_bus->begin(_bus_sda, _bus_scl)) {
-    _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_HANG;
+    _bus_status = ws_i2c_BusStatus_BS_ERROR_HANG;
     return;
   }
   _bus->setClock(50000);
@@ -152,7 +152,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 #error "I2C bus implementation not supported by this platform!"
 #endif
 
-  _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS;
+  _bus_status = ws_i2c_BusStatus_BS_SUCCESS;
 }
 
 /*!
@@ -190,23 +190,19 @@ bool I2cHardware::ScanBus(ws_i2c_BusScanned *scan_results) {
     if (endTransmissionRC == 0) {
       WS_DEBUG_PRINTLN("[i2c] Found Device!");
       // TODO: Abstract this? Allow for mux flags to be set here, too
-      scan_results
-          ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+      scan_results->bus_found_devices[scan_results->bus_found_devices_count]
           .i2c_device_address = address;
-      scan_results
-          ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+      scan_results->bus_found_devices[scan_results->bus_found_devices_count]
           .i2c_mux_address = 0xFFFF; // Tell user that device is not on a mux
       strcpy(
-          scan_results
-              ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+          scan_results->bus_found_devices[scan_results->bus_found_devices_count]
               .i2c_bus_sda,
           i2c_bus_sda);
       strcpy(
-          scan_results
-              ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+          scan_results->bus_found_devices[scan_results->bus_found_devices_count]
               .i2c_bus_scl,
           i2c_bus_scl);
-      scan_results->i2c_bus_found_devices_count++;
+      scan_results->bus_found_devices_count++;
     }
 #if defined(ARDUINO_ARCH_ESP32)
     // Check endTransmission()'s return code (Arduino-ESP32 ONLY)

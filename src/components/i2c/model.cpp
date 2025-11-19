@@ -270,14 +270,13 @@ bool I2cModel::encodeMsgI2cDeviceAddedorReplaced(
   // Fill I2cDeviceAddedOrReplaced message
   memset(&_msg_i2c_device_added_replaced, 0,
          sizeof(_msg_i2c_device_added_replaced));
-  _msg_i2c_device_added_replaced.has_i2c_device_description = true;
-  _msg_i2c_device_added_replaced.i2c_device_description = device_descriptor;
-  _msg_i2c_device_added_replaced.i2c_bus_status = bus_status;
-  _msg_i2c_device_added_replaced.i2c_device_status = device_status;
+  _msg_i2c_device_added_replaced.has_device_description = true;
+  _msg_i2c_device_added_replaced.device_description = device_descriptor;
+  _msg_i2c_device_added_replaced.bus_status = bus_status;
+  _msg_i2c_device_added_replaced.device_status = device_status;
 
   // Encode message
-  if (!pb_get_encoded_size(&sz_msg,
-                           wippersnapper_i2c_I2cDeviceAddedOrReplaced_fields,
+  if (!pb_get_encoded_size(&sz_msg, ws_i2c_DeviceAddedOrReplaced_fields,
                            &_msg_i2c_device_added_replaced))
     return false;
 
@@ -301,7 +300,7 @@ ws_i2c_DeviceAddedOrReplaced *I2cModel::GetMsgI2cDeviceAddedOrReplaced() {
 */
 void I2cModel::ClearI2cDeviceEvent() {
   memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
-  _msg_i2c_device_event.i2c_device_events_count = 0;
+  _msg_i2c_device_event.device_events_count = 0;
 }
 
 /*!
@@ -322,12 +321,12 @@ void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
                                                  uint32_t addr_device,
                                                  uint32_t addr_mux,
                                                  uint32_t mux_channel) {
-  _msg_i2c_device_event.has_i2c_device_description = true;
-  strcpy(_msg_i2c_device_event.i2c_device_description.i2c_bus_scl, bus_scl);
-  strcpy(_msg_i2c_device_event.i2c_device_description.i2c_bus_sda, bus_sda);
-  _msg_i2c_device_event.i2c_device_description.i2c_device_address = addr_device;
-  _msg_i2c_device_event.i2c_device_description.i2c_mux_address = addr_mux;
-  _msg_i2c_device_event.i2c_device_description.i2c_mux_channel = mux_channel;
+  _msg_i2c_device_event.has_device_description = true;
+  strcpy(_msg_i2c_device_event.device_description.bus_scl, bus_scl);
+  strcpy(_msg_i2c_device_event.device_description.bus_sda, bus_sda);
+  _msg_i2c_device_event.device_description.device_address = addr_device;
+  _msg_i2c_device_event.device_description.mux_address = addr_mux;
+  _msg_i2c_device_event.device_description.mux_channel = mux_channel;
 }
 
 /*!
@@ -340,18 +339,16 @@ void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
 */
 bool I2cModel::AddI2cDeviceSensorEvent(sensors_event_t &event,
                                        ws_sensor_Type sensor_type) {
-  if (_msg_i2c_device_event.i2c_device_events_count >= MAX_DEVICE_EVENTS)
+  if (_msg_i2c_device_event.device_events_count >= MAX_DEVICE_EVENTS)
     return false; // Maximum amount of events reached
 
-  _msg_i2c_device_event
-      .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+  _msg_i2c_device_event.device_events[_msg_i2c_device_event.device_events_count]
       .type = sensor_type;
   float value = GetValueFromSensorsEvent(sensor_type, &event);
-  _msg_i2c_device_event
-      .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+  _msg_i2c_device_event.device_events[_msg_i2c_device_event.device_events_count]
       .value.float_value = value;
 
-  _msg_i2c_device_event.i2c_device_events_count++;
+  _msg_i2c_device_event.device_events_count++;
   return true;
 }
 
@@ -361,13 +358,13 @@ bool I2cModel::AddI2cDeviceSensorEvent(sensors_event_t &event,
 */
 bool I2cModel::EncodeI2cDeviceEvent() {
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, wippersnapper_i2c_I2cDeviceEvent_fields,
+  if (!pb_get_encoded_size(&sz_msg, ws_i2c_DeviceEvent_fields,
                            &_msg_i2c_device_event))
     return false;
 
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, wippersnapper_i2c_I2cDeviceEvent_fields,
+  return pb_encode(&msg_stream, ws_i2c_DeviceEvent_fields,
                    &_msg_i2c_device_event);
 }
 
@@ -389,7 +386,7 @@ ws_i2c_DeviceEvent *I2cModel::GetI2cDeviceEvent() {
 bool I2cModel::DecodeI2cDeviceOutputWrite(pb_istream_t *stream) {
   memset(&_msg_i2c_device_output_write, 0,
          sizeof(_msg_i2c_device_output_write));
-  return pb_decode(stream, wippersnapper_i2c_I2cDeviceOutputWrite_fields,
+  return pb_decode(stream, ws_i2c_DeviceOutputWrite_fields,
                    &_msg_i2c_device_output_write);
 }
 
@@ -426,7 +423,7 @@ I2cOutputModel::~I2cOutputModel() {
 */
 bool I2cOutputModel::DecodeLedBackpackWrite(pb_istream_t *stream) {
   memset(&_msg_led_backpack_write, 0, sizeof(_msg_led_backpack_write));
-  return pb_decode(stream, wippersnapper_i2c_output_LedBackpackWrite_fields,
+  return pb_decode(stream, ws_i2c_output_LedBackpackWrite_fields,
                    &_msg_led_backpack_write);
 }
 
@@ -439,7 +436,7 @@ bool I2cOutputModel::DecodeLedBackpackWrite(pb_istream_t *stream) {
 */
 bool I2cOutputModel::DecodeCharLCDWrite(pb_istream_t *stream) {
   memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
-  return pb_decode(stream, wippersnapper_i2c_output_CharLCDWrite_fields,
+  return pb_decode(stream, ws_i2c_output_CharLCDWrite_fields,
                    &_msg_char_lcd_write);
 }
 

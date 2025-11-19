@@ -210,7 +210,7 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     @param    len
                 Length of data received from MQTT broker.
 */
-void cbBrokerToDevice(const char *data, uint16_t len) {
+void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("=> New B2D message!");
   ws_signal_BrokerToDevice msg_signal = ws_signal_BrokerToDevice_init_default;
 
