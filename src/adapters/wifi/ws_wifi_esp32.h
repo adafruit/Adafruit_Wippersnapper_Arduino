@@ -234,6 +234,24 @@ public:
   */
   const char *connectionType() { return "ESP32"; }
 
+  /*!
+  @brief  Sets the AIO key from the configuration.
+  */
+  void set_user_key() {
+    // For ESP32, the key is already set in the constructor or from config
+    // This method exists to satisfy the pure virtual function requirement
+  }
+
+  /*!
+  @brief  Public interface to connect to the network.
+  */
+  void connect() { _connect(); }
+
+  /*!
+  @brief  Public interface to disconnect from the network.
+  */
+  void disconnect() { _disconnect(); }
+
 protected:
   const char *_ssid; ///< WiFi SSID
   const char *_pass; ///< WiFi password

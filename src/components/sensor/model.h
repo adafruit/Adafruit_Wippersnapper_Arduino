@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -27,6 +27,6 @@ public:
   ~SensorModel();
 
 private:
-  wippersnapper_sensor_SensorEvent _msg_sensor_event; ///< SensorEvent message
+  ws_sensor_Event _msg_sensor_event; ///< SensorEvent message
 };
 #endif // WS_SENSOR_MODEL_H

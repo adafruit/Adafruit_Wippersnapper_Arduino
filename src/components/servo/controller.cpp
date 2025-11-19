@@ -48,9 +48,9 @@ ServoController::~ServoController() {
             True if the servo was attached successfully, False otherwise
     @returns True if successful, False otherwise
 */
-bool ServoController::PublishServoAddedMsg(
-    const char *servo_pin, bool did_attach,
-    ws_servo_Add *msg_add) {
+bool ServoController::PublishServoAddedMsg(const char *servo_pin,
+                                           bool did_attach,
+                                           ws_servo_Add *msg_add) {
   _servo_model->EncodeServoAdded(msg_add->servo_pin, did_attach);
   if (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_servo_added_tag,
                        _servo_model->GetServoAddedMsg())) {
@@ -147,8 +147,7 @@ bool ServoController::Handle_Servo_Remove(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoRemove message!");
     return false;
   }
-  ws_servo_Remove *msg_remove =
-      _servo_model->GetServoRemoveMsg();
+  ws_servo_Remove *msg_remove = _servo_model->GetServoRemoveMsg();
   uint8_t pin = atoi(msg_remove->servo_pin + 1);
   int servo_idx = GetServoIndex(pin);
   if (servo_idx == -1) {

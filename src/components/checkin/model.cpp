@@ -187,8 +187,11 @@ bool CheckinModel::AddComponents() {
     }
   }
 
-  /*!
-      @brief  Returns whether a checkin response has been received.
-      @returns True if response received, False otherwise.
-  */
-  bool CheckinModel::GotResponse() { return _got_response; }
+  return true;
+}
+
+/*!
+    @brief  Returns whether a checkin response has been received.
+    @returns True if response received, False otherwise.
+*/
+bool CheckinModel::GotResponse() { return _got_response; }

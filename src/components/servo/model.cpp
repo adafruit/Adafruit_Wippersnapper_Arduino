@@ -50,9 +50,7 @@ bool ServoModel::DecodeServoAdd(pb_istream_t *stream) {
     @brief  Returns a pointer to the ServoAdd message
     @returns Pointer to ServoAdd message
 */
-ws_servo_Add *ServoModel::GetServoAddMsg() {
-  return &_msg_servo_add;
-}
+ws_servo_Add *ServoModel::GetServoAddMsg() { return &_msg_servo_add; }
 
 /*!
     @brief Encodes a ServoAdded message
@@ -84,9 +82,7 @@ bool ServoModel::EncodeServoAdded(char *pin_name, bool did_attach) {
     @brief  Returns a pointer to the ServoAdded message
     @returns Pointer to ServoAdded message
 */
-ws_servo_Added *ServoModel::GetServoAddedMsg() {
-  return &_msg_servo_added;
-}
+ws_servo_Added *ServoModel::GetServoAddedMsg() { return &_msg_servo_added; }
 
 /*!
     @brief  Decodes a ServoRemove message from a pb_istream_t
@@ -104,9 +100,7 @@ bool ServoModel::DecodeServoRemove(pb_istream_t *stream) {
     @brief  Returns a pointer to the ServoRemove message
     @returns Pointer to ServoRemove message
 */
-ws_servo_Remove *ServoModel::GetServoRemoveMsg() {
-  return &_msg_servo_remove;
-}
+ws_servo_Remove *ServoModel::GetServoRemoveMsg() { return &_msg_servo_remove; }
 
 /*!
     @brief  Decodes a ServoWrite message from a pb_istream_t
@@ -124,6 +118,4 @@ bool ServoModel::DecodeServoWrite(pb_istream_t *stream) {
     @brief  Returns a pointer to the ServoWrite message
     @returns Pointer to ServoWrite message
 */
-ws_servo_Write *ServoModel::GetServoWriteMsg() {
-  return &_msg_servo_write;
-}
+ws_servo_Write *ServoModel::GetServoWriteMsg() { return &_msg_servo_write; }

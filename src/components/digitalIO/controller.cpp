@@ -44,7 +44,7 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
 
 bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
-  int pin_name = atoi(msg->pin_name + 1);
+  uint8_t pin_name = atoi(msg->pin_name + 1);
 
   // Check if the provided pin is also the status LED pin
   if (_dio_hardware->IsStatusLEDPin(pin_name))
@@ -67,7 +67,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
       .pin_direction = msg->gpio_direction,
       .sample_mode = msg->sample_mode,
       .pin_value = msg->value,
-      .pin_period = msg->period * 1000,
+      .pin_period = (ulong)(msg->period * 1000.0f),
       .prv_pin_time = 0 // Set to 0 so timer pins trigger immediately
   };
   _digitalio_pins.push_back(new_pin);
@@ -108,7 +108,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
   }
 
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
-  int pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
+  uint8_t pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
 
   // Check if the provided pin is also the status LED pin
   if (_dio_hardware->IsStatusLEDPin(pin_name))

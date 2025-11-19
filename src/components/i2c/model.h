@@ -38,8 +38,7 @@ public:
   // Encoders
   bool encodeMsgI2cDeviceAddedorReplaced(
       ws_i2c_DeviceDescriptor i2c_device_description,
-      ws_i2c_BusStatus i2c_bus_status,
-      ws_i2c_DeviceStatus i2c_device_status);
+      ws_i2c_BusStatus i2c_bus_status, ws_i2c_DeviceStatus i2c_device_status);
   bool EncodeI2cDeviceEvent();
   // Getters
   ws_i2c_DeviceRemove *GetI2cDeviceRemoveMsg();

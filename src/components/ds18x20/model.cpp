@@ -126,14 +126,13 @@ ws_ds18x20_Event *DS18X20Model::GetDS18x20EventMsg() {
 bool DS18X20Model::EncodeDs18x20Event() {
   // take the filled _msg_DS18x20Event we built in the controller and encode it
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, wippersnapper_ds18x20_Ds18x20Event_fields,
+  if (!pb_get_encoded_size(&sz_msg, ws_ds18x20_Event_fields,
                            &_msg_DS18x20Event))
     return false;
 
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, wippersnapper_ds18x20_Ds18x20Event_fields,
-                   &_msg_DS18x20Event);
+  return pb_encode(&msg_stream, ws_ds18x20_Event_fields, &_msg_DS18x20Event);
 }
 
 /*!

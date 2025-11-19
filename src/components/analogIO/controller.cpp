@@ -170,7 +170,7 @@ bool AnalogIOController::EncodePublishPinEvent(uint8_t pin, float value,
 
   // Publish the AnalogIO message to the broker
   WS_DEBUG_PRINTLN("Publishing AnalogIOEvent message to broker...");
-  if (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_analogio_event_tag,
+  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_analogio_tag,
                        _analogio_model->GetAnalogIOEvent())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analogio voltage event message, "
                      "moving onto the next pin!");

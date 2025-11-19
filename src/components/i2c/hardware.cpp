@@ -45,9 +45,7 @@ I2cHardware::~I2cHardware() { _has_mux = false; }
     @brief  Returns the I2C bus' status.
     @returns  The I2C bus status, as a ws_i2c_BusStatus.
 */
-ws_i2c_BusStatus I2cHardware::GetBusStatus() {
-  return _bus_status;
-}
+ws_i2c_BusStatus I2cHardware::GetBusStatus() { return _bus_status; }
 
 /*!
     @brief  Optionally turns on the I2C bus, used for hardware with

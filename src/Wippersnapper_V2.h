@@ -168,8 +168,8 @@ public:
   virtual bool check_valid_ssid() = 0;
   virtual void _connect() = 0;
   virtual void _disconnect() = 0;
-  void connect() = 0;
-  void disconnect() = 0;
+  virtual void connect() = 0;
+  virtual void disconnect() = 0;
   virtual void getMacAddr() = 0;
   virtual int32_t getRSSI() = 0;
   virtual void setupMQTTClient(const char *clientID) = 0;

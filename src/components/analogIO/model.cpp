@@ -68,15 +68,14 @@ bool AnalogIOModel::DecodeAnalogIORemove(pb_istream_t *stream) {
   // data
   memset(&_msg_AnalogioRemove, 0, sizeof(_msg_AnalogioRemove));
   // Decode the stream into a AnalogIORemove message
-  return pb_decode(stream, wippersnapper_analogio_AnalogIORemove_fields,
-                   &_msg_AnalogioRemove);
+  return pb_decode(stream, ws_analogio_Remove_fields, &_msg_AnalogioRemove);
 }
 
 /*!
     @brief  Gets an AnalogIORemove message struct.
     @return Pointer to an AnalogIORemove message struct.
 */
-wippersnapper_analogio_AnalogIORemove *AnalogIOModel::GetAnalogIORemoveMsg() {
+ws_analogio_Remove *AnalogIOModel::GetAnalogIORemoveMsg() {
   return &_msg_AnalogioRemove;
 }
 
@@ -84,7 +83,7 @@ wippersnapper_analogio_AnalogIORemove *AnalogIOModel::GetAnalogIORemoveMsg() {
     @brief  Gets an AnalogIOEvent message struct.
     @return Pointer to an AnalogIOEvent message struct.
 */
-wippersnapper_analogio_AnalogIOEvent *AnalogIOModel::GetAnalogIOEvent() {
+ws_analogio_Event *AnalogIOModel::GetAnalogIOEvent() {
   return &_msg_AnalogioEvent;
 }
 
@@ -98,9 +97,8 @@ wippersnapper_analogio_AnalogIOEvent *AnalogIOModel::GetAnalogIOEvent() {
            The type of sensor event to encode.
     @return True if successful, False otherwise.
 */
-bool AnalogIOModel::EncodeAnalogIOEvent(
-    char *pin_name, float pin_value,
-    ws_sensor_Type read_type) {
+bool AnalogIOModel::EncodeAnalogIOEvent(char *pin_name, float pin_value,
+                                        ws_sensor_Type read_type) {
   // Initialize the AnalogIOEvent message to default values
   memset(&_msg_AnalogioEvent, 0, sizeof(_msg_AnalogioEvent));
   // Fill the AnalogIOEvent message's fields
@@ -113,16 +111,14 @@ bool AnalogIOModel::EncodeAnalogIOEvent(
 
   // Obtain size of an encoded AnalogIOEvent message
   size_t sz_aio_event_msg;
-  if (!pb_get_encoded_size(&sz_aio_event_msg,
-                           ws_analogio_Event_fields,
+  if (!pb_get_encoded_size(&sz_aio_event_msg, ws_analogio_Event_fields,
                            &_msg_AnalogioEvent))
     return false;
 
   // Encode the AnalogIOEvent message
   uint8_t buf[sz_aio_event_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_analogio_Event_fields,
-                   &_msg_AnalogioEvent);
+  return pb_encode(&msg_stream, ws_analogio_Event_fields, &_msg_AnalogioEvent);
 }
 
 /*!
