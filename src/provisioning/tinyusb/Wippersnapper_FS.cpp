@@ -30,6 +30,7 @@
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2350_HSTX) ||                           \
     defined(ARDUINO_ADAFRUIT_METRO_RP2350) ||                                  \
     defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include "Wippersnapper_FS.h"

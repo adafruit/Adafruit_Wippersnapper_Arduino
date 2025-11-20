@@ -23,7 +23,11 @@ ws_adapter_offline wipper;
 
 void setup() {
   Serial.begin(115200);
-  while(!Serial);
+  // Wait for serial to connect when dev mode, but don't wait forever
+  uint8_t countdown = 200;
+  while(!Serial && countdown-- > 0) {
+    delay(10);
+  }
   wipper.provision();
   wipper.connect();
 }
