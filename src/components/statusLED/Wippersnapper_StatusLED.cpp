@@ -84,11 +84,29 @@ void initStatusLED() {
   analogWrite(STATUS_LED_PIN, 255);
 #elif defined(ARDUINO_ARCH_ESP32)
   WS._pwmComponent->attach(STATUS_LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
-  WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0); // turn OFF
-#elif defined(ARDUINO_ARCH_RP2040)
-  digitalWrite(STATUS_LED_PIN, 0);
+  WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 
+#if defined(STATUS_LED_INVERTED)
+255
 #else
-  analogWrite(STATUS_LED_PIN, 0);
+0
+#endif
+  ); // turn OFF
+#elif defined(ARDUINO_ARCH_RP2040)
+  digitalWrite(STATUS_LED_PIN, 
+#if defined(STATUS_LED_INVERTED)
+255
+#else
+0
+#endif
+  ); // turn OFF
+#else
+  analogWrite(STATUS_LED_PIN, 
+#if defined(STATUS_LED_INVERTED)
+255
+#else
+0
+#endif
+  ); // turn OFF
 #endif
 
   WS.lockStatusLED = true; // set global pin "lock" flag
@@ -116,7 +134,13 @@ void releaseStatusLED() {
 #endif
 
 #ifdef USE_STATUS_LED
-  digitalWrite(STATUS_LED_PIN, 0); // turn off
+  digitalWrite(STATUS_LED_PIN, 
+#if defined(STATUS_LED_INVERTED)
+255
+#else
+0
+#endif
+  ); // turn OFF
   pinMode(STATUS_LED_PIN,
           INPUT);           // "release" for use by setting to input (hi-z)
   WS.lockStatusLED = false; // un-set global pin "lock" flag
@@ -182,13 +206,31 @@ void setStatusLEDColor(uint32_t color) {
   if (!WS.lockStatusLED)
     return; // status pixel is in-use elsewhere
 #ifdef ARDUINO_ARCH_RP2040
-  digitalWrite(STATUS_LED_PIN, color > 0);
+  digitalWrite(STATUS_LED_PIN, 
+#if defined(STATUS_LED_INVERTED)
+    !(color > 0)
+#else
+    color > 0
+#endif
+  );
 #else
   if (color != BLACK)
     WS._pwmComponent->writeDutyCycle(
-        STATUS_LED_PIN, map(WS.status_pixel_brightness, 0.0, 1.0, 0, 1023));
+        STATUS_LED_PIN, map(WS.status_pixel_brightness, 0.0, 1.0,
+#if defined(STATUS_LED_INVERTED)
+1023, 0
+#else
+0, 1023
+#endif
+        ));
   else
-    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 
+#if defined(STATUS_LED_INVERTED)
+      1023
+#else
+      0
+#endif
+    );
 #endif
 #endif
 }
@@ -241,14 +283,32 @@ void setStatusLEDColor(uint32_t color, int brightness) {
     return;
 
 #ifdef ARDUINO_ARCH_RP2040
-  digitalWrite(STATUS_LED_PIN, color > 0);
+  digitalWrite(STATUS_LED_PIN,
+#if defined(STATUS_LED_INVERTED)
+    !(color > 0)
+#else
+    color > 0
+#endif
+  );
 #else
   if (color != BLACK) {
     // re-map for pixel as a LED
-    int pulseWidth = map(brightness, 0, 255, 0, 1023);
+    int pulseWidth = map(brightness, 0, 255, 
+#if defined(STATUS_LED_INVERTED)
+      1023, 0
+#else
+      0, 1023
+#endif
+    );
     WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
   } else {
-    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN,
+#if defined(STATUS_LED_INVERTED)
+      1023
+#else
+      0
+#endif
+    );
   }
 #endif
 #endif

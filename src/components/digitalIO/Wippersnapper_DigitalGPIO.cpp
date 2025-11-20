@@ -76,7 +76,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     WS_DEBUG_PRINTLN(pinName);
 
 // Initialize LOW
-#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) || defined(STATUS_LED_INVERTED)
     // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting
     // the pin LOW will turn the LED on.
     digitalWrite(STATUS_LED_PIN, !0);
