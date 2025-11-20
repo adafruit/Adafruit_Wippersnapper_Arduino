@@ -170,6 +170,9 @@
 #define BOARD_ID "arduino-nesso-n1"
 #define USE_LITTLEFS
 #define USE_STATUS_LED
+#ifdef STATUS_LED_PIN
+#undef STATUS_LED_PIN
+#endif
 #define STATUS_LED_PIN LED_BUILTIN
 #define STATUS_LED_INVERTED
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation

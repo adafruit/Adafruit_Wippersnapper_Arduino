@@ -66,9 +66,13 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
 
 #ifdef STATUS_LED_PIN
+#if !defined(ARDUINO_ARDUINO_NESSO_N1)
+//     if (String("D") + pinName == STATUS_LED_PIN.pin)
+// #else
     // deinit status led, use it as a dio component instead
     if (pinName == STATUS_LED_PIN)
       releaseStatusLED();
+#endif
 #endif
     pinMode(pinName, OUTPUT);
 
@@ -76,10 +80,14 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     WS_DEBUG_PRINTLN(pinName);
 
 // Initialize LOW
-#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) || defined(STATUS_LED_INVERTED)
-    // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting
-    // the pin LOW will turn the LED on.
-    digitalWrite(STATUS_LED_PIN, !0);
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) // not until we support ExpanderPins || defined(STATUS_LED_INVERTED)
+    if (pinName == STATUS_LED_PIN) {
+      // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting
+      // the pin LOW will turn the LED on.
+      digitalWrite(STATUS_LED_PIN, !0);
+    } else {
+      digitalWrite(pinName, LOW);
+    }
 #else
     pinMode(pinName, OUTPUT);
     digitalWrite(pinName, LOW); // initialize LOW
@@ -155,8 +163,10 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
 
 // if prv. in-use by DIO, release pin back to application
 #ifdef STATUS_LED_PIN
+#if !defined(ARDUINO_ARDUINO_NESSO_N1) // not until we support ExpanderPins
   if (pinName == STATUS_LED_PIN)
     initStatusLED();
+#endif
 #endif
 }
 
@@ -174,6 +184,40 @@ int Wippersnapper_DigitalGPIO::digitalReadSvc(int pinName) {
   int pinVal = digitalRead(pinName);
   return pinVal;
 }
+
+#if defined(ARDUINO_ARDUINO_NESSO_N1)
+/********************************************************************/
+/*!
+    @brief    High-level digitalRead service impl. which performs a
+                digitalRead.
+    @param    pin
+                The ExpanderPin instance
+    @returns  The pin's value.
+*/
+/********************************************************************/
+int Wippersnapper_DigitalGPIO::digitalReadSvc(ExpanderPin pin) {
+  // Service using arduino `digitalRead`
+  int pinVal = digitalRead(pin);
+  return pinVal;
+}
+
+/*******************************************************************************/
+/*!
+    @brief  Writes a value to a pin.
+    @param  pinName
+                The pin's name.
+    @param  pinValue
+                The pin's value.
+*/
+/*******************************************************************************/
+void Wippersnapper_DigitalGPIO::digitalWriteSvc(ExpanderPin pin, int pinValue) {
+  WS_DEBUG_PRINT("Digital Pin Event: Set ");
+  WS_DEBUG_PRINT(pin.pin);
+  WS_DEBUG_PRINT(" to ");
+  WS_DEBUG_PRINTLN(pinValue);
+  digitalWrite(pin, pinValue);
+}
+#endif
 
 /*******************************************************************************/
 /*!
