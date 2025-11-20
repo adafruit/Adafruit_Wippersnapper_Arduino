@@ -91,7 +91,7 @@ private:
                        const char *sensor_type_2);
   bool ParseI2cDeviceAddReplace(
       JsonObject &component,
-      ws_i2c_DeviceAddedOrReplaced &msg_i2c_device_add_replace);
+      ws_i2c_DeviceAddOrReplace &msg_i2c_device_add_replace);
   uint32_t HexStrToInt(const char *hex_str);
 
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,

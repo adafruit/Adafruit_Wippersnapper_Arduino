@@ -42,7 +42,7 @@ public:
   bool EncodeI2cDeviceEvent();
   // Getters
   ws_i2c_DeviceRemove *GetI2cDeviceRemoveMsg();
-  ws_i2c_DeviceAddedOrReplaced *GetI2cDeviceAddOrReplaceMsg();
+  ws_i2c_DeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
   ws_i2c_output_Add *GetI2cOutputAddMsg();
   ws_i2c_DeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
   ws_i2c_DeviceEvent *GetI2cDeviceEvent();
@@ -67,7 +67,7 @@ public:
 private:
   ws_i2c_BusScan _msg_i2c_bus_scan;
   ws_i2c_BusScanned _msg_i2c_bus_scanned;
-  ws_i2c_DeviceAddedOrReplaced _msg_i2c_device_add_replace;
+  ws_i2c_DeviceAddOrReplace _msg_i2c_device_add_replace;
   ws_i2c_DeviceAddedOrReplaced _msg_i2c_device_added_replaced;
   ws_i2c_DeviceRemove _msg_i2c_device_remove;
   ws_i2c_DeviceRemoved _msg_i2c_device_removed;

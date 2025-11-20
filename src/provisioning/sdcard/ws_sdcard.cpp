@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024-2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -218,84 +218,83 @@ void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
             The sensor type to parse.
     @returns The corresponding SensorType
 */
-ws_sensor_Type
-ws_sdcard::ParseSensorType(const char *sensor_type) {
+ws_sensor_Type ws_sdcard::ParseSensorType(const char *sensor_type) {
   if (strcmp(sensor_type, "raw") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+    return ws_sensor_Type_T_RAW;
   } else if (strcmp(sensor_type, "voltage") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
+    return ws_sensor_Type_T_VOLTAGE;
   } else if (strcmp(sensor_type, "current") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT;
+    return ws_sensor_Type_T_CURRENT;
   } else if (strcmp(sensor_type, "object-temp-fahrenheit") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT;
+    return ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT;
   } else if (strcmp(sensor_type, "object-temp") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
+    return ws_sensor_Type_T_OBJECT_TEMPERATURE;
   } else if (strcmp(sensor_type, "ambient-temp") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+    return ws_sensor_Type_T_AMBIENT_TEMPERATURE;
   } else if (strcmp(sensor_type, "ambient-temp-fahrenheit") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+    return ws_sensor_Type_T_AMBIENT_TEMPERATURE_FAHRENHEIT;
   } else if (strcmp(sensor_type, "accelerometer") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER;
+    return ws_sensor_Type_T_ACCELEROMETER;
   } else if (strcmp(sensor_type, "magnetic-field") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD;
+    return ws_sensor_Type_T_MAGNETIC_FIELD;
   } else if (strcmp(sensor_type, "orientation") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION;
+    return ws_sensor_Type_T_ORIENTATION;
   } else if (strcmp(sensor_type, "gyroscope") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE;
+    return ws_sensor_Type_T_GYROSCOPE;
   } else if (strcmp(sensor_type, "gravity") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY;
+    return ws_sensor_Type_T_GRAVITY;
   } else if (strcmp(sensor_type, "linear-acceleration") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION;
+    return ws_sensor_Type_T_LINEAR_ACCELERATION;
   } else if (strcmp(sensor_type, "rotation-vector") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR;
+    return ws_sensor_Type_T_ROTATION_VECTOR;
   } else if (strcmp(sensor_type, "altitude") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE;
+    return ws_sensor_Type_T_ALTITUDE;
   } else if (strcmp(sensor_type, "relative-humidity") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
+    return ws_sensor_Type_T_RELATIVE_HUMIDITY;
   } else if (strcmp(sensor_type, "pressure") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
+    return ws_sensor_Type_T_PRESSURE;
   } else if (strcmp(sensor_type, "light") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT;
+    return ws_sensor_Type_T_LIGHT;
   } else if (strcmp(sensor_type, "lux") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_LUX;
+    return ws_sensor_Type_T_LUX;
   } else if (strcmp(sensor_type, "proximity") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY;
+    return ws_sensor_Type_T_PROXIMITY;
   } else if (strcmp(sensor_type, "pm10-std") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD;
+    return ws_sensor_Type_T_PM10_STD;
   } else if (strcmp(sensor_type, "pm25-std") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD;
+    return ws_sensor_Type_T_PM25_STD;
   } else if (strcmp(sensor_type, "pm100-std") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD;
+    return ws_sensor_Type_T_PM100_STD;
   } else if (strcmp(sensor_type, "pm10-env") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV;
+    return ws_sensor_Type_T_PM10_ENV;
   } else if (strcmp(sensor_type, "pm25-env") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV;
+    return ws_sensor_Type_T_PM25_ENV;
   } else if (strcmp(sensor_type, "pm100-env") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV;
+    return ws_sensor_Type_T_PM100_ENV;
   } else if (strcmp(sensor_type, "co2") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2;
+    return ws_sensor_Type_T_CO2;
   } else if (strcmp(sensor_type, "eco2") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2;
+    return ws_sensor_Type_T_ECO2;
   } else if (strcmp(sensor_type, "gas-resistance") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE;
+    return ws_sensor_Type_T_GAS_RESISTANCE;
   } else if (strcmp(sensor_type, "voc-index") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX;
+    return ws_sensor_Type_T_VOC_INDEX;
   } else if (strcmp(sensor_type, "nox-index") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX;
+    return ws_sensor_Type_T_NOX_INDEX;
   } else if (strcmp(sensor_type, "tvoc") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC;
+    return ws_sensor_Type_T_TVOC;
   } else if (strcmp(sensor_type, "color") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_COLOR;
+    return ws_sensor_Type_T_COLOR;
   } else if (strcmp(sensor_type, "unitless-percent") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT;
+    return ws_sensor_Type_T_UNITLESS_PERCENT;
   } else if (strcmp(sensor_type, "bytes") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_BYTES;
+    return ws_sensor_Type_T_BYTES;
   } else if (strcmp(sensor_type, "boolean") == 0) {
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN;
+    return ws_sensor_Type_T_BOOLEAN;
   } else {
     WS_DEBUG_PRINT("[SD] ERROR: Found unspecified SensorType - ");
     WS_DEBUG_PRINTLN(sensor_type);
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED;
+    return ws_sensor_Type_T_UNSPECIFIED;
   }
 }
 
@@ -327,7 +326,7 @@ bool ws_sdcard::ValidateJSONKey(const char *key, const char *error_msg) {
              False otherwise.
 */
 bool ws_sdcard::ParseDigitalIOAdd(
-    wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd, const char *pin,
+    ws_digitalio_Add &msg_DigitalIOAdd, const char *pin,
     float period, bool value, const char *sample_mode, const char *direction,
     const char *pull) {
   if (!ValidateJSONKey(pin, "[SD] Parsing Error: Digital pin name not found!"))
@@ -347,11 +346,9 @@ bool ws_sdcard::ParseDigitalIOAdd(
           "[SD] Parsing Error: Digital pin's sample mode not found!")) {
     return false;
   } else if (strcmp(sample_mode, "TIMER") == 0) {
-    msg_DigitalIOAdd.sample_mode =
-        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER;
+    msg_DigitalIOAdd.sample_mode = ws_digitalio_SampleMode_SM_TIMER;
   } else if (strcmp(sample_mode, "EVENT") == 0) {
-    msg_DigitalIOAdd.sample_mode =
-        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT;
+    msg_DigitalIOAdd.sample_mode = ws_digitalio_SampleMode_SM_EVENT;
   } else {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown sample mode found: " +
                      String(sample_mode));
@@ -364,11 +361,9 @@ bool ws_sdcard::ParseDigitalIOAdd(
     return false;
   } else if (strcmp(direction, "INPUT") == 0) {
     if (pull != nullptr) {
-      msg_DigitalIOAdd.gpio_direction =
-          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP;
+      msg_DigitalIOAdd.gpio_direction = ws_digitalio_Direction_D_INPUT_PULL_UP;
     } else {
-      msg_DigitalIOAdd.gpio_direction =
-          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT;
+      msg_DigitalIOAdd.gpio_direction = ws_digitalio_Direction_D_INPUT;
     }
   } else if (strcmp(direction, "OUTPUT") == 0) {
     WS_DEBUG_PRINTLN(
@@ -396,7 +391,7 @@ bool ws_sdcard::ParseDigitalIOAdd(
              False otherwise.
 */
 bool ws_sdcard::ParseAnalogIOAdd(
-    wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd, const char *pin,
+    ws_analogio_Add &msg_AnalogIOAdd, const char *pin,
     float period, const char *mode) {
 
   if (!ValidateJSONKey(pin, "[SD] Parsing Error: Analog pin name not found!"))
@@ -414,8 +409,7 @@ bool ws_sdcard::ParseAnalogIOAdd(
                        "[SD] Parsing Error: Analog pin read mode not found!"))
     return false;
   msg_AnalogIOAdd.read_mode = ParseSensorType(mode);
-  if (msg_AnalogIOAdd.read_mode ==
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED) {
+  if (msg_AnalogIOAdd.read_mode == ws_sensor_Type_T_UNSPECIFIED) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown read mode found: " +
                      String(mode));
     return false;
@@ -424,7 +418,7 @@ bool ws_sdcard::ParseAnalogIOAdd(
 }
 
 bool ws_sdcard::ParseDS18X20Add(
-    wippersnapper_ds18x20_Ds18x20Add &msg_DS18X20Add, const char *pin,
+    ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
     int resolution, float period, int num_sensors, const char *sensor_type_1,
     const char *sensor_type_2) {
 
@@ -491,39 +485,38 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
              parsed, False otherwise.
 */
 bool ws_sdcard::ParseI2cDeviceAddReplace(
-    JsonObject &component,
-    ws_i2c_DeviceAddedOrReplaced &msg_i2c_add) {
-  strcpy(msg_i2c_add.i2c_device_name,
+    JsonObject &component, ws_i2c_DeviceAddOrReplace &msg_i2c_add) {
+  strcpy(msg_i2c_add.device_name,
          component["i2cDeviceName"] | UNKNOWN_VALUE);
-  msg_i2c_add.i2c_device_period = component["period"] | 0.0;
-  if (msg_i2c_add.i2c_device_period == 0.0) {
+  msg_i2c_add.device_period = component["period"] | 0.0;
+  if (msg_i2c_add.device_period == 0.0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Invalid I2C device period!");
     return false;
   }
 
-  msg_i2c_add.has_i2c_device_description = true;
-  strcpy(msg_i2c_add.i2c_device_description.i2c_bus_scl,
+  msg_i2c_add.has_device_description = true;
+  strcpy(msg_i2c_add.device_description.bus_scl,
          component["i2cBusScl"] | "default");
-  strcpy(msg_i2c_add.i2c_device_description.i2c_bus_sda,
+  strcpy(msg_i2c_add.device_description.bus_sda,
          component["i2cBusSda"] | "default");
 
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
-  msg_i2c_add.i2c_device_description.i2c_device_address =
+  msg_i2c_add.device_description.device_address =
       HexStrToInt(addr_device);
 
   const char *addr_mux = component["i2cMuxAddress"] | "0x00";
-  msg_i2c_add.i2c_device_description.i2c_mux_address = HexStrToInt(addr_mux);
+  msg_i2c_add.device_description.mux_address = HexStrToInt(addr_mux);
 
   const char *mux_channel = component["i2cMuxChannel"] | "0xFFFF";
-  msg_i2c_add.i2c_device_description.i2c_mux_channel = HexStrToInt(mux_channel);
+  msg_i2c_add.device_description.mux_channel = HexStrToInt(mux_channel);
 
-  msg_i2c_add.i2c_device_sensor_types_count = 0;
+  msg_i2c_add.device_sensor_types_count = 0;
   for (JsonObject components_0_i2cDeviceSensorType :
        component["i2cDeviceSensorTypes"].as<JsonArray>()) {
     msg_i2c_add
-        .i2c_device_sensor_types[msg_i2c_add.i2c_device_sensor_types_count] =
+        .device_sensor_types[msg_i2c_add.device_sensor_types_count] =
         ParseSensorType(components_0_i2cDeviceSensorType["type"]);
-    msg_i2c_add.i2c_device_sensor_types_count++;
+    msg_i2c_add.device_sensor_types_count++;
   }
 
   return true;
@@ -537,7 +530,7 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
              buffer, False otherwise.
 */
 bool ws_sdcard::AddSignalMessageToSharedBuffer(
-    wippersnapper_signal_BrokerToDevice &msg_signal) {
+    ws_signal_BrokerToDevice &msg_signal) {
   // Create a temporary buffer to hold the encoded signal message
   std::vector<uint8_t> tempBuf(512);
   size_t tempBufSz;
@@ -545,7 +538,7 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
   // Get the encoded size of the signal message first so we can resize the
   // buffer prior to encoding
   if (!pb_get_encoded_size(&tempBufSz,
-                           wippersnapper_signal_BrokerToDevice_fields,
+                           ws_signal_BrokerToDevice_fields,
                            &msg_signal)) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to get signal message size!");
     return false;
@@ -554,7 +547,7 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
   // Encode and push the signal message to the shared config buffer
   tempBuf.resize(tempBufSz);
   pb_ostream_t ostream = pb_ostream_from_buffer(tempBuf.data(), tempBuf.size());
-  if (!ws_pb_encode(&ostream, wippersnapper_signal_BrokerToDevice_fields,
+  if (!ws_pb_encode(&ostream, ws_signal_BrokerToDevice_fields,
                     &msg_signal)) {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: Unable to encode D2B signal message!");
@@ -704,8 +697,7 @@ bool ws_sdcard::parseConfigFile() {
 
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
-    wippersnapper_signal_BrokerToDevice msg_signal_b2d =
-        wippersnapper_signal_BrokerToDevice_init_default;
+    ws_signal_BrokerToDevice msg_signal_b2d = ws_signal_BrokerToDevice_init_default;
 
     // Parse the component API type
     const char *component_api_type = component["componentAPI"];
@@ -718,8 +710,7 @@ bool ws_sdcard::parseConfigFile() {
     if (strcmp(component_api_type, "digitalio") == 0) {
       WS_DEBUG_PRINTLN(
           "[SD] DigitalIO component found, decoding JSON to PB...");
-      wippersnapper_digitalio_DigitalIOAdd msg_DigitalIOAdd =
-          wippersnapper_digitalio_DigitalIOAdd_init_default;
+      ws_digitalio_Add msg_DigitalIOAdd = ws_digitalio_Add_init_default;
       if (!ParseDigitalIOAdd(
               msg_DigitalIOAdd, component["pinName"] | UNKNOWN_VALUE,
               component["period"] | 0.0, component["value"],
@@ -731,13 +722,11 @@ bool ws_sdcard::parseConfigFile() {
         return false;
       }
 
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
-      msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
+      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_digitalio_tag;
+      msg_signal_b2d.payload.digitalio.payload.add = msg_DigitalIOAdd;
     } else if (strcmp(component_api_type, "analogio") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
-      wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
-          wippersnapper_analogio_AnalogIOAdd_init_default;
+      ws_analogio_Add msg_AnalogIOAdd = ws_analogio_Add_init_default;
       if (!ParseAnalogIOAdd(msg_AnalogIOAdd,
                             component["pinName"] | UNKNOWN_VALUE,
                             component["period"] | 0.0,
@@ -748,13 +737,11 @@ bool ws_sdcard::parseConfigFile() {
         return false;
       }
 
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_analogio_add_tag;
-      msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
+      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_analogio_tag;
+      msg_signal_b2d.payload.analogio.payload.add = msg_AnalogIOAdd;
     } else if (strcmp(component_api_type, "ds18x20") == 0) {
       WS_DEBUG_PRINTLN("[SD] Ds18x20 component found, decoding JSON to PB...");
-      wippersnapper_ds18x20_Ds18x20Add msg_DS18X20Add =
-          wippersnapper_ds18x20_Ds18x20Add_init_default;
+      ws_ds18x20_Add msg_DS18X20Add = ws_ds18x20_Add_init_default;
       if (!ParseDS18X20Add(msg_DS18X20Add, component["pinName"] | UNKNOWN_VALUE,
                            component["sensorResolution"] | 0,
                            component["period"] | 0.0,
@@ -766,20 +753,19 @@ bool ws_sdcard::parseConfigFile() {
         WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
-      msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
+      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_ds18x20_tag;
+      msg_signal_b2d.payload.ds18x20.which_payload = ws_ds18x20_B2D_add_tag;
+      msg_signal_b2d.payload.ds18x20.payload.add = msg_DS18X20Add;
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
-      ws_i2c_DeviceAddedOrReplaced msg_i2c_add_replace =
-          wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
+      ws_i2c_DeviceAddOrReplace msg_i2c_add_replace = ws_i2c_DeviceAddOrReplace_init_default;
       if (!ParseI2cDeviceAddReplace(component, msg_i2c_add_replace)) {
         WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to parse I2C Component");
         return false;
       }
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
-      msg_signal_b2d.payload.i2c_device_add_replace = msg_i2c_add_replace;
+      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_i2c_tag;
+      msg_signal_b2d.payload.i2c.which_payload = ws_i2c_B2D_device_add_replace_tag;
+      msg_signal_b2d.payload.i2c.payload.device_add_replace = msg_i2c_add_replace;
     } else {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown Component API Type: " +
                        String(component_api_type));
@@ -828,79 +814,79 @@ uint32_t ws_sdcard::GetTimestamp() {
 */
 const char *SensorTypeToSIUnit(ws_sensor_Type sensorType) {
   switch (sensorType) {
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED:
+  case ws_sensor_Type_T_UNSPECIFIED:
     return "UNSPECIFIED";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER:
+  case ws_sensor_Type_T_ACCELEROMETER:
     return "m/s/s";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD:
+  case ws_sensor_Type_T_MAGNETIC_FIELD:
     return "µT";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION:
+  case ws_sensor_Type_T_ORIENTATION:
     return "\xB0";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE:
+  case ws_sensor_Type_T_GYROSCOPE:
     return "rad/s";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT:
+  case ws_sensor_Type_T_LIGHT:
     return "none";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE:
+  case ws_sensor_Type_T_PRESSURE:
     return "hPa";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY:
+  case ws_sensor_Type_T_PROXIMITY:
     return "none";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY:
+  case ws_sensor_Type_T_GRAVITY:
     return "m/s^2";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION:
+  case ws_sensor_Type_T_LINEAR_ACCELERATION:
     return "m/s^2";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR:
+  case ws_sensor_Type_T_ROTATION_VECTOR:
     return "rad";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+  case ws_sensor_Type_T_RELATIVE_HUMIDITY:
     return "\x25";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+  case ws_sensor_Type_T_AMBIENT_TEMPERATURE:
     return "C";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+  case ws_sensor_Type_T_OBJECT_TEMPERATURE:
     return "C";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
+  case ws_sensor_Type_T_VOLTAGE:
     return "V";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
+  case ws_sensor_Type_T_CURRENT:
     return "mA";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_COLOR:
+  case ws_sensor_Type_T_COLOR:
     return "none";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW:
+  case ws_sensor_Type_T_RAW:
     return "none";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
+  case ws_sensor_Type_T_PM10_STD:
     return "ppm";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
+  case ws_sensor_Type_T_PM25_STD:
     return "ppm";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
+  case ws_sensor_Type_T_PM100_STD:
     return "ppm";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV:
+  case ws_sensor_Type_T_PM10_ENV:
     return "ppm";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV:
+  case ws_sensor_Type_T_PM25_ENV:
     return "ppm";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV:
+  case ws_sensor_Type_T_PM100_ENV:
     return "ppm";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2:
+  case ws_sensor_Type_T_CO2:
     return "ppm";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
+  case ws_sensor_Type_T_GAS_RESISTANCE:
     return "\u03A9";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE:
+  case ws_sensor_Type_T_ALTITUDE:
     return "m";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_LUX:
+  case ws_sensor_Type_T_LUX:
     return "lux";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2:
+  case ws_sensor_Type_T_ECO2:
     return "ppm";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
+  case ws_sensor_Type_T_UNITLESS_PERCENT:
     return "\x25";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+  case ws_sensor_Type_T_AMBIENT_TEMPERATURE_FAHRENHEIT:
     return "F";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+  case ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT:
     return "F";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
+  case ws_sensor_Type_T_VOC_INDEX:
     return "VOC";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
+  case ws_sensor_Type_T_NOX_INDEX:
     return "NOX";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC:
+  case ws_sensor_Type_T_TVOC:
     return "ppb";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_BYTES:
+  case ws_sensor_Type_T_BYTES:
     return "bytes";
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN:
+  case ws_sensor_Type_T_BOOLEAN:
     return "boolean";
   default:
     return "UNKNOWN";
@@ -1018,8 +1004,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
             The sensor type.
     @returns True if the event was successfully logged, False otherwise.
 */
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, float value, ws_sensor_Type read_type) {
+bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, float value,
+                                       ws_sensor_Type read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1037,8 +1023,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
             The sensor type.
     @returns True if the event was successfully logged, False otherwise.
 */
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, uint16_t value, ws_sensor_Type read_type) {
+bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
+                                       ws_sensor_Type read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1056,8 +1042,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
             The sensor type.
     @returns True if the event was successfully logged, False otherwise.
 */
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, bool value, ws_sensor_Type read_type) {
+bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, bool value,
+                                       ws_sensor_Type read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1075,8 +1061,7 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
             The sensor type.
     @returns True if the event was successfully logged, False otherwise.
 */
-bool ws_sdcard::LogDS18xSensorEventToSD(
-    ws_ds18x20_Event *event_msg) {
+bool ws_sdcard::LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg) {
   JsonDocument doc;
   // Iterate over the event message's sensor events
   // TODO: Standardize this Event with I2C
@@ -1097,29 +1082,27 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
             The I2cDeviceEvent message to log.
     @returns True if the event was successfully logged, False otherwise.
 */
-bool ws_sdcard::LogI2cDeviceEvent(
-    ws_i2c_DeviceEvent *msg_device_event) {
+bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event) {
   JsonDocument doc;
   // Pull the DeviceDescriptor out
-  ws_i2c_DeviceDescriptor descriptor =
-      msg_device_event->i2c_device_description;
+  ws_i2c_DeviceDescriptor descriptor = msg_device_event->device_description;
   char hex_addr[5];
-  snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.i2c_device_address);
+  snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.device_address);
   doc["i2c_address"] = hex_addr;
 
   // Using I2C MUX?
-  if (descriptor.i2c_mux_address != 0x00) {
-    snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.i2c_mux_address);
+  if (descriptor.mux_address != 0x00) {
+    snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.mux_address);
     doc["i2c_mux_addr"] = hex_addr;
-    doc["i2c_mux_ch"] = descriptor.i2c_mux_channel;
+    doc["i2c_mux_ch"] = descriptor.mux_channel;
   }
 
   // Log each event
-  for (pb_size_t i = 0; i < msg_device_event->i2c_device_events_count; i++) {
+  for (pb_size_t i = 0; i < msg_device_event->device_events_count; i++) {
     doc["timestamp"] = GetTimestamp();
-    doc["value"] = msg_device_event->i2c_device_events[i].value.float_value;
+    doc["value"] = msg_device_event->device_events[i].value.float_value;
     doc["si_unit"] =
-        SensorTypeToSIUnit(msg_device_event->i2c_device_events[i].type);
+        SensorTypeToSIUnit(msg_device_event->device_events[i].type);
     if (!LogJSONDoc(doc))
       return false;
   }

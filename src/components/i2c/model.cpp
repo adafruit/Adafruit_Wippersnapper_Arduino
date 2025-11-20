@@ -240,7 +240,7 @@ bool I2cModel::DecodeI2cDeviceAddReplace(pb_istream_t *stream) {
     @brief    Returns a pointer to the I2cDeviceAddOrReplace message.
     @returns  Pointer to the I2cDeviceAddOrReplace message.
 */
-ws_i2c_DeviceAddedOrReplaced *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
+ws_i2c_DeviceAddOrReplace *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
   return &_msg_i2c_device_add_replace;
 }
 
@@ -249,7 +249,7 @@ ws_i2c_DeviceAddedOrReplaced *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
     @returns  Pointer to the I2cOutputAdd message.
 */
 ws_i2c_output_Add *I2cModel::GetI2cOutputAddMsg() {
-  return &_msg_i2c_device_add_replace.i2c_output_add;
+  return &_msg_i2c_device_add_replace.output_add;
 }
 
 /*!

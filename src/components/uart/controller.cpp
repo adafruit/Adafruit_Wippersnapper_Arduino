@@ -205,7 +205,7 @@ bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
         if ((*driver_it)->GetPortNum() == port_num &&
             (*driver_it)->GetDeviceType() == remove_msg->descriptor.type &&
             strcmp((*driver_it)->GetName(),
-                   remove_msg->descriptor.device_id.arg) == 0) {
+                   (const char *)remove_msg->descriptor.device_id.arg) == 0) {
           // Driver found, remove it
           WS_DEBUG_PRINT("[uart] Removing UART driver: " +
                          String((*driver_it)->GetName()) + "...");
