@@ -166,6 +166,13 @@
 #define USE_LITTLEFS
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
+#elif defined(ARDUINO_ARDUINO_NESSO_N1)
+#define BOARD_ID "arduino-nesso-n1"
+#define USE_LITTLEFS
+#define USE_STATUS_LED
+#define STATUS_LED_PIN LED_BUILTIN
+#define STATUS_LED_INVERTED
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6)
 #define BOARD_ID "feather-esp32c6"
 #define USE_LITTLEFS

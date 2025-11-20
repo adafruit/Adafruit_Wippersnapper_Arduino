@@ -370,7 +370,8 @@ jobs:
             "dfrobot_beetle_esp32c3",
             "wippersnapper_qtpy_esp32c3",
             "espressif_esp32c5_devkitc_1_n8r4",
-            "wippersnapper_feather_esp32c6"
+            "wippersnapper_feather_esp32c6",
+            "arduino_nesso_n1"
           ]
         include:
           - offset: "0x1000"
@@ -382,6 +383,8 @@ jobs:
             arduino-platform: "espressif_esp32c5_devkitc_1_n8r4"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
+          - offset: "0x0"
+            arduino-platform: "arduino_nesso_n1"
     steps:
       - name: "skip if unwanted"
         continue-on-error: true
