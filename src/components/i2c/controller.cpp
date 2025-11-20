@@ -458,12 +458,12 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x12, {"pmsa003i"}},
         {0x13, {"vncl4020"}},
         {0x18, {"ds2484", "mcp9808", "mprls", "lis3dh"}},
-        {0x19, {"mcp9808", "lis3dh", "lsm303dlh", "lsm303agr"}},
+        {0x19, {"mcp9808", "lsm303agr", "lsm303dlh", "lis3dh"}}, // LIS3DH last - seems to match LSM303AGR
         {0x1A, {"mcp9808"}},
         {0x1B, {"mcp9808"}},
         {0x1C, {"mcp9808", "lis3mdl"}},
         {0x1D, {"mcp9808"}},
-        {0x1E, {"mcp9808", "lis2mdl", "lis3mdl"}},
+        {0x1E, {"mcp9808", "lis3mdl", "lis2mdl"}}, // "lsm303dlh", "lsm303agr", but rely on first addr
         {0x1F, {"mcp9808"}},
         {0x23, {"bh1750"}},
         {0x28, {"pct2075"}},
