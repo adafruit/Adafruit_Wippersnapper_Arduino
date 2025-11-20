@@ -225,23 +225,21 @@ void cbBrokerToDevice(char *data, uint16_t len) {
     @brief    Decodes and parses a buffer containing configuration
               messages from the SD card.
 */
-// TODO: Put back, removed during PB refactor
-/* void callDecodeB2D() {
+void callDecodeB2D() {
   for (size_t i = 0; i < WsV2._sharedConfigBuffers.size(); i++) {
-    wippersnapper_signal_BrokerToDevice msg_signal =
-        wippersnapper_signal_BrokerToDevice_init_default;
+    ws_signal_BrokerToDevice msg_signal = ws_signal_BrokerToDevice_init_default;
     // Configure the payload callback
     msg_signal.cb_payload.funcs.decode = routeBrokerToDevice;
     const std::vector<uint8_t> &buffer = WsV2._sharedConfigBuffers[i];
     pb_istream_t istream = pb_istream_from_buffer(buffer.data(), buffer.size());
     // Decode the message
-    if (!pb_decode(&istream, wippersnapper_signal_BrokerToDevice_fields,
+    if (!pb_decode(&istream, ws_signal_BrokerToDevice_fields,
                    &msg_signal)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");
       continue; // Skip this message and move on!
     }
   }
-} */
+}
 
 /*!
     @brief    Called when client receives a message published across the
