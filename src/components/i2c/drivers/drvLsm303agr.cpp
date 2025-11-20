@@ -8,7 +8,7 @@
 
 #include <math.h>
 
-#define LSM303AGR_ACCEL_DEFAULT_ADDR LSM303_ADDRESS_ACCEL
+#define LSM303AGR_ACCEL_DEFAULT_ADDR 0x19 ///< LSM303AGR default address
 #define LSM303AGR_MAG_DEFAULT_ADDR 0x1E ///< LIS2MDL default address
 
 /******************************************************************************/
@@ -52,13 +52,11 @@ bool drvLsm303agr::begin() {
 
   // TODO: if _address isn't default (or alt), shift mag by same offset.
   // to support adress translators. Alternatively compound components.
-  const uint8_t accel_addr =
-      _address == 0 ? LSM303AGR_ACCEL_DEFAULT_ADDR : (uint8_t)_address;
-
+  
   WS_DEBUG_PRINT("[drvLsm303agr] Initialising accel @ 0x");
-  WS_DEBUG_PRINTHEX(accel_addr);
+  WS_DEBUG_PRINTHEX(LSM303AGR_ACCEL_DEFAULT_ADDR);
   WS_DEBUG_PRINTLN("...");
-  if (!_accel->begin(accel_addr, _i2c)) {
+  if (!_accel->begin(LSM303AGR_ACCEL_DEFAULT_ADDR, _i2c)) {
     WS_DEBUG_PRINTLN("[drvLsm303agr] Failed to initialise accelerometer");
     teardown();
     return false;

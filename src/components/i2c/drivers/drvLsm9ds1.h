@@ -21,9 +21,6 @@
 
 class Adafruit_LSM9DS1; // forward
 
-// Approximate acceleration magnitude (m/s^2) that triggers a tap event
-#define LSM9DS1_TAP_THRESHOLD_MSS 15.0f
-
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a LSM9DS1 IMU.
@@ -63,17 +60,6 @@ public:
   /*******************************************************************************/
   bool begin() override;
 
-  /******************************************************************************/
-  /*!
-      @brief    Gets the LSM9DS1's boolean sensor event.
-      @param    booleanEvent
-                Pointer to the sensor event.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /******************************************************************************/
-  bool getEventBoolean(sensors_event_t *booleanEvent) override;
-
   /*******************************************************************************/
   /*!
       @brief    Gets the LSM9DS1's raw sensor event (magnitude stored in
@@ -95,6 +81,17 @@ public:
   */
   /*******************************************************************************/
   bool getEventAccelerometer(sensors_event_t *accelEvent) override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the LSM9DS1's temperature sensor event (not necessarily *C).
+      @param    tempEvent
+                Pointer to the temperature sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) override;
 
   /*******************************************************************************/
   /*!
@@ -125,6 +122,7 @@ protected:
 
   bool readAllEvents(sensors_event_t *accel, sensors_event_t *mag,
                      sensors_event_t *gyro, sensors_event_t *temp);
+
 };
 
 #endif // DRV_LSM9DS1_H

@@ -37,8 +37,8 @@ bool drvLsm9ds1::begin() {
   }
 
   // Mirror the configuration used by the reference example
-  _lsm->setupAccel(_lsm->LSM9DS1_ACCELRANGE_2G,
-                   _lsm->LSM9DS1_ACCELDATARATE_10HZ);
+  _lsm->setupAccel(_lsm->LSM9DS1_ACCELRANGE_4G,
+                   _lsm->LSM9DS1_ACCELDATARATE_119HZ);
   _lsm->setupMag(_lsm->LSM9DS1_MAGGAIN_4GAUSS);
   _lsm->setupGyro(_lsm->LSM9DS1_GYROSCALE_245DPS);
 
@@ -50,6 +50,7 @@ bool drvLsm9ds1::readAllEvents(sensors_event_t *accel, sensors_event_t *mag,
   if (!_lsm) {
     return false;
   }
+  
   return _lsm->getEvent(accel, mag, gyro, temp);
 }
 
@@ -81,36 +82,6 @@ bool drvLsm9ds1::getEventRaw(sensors_event_t *rawEvent) {
 
 /******************************************************************************/
 /*!
-    @brief    Gets the LSM9DS1's boolean sensor event.
-    @param    booleanEvent
-              Pointer to the sensor event.
-    @returns  True if the sensor event was obtained successfully, False
-              otherwise.
-*/
-/******************************************************************************/
-bool drvLsm9ds1::getEventBoolean(sensors_event_t *booleanEvent) {
-  WS_DEBUG_PRINTLN("[drvLsm9ds1] Checking for tap event...");
-  sensors_event_t accel, mag, gyro, temp;
-  if (!readAllEvents(&accel, &mag, &gyro, &temp)) {
-    return false;
-  }
-
-  float mag_accel = sqrtf(accel.acceleration.x * accel.acceleration.x +
-                          accel.acceleration.y * accel.acceleration.y +
-                          accel.acceleration.z * accel.acceleration.z);
-
-  bool tap_detected = (mag_accel > LSM9DS1_TAP_THRESHOLD_MSS);
-  booleanEvent->data[0] = tap_detected ? 1.0f : 0.0f;
-
-  if (tap_detected) {
-    WS_DEBUG_PRINTLN("[drvLsm9ds1] Tap event detected!");
-  }
-
-  return true;
-}
-
-/******************************************************************************/
-/*!
     @brief    Gets the LSM9DS1's accelerometer sensor event (x,y,z in m/s^2).
     @param    accelEvent
               Pointer to the accelerometer sensor event.
@@ -122,6 +93,24 @@ bool drvLsm9ds1::getEventAccelerometer(sensors_event_t *accelEvent) {
   WS_DEBUG_PRINTLN("[drvLsm9ds1] Getting accelerometer event...");
   sensors_event_t mag, gyro, temp;
   if (!readAllEvents(accelEvent, &mag, &gyro, &temp)) {
+    return false;
+  }
+  return true;
+}
+
+/******************************************************************************/
+/*!
+    @brief    Gets the LSM9DS1's temperature sensor event (not necessarily *C).
+    @param    tempEvent
+              Pointer to the temperature sensor event.
+    @returns  True if the sensor event was obtained successfully, False
+              otherwise.
+*/
+/******************************************************************************/
+bool drvLsm9ds1::getEventAmbientTemp(sensors_event_t *tempEvent) {
+  WS_DEBUG_PRINTLN("[drvLsm9ds1] Getting temperature event...");
+  sensors_event_t accel, mag, gyro;
+  if (!readAllEvents(&accel, &mag, &gyro, tempEvent)) {
     return false;
   }
   return true;
@@ -164,7 +153,13 @@ bool drvLsm9ds1::getEventMagneticField(sensors_event_t *magEvent) {
 }
 
 void drvLsm9ds1::ConfigureDefaultSensorTypes() {
-  _default_sensor_types_count = 1;
+  _default_sensor_types_count = 4;
   _default_sensor_types[0] =
       wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER;
+  _default_sensor_types[1] =
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD;
+  _default_sensor_types[2] =
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE;
+  _default_sensor_types[3] =
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
 }

@@ -41,24 +41,29 @@ void drvLsm303dlh::teardown() {
 */
 /******************************************************************************/
 bool drvLsm303dlh::begin() {
+  WS_DEBUG_PRINTLN("[drvLsm303dlh] Initializing LSM303DLH driver...");
+  WS_PRINTER.flush();
+
+  WS_DEBUG_PRINTLN("[drvLsm303dlh] Tearing down any existing sensor instances...");
+  WS_PRINTER.flush();
   teardown();
 
+  WS_DEBUG_PRINTLN("[drvLsm303dlh] Creating new sensor instances...");
+  WS_PRINTER.flush();
   _accel = new Adafruit_LSM303_Accel_Unified();
+  WS_DEBUG_PRINTLN("[drvLsm303dlh] Created accelerometer instance, DLH mag next");
+  WS_PRINTER.flush();
   _mag = new Adafruit_LSM303DLH_Mag_Unified();
+  WS_DEBUG_PRINTLN("[drvLsm303dlh] Created magnetometer instance");
+  WS_PRINTER.flush();
   if (!_accel || !_mag) {
     teardown();
     return false;
   }
-
-  // TODO: if _address isn't default (or alt), shift mag by same offset.
-  // to support adress translators. Alternatively compound components.
-  const uint8_t accel_addr =
-      _address == 0 ? LSM303DLH_ACCEL_DEFAULT_ADDR : (uint8_t)_address;
-
-  WS_DEBUG_PRINT("[drvLsm303dlh] Initialising accel @ 0x");
-  WS_DEBUG_PRINTHEX(accel_addr);
+  WS_DEBUG_PRINT("[drvLsm303dlh] Initialising accelerometer @ 0x");
+  WS_DEBUG_PRINTHEX(LSM303DLH_ACCEL_DEFAULT_ADDR);
   WS_DEBUG_PRINTLN("...");
-  if (!_accel->begin(accel_addr, _i2c)) {
+  if (!_accel->begin(LSM303DLH_ACCEL_DEFAULT_ADDR, _i2c)) {
     WS_DEBUG_PRINTLN("[drvLsm303dlh] Failed to initialise accelerometer");
     teardown();
     return false;
