@@ -421,6 +421,7 @@ jobs:
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
+          ref: arduino-nesso-n1
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
