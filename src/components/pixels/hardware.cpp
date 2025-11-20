@@ -113,10 +113,9 @@ bool PixelsHardware::AddDotStar(uint16_t num_pixels, uint16_t pin_data,
             The desired clock pin for the pixel strand (for DotStar).
     @returns True if successful, False otherwise.
 */
-bool PixelsHardware::AddStrand(wippersnapper_pixels_PixelsType type,
-                               ws_pixels_Order order, uint32_t num_pixels,
-                               uint32_t brightness, const char *pin_data,
-                               const char *pin_clock) {
+bool PixelsHardware::AddStrand(ws_pixels_Type type, ws_pixels_Order order,
+                               uint32_t num_pixels, uint32_t brightness,
+                               const char *pin_data, const char *pin_clock) {
   _type = type;
   // Convert the pin string to an integer
   uint16_t p_data = atoi(pin_data + 1);

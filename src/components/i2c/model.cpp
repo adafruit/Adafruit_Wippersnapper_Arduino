@@ -282,8 +282,7 @@ bool I2cModel::encodeMsgI2cDeviceAddedorReplaced(
 
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream,
-                   wippersnapper_i2c_I2cDeviceAddedOrReplaced_fields,
+  return pb_encode(&msg_stream, ws_i2c_DeviceAddedOrReplaced_fields,
                    &_msg_i2c_device_added_replaced);
 }
 

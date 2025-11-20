@@ -52,7 +52,7 @@ bool ServoController::PublishServoAddedMsg(const char *servo_pin,
                                            bool did_attach,
                                            ws_servo_Add *msg_add) {
   _servo_model->EncodeServoAdded(msg_add->servo_pin, did_attach);
-  if (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_servo_added_tag,
+  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_servo_tag,
                        _servo_model->GetServoAddedMsg())) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed publishing a ServoAdded message!");
     return false;
@@ -82,9 +82,9 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
 
   ws_servo_Add *msg_add = _servo_model->GetServoAddMsg();
   uint8_t pin = atoi(msg_add->servo_pin + 1);
-  _servo_hardware[_active_servo_pins] = new ServoHardware(
-      pin, (int)msg_add->min_pulse_width, (int)msg_add->max_pulse_width,
-      (int)msg_add->servo_freq);
+  _servo_hardware[_active_servo_pins] =
+      new ServoHardware(pin, (int)msg_add->min_pulse_width,
+                        (int)msg_add->max_pulse_width, (int)msg_add->freq);
   // Attempt to attach the servo to the pin
   did_attach = _servo_hardware[_active_servo_pins]->ServoAttach();
 

@@ -287,9 +287,8 @@ void UARTController::update() {
         } */
       } else {
         // In online mode, publish to Adafruit IO
-        if (!WsV2.PublishD2b(
-                wippersnapper_signal_DeviceToBroker_uart_input_event_tag,
-                _uart_model->GetUartInputEventMsg())) {
+        if (!WsV2.PublishD2b(ws_signal_BrokerToDevice_uart_tag,
+                             _uart_model->GetUartInputEventMsg())) {
           WS_DEBUG_PRINTLN(
               "[uart] ERROR: Unable to publish UartInputEvent to IO!");
         }

@@ -45,17 +45,14 @@ PixelsModel::~PixelsModel() {
 */
 bool PixelsModel::DecodePixelsAdd(pb_istream_t *stream) {
   memset(&_msg_pixels_add, 0, sizeof(_msg_pixels_add));
-  return pb_decode(stream, ws_pixels_Add_fields,
-                   &_msg_pixels_add);
+  return pb_decode(stream, ws_pixels_Add_fields, &_msg_pixels_add);
 }
 
 /*!
     @brief  Returns a pointer to the PixelsAdd message.
     @returns Pointer to the PixelsAdd message object.
 */
-ws_pixels_Add *PixelsModel::GetPixelsAddMsg() {
-  return &_msg_pixels_add;
-}
+ws_pixels_Add *PixelsModel::GetPixelsAddMsg() { return &_msg_pixels_add; }
 
 /*!
     @brief  Decodes a PixelsRemove message from a protocol buffer input stream.
@@ -65,8 +62,7 @@ ws_pixels_Add *PixelsModel::GetPixelsAddMsg() {
 */
 bool PixelsModel::DecodePixelsRemove(pb_istream_t *stream) {
   memset(&_msg_pixels_remove, 0, sizeof(_msg_pixels_remove));
-  return pb_decode(stream, ws_pixels_Remove_fields,
-                   &_msg_pixels_remove);
+  return pb_decode(stream, ws_pixels_Remove_fields, &_msg_pixels_remove);
 }
 
 /*!
@@ -86,17 +82,14 @@ ws_pixels_Remove *PixelsModel::GetPixelsRemoveMsg() {
 bool PixelsModel::DecodePixelsWrite(pb_istream_t *stream) {
   memset(&_msg_pixels_write, 0, sizeof(_msg_pixels_write));
   WS_DEBUG_PRINTLN("Decoding PixelsWrite message...");
-  return pb_decode(stream, ws_pixels_Write_fields,
-                   &_msg_pixels_write);
+  return pb_decode(stream, ws_pixels_Write_fields, &_msg_pixels_write);
 }
 
 /*!
     @brief  Returns a pointer to the PixelsWrite message.
     @returns Pointer to the PixelsWrite message object.
 */
-ws_pixels_Write *PixelsModel::GetPixelsWriteMsg() {
-  return &_msg_pixels_write;
-}
+ws_pixels_Write *PixelsModel::GetPixelsWriteMsg() { return &_msg_pixels_write; }
 
 /*!
     @brief  Encodes a PixelsAdded message.
@@ -115,19 +108,15 @@ bool PixelsModel::EncodePixelsAdded(char *pin_data, bool success) {
 
   // Encode it!
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_pixels_Added_fields,
-                           &_msg_pixels_added))
+  if (!pb_get_encoded_size(&sz_msg, ws_pixels_Added_fields, &_msg_pixels_added))
     return false;
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_pixels_Added_fields,
-                   &_msg_pixels_added);
+  return pb_encode(&msg_stream, ws_pixels_Added_fields, &_msg_pixels_added);
 }
 
 /*!
     @brief  Returns a pointer to the PixelsAdded message.
     @returns Pointer to the PixelsAdded message object.
 */
-ws_pixels_Added *PixelsModel::GetPixelsAddedMsg() {
-  return &_msg_pixels_added;
-}
+ws_pixels_Added *PixelsModel::GetPixelsAddedMsg() { return &_msg_pixels_added; }

@@ -42,8 +42,7 @@ ServoModel::~ServoModel() {
 */
 bool ServoModel::DecodeServoAdd(pb_istream_t *stream) {
   memset(&_msg_servo_add, 0, sizeof(_msg_servo_add));
-  return pb_decode(stream, wippersnapper_servo_ServoAdd_fields,
-                   &_msg_servo_add);
+  return pb_decode(stream, ws_servo_Add_fields, &_msg_servo_add);
 }
 
 /*!
@@ -69,13 +68,11 @@ bool ServoModel::EncodeServoAdded(char *pin_name, bool did_attach) {
           sizeof(_msg_servo_added.servo_pin) - 1);
   // Encode it!
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, wippersnapper_servo_ServoAdded_fields,
-                           &_msg_servo_added))
+  if (!pb_get_encoded_size(&sz_msg, ws_servo_Added_fields, &_msg_servo_added))
     return false;
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, wippersnapper_servo_ServoAdded_fields,
-                   &_msg_servo_added);
+  return pb_encode(&msg_stream, ws_servo_Added_fields, &_msg_servo_added);
 }
 
 /*!
@@ -92,8 +89,7 @@ ws_servo_Added *ServoModel::GetServoAddedMsg() { return &_msg_servo_added; }
 */
 bool ServoModel::DecodeServoRemove(pb_istream_t *stream) {
   memset(&_msg_servo_remove, 0, sizeof(_msg_servo_remove));
-  return pb_decode(stream, wippersnapper_servo_ServoRemove_fields,
-                   &_msg_servo_remove);
+  return pb_decode(stream, ws_servo_Remove_fields, &_msg_servo_remove);
 }
 
 /*!
@@ -110,8 +106,7 @@ ws_servo_Remove *ServoModel::GetServoRemoveMsg() { return &_msg_servo_remove; }
 */
 bool ServoModel::DecodeServoWrite(pb_istream_t *stream) {
   memset(&_msg_servo_write, 0, sizeof(_msg_servo_write));
-  return pb_decode(stream, wippersnapper_servo_ServoWrite_fields,
-                   &_msg_servo_write);
+  return pb_decode(stream, ws_servo_Write_fields, &_msg_servo_write);
 }
 
 /*!

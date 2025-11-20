@@ -191,16 +191,16 @@ bool I2cHardware::ScanBus(ws_i2c_BusScanned *scan_results) {
       WS_DEBUG_PRINTLN("[i2c] Found Device!");
       // TODO: Abstract this? Allow for mux flags to be set here, too
       scan_results->bus_found_devices[scan_results->bus_found_devices_count]
-          .i2c_device_address = address;
+          .device_address = address;
       scan_results->bus_found_devices[scan_results->bus_found_devices_count]
-          .i2c_mux_address = 0xFFFF; // Tell user that device is not on a mux
+          .mux_address = 0xFFFF; // Tell user that device is not on a mux
       strcpy(
           scan_results->bus_found_devices[scan_results->bus_found_devices_count]
-              .i2c_bus_sda,
+              .bus_sda,
           i2c_bus_sda);
       strcpy(
           scan_results->bus_found_devices[scan_results->bus_found_devices_count]
-              .i2c_bus_scl,
+              .bus_scl,
           i2c_bus_scl);
       scan_results->bus_found_devices_count++;
     }

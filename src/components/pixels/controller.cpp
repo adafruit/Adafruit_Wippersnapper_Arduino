@@ -45,15 +45,14 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to decode PixelsAdd message!");
     return false;
   }
-  wippersnapper_pixels_PixelsAdd *msg_add = _pixels_model->GetPixelsAddMsg();
+  ws_pixels_Add *msg_add = _pixels_model->GetPixelsAddMsg();
   _pixel_strands[_num_strands] = new PixelsHardware();
 
   // Configure the pixel strand
   bool did_init = false;
   did_init = _pixel_strands[_num_strands]->AddStrand(
-      msg_add->pixels_type, msg_add->pixels_ordering, msg_add->pixels_num,
-      msg_add->pixels_brightness, msg_add->pixels_pin_data,
-      msg_add->pixels_pin_dotstar_clock);
+      msg_add->type, msg_add->ordering, msg_add->num, msg_add->brightness,
+      msg_add->pin_data, msg_add->pin_dotstar_clock);
   if (!did_init) {
     WS_DEBUG_PRINTLN("[pixels] Failed to create strand!");
   } else {
@@ -63,7 +62,7 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
   }
 
   // Publish PixelsAdded message to the broker
-  if (!_pixels_model->EncodePixelsAdded(msg_add->pixels_pin_data, did_init)) {
+  if (!_pixels_model->EncodePixelsAdded(msg_add->pin_data, did_init)) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to encode PixelsAdded message!");
     return false;
   }
@@ -88,9 +87,8 @@ bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to decode PixelsWrite message!");
     return false;
   }
-  wippersnapper_pixels_PixelsWrite *msg_write =
-      _pixels_model->GetPixelsWriteMsg();
-  uint16_t pin_data = atoi(msg_write->pixels_pin_data + 1);
+  ws_pixels_Write *msg_write = _pixels_model->GetPixelsWriteMsg();
+  uint16_t pin_data = atoi(msg_write->pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
   if (idx == STRAND_NOT_FOUND) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
@@ -99,7 +97,7 @@ bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {
 
   // Call hardware to fill the strand
   WS_DEBUG_PRINTLN("[pixels]: Filling strand!");
-  _pixel_strands[idx]->FillStrand(msg_write->pixels_color);
+  _pixel_strands[idx]->FillStrand(msg_write->color);
   return true;
 }
 
@@ -115,10 +113,9 @@ bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to decode PixelsRemove message!");
     return false;
   }
-  wippersnapper_pixels_PixelsRemove *msg_remove =
-      _pixels_model->GetPixelsRemoveMsg();
+  ws_pixels_Remove *msg_remove = _pixels_model->GetPixelsRemoveMsg();
 
-  uint16_t pin_data = atoi(msg_remove->pixels_pin_data + 1);
+  uint16_t pin_data = atoi(msg_remove->pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
   if (idx == STRAND_NOT_FOUND) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
