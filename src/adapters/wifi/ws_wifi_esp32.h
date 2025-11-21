@@ -242,16 +242,6 @@ public:
     // This method exists to satisfy the pure virtual function requirement
   }
 
-  /*!
-  @brief  Public interface to connect to the network.
-  */
-  void connect() { _connect(); }
-
-  /*!
-  @brief  Public interface to disconnect from the network.
-  */
-  void disconnect() { _disconnect(); }
-
 protected:
   const char *_ssid; ///< WiFi SSID
   const char *_pass; ///< WiFi password

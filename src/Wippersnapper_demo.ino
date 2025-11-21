@@ -1,5 +1,5 @@
-// Adafruit IO WipperSnapper - Offline Mode with Network Interface
-// USE ONLY WITH DEVICES WITH A NETWORK ADAPTER LIKE ESP32-x
+// Adafruit IO WipperSnapper
+// USE ONLY WITH DEVICES WITHOUT A NETWORK ADAPTER LIKE RP2040 PICO
 //
 // Adafruit invests time and resources providing this open source code.
 // Please support Adafruit and open source hardware by purchasing
@@ -10,13 +10,23 @@
 // All text above must be included in any redistribution.
 
 #include "ws_adapters.h"
+#if defined(OFFLINE_MODE_WOKWI)
+ws_adapter_wifi wipper; // Wokwi offline mode uses a wifi adapter
+#elif defined(WS_WIFI_ADAPTER)
 ws_adapter_wifi wipper;
+#elif defined(WS_OFFLINE_ADAPTER)
+ws_adapter_offline wipper;
+#else
+#error "No valid ws_adapter_wifi or ws_adapter_offline defined! Please check your board configuration."
+#endif
 #define WS_DEBUG // Enable debug output!
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("WipperSnapper Offline Mode Demo");
+  while(!Serial);
+  Serial.println("WipperSnapper Starting...");
   wipper.provision();
+  Serial.println("WipperSnapper Connecting...");
   wipper.connect();
 }
 

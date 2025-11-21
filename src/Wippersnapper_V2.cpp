@@ -197,9 +197,14 @@ void Wippersnapper_V2::provision() {
 #elif defined(USE_LITTLEFS)
   _littleFSV2->GetSDCSPin();
 #elif defined(OFFLINE_MODE_WOKWI)
+  WS_DEBUG_PRINTLN("Wokwi offline mode detected, setting SD CS pin to 15");
   WsV2.pin_sd_cs = 15;
 #endif
+  WS_DEBUG_PRINT("SD CS Pin: ");
+  WS_DEBUG_PRINTLN(WsV2.pin_sd_cs);
   WsV2._sdCardV2 = new ws_sdcard();
+  WS_DEBUG_PRINTLN("Is SD Card initialized?");
+  WS_DEBUG_PRINTLN(WsV2._sdCardV2->isSDCardInitialized());
   if (WsV2._sdCardV2->isSDCardInitialized()) {
     return; // SD card initialized, cede control back to loop()
   } else {
@@ -959,7 +964,13 @@ void Wippersnapper_V2::connect() {
   // Dump device info to the serial monitor
   printDeviceInfoV2();
 
+  // Print free heap a tthis point
+    WS_DEBUG_PRINT("Free heap at startup: ");
+    WS_DEBUG_PRINTLN(ESP.getFreeHeap());
   this->CheckInModel = new CheckinModel();
+  // Print fre eheap after
+    WS_DEBUG_PRINT("Free heap after CheckinModel init: ");
+    WS_DEBUG_PRINTLN(ESP.getFreeHeap());
 
   // enable global WDT
   WsV2.enableWDTV2(WS_WDT_TIMEOUT);
