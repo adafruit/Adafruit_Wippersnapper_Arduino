@@ -20,8 +20,6 @@
     @brief  CheckinModel constructor
 */
 CheckinModel::CheckinModel() {
-  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
-  memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
   _got_response = false;
 }
 
@@ -29,8 +27,6 @@ CheckinModel::CheckinModel() {
     @brief  CheckinModel destructor
 */
 CheckinModel::~CheckinModel() {
-  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
-  memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
   _got_response = false;
 }
 
@@ -111,6 +107,7 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
     return false;
   }
 
+  _got_response = true; // Set flag to indicate response received
   return true;
 }
 

@@ -161,19 +161,19 @@ public:
       STATUS_PIXEL_BRIGHTNESS_DEFAULT; ///< Global status pixel's brightness
                                        ///< (from 0.0 to 1.0)
 
-    // Network interface virtual functions
-    virtual void set_user_key() {}
-    virtual void set_ssid_pass(const char *ssid, const char *ssidPassword) {}
-    virtual void set_ssid_pass() {}
-    virtual bool check_valid_ssid() { return false; }
-    virtual void _connect() {}
-    virtual void _disconnect() {}
-    virtual void connect(); ///< Implemented in .cpp
-    virtual void disconnect() {}
-    virtual void getMacAddr() {}
-    virtual int32_t getRSSI() { return 0; }
-    virtual void setupMQTTClient(const char *clientID) {}
-    virtual ws_status_t networkStatus() { return WS_DISCONNECTED; } // or appropriate default
+  // Network interface virtual functions
+  virtual void set_user_key();
+  virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
+  virtual void set_ssid_pass();
+  virtual bool check_valid_ssid();
+  virtual void _connect();
+  virtual void _disconnect();
+  void connect();
+  void disconnect();
+  virtual void getMacAddr();
+  virtual int32_t getRSSI();
+  virtual void setupMQTTClient(const char *clientID);
+  virtual ws_status_t networkStatus();
 
   // Generators for device UID and MQTT topics
   bool generateDeviceUID();

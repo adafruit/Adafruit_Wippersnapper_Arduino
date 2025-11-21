@@ -47,25 +47,131 @@ Wippersnapper_V2::Wippersnapper_V2() {
   _subscribeThrottle = 0;
 
   // Initialize model classes
-  WsV2.sensorModel = new SensorModel();
-  WsV2.CheckInModel = new CheckinModel();
+  // NOTE: This is causing a crash!
+  this->sensorModel = new SensorModel();
+
 
   // Initialize controller classes
-  WsV2.digital_io_controller = new DigitalIOController();
-  WsV2.analogio_controller = new AnalogIOController();
-  WsV2._ds18x20_controller = new DS18X20Controller();
-  WsV2._gps_controller = new GPSController();
-  WsV2._i2c_controller = new I2cController();
-  WsV2._uart_controller = new UARTController();
-  WsV2._pixels_controller = new PixelsController();
-  WsV2._pwm_controller = new PWMController();
-  WsV2._servo_controller = new ServoController();
+  this->digital_io_controller = new DigitalIOController();
+  this->analogio_controller = new AnalogIOController();
+  this->_ds18x20_controller = new DS18X20Controller();
+  this->_gps_controller = new GPSController();
+  this->_i2c_controller = new I2cController();
+  this->_uart_controller = new UARTController();
+  this->_pixels_controller = new PixelsController();
+  this->_pwm_controller = new PWMController();
+  this->_servo_controller = new ServoController();
 };
 
 /*!
     @brief    Wippersnapper_V2 destructor
 */
 Wippersnapper_V2::~Wippersnapper_V2() {}
+
+/*!
+    @brief    Disconnects from Adafruit IO+ Wippersnapper_V2.
+*/
+void Wippersnapper_V2::disconnect() { _disconnect(); }
+
+// Concrete class definition for abstract classes
+
+/*!
+    @brief    Connects to wireless network.
+*/
+void Wippersnapper_V2::_connect() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::_connect()");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/*!
+    @brief    Disconnect Wippersnapper MQTT session and network.
+*/
+void Wippersnapper_V2::_disconnect() {
+  WS_DEBUG_PRINTLN("WIppersnapper_V2::_disconnect");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/*!
+    @brief    Sets the network interface's unique identifer, typically the
+              MAC address.
+*/
+void Wippersnapper_V2::getMacAddr() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::getMacAddr");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/*!
+    @brief    Gets the network's RSSI.
+    @return   int32_t RSSI value, 0 to 255, in dB
+*/
+int32_t Wippersnapper_V2::getRSSI() {
+  WS_DEBUG_PRINTLN("Wiippersnapper_V2::getRSSI");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return 0;
+}
+
+/*!
+    @brief    Sets up the MQTT client session.
+    @param    clientID
+              A unique client identifier string.
+*/
+void Wippersnapper_V2::setupMQTTClient(const char * /*clientID*/) {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::setupMQTTClient");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/*!
+    @brief    Returns the network's connection status
+    @returns  Network status as ws_status_t.
+*/
+ws_status_t Wippersnapper_V2::networkStatus() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::networkStatus");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return WS_IDLE;
+}
+
+/*!
+    @brief    Sets the device's wireless network credentials.
+    @param    ssid
+              Your wireless network's SSID
+    @param    ssidPassword
+              Your wireless network's password.
+*/
+void Wippersnapper_V2::set_ssid_pass(const char * /*ssid*/,
+                                     const char * /*ssidPassword*/) {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_pass");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/*!
+    @brief    Sets the device's wireless network credentials from the
+              secrets.json configuration file.
+*/
+void Wippersnapper_V2::set_ssid_pass() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_pass");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/*!
+@brief   Performs a scan of local WiFi networks.
+@returns True if `_network_ssid` is found, False otherwise.
+*/
+bool Wippersnapper_V2::check_valid_ssid() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::check_valid_ssid");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return false;
+}
+
+/*!
+    @brief    Configures the device's Adafruit IO credentials. This method
+              should be used only if filesystem-backed provisioning is
+              not avaliable.
+*/
+void Wippersnapper_V2::set_user_key() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_user_key");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
 
 /*!
     @brief    Provisions a WipperSnapper device with its network
@@ -852,6 +958,8 @@ void Wippersnapper_V2::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   printDeviceInfoV2();
+
+  this->CheckInModel = new CheckinModel();
 
   // enable global WDT
   WsV2.enableWDTV2(WS_WDT_TIMEOUT);

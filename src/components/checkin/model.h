@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -33,8 +33,8 @@ public:
   bool GotResponse();
 
 private:
-  ws_checkin_B2D _CheckinB2D; ///< Broker to Device message wrapper
-  ws_checkin_D2B _CheckinD2B; ///< Device to Broker message wrapper
+  ws_checkin_B2D _CheckinB2D = ws_checkin_B2D_init_zero; ///< Broker to Device message wrapper
+  ws_checkin_D2B _CheckinD2B = ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;         ///< Flag indicating if response was received
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
