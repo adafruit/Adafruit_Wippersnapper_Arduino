@@ -77,27 +77,30 @@ public:
       @return True if the display was initialized successfully, false otherwise.
   */
   bool begin() override {
-    #if defined(ARDUINO_ARDUINO_NESSO_N1)
-    WS_DEBUG_PRINT("pin_cs: "); WS_DEBUG_PRINTLN(_pin_cs);
-    WS_DEBUG_PRINT(" == LCD_CS "); WS_DEBUG_PRINTLN(_pin_cs == LCD_CS);
+#if defined(ARDUINO_ARDUINO_NESSO_N1)
+    WS_DEBUG_PRINT("pin_cs: ");
+    WS_DEBUG_PRINTLN(_pin_cs);
+    WS_DEBUG_PRINT(" == LCD_CS ");
+    WS_DEBUG_PRINTLN(_pin_cs == LCD_CS);
     if (_pin_cs == LCD_CS)
-      _display = new Adafruit_ST7789((int8_t) _pin_cs, (int8_t) _pin_dc, &LCD_RESET);
+      _display =
+          new Adafruit_ST7789((int8_t)_pin_cs, (int8_t)_pin_dc, &LCD_RESET);
     else
-    #endif
-    _display = new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_rst);
+#endif
+      _display = new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_rst);
     if (!_display)
       return false;
 
 // Built in displays with custom init / swapped w+h
 #ifdef ARDUINO_ARDUINO_NESSO_N1
-if (_pin_cs == LCD_CS) {
-  _display->init(135, 240);// Init ST7789 240x135
-  _display->invertDisplay(true);
-} else {
+    if (_pin_cs == LCD_CS) {
+      _display->init(135, 240); // Init ST7789 240x135
+      _display->invertDisplay(true);
+    } else {
 #endif
-_display->init(_width, _height);
+      _display->init(_width, _height);
 #if defined(ARDUINO_ARDUINO_NESSO_N1)
-}
+    }
 #endif
     _display->setRotation(_rotation);
     _display->fillScreen(ST77XX_BLACK);
@@ -122,7 +125,6 @@ _display->init(_width, _height);
     return true;
   }
 
-  
   /*!
   @brief  Draws the battery icon based on the current battery level.
   @param  bat
@@ -130,25 +132,25 @@ _display->init(_width, _height);
   */
   void drawBatteryIcon(uint8_t bat) override {
     const unsigned char *bat_icon = epd_bmp_bat_empty;
-      if (bat >= 75) {
-        bat_icon = epd_bmp_bat_full;
-      } else if (bat < 75 && bat >= 50) {
-        bat_icon = epd_bmp_bat_75;
-      } else if (bat < 50 && bat >= 25) {
-        bat_icon = epd_bmp_bat_50;
-      } else if (bat < 25 && bat >= 10) {
-        bat_icon = epd_bmp_bat_25;
-      } else {
-        bat_icon = epd_bmp_bat_empty;
-      }
-      // Clear and draw the new battery icon, based on battery level
-      _display->fillRect(_statusbar_icon_battery_x, _statusbar_icons_y,
-                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
-                         ST77XX_WHITE);
-      _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
-                           bat_icon, ST7789_STATUSBAR_ICON_SZ,
-                           ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
-      _statusbar_bat = bat;
+    if (bat >= 75) {
+      bat_icon = epd_bmp_bat_full;
+    } else if (bat < 75 && bat >= 50) {
+      bat_icon = epd_bmp_bat_75;
+    } else if (bat < 50 && bat >= 25) {
+      bat_icon = epd_bmp_bat_50;
+    } else if (bat < 25 && bat >= 10) {
+      bat_icon = epd_bmp_bat_25;
+    } else {
+      bat_icon = epd_bmp_bat_empty;
+    }
+    // Clear and draw the new battery icon, based on battery level
+    _display->fillRect(_statusbar_icon_battery_x, _statusbar_icons_y,
+                       ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                       ST77XX_WHITE);
+    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
+                         bat_icon, ST7789_STATUSBAR_ICON_SZ,
+                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+    _statusbar_bat = bat;
   }
 
   /*!
@@ -222,7 +224,6 @@ _display->init(_width, _height);
     _display->setTextColor(ST77XX_WHITE);
     _display->setTextSize(_text_sz);
   }
-
 
   /*!
   @brief  Updates the status bar with current information (battery level,

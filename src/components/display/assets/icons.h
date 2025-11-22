@@ -18,7 +18,7 @@
 
 /**
  * @brief cloud-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * ................
  * .....#####......
@@ -43,7 +43,7 @@ const unsigned char epd_bmp_cloud_online[] = {
 
 /**
  * @brief cloud-xmark-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * ................
  * .....#####......
@@ -68,7 +68,7 @@ const unsigned char epd_bmp_cloud_offline[] PROGMEM = {
 
 /**
  * @brief wifi-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * .....######.....
  * ..####....####..
@@ -93,7 +93,7 @@ const unsigned char epd_bmp_wifi_full[] = {
 
 /**
  * @brief wifi-fair-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * ................
  * ................
@@ -118,7 +118,7 @@ const unsigned char epd_bmp_wifi_fair[] = {
 
 /**
  * @brief wifi-weak-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * ................
  * ................
@@ -143,7 +143,7 @@ const unsigned char epd_bmp_wifi_weak[] = {
 
 /**
  * @brief wifi-slash-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * .#..............
  * ..#..#####......
@@ -168,7 +168,7 @@ const unsigned char epd_bmp_wifi_no_signal[] = {
 
 /**
  * @brief battery-full-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * ................
  * ................
@@ -191,9 +191,8 @@ const unsigned char epd_bmp_bat_full[] = {
     0xfa, 0xf0, 0x0b, 0xf0, 0x0b, 0xf0, 0x0b, 0xf0, 0x0b, 0xff, 0xfa,
     0xc0, 0x06, 0x7f, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-
 /** * @brief battery-75-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * ................
  * ................
@@ -218,7 +217,7 @@ const unsigned char epd_bmp_bat_75[] = {
 
 /**
  * @brief battery-50-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * ................
  * ................
@@ -243,7 +242,7 @@ const unsigned char epd_bmp_bat_50[] = {
 
 /**
  * @brief battery-25-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * ................
  * ................
@@ -268,7 +267,7 @@ const unsigned char epd_bmp_bat_25[] = {
 
 /**
  * @brief battery-empty-thin-full icon from FontAwesome (16x16px)
- * 
+ *
  * ................
  * ................
  * ................
@@ -290,6 +289,5 @@ const unsigned char epd_bmp_bat_empty[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0xfe, 0xc0, 0x06, 0xc0,
     0x06, 0xc0, 0x06, 0xc0, 0x06, 0xc0, 0x06, 0xc0, 0x06, 0xc0, 0x06,
     0xc0, 0x06, 0x7f, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
 
 #endif // _ICONS_H_

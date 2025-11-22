@@ -67,8 +67,8 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
 
 #ifdef STATUS_LED_PIN
 #if !defined(ARDUINO_ARDUINO_NESSO_N1)
-//     if (String("D") + pinName == STATUS_LED_PIN.pin)
-// #else
+    //     if (String("D") + pinName == STATUS_LED_PIN.pin)
+    // #else
     // deinit status led, use it as a dio component instead
     if (pinName == STATUS_LED_PIN)
       releaseStatusLED();
@@ -80,7 +80,9 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     WS_DEBUG_PRINTLN(pinName);
 
 // Initialize LOW
-#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) // not until we support ExpanderPins || defined(STATUS_LED_INVERTED)
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) // not until we support
+                                             // ExpanderPins ||
+                                             // defined(STATUS_LED_INVERTED)
     if (pinName == STATUS_LED_PIN) {
       // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting
       // the pin LOW will turn the LED on.

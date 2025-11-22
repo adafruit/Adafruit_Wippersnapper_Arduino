@@ -28,8 +28,7 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
-    defined(ARDUINO_XIAO_ESP32S3) ||                                           \
-    defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
+    defined(ARDUINO_XIAO_ESP32S3) || defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
 
 #include "Wippersnapper_FS.h"
 #include "print_dependencies.h"
@@ -296,8 +295,8 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("Board ID: ");
     bootFile.println(BOARD_ID);
 
-#if defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT) ||          \
-    defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) || \
+#if defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT) ||            \
+    defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
     bootFile.print("AirLift FW Revision: ");
     bootFile.println(WS._airlift_version);
@@ -357,7 +356,8 @@ void Wippersnapper_FS::createSecretsFile() {
   secretsFile.flush();
   secretsFile.close();
 
-  writeToBootOut("ERROR: Please edit the secrets.json file. Then, reset your board.\n");
+  writeToBootOut(
+      "ERROR: Please edit the secrets.json file. Then, reset your board.\n");
   // Re-attach the USB device for file access
   delay(500);
   initUSBMSC();

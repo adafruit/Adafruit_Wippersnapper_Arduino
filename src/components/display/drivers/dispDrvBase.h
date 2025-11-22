@@ -145,7 +145,6 @@ public:
     // No-op for base class
   }
 
-  
   /*!
   @brief  Draws the battery icon based on the current battery level.
   @param  bat

@@ -52,11 +52,13 @@ public:
   void digitalWriteSvc(uint8_t pinName, int pinValue);
 #if defined(ARDUINO_ARDUINO_NESSO_N1)
   // void
-  // initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
+  // initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction
+  // direction,
   //                ExpanderPin pinName, float period,
   //                wippersnapper_pin_v1_ConfigurePinRequest_Pull pull);
   // void
-  // deinitDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
+  // deinitDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction
+  // direction,
   //                  ExpanderPin pinName);
 
   int digitalReadSvc(ExpanderPin pinName);

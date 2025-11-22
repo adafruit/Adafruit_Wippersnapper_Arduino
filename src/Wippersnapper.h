@@ -245,7 +245,6 @@ class DisplayController;
 static NessoBattery battery; ///< Nesso-N1 Battery instance
 #endif
 
-
 /**************************************************************************/
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
