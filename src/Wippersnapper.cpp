@@ -98,6 +98,49 @@ void Wippersnapper::provision() {
   // Obtain device's MAC address
   getMacAddr();
 
+  // Board specific initializations
+#ifdef ARDUINO_ARDUINO_NESSO_N1
+  Wire.begin(SDA, SCL, 100000);
+
+  // verify chip id 0x49 at 0x0Ah
+  Wire.beginTransmission(0x49);
+  Wire.write(0x0A);
+  Wire.endTransmission();
+  Wire.requestFrom(0x49, 1);
+  uint8_t chipId = Wire.read();
+  if (chipId != 0x49) {
+    WS_DEBUG_PRINTLN("ERROR: AW32001E not found on I2C bus!");
+    Wire.endTransmission();
+    Wire.end();
+  } else {
+    WS_DEBUG_PRINTLN("AW32001E detected on I2C bus.");
+    // Disable AW32001E watchdog timer, read 05h, & 0x1F, write back
+    Wire.beginTransmission(0x49);
+    Wire.write(0x05);
+    Wire.endTransmission();
+    Wire.requestFrom(0x49, 1);
+    uint8_t regVal = Wire.read();
+    Wire.endTransmission();
+    WS_DEBUG_PRINTLN("AW32001E WDT reg before disable: " + String(regVal, BIN));
+    delay(10);
+    regVal &=
+        0b00011111; // Clear bits 5:6 to disable Watchdog timer, 7 for discharge
+    Wire.beginTransmission(0x49);
+    Wire.write(0x05);
+    Wire.write(regVal);
+    Wire.endTransmission();
+    Wire.end();
+    delay(10);
+
+    battery.enableCharge();
+  }
+
+  // // digitalWrite(LORA_ENABLE, FALSE);
+  // // digitalWrite(LORA_LNA_ENABLE, FALSE);
+  // // digitalWrite(GROVE_POWER_EN, TRUE);
+  // delay(10);
+#endif
+
   // Initialize the status LED for signaling FS errors
   initStatusLED();
 
@@ -2272,7 +2315,7 @@ bool Wippersnapper::generateWSTopics() {
                     strlen(_device_uid) + strlen("/wprsnpr/") +
                     strlen(TOPIC_SIGNALS) + strlen("broker/uart") + 1;
 
-// Allocate memory for dynamic MQTT topic
+  // Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
   WS._topic_signal_uart_brkr = (char *)ps_malloc(topicLen);
 #else
@@ -2301,7 +2344,7 @@ bool Wippersnapper::generateWSTopics() {
              strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
              strlen("device/uart") + 1;
 
-// Allocate memory for dynamic MQTT topic
+  // Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
   WS._topic_signal_uart_device = (char *)ps_malloc(topicLen);
 #else
@@ -2325,7 +2368,7 @@ bool Wippersnapper::generateWSTopics() {
              strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
              strlen(TOPIC_DISPLAY) + 1;
 
-// Pre-allocate memory for topic
+  // Pre-allocate memory for topic
 #ifdef USE_PSRAM
   WS._topic_signal_display_brkr = (char *)ps_malloc(topicLen);
 #else
@@ -2356,7 +2399,7 @@ bool Wippersnapper::generateWSTopics() {
              strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
              strlen(TOPIC_DISPLAY) + 1;
 
-// Allocate memory for dynamic MQTT topic
+  // Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
   WS._topic_signal_display_device = (char *)ps_malloc(topicLen);
 #else
