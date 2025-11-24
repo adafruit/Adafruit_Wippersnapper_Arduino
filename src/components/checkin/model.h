@@ -29,10 +29,10 @@ public:
   bool Checkin(const char *hardware_uid, const char *firmware_version);
   bool ProcessResponse(pb_istream_t *stream);
   void ConfigureControllers();
-  bool AddComponents();
   bool GotResponse();
 
 private:
+  static bool cbComponentAdds(pb_istream_t *stream, const pb_field_t *field, void **arg); //< Callback for decoding ComponentAdd messages
   ws_checkin_B2D _CheckinB2D = ws_checkin_B2D_init_zero; ///< Broker to Device message wrapper
   ws_checkin_D2B _CheckinD2B = ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;         ///< Flag indicating if response was received

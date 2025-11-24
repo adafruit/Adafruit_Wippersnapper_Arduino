@@ -41,11 +41,29 @@ def run_wokwi_cli(binary, timeout, scenario, diagram):
     )
     return result
 
+# Test JSON validation
+
+def test_invalid_json():
+    result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-invalid-json.scenario.yaml", f"diagrams/offline.json")
+    assert result.returncode == 0
+
+
+def test_invalid_checksum():
+    result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-invalid-checksum.scenario.yaml", f"diagrams/offline.json")
+    assert result.returncode == 0
+
+
+def test_valid_checksum():
+    result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-valid-checksum.scenario.yaml", f"diagrams/offline.json")
+    assert result.returncode == 0
+
+# Test hardware validation
+
 def test_digital_input():
     result = run_wokwi_cli("test.elf", "120000", f"scenarios/offline/test-log-digital-in.scenario.yaml", f"diagrams/offline.json")
     assert result.returncode == 0
 
-"""
+
 def test_analog_input():
     result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-log-analogin.scenario.yaml", f"diagrams/offline.json")
     assert result.returncode == 0
@@ -55,16 +73,3 @@ def test_ds18b20():
     result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-log-ds18b20.scenario.yaml", f"diagrams/offline.json")
     assert result.returncode == 0
 
-def test_invalid_json():
-    result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-invalid-json.scenario.yaml", f"tests/diagrams/offline.json")
-    assert result.returncode == 0
-
-
-def test_invalid_checksum():
-    result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-invalid-checksum.scenario.yaml", f"tests/diagrams/offline.json")
-    assert result.returncode == 0
-
-
-def test_valid_checksum():
-    result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"tests/scenarios/offline/test-valid-checksum.scenario.yaml", f"tests/diagrams/offline.json")
-    assert result.returncode == 0"""

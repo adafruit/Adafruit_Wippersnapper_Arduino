@@ -86,7 +86,12 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   // Zero-out the B2D wrapper message
   memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
 
+  // Configure the callback for the component_adds field
+  _CheckinB2D.payload.response.component_adds.funcs.decode = &cbComponentAdds;
+  _CheckinB2D.payload.response.component_adds.arg = this;
+
   // Decode the B2d wrapper message
+  // NOTE: This also decodes the component_adds message
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to decode CheckinB2D message from broker!");
@@ -124,64 +129,81 @@ void CheckinModel::ConfigureControllers() {
 }
 
 /*!
-    @brief  Adds components from the broker
-    @returns True if components were added successfully, False otherwise.
+    @brief    Callback for decoding ComponentAdd messages during Checkin
+              Response processing.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
 */
-bool CheckinModel::AddComponents() {
-  // early-out if no components to add
-  if (_CheckinB2D.payload.response.component_adds_count == 0) {
-    WS_DEBUG_PRINTLN("[checkin] No components to add!");
-    return true;
-  }
+bool CheckinModel::cbComponentAdds(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  // TODO: This will let us route based on component struct, however below we are passing the 
+  // stream and allowing the component to decode itself, directly. We will want to pick
+  // an approach but for now I am leaving this here as reference.
 
-  WS_DEBUG_PRINT("[checkin] Adding ");
-  WS_DEBUG_PRINT(_CheckinB2D.payload.response.component_adds_count);
-  WS_DEBUG_PRINTLN(" components...");
+  // ws_checkin_ComponentAdd component = ws_checkin_ComponentAdd_init_default;
+  /*   if (!pb_decode(stream, ws_checkin_ComponentAdd_fields, &component)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode ComponentAdd message!"); // TODO: Remove debug print after testing?
+    return false;
+  } */
 
-  // Iterate through each component add message
-  for (pb_size_t i = 0; i < _CheckinB2D.payload.response.component_adds_count;
-       i++) {
-    const ws_checkin_ComponentAdd *comp_add =
-        &_CheckinB2D.payload.response.component_adds[i];
-    WS_DEBUG_PRINTLN("[checkin] Adding component from broker...");
-    switch (comp_add->which_payload) {
+  CheckinModel* self = (CheckinModel*)*arg;
+  // Route based on component type
+  switch (field->tag) {
     case ws_checkin_ComponentAdd_digitalio_tag:
-      // TODO
-      WS_DEBUG_PRINTLN("[checkin] Adding DigitalIO component...");
+      if (!WsV2.digital_io_controller->Handle_DigitalIO_Add(stream)) {
+        WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add DigitalIO component");
+        return false;
+      }
       break;
     case ws_checkin_ComponentAdd_analogio_tag:
-      // TODO
-      WS_DEBUG_PRINTLN("[checkin] Adding AnalogIO component...");
-      break;
-    case ws_checkin_ComponentAdd_servo_tag:
-      // TODO
-      WS_DEBUG_PRINTLN("[checkin] Adding Servo component...");
-      break;
-    case ws_checkin_ComponentAdd_pwm_tag:
-      // TODO
-      WS_DEBUG_PRINTLN("[checkin] Adding PWM component...");
+      if (!WsV2.analogio_controller->Handle_AnalogIOAdd(stream)) {
+        WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add AnalogIO component");
+        return false;
+      }
       break;
     case ws_checkin_ComponentAdd_pixels_tag:
-      // TODO
-      WS_DEBUG_PRINTLN("[checkin] Adding Pixels component...");
+      if (!WsV2._pixels_controller->Handle_Pixels_Add(stream)) {
+        WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add Pixels component");
+        return false;
+      }
+      break;
+    case ws_checkin_ComponentAdd_pwm_tag:
+      if (!WsV2._pwm_controller->Handle_PWM_Add(stream)) {
+        WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add PWM component");
+        return false;
+      }
+      break;
+    case ws_checkin_ComponentAdd_servo_tag:
+      if (!WsV2._servo_controller->Handle_Servo_Add(stream)) {
+        WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add Servo component");
+        return false;
+      }
       break;
     case ws_checkin_ComponentAdd_ds18x20_tag:
-      // TODO
-      WS_DEBUG_PRINTLN("[checkin] Adding DS18X20 component...");
+      if (!WsV2._ds18x20_controller->Handle_Ds18x20Add(stream)) {
+        WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add DS18x20 component");
+        return false;
+      }
       break;
     case ws_checkin_ComponentAdd_uart_tag:
-      // TODO
-      WS_DEBUG_PRINTLN("[checkin] Adding UART component...");
+      if (!WsV2._uart_controller->Handle_UartAdd(stream)) {
+        WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add UART component");
+        return false;
+      }
       break;
     case ws_checkin_ComponentAdd_i2c_tag:
-      // TODO
-      WS_DEBUG_PRINTLN("[checkin] Adding I2C component...");
+      if (!WsV2._i2c_controller->Handle_I2cDeviceAddOrReplace(stream)) {
+        WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add I2C component");
+        return false;
+      }
       break;
     default:
-      WS_DEBUG_PRINTLN(
-          "[checkin] WARNING: Unknown component add type from broker!");
-      break;
-    }
+      WS_DEBUG_PRINTLN("[checkin] WARNING: Unknown ComponentAdd message type");
+      return false;
   }
 
   return true;

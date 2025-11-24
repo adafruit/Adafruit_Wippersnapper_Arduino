@@ -249,11 +249,6 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   // Configure controller settings using Response
   WsV2.CheckInModel->ConfigureControllers();
   
-  // Attempt to initialize components using Response
-  if (!WsV2.CheckInModel->AddComponents()) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to add components from Checkin Response");
-    return false;
-  }
 
   // TODO: Publish out the complete flag
 
@@ -1051,10 +1046,6 @@ void Wippersnapper_V2::connect() {
   }
   // Configure controllers
   WsV2.CheckInModel->ConfigureControllers();
-  // Add components
-  if (!WsV2.CheckInModel->AddComponents()) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to sync components from checkin response");
-  }
   WS_DEBUG_PRINTLN("Completed checkin process!");
 
   // Set the status LED to green to indicate successful configuration
