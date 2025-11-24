@@ -307,6 +307,66 @@ bool ws_sdcard::ValidateJSONKey(const char *key, const char *error_msg) {
 }
 
 /*!
+    @brief  Encodes the DigitalIO payload for a BrokerToDevice signal message.
+    @param  stream
+            The output stream to encode the message to.
+    @param  field
+            The field descriptor for the payload.
+    @param  arg
+            Pointer to the BrokerToDevice message containing the payload.
+    @returns True if the payload was successfully encoded, False otherwise.
+*/
+static bool encodeSignalPayload(pb_ostream_t *stream, const pb_field_t *field,
+                                void *const *arg) {
+  ws_signal_BrokerToDevice *msg = (ws_signal_BrokerToDevice *)(*arg);
+  const pb_msgdesc_t *payload_fields = nullptr;
+  const void *payload = nullptr;
+
+  // Pack the correct payload based on the message type
+  switch (msg->which_payload) {
+  case ws_signal_BrokerToDevice_digitalio_tag:
+    payload_fields = ws_digitalio_B2D_fields;
+    payload = &msg->payload.digitalio;
+    break;
+  case ws_signal_BrokerToDevice_analogio_tag:
+    payload_fields = ws_analogio_B2D_fields;
+    payload = &msg->payload.analogio;
+    break;
+  case ws_signal_BrokerToDevice_ds18x20_tag:
+    payload_fields = ws_ds18x20_B2D_fields;
+    payload = &msg->payload.ds18x20;
+    break;
+  case ws_signal_BrokerToDevice_i2c_tag:
+    payload_fields = ws_i2c_B2D_fields;
+    payload = &msg->payload.i2c;
+    ;
+    break;
+  case ws_signal_BrokerToDevice_pwm_tag:
+    payload_fields = ws_pwm_B2D_fields;
+    payload = &msg->payload.pwm;
+    break;
+  case ws_signal_BrokerToDevice_servo_tag:
+    payload_fields = ws_servo_B2D_fields;
+    payload = &msg->payload.servo;
+    break;
+  case ws_signal_BrokerToDevice_pixels_tag:
+    payload_fields = ws_pixels_B2D_fields;
+    payload = &msg->payload.pixels;
+    break;
+  case ws_signal_BrokerToDevice_uart_tag:
+    payload_fields = ws_uart_B2D_fields;
+    payload = &msg->payload.uart;
+    break;
+  default:
+    return false;
+  }
+
+  // Encode the payload submessage
+  return pb_encode_tag_for_field(stream, field) &&
+         pb_encode_submessage(stream, payload_fields, payload);
+}
+
+/*!
     @brief  Parses a DigitalIOAdd message from the JSON configuration file.
     @param  msg_DigitalIOAdd
             The DigitalIOAdd message to populate.
@@ -325,10 +385,10 @@ bool ws_sdcard::ValidateJSONKey(const char *key, const char *error_msg) {
     @returns True if the DigitalIOAdd message was successfully parsed,
              False otherwise.
 */
-bool ws_sdcard::ParseDigitalIOAdd(
-    ws_digitalio_Add &msg_DigitalIOAdd, const char *pin,
-    float period, bool value, const char *sample_mode, const char *direction,
-    const char *pull) {
+bool ws_sdcard::ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
+                                  const char *pin, float period, bool value,
+                                  const char *sample_mode,
+                                  const char *direction, const char *pull) {
   if (!ValidateJSONKey(pin, "[SD] Parsing Error: Digital pin name not found!"))
     return false;
   strcpy(msg_DigitalIOAdd.pin_name, pin);
@@ -374,6 +434,28 @@ bool ws_sdcard::ParseDigitalIOAdd(
                      String(direction));
     return false;
   }
+
+  // Print out contents of the DigitalIOAdd message
+  WS_DEBUG_PRINTLN("[SD] Parsed DigitalIOAdd message:");
+  WS_DEBUG_PRINTLN("  Pin Name: " + String(msg_DigitalIOAdd.pin_name));
+  WS_DEBUG_PRINTLN("  Period: " + String(msg_DigitalIOAdd.period) + " seconds");
+  WS_DEBUG_PRINTLN("  Value: " + String(msg_DigitalIOAdd.value));
+  WS_DEBUG_PRINT("  Sample Mode: ");
+  if (msg_DigitalIOAdd.sample_mode == ws_digitalio_SampleMode_SM_TIMER) {
+    WS_DEBUG_PRINTLN("TIMER");
+  } else if (msg_DigitalIOAdd.sample_mode == ws_digitalio_SampleMode_SM_EVENT) {
+    WS_DEBUG_PRINTLN("EVENT");
+  }
+  WS_DEBUG_PRINT("  GPIO Direction: ");
+  if (msg_DigitalIOAdd.gpio_direction == ws_digitalio_Direction_D_INPUT) {
+    WS_DEBUG_PRINTLN("INPUT");
+  } else if (msg_DigitalIOAdd.gpio_direction ==
+             ws_digitalio_Direction_D_INPUT_PULL_UP) {
+    WS_DEBUG_PRINTLN("INPUT_PULL_UP");
+  } else {
+    WS_DEBUG_PRINTLN("OUTPUT");
+  }
+
   return true;
 }
 
@@ -390,9 +472,9 @@ bool ws_sdcard::ParseDigitalIOAdd(
     @returns True if the AnalogIOAdd message was successfully parsed,
              False otherwise.
 */
-bool ws_sdcard::ParseAnalogIOAdd(
-    ws_analogio_Add &msg_AnalogIOAdd, const char *pin,
-    float period, const char *mode) {
+bool ws_sdcard::ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd,
+                                 const char *pin, float period,
+                                 const char *mode) {
 
   if (!ValidateJSONKey(pin, "[SD] Parsing Error: Analog pin name not found!"))
     return false;
@@ -417,10 +499,10 @@ bool ws_sdcard::ParseAnalogIOAdd(
   return true;
 }
 
-bool ws_sdcard::ParseDS18X20Add(
-    ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
-    int resolution, float period, int num_sensors, const char *sensor_type_1,
-    const char *sensor_type_2) {
+bool ws_sdcard::ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
+                                int resolution, float period, int num_sensors,
+                                const char *sensor_type_1,
+                                const char *sensor_type_2) {
 
   if (strcmp(pin, UNKNOWN_VALUE) == 0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 pin name not found!");
@@ -486,8 +568,7 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
 */
 bool ws_sdcard::ParseI2cDeviceAddReplace(
     JsonObject &component, ws_i2c_DeviceAddOrReplace &msg_i2c_add) {
-  strcpy(msg_i2c_add.device_name,
-         component["i2cDeviceName"] | UNKNOWN_VALUE);
+  strcpy(msg_i2c_add.device_name, component["i2cDeviceName"] | UNKNOWN_VALUE);
   msg_i2c_add.device_period = component["period"] | 0.0;
   if (msg_i2c_add.device_period == 0.0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Invalid I2C device period!");
@@ -501,8 +582,7 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
          component["i2cBusSda"] | "default");
 
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
-  msg_i2c_add.device_description.device_address =
-      HexStrToInt(addr_device);
+  msg_i2c_add.device_description.device_address = HexStrToInt(addr_device);
 
   const char *addr_mux = component["i2cMuxAddress"] | "0x00";
   msg_i2c_add.device_description.mux_address = HexStrToInt(addr_mux);
@@ -513,8 +593,7 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   msg_i2c_add.device_sensor_types_count = 0;
   for (JsonObject components_0_i2cDeviceSensorType :
        component["i2cDeviceSensorTypes"].as<JsonArray>()) {
-    msg_i2c_add
-        .device_sensor_types[msg_i2c_add.device_sensor_types_count] =
+    msg_i2c_add.device_sensor_types[msg_i2c_add.device_sensor_types_count] =
         ParseSensorType(components_0_i2cDeviceSensorType["type"]);
     msg_i2c_add.device_sensor_types_count++;
   }
@@ -531,14 +610,19 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
 */
 bool ws_sdcard::AddSignalMessageToSharedBuffer(
     ws_signal_BrokerToDevice &msg_signal) {
+
+  // if (msg_signal.which_payload == ws_signal_BrokerToDevice_digitalio_tag) {
+  msg_signal.cb_payload.funcs.encode = encodeSignalPayload;
+  msg_signal.cb_payload.arg = &msg_signal;
+  //  }
+
   // Create a temporary buffer to hold the encoded signal message
   std::vector<uint8_t> tempBuf(512);
   size_t tempBufSz;
 
   // Get the encoded size of the signal message first so we can resize the
   // buffer prior to encoding
-  if (!pb_get_encoded_size(&tempBufSz,
-                           ws_signal_BrokerToDevice_fields,
+  if (!pb_get_encoded_size(&tempBufSz, ws_signal_BrokerToDevice_fields,
                            &msg_signal)) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to get signal message size!");
     return false;
@@ -547,8 +631,7 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
   // Encode and push the signal message to the shared config buffer
   tempBuf.resize(tempBufSz);
   pb_ostream_t ostream = pb_ostream_from_buffer(tempBuf.data(), tempBuf.size());
-  if (!ws_pb_encode(&ostream, ws_signal_BrokerToDevice_fields,
-                    &msg_signal)) {
+  if (!ws_pb_encode(&ostream, ws_signal_BrokerToDevice_fields, &msg_signal)) {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: Unable to encode D2B signal message!");
     return false;
@@ -619,7 +702,7 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 bool ws_sdcard::parseConfigFile() {
   DeserializationError error;
   JsonDocument doc;
-  delay(5000);
+  // delay(5000); // Enable for debugging the sdcard class
 
   // Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG
@@ -697,7 +780,8 @@ bool ws_sdcard::parseConfigFile() {
 
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
-    ws_signal_BrokerToDevice msg_signal_b2d = ws_signal_BrokerToDevice_init_default;
+    ws_signal_BrokerToDevice msg_signal_b2d =
+        ws_signal_BrokerToDevice_init_default;
 
     // Parse the component API type
     const char *component_api_type = component["componentAPI"];
@@ -723,6 +807,7 @@ bool ws_sdcard::parseConfigFile() {
       }
 
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_digitalio_tag;
+      msg_signal_b2d.payload.digitalio.which_payload = ws_digitalio_B2D_add_tag;
       msg_signal_b2d.payload.digitalio.payload.add = msg_DigitalIOAdd;
     } else if (strcmp(component_api_type, "analogio") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
@@ -758,14 +843,17 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.payload.ds18x20.payload.add = msg_DS18X20Add;
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
-      ws_i2c_DeviceAddOrReplace msg_i2c_add_replace = ws_i2c_DeviceAddOrReplace_init_default;
+      ws_i2c_DeviceAddOrReplace msg_i2c_add_replace =
+          ws_i2c_DeviceAddOrReplace_init_default;
       if (!ParseI2cDeviceAddReplace(component, msg_i2c_add_replace)) {
         WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to parse I2C Component");
         return false;
       }
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_i2c_tag;
-      msg_signal_b2d.payload.i2c.which_payload = ws_i2c_B2D_device_add_replace_tag;
-      msg_signal_b2d.payload.i2c.payload.device_add_replace = msg_i2c_add_replace;
+      msg_signal_b2d.payload.i2c.which_payload =
+          ws_i2c_B2D_device_add_replace_tag;
+      msg_signal_b2d.payload.i2c.payload.device_add_replace =
+          msg_i2c_add_replace;
     } else {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown Component API Type: " +
                        String(component_api_type));

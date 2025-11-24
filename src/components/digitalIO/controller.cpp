@@ -43,6 +43,20 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
 }
 
 bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
+
+  // Print out all the message details
+  WS_DEBUG_PRINTLN("[digitalio] Received DigitalIOAdd message:");
+  WS_DEBUG_PRINT("Pin Name: ");
+  WS_DEBUG_PRINTLN(msg->pin_name);
+  WS_DEBUG_PRINT("Period: ");
+  WS_DEBUG_PRINTLN(msg->period);
+  WS_DEBUG_PRINT("Sample Mode: ");
+  WS_DEBUG_PRINTLN(msg->sample_mode);
+  WS_DEBUG_PRINT("Direction: ");
+  WS_DEBUG_PRINTLN(msg->gpio_direction);
+  WS_DEBUG_PRINT("Value: ");
+  WS_DEBUG_PRINTLN(msg->value);
+
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
   uint8_t pin_name = atoi(msg->pin_name + 1);
 
@@ -106,6 +120,19 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
         "[digitalio] ERROR: Unable to decode DigitalIOAdd message!");
     return false;
   }
+
+  // Print out all the message details
+  WS_DEBUG_PRINTLN("[digitalio] Received DigitalIOAdd message:");
+  WS_DEBUG_PRINT("Pin Name: ");
+  WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOAddMsg()->pin_name);
+  WS_DEBUG_PRINT("Period: ");
+  WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOAddMsg()->period);
+  WS_DEBUG_PRINT("Sample Mode: ");
+  WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOAddMsg()->sample_mode);
+  WS_DEBUG_PRINT("Direction: ");
+  WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOAddMsg()->gpio_direction);
+  WS_DEBUG_PRINT("Value: ");
+  WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOAddMsg()->value);
 
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
   uint8_t pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
