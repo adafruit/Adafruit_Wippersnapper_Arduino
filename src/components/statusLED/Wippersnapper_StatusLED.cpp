@@ -25,7 +25,7 @@ Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
 #ifdef USE_STATUS_DOTSTAR
 Adafruit_DotStar *statusPixelDotStar =
     new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
-                         STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
+                         STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BGR);
 #endif
 
 /****************************************************************************/
