@@ -67,7 +67,8 @@ void initStatusLED() {
 #else
     statusPixelDotStar =
         new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
-                             STATUS_DOTSTAR_PIN_CLK, STATUS_DOTSTAR_DEFAULT_COLOR_ORDER)
+                             STATUS_DOTSTAR_PIN_CLK,
+                             STATUS_DOTSTAR_DEFAULT_COLOR_ORDER)
 #endif
     statusPixelDotStar->begin();
     statusPixelDotStar->clear();
