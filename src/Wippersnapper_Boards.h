@@ -41,7 +41,7 @@
 #define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA ///< DotStar Data Pin
 #define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK ///< DotStar Clock Pin
 #define STATUS_DOTSTAR_NUM 5                     ///< Number of DotStar LEDs
-#define STATUS_DOTSTAR_COLOR_ORDER DOTSTAR_GBR   ///< DotStar Color Order
+#define STATUS_DOTSTAR_COLOR_ORDER DOTSTAR_BGR   ///< DotStar Color Order
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_METRO_ESP32S2)
 #define BOARD_ID "metroesp32s2"
