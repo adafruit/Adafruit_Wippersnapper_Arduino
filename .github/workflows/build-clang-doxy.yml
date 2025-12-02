@@ -145,6 +145,8 @@ jobs:
           board_name=${board_name%_noota}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
+          # Remove 'espressif_' prefix if present
+          board_name=${board_name#espressif_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
@@ -367,6 +369,7 @@ jobs:
             "itsybitsy_esp32",
             "dfrobot_beetle_esp32c3",
             "wippersnapper_qtpy_esp32c3",
+            "espressif_esp32c5_devkitc_1_n8r4",
             "wippersnapper_feather_esp32c6"
           ]
         include:
@@ -375,6 +378,8 @@ jobs:
             arduino-platform: "dfrobot_beetle_esp32c3"
           - offset: "0x0"
             arduino-platform: "wippersnapper_qtpy_esp32c3"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32c5_devkitc_1_n8r4"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
@@ -450,7 +455,7 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: Install Dependencies
         run: |
-          pip install esptool==4.6
+          pip install esptool
       - name: build ESP32 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: Check artifacts
@@ -459,6 +464,8 @@ jobs:
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
+          ## We manually merge our own binary instead of relying on the arduino-cli auto-merged one. Uncomment to diagnose differences.
+          # mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.merged.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.auto-merge.bin
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.elf
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin
@@ -482,6 +489,8 @@ jobs:
           board_name=${board_name%_noota}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
+          # Remove 'espressif_' prefix if present
+          board_name=${board_name#espressif_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
@@ -492,14 +501,11 @@ jobs:
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
+            --flash-mode keep --flash-freq keep --flash-size keep \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
-            0xe000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin \
             0x10000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
       - name: Zip build artifacts
         run: |
@@ -905,11 +911,15 @@ jobs:
         arduino-platform:
           [
             "wippersnapper_feather_esp32c6_debug",
+            "espressif_esp32c5_devkitc_1_n8r4_debug",
           ]
         include:
           - offset: "0x1000"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32c5_devkitc_1_n8r4_debug"
+
     steps:
       - name: "skip if unwanted"
         continue-on-error: true
@@ -983,7 +993,7 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: Install Dependencies
         run: |
-          pip3 install esptool==4.6
+          pip3 install esptool
       - name: build ESP32 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: Check artifacts
@@ -992,6 +1002,7 @@ jobs:
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
+          mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.merged.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.auto-merge.bin
           mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.elf wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.elf
           mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
           mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin
@@ -1017,6 +1028,8 @@ jobs:
           board_name=${board_name%_debug}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
+          # Remove 'espressif_' prefix if present
+          board_name=${board_name#espressif_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
@@ -1027,14 +1040,11 @@ jobs:
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
+            --flash-mode keep --flash-freq keep --flash-size keep \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
-            0xe000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin \
             0x10000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
       - name: Zip build artifacts
         run: |
