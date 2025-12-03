@@ -46,7 +46,9 @@ class DigitalIOController {
 public:
   DigitalIOController();
   ~DigitalIOController();
-  bool Handle_DigitalIO_Add(ws_digitalio_Add *msg);
+  bool Router(pb_istream_t *stream);
+  bool Handle_DigitalIO_Add(
+      ws_digitalio_Add *msg); // TODO: Might not need this function
   // Called by the cbDecodeBrokerToDevice router function
   bool Handle_DigitalIO_Add(pb_istream_t *stream);
   bool Handle_DigitalIO_Write(pb_istream_t *stream);

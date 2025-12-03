@@ -42,8 +42,50 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
   _max_digitalio_pins = max_digital_pins;
 }
 
+/*!
+    @brief  Routes messages using the digitalio.proto API to the
+            appropriate controller functions.
+    @param  stream
+            The nanopb input stream.
+    @return True if the message was successfully routed, False otherwise.
+*/
+bool DigitalIOController::Router(pb_istream_t *stream) {
+  // Attempt to decode the DigitalIO B2D envelope
+  ws_digitalio_B2D b2d = ws_digitalio_B2D_init_zero;
+  if (!ws_pb_decode(stream, ws_digitalio_B2D_fields, &b2d)) {
+    WS_DEBUG_PRINTLN(
+        "[digitalio] ERROR: Unable to decode DigitalIO B2D envelope");
+    return false;
+  }
+
+  // Route based on payload type
+  bool res = false;
+  switch (b2d.which_payload) {
+  case ws_digitalio_B2D_add_tag:
+    res = Handle_DigitalIO_Add(&b2d.payload.add);
+    break;
+  case ws_digitalio_B2D_remove_tag:
+    // TODO: Re-implement handler using message instead of stream
+    // res = Handle_DigitalIO_Remove(&b2d.payload.remove);
+    WS_DEBUG_PRINTLN("[digitalio] WARNING: Remove handler not implemented yet");
+    break;
+  case ws_digitalio_B2D_write_tag:
+    // TODO: Re-implement handler using message instead of stream
+    // res = Handle_DigitalIO_Write(&b2d.payload.write);
+    WS_DEBUG_PRINTLN("[digitalio] WARNING: Write handler not implemented yet");
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[digitalio] WARNING: Unsupported DigitalIO payload");
+    res = false;
+    break;
+  }
+
+  return res;
+}
+
 // TODO: Do we even need this function?
 bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
+  WS_DEBUG_PRINTLN("[digitalio] Handle_DigitalIO_Add MESSAGE...");
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
   uint8_t pin_name = atoi(msg->pin_name + 1);
 

@@ -269,35 +269,20 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
                          void **arg) {
   (void)arg;
 
+  if (stream == nullptr || field == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: Null stream or field in routeBrokerToDevice");
+    return false;
+  }
+
   // Route based on message tag
   switch (field->tag) {
   case ws_signal_BrokerToDevice_error_tag:
-    // TODO: Route to new error component
+    // TODO: Handle new error component API
     return true;
   case ws_signal_BrokerToDevice_checkin_tag:
     return handleCheckinResponse(stream);
   case ws_signal_BrokerToDevice_digitalio_tag: {
-    WS_DEBUG_PRINTLN("Handling DigitalIO...");
-    ws_digitalio_B2D b2d = ws_digitalio_B2D_init_zero;
-    if (!ws_pb_decode(stream, ws_digitalio_B2D_fields, &b2d)) {
-      WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to decode DigitalIO B2D envelope");
-      return false;
-    }
-    switch (b2d.which_payload) {
-    case ws_digitalio_B2D_add_tag:
-      return WsV2.digital_io_controller->Handle_DigitalIO_Add(&b2d.payload.add);
-    case ws_digitalio_B2D_remove_tag:
-      WS_DEBUG_PRINTLN("[digitalio] WARNING: Remove DigitalIO not implemented yet!");
-      return false;
-      // return WsV2.digital_io_controller->Handle_DigitalIO_Remove(&b2d.payload.remove);
-    case ws_digitalio_B2D_write_tag:
-      WS_DEBUG_PRINTLN("[digitalio] WARNING: Write DigitalIO not implemented yet!");
-      return false;
-      // return WsV2.digital_io_controller->Handle_DigitalIO_Write(&b2d.payload.write);
-    default:
-        WS_DEBUG_PRINTLN("[digitalio] WARNING: Unsupported DigitalIO payload");
-        return false;
-    }
+    return WsV2.digital_io_controller->Router(stream);
   }
   case ws_signal_BrokerToDevice_analogio_tag:
     return WsV2.analogio_controller->Handle_AnalogIOAdd(stream);
