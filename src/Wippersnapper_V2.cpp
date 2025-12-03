@@ -50,7 +50,6 @@ Wippersnapper_V2::Wippersnapper_V2() {
   // NOTE: This is causing a crash!
   this->sensorModel = new SensorModel();
 
-
   // Initialize controller classes
   this->digital_io_controller = new DigitalIOController();
   this->analogio_controller = new AnalogIOController();
@@ -172,7 +171,6 @@ void Wippersnapper_V2::set_user_key() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-
 /*!
     @brief    Provisions a WipperSnapper device with its network
               configuration and Adafruit IO credentials.
@@ -248,14 +246,11 @@ bool handleCheckinResponse(pb_istream_t *stream) {
 
   // Configure controller settings using Response
   WsV2.CheckInModel->ConfigureControllers();
-  
 
   // TODO: Publish out the complete flag
 
-
   return true;
 }
-
 
 // Decoders //
 
@@ -271,35 +266,56 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     @returns  True if decoded and executed successfully, False otherwise.
 */
 bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
-                            void **arg) {
+                         void **arg) {
   (void)arg;
 
   // Route based on message tag
   switch (field->tag) {
-    case ws_signal_BrokerToDevice_error_tag:
-      // TODO: Route to new error component
-      return true;
-    case ws_signal_BrokerToDevice_checkin_tag:
-      return handleCheckinResponse(stream);
-    case ws_signal_BrokerToDevice_digitalio_tag:
-      return WsV2.digital_io_controller->Handle_DigitalIO_Add(stream);
-    case ws_signal_BrokerToDevice_analogio_tag:
-      return WsV2.analogio_controller->Handle_AnalogIOAdd(stream);
-    case ws_signal_BrokerToDevice_pixels_tag:
-      return WsV2._pixels_controller->Handle_Pixels_Add(stream);
-    case ws_signal_BrokerToDevice_pwm_tag:
-      return WsV2._pwm_controller->Handle_PWM_Add(stream);
-    case ws_signal_BrokerToDevice_servo_tag:
-      return WsV2._servo_controller->Handle_Servo_Add(stream);
-    case ws_signal_BrokerToDevice_ds18x20_tag:
-      return WsV2._ds18x20_controller->Handle_Ds18x20Add(stream);
-    case ws_signal_BrokerToDevice_i2c_tag:
-      return WsV2._i2c_controller->Handle_I2cDeviceAddOrReplace(stream);
-    case ws_signal_BrokerToDevice_uart_tag:
-      return WsV2._uart_controller->Handle_UartAdd(stream);
-    default:
-      WS_DEBUG_PRINTLN("WARNING: Unhandled BrokerToDevice message tag!");
+  case ws_signal_BrokerToDevice_error_tag:
+    // TODO: Route to new error component
+    return true;
+  case ws_signal_BrokerToDevice_checkin_tag:
+    return handleCheckinResponse(stream);
+  case ws_signal_BrokerToDevice_digitalio_tag: {
+    WS_DEBUG_PRINTLN("Handling DigitalIO...");
+    ws_digitalio_B2D b2d = ws_digitalio_B2D_init_zero;
+    if (!ws_pb_decode(stream, ws_digitalio_B2D_fields, &b2d)) {
+      WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to decode DigitalIO B2D envelope");
       return false;
+    }
+    switch (b2d.which_payload) {
+    case ws_digitalio_B2D_add_tag:
+      return WsV2.digital_io_controller->Handle_DigitalIO_Add(&b2d.payload.add);
+    case ws_digitalio_B2D_remove_tag:
+      WS_DEBUG_PRINTLN("[digitalio] WARNING: Remove DigitalIO not implemented yet!");
+      return false;
+      // return WsV2.digital_io_controller->Handle_DigitalIO_Remove(&b2d.payload.remove);
+    case ws_digitalio_B2D_write_tag:
+      WS_DEBUG_PRINTLN("[digitalio] WARNING: Write DigitalIO not implemented yet!");
+      return false;
+      // return WsV2.digital_io_controller->Handle_DigitalIO_Write(&b2d.payload.write);
+    default:
+        WS_DEBUG_PRINTLN("[digitalio] WARNING: Unsupported DigitalIO payload");
+        return false;
+    }
+  }
+  case ws_signal_BrokerToDevice_analogio_tag:
+    return WsV2.analogio_controller->Handle_AnalogIOAdd(stream);
+  case ws_signal_BrokerToDevice_pixels_tag:
+    return WsV2._pixels_controller->Handle_Pixels_Add(stream);
+  case ws_signal_BrokerToDevice_pwm_tag:
+    return WsV2._pwm_controller->Handle_PWM_Add(stream);
+  case ws_signal_BrokerToDevice_servo_tag:
+    return WsV2._servo_controller->Handle_Servo_Add(stream);
+  case ws_signal_BrokerToDevice_ds18x20_tag:
+    return WsV2._ds18x20_controller->Handle_Ds18x20Add(stream);
+  case ws_signal_BrokerToDevice_i2c_tag:
+    return WsV2._i2c_controller->Handle_I2cDeviceAddOrReplace(stream);
+  case ws_signal_BrokerToDevice_uart_tag:
+    return WsV2._uart_controller->Handle_UartAdd(stream);
+  default:
+    WS_DEBUG_PRINTLN("WARNING: Unhandled BrokerToDevice message tag!");
+    return false;
   }
 }
 
@@ -320,8 +336,7 @@ void cbBrokerToDevice(char *data, uint16_t len) {
 
   // Decode message
   pb_istream_t istream = pb_istream_from_buffer((uint8_t *)data, len);
-  if (!pb_decode(&istream, ws_signal_BrokerToDevice_fields,
-                 &msg_signal)) {
+  if (!pb_decode(&istream, ws_signal_BrokerToDevice_fields, &msg_signal)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");
     return;
   }
@@ -339,8 +354,7 @@ void callDecodeB2D() {
     const std::vector<uint8_t> &buffer = WsV2._sharedConfigBuffers[i];
     pb_istream_t istream = pb_istream_from_buffer(buffer.data(), buffer.size());
     // Decode the message
-    if (!pb_decode(&istream, ws_signal_BrokerToDevice_fields,
-                   &msg_signal)) {
+    if (!pb_decode(&istream, ws_signal_BrokerToDevice_fields, &msg_signal)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");
       continue; // Skip this message and move on!
     }
@@ -743,9 +757,9 @@ void Wippersnapper_V2::haltErrorV2(const char *error,
 bool Wippersnapper_V2::PublishD2b(pb_size_t which_payload, void *payload) {
   ws_signal_DeviceToBroker msg = ws_signal_DeviceToBroker_init_default;
 
-// Fill generic signal payload with the payload from the args.
-WS_DEBUG_PRINT("[DBG] Signal Payload Type: "); // TODO: Remove debug print
-switch (which_payload) {
+  // Fill generic signal payload with the payload from the args.
+  WS_DEBUG_PRINT("[DBG] Signal Payload Type: "); // TODO: Remove debug print
+  switch (which_payload) {
   case ws_signal_DeviceToBroker_error_tag:
     WS_DEBUG_PRINTLN("Error");
     msg.which_payload = ws_signal_DeviceToBroker_error_tag;
@@ -804,12 +818,11 @@ switch (which_payload) {
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;
-}
+  }
 
   // Get the encoded size of the signal message
   size_t szMessageBuf;
-  if (!pb_get_encoded_size(&szMessageBuf,
-                           ws_signal_DeviceToBroker_fields,
+  if (!pb_get_encoded_size(&szMessageBuf, ws_signal_DeviceToBroker_fields,
                            &msg)) {
     WS_DEBUG_PRINTLN(
         "ERROR: Unable to get encoded size of signal message, bailing out!");
@@ -821,10 +834,8 @@ switch (which_payload) {
   // Encode the signal message
   WS_DEBUG_PRINT("Encoding d2b message...");
   pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, szMessageBuf);
-  if (!ws_pb_encode(&stream, ws_signal_DeviceToBroker_fields,
-                    &msg)) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Unable to encode d2b message, bailing out!");
+  if (!ws_pb_encode(&stream, ws_signal_DeviceToBroker_fields, &msg)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode d2b message, bailing out!");
     return false;
   }
   WS_DEBUG_PRINTLN("Encoded!");
@@ -960,12 +971,12 @@ void Wippersnapper_V2::connect() {
   printDeviceInfoV2();
 
   // Print free heap a tthis point
-    WS_DEBUG_PRINT("Free heap at startup: ");
-    WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  WS_DEBUG_PRINT("Free heap at startup: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
   this->CheckInModel = new CheckinModel();
   // Print fre eheap after
-    WS_DEBUG_PRINT("Free heap after CheckinModel init: ");
-    WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  WS_DEBUG_PRINT("Free heap after CheckinModel init: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
 
   // enable global WDT
   WsV2.enableWDTV2(WS_WDT_TIMEOUT);
@@ -995,8 +1006,7 @@ void Wippersnapper_V2::connect() {
       haltErrorV2("Unable to create new .log file on SD card!");
 #endif
     // Call the TL signal decoder to parse the incoming JSON data
-    // TODO: Put back, removed during PB refactor
-    // callDecodeB2D();
+    callDecodeB2D();
     WS_DEBUG_PRINTLN("[Offline] Hardware configured, skipping network setup "
                      "and running app...");
     // Blink status LED to green to indicate successful configuration
@@ -1025,7 +1035,7 @@ void Wippersnapper_V2::connect() {
   runNetFSMV2();
   WsV2.feedWDTV2();
 
-  // TODO: Possibly refactor checkin process into its own function 
+  // TODO: Possibly refactor checkin process into its own function
   // or component class for clarity
   // TODO: Remove logging from checkin process,
   // but only after we test on staging
@@ -1042,7 +1052,7 @@ void Wippersnapper_V2::connect() {
   // the WDT will reset the device and try again
   while (!WsV2.CheckInModel->GotResponse()) {
     WsV2._mqttV2->processPackets(10); // TODO: Test with lower timeout value
-    pingBrokerV2(); // Keep MQTT connection alive
+    pingBrokerV2();                   // Keep MQTT connection alive
   }
   // Configure controllers
   WsV2.CheckInModel->ConfigureControllers();

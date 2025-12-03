@@ -721,9 +721,10 @@ bool ws_sdcard::parseConfigFile() {
         WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
-
+      // Configure the message envelope
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_digitalio_tag;
       msg_signal_b2d.payload.digitalio.payload.add = msg_DigitalIOAdd;
+      msg_signal_b2d.payload.digitalio.which_payload = ws_digitalio_B2D_add_tag;
     } else if (strcmp(component_api_type, "analogio") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
       ws_analogio_Add msg_AnalogIOAdd = ws_analogio_Add_init_default;
@@ -739,6 +740,7 @@ bool ws_sdcard::parseConfigFile() {
 
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_analogio_tag;
       msg_signal_b2d.payload.analogio.payload.add = msg_AnalogIOAdd;
+      msg_signal_b2d.payload.analogio.which_payload = ws_analogio_B2D_add_tag;
     } else if (strcmp(component_api_type, "ds18x20") == 0) {
       WS_DEBUG_PRINTLN("[SD] Ds18x20 component found, decoding JSON to PB...");
       ws_ds18x20_Add msg_DS18X20Add = ws_ds18x20_Add_init_default;

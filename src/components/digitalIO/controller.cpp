@@ -42,6 +42,7 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
   _max_digitalio_pins = max_digital_pins;
 }
 
+// TODO: Do we even need this function?
 bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
   uint8_t pin_name = atoi(msg->pin_name + 1);
@@ -93,6 +94,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     @return True if the digital pin was successfully added.
 */
 bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
+  WS_DEBUG_PRINTLN("[digitalio] Adding new digital pin...");
   // Early-out if we have reached the maximum number of digital pins
   if (_digitalio_pins.size() >= _max_digitalio_pins) {
     WS_DEBUG_PRINTLN("[digitalio] ERROR: Can not add new pin, all pins have "
@@ -109,6 +111,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
 
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
   uint8_t pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
+  WS_DEBUG_PRINTLN("[digitalio] Pin Name: " + String(pin_name));
 
   // Check if the provided pin is also the status LED pin
   if (_dio_hardware->IsStatusLEDPin(pin_name))
@@ -119,6 +122,11 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
     _dio_hardware->deinit(pin_name);
 
   // Attempt to configure the pin
+
+  // Print pin direction
+  WS_DEBUG_PRINT("[digitalio] Pin Direction: ");
+  WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOAddMsg()->gpio_direction);
+
   if (!_dio_hardware->ConfigurePin(
           pin_name, _dio_model->GetDigitalIOAddMsg()->gpio_direction)) {
     WS_DEBUG_PRINTLN(

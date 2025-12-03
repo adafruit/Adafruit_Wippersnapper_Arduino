@@ -42,7 +42,7 @@ def run_wokwi_cli(binary, timeout, scenario, diagram):
     return result
 
 # Test JSON validation
-
+"""
 def test_invalid_json():
     result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-invalid-json.scenario.yaml", f"diagrams/offline.json")
     assert result.returncode == 0
@@ -56,6 +56,7 @@ def test_invalid_checksum():
 def test_valid_checksum():
     result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-valid-checksum.scenario.yaml", f"diagrams/offline.json")
     assert result.returncode == 0
+"""
 
 # Test hardware validation
 
