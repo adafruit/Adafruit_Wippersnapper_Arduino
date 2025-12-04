@@ -100,45 +100,9 @@ void Wippersnapper::provision() {
 
   // Board specific initializations
 #ifdef ARDUINO_ARDUINO_NESSO_N1
-  Wire.begin(SDA, SCL, 100000);
-
-  // verify chip id 0x49 at 0x0Ah
-  Wire.beginTransmission(0x49);
-  Wire.write(0x0A);
-  Wire.endTransmission();
-  Wire.requestFrom(0x49, 1);
-  uint8_t chipId = Wire.read();
-  if (chipId != 0x49) {
-    WS_DEBUG_PRINTLN("ERROR: AW32001E not found on I2C bus!");
-    Wire.endTransmission();
-    Wire.end();
-  } else {
-    WS_DEBUG_PRINTLN("AW32001E detected on I2C bus.");
-    // Disable AW32001E watchdog timer, read 05h, & 0x1F, write back
-    Wire.beginTransmission(0x49);
-    Wire.write(0x05);
-    Wire.endTransmission();
-    Wire.requestFrom(0x49, 1);
-    uint8_t regVal = Wire.read();
-    Wire.endTransmission();
-    WS_DEBUG_PRINTLN("AW32001E WDT reg before disable: " + String(regVal, BIN));
-    delay(10);
-    regVal &=
-        0b00011111; // Clear bits 5:6 to disable Watchdog timer, 7 for discharge
-    Wire.beginTransmission(0x49);
-    Wire.write(0x05);
-    Wire.write(regVal);
-    Wire.endTransmission();
-    Wire.end();
-    delay(10);
-
-    battery.enableCharge();
-  }
-
-  // // digitalWrite(LORA_ENABLE, FALSE);
-  // // digitalWrite(LORA_LNA_ENABLE, FALSE);
-  // // digitalWrite(GROVE_POWER_EN, TRUE);
-  // delay(10);
+  battery.begin();
+  delay(10);
+  battery.enableCharge();
 #endif
 
   // Initialize the status LED for signaling FS errors
@@ -1703,7 +1667,7 @@ void cbDisplayMessage(char *data, uint16_t len) {
 /****************************************************************************/
 bool Wippersnapper::encodePinEvent(
     wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-    uint8_t pinName, int pinVal) {
+    uint16_t pinName, int pinVal) {
   bool is_success = true;
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
