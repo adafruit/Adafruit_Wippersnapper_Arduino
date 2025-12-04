@@ -286,17 +286,17 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   case ws_signal_BrokerToDevice_analogio_tag:
     return WsV2.analogio_controller->Router(stream);
   case ws_signal_BrokerToDevice_pixels_tag:
-    return WsV2._pixels_controller->Handle_Pixels_Add(stream);
+    return WsV2._pixels_controller->Router(stream);
   case ws_signal_BrokerToDevice_pwm_tag:
-    return WsV2._pwm_controller->Handle_PWM_Add(stream);
+    return WsV2._pwm_controller->Router(stream);
   case ws_signal_BrokerToDevice_servo_tag:
-    return WsV2._servo_controller->Handle_Servo_Add(stream);
+    return WsV2._servo_controller->Router(stream);
   case ws_signal_BrokerToDevice_ds18x20_tag:
-    return WsV2._ds18x20_controller->Handle_Ds18x20Add(stream);
+    return WsV2._ds18x20_controller->Router(stream);
   case ws_signal_BrokerToDevice_i2c_tag:
-    return WsV2._i2c_controller->Handle_I2cDeviceAddOrReplace(stream);
+    return WsV2._i2c_controller->Router(stream);
   case ws_signal_BrokerToDevice_uart_tag:
-    return WsV2._uart_controller->Handle_UartAdd(stream);
+    return WsV2._uart_controller->Router(stream);
   default:
     WS_DEBUG_PRINTLN("WARNING: Unhandled BrokerToDevice message tag!");
     return false;

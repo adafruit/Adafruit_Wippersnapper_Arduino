@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -31,8 +31,9 @@ public:
   DS18X20Controller();
   ~DS18X20Controller();
   // Routing
-  bool Handle_Ds18x20Add(pb_istream_t *stream);
-  bool Handle_Ds18x20Remove(pb_istream_t *stream);
+  bool Router(pb_istream_t *stream);
+  bool Handle_Ds18x20Add(ws_ds18x20_Add *msg);
+  bool Handle_Ds18x20Remove(ws_ds18x20_Remove *msg);
   // Polling
   void update();
 

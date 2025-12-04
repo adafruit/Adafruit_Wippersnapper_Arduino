@@ -28,24 +28,55 @@ PWMController::PWMController() {
 PWMController::~PWMController() { delete _pwm_model; }
 
 /*!
-    @brief  Handles the PWM_Add message.
-    @param  stream The stream containing the message data.
-    @return True if the message was handled successfully, false otherwise.
+    @brief  Routes messages using the pwm.proto API to the
+            appropriate controller functions.
+    @param  stream
+            The nanopb input stream.
+    @return True if the message was successfully routed, False otherwise.
 */
-bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
-  bool did_attach;
-  if (!_pwm_model->DecodePWMAdd(stream)) {
-    WS_DEBUG_PRINTLN("[pwm] Failed to decode PWMAdd message!");
+bool PWMController::Router(pb_istream_t *stream) {
+  // Attempt to decode the PWM B2D envelope
+  ws_pwm_B2D b2d = ws_pwm_B2D_init_zero;
+  if (!ws_pb_decode(stream, ws_pwm_B2D_fields, &b2d)) {
+    WS_DEBUG_PRINTLN("[pwm] ERROR: Unable to decode PWM B2D envelope");
     return false;
   }
-  ws_pwm_Add msg_add = *_pwm_model->GetPWMAddMsg();
-  uint8_t pin = atoi(msg_add.pin + 1);
+
+  // Route based on payload type
+  bool res = false;
+  switch (b2d.which_payload) {
+  case ws_pwm_B2D_add_tag:
+    res = Handle_PWM_Add(&b2d.payload.add);
+    break;
+  case ws_pwm_B2D_remove_tag:
+    res = Handle_PWM_Remove(&b2d.payload.remove);
+    break;
+  case ws_pwm_B2D_write_tag:
+    res = Handle_PWM_Write(&b2d.payload.write);
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[pwm] WARNING: Unsupported PWM payload");
+    res = false;
+    break;
+  }
+
+  return res;
+}
+
+/*!
+    @brief  Handles the PWM_Add message.
+    @param  msg The PWMAdd message.
+    @return True if the message was handled successfully, false otherwise.
+*/
+bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
+  bool did_attach;
+  uint8_t pin = atoi(msg->pin + 1);
   _pwm_hardware[_active_pwm_pins] = new PWMHardware();
 
   WS_DEBUG_PRINT("[pwm] Attaching pin: ");
-  WS_DEBUG_PRINT(msg_add.pin);
+  WS_DEBUG_PRINT(msg->pin);
   did_attach = _pwm_hardware[_active_pwm_pins]->AttachPin(
-      pin, (uint32_t)msg_add.frequency, (uint32_t)msg_add.resolution);
+      pin, (uint32_t)msg->frequency, (uint32_t)msg->resolution);
   if (!did_attach) {
     WS_DEBUG_PRINTLN("[pwm] Failed to attach pin!");
     delete _pwm_hardware[_active_pwm_pins];
@@ -54,7 +85,7 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
   }
 
   // Publish PixelsAdded message to the broker
-  if (!_pwm_model->EncodePWMAdded(msg_add.pin, did_attach)) {
+  if (!_pwm_model->EncodePWMAdded(msg->pin, did_attach)) {
     WS_DEBUG_PRINTLN("[pwm]: Failed to encode PWMAdded message!");
     return false;
   }
@@ -69,16 +100,11 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
 
 /*!
     @brief  Handles the PWM_Remove message.
-    @param  stream The stream containing the message data.
+    @param  msg The PWMRemove message.
     @return True if the message was handled successfully, false otherwise.
 */
-bool PWMController::Handle_PWM_Remove(pb_istream_t *stream) {
-  if (!_pwm_model->DecodePWMRemove(stream)) {
-    WS_DEBUG_PRINTLN("[pwm] Error: Failed to decode PWMRemove message!");
-    return false;
-  }
-  ws_pwm_Remove msg_remove = *_pwm_model->GetPWMRemoveMsg();
-  uint8_t pin = atoi(msg_remove.pin + 1);
+bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
+  uint8_t pin = atoi(msg->pin + 1);
   int pin_idx = GetPWMHardwareIdx(pin);
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
@@ -87,7 +113,7 @@ bool PWMController::Handle_PWM_Remove(pb_istream_t *stream) {
 
   // Detach and free the pin for other uses
   WS_DEBUG_PRINT("[pwm] Detaching pin: ");
-  WS_DEBUG_PRINT(msg_remove.pin);
+  WS_DEBUG_PRINT(msg->pin);
   if (_pwm_hardware[pin_idx] != nullptr) {
     bool detach_result = _pwm_hardware[pin_idx]->DetachPin();
     if (!detach_result) {
@@ -126,17 +152,11 @@ int PWMController::GetPWMHardwareIdx(uint8_t pin) {
 
 /*!
     @brief  Handles the PWM_Write message.
-    @param  stream The stream containing the message data.
+    @param  msg The PWMWrite message.
     @return True if the message was handled successfully, false otherwise.
 */
-bool PWMController::Handle_PWM_Write(pb_istream_t *stream) {
-  if (!_pwm_model->DecodePWMWrite(stream)) {
-    WS_DEBUG_PRINTLN("[pwm] Error: Failed to decode PWMWrite message!");
-    return false;
-  }
-
-  ws_pwm_Write msg_write = *_pwm_model->GetPWMWriteMsg();
-  uint8_t pin = atoi(msg_write.pin + 1);
+bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
+  uint8_t pin = atoi(msg->pin + 1);
   int pin_idx = GetPWMHardwareIdx(pin);
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
@@ -144,27 +164,27 @@ bool PWMController::Handle_PWM_Write(pb_istream_t *stream) {
   }
 
   // Check which payload type we have
-  if (msg_write.which_payload == ws_pwm_Write_duty_cycle_tag) {
+  if (msg->which_payload == ws_pwm_Write_duty_cycle_tag) {
     // Write the duty cycle to the pin
-    if (!_pwm_hardware[pin_idx]->WriteDutyCycle(msg_write.payload.duty_cycle)) {
+    if (!_pwm_hardware[pin_idx]->WriteDutyCycle(msg->payload.duty_cycle)) {
       WS_DEBUG_PRINTLN("[pwm] Error: Failed to write duty cycle!");
       return false;
     }
     WS_DEBUG_PRINTLN("[pwm] Wrote duty cycle: ");
-    WS_DEBUG_PRINT(msg_write.payload.duty_cycle);
+    WS_DEBUG_PRINT(msg->payload.duty_cycle);
     WS_DEBUG_PRINTLN(" to pin: ");
-    WS_DEBUG_PRINT(msg_write.pin);
-  } else if (msg_write.which_payload == ws_pwm_Write_frequency_tag) {
+    WS_DEBUG_PRINT(msg->pin);
+  } else if (msg->which_payload == ws_pwm_Write_frequency_tag) {
     // Write the frequency to the pin
-    if (_pwm_hardware[pin_idx]->WriteTone(msg_write.payload.frequency) !=
-        msg_write.payload.frequency) {
+    if (_pwm_hardware[pin_idx]->WriteTone(msg->payload.frequency) !=
+        msg->payload.frequency) {
       WS_DEBUG_PRINTLN("[pwm] Error: Failed to write frequency!");
       return false;
     }
     WS_DEBUG_PRINTLN("[pwm] Wrote frequency: ");
-    WS_DEBUG_PRINT(msg_write.payload.frequency);
+    WS_DEBUG_PRINT(msg->payload.frequency);
     WS_DEBUG_PRINTLN(" to pin: ");
-    WS_DEBUG_PRINT(msg_write.pin);
+    WS_DEBUG_PRINT(msg->pin);
   } else {
     WS_DEBUG_PRINTLN("[pwm] Error: Invalid payload type!");
     return false;

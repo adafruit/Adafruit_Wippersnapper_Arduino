@@ -39,9 +39,10 @@ class ServoController {
 public:
   ServoController();
   ~ServoController();
-  bool Handle_Servo_Add(pb_istream_t *stream);
-  bool Handle_Servo_Write(pb_istream_t *stream);
-  bool Handle_Servo_Remove(pb_istream_t *stream);
+  bool Router(pb_istream_t *stream);
+  bool Handle_Servo_Add(ws_servo_Add *msg);
+  bool Handle_Servo_Write(ws_servo_Write *msg);
+  bool Handle_Servo_Remove(ws_servo_Remove *msg);
 
 private:
   int GetServoIndex(uint8_t pin);

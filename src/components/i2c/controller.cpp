@@ -460,6 +460,45 @@ I2cController::~I2cController() {
 }
 
 /*!
+    @brief  Routes messages using the i2c.proto API to the
+            appropriate controller functions.
+    @param  stream
+            The nanopb input stream.
+    @return True if the message was successfully routed, False otherwise.
+*/
+bool I2cController::Router(pb_istream_t *stream) {
+  // Attempt to decode the I2C B2D envelope
+  ws_i2c_B2D b2d = ws_i2c_B2D_init_zero;
+  if (!ws_pb_decode(stream, ws_i2c_B2D_fields, &b2d)) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2C B2D envelope");
+    return false;
+  }
+
+  // Route based on payload type
+  bool res = false;
+  switch (b2d.which_payload) {
+  case ws_i2c_B2D_bus_scan_tag:
+    res = Handle_I2cBusScan(&b2d.payload.bus_scan);
+    break;
+  case ws_i2c_B2D_device_add_replace_tag:
+    res = Handle_I2cDeviceAddOrReplaced(&b2d.payload.device_add_replace);
+    break;
+  case ws_i2c_B2D_device_remove_tag:
+    res = Handle_I2cDeviceRemove(&b2d.payload.device_remove);
+    break;
+  case ws_i2c_B2D_device_output_write_tag:
+    res = Handle_I2cDeviceOutputWrite(&b2d.payload.device_output_write);
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[i2c] WARNING: Unsupported I2C payload");
+    res = false;
+    break;
+  }
+
+  return res;
+}
+
+/*!
     @brief  Removes an I2C driver from the controller and frees memory
     @param    address
                 The desired I2C device's address.
@@ -564,21 +603,12 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
     @returns  True if the I2cDeviceRemove message was handled, False
               otherwise.
 */
-bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
-  // Attempt to decode an I2cDeviceRemove message
-  WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceRemove message...");
-  if (!_i2c_model->DecodeI2cDeviceRemove(stream)) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2cDeviceRemove message!");
-    return false;
-  }
-
+bool I2cController::Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg) {
   // TODO [Online]: Implement the rest of this function
   // TODO: Remember - can be on either bus! (default or alt)
   // TODO: Remember to handle removal of a mux device or a device on a mux
   // strlen(descriptor.i2c_bus_sda) == 0
-
-  ws_i2c_DeviceRemove *msgRemove = _i2c_model->GetI2cDeviceRemoveMsg();
-  if (!msgRemove->has_device_description) {
+  if (!msg->has_device_description) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2cDeviceRemove message missing required "
                      "device description!");
     return false;
@@ -587,12 +617,12 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
   bool did_remove = true;
 
   // Check for default bus
-  if (strlen(msgRemove->device_description.bus_scl) == 0 &&
-      strlen(msgRemove->device_description.bus_sda) == 0) {
+  if (strlen(msg->device_description.bus_scl) == 0 &&
+      strlen(msg->device_description.bus_sda) == 0) {
     WS_DEBUG_PRINTLN("[i2c] Removing device from default bus...");
     if (!_i2c_bus_default->HasMux()) {
-      if (!RemoveDriver(msgRemove->device_description.device_address,
-                        msgRemove->is_output_device)) {
+      if (!RemoveDriver(msg->device_description.device_address,
+                        msg->is_output_device)) {
         WS_DEBUG_PRINTLN(
             "[i2c] ERROR: Failed to remove i2c device from default bus!");
         did_remove = false;
@@ -600,20 +630,20 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
     } else {
       // Bus has a I2C MUX attached
       // Case 1: Is the I2C device connected to a MUX?
-      if (msgRemove->device_description.mux_address != 0xFFFF &&
-          msgRemove->device_description.mux_channel >= 0) {
+      if (msg->device_description.mux_address != 0xFFFF &&
+          msg->device_description.mux_channel >= 0) {
         _i2c_bus_default->SelectMuxChannel(
-            msgRemove->device_description.mux_channel);
-        if (!RemoveDriver(msgRemove->device_description.device_address,
-                          msgRemove->is_output_device)) {
+            msg->device_description.mux_channel);
+        if (!RemoveDriver(msg->device_description.device_address,
+                          msg->is_output_device)) {
           WS_DEBUG_PRINTLN(
               "[i2c] ERROR: Failed to remove i2c device from default bus!");
           did_remove = false;
         }
       }
       // Case 2: Is the I2C device a MUX?
-      if (msgRemove->device_description.device_address ==
-          msgRemove->device_description.mux_address) {
+      if (msg->device_description.device_address ==
+          msg->device_description.mux_address) {
         ws_i2c_BusScanned scan_results;
         _i2c_bus_default->ScanMux(&scan_results);
         for (int i = 0; i < scan_results.bus_found_devices_count; i++) {
@@ -621,7 +651,7 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
           _i2c_bus_default->SelectMuxChannel(
               scan_results.bus_found_devices[i].mux_channel);
           RemoveDriver(scan_results.bus_found_devices[i].device_address,
-                       msgRemove->is_output_device);
+                       msg->is_output_device);
         }
         _i2c_bus_default->RemoveMux();
       }
@@ -675,20 +705,13 @@ bool I2cController::InitMux(const char *name, uint32_t address,
     @returns True if the I2C bus was successfully scanned and the
              I2cBusScan message was published to IO, False otherwise.
 */
-bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
-  WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceAddOrReplace message...");
-  // Attempt to decode I2cBusScan message
-  if (!_i2c_model->DecodeI2cBusScan(stream)) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2cBusScan message!");
-    return false;
-  }
-
+bool I2cController::Handle_I2cBusScan(ws_i2c_BusScan *msg) {
   _i2c_model->ClearI2cBusScanned();
   ws_i2c_BusScanned *scan_results = _i2c_model->GetI2cBusScannedMsg();
 
   bool scan_success = true;
   // Case 1: Scan the default I2C bus
-  if (_i2c_model->GetI2cBusScanMsg()->scan_default_bus) {
+  if (msg->scan_default_bus) {
     // Was the default bus initialized correctly and ready to scan?
     WS_DEBUG_PRINT("Bus State: ");
     WS_DEBUG_PRINTLN(_i2c_bus_default->GetBusStatus());
@@ -706,12 +729,12 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
   }
 
   // Case 2: Optionally scan the alternative I2C bus
-  if (_i2c_model->GetI2cBusScanMsg()->scan_alt_bus) {
+  if (msg->scan_alt_bus) {
     // Is the alt bus initialized?
     if (_i2c_bus_alt == nullptr) {
       _i2c_bus_alt = new I2cHardware(
-          _i2c_model->GetI2cBusScanMsg()->alt_bus_descriptor.bus_scl,
-          _i2c_model->GetI2cBusScanMsg()->alt_bus_descriptor.bus_sda);
+          msg->alt_bus_descriptor.bus_scl,
+          msg->alt_bus_descriptor.bus_sda);
       // Was the default bus initialized correctly and ready to scan?
       if (IsBusStatusOK(true)) {
         if (!_i2c_bus_alt->ScanBus(scan_results)) {
@@ -727,7 +750,7 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
   }
 
   // Case 3: Optionally scan MUX attached to the default bus
-  if (_i2c_model->GetI2cBusScanMsg()->scan_default_bus_mux) {
+  if (msg->scan_default_bus_mux) {
     if (_i2c_bus_default->HasMux()) {
       if (!_i2c_bus_default->ScanMux(scan_results)) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C MUX on default bus!");
@@ -737,7 +760,7 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
   }
 
   // Case 4: Optionally scan MUX attached to the alt. bus
-  if (_i2c_model->GetI2cBusScanMsg()->scan_alt_bus) {
+  if (msg->scan_alt_bus) {
     if (_i2c_bus_alt->HasMux()) {
       if (!_i2c_bus_alt->ScanMux(scan_results)) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C MUX on alt. bus!");
@@ -776,16 +799,8 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
     @returns  True if the callback was successfully executed by the driver,
    False otherwise.
 */
-bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
-  WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceOutputWrite message...");
-  // Attempt to decode an I2cDeviceOutputWrite message
-  if (!_i2c_model->DecodeI2cDeviceOutputWrite(stream)) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2cDeviceOutputWrite "
-                     "message!");
-    return false;
-  }
-  ws_i2c_DeviceDescriptor descriptor =
-      _i2c_model->GetI2cDeviceOutputWriteMsg()->device_description;
+bool I2cController::Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg) {
+  ws_i2c_DeviceDescriptor descriptor = msg->device_description;
 
   // Attempt to find the driver
   drvOutputBase *driver = nullptr;
@@ -814,27 +829,24 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
   }
 
   // Determine which driver cb function to use
-  if (_i2c_model->GetI2cDeviceOutputWriteMsg()->which_output_msg ==
+  if (msg->which_output_msg ==
       ws_i2c_DeviceOutputWrite_write_led_backpack_tag) {
     WS_DEBUG_PRINTLN("[i2c] Writing to LED backpack...");
-    driver->WriteMessage(_i2c_model->GetI2cDeviceOutputWriteMsg()
-                             ->output_msg.write_led_backpack.message);
-  } else if (_i2c_model->GetI2cDeviceOutputWriteMsg()->which_output_msg ==
+    driver->WriteMessage(msg->output_msg.write_led_backpack.message);
+  } else if (msg->which_output_msg ==
              ws_i2c_DeviceOutputWrite_write_char_lcd_tag) {
     WS_DEBUG_PRINTLN("[i2c] Writing to char LCD...");
-    if (!driver->WriteMessageCharLCD(&_i2c_model->GetI2cDeviceOutputWriteMsg()
-                                          ->output_msg.write_char_lcd)) {
+    if (!driver->WriteMessageCharLCD(&msg->output_msg.write_char_lcd)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to write to char LCD!");
       return false;
     }
-  } else if (_i2c_model->GetI2cDeviceOutputWriteMsg()->which_output_msg ==
+  } else if (msg->which_output_msg ==
              ws_i2c_DeviceOutputWrite_write_oled_tag) {
     WS_DEBUG_PRINTLN("[i2c] Writing to SSD1306 OLED...");
     // Note: In the future, we can expand this to support other OLEDs by
     // creating and checking a tag within the write oled msg (e.g. SSD1327,
     // etc.)
-    driver->WriteMessageSSD1306(_i2c_model->GetI2cDeviceOutputWriteMsg()
-                                    ->output_msg.write_oled.message);
+    driver->WriteMessageSSD1306(msg->output_msg.write_oled.message);
   } else {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine I2C Output Write type!");
     return false;
@@ -850,29 +862,21 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
     @returns  True if the I2cDeviceAddOrReplace message was handled
               (created or replaced), False otherwise.
 */
-bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
+bool I2cController::Handle_I2cDeviceAddOrReplaced(ws_i2c_DeviceAddOrReplace *msg) {
   bool use_alt_bus = false;
   bool did_set_mux_ch = false;
-  // Attempt to decode an I2cDeviceAddOrReplace message
-  WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceAddOrReplace message...");
-  if (!_i2c_model->DecodeI2cDeviceAddReplace(stream)) {
-    WS_DEBUG_PRINTLN(
-        "[i2c] ERROR: Unable to decode I2cDeviceAddOrReplace message!");
-    return false;
-  }
 
   ws_i2c_DeviceStatus device_status = ws_i2c_DeviceStatus_DS_UNSPECIFIED;
   // Parse out device name and descriptor
   char device_name[15];
-  strcpy(device_name, _i2c_model->GetI2cDeviceAddOrReplaceMsg()->device_name);
-  ws_i2c_DeviceDescriptor device_descriptor =
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->device_description;
+  strcpy(device_name, msg->device_name);
+  ws_i2c_DeviceDescriptor device_descriptor = msg->device_description;
 
   // Is this an i2c output device?
-  bool is_output = _i2c_model->GetI2cDeviceAddOrReplaceMsg()->is_output;
+  bool is_output = msg->is_output;
 
   // Is this a i2c GPS?
-  bool is_gps = _i2c_model->GetI2cDeviceAddOrReplaceMsg()->is_gps;
+  bool is_gps = msg->is_gps;
 
   // TODO [Online]: Handle Replace messages by implementing the Remove handler
   // first...then proceed to adding a new device
@@ -960,7 +964,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINT("[i2c] Creating a GPS driver...");
     if (!WsV2._gps_controller->AddGPS(
             bus, device_descriptor.device_address,
-            &_i2c_model->GetI2cDeviceAddOrReplaceMsg()->gps_config)) {
+            &msg->gps_config)) {
       did_init = false;
       WS_DEBUG_PRINTLN("FAILURE!");
     } else {
@@ -1001,15 +1005,13 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   if (use_alt_bus) {
     if (!is_output) {
       drv->EnableAltI2CBus(
-          _i2c_model->GetI2cDeviceAddOrReplaceMsg()->device_description.bus_scl,
-          _i2c_model->GetI2cDeviceAddOrReplaceMsg()
-              ->device_description.bus_sda);
+          msg->device_description.bus_scl,
+          msg->device_description.bus_sda);
     } else {
       WS_DEBUG_PRINTLN("[i2c] Setting alt. I2C bus for output driver...");
       drv_out->EnableAltI2CBus(
-          _i2c_model->GetI2cDeviceAddOrReplaceMsg()->device_description.bus_scl,
-          _i2c_model->GetI2cDeviceAddOrReplaceMsg()
-              ->device_description.bus_sda);
+          msg->device_description.bus_scl,
+          msg->device_description.bus_sda);
     }
     WS_DEBUG_PRINTLN("[i2c] Set driver to use Alt I2C bus");
   }
@@ -1018,20 +1020,18 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   if (!is_output) {
     // Configure Input-driver settings
     drv->EnableSensorReads(
-        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->device_sensor_types,
-        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->device_sensor_types_count);
+        msg->device_sensor_types,
+        msg->device_sensor_types_count);
     drv->SetSensorPeriod(
-        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->device_period);
+        msg->device_period);
   } else {
     WS_DEBUG_PRINTLN("[i2c] Configuring output driver...");
     // Configure Output-driver settings
-    pb_size_t config =
-        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->output_add.which_config;
+    pb_size_t config = msg->output_add.which_config;
     if (config == ws_i2c_output_Add_led_backpack_config_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring LED backpack...");
       ws_i2c_output_LedBackpackConfig cfg =
-          _i2c_model->GetI2cDeviceAddOrReplaceMsg()
-              ->output_add.config.led_backpack_config;
+          msg->output_add.config.led_backpack_config;
       WS_DEBUG_PRINT("[i2c] Got cfg, calling ConfigureI2CBackpack...");
       drv_out->ConfigureI2CBackpack(cfg.brightness, cfg.alignment);
       WS_DEBUG_PRINTLN("OK!");
@@ -1039,8 +1039,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       WS_DEBUG_PRINTLN("[i2c] Configuring char LCD...");
     } else if (config == ws_i2c_output_Add_oled_config_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring OLED...");
-      ws_i2c_output_OledConfig cfg = _i2c_model->GetI2cDeviceAddOrReplaceMsg()
-                                         ->output_add.config.oled_config;
+      ws_i2c_output_OledConfig cfg = msg->output_add.config.oled_config;
       WS_DEBUG_PRINT("[i2c] Got cfg, calling ConfigureOLED...");
       drv_out->ConfigureSSD1306(cfg.width, cfg.height, cfg.font_size);
       WS_DEBUG_PRINTLN("OK!");

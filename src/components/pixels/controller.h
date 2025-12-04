@@ -35,9 +35,10 @@ class PixelsController {
 public:
   PixelsController();
   ~PixelsController();
-  bool Handle_Pixels_Add(pb_istream_t *stream);
-  bool Handle_Pixels_Write(pb_istream_t *stream);
-  bool Handle_Pixels_Remove(pb_istream_t *stream);
+  bool Router(pb_istream_t *stream);
+  bool Handle_Pixels_Add(ws_pixels_Add *msg);
+  bool Handle_Pixels_Write(ws_pixels_Write *msg);
+  bool Handle_Pixels_Remove(ws_pixels_Remove *msg);
 
 private:
   PixelsModel *_pixels_model = nullptr; ///< Pointer to the model class

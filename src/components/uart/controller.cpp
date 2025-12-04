@@ -31,23 +31,50 @@ UARTController::~UARTController() {
 }
 
 /*!
-    @brief  Handles a UartAdd message.
+    @brief  Routes messages using the uart.proto API to the
+            appropriate controller functions.
     @param  stream
-            Pointer to a pb_istream_t object.
-    @return True if the message was handled successfully, False otherwise.
+            The nanopb input stream.
+    @return True if the message was successfully routed, False otherwise.
 */
-bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
-  // Attempt to decode the UartAdd message
-  WS_DEBUG_PRINTLN("[uart] Decoding UartAdd message...");
-  if (!_uart_model->DecodeUartAdd(stream)) {
-    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to decode UartAdd message!");
+bool UARTController::Router(pb_istream_t *stream) {
+  // Attempt to decode the UART B2D envelope
+  ws_uart_B2D b2d = ws_uart_B2D_init_zero;
+  if (!ws_pb_decode(stream, ws_uart_B2D_fields, &b2d)) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Unable to decode UART B2D envelope");
     return false;
   }
-  WS_DEBUG_PRINTLN("[uart] UartAdd message decoded successfully!");
-  // Get ref. to the UartAdd message within the model
-  ws_uart_Add *add_msg = _uart_model->GetUartAddMsg();
+
+  // Route based on payload type
+  bool res = false;
+  switch (b2d.which_payload) {
+  case ws_uart_B2D_add_tag:
+    res = Handle_UartAdd(&b2d.payload.add);
+    break;
+  case ws_uart_B2D_remove_tag:
+    res = Handle_UartRemove(&b2d.payload.remove);
+    break;
+  case ws_uart_B2D_write_tag:
+    res = Handle_UartWrite(&b2d.payload.write);
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[uart] WARNING: Unsupported UART payload");
+    res = false;
+    break;
+  }
+
+  return res;
+}
+
+/*!
+    @brief  Handles a UartAdd message.
+    @param  msg
+            The UartAdd message.
+    @return True if the message was handled successfully, False otherwise.
+*/
+bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // TODO: fix the id field, currently it is a callback and should be a string.
-  if (!add_msg->has_cfg_serial && !add_msg->has_cfg_device) {
+  if (!msg->has_cfg_serial && !msg->has_cfg_device) {
     WS_DEBUG_PRINTLN(
         "[uart] ERROR: No configuration provided for UART device!");
     return false;
@@ -56,7 +83,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   // Configure a UART hardware instance using the provided serial configuration
   // TODO: Have we already configured this UART hardware instance?!
   WS_DEBUG_PRINTLN("[uart] Configuring UART hardware instance...");
-  ws_uart_SerialConfig cfg_serial = add_msg->cfg_serial;
+  ws_uart_SerialConfig cfg_serial = msg->cfg_serial;
   UARTHardware *uart_hardware = new UARTHardware(cfg_serial);
   if (!uart_hardware->ConfigureSerial()) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to configure UART hardware!");
@@ -73,7 +100,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   drvUartBase *uart_driver = nullptr;
   GPSController *drv_uart_gps = nullptr;
   bool is_gps_drv = false;
-  ws_uart_DeviceConfig cfg_device = add_msg->cfg_device;
+  ws_uart_DeviceConfig cfg_device = msg->cfg_device;
   switch (cfg_device.device_type) {
   case ws_uart_DeviceType_DT_UNSPECIFIED:
     WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
@@ -183,29 +210,23 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
 
 /*!
     @brief  Handles a UartRemove message.
-    @param  stream
-            Pointer to a pb_istream_t object.
+    @param  msg
+            The UartRemove message.
     @return True if the message was handled successfully, False otherwise.
 */
-bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
-  if (!_uart_model->DecodeUartDeviceRemove(stream)) {
-    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to decode UartRemove message!");
-    return false;
-  }
-  // Get the UartRemove message from the model
-  ws_uart_Remove *remove_msg = _uart_model->GetUartRemoveMsg();
+bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
 
   // Find the corresponding hardware instance for the UART port
-  uint32_t port_num = remove_msg->descriptor.uart_nbr;
+  uint32_t port_num = msg->descriptor.uart_nbr;
   for (auto it = _uart_ports.begin(); it != _uart_ports.end(); ++it) {
     if ((*it)->GetBusNumber() == port_num) {
       // Find the corresponding driver for the uart port
       for (auto driver_it = _uart_drivers.begin();
            driver_it != _uart_drivers.end(); ++driver_it) {
         if ((*driver_it)->GetPortNum() == port_num &&
-            (*driver_it)->GetDeviceType() == remove_msg->descriptor.type &&
+            (*driver_it)->GetDeviceType() == msg->descriptor.type &&
             strcmp((*driver_it)->GetName(),
-                   (const char *)remove_msg->descriptor.device_id.arg) == 0) {
+                   (const char *)msg->descriptor.device_id.arg) == 0) {
           // Driver found, remove it
           WS_DEBUG_PRINT("[uart] Removing UART driver: " +
                          String((*driver_it)->GetName()) + "...");
@@ -223,11 +244,11 @@ bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
 
 /*!
     @brief  Handles a UartWrite message.
-    @param  stream
-            Pointer to a pb_istream_t object.
+    @param  msg
+            The UartWrite message.
     @return True if the message was handled successfully, False otherwise.
 */
-bool UARTController::Handle_UartWrite(pb_istream_t *stream) {
+bool UARTController::Handle_UartWrite(ws_uart_Write *msg) {
   // TODO: Needs implementation
   // TO ADDRESS:
   // 1) Hardware is the uart_nbr

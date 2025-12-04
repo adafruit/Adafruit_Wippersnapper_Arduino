@@ -31,32 +31,61 @@ DS18X20Controller::~DS18X20Controller() {
 }
 
 /*!
+    @brief  Routes messages using the ds18x20.proto API to the
+            appropriate controller functions.
+    @param  stream
+            The nanopb input stream.
+    @return True if the message was successfully routed, False otherwise.
+*/
+bool DS18X20Controller::Router(pb_istream_t *stream) {
+  // Attempt to decode the DS18X20 B2D envelope
+  ws_ds18x20_B2D b2d = ws_ds18x20_B2D_init_zero;
+  if (!ws_pb_decode(stream, ws_ds18x20_B2D_fields, &b2d)) {
+    WS_DEBUG_PRINTLN("[ds18x20] ERROR: Unable to decode DS18X20 B2D envelope");
+    return false;
+  }
+
+  // Route based on payload type
+  bool res = false;
+  switch (b2d.which_payload) {
+  case ws_ds18x20_B2D_add_tag:
+    res = Handle_Ds18x20Add(&b2d.payload.add);
+    break;
+  case ws_ds18x20_B2D_remove_tag:
+    res = Handle_Ds18x20Remove(&b2d.payload.remove);
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[ds18x20] WARNING: Unsupported DS18X20 payload");
+    res = false;
+    break;
+  }
+
+  return res;
+}
+
+/*!
     @brief  Handles a Ds18x20Add message from the broker. Attempts to
             initialize a  OneWire bus on the requested pin, attempts to
             initialize a DSTherm driver on the OneWire bus, adds the
             OneWire bus to the controller, and publishes a Ds18x20Added
             message to the broker indicating the result of this function.
-    @param  stream
-            The nanopb input stream.
+    @param  msg
+            The Ds18x20Add message.
     @return True if the sensor was successfully initialized,
             added to the controller, and a response was succesfully
             published to the broker. False otherwise.
 */
-bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
-  // Attempt to decode the incoming message into a Ds18x20Add message
-  if (!_DS18X20_model->DecodeDS18x20Add(stream)) {
-    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to decode Ds18x20Add message");
-    return false;
-  }
+bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
+  WS_DEBUG_PRINTLN("[ds18x20] Handle_Ds18x20Add MESSAGE...");
 
   // If we receive no sensor types to configure, bail out
-  if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types_count == 0) {
+  if (msg->sensor_types_count == 0) {
     WS_DEBUG_PRINTLN("ERROR | DS18x20: No ds18x sensor types provided!");
     return false;
   }
 
   // Extract the OneWire pin from the message
-  uint8_t pin_name = atoi(_DS18X20_model->GetDS18x20AddMsg()->onewire_pin + 1);
+  uint8_t pin_name = atoi(msg->onewire_pin + 1);
 
 #ifdef ARDUINO_ARCH_SAMD
   auto new_dsx_driver = new DS18X20Hardware(pin_name, _num_drivers);
@@ -68,27 +97,32 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   // Attempt to get the sensor's ID on the OneWire bus to show it's been init'd
   bool is_initialized = new_dsx_driver->GetSensor();
 
+  WS_DEBUG_PRINT("DS18x20 Sensor Initialization Status: ");
+  WS_DEBUG_PRINTLN(is_initialized ? "SUCCESS" : "FAILURE");
+  WS_DEBUG_PRINT("OneWire Pin: ");
+  WS_DEBUG_PRINTLN(pin_name);
+  WS_DEBUG_PRINT("Sensor # on Bus: ");
+  WS_DEBUG_PRINTLN(_num_drivers);
+  WS_DEBUG_PRINT("Sensor Type Count: ");
+  WS_DEBUG_PRINTLN(msg->sensor_types_count);
+
   if (is_initialized) {
     WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
 
     // Set the sensor's pin name (non-logical name)
-    new_dsx_driver->setOneWirePinName(
-        _DS18X20_model->GetDS18x20AddMsg()->onewire_pin);
+    new_dsx_driver->setOneWirePinName(msg->onewire_pin);
 
     // Set the sensor's resolution
-    new_dsx_driver->SetResolution(
-        _DS18X20_model->GetDS18x20AddMsg()->sensor_resolution);
+    new_dsx_driver->SetResolution(msg->sensor_resolution);
 
     // Set the sensor's period
-    new_dsx_driver->SetPeriod(_DS18X20_model->GetDS18x20AddMsg()->period);
+    new_dsx_driver->SetPeriod(msg->period);
 
     // Configure the types of sensor reads to perform
-    for (int i = 0; i < _DS18X20_model->GetDS18x20AddMsg()->sensor_types_count;
-         i++) {
-      if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
-          ws_sensor_Type_T_OBJECT_TEMPERATURE) {
+    for (int i = 0; i < msg->sensor_types_count; i++) {
+      if (msg->sensor_types[i] == ws_sensor_Type_T_OBJECT_TEMPERATURE) {
         new_dsx_driver->is_read_temp_c = true;
-      } else if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
+      } else if (msg->sensor_types[i] ==
                  ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT) {
         new_dsx_driver->is_read_temp_f = true;
       } else {
@@ -113,13 +147,12 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     WS_DEBUG_PRINT("\tPin: ");
     WS_DEBUG_PRINTLN(pin_name);
     WS_DEBUG_PRINT("\tResolution: ");
-    WS_DEBUG_PRINTLN(_DS18X20_model->GetDS18x20AddMsg()->sensor_resolution);
+    WS_DEBUG_PRINTLN(msg->sensor_resolution);
     WS_DEBUG_PRINT("\tPeriod: ");
-    WS_DEBUG_PRINTLN(_DS18X20_model->GetDS18x20AddMsg()->period);
+    WS_DEBUG_PRINTLN(msg->period);
     WS_DEBUG_PRINT("\tSI Units: ");
-    for (int i = 0; i < _DS18X20_model->GetDS18x20AddMsg()->sensor_types_count;
-         i++) {
-      WS_DEBUG_PRINT(_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i]);
+    for (int i = 0; i < msg->sensor_types_count; i++) {
+      WS_DEBUG_PRINT(msg->sensor_types[i]);
       WS_DEBUG_PRINT(", ");
     }
     WS_DEBUG_PRINTLN("");
@@ -132,8 +165,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   // broker
   if (!WsV2._sdCardV2->isModeOffline()) {
     // Encode and publish a Ds18x20Added message back to the broker
-    if (!_DS18X20_model->EncodeDS18x20Added(
-            _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, is_initialized)) {
+    if (!_DS18X20_model->EncodeDS18x20Added(msg->onewire_pin, is_initialized)) {
       WS_DEBUG_PRINTLN(
           "ERROR | DS18x20: Unable to encode Ds18x20Added message!");
       return false;
@@ -154,21 +186,16 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     @brief  Handles a Ds18x20Remove message from the broker. Attempts to
             remove a DS18X20Hardware object from the controller and
             release the OneWire pin for other uses.
-    @param  stream
-            The nanopb input stream.
+    @param  msg
+            The Ds18x20Remove message.
     @return True if the sensor was successfully removed from the
             controller, False otherwise.
 */
-bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
-  WS_DEBUG_PRINT("Removing DS18X20 sensor...");
-  // Attempt to decode the stream
-  if (!_DS18X20_model->DecodeDS18x20Remove(stream)) {
-    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to decode Ds18x20Remove message");
-    return false;
-  }
-  // Create a temp. instance of the Ds18x20Remove message
-  ws_ds18x20_Remove *msg_remove = _DS18X20_model->GetDS18x20RemoveMsg();
-  uint8_t pin_name = atoi(msg_remove->onewire_pin + 1);
+bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
+  WS_DEBUG_PRINT("[ds18x20] Handle_Ds18x20Remove MESSAGE...");
+
+  // Get the pin name
+  uint8_t pin_name = atoi(msg->onewire_pin + 1);
 
   // Find the driver/bus in the vector and remove it
   for (size_t i = 0; i < _DS18X20_pins.size(); ++i) {

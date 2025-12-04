@@ -87,10 +87,11 @@ public:
   ~I2cController();
   void update();
   // Routing //
-  bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
-  bool Handle_I2cBusScan(pb_istream_t *stream);
-  bool Handle_I2cDeviceRemove(pb_istream_t *stream);
-  bool Handle_I2cDeviceOutputWrite(pb_istream_t *stream);
+  bool Router(pb_istream_t *stream);
+  bool Handle_I2cDeviceAddOrReplaced(ws_i2c_DeviceAddOrReplace *msg);
+  bool Handle_I2cBusScan(ws_i2c_BusScan *msg);
+  bool Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg);
+  bool Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg);
   // Publishing //
   bool PublishI2cDeviceAddedorReplaced(
       const ws_i2c_DeviceDescriptor &device_descriptor,

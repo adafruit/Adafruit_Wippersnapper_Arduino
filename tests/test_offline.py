@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024-2025, Brent Rubell for Adafruit Industries
+# SPDX-FileCopyrightText: 2025, Brent Rubell for Adafruit Industries
 # SPDX-License-Identifier: MIT
 # SPDX-FileDescription: Unit tests for WipperSnapper Offline Mode Functionality
 import pytest
@@ -42,7 +42,7 @@ def run_wokwi_cli(binary, timeout, scenario, diagram):
     return result
 
 # Test JSON validation
-"""
+
 def test_invalid_json():
     result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-invalid-json.scenario.yaml", f"diagrams/offline.json")
     assert result.returncode == 0
@@ -56,10 +56,9 @@ def test_invalid_checksum():
 def test_valid_checksum():
     result = run_wokwi_cli(FIRMWARE_ELF, "120000", f"scenarios/offline/test-valid-checksum.scenario.yaml", f"diagrams/offline.json")
     assert result.returncode == 0
-"""
+
 
 # Test hardware validation
-
 def test_digital_input():
     result = run_wokwi_cli("test.elf", "120000", f"scenarios/offline/test-log-digital-in.scenario.yaml", f"diagrams/offline.json")
     assert result.returncode == 0

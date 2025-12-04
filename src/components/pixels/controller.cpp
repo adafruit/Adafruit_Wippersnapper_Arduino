@@ -34,25 +34,55 @@ PixelsController::~PixelsController() {
 }
 
 /*!
-    @brief  Handles a request to add a pixel strand
+    @brief  Routes messages using the pixels.proto API to the
+            appropriate controller functions.
     @param  stream
-            Protocol buffer input stream
-    @returns True if successful, False otherwise
+            The nanopb input stream.
+    @return True if the message was successfully routed, False otherwise.
 */
-bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
-  // Attempt to decode the istream into a PixelsAdd message
-  if (!_pixels_model->DecodePixelsAdd(stream)) {
-    WS_DEBUG_PRINTLN("[pixels]: Failed to decode PixelsAdd message!");
+bool PixelsController::Router(pb_istream_t *stream) {
+  // Attempt to decode the Pixels B2D envelope
+  ws_pixels_B2D b2d = ws_pixels_B2D_init_zero;
+  if (!ws_pb_decode(stream, ws_pixels_B2D_fields, &b2d)) {
+    WS_DEBUG_PRINTLN("[pixels] ERROR: Unable to decode Pixels B2D envelope");
     return false;
   }
-  ws_pixels_Add *msg_add = _pixels_model->GetPixelsAddMsg();
+
+  // Route based on payload type
+  bool res = false;
+  switch (b2d.which_payload) {
+  case ws_pixels_B2D_add_tag:
+    res = Handle_Pixels_Add(&b2d.payload.add);
+    break;
+  case ws_pixels_B2D_remove_tag:
+    res = Handle_Pixels_Remove(&b2d.payload.remove);
+    break;
+  case ws_pixels_B2D_write_tag:
+    res = Handle_Pixels_Write(&b2d.payload.write);
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[pixels] WARNING: Unsupported Pixels payload");
+    res = false;
+    break;
+  }
+
+  return res;
+}
+
+/*!
+    @brief  Handles a request to add a pixel strand
+    @param  msg
+            The PixelsAdd message.
+    @returns True if successful, False otherwise
+*/
+bool PixelsController::Handle_Pixels_Add(ws_pixels_Add *msg) {
   _pixel_strands[_num_strands] = new PixelsHardware();
 
   // Configure the pixel strand
   bool did_init = false;
   did_init = _pixel_strands[_num_strands]->AddStrand(
-      msg_add->type, msg_add->ordering, msg_add->num, msg_add->brightness,
-      msg_add->pin_data, msg_add->pin_dotstar_clock);
+      msg->type, msg->ordering, msg->num, msg->brightness,
+      msg->pin_data, msg->pin_dotstar_clock);
   if (!did_init) {
     WS_DEBUG_PRINTLN("[pixels] Failed to create strand!");
   } else {
@@ -62,7 +92,7 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
   }
 
   // Publish PixelsAdded message to the broker
-  if (!_pixels_model->EncodePixelsAdded(msg_add->pin_data, did_init)) {
+  if (!_pixels_model->EncodePixelsAdded(msg->pin_data, did_init)) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to encode PixelsAdded message!");
     return false;
   }
@@ -77,18 +107,12 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
 
 /*!
     @brief  Handles a request to write to a pixel strand
-    @param  stream
-            Protocol buffer input stream
+    @param  msg
+            The PixelsWrite message.
     @returns True if successful, False otherwise
 */
-bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {
-  // Decode the PixelsWrite message
-  if (!_pixels_model->DecodePixelsWrite(stream)) {
-    WS_DEBUG_PRINTLN("[pixels]: Failed to decode PixelsWrite message!");
-    return false;
-  }
-  ws_pixels_Write *msg_write = _pixels_model->GetPixelsWriteMsg();
-  uint16_t pin_data = atoi(msg_write->pin_data + 1);
+bool PixelsController::Handle_Pixels_Write(ws_pixels_Write *msg) {
+  uint16_t pin_data = atoi(msg->pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
   if (idx == STRAND_NOT_FOUND) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
@@ -97,25 +121,18 @@ bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {
 
   // Call hardware to fill the strand
   WS_DEBUG_PRINTLN("[pixels]: Filling strand!");
-  _pixel_strands[idx]->FillStrand(msg_write->color);
+  _pixel_strands[idx]->FillStrand(msg->color);
   return true;
 }
 
 /*!
     @brief  Handles a request to remove a pixel strand
-    @param  stream
-            Protocol buffer input stream
+    @param  msg
+            The PixelsRemove message.
     @returns True if successful, False otherwise
 */
-bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {
-  // Decode the PixelsRemove message
-  if (!_pixels_model->DecodePixelsRemove(stream)) {
-    WS_DEBUG_PRINTLN("[pixels]: Failed to decode PixelsRemove message!");
-    return false;
-  }
-  ws_pixels_Remove *msg_remove = _pixels_model->GetPixelsRemoveMsg();
-
-  uint16_t pin_data = atoi(msg_remove->pin_data + 1);
+bool PixelsController::Handle_Pixels_Remove(ws_pixels_Remove *msg) {
+  uint16_t pin_data = atoi(msg->pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
   if (idx == STRAND_NOT_FOUND) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");

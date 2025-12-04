@@ -32,9 +32,10 @@ class PWMController {
 public:
   PWMController();
   ~PWMController();
-  bool Handle_PWM_Add(pb_istream_t *stream);
-  bool Handle_PWM_Write(pb_istream_t *stream);
-  bool Handle_PWM_Remove(pb_istream_t *stream);
+  bool Router(pb_istream_t *stream);
+  bool Handle_PWM_Add(ws_pwm_Add *msg);
+  bool Handle_PWM_Write(ws_pwm_Write *msg);
+  bool Handle_PWM_Remove(ws_pwm_Remove *msg);
   int GetPWMHardwareIdx(uint8_t pin);
 
 private:

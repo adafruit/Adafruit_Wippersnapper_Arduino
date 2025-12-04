@@ -194,7 +194,7 @@ bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
         }
         break;
       case ws_checkin_ComponentAdd_i2c_tag:
-        if (!WsV2._i2c_controller->Handle_I2cDeviceAddOrReplace(stream)) {
+        if (!WsV2._i2c_controller->Handle_I2cDeviceAddOrReplaced(stream)) {
           WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add I2C component");
           return false;
         }
