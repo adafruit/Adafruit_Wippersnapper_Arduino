@@ -52,30 +52,56 @@ void AnalogIOController::SetTotalAnalogPins(uint8_t total_pins) {
 }
 
 /*!
-    @brief  Handles an AnalogIOAdd message from the broker and adds a
-            new analog pin to the controller.
+    @brief  Routes messages using the analogio.proto API to the
+            appropriate controller functions.
     @param  stream
             The nanopb input stream.
-    @return True if the pin was successfully added, False otherwise.
+    @return True if the message was successfully routed, False otherwise.
 */
-bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
-  // Attempt to decode the incoming message into an AnalogIOAdd object
-  if (!_analogio_model->DecodeAnalogIOAdd(stream)) {
-    WS_DEBUG_PRINTLN("[analogio] ERROR: Unable to decode Add message");
+bool AnalogIOController::Router(pb_istream_t *stream) {
+  // Attempt to decode the AnalogIO B2D envelope
+  ws_analogio_B2D b2d = ws_analogio_B2D_init_zero;
+  if (!ws_pb_decode(stream, ws_analogio_B2D_fields, &b2d)) {
+    WS_DEBUG_PRINTLN(
+        "[analogio] ERROR: Unable to decode AnalogIO B2D envelope");
     return false;
   }
 
+  // Route based on payload type
+  bool res = false;
+  switch (b2d.which_payload) {
+  case ws_analogio_B2D_add_tag:
+    res = Handle_AnalogIOAdd(&b2d.payload.add);
+    break;
+  case ws_analogio_B2D_remove_tag:
+    res = Handle_AnalogIORemove(&b2d.payload.remove);
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[analogio] WARNING: Unsupported AnalogIO payload");
+    res = false;
+    break;
+  }
+
+  return res;
+}
+
+/*!
+    @brief  Handles an AnalogIOAdd message from the broker and adds a
+            new analog pin to the controller.
+    @param  msg
+            The AnalogIOAdd message.
+    @return True if the pin was successfully added, False otherwise.
+*/
+bool AnalogIOController::Handle_AnalogIOAdd(ws_analogio_Add *msg) {
+  WS_DEBUG_PRINTLN("[analogio] Handle_AnalogIOAdd MESSAGE...");
   // Get the pin name
-  uint8_t pin_name = atoi(_analogio_model->GetAnalogIOAddMsg()->pin_name + 1);
+  uint8_t pin_name = atoi(msg->pin_name + 1);
 
   // Create a new analogioPin object
-  // TODO: Replicate this within the digitalio controller, much cleaner way to
-  // assign!
-  analogioPin new_pin = {
-      .name = pin_name,
-      .period = long(_analogio_model->GetAnalogIOAddMsg()->period) * 1000,
-      .prv_period = 0,
-      .read_mode = _analogio_model->GetAnalogIOAddMsg()->read_mode};
+  analogioPin new_pin = {.name = pin_name,
+                         .period = long(msg->period) * 1000,
+                         .prv_period = 0,
+                         .read_mode = msg->read_mode};
 
   // Initialize the pin
   _analogio_hardware->InitPin(pin_name);
@@ -98,25 +124,18 @@ bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
 /*!
     @brief  Handles an AnalogIORemove message from the broker and removes
             the requested analog pin from the controller.
-    @param  stream
-            The nanopb input stream.
+    @param  msg
+            The AnalogIORemove message.
     @return True if the pin was successfully removed, False otherwise.
 */
-bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
-  // Attempt to decode the incoming message into an AnalogIORemove object
-  if (!_analogio_model->DecodeAnalogIORemove(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode AnalogIORemove message");
-    return false;
-  }
-
+bool AnalogIOController::Handle_AnalogIORemove(ws_analogio_Remove *msg) {
   // Get the pin name
-  int pin_name = atoi(_analogio_model->GetAnalogIORemoveMsg()->pin_name + 1);
+  int pin_name = atoi(msg->pin_name + 1);
 
   // Remove the pin from the hardware
   _analogio_hardware->DeinitPin(pin_name);
 
   // Remove the pin from the vector
-  // TODO: Refactor this out? TODO: Make this better??
   for (int i = 0; i < _analogio_pins.size(); i++) {
     if (_analogio_pins[i].name == pin_name) {
       _analogio_pins.erase(_analogio_pins.begin() + i);

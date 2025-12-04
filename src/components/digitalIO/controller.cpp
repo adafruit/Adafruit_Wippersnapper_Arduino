@@ -130,93 +130,14 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
 }
 
 /*!
-    @brief  Add a new digital pin to the controller
-    @param  stream
-            The nanopb input stream.
-    @return True if the digital pin was successfully added.
-*/
-bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
-  WS_DEBUG_PRINTLN("[digitalio] Adding new digital pin...");
-  // Early-out if we have reached the maximum number of digital pins
-  if (_digitalio_pins.size() >= _max_digitalio_pins) {
-    WS_DEBUG_PRINTLN("[digitalio] ERROR: Can not add new pin, all pins have "
-                     "already been allocated!");
-    return false;
-  }
-
-  // Attempt to decode the DigitalIOAdd message and parse it into the model
-  if (!_dio_model->DecodeDigitalIOAdd(stream)) {
-    WS_DEBUG_PRINTLN(
-        "[digitalio] ERROR: Unable to decode DigitalIOAdd message!");
-    return false;
-  }
-
-  // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
-  uint8_t pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
-  WS_DEBUG_PRINTLN("[digitalio] Pin Name: " + String(pin_name));
-
-  // Check if the provided pin is also the status LED pin
-  if (_dio_hardware->IsStatusLEDPin(pin_name))
-    ReleaseStatusPixel();
-
-  // Deinit the pin if it's already in use
-  if (GetPinIdx(pin_name) != -1)
-    _dio_hardware->deinit(pin_name);
-
-  // Attempt to configure the pin
-
-  // Print pin direction
-  WS_DEBUG_PRINT("[digitalio] Pin Direction: ");
-  WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOAddMsg()->gpio_direction);
-
-  if (!_dio_hardware->ConfigurePin(
-          pin_name, _dio_model->GetDigitalIOAddMsg()->gpio_direction)) {
-    WS_DEBUG_PRINTLN(
-        "[digitalio] ERROR: Pin provided an invalid protobuf direction!");
-    return false;
-  }
-
-  ulong period = _dio_model->GetDigitalIOAddMsg()->period;
-  // Create the digital pin and add it to the vector
-  DigitalIOPin new_pin = {
-      .pin_name = pin_name,
-      .pin_direction = _dio_model->GetDigitalIOAddMsg()->gpio_direction,
-      .sample_mode = _dio_model->GetDigitalIOAddMsg()->sample_mode,
-      .pin_value = _dio_model->GetDigitalIOAddMsg()->value,
-      .pin_period = period * 1000,
-      .prv_pin_time = (millis() - 1) - period};
-  _digitalio_pins.push_back(new_pin);
-
-  // Print out the pin's details
-  WS_DEBUG_PRINTLN("[digitalio] Added new pin:");
-  WS_DEBUG_PRINT("Pin Name: ");
-  WS_DEBUG_PRINTLN(new_pin.pin_name);
-  WS_DEBUG_PRINT("Period: ");
-  WS_DEBUG_PRINTLN(new_pin.pin_period);
-  WS_DEBUG_PRINT("Sample Mode: ");
-  WS_DEBUG_PRINTLN(new_pin.sample_mode);
-  WS_DEBUG_PRINT("Direction: ");
-  WS_DEBUG_PRINTLN(new_pin.pin_direction);
-
-  return true;
-}
-
-/*!
     @brief  Removes a digital pin from the controller, if it exists
-    @param  stream
-            The nanopb input stream.
-    @return True if the digital pin was successfully removed.
+    @param  msg
+            The DigitalIORemove message.
+    @return True if the digital pin was successfully removed, False otherwise.
 */
-bool DigitalIOController::Handle_DigitalIO_Remove(pb_istream_t *stream) {
-  // Attempt to decode the DigitalIORemove message
-  if (!_dio_model->DecodeDigitalIORemove(stream)) {
-    WS_DEBUG_PRINTLN(
-        "[digitalio] ERROR: Unable to decode DigitalIORemove message!");
-    return false;
-  }
-
+bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
   // Get the pin's name
-  int pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
+  int pin_name = atoi(msg->pin_name + 1);
 
   // Bail out if the pin does not exist within controller
   if (GetPinIdx(pin_name) == -1) {
@@ -251,16 +172,9 @@ int DigitalIOController::GetPinIdx(uint8_t pin_name) {
             The nanopb input stream.
     @return True if the digital pin was successfully written.
 */
-bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
-  // Attempt to decode the DigitalIOWrite message
-  if (!_dio_model->DecodeDigitalIOWrite(stream)) {
-    WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to decode Write message!");
-    return false;
-  }
-
+bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   // Get the digital pin
-  int pin_idx =
-      GetPinIdx(atoi(_dio_model->GetDigitalIOWriteMsg()->pin_name + 1));
+  int pin_idx = GetPinIdx(atoi(msg->pin_name + 1));
   // Check if the pin was found and is a valid digital output pin
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN(
@@ -269,31 +183,27 @@ bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
   }
 
   // Ensure we got the correct value type
-  if (!_dio_model->GetDigitalIOWriteMsg()->value.which_value ==
-      ws_sensor_Event_bool_value_tag) {
+  if (!msg->value.which_value == ws_sensor_Event_bool_value_tag) {
     WS_DEBUG_PRINTLN("[digitalio] ERROR: controller got invalid value type!");
     return false;
   }
 
   WS_DEBUG_PRINT("[digitalio] Writing value: ");
-  WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOWriteMsg()->value.value.bool_value);
+  WS_DEBUG_PRINTLN(msg->value.value.bool_value);
   WS_DEBUG_PRINT("on Pin: ");
   WS_DEBUG_PRINTLN(_digitalio_pins[pin_idx].pin_name);
 
   // Is the pin already set to this value? If so, we don't need to write it
   // again
-  if (_digitalio_pins[pin_idx].pin_value ==
-      _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value)
+  if (_digitalio_pins[pin_idx].pin_value == msg->value.value.bool_value)
     return true;
 
   // Call hardware to write the value type
-  _dio_hardware->SetValue(
-      _digitalio_pins[pin_idx].pin_name,
-      _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value);
+  _dio_hardware->SetValue(_digitalio_pins[pin_idx].pin_name,
+                          msg->value.value.bool_value);
 
   // Update the pin's value
-  _digitalio_pins[pin_idx].pin_value =
-      _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value;
+  _digitalio_pins[pin_idx].pin_value = msg->value.value.bool_value;
 
   return true;
 }

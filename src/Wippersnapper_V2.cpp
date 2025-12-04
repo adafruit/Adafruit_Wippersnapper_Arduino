@@ -274,18 +274,17 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     return false;
   }
 
-  // Route based on message tag
+  // Pass to class' router based on tag type
   switch (field->tag) {
   case ws_signal_BrokerToDevice_error_tag:
     // TODO: Handle new error component API
     return true;
   case ws_signal_BrokerToDevice_checkin_tag:
     return handleCheckinResponse(stream);
-  case ws_signal_BrokerToDevice_digitalio_tag: {
+  case ws_signal_BrokerToDevice_digitalio_tag:
     return WsV2.digital_io_controller->Router(stream);
-  }
   case ws_signal_BrokerToDevice_analogio_tag:
-    return WsV2.analogio_controller->Handle_AnalogIOAdd(stream);
+    return WsV2.analogio_controller->Router(stream);
   case ws_signal_BrokerToDevice_pixels_tag:
     return WsV2._pixels_controller->Handle_Pixels_Add(stream);
   case ws_signal_BrokerToDevice_pwm_tag:

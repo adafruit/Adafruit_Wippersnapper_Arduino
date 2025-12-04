@@ -43,8 +43,9 @@ public:
   AnalogIOController();
   ~AnalogIOController();
   // Routing
-  bool Handle_AnalogIOAdd(pb_istream_t *stream);
-  bool Handle_AnalogIORemove(pb_istream_t *stream);
+  bool Router(pb_istream_t *stream);
+  bool Handle_AnalogIOAdd(ws_analogio_Add *msg);
+  bool Handle_AnalogIORemove(ws_analogio_Remove *msg);
   // Polling loop
   void update();
   // Encoder
