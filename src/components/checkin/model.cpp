@@ -137,72 +137,47 @@ void CheckinModel::ConfigureControllers() {
 */
 bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
-  // TODO: This will let us route based on component struct, however below we
-  // are passing the stream and allowing the component to decode itself,
-  // directly. We will want to pick an approach but for now I am leaving this
-  // here as reference.
-
-  // ws_checkin_ComponentAdd component = ws_checkin_ComponentAdd_init_default;
-  /*   if (!pb_decode(stream, ws_checkin_ComponentAdd_fields, &component)) {
+  ws_checkin_ComponentAdd component = ws_checkin_ComponentAdd_init_default;
+  if (!pb_decode(stream, ws_checkin_ComponentAdd_fields, &component)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode ComponentAdd message!");
-  // TODO: Remove debug print after testing? return false;
-  } */
+  }
 
-  CheckinModel *self = (CheckinModel *)*arg;
-  // Route based on component type
-  /*   switch (field->tag) {
-      case ws_checkin_ComponentAdd_digitalio_tag:
-        if (!WsV2.digital_io_controller->Handle_DigitalIO_Add(stream)) {
-          WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add DigitalIO
-    component"); return false;
-        }
-        break;
-      case ws_checkin_ComponentAdd_analogio_tag:
-        if (!WsV2.analogio_controller->Handle_AnalogIOAdd(stream)) {
-          WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add AnalogIO component");
-          return false;
-        }
-        break;
-      case ws_checkin_ComponentAdd_pixels_tag:
-        if (!WsV2._pixels_controller->Handle_Pixels_Add(stream)) {
-          WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add Pixels component");
-          return false;
-        }
-        break;
-      case ws_checkin_ComponentAdd_pwm_tag:
-        if (!WsV2._pwm_controller->Handle_PWM_Add(stream)) {
-          WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add PWM component");
-          return false;
-        }
-        break;
-      case ws_checkin_ComponentAdd_servo_tag:
-        if (!WsV2._servo_controller->Handle_Servo_Add(stream)) {
-          WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add Servo component");
-          return false;
-        }
-        break;
-      case ws_checkin_ComponentAdd_ds18x20_tag:
-        if (!WsV2._ds18x20_controller->Handle_Ds18x20Add(stream)) {
-          WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add DS18x20 component");
-          return false;
-        }
-        break;
-      case ws_checkin_ComponentAdd_uart_tag:
-        if (!WsV2._uart_controller->Handle_UartAdd(stream)) {
-          WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add UART component");
-          return false;
-        }
-        break;
-      case ws_checkin_ComponentAdd_i2c_tag:
-        if (!WsV2._i2c_controller->Handle_I2cDeviceAddOrReplaced(stream)) {
-          WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to add I2C component");
-          return false;
-        }
-        break;
-      default:
-        WS_DEBUG_PRINTLN("[checkin] WARNING: Unknown ComponentAdd message
-    type"); return false;
-    } */
+  // TODO: Remove debug prints after testing
+  WS_DEBUG_PRINT("[checkin] Adding component: ");
+  switch (component.which_payload) {
+  case ws_checkin_ComponentAdd_digitalio_tag:
+    WS_DEBUG_PRINTLN("DigitalIO");
+    return WsV2.digital_io_controller->Handle_DigitalIO_Add(
+        &component.payload.digitalio);
+  case ws_checkin_ComponentAdd_analogio_tag:
+    WS_DEBUG_PRINTLN("AnalogIO");
+    return WsV2.analogio_controller->Handle_AnalogIOAdd(
+        &component.payload.analogio);
+  case ws_checkin_ComponentAdd_servo_tag:
+    WS_DEBUG_PRINTLN("Servo");
+    return WsV2._servo_controller->Handle_Servo_Add(&component.payload.servo);
+  case ws_checkin_ComponentAdd_pwm_tag:
+    WS_DEBUG_PRINTLN("PWM");
+    return WsV2._pwm_controller->Handle_PWM_Add(&component.payload.pwm);
+  case ws_checkin_ComponentAdd_pixels_tag:
+    WS_DEBUG_PRINTLN("Pixels");
+    return WsV2._pixels_controller->Handle_Pixels_Add(
+        &component.payload.pixels);
+  case ws_checkin_ComponentAdd_ds18x20_tag:
+    WS_DEBUG_PRINTLN("DS18x20");
+    return WsV2._ds18x20_controller->Handle_Ds18x20Add(
+        &component.payload.ds18x20);
+  case ws_checkin_ComponentAdd_uart_tag:
+    WS_DEBUG_PRINTLN("UART");
+    return WsV2._uart_controller->Handle_UartAdd(&component.payload.uart);
+  case ws_checkin_ComponentAdd_i2c_tag:
+    WS_DEBUG_PRINTLN("I2C");
+    return WsV2._i2c_controller->Handle_I2cDeviceAddOrReplace(
+        &component.payload.i2c);
+  default:
+    WS_DEBUG_PRINTLN("UNKNOWN COMPONENT TYPE!");
+    break;
+  }
 
   return true;
 }
