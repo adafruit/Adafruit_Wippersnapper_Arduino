@@ -100,9 +100,9 @@ void Wippersnapper::provision() {
 
   // Board specific initializations
 #ifdef ARDUINO_ARDUINO_NESSO_N1
-    battery.begin();
-    delay(10);
-    battery.enableCharge();
+  battery.begin();
+  delay(10);
+  battery.enableCharge();
 #endif
 
   // Initialize the status LED for signaling FS errors
@@ -1667,7 +1667,7 @@ void cbDisplayMessage(char *data, uint16_t len) {
 /****************************************************************************/
 bool Wippersnapper::encodePinEvent(
     wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-    uint8_t pinName, int pinVal) {
+    uint16_t pinName, int pinVal) {
   bool is_success = true;
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;

@@ -254,9 +254,10 @@ static NessoBattery battery; ///< Nesso-N1 Battery instance
 class WsExpanderPin : public ExpanderPin, public Printable {
 public:
   WsExpanderPin(uint16_t _pin) : ExpanderPin(_pin) {}
-  WsExpanderPin(ExpanderPin ep) : ExpanderPin(ep.pin | (ep.address == 0x44 ? 0x100 : 0x200)) {}
-  
-  size_t printTo(Print& p) const override {
+  WsExpanderPin(ExpanderPin ep)
+      : ExpanderPin(ep.pin | (ep.address == 0x44 ? 0x100 : 0x200)) {}
+
+  size_t printTo(Print &p) const override {
     size_t n = p.print("0x");
     n += p.print(address, HEX);
     n += p.print("_");
@@ -343,7 +344,7 @@ public:
   // Encodes a pin event message
   bool
   encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-                 uint8_t pinName, int pinVal);
+                 uint16_t pinName, int pinVal);
 
   // Pin configure message
   bool configureDigitalPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);

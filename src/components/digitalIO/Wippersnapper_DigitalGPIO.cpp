@@ -66,7 +66,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
   WsExpanderPin flexPinName = (ExpanderPin)pinName;
 #else
   uint8_t flexPinName = (uint8_t)pinName;
-#endif  
+#endif
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
 
@@ -96,20 +96,20 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
       digitalWrite(pinName, LOW);
     }
 #else
-    pinMode(pinName, OUTPUT);
-    digitalWrite(pinName, LOW); // initialize LOW
+    pinMode(flexPinName, OUTPUT);
+    digitalWrite(flexPinName, LOW); // initialize LOW
 #endif
   } else if (
       direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
     WS_DEBUG_PRINT("Configuring digital input pin on D");
-    WS_DEBUG_PRINT(pinName);
+    WS_DEBUG_PRINT(flexPinName);
 
     if (pull == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP) {
       WS_DEBUG_PRINTLN("with internal pull-up enabled");
-      pinMode(pinName, INPUT_PULLUP);
+      pinMode(flexPinName, INPUT_PULLUP);
     } else {
-      pinMode(pinName, INPUT);
+      pinMode(flexPinName, INPUT);
       WS_DEBUG_PRINT("\n");
     }
 
@@ -187,27 +187,20 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
 */
 /********************************************************************/
 int Wippersnapper_DigitalGPIO::digitalReadSvc(int pinName) {
+#if defined(ARDUINO_ARDUINO_NESSO_N1)
+  // probably this should be >255 instead for future use.
+  if ((pinName & 0x100) || (pinName & 0x200)) {
+    WsExpanderPin flexPinName = (ExpanderPin)pinName;
+    // Service using expander `digitalRead`
+    int pinVal = digitalRead(flexPinName);
+    return pinVal;
+  }
+#endif
   // Service using arduino `digitalRead`
   int pinVal = digitalRead(pinName);
   return pinVal;
 }
 
-#if defined(ARDUINO_ARDUINO_NESSO_N1)
-/********************************************************************/
-/*!
-    @brief    High-level digitalRead service impl. which performs a
-                digitalRead.
-    @param    pin
-                The ExpanderPin instance
-    @returns  The pin's value.
-*/
-/********************************************************************/
-int Wippersnapper_DigitalGPIO::digitalReadSvc(ExpanderPin pin) {
-  // Service using arduino `digitalRead`
-  int pinVal = digitalRead(pin);
-  return pinVal;
-}
-
 /*******************************************************************************/
 /*!
     @brief  Writes a value to a pin.
@@ -217,25 +210,8 @@ int Wippersnapper_DigitalGPIO::digitalReadSvc(ExpanderPin pin) {
                 The pin's value.
 */
 /*******************************************************************************/
-void Wippersnapper_DigitalGPIO::digitalWriteSvc(ExpanderPin pin, int pinValue) {
-  WS_DEBUG_PRINT("Digital Pin Event: Set ");
-  WS_DEBUG_PRINT(pin.pin);
-  WS_DEBUG_PRINT(" to ");
-  WS_DEBUG_PRINTLN(pinValue);
-  digitalWrite(pin, pinValue);
-}
-#endif
-
-/*******************************************************************************/
-/*!
-    @brief  Writes a value to a pin.
-    @param  pinName
-                The pin's name.
-    @param  pinValue
-                The pin's value.
-*/
-/*******************************************************************************/
-void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint16_t pinName, int pinValue) {
+void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint16_t pinName,
+                                                int pinValue) {
   WS_DEBUG_PRINT("Digital Pin Event: Set ");
   WS_DEBUG_PRINT(pinName);
   WS_DEBUG_PRINT(" to ");
@@ -249,6 +225,13 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint16_t pinName, int pinValue) 
     digitalWrite(pinName, !pinValue);
   else
     digitalWrite(pinName, pinValue);
+#elif defined(ARDUINO_ARDUINO_NESSO_N1)
+  if ((pinName & 0x100) || (pinName & 0x200)) {
+    WsExpanderPin flexPinName = (ExpanderPin)pinName;
+    digitalWrite(flexPinName, pinValue);
+  } else {
+    digitalWrite(pinName, pinValue);
+  }
 #else
   digitalWrite(pinName, pinValue);
 #endif

@@ -170,7 +170,7 @@
 #define BOARD_ID "arduino-nesso-n1"
 #define USE_LITTLEFS
 #define USE_STATUS_LED
-#define STATUS_LED_PIN LED_BUILTIN // can now be +512/+256 for expander (0x43/44)
+#define STATUS_LED_PIN LED_BUILTIN // can be +512/+256 as expander (0x43/44)
 #define STATUS_LED_INVERTED
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6)
 #define BOARD_ID "feather-esp32c6"
