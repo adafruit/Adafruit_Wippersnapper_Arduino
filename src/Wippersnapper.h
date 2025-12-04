@@ -243,6 +243,27 @@ class DisplayController;
 
 #ifdef ARDUINO_ARDUINO_NESSO_N1
 static NessoBattery battery; ///< Nesso-N1 Battery instance
+
+/**************************************************************************/
+/*!
+    @brief  Printable subclass of ExpanderPin for use with Serial.println()
+            Allows ExpanderPin to be used interchangeably with uint8_t pins
+            when printing to Serial.
+*/
+/**************************************************************************/
+class WsExpanderPin : public ExpanderPin, public Printable {
+public:
+  WsExpanderPin(uint16_t _pin) : ExpanderPin(_pin) {}
+  WsExpanderPin(ExpanderPin ep) : ExpanderPin(ep.pin | (ep.address == 0x44 ? 0x100 : 0x200)) {}
+  
+  size_t printTo(Print& p) const override {
+    size_t n = p.print("0x");
+    n += p.print(address, HEX);
+    n += p.print("_");
+    n += p.print(pin);
+    return n;
+  }
+};
 #endif
 
 /**************************************************************************/

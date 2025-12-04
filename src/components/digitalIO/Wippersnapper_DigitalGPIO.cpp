@@ -60,8 +60,13 @@ Wippersnapper_DigitalGPIO::~Wippersnapper_DigitalGPIO() {
 /*******************************************************************************************************************************/
 void Wippersnapper_DigitalGPIO::initDigitalPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
-    uint8_t pinName, float period,
+    uint16_t pinName, float period,
     wippersnapper_pin_v1_ConfigurePinRequest_Pull pull) {
+#if defined(ARDUINO_ARDUINO_NESSO_N1)
+  WsExpanderPin flexPinName = (ExpanderPin)pinName;
+#else
+  uint8_t flexPinName = (uint8_t)pinName;
+#endif  
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
 
@@ -70,14 +75,14 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     //     if (String("D") + pinName == STATUS_LED_PIN.pin)
     // #else
     // deinit status led, use it as a dio component instead
-    if (pinName == STATUS_LED_PIN)
+    if (flexPinName == STATUS_LED_PIN)
       releaseStatusLED();
 #endif
 #endif
-    pinMode(pinName, OUTPUT);
+    pinMode(flexPinName, OUTPUT);
 
     WS_DEBUG_PRINT("Configured digital output pin on D");
-    WS_DEBUG_PRINTLN(pinName);
+    WS_DEBUG_PRINTLN(flexPinName);
 
 // Initialize LOW
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) // not until we support
@@ -142,7 +147,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
 /********************************************************************************************************************************/
 void Wippersnapper_DigitalGPIO::deinitDigitalPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
-    uint8_t pinName) {
+    uint16_t pinName) {
   WS_DEBUG_PRINT("Deinitializing digital pin ");
   WS_DEBUG_PRINTLN(pinName);
 
@@ -230,7 +235,7 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(ExpanderPin pin, int pinValue) {
                 The pin's value.
 */
 /*******************************************************************************/
-void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
+void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint16_t pinName, int pinValue) {
   WS_DEBUG_PRINT("Digital Pin Event: Set ");
   WS_DEBUG_PRINT(pinName);
   WS_DEBUG_PRINT(" to ");
