@@ -30,7 +30,9 @@
 */
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+  } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {                                                                            \
     WS_PRINTER.println(__VA_ARGS__);                                           \
@@ -42,9 +44,11 @@
   } /**< Print debug message in hexadecimal */
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} /**< Debug print */
+  {                                                                            \
+  } /**< Debug print */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} /**< Debug println */
+  {                                                                            \
+  } /**< Debug println */
 #endif
 
 /*!
@@ -99,6 +103,7 @@
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/ds18x20/controller.h"
+#include "components/error/controller.h"
 #include "components/gps/controller.h"
 #include "components/i2c/controller.h"
 #include "components/pixels/controller.h"
@@ -130,6 +135,7 @@ class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class ws_sdcard;
 class CheckinModel;
+class ErrorController;
 class SensorModel;
 class DigitalIOController;
 class AnalogIOController;
@@ -216,7 +222,9 @@ public:
 
   // API v2 Components
   CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
-  SensorModel *sensorModel = nullptr;   ///< Instance of SensorModel class
+  ErrorController *error_controller =
+      nullptr;                         ///< Instance of ErrorController class
+  SensorModel *sensor_model = nullptr; ///< Instance of SensorModel class
   DigitalIOController *digital_io_controller =
       nullptr; ///< Instance of DigitalIO controller class
   AnalogIOController *analogio_controller =
@@ -261,13 +269,9 @@ private:
   // MQTT topics
   char *_topicB2d;
   char *_topicD2b;
-  char *_topicError;
-  char *_topicThrottle;
 
   // Adafruit_MQTT Subscription objects
   Adafruit_MQTT_Subscribe *_subscribeB2d;
-  Adafruit_MQTT_Subscribe *_subscribeError;
-  Adafruit_MQTT_Subscribe *_subscribeThrottle;
 
 protected:
   ws_status_t _statusV2 = WS_IDLE; ///< Wippersnapper status

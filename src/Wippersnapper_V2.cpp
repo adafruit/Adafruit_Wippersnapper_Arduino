@@ -35,37 +35,48 @@
 
 Wippersnapper_V2 WsV2;
 
-Wippersnapper_V2::Wippersnapper_V2() {
-  // TODO: Scope out how much of this we can remove
-  // and what should be here (if we are wrong!)
-  _mqttV2 = 0; // MQTT Client object
-
-  // Reserved MQTT Topics
-  _topicError = 0;
-  _topicThrottle = 0;
-  _subscribeError = 0;
-  _subscribeThrottle = 0;
-
+/*!
+    @brief    Wippersnapper_V2 constructor
+*/
+Wippersnapper_V2::Wippersnapper_V2()
+    : _mqttV2(nullptr), sensor_model(nullptr), error_controller(nullptr),
+      digital_io_controller(nullptr), analogio_controller(nullptr),
+      _ds18x20_controller(nullptr), _gps_controller(nullptr),
+      _i2c_controller(nullptr), _uart_controller(nullptr),
+      _pixels_controller(nullptr), _pwm_controller(nullptr),
+      _servo_controller(nullptr) {
   // Initialize model classes
-  // NOTE: This is causing a crash!
-  this->sensorModel = new SensorModel();
+  sensor_model = new SensorModel();
 
   // Initialize controller classes
-  this->digital_io_controller = new DigitalIOController();
-  this->analogio_controller = new AnalogIOController();
-  this->_ds18x20_controller = new DS18X20Controller();
-  this->_gps_controller = new GPSController();
-  this->_i2c_controller = new I2cController();
-  this->_uart_controller = new UARTController();
-  this->_pixels_controller = new PixelsController();
-  this->_pwm_controller = new PWMController();
-  this->_servo_controller = new ServoController();
-};
+  error_controller = new ErrorController();
+  digital_io_controller = new DigitalIOController();
+  analogio_controller = new AnalogIOController();
+  _ds18x20_controller = new DS18X20Controller();
+  _gps_controller = new GPSController();
+  _i2c_controller = new I2cController();
+  _uart_controller = new UARTController();
+  _pixels_controller = new PixelsController();
+  _pwm_controller = new PWMController();
+  _servo_controller = new ServoController();
+}
 
 /*!
     @brief    Wippersnapper_V2 destructor
 */
-Wippersnapper_V2::~Wippersnapper_V2() {}
+Wippersnapper_V2::~Wippersnapper_V2() {
+  delete this->sensor_model;
+  delete this->error_controller;
+  delete this->digital_io_controller;
+  delete this->analogio_controller;
+  delete this->_ds18x20_controller;
+  delete this->_gps_controller;
+  delete this->_i2c_controller;
+  delete this->_uart_controller;
+  delete this->_pixels_controller;
+  delete this->_pwm_controller;
+  delete this->_servo_controller;
+}
 
 /*!
     @brief    Disconnects from Adafruit IO+ Wippersnapper_V2.
@@ -469,15 +480,11 @@ bool Wippersnapper_V2::generateWSTopics() {
   size_t lenBoardId = strlen(_device_uidV2);
   // Calculate length of static strings
   size_t lenTopicX2x = strlen("/ws-x2x/");
-  size_t lenTopicErrorStr = strlen("/errors/");
-  size_t lenTopicThrottleStr = strlen("/throttle/");
   // Calculate length of complete topic strings
   // NOTE: We are using "+2" to account for the null terminator and the "/" at
   // the end of the topic
   size_t lenTopicB2d = lenUser + lenTopicX2x + lenBoardId + 2;
   size_t lenTopicD2b = lenUser + lenTopicX2x + lenBoardId + 2;
-  size_t lenTopicError = lenUser + lenTopicErrorStr + 2;
-  size_t lenTopicThrottle = lenUser + lenTopicThrottleStr + 2;
 
   // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
@@ -513,46 +520,6 @@ bool Wippersnapper_V2::generateWSTopics() {
            WsV2._configV2.aio_user, _device_uidV2);
   WS_DEBUG_PRINT("Device-to-broker topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicD2b);
-
-  // Attempt to allocate memory for the error topic
-#ifdef USE_PSRAM
-  WsV2._topicError = (char *)ps_malloc(sizeof(char) * lenTopicError);
-#else
-  WsV2._topicError = (char *)malloc(sizeof(char) * lenTopicError);
-#endif
-  // Check if memory allocation was successful
-  if (WsV2._topicError == NULL)
-    return false;
-  // Build the error topic
-  snprintf(WsV2._topicError, lenTopicError, "%s/%s/", WsV2._configV2.aio_user,
-           "errors");
-  WS_DEBUG_PRINT("Error topic: ");
-  WS_DEBUG_PRINTLN(WsV2._topicError);
-  // Subscribe to the error topic
-  _subscribeError = new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicError);
-  WsV2._mqttV2->subscribe(_subscribeError);
-  // TODO: Implement the error topic callback
-  _subscribeError->setCallback(cbErrorTopicV2);
-
-// Attempt to allocate memory for the error topic
-#ifdef USE_PSRAM
-  WsV2._topicThrottle = (char *)ps_malloc(sizeof(char) * lenTopicThrottle);
-#else
-  WsV2._topicThrottle = (char *)malloc(sizeof(char) * lenTopicThrottle);
-#endif
-  // Check if memory allocation was successful
-  if (WsV2._topicThrottle == NULL)
-    return false;
-  // Build the throttle topic
-  snprintf(WsV2._topicThrottle, lenTopicThrottle, "%s/%s/",
-           WsV2._configV2.aio_user, "throttle");
-  WS_DEBUG_PRINT("Throttle topic: ");
-  WS_DEBUG_PRINTLN(WsV2._topicThrottle);
-  // Subscribe to throttle topic
-  _subscribeThrottle =
-      new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicThrottle);
-  WsV2._mqttV2->subscribe(_subscribeThrottle);
-  _subscribeThrottle->setCallback(cbThrottleTopicV2);
 
   return true;
 }
