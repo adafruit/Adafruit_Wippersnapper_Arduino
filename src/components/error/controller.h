@@ -29,10 +29,22 @@ public:
   ErrorController();
   ~ErrorController();
   bool Router(pb_istream_t *stream);
+  bool PublishAnalogIO(const char *error_msg, const char *pin_name);
+  bool PublishDigitalIO(const char *error_msg, const char *pin_name);
+  bool PublishDS18x20(const char *error_msg, const char *pin_name);
+  bool PublishPixels(const char *error_msg, const char *pin_name);
+  bool PublishPWM(const char *error_msg, const char *pin_name);
+  bool PublishServo(const char *error_msg, const char *pin_name);
+  bool PublishGPS(const char *error_msg, ws_i2c_DeviceDescriptor *i2c_device);
+  bool PublishGPS(const char *error_msg, ws_uart_Descriptor *uart_device);
+  bool PublishI2C(const char *error_msg, ws_i2c_DeviceDescriptor *i2c_device);
+  bool PublishUART(const char *error_msg, ws_uart_Descriptor *uart_device);
 
 private:
   bool HandleThrottle(const ws_error_ErrorIOThrottle &throttle);
   bool HandleBan(const ws_error_ErrorIOBan &ban);
+  bool PublishError(pb_size_t which_component, void *component_id,
+                    pb_callback_t error_msg);
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_CONTROLLER_MODEL
