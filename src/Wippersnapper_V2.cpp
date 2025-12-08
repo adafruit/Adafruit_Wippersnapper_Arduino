@@ -65,6 +65,7 @@ Wippersnapper_V2::Wippersnapper_V2()
     @brief    Wippersnapper_V2 destructor
 */
 Wippersnapper_V2::~Wippersnapper_V2() {
+  disconnect();
   delete this->sensor_model;
   delete this->error_controller;
   delete this->digital_io_controller;
@@ -288,8 +289,7 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   // Pass to class' router based on tag type
   switch (field->tag) {
   case ws_signal_BrokerToDevice_error_tag:
-    // TODO: Handle new error component API
-    return true;
+    return WsV2.error_controller->Router(stream);
   case ws_signal_BrokerToDevice_checkin_tag:
     return handleCheckinResponse(stream);
   case ws_signal_BrokerToDevice_digitalio_tag:
@@ -354,69 +354,6 @@ void callDecodeB2D() {
       continue; // Skip this message and move on!
     }
   }
-}
-
-/*!
-    @brief    Called when client receives a message published across the
-                Adafruit IO MQTT /error special topic.
-    @param    errorData
-                Data from MQTT broker.
-    @param    len
-                Length of data received from MQTT broker.
-*/
-void cbErrorTopicV2(char *errorData, uint16_t len) {
-  (void)len; // marking unused parameter to avoid compiler warning
-  WS_DEBUG_PRINT("IO Ban Error: ");
-  WS_DEBUG_PRINTLN(errorData);
-  // Disconnect client from broker
-  WS_DEBUG_PRINT("Disconnecting from MQTT..");
-  if (!WsV2._mqttV2->disconnect()) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
-  }
-
-  WsV2.haltErrorV2("IO MQTT Ban Error"); // WDT reset
-}
-
-/*!
-    @brief    Called when client receives a message published across the
-                Adafruit IO MQTT /throttle special topic. Delays until
-                throttle is released.
-    @param    throttleData
-                Throttle message from Adafruit IO.
-    @param    len
-                Length of data received from MQTT broker.
-*/
-void cbThrottleTopicV2(char *throttleData, uint16_t len) {
-  (void)len; // marking unused parameter to avoid compiler warning
-  WS_DEBUG_PRINT("IO Throttle Error: ");
-  WS_DEBUG_PRINTLN(throttleData);
-  char *throttleMessage;
-  // Parse out # of seconds from message buffer
-  throttleMessage = strtok(throttleData, ",");
-  throttleMessage = strtok(NULL, " ");
-  // Convert from seconds to to millis
-  int throttleDuration = atoi(throttleMessage) * 1000;
-
-  WS_DEBUG_PRINT("Device is throttled for ");
-  WS_DEBUG_PRINT(throttleDuration);
-  WS_DEBUG_PRINTLN("ms and blocking command execution.");
-
-  // If throttle duration is less than the keepalive interval, delay for the
-  // full keepalive interval
-  if (throttleDuration < WS_KEEPALIVE_INTERVAL_MS) {
-    delay(WS_KEEPALIVE_INTERVAL_MS);
-  } else {
-    // round to nearest millis to prevent delaying for less time than req'd.
-    float throttleLoops = ceil(throttleDuration / WS_KEEPALIVE_INTERVAL_MS);
-    // block the run() loop
-    while (throttleLoops > 0) {
-      delay(WS_KEEPALIVE_INTERVAL_MS);
-      WsV2.feedWDTV2();
-      WsV2._mqttV2->ping();
-      throttleLoops--;
-    }
-  }
-  WS_DEBUG_PRINTLN("Device is un-throttled, resumed command execution");
 }
 
 /*!

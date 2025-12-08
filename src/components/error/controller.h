@@ -28,6 +28,11 @@ class ErrorController {
 public:
   ErrorController();
   ~ErrorController();
+  bool Router(pb_istream_t *stream);
+
+private:
+  bool HandleThrottle(const ws_error_ErrorIOThrottle &throttle);
+  bool HandleBan(const ws_error_ErrorIOBan &ban);
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_CONTROLLER_MODEL
