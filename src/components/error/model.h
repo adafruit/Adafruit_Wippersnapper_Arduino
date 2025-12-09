@@ -22,6 +22,9 @@ class Wippersnapper_V2; ///< Forward declaration
     @brief  Provides an interface for creating, encoding, and parsing
             messages from error.proto.
 */
+bool encode_string_callback(pb_ostream_t *stream, const pb_field_t *field,
+                            void *const *arg);
+
 class ErrorModel {
 public:
   ErrorModel();
