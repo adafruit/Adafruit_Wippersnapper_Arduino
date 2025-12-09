@@ -49,7 +49,6 @@ Wippersnapper_V2::Wippersnapper_V2()
   sensor_model = new SensorModel();
 
   // Initialize controller classes
-  error_controller = new ErrorController();
   digital_io_controller = new DigitalIOController();
   analogio_controller = new AnalogIOController();
   _ds18x20_controller = new DS18X20Controller();
@@ -67,7 +66,7 @@ Wippersnapper_V2::Wippersnapper_V2()
 Wippersnapper_V2::~Wippersnapper_V2() {
   disconnect();
   delete this->sensor_model;
-  delete this->error_controller;
+  //delete this->error_controller;
   delete this->digital_io_controller;
   delete this->analogio_controller;
   delete this->_ds18x20_controller;
@@ -862,6 +861,7 @@ void Wippersnapper_V2::connect() {
   WS_DEBUG_PRINT("Free heap at startup: ");
   WS_DEBUG_PRINTLN(ESP.getFreeHeap());
   this->CheckInModel = new CheckinModel();
+  this->error_controller = new ErrorController();
   // Print fre eheap after
   WS_DEBUG_PRINT("Free heap after CheckinModel init: ");
   WS_DEBUG_PRINTLN(ESP.getFreeHeap());
@@ -929,7 +929,7 @@ void Wippersnapper_V2::connect() {
   // but only after we test on staging
   WS_DEBUG_PRINTLN("Creating checkin request...");
   // Publish the checkin request
-  if (!WsV2.CheckInModel->Checkin(sUIDV2, WS_VERSION)) {
+  if (!WsV2.CheckInModel->Checkin(BOARD_ID, WS_VERSION)) {
     haltErrorV2("ERROR: Unable to create and/or checkin request");
   }
   WS_DEBUG_PRINTLN("Published checkin request...");
