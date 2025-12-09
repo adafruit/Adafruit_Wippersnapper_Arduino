@@ -52,6 +52,7 @@ private:
   bool PublishError(pb_size_t which_component_type,
                     pb_size_t which_component_id, ws_uart_Descriptor uart,
                     pb_callback_t error_msg);
+  ErrorModel *_model = nullptr; ///< Instance of ErrorModel class
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_CONTROLLER_MODEL

@@ -26,12 +26,15 @@ class ErrorModel {
 public:
   ErrorModel();
   ~ErrorModel();
+  bool FillErrorD2B(pb_size_t which_component_type,
+                    pb_size_t which_component_id, pb_callback_t pin,
+                    pb_callback_t error_msg);
+  ws_error_ErrorD2B *getErrorD2BMessage();
+  bool encodeErrorD2B(uint8_t *buffer, size_t buffer_size,
+                      size_t *encoded_size);
 
 private:
-/*   static bool cbComponentAdds(pb_istream_t *stream, const pb_field_t *field, void **arg); //< Callback for decoding ComponentAdd messages
-  ws_checkin_B2D _CheckinB2D = ws_checkin_B2D_init_zero; ///< Broker to Device message wrapper
-  ws_checkin_D2B _CheckinD2B = ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
-  bool _got_response;         ///< Flag indicating if response was received */
+  ws_error_ErrorD2B _error_d2b_msg; ///< ErrorD2B message instance;
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_ERROR_MODEL_H

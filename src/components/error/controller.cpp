@@ -15,38 +15,14 @@
 #include "controller.h"
 
 /*!
-    @brief  Callback function to encode a string for nanopb.
-    @param  stream
-            The nanopb output stream.
-    @param  field
-            The nanopb field descriptor.
-    @param  arg
-            Pointer to the string to encode.
-    @return True if encoding was successful, False otherwise.
-*/
-static bool encode_string_callback(pb_ostream_t *stream,
-                                   const pb_field_t *field, void *const *arg) {
-  // Retrieve the string from arg
-  const char *str = (const char *)*arg;
-  // Handle null string case
-  if (!str) {
-    return pb_encode_string(stream, (const uint8_t *)"", 0);
-  }
-
-  // Calculate string length and encode
-  size_t len = strlen(str);
-  return pb_encode_string(stream, (const uint8_t *)str, len);
-}
-
-/*!
     @brief  ErrorController constructor
 */
-ErrorController::ErrorController() {}
+ErrorController::ErrorController() { _model = new ErrorModel(); }
 
 /*!
     @brief  ErrorController destructor
 */
-ErrorController::~ErrorController() {}
+ErrorController::~ErrorController() { delete _model; }
 
 /*!
     @brief  Routes messages using the error.proto API to the
@@ -144,25 +120,30 @@ bool ErrorController::PublishError(pb_size_t which_component_type,
                                    pb_callback_t pin, pb_callback_t error_msg) {
   ws_error_ErrorD2B error_d2b = ws_error_ErrorD2B_init_zero;
   // Fill the ErrorD2B message
+  if (!_model->FillErrorD2B(which_component_type, which_component_id, pin,
+                            error_msg)) {
+    WS_DEBUG_PRINTLN("[Error] ERROR: Unable to fill ErrorD2B message");
+    return false;
+  }
 
-  error_d2b.type = (ws_error_ComponentType)which_component_type;
-  error_d2b.which_component_id = which_component_id;
-  error_d2b.component_id.pin.funcs.encode = encode_string_callback;
-  error_d2b.component_id.pin.arg = pin.arg;
-  error_d2b.error = error_msg;
-
-  // Obtain size of the encoded ErrorD2B message
-  size_t sz_error_d2b_msg;
-  if (!pb_get_encoded_size(&sz_error_d2b_msg, ws_error_ErrorD2B_fields,
-                           &error_d2b)) {
+  // Get the size needed for encoding
+  size_t encoded_size;
+  if (!pb_get_encoded_size(&encoded_size, ws_error_ErrorD2B_fields,
+                           _model->getErrorD2BMessage())) {
     WS_DEBUG_PRINTLN("[Error] ERROR: Unable to get size of ErrorD2B message");
     return false;
   }
 
-  // Encode the ErrorD2B message
-  uint8_t buf[sz_error_d2b_msg];
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  if (!pb_encode(&msg_stream, ws_error_ErrorD2B_fields, &error_d2b)) {
+  // Validate buffer size won't exceed a reasonable limit for a ErrorD2B message
+  if (encoded_size == 0 || encoded_size > 1024) {
+    WS_DEBUG_PRINTLN(
+        "[Error] ERROR: Invalid encoded size for ErrorD2B message");
+    return false;
+  }
+
+  // Attempt to allocate buffer and encode the message
+  uint8_t buf[encoded_size];
+  if (!_model->encodeErrorD2B(buf, encoded_size, &encoded_size)) {
     WS_DEBUG_PRINTLN("[Error] ERROR: Unable to encode ErrorD2B message");
     return false;
   }
