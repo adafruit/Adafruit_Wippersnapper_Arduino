@@ -15,6 +15,30 @@
 #include "controller.h"
 
 /*!
+    @brief  Callback function to encode a string for nanopb.
+    @param  stream
+            The nanopb output stream.
+    @param  field
+            The nanopb field descriptor.
+    @param  arg
+            Pointer to the string to encode.
+    @return True if encoding was successful, False otherwise.
+*/
+static bool encode_string_callback(pb_ostream_t *stream,
+                                   const pb_field_t *field, void *const *arg) {
+  // Retrieve the string from arg
+  const char *str = (const char *)*arg;
+  // Handle null string case
+  if (!str) {
+    return pb_encode_string(stream, (const uint8_t *)"", 0);
+  }
+
+  // Calculate string length and encode
+  size_t len = strlen(str);
+  return pb_encode_string(stream, (const uint8_t *)str, len);
+}
+
+/*!
     @brief  ErrorController constructor
 */
 ErrorController::ErrorController() {}
@@ -44,6 +68,7 @@ bool ErrorController::Router(pb_istream_t *stream) {
   switch (b2d.which_payload) {
   case ws_error_ErrorB2D_io_ban_tag:
     WS_DEBUG_PRINTLN("[error] Received ErrorIOBan message from broker");
+    res = HandleBan(b2d.payload.io_ban);
     break;
   case ws_error_ErrorB2D_io_throttle_tag:
     WS_DEBUG_PRINTLN("[error] Received ErrorIOThrottle message from broker");
@@ -114,67 +139,49 @@ bool ErrorController::HandleThrottle(const ws_error_ErrorIOThrottle &throttle) {
   return true;
 }
 
-/*!
-    @brief  Publishes an error message to the broker with the specified
-            component identifier and error message.
-    @param  which_component
-            The component type that caused the error.
-    @param  component_id
-            Pointer to the component identifier.
-    @param  error_msg
-            The error message to publish.
-    @return True if the message was successfully published, False otherwise.
-*/
 bool ErrorController::PublishError(pb_size_t which_component_type,
                                    pb_size_t which_component_id,
-                                   void *component_id,
-                                   pb_callback_t error_msg) {
-  // Print debug information
-  WS_DEBUG_PRINT("which_component_type: ");
-  WS_DEBUG_PRINTLN(which_component_type);
-  WS_DEBUG_PRINTLN("which_component_id: ");
-  WS_DEBUG_PRINTLN(which_component_id);
+                                   pb_callback_t pin, pb_callback_t error_msg) {
+  ws_error_ErrorD2B error_d2b = ws_error_ErrorD2B_init_zero;
+  // Fill the ErrorD2B message
 
-  // Based on ID, print out the component_id field
-  if (which_component_id == ws_error_ErrorD2B_pin_tag) {
-    WS_DEBUG_PRINTLN("Pin");
-  } else if (which_component_id == ws_error_ErrorD2B_i2c_tag) {
-    WS_DEBUG_PRINTLN("I2C");
-  } else if (which_component_id == ws_error_ErrorD2B_uart_tag) {
-    WS_DEBUG_PRINTLN("UART");
-  } else {
-    WS_DEBUG_PRINTLN("Error, which_component_id not found");
+  error_d2b.type = (ws_error_ComponentType)which_component_type;
+  error_d2b.which_component_id = which_component_id;
+  error_d2b.component_id.pin.funcs.encode = encode_string_callback;
+  error_d2b.component_id.pin.arg = pin.arg;
+  error_d2b.error = error_msg;
+
+  // Obtain size of the encoded ErrorD2B message
+  size_t sz_error_d2b_msg;
+  if (!pb_get_encoded_size(&sz_error_d2b_msg, ws_error_ErrorD2B_fields,
+                           &error_d2b)) {
+    WS_DEBUG_PRINTLN("[Error] ERROR: Unable to get size of ErrorD2B message");
     return false;
   }
-  
+
+  // Encode the ErrorD2B message
+  uint8_t buf[sz_error_d2b_msg];
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  if (!pb_encode(&msg_stream, ws_error_ErrorD2B_fields, &error_d2b)) {
+    WS_DEBUG_PRINTLN("[Error] ERROR: Unable to encode ErrorD2B message");
+    return false;
+  }
+
+  // Publish the ErrorD2B message to the broker
+  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_error_tag, (void *)buf)) {
+    WS_DEBUG_PRINTLN("[Error] ERROR: Unable to publish ErrorD2B message");
+    return false;
+  }
+
   return true;
 }
 
+// bool PublishError(pb_size_t which_component_type, pb_size_t
+// which_component_id, ws_i2c_DeviceDescriptor i2c, pb_callback_t error_msg);
+// bool PublishError(pb_size_t which_component_type, pb_size_t
+// which_component_id, ws_uart_Descriptor uart, pb_callback_t error_msg);
+
 /*! Helper Functions */
-
-/*!
-    @brief  Callback function to encode a string for nanopb.
-    @param  stream
-            The nanopb output stream.
-    @param  field
-            The nanopb field descriptor.
-    @param  arg
-            Pointer to the string to encode.
-    @return True if encoding was successful, False otherwise.
-*/
-static bool encode_string_callback(pb_ostream_t *stream,
-                                   const pb_field_t *field, void *const *arg) {
-  // Retrieve the string from arg
-  const char *str = (const char *)*arg;
-  // Handle null string case
-  if (!str) {
-    return pb_encode_string(stream, (const uint8_t *)"", 0);
-  }
-
-  // Calculate string length and encode
-  size_t len = strlen(str);
-  return pb_encode_string(stream, (const uint8_t *)str, len);
-}
 
 /*!
     @brief  Publishes an AnalogIO error message to the broker.
@@ -189,12 +196,19 @@ bool ErrorController::PublishAnalogIO(const char *error_msg,
   if (!error_msg || !pin_name)
     return false;
 
-  // Pass to PublishError
+  // Create callbacks for pin name and error message
   pb_callback_t error_msg_callback;
   error_msg_callback.funcs.encode = encode_string_callback;
   error_msg_callback.arg = (void *)error_msg;
-  return PublishError(ws_signal_DeviceToBroker_analogio_tag, ws_error_ErrorD2B_pin_tag,
-                      (void *)pin_name, error_msg_callback);
+
+  pb_callback_t pin_callback;
+  pin_callback.funcs.encode = encode_string_callback;
+  pin_callback.arg = (void *)pin_name;
+
+  // Pass to PublishError
+  return PublishError(ws_signal_DeviceToBroker_analogio_tag,
+                      ws_error_ErrorD2B_pin_tag, pin_callback,
+                      error_msg_callback);
 }
 
 /*!
@@ -210,12 +224,17 @@ bool ErrorController::PublishDigitalIO(const char *error_msg,
   if (!error_msg || !pin_name)
     return false;
 
-  // Pass to PublishError
   pb_callback_t error_msg_callback;
   error_msg_callback.funcs.encode = encode_string_callback;
   error_msg_callback.arg = (void *)error_msg;
-  return PublishError(ws_signal_DeviceToBroker_digitalio_tag, ws_error_ErrorD2B_pin_tag,
-                      (void *)pin_name, error_msg_callback);
+
+  pb_callback_t pin_callback;
+  pin_callback.funcs.encode = encode_string_callback;
+  pin_callback.arg = (void *)pin_name;
+
+  return PublishError(ws_signal_DeviceToBroker_digitalio_tag,
+                      ws_error_ErrorD2B_pin_tag, pin_callback,
+                      error_msg_callback);
 }
 
 /*!
@@ -231,12 +250,17 @@ bool ErrorController::PublishDS18x20(const char *error_msg,
   if (!error_msg || !pin_name)
     return false;
 
-  // Pass to PublishError
   pb_callback_t error_msg_callback;
   error_msg_callback.funcs.encode = encode_string_callback;
   error_msg_callback.arg = (void *)error_msg;
-  return PublishError(ws_signal_DeviceToBroker_ds18x20_tag, ws_error_ErrorD2B_pin_tag,
-                      (void *)pin_name, error_msg_callback);
+
+  pb_callback_t pin_callback;
+  pin_callback.funcs.encode = encode_string_callback;
+  pin_callback.arg = (void *)pin_name;
+
+  return PublishError(ws_signal_DeviceToBroker_ds18x20_tag,
+                      ws_error_ErrorD2B_pin_tag, pin_callback,
+                      error_msg_callback);
 }
 
 /*!
@@ -252,12 +276,17 @@ bool ErrorController::PublishPixels(const char *error_msg,
   if (!error_msg || !pin_name)
     return false;
 
-  // Pass to PublishError
   pb_callback_t error_msg_callback;
   error_msg_callback.funcs.encode = encode_string_callback;
   error_msg_callback.arg = (void *)error_msg;
-  return PublishError(ws_signal_DeviceToBroker_pixels_tag, ws_error_ErrorD2B_pin_tag,
-                      (void *)pin_name, error_msg_callback);
+
+  pb_callback_t pin_callback;
+  pin_callback.funcs.encode = encode_string_callback;
+  pin_callback.arg = (void *)pin_name;
+
+  return PublishError(ws_signal_DeviceToBroker_pixels_tag,
+                      ws_error_ErrorD2B_pin_tag, pin_callback,
+                      error_msg_callback);
 }
 
 /*!
@@ -272,12 +301,17 @@ bool ErrorController::PublishPWM(const char *error_msg, const char *pin_name) {
   if (!error_msg || !pin_name)
     return false;
 
-  // Pass to PublishError
   pb_callback_t error_msg_callback;
   error_msg_callback.funcs.encode = encode_string_callback;
   error_msg_callback.arg = (void *)error_msg;
-  return PublishError(ws_signal_DeviceToBroker_pwm_tag, ws_error_ErrorD2B_pin_tag,
-                      (void *)pin_name, error_msg_callback);
+
+  pb_callback_t pin_callback;
+  pin_callback.funcs.encode = encode_string_callback;
+  pin_callback.arg = (void *)pin_name;
+
+  return PublishError(ws_signal_DeviceToBroker_pwm_tag,
+                      ws_error_ErrorD2B_pin_tag, pin_callback,
+                      error_msg_callback);
 }
 
 /*!
@@ -293,10 +327,15 @@ bool ErrorController::PublishServo(const char *error_msg,
   if (!error_msg || !pin_name)
     return false;
 
-  // Pass to PublishError
   pb_callback_t error_msg_callback;
   error_msg_callback.funcs.encode = encode_string_callback;
   error_msg_callback.arg = (void *)error_msg;
-  return PublishError(ws_signal_DeviceToBroker_servo_tag, ws_error_ErrorD2B_pin_tag,
-                      (void *)pin_name, error_msg_callback);
+
+  pb_callback_t pin_callback;
+  pin_callback.funcs.encode = encode_string_callback;
+  pin_callback.arg = (void *)pin_name;
+
+  return PublishError(ws_signal_DeviceToBroker_servo_tag,
+                      ws_error_ErrorD2B_pin_tag, pin_callback,
+                      error_msg_callback);
 }

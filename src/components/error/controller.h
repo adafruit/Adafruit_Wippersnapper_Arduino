@@ -43,7 +43,15 @@ public:
 private:
   bool HandleThrottle(const ws_error_ErrorIOThrottle &throttle);
   bool HandleBan(const ws_error_ErrorIOBan &ban);
-  bool PublishError(pb_size_t which_component_type, pb_size_t which_component_id, void *component_id, pb_callback_t error_msg);
+  bool PublishError(pb_size_t which_component_type,
+                    pb_size_t which_component_id, pb_callback_t pin,
+                    pb_callback_t error_msg);
+  bool PublishError(pb_size_t which_component_type,
+                    pb_size_t which_component_id, ws_i2c_DeviceDescriptor i2c,
+                    pb_callback_t error_msg);
+  bool PublishError(pb_size_t which_component_type,
+                    pb_size_t which_component_id, ws_uart_Descriptor uart,
+                    pb_callback_t error_msg);
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_CONTROLLER_MODEL
