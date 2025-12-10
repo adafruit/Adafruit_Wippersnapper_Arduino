@@ -119,14 +119,14 @@ public:
   @returns True if `_network_ssid` is found, False otherwise.
   */
   bool check_valid_ssid() {
-    // Set WiFi to station mode and disconnect from an AP if it was previously
-    // connected
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
+    WS_DEBUG_PRINTLN("[ws_wifi_esp32] check_valid_ssid()");
+    WiFi.STA.begin();
     delay(100);
 
     // Perform a network scan
     int n = WiFi.scanNetworks();
+    WS_DEBUG_PRINT("Number of WiFi networks found: ");
+    WS_DEBUG_PRINTLN(n);
     if (n == 0) {
       WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
       return false;

@@ -47,19 +47,18 @@ Wippersnapper_V2::Wippersnapper_V2() {
   _subscribeThrottle = 0;
 
   // Initialize model classes
-  // NOTE: This is causing a crash!
-  this->sensorModel = new SensorModel();
+  sensorModel = new SensorModel();
 
   // Initialize controller classes
-  this->digital_io_controller = new DigitalIOController();
-  this->analogio_controller = new AnalogIOController();
-  this->_ds18x20_controller = new DS18X20Controller();
-  this->_gps_controller = new GPSController();
-  this->_i2c_controller = new I2cController();
-  this->_uart_controller = new UARTController();
-  this->_pixels_controller = new PixelsController();
-  this->_pwm_controller = new PWMController();
-  this->_servo_controller = new ServoController();
+  digital_io_controller = new DigitalIOController();
+  analogio_controller = new AnalogIOController();
+  _ds18x20_controller = new DS18X20Controller();
+  _gps_controller = new GPSController();
+  _i2c_controller = new I2cController();
+  _uart_controller = new UARTController();
+  _pixels_controller = new PixelsController();
+  _pwm_controller = new PWMController();
+  _servo_controller = new ServoController();
 };
 
 /*!
@@ -957,7 +956,7 @@ void Wippersnapper_V2::connect() {
   // Print free heap a tthis point
   WS_DEBUG_PRINT("Free heap at startup: ");
   WS_DEBUG_PRINTLN(ESP.getFreeHeap());
-  this->CheckInModel = new CheckinModel();
+  CheckInModel = new CheckinModel();
   // Print fre eheap after
   WS_DEBUG_PRINT("Free heap after CheckinModel init: ");
   WS_DEBUG_PRINTLN(ESP.getFreeHeap());
