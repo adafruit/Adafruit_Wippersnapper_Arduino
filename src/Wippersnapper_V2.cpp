@@ -432,7 +432,7 @@ bool Wippersnapper_V2::generateWSTopics() {
   if (WsV2._topicB2d == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s/",
+  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s",
            WsV2._configV2.aio_user, _device_uidV2);
   WS_DEBUG_PRINT("Broker-to-device topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicB2d);
@@ -452,7 +452,7 @@ bool Wippersnapper_V2::generateWSTopics() {
   if (WsV2._topicD2b == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s/",
+  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s",
            WsV2._configV2.aio_user, _device_uidV2);
   WS_DEBUG_PRINT("Device-to-broker topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicD2b);
@@ -860,8 +860,8 @@ void Wippersnapper_V2::connect() {
   // Print free heap a tthis point
   WS_DEBUG_PRINT("Free heap at startup: ");
   WS_DEBUG_PRINTLN(ESP.getFreeHeap());
-  this->CheckInModel = new CheckinModel();
-  this->error_controller = new ErrorController();
+  WsV2.CheckInModel = new CheckinModel();
+  WsV2.error_controller = new ErrorController();
   // Print fre eheap after
   WS_DEBUG_PRINT("Free heap after CheckinModel init: ");
   WS_DEBUG_PRINTLN(ESP.getFreeHeap());

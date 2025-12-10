@@ -37,10 +37,12 @@ CheckinModel::~CheckinModel() { _got_response = false; }
 */
 bool CheckinModel::Checkin(const char *hardware_uid,
                            const char *firmware_version) {
+  WS_DEBUG_PRINTLN("[checkin] Zero out d2b wrapper...");
   // Zero-out the D2B wrapper message
   memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
 
   // Create the CheckinRequest message
+  WS_DEBUG_PRINTLN("[checkin] Creating CheckinRequest message...");
   _CheckinD2B.which_payload = ws_checkin_D2B_request_tag;
   strncpy(_CheckinD2B.payload.request.hardware_uid, hardware_uid,
           sizeof(_CheckinD2B.payload.request.hardware_uid) - 1);
@@ -48,6 +50,7 @@ bool CheckinModel::Checkin(const char *hardware_uid,
           sizeof(_CheckinD2B.payload.request.firmware_version) - 1);
 
   // Encode the D2B wrapper message
+  WS_DEBUG_PRINTLN("[checkin] Encoding CheckinRequest message size...");
   size_t CheckinD2BSz;
   if (!pb_get_encoded_size(&CheckinD2BSz, ws_checkin_D2B_fields,
                            &_CheckinD2B)) {
@@ -56,6 +59,7 @@ bool CheckinModel::Checkin(const char *hardware_uid,
     return false;
   }
 
+  WS_DEBUG_PRINTLN("[checkin] Encoding CheckinRequest message...");
   uint8_t buf[CheckinD2BSz];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
   if (!pb_encode(&msg_stream, ws_checkin_D2B_fields, &_CheckinD2B)) {
@@ -64,6 +68,7 @@ bool CheckinModel::Checkin(const char *hardware_uid,
   }
 
   // Publish out
+  WS_DEBUG_PRINTLN("[checkin] Publishing CheckinRequest to broker...");
   if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to publish CheckinRequest message!");

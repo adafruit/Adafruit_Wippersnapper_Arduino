@@ -16,8 +16,8 @@ ws_adapter_wifi wipper;
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial)
-    delay(10);
+/*   while (!Serial)
+    delay(10); */
   wipper.provision();
   wipper.connect();
 }
