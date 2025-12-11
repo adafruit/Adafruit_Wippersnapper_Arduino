@@ -66,7 +66,7 @@ Wippersnapper_V2::Wippersnapper_V2()
 Wippersnapper_V2::~Wippersnapper_V2() {
   disconnect();
   delete this->sensor_model;
-  //delete this->error_controller;
+  // delete this->error_controller;
   delete this->digital_io_controller;
   delete this->analogio_controller;
   delete this->_ds18x20_controller;
@@ -247,20 +247,25 @@ void Wippersnapper_V2::provision() {
     @returns  True if Checkin Response decoded and parsed successfully,
               False otherwise.
 */
-// TODO: Change this funcn name?
 bool handleCheckinResponse(pb_istream_t *stream) {
   // Decode the Checkin Response message
+  WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
   if (!WsV2.CheckInModel->ProcessResponse(stream)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response message");
     return false;
   }
+  WsV2.runNetFSMV2();
 
   // Configure controller settings using Response
+  WS_DEBUG_PRINTLN("[app] Configuring controllers");
   WsV2.CheckInModel->ConfigureControllers();
+  WsV2.runNetFSMV2();
+  
 
-  // TODO: Publish out the complete flag
-
-  return true;
+  // Publish the complete response message to indicate the checkin
+  // routine is done and the device is ready for use
+  WS_DEBUG_PRINTLN("[app] Publishing complete response message");
+  return WsV2.CheckInModel->Complete();
 }
 
 // Decoders //
@@ -286,10 +291,13 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   }
 
   // Pass to class' router based on tag type
+  WS_DEBUG_PRINT("Handling BrokerToDevice message with tag: ");
   switch (field->tag) {
   case ws_signal_BrokerToDevice_error_tag:
+    WS_DEBUG_PRINTLN("error");
     return WsV2.error_controller->Router(stream);
   case ws_signal_BrokerToDevice_checkin_tag:
+    WS_DEBUG_PRINTLN("checkin");
     return handleCheckinResponse(stream);
   case ws_signal_BrokerToDevice_digitalio_tag:
     return WsV2.digital_io_controller->Router(stream);
@@ -334,6 +342,8 @@ void cbBrokerToDevice(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");
     return;
   }
+
+  WS_DEBUG_PRINTLN("=> B2D message decoded successfully!");
 }
 
 /*!
@@ -432,8 +442,8 @@ bool Wippersnapper_V2::generateWSTopics() {
   if (WsV2._topicB2d == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s",
-           WsV2._configV2.aio_user, _device_uidV2);
+  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s", WsV2._configV2.aio_user,
+           _device_uidV2);
   WS_DEBUG_PRINT("Broker-to-device topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicB2d);
   // Subscribe to broker-to-device topic
@@ -452,8 +462,8 @@ bool Wippersnapper_V2::generateWSTopics() {
   if (WsV2._topicD2b == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s",
-           WsV2._configV2.aio_user, _device_uidV2);
+  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s", WsV2._configV2.aio_user,
+           _device_uidV2);
   WS_DEBUG_PRINT("Device-to-broker topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicD2b);
 
@@ -642,77 +652,90 @@ void Wippersnapper_V2::haltErrorV2(const char *error,
               False otherwise.
 */
 bool Wippersnapper_V2::PublishD2b(pb_size_t which_payload, void *payload) {
-  ws_signal_DeviceToBroker msg = ws_signal_DeviceToBroker_init_default;
+  WS_DEBUG_PRINTLN("=> Publishing DeviceToBroker signal message...");
+
+  // Alloc memory on heap for the DeviceToBroker message
+  ws_signal_DeviceToBroker *msg =
+      (ws_signal_DeviceToBroker *)malloc(sizeof(ws_signal_DeviceToBroker));
+  if (msg == NULL) {
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate memory for D2B message!");
+    return false;
+  }
+
+  // Initialize DeviceToBroker message
+  memset(msg, 0, sizeof(ws_signal_DeviceToBroker));
+  *msg = ws_signal_DeviceToBroker_init_zero;
 
   // Fill generic signal payload with the payload from the args.
-  WS_DEBUG_PRINT("[DBG] Signal Payload Type: "); // TODO: Remove debug print
   switch (which_payload) {
   case ws_signal_DeviceToBroker_error_tag:
-    WS_DEBUG_PRINTLN("Error");
-    msg.which_payload = ws_signal_DeviceToBroker_error_tag;
-    msg.payload.error = *(ws_error_ErrorD2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: Error");
+    msg->which_payload = ws_signal_DeviceToBroker_error_tag;
+    msg->payload.error = *(ws_error_ErrorD2B *)payload;
     break;
   case ws_signal_DeviceToBroker_checkin_tag:
-    WS_DEBUG_PRINTLN("Checkin");
-    msg.which_payload = ws_signal_DeviceToBroker_checkin_tag;
-    msg.payload.checkin = *(ws_checkin_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: Checkin");
+    msg->which_payload = ws_signal_DeviceToBroker_checkin_tag;
+    msg->payload.checkin = *(ws_checkin_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_digitalio_tag:
-    WS_DEBUG_PRINTLN("DigitalIO");
-    msg.which_payload = ws_signal_DeviceToBroker_digitalio_tag;
-    msg.payload.digitalio = *(ws_digitalio_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: DigitalIO");
+    msg->which_payload = ws_signal_DeviceToBroker_digitalio_tag;
+    msg->payload.digitalio = *(ws_digitalio_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_analogio_tag:
-    WS_DEBUG_PRINTLN("AnalogIO");
-    msg.which_payload = ws_signal_DeviceToBroker_analogio_tag;
-    msg.payload.analogio = *(ws_analogio_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: AnalogIO");
+    msg->which_payload = ws_signal_DeviceToBroker_analogio_tag;
+    msg->payload.analogio = *(ws_analogio_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_servo_tag:
-    WS_DEBUG_PRINTLN("Servo");
-    msg.which_payload = ws_signal_DeviceToBroker_servo_tag;
-    msg.payload.servo = *(ws_servo_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: Servo");
+    msg->which_payload = ws_signal_DeviceToBroker_servo_tag;
+    msg->payload.servo = *(ws_servo_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_pwm_tag:
-    WS_DEBUG_PRINTLN("PWM");
-    msg.which_payload = ws_signal_DeviceToBroker_pwm_tag;
-    msg.payload.pwm = *(ws_pwm_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: PWM");
+    msg->which_payload = ws_signal_DeviceToBroker_pwm_tag;
+    msg->payload.pwm = *(ws_pwm_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_pixels_tag:
-    WS_DEBUG_PRINTLN("Pixels");
-    msg.which_payload = ws_signal_DeviceToBroker_pixels_tag;
-    msg.payload.pixels = *(ws_pixels_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: Pixels");
+    msg->which_payload = ws_signal_DeviceToBroker_pixels_tag;
+    msg->payload.pixels = *(ws_pixels_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_ds18x20_tag:
-    WS_DEBUG_PRINTLN("DS18x20");
-    msg.which_payload = ws_signal_DeviceToBroker_ds18x20_tag;
-    msg.payload.ds18x20 = *(ws_ds18x20_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: DS18x20");
+    msg->which_payload = ws_signal_DeviceToBroker_ds18x20_tag;
+    msg->payload.ds18x20 = *(ws_ds18x20_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_uart_tag:
-    WS_DEBUG_PRINTLN("UART");
-    msg.which_payload = ws_signal_DeviceToBroker_uart_tag;
-    msg.payload.uart = *(ws_uart_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: UART");
+    msg->which_payload = ws_signal_DeviceToBroker_uart_tag;
+    msg->payload.uart = *(ws_uart_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_i2c_tag:
-    WS_DEBUG_PRINTLN("I2C");
-    msg.which_payload = ws_signal_DeviceToBroker_i2c_tag;
-    msg.payload.i2c = *(ws_i2c_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: I2C");
+    msg->which_payload = ws_signal_DeviceToBroker_i2c_tag;
+    msg->payload.i2c = *(ws_i2c_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_gps_tag:
-    WS_DEBUG_PRINTLN("GPS");
-    msg.which_payload = ws_signal_DeviceToBroker_gps_tag;
-    msg.payload.gps = *(ws_gps_D2B *)payload;
+    WS_DEBUG_PRINTLN("Signal type: GPS");
+    msg->which_payload = ws_signal_DeviceToBroker_gps_tag;
+    msg->payload.gps = *(ws_gps_D2B *)payload;
     break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
+    free(msg);
     return false;
   }
 
   // Get the encoded size of the signal message
   size_t szMessageBuf;
   if (!pb_get_encoded_size(&szMessageBuf, ws_signal_DeviceToBroker_fields,
-                           &msg)) {
+                           msg)) {
     WS_DEBUG_PRINTLN(
         "ERROR: Unable to get encoded size of signal message, bailing out!");
+    free(msg);
     return false;
   }
 
@@ -721,8 +744,9 @@ bool Wippersnapper_V2::PublishD2b(pb_size_t which_payload, void *payload) {
   // Encode the signal message
   WS_DEBUG_PRINT("Encoding d2b message...");
   pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, szMessageBuf);
-  if (!ws_pb_encode(&stream, ws_signal_DeviceToBroker_fields, &msg)) {
+  if (!ws_pb_encode(&stream, ws_signal_DeviceToBroker_fields, msg)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode d2b message, bailing out!");
+    free(msg);
     return false;
   }
   WS_DEBUG_PRINTLN("Encoded!");
@@ -735,11 +759,12 @@ bool Wippersnapper_V2::PublishD2b(pb_size_t which_payload, void *payload) {
   WS_DEBUG_PRINT("Publishing signal message to broker...");
   if (!WsV2._mqttV2->publish(WsV2._topicD2b, msgBuf, szMessageBuf, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish d2b message to broker!");
+    free(msg);
     return false;
   }
 
   WS_DEBUG_PRINTLN("Published!");
-
+  free(msg);
   return true;
 }
 
@@ -942,8 +967,6 @@ void Wippersnapper_V2::connect() {
     WsV2._mqttV2->processPackets(10); // TODO: Test with lower timeout value
     pingBrokerV2();                   // Keep MQTT connection alive
   }
-  // Configure controllers
-  WsV2.CheckInModel->ConfigureControllers();
   WS_DEBUG_PRINTLN("Completed checkin process!");
 
   // Set the status LED to green to indicate successful configuration

@@ -36,8 +36,8 @@ ErrorModel::~ErrorModel() {}
             Pointer to the string to encode.
     @return True if encoding was successful, False otherwise.
 */
-bool encode_string_callback(pb_ostream_t *stream,
-                                   const pb_field_t *field, void *const *arg) {
+bool encode_string_callback(pb_ostream_t *stream, const pb_field_t *field,
+                            void *const *arg) {
   // Retrieve the string from arg
   const char *str = (const char *)*arg;
   // Handle null string case

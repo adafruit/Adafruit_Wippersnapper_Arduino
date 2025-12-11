@@ -30,12 +30,17 @@ public:
   bool ProcessResponse(pb_istream_t *stream);
   void ConfigureControllers();
   bool GotResponse();
+  bool Complete();
 
 private:
-  static bool cbComponentAdds(pb_istream_t *stream, const pb_field_t *field, void **arg); //< Callback for decoding ComponentAdd messages
-  ws_checkin_B2D _CheckinB2D = ws_checkin_B2D_init_zero; ///< Broker to Device message wrapper
-  ws_checkin_D2B _CheckinD2B = ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
-  bool _got_response;         ///< Flag indicating if response was received
+  static bool
+  cbComponentAdds(pb_istream_t *stream, const pb_field_t *field,
+                  void **arg); //< Callback for decoding ComponentAdd messages
+  ws_checkin_B2D _CheckinB2D =
+      ws_checkin_B2D_init_zero; ///< Broker to Device message wrapper
+  ws_checkin_D2B _CheckinD2B =
+      ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
+  bool _got_response;           ///< Flag indicating if response was received
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_CHECKIN_H

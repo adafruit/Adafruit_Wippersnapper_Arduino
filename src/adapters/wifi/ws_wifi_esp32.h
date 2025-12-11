@@ -139,6 +139,7 @@ public:
         WS_DEBUG_PRINT(_ssid);
         WS_DEBUG_PRINT(") found! RSSI: ");
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+        WiFi.scanDelete(); // Free the scan result memory
         return true;
       }
       if (WsV2._isWiFiMultiV2) {
@@ -150,6 +151,7 @@ public:
             WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+            WiFi.scanDelete(); // Free the scan result memory
             return true;
           }
         }
@@ -165,6 +167,8 @@ public:
       WS_DEBUG_PRINT(WiFi.RSSI(i));
       WS_DEBUG_PRINTLN("dB");
     }
+
+    WiFi.scanDelete(); // Free the scan result memory
 
     return false;
   }
