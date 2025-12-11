@@ -198,8 +198,6 @@ public:
     if (strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0 ||
         strcmp(WsV2._configV2.aio_url, "io.adafruit.us") == 0) {
       _mqtt_client_secure = new NetworkClientSecure();
-      WS_DEBUG_PRINT("IO URL: ");
-      WS_DEBUG_PRINTLN(WsV2._configV2.aio_url);
       _mqtt_client_secure->setCACert(
           strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0
               ? _aio_root_ca_prod
@@ -251,10 +249,8 @@ public:
 protected:
   const char *_ssid; ///< WiFi SSID
   const char *_pass; ///< WiFi password
-  NetworkClientSecure
-      *_mqtt_client_secure; ///< Pointer to a secure network client object
-  NetworkClient
-      *_mqtt_client_insecure; ///< Pointer to an insecure network client object
+  NetworkClientSecure *_mqtt_client_secure = nullptr; ///< Pointer to a secure network client object
+  NetworkClient *_mqtt_client_insecure = nullptr; ///< Pointer to an insecure network client object
   WiFiMulti _wifiMulti;       ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =

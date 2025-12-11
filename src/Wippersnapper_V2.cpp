@@ -260,7 +260,6 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[app] Configuring controllers");
   WsV2.CheckInModel->ConfigureControllers();
   WsV2.runNetFSMV2();
-  
 
   // Publish the complete response message to indicate the checkin
   // routine is done and the device is ready for use
@@ -420,32 +419,22 @@ bool Wippersnapper_V2::generateDeviceUID() {
                 False otherwise.
 */
 bool Wippersnapper_V2::generateWSTopics() {
-  WS_DEBUG_PRINTLN("Pre-calculating topic lengths...");
-  // Calculate length of strings that are are dynamic within the secrets file
-  size_t lenUser = strlen(WsV2._configV2.aio_user);
-  size_t lenBoardId = strlen(_device_uidV2);
-  // Calculate length of static strings
-  size_t lenTopicX2x = strlen("/ws-x2x/");
-  // Calculate length of complete topic strings
-  // NOTE: We are using "+2" to account for the null terminator and the "/" at
-  // the end of the topic
-  size_t lenTopicB2d = lenUser + lenTopicX2x + lenBoardId + 2;
-  size_t lenTopicD2b = lenUser + lenTopicX2x + lenBoardId + 2;
+  // Calculate length for topic strings
+  size_t lenSignalTopic = strlen(WsV2._configV2.aio_user) +
+                          WS_TOPIC_PREFIX_LEN + strlen(_device_uidV2) + 1;
 
   // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
-  WsV2._topicB2d = (char *)ps_malloc(sizeof(char) * lenTopicB2d);
+  WsV2._topicB2d = (char *)ps_malloc(sizeof(char) * lenSignalTopic);
 #else
-  WsV2._topicB2d = (char *)malloc(sizeof(char) * lenTopicB2d);
+  WsV2._topicB2d = (char *)malloc(sizeof(char) * lenSignalTopic);
 #endif
   // Check if memory allocation was successful
   if (WsV2._topicB2d == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s", WsV2._configV2.aio_user,
-           _device_uidV2);
-  WS_DEBUG_PRINT("Broker-to-device topic: ");
-  WS_DEBUG_PRINTLN(WsV2._topicB2d);
+  snprintf(WsV2._topicB2d, lenSignalTopic, "%s/ws-b2d/%s",
+           WsV2._configV2.aio_user, _device_uidV2);
   // Subscribe to broker-to-device topic
   _subscribeB2d = new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicB2d, 1);
   WsV2._mqttV2->subscribe(_subscribeB2d);
@@ -454,19 +443,23 @@ bool Wippersnapper_V2::generateWSTopics() {
   // Create global device to broker topic
   // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
-  WsV2._topicD2b = (char *)ps_malloc(sizeof(char) * lenTopicD2b);
+  WsV2._topicD2b = (char *)ps_malloc(sizeof(char) * lenSignalTopic);
 #else
-  WsV2._topicD2b = (char *)malloc(sizeof(char) * lenTopicD2b);
+  WsV2._topicD2b = (char *)malloc(sizeof(char) * lenSignalTopic);
 #endif
   // Check if memory allocation was successful
-  if (WsV2._topicD2b == NULL)
+  if (WsV2._topicD2b == NULL) {
+    // Release resources and return false
+    free(WsV2._topicB2d);
+    WsV2._topicB2d = NULL;
+    delete _subscribeB2d;
+    _subscribeB2d = NULL;
     return false;
-  // Build the broker-to-device topic
-  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s", WsV2._configV2.aio_user,
-           _device_uidV2);
-  WS_DEBUG_PRINT("Device-to-broker topic: ");
-  WS_DEBUG_PRINTLN(WsV2._topicD2b);
+  }
 
+  // Build the broker-to-device topic
+  snprintf(WsV2._topicD2b, lenSignalTopic, "%s/ws-d2b/%s",
+           WsV2._configV2.aio_user, _device_uidV2);
   return true;
 }
 
@@ -882,24 +875,16 @@ void Wippersnapper_V2::connect() {
   // Dump device info to the serial monitor
   printDeviceInfoV2();
 
-  // Print free heap a tthis point
-  WS_DEBUG_PRINT("Free heap at startup: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
-  WsV2.CheckInModel = new CheckinModel();
+  // TODO: Does this need to be here?
   WsV2.error_controller = new ErrorController();
-  // Print fre eheap after
-  WS_DEBUG_PRINT("Free heap after CheckinModel init: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
 
   // enable global WDT
   WsV2.enableWDTV2(WS_WDT_TIMEOUT);
 
   // Generate device identifier
-  WS_DEBUG_PRINTLN("Generating device UID...");
   if (!generateDeviceUID()) {
     haltErrorV2("Unable to generate Device UID");
   }
-  WS_DEBUG_PRINTLN("Device UID generated successfully!");
 
   // If we are running in offline mode, we skip the network setup
   // and MQTT connection process and jump to the offline device config process
@@ -952,6 +937,7 @@ void Wippersnapper_V2::connect() {
   // or component class for clarity
   // TODO: Remove logging from checkin process,
   // but only after we test on staging
+  WsV2.CheckInModel = new CheckinModel();
   WS_DEBUG_PRINTLN("Creating checkin request...");
   // Publish the checkin request
   if (!WsV2.CheckInModel->Checkin(BOARD_ID, WS_VERSION)) {
@@ -968,6 +954,13 @@ void Wippersnapper_V2::connect() {
     pingBrokerV2();                   // Keep MQTT connection alive
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
+  // Perform cleanup for checkin process, we don't need it anymore
+  WS_DEBUG_PRINT("Free heap before freeing checkin model: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  delete WsV2.CheckInModel;
+  WsV2.CheckInModel = nullptr;
+  WS_DEBUG_PRINT("Free heap going into loop: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
 
   // Set the status LED to green to indicate successful configuration
   setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2);

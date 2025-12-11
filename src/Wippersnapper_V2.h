@@ -129,6 +129,7 @@
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
+#define WS_TOPIC_PREFIX_LEN 9 ///< (i.e: "/ws-d2b/")
 
 // Forward declarations
 class Wippersnapper_FS;
@@ -271,7 +272,8 @@ private:
   char *_topicD2b;
 
   // Adafruit_MQTT Subscription objects
-  Adafruit_MQTT_Subscribe *_subscribeB2d;
+  Adafruit_MQTT_Subscribe *_subscribeB2d =
+      nullptr; ///< MQTT subscription object for B2D topic
 
 protected:
   ws_status_t _statusV2 = WS_IDLE; ///< Wippersnapper status
