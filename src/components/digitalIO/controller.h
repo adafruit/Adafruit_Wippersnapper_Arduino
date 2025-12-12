@@ -50,21 +50,20 @@ public:
   bool Handle_DigitalIO_Add(ws_digitalio_Add *msg);
   bool Handle_DigitalIO_Remove(ws_digitalio_Remove *msg);
   bool Handle_DigitalIO_Write(ws_digitalio_Write *msg);
+  void update();
 
-  void Update();
+  // Called once per-run, during CheckinResponse processing
+  void SetMaxDigitalPins(uint8_t max_digital_pins);
 
+private:
   bool EncodePublishPinEvent(uint8_t pin_name, bool pin_value);
   bool CheckEventPin(DigitalIOPin *pin);
   bool CheckTimerPin(DigitalIOPin *pin);
   bool IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time);
-
   void PrintPinValue(DigitalIOPin *pin);
-  void SetMaxDigitalPins(uint8_t max_digital_pins);
   int GetPinIdx(uint8_t pin_name);
-
-private:
-  std::vector<DigitalIOPin> _digitalio_pins;
-  uint8_t _max_digitalio_pins;
+  std::vector<DigitalIOPin> _pins_input;
+  std::vector<DigitalIOPin> _pins_output;
   DigitalIOModel *_dio_model;
   DigitalIOHardware *_dio_hardware;
 };

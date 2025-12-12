@@ -757,6 +757,7 @@ bool Wippersnapper_V2::PublishD2b(pb_size_t which_payload, void *payload) {
   }
 
   WS_DEBUG_PRINTLN("Published!");
+  // Free the allocated message's memory
   free(msg);
   return true;
 }
@@ -988,7 +989,7 @@ ws_status_t Wippersnapper_V2::run() {
   }
 
   // Process all digital events
-  WsV2.digital_io_controller->Update();
+  WsV2.digital_io_controller->update();
 
   // Process all analog inputs
   WsV2.analogio_controller->update();

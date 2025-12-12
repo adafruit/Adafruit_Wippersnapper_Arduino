@@ -20,9 +20,6 @@
 DigitalIOController::DigitalIOController() {
   _dio_model = new DigitalIOModel();
   _dio_hardware = new DigitalIOHardware();
-  // Set the default maximum number of digital pins to 0
-  // NOTE: This will be set during runtime by the CheckinResponse message
-  SetMaxDigitalPins(0);
 }
 
 /*!
@@ -39,7 +36,8 @@ DigitalIOController::~DigitalIOController() {
             The maximum number of digital pins
 */
 void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
-  _max_digitalio_pins = max_digital_pins;
+  _pins_input.reserve(max_digital_pins);
+  _pins_output.reserve(max_digital_pins);
 }
 
 /*!
@@ -64,15 +62,13 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
   case ws_digitalio_B2D_add_tag:
     res = Handle_DigitalIO_Add(&b2d.payload.add);
     break;
-  case ws_digitalio_B2D_remove_tag:
-    // TODO: Re-implement handler using message instead of stream
-    // res = Handle_DigitalIO_Remove(&b2d.payload.remove);
-    WS_DEBUG_PRINTLN("[digitalio] WARNING: Remove handler not implemented yet");
-    break;
   case ws_digitalio_B2D_write_tag:
-    // TODO: Re-implement handler using message instead of stream
-    // res = Handle_DigitalIO_Write(&b2d.payload.write);
+    res = Handle_DigitalIO_Write(&b2d.payload.write);
     WS_DEBUG_PRINTLN("[digitalio] WARNING: Write handler not implemented yet");
+    break;
+  case ws_digitalio_B2D_remove_tag:
+    res = Handle_DigitalIO_Remove(&b2d.payload.remove);
+    WS_DEBUG_PRINTLN("[digitalio] WARNING: Remove handler not implemented yet");
     break;
   default:
     WS_DEBUG_PRINTLN("[digitalio] WARNING: Unsupported DigitalIO payload");
@@ -83,7 +79,12 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
   return res;
 }
 
-// TODO: Do we even need this function?
+/*!
+    @brief  Adds a digital pin to the controller
+    @param  msg
+            The DigitalIOAdd message.
+    @return True if the digital pin was successfully added, False otherwise.
+*/
 bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   WS_DEBUG_PRINTLN("[digitalio] Handle_DigitalIO_Add MESSAGE...");
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
@@ -113,7 +114,16 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
       .pin_period = (ulong)(msg->period * 1000.0f),
       .prv_pin_time = 0 // Set to 0 so timer pins trigger immediately
   };
-  _digitalio_pins.push_back(new_pin);
+
+  // Add the pin to the controller's list of pins
+  if (msg->gpio_direction == ws_digitalio_Direction_D_INPUT ||
+      msg->gpio_direction == ws_digitalio_Direction_D_INPUT_PULL_UP) {
+    _pins_input.push_back(new_pin);
+  } else if (msg->gpio_direction == ws_digitalio_Direction_D_OUTPUT) {
+    // Write the initial value to the output pin
+    _dio_hardware->SetValue(pin_name, msg->value);
+    _pins_output.push_back(new_pin);
+  }
 
   // Print out the pin's details
   WS_DEBUG_PRINTLN("[digitalio] Added new pin:");
@@ -158,8 +168,16 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
     @return The index of the digital output pin.
 */
 int DigitalIOController::GetPinIdx(uint8_t pin_name) {
-  for (int i = 0; i < _digitalio_pins.size(); i++) {
-    if (_digitalio_pins[i].pin_name == pin_name) {
+  // Search through output pins first
+  for (int i = 0; i < _pins_output.size(); i++) {
+    if (_pins_output[i].pin_name == pin_name) {
+      return i;
+    }
+  }
+
+  // Search through input pins next
+  for (int i = 0; i < _pins_input.size(); i++) {
+    if (_pins_input[i].pin_name == pin_name) {
       return i;
     }
   }
@@ -182,29 +200,36 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
     return false;
   }
 
-  // Ensure we got the correct value type
-  if (!msg->value.which_value == ws_sensor_Event_bool_value_tag) {
-    WS_DEBUG_PRINTLN("[digitalio] ERROR: controller got invalid value type!");
+  // Ensure pin_idx exists within pins_output vector
+  if (pin_idx >= _pins_output.size()) {
+    WS_DEBUG_PRINTLN(
+        "[digitalio] ERROR: Requested pin is not a digital output pin!");
+    return false;
+  }
+
+  // Ensure the value type to write is boolean
+  if (msg->value.which_value != ws_sensor_Event_bool_value_tag) {
+    WS_DEBUG_PRINTLN(
+        "[digitalio] ERROR: controller received invalid value type!");
     return false;
   }
 
   WS_DEBUG_PRINT("[digitalio] Writing value: ");
   WS_DEBUG_PRINTLN(msg->value.value.bool_value);
   WS_DEBUG_PRINT("on Pin: ");
-  WS_DEBUG_PRINTLN(_digitalio_pins[pin_idx].pin_name);
+  WS_DEBUG_PRINTLN(_pins_output[pin_idx].pin_name);
 
   // Is the pin already set to this value? If so, we don't need to write it
   // again
-  if (_digitalio_pins[pin_idx].pin_value == msg->value.value.bool_value)
+  if (_pins_output[pin_idx].pin_value == msg->value.value.bool_value)
     return true;
 
-  // Call hardware to write the value type
-  _dio_hardware->SetValue(_digitalio_pins[pin_idx].pin_name,
+  // Write the value
+  _dio_hardware->SetValue(_pins_output[pin_idx].pin_name,
                           msg->value.value.bool_value);
 
   // Update the pin's value
-  _digitalio_pins[pin_idx].pin_value = msg->value.value.bool_value;
-
+  _pins_output[pin_idx].pin_value = msg->value.value.bool_value;
   return true;
 }
 
@@ -320,43 +345,35 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     @brief  Iterates through the digital pins and updates their values
       (if necessary) and publishes the event to the broker.
 */
-void DigitalIOController::Update() {
-  // Bail out if we have no digital pins to poll
-  if (_digitalio_pins.empty())
+void DigitalIOController::update() {
+  // Bail out if we have no digital input pins to poll
+  if (_pins_input.empty())
     return;
 
-  for (int i = 0; i < _digitalio_pins.size(); i++) {
+  // Check the input pins for events or timer expirations
+  const size_t num_input_pins = _pins_input.size();
+  for (size_t i = 0; i < num_input_pins; i++) {
     // Create a pin object for this iteration
-    DigitalIOPin &pin = _digitalio_pins[i];
-    // Skip if the pin is an output
-    if (pin.pin_direction == ws_digitalio_Direction_D_OUTPUT)
-      continue;
-
-    if (pin.sample_mode == ws_digitalio_SampleMode_SM_EVENT) {
+    DigitalIOPin &pin = _pins_input[i];
+    switch (pin.sample_mode) {
+    case ws_digitalio_SampleMode_SM_EVENT:
       // Check if the pin value has changed
       if (!CheckEventPin(&pin))
         continue; // No change in pin value detected, move onto the next pin
-
-      // Encode and publish the event
-      if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value)) {
-        WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to record pin value!");
-        continue;
-      }
-    } else if (pin.sample_mode == ws_digitalio_SampleMode_SM_TIMER) {
+      break;
+    case ws_digitalio_SampleMode_SM_TIMER:
       // Check if the timer has expired
       if (!CheckTimerPin(&pin))
         continue; // Timer has not expired yet, move onto the next pin
+      break;
+    default:
+      continue;
+    }
 
-      // Encode and publish the event
-      if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value)) {
-        WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to record pin value!");
-        continue;
-      }
-    } else {
-      // Invalid sample mode
-      WS_DEBUG_PRINT("[digitalio] ERROR: DigitalIO Pin ");
-      WS_DEBUG_PRINT(pin.pin_name);
-      WS_DEBUG_PRINTLN(" contains an invalid sample mode!");
+    // Encode and publish the event
+    if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value)) {
+      WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to record pin value!");
+      continue;
     }
   }
 }
