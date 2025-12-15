@@ -111,6 +111,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
       .pin_direction = msg->gpio_direction,
       .sample_mode = msg->sample_mode,
       .pin_value = msg->value,
+      .prv_pin_value = msg->value,
       .pin_period = (ulong)(msg->period * 1000.0f),
       .prv_pin_time = 0 // Set to 0 so timer pins trigger immediately
   };
@@ -266,6 +267,9 @@ void DigitalIOController::PrintPinValue(DigitalIOPin *pin) {
     @return True if the pin's timer has expired.
 */
 bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
+  if (!pin)
+    return false;
+
   ulong cur_time = millis();
   // Bail out if the pin's timer has not expired
   if (!IsPinTimerExpired(pin, cur_time))
@@ -274,6 +278,7 @@ bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
   // Fill in the pin's current time and value
   pin->prv_pin_time = cur_time;
   pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
+  ;
 
   PrintPinValue(pin);
   return true;
@@ -286,11 +291,15 @@ bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
     @return True if the pin's value has changed.
 */
 bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
+  if (!pin)
+    return false;
   // Get the pin's current value
   pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
+
   // Bail out if the pin value hasn't changed
   if (pin->pin_value == pin->prv_pin_value)
     return false;
+
   // Update the pin's previous value to the current value
   pin->prv_pin_value = pin->pin_value;
 
