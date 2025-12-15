@@ -16,6 +16,9 @@
 #define WS_ANALOGIO_HARDWARE_H
 #include "Wippersnapper_V2.h"
 
+#define DEFAULT_ADC_RESOLUTION 16 ///< Default ADC resolution, in bits
+#define DEFAULT_REF_VOLTAGE 3.3   ///< Default reference voltage, in volts
+
 /*!
     @brief  Interface for interacting with hardware's analog i/o pin API.
 */

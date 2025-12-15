@@ -19,7 +19,10 @@
 */
 AnalogIOHardware::AnalogIOHardware() {
   SetNativeADCResolution(); // Configure the device's native ADC resolution
-  SetResolution(16);        // Wippersnapper's default resolution is 16-bit
+  SetResolution(
+      DEFAULT_ADC_RESOLUTION); // Wippersnapper's default resolution is 16-bit
+  SetReferenceVoltage(
+      DEFAULT_REF_VOLTAGE); // Wippersnapper's default ref voltage is 3.3V
 }
 
 /*!

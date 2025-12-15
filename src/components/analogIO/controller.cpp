@@ -20,8 +20,6 @@
 AnalogIOController::AnalogIOController() {
   _analogio_hardware = new AnalogIOHardware();
   _analogio_model = new AnalogIOModel();
-  _analogio_hardware->SetResolution(16); // Default to 16-bit resolution
-  SetRefVoltage(3.3);                    // Default to 3.3V
 }
 
 /*!
@@ -38,17 +36,17 @@ AnalogIOController::~AnalogIOController() {
             The reference voltage.
 */
 void AnalogIOController::SetRefVoltage(float voltage) {
-  // To set the reference voltage, we call into the hardware
+  // To set the reference voltage, we require a call into the hardware
   _analogio_hardware->SetReferenceVoltage(voltage);
 }
 
 /*!
-    @brief  Set the total number of analog pins present on the hardware.
+    @brief  Allocate memory for the total number of analog pins.
     @param  total_pins
             The hardware's total number of analog pins.
 */
 void AnalogIOController::SetTotalAnalogPins(uint8_t total_pins) {
-  _total_analogio_pins = total_pins;
+  _analogio_pins.reserve(total_pins);
 }
 
 /*!
@@ -98,13 +96,16 @@ bool AnalogIOController::Handle_AnalogIOAdd(ws_analogio_Add *msg) {
   uint8_t pin_name = atoi(msg->pin_name + 1);
 
   // Create a new analogioPin object
-  analogioPin new_pin = {.name = pin_name,
-                         .period = long(msg->period) * 1000,
-                         .prv_period = 0,
-                         .read_mode = msg->read_mode};
+  analogioPin new_pin = {
+      .name = pin_name,
+      .period = (ulong)(msg->period * 1000.0f),
+      .prv_period =
+          0, // Initialize previous period to 0 to force immediate read
+      .read_mode = msg->read_mode};
 
-  // Initialize the pin
+  // Initialize the pin and add it to the vector
   _analogio_hardware->InitPin(pin_name);
+  _analogio_pins.push_back(new_pin);
 
   // Print out the pin's details
   WS_DEBUG_PRINTLN("[analogio] Added new pin:");
@@ -114,9 +115,6 @@ bool AnalogIOController::Handle_AnalogIOAdd(ws_analogio_Add *msg) {
   WS_DEBUG_PRINTLN(new_pin.period);
   WS_DEBUG_PRINT("Read Mode: ");
   WS_DEBUG_PRINTLN(new_pin.read_mode);
-
-  // Add the new pin to the vector
-  _analogio_pins.push_back(new_pin);
 
   return true;
 }
@@ -130,18 +128,25 @@ bool AnalogIOController::Handle_AnalogIOAdd(ws_analogio_Add *msg) {
 */
 bool AnalogIOController::Handle_AnalogIORemove(ws_analogio_Remove *msg) {
   // Get the pin name
-  int pin_name = atoi(msg->pin_name + 1);
+  uint8_t pin_name = atoi(msg->pin_name + 1);
 
-  // Remove the pin from the hardware
-  _analogio_hardware->DeinitPin(pin_name);
-
-  // Remove the pin from the vector
-  for (int i = 0; i < _analogio_pins.size(); i++) {
+  bool removed = false;
+  for (size_t i = 0; i < _analogio_pins.size(); i++) {
     if (_analogio_pins[i].name == pin_name) {
+      _analogio_hardware->DeinitPin(pin_name);
       _analogio_pins.erase(_analogio_pins.begin() + i);
+      removed = true;
       break;
     }
   }
+
+  if (!removed) {
+    WS_DEBUG_PRINTLN("[analogio] ERROR: Unable to find requested pin!");
+    return false;
+  }
+
+  WS_DEBUG_PRINT("[analogio] Removed pin: ");
+  WS_DEBUG_PRINTLN(msg->pin_name);
   return true;
 }
 
@@ -201,39 +206,40 @@ bool AnalogIOController::EncodePublishPinEvent(uint8_t pin, float value,
 }
 
 /*!
-    @brief  Encodes and publishes an AnalogIOEvent message to the broker.
+    @brief  Encodes and publishes an AnalogIOEvent message to the broker or SD
+            card, depending on the device's mode.
     @param  pin
             The requested pin.
     @param  value
             The pin's value.
     @return True if the message was successfully encoded and published,
-            False othewise.
+            otherwise False.
 */
 bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
-  if (WsV2._sdCardV2->isModeOffline()) {
+  if (!WsV2._sdCardV2->isModeOffline()) {
+    return EncodePublishPinEvent(pin, (float)value, ws_sensor_Type_T_RAW);
+  } else {
     return WsV2._sdCardV2->LogGPIOSensorEventToSD(pin, value,
                                                   ws_sensor_Type_T_RAW);
-  } else {
-    return EncodePublishPinEvent(pin, (float)value, ws_sensor_Type_T_RAW);
   }
 }
 
 /*!
-    @brief  Encodes and publishes an AnalogIOEvent message to the broker.
+    @brief  Encodes and publishes an AnalogIOEvent message to the broker or SD
+            card, depending on the device's mode.
     @param  pin
             The requested pin.
     @param  value
             The pin's value, as a voltage.
     @return True if the message was successfully encoded and published,
-            False othewise.
+            otherwise False.
 */
 bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
-  if (WsV2._sdCardV2->isModeOffline()) {
-    return WsV2._sdCardV2->LogGPIOSensorEventToSD(pin, value,
-                                                  ws_sensor_Type_T_VOLTAGE);
-  } else {
+  if (!WsV2._sdCardV2->isModeOffline()) {
     return EncodePublishPinEvent(pin, value, ws_sensor_Type_T_VOLTAGE);
   }
+  return WsV2._sdCardV2->LogGPIOSensorEventToSD(pin, value,
+                                                ws_sensor_Type_T_VOLTAGE);
 }
 
 /*!
@@ -246,7 +252,8 @@ void AnalogIOController::update() {
   }
 
   // Process analog input pins
-  for (int i = 0; i < _analogio_pins.size(); i++) {
+  size_t num_pins = _analogio_pins.size();
+  for (size_t i = 0; i < num_pins; i++) {
     // Create a pin object for this iteration
     analogioPin &pin = _analogio_pins[i];
     // Go to the next pin if the period hasn't expired yet
@@ -263,15 +270,18 @@ void AnalogIOController::update() {
         WS_DEBUG_PRINTLN("[analogio] ERROR: Unable to record pin value!");
         continue;
       }
-      pin.prv_period = cur_time; // Reset the pin's period
     } else if (pin.read_mode == ws_sensor_Type_T_VOLTAGE) {
       // Convert the raw value into voltage
       float pin_value = _analogio_hardware->GetPinVoltage(pin.name);
       // Encode and publish the voltage value to the broker
-      EncodePublishPinVoltage(pin.name, pin_value);
-      pin.prv_period = cur_time; // Reset the pin's period
+      if (!EncodePublishPinVoltage(pin.name, pin_value)) {
+        WS_DEBUG_PRINTLN("[analogio] ERROR: Unable to record pin voltage!");
+        continue;
+      }
     } else {
       WS_DEBUG_PRINTLN("[analogio] ERROR: Invalid read mode for analog pin!");
+      continue;
     }
+    pin.prv_period = cur_time; // Reset the pin's period timer
   }
 }

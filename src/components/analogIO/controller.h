@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -28,8 +28,8 @@ class AnalogIOHardware; ///< Forward declaration
  */
 struct analogioPin {
   uint8_t name;             ///< The pin's name.
-  float period;             ///< The pin's period, in milliseconds.
-  float prv_period;         ///< The pin's previous period, in milliseconds.
+  ulong period;             ///< The pin's period, in milliseconds.
+  ulong prv_period;         ///< The pin's previous period, in milliseconds.
   ws_sensor_Type read_mode; ///< Type of analog read to perform
 };
 
@@ -46,23 +46,20 @@ public:
   bool Router(pb_istream_t *stream);
   bool Handle_AnalogIOAdd(ws_analogio_Add *msg);
   bool Handle_AnalogIORemove(ws_analogio_Remove *msg);
-  // Polling loop
   void update();
-  // Encoder
+
+  void SetTotalAnalogPins(uint8_t total_pins);
+  void SetRefVoltage(float voltage);
+
+private:
+  bool IsPinTimerExpired(analogioPin *pin, ulong cur_time);
   bool EncodePublishPinEvent(uint8_t pin, float value,
                              ws_sensor_Type read_type);
   bool EncodePublishPinValue(uint8_t pin, uint16_t value);
   bool EncodePublishPinVoltage(uint8_t pin, float value);
-  // Helpers
-  void SetTotalAnalogPins(uint8_t total_pins);
-  void SetRefVoltage(float voltage);
-  bool IsPinTimerExpired(analogioPin *pin, ulong cur_time);
-
-private:
   AnalogIOModel *_analogio_model;          ///< AnalogIO model
   AnalogIOHardware *_analogio_hardware;    ///< AnalogIO hardware
   std::vector<analogioPin> _analogio_pins; ///< Vector of analogio pins
-  uint8_t _total_analogio_pins;            ///< Total number of analogio pins
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_ANALOGIO_CONTROLLER_H
