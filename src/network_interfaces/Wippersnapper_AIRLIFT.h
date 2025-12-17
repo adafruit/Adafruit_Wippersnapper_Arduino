@@ -27,8 +27,14 @@
 #include "WiFiNINA.h"
 #include "Wippersnapper.h"
 
+#if defined ARDUINO_ADAFRUIT_FRUITJAM_RP2350
+#define NINAFWVER                                                              \
+  "3.3.0" /*!< Fruit Jam's ESP32-C6 requires nina-fw version 3.3.0+ to work    \
+             with this library. */
+#else
 #define NINAFWVER                                                              \
   "1.7.7" /*!< min. nina-fw version compatible with this library. */
+#endif
 #define AIRLIFT_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define AIRLIFT_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
@@ -337,11 +343,14 @@ protected:
       WS_PRINTER.flush();
       feedWDT();
 
-      // validate co-processor's firmware version
+      // Validate nina-fw version
       if (!firmwareCheck()) {
         // TODO: see if there's a way to add to bootlog without usb reattach
-        WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the "
-                         "latest version.");
+        WS_DEBUG_PRINTLN("ERROR: Incompatible nina-fw version!");
+        WS_DEBUG_PRINT("Required nina-fw version: ");
+        WS_DEBUG_PRINTLN(NINAFWVER);
+        WS_PRINTER.flush();
+        return;
       }
 
       WS_DEBUG_PRINT("Connecting to ");
