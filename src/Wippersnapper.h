@@ -501,6 +501,11 @@ protected:
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
 };
-extern Wippersnapper WS; ///< Global member variable for callbacks
+
+// Include networking to get the platform-specific Wippersnapper_WiFi typedef
+#include "Wippersnapper_Networking.h"
+
+// // Global WS instance - defined as platform-specific type in Wippersnapper.cpp
+// extern Wippersnapper_WiFi WS; ///< Global member variable for callbacks
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H
