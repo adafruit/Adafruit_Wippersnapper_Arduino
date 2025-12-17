@@ -24,6 +24,9 @@
 #include "ESP8266WiFiMulti.h"
 #include "Wippersnapper.h"
 
+class Wippersnapper_ESP8266;
+extern Wippersnapper_ESP8266 WS;
+
 /* NOTE - As of 07/21/26, this library no longer supports "Secure MQTT"
  * (TLS/SSL) on the ESP8266 due to new automatic certificate updates that
  * require a new certificate every 199 days (or less) -
