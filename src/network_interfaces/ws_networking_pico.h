@@ -30,6 +30,8 @@
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
 
+class ws_networking_pico;
+extern ws_networking_pico WS;
 /****************************************************************************/
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
