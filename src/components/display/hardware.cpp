@@ -34,8 +34,7 @@ static const std::map<wippersnapper_display_v1_DisplayDriver,
         {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8253,
          [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
             int16_t busy) -> dispDrvBase * {
-           return new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs,
-                                                   busy);
+           return new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs, busy);
          }},
         {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373,
          [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
@@ -258,6 +257,10 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
+  _drvDisp->setWidth(config->width);
+  _drvDisp->setHeight(config->height);
+  // EPD config doesn't support rotation
+  // _drvDisp->setRotation(config->rotation);
   _drvDisp->setTextSize(config->text_size);
 
   if (!_drvDisp->begin(epd_mode)) {

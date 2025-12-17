@@ -36,7 +36,7 @@ public:
               Optional Busy pin for the display.
   */
   dispDrvThinkInkMonoBAAMFGN(int16_t dc, int16_t rst, int16_t cs,
-                              int16_t sram_cs = -1, int16_t busy = -1)
+                             int16_t sram_cs = -1, int16_t busy = -1)
       : dispDrvBase(dc, rst, cs, sram_cs, busy), _display(nullptr) {}
 
   ~dispDrvThinkInkMonoBAAMFGN() {
@@ -60,7 +60,7 @@ public:
   */
   bool begin(thinkinkmode_t mode, bool reset = true) override {
     _display = new ThinkInk_370_Mono_BAAMFGN(_pin_dc, _pin_rst, _pin_cs,
-                                              _pin_sram_cs, _pin_busy);
+                                             _pin_sram_cs, _pin_busy);
     if (!_display)
       return false; // Allocation failed
 
