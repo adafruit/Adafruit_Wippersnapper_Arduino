@@ -13,6 +13,7 @@
  *
  */
 #include "controller.h"
+#include "Wippersnapper_Networking.h"
 
 /*!
     @brief  Constructs a new DisplayController object
@@ -83,14 +84,17 @@ bool DisplayController::Handle_Display_AddOrReplace(
     return false;
   }
 
+  WS.runNetFSM();
   WS.pingBroker();
   display->showSplash();
 
+  WS.runNetFSM();
   WS.pingBroker();
   display->drawStatusBar(WS._config.aio_user);
 
   _hw_instances.push_back(display); // Store the display instance
   WS_DEBUG_PRINTLN("[display] Display added or replaced successfully!");
+  WS.runNetFSM();
   WS.pingBroker();
   return true;
 }
