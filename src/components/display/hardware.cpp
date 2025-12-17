@@ -260,7 +260,6 @@ bool DisplayHardware::beginEPD(
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
   // EPD config doesn't support rotation
-  // _drvDisp->setRotation(config->rotation);
   _drvDisp->setTextSize(config->text_size);
 
   if (!_drvDisp->begin(epd_mode)) {
