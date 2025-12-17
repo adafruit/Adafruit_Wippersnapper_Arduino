@@ -71,6 +71,5 @@ private:
   servoComponent _servos[MAX_SERVO_NUM]; ///< Container of servo objects and
                                          ///< their associated pin #s
 };
-extern Wippersnapper WS;
 
 #endif // WS_SERVO

@@ -32,8 +32,6 @@
  * related models) instead of the ESP8266.
  */
 
-extern Wippersnapper WS;
-
 /******************************************************************************/
 /*!
     @brief  Class for interacting with the Espressif ESP8266's network

@@ -27,7 +27,9 @@
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
-extern Wippersnapper WS;
+
+class Wippersnapper_ESP32;
+extern Wippersnapper_ESP32 WS;
 
 /****************************************************************************/
 /*!
@@ -366,6 +368,7 @@ protected:
     delay(500);
   }
 };
+
 
 #endif // ARDUINO_ARCH_ESP32_H
 #endif // Wippersnapper_ESP32_H

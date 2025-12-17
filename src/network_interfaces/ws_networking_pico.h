@@ -29,7 +29,6 @@
 #include "Arduino.h"
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
-extern Wippersnapper WS;
 
 /****************************************************************************/
 /*!
