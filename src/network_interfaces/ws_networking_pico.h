@@ -31,7 +31,7 @@
 #include <WiFiClientSecure.h>
 
 class ws_networking_pico;
-extern ws_networking_pico WS;
+extern ws_networking_pico WS; //!< Global instance of Wippersnapper_WiFi
 /****************************************************************************/
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
