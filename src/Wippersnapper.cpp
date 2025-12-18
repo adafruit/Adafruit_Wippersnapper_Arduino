@@ -33,10 +33,9 @@
 
 #include "Wippersnapper.h"
 
-// Define the global WS instance as the platform-specific derived class
-// This ensures virtual methods like _connect() route to the correct
-// implementation
-Wippersnapper_WiFi WS;
+// Define the global WS instance as the platform-specific derived class,
+// ensuring virtual methods [_connect()] route to the correct implementation
+Wippersnapper_WiFi WS; //!< Global instance of Wippersnapper_WiFi
 
 Wippersnapper::Wippersnapper() {
   _mqtt = 0; // MQTT Client object
@@ -2672,6 +2671,7 @@ void Wippersnapper::processPackets() {
             The length of the payload.
     @param  qos
             The Quality of Service to publish with.
+    @return True if publish was successful, False otherwise.
 */
 /*******************************************************/
 bool Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,

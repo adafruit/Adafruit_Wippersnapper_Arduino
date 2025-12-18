@@ -25,7 +25,7 @@
 #include "Wippersnapper.h"
 
 class Wippersnapper_ESP8266;
-extern Wippersnapper_ESP8266 WS;
+extern Wippersnapper_ESP8266 WS; //!< Global instance of Wippersnapper_WiFi
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
  * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is

@@ -29,7 +29,7 @@
 #include <NetworkClientSecure.h>
 
 class Wippersnapper_ESP32;
-extern Wippersnapper_ESP32 WS;
+extern Wippersnapper_ESP32 WS; //!< Global instance of Wippersnapper_WiFi
 
 /****************************************************************************/
 /*!
