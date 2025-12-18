@@ -20,6 +20,7 @@
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
 #include "drivers/dispDrvThinkInkGrayscale4MFGN.h"
 #include "drivers/dispDrvThinkInkGrayscale4T5.h"
+#include "drivers/dispDrvThinkInkMonoAAAMFGN.h"
 #include "drivers/dispDrvThinkInkMonoBAAMFGN.h"
 #include <functional>
 #include <map>
