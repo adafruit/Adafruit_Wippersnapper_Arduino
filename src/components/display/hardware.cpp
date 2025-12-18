@@ -57,6 +57,75 @@ static const std::map<wippersnapper_display_v1_DisplayDriver,
            return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
          }}};
 
+static bool ApplyEpdDriverDefaultsFromComponentName(
+    const char *name, wippersnapper_display_v1_DisplayDriver *driver,
+    wippersnapper_display_v1_EPDConfig *config) {
+  if (!name || !driver || !config)
+    return false;
+
+  // NOTE: Component name is the stable identifier that can distinguish
+  // multiple panel variants sharing the same chipset.
+  const char *kEink29FlexMono296x128 = "eink-29-flexible-monochrome-296x128";
+  const char *kEink37Mono416x240 = "eink-37-monochrome-416x240";
+  const char *kEink42Gray300x400 = "eink-42-grayscale-300x400";
+  const char *kEink583Mono648x480 = "eink-583-monochrome-648x480";
+
+  if (strncmp(name, kEink29FlexMono296x128, strlen(kEink29FlexMono296x128)) ==
+      0) {
+    *driver = wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8151;
+    if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED)
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_MONO;
+    return true;
+  }
+  if (strncmp(name, kEink37Mono416x240, strlen(kEink37Mono416x240)) == 0) {
+    *driver = wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8253;
+    if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED)
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_MONO;
+    return true;
+  }
+  if (strncmp(name, kEink42Gray300x400, strlen(kEink42Gray300x400)) == 0) {
+    *driver = wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1683;
+    if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED)
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4;
+    return true;
+  }
+  if (strncmp(name, kEink583Mono648x480, strlen(kEink583Mono648x480)) == 0) {
+    *driver = wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8179;
+    if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED)
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_MONO;
+    return true;
+  }
+
+  return false;
+}
+
+static dispDrvBase *CreateDrvDispEpdForComponent(
+    const char *name, wippersnapper_display_v1_DisplayDriver driver,
+    int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs, int16_t busy) {
+  if (name) {
+    const char *kEink29FlexMono296x128 = "eink-29-flexible-monochrome-296x128";
+    const char *kEink37Mono416x240 = "eink-37-monochrome-416x240";
+    const char *kEink42Gray300x400 = "eink-42-grayscale-300x400";
+    const char *kEink583Mono648x480 = "eink-583-monochrome-648x480";
+
+    if (strncmp(name, kEink29FlexMono296x128, strlen(kEink29FlexMono296x128)) ==
+        0) {
+      return new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
+    }
+    if (strncmp(name, kEink37Mono416x240, strlen(kEink37Mono416x240)) == 0) {
+      return new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs, busy);
+    }
+    if (strncmp(name, kEink42Gray300x400, strlen(kEink42Gray300x400)) == 0) {
+      return new dispDrvThinkInkGrayscale4MFGN(dc, rst, cs, sram_cs, busy);
+    }
+    if (strncmp(name, kEink583Mono648x480, strlen(kEink583Mono648x480)) == 0) {
+      return new dispDrvThinkInkMonoAAAMFGN(dc, rst, cs, sram_cs, busy);
+    }
+  }
+
+  return CreateDrvDispEpd(driver, dc, rst, cs, sram_cs, busy);
+}
+
 /*!
     @brief  Lambda function to create a dispDrvBase SPI TFT instance
 */
@@ -246,14 +315,18 @@ bool DisplayHardware::beginEPD(
     }
   }
 
+  // For specific EPD components, use component name to select the exact panel
+  // driver (chipset alone is not sufficient when multiple panels share it).
+  ApplyEpdDriverDefaultsFromComponentName(_name, driver, config);
+
   // Validate mode
   if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
     WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
     return false;
   }
 
-  // Create display driver object using the factory function
-  _drvDisp = CreateDrvDispEpd(*driver, dc, rst, cs, srcs, busy);
+  // Create display driver object using component-name-aware selection.
+  _drvDisp = CreateDrvDispEpdForComponent(_name, *driver, dc, rst, cs, srcs, busy);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false; // Failed to create display driver
