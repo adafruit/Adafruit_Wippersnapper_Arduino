@@ -552,3 +552,62 @@ bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
 
   return status == 0xFF;
 }
+
+
+bool DisplayHardware::detect_ssd1683(uint8_t cs, uint8_t dc, uint8_t rst) {
+  // Configure SPI pins to bit-bang
+  pinMode(MOSI, OUTPUT);
+  pinMode(SCK, OUTPUT);
+  pinMode(cs, OUTPUT);
+  pinMode(dc, OUTPUT);
+  if (rst >= 0)
+    pinMode(rst, OUTPUT);
+
+  // Reset the display
+  digitalWrite(cs, HIGH);
+  if (rst >= 0) {
+    digitalWrite(rst, HIGH);
+    delay(10);
+    digitalWrite(rst, LOW);
+    delay(10);
+    digitalWrite(rst, HIGH);
+    delay(200);
+  }
+
+  // Begin transaction by pulling cs and dc LOW
+  digitalWrite(cs, LOW);
+  digitalWrite(dc, LOW);
+  digitalWrite(MOSI, LOW);
+  if (rst >= 0)
+    digitalWrite(rst, HIGH);
+  digitalWrite(SCK, LOW);
+
+  // Write to read register 0x2F
+  uint8_t cmd = 0x2F;
+  for (int i = 0; i < 8; i++) {
+    digitalWrite(MOSI, (cmd & (1 << (7 - i))) != 0);
+    digitalWrite(SCK, HIGH);
+    digitalWrite(SCK, LOW);
+  }
+
+  // Set DC high to indicate data and switch MOSI to input with PUR in case
+  // SSD1683 does not send data back
+  pinMode(MOSI, INPUT_PULLUP);
+  digitalWrite(dc, HIGH);
+
+  // Read response from register
+  uint8_t status = 0;
+  for (int i = 0; i < 8; i++) {
+    status <<= 1;
+    if (digitalRead(MOSI)) {
+      status |= 1;
+    }
+
+    digitalWrite(SCK, HIGH);
+    digitalWrite(SCK, LOW);
+  }
+  digitalWrite(cs, HIGH);
+  pinMode(MOSI, OUTPUT);
+  // Lowest two bits A[1:0]: Chip ID [POR=01]
+  return (status & 0x03) == 0x01;
+}
