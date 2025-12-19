@@ -57,6 +57,16 @@ static const std::map<wippersnapper_display_v1_DisplayDriver,
            return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
          }}};
 
+dispDrvBase *CreateDrvDispEpd(wippersnapper_display_v1_DisplayDriver driver,
+                              int16_t dc, int16_t rst, int16_t cs,
+                              int16_t sram_cs, int16_t busy) {
+  auto it = FactoryDrvDispEpd.find(driver);
+  if (it == FactoryDrvDispEpd.end())
+    return nullptr;
+
+  return it->second(dc, rst, cs, sram_cs, busy);
+}
+
 static bool ApplyEpdDriverDefaultsFromComponentName(
     const char *name, wippersnapper_display_v1_DisplayDriver *driver,
     wippersnapper_display_v1_EPDConfig *config) {
@@ -162,16 +172,6 @@ static const std::map<wippersnapper_display_v1_DisplayDriver,
     @return Pointer to the created display driver instance, or nullptr if the
             driver name is not recognized.
 */
-dispDrvBase *CreateDrvDispEpd(wippersnapper_display_v1_DisplayDriver driver,
-                              int16_t dc, int16_t rst, int16_t cs,
-                              int16_t sram_cs = -1, int16_t busy = -1) {
-  auto it = FactoryDrvDispEpd.find(driver);
-  if (it == FactoryDrvDispEpd.end())
-    return nullptr;
-
-  return it->second(dc, rst, cs, sram_cs, busy);
-}
-
 /*!
     @brief  Creates a new SPI TFT display driver instance based on the driver
    name.
@@ -484,6 +484,60 @@ void DisplayHardware::writeMessage(const char *message) {
   _drvDisp->writeMessage(message);
 }
 
+static uint8_t EpdBitBangReadRegister(uint8_t cs, uint8_t dc, uint8_t rst,
+                                     uint8_t cmd) {
+  // Configure SPI pins to bit-bang
+  pinMode(MOSI, OUTPUT);
+  pinMode(SCK, OUTPUT);
+  pinMode(cs, OUTPUT);
+  pinMode(dc, OUTPUT);
+  pinMode(rst, OUTPUT);
+
+  // Reset the display
+  digitalWrite(cs, HIGH);
+  digitalWrite(rst, HIGH);
+  delay(10);
+  digitalWrite(rst, LOW);
+  delay(10);
+  digitalWrite(rst, HIGH);
+  delay(200);
+
+  // Begin transaction by pulling cs and dc LOW
+  digitalWrite(cs, LOW);
+  digitalWrite(dc, LOW);
+  digitalWrite(MOSI, LOW);
+  digitalWrite(rst, HIGH);
+  digitalWrite(SCK, LOW);
+
+  // Write command
+  for (int i = 0; i < 8; i++) {
+    digitalWrite(MOSI, (cmd & (1 << (7 - i))) != 0);
+    digitalWrite(SCK, HIGH);
+    digitalWrite(SCK, LOW);
+  }
+
+  // Set DC high to indicate data and switch MOSI to input with PUR in case
+  // the controller does not send data back.
+  pinMode(MOSI, INPUT_PULLUP);
+  digitalWrite(dc, HIGH);
+
+  // Read response
+  uint8_t status = 0;
+  for (int i = 0; i < 8; i++) {
+    status <<= 1;
+    if (digitalRead(MOSI)) {
+      status |= 1;
+    }
+
+    digitalWrite(SCK, HIGH);
+    digitalWrite(SCK, LOW);
+  }
+
+  digitalWrite(cs, HIGH);
+  pinMode(MOSI, OUTPUT);
+  return status;
+}
+
 /*!
     @brief  Detects if an SSD1680 EPD is connected using bit-banged SPI.
     @param  cs
@@ -496,118 +550,34 @@ void DisplayHardware::writeMessage(const char *message) {
    EPD).
 */
 bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
-  // Configure SPI pins to bit-bang
-  pinMode(MOSI, OUTPUT);
-  pinMode(SCK, OUTPUT);
-  pinMode(cs, OUTPUT);
-  pinMode(dc, OUTPUT);
-  if (rst >= 0)
-    pinMode(rst, OUTPUT);
-
-  // Reset the display
-  digitalWrite(cs, HIGH);
-  if (rst >= 0) {
-    digitalWrite(rst, HIGH);
-    delay(10);
-    digitalWrite(rst, LOW);
-    delay(10);
-    digitalWrite(rst, HIGH);
-    delay(200);
-  }
-
-  // Begin transaction by pulling cs and dc LOW
-  digitalWrite(cs, LOW);
-  digitalWrite(dc, LOW);
-  digitalWrite(MOSI, LOW);
-  if (rst >= 0)
-    digitalWrite(rst, HIGH);
-  digitalWrite(SCK, LOW);
-
-  // Write to read register 0x71
-  uint8_t cmd = 0x71;
-  for (int i = 0; i < 8; i++) {
-    digitalWrite(MOSI, (cmd & (1 << (7 - i))) != 0);
-    digitalWrite(SCK, HIGH);
-    digitalWrite(SCK, LOW);
-  }
-
-  // Set DC high to indicate data and switch MOSI to input with PUR in case
-  // SSD1680 does not send data back
-  pinMode(MOSI, INPUT_PULLUP);
-  digitalWrite(dc, HIGH);
-
-  // Read response from register
-  uint8_t status = 0;
-  for (int i = 0; i < 8; i++) {
-    status <<= 1;
-    if (digitalRead(MOSI)) {
-      status |= 1;
-    }
-
-    digitalWrite(SCK, HIGH);
-    digitalWrite(SCK, LOW);
-  }
-  digitalWrite(cs, HIGH);
-  pinMode(MOSI, OUTPUT);
-
+  uint8_t status = EpdBitBangReadRegister(cs, dc, rst, 0x71);
   return status == 0xFF;
 }
 
 
 bool DisplayHardware::detect_ssd1683(uint8_t cs, uint8_t dc, uint8_t rst) {
-  // Configure SPI pins to bit-bang
-  pinMode(MOSI, OUTPUT);
-  pinMode(SCK, OUTPUT);
-  pinMode(cs, OUTPUT);
-  pinMode(dc, OUTPUT);
-  if (rst >= 0)
-    pinMode(rst, OUTPUT);
-
-  // Reset the display
-  digitalWrite(cs, HIGH);
-  if (rst >= 0) {
-    digitalWrite(rst, HIGH);
-    delay(10);
-    digitalWrite(rst, LOW);
-    delay(10);
-    digitalWrite(rst, HIGH);
-    delay(200);
-  }
-
-  // Begin transaction by pulling cs and dc LOW
-  digitalWrite(cs, LOW);
-  digitalWrite(dc, LOW);
-  digitalWrite(MOSI, LOW);
-  if (rst >= 0)
-    digitalWrite(rst, HIGH);
-  digitalWrite(SCK, LOW);
-
-  // Write to read register 0x2F
-  uint8_t cmd = 0x2F;
-  for (int i = 0; i < 8; i++) {
-    digitalWrite(MOSI, (cmd & (1 << (7 - i))) != 0);
-    digitalWrite(SCK, HIGH);
-    digitalWrite(SCK, LOW);
-  }
-
-  // Set DC high to indicate data and switch MOSI to input with PUR in case
-  // SSD1683 does not send data back
-  pinMode(MOSI, INPUT_PULLUP);
-  digitalWrite(dc, HIGH);
-
-  // Read response from register
-  uint8_t status = 0;
-  for (int i = 0; i < 8; i++) {
-    status <<= 1;
-    if (digitalRead(MOSI)) {
-      status |= 1;
-    }
-
-    digitalWrite(SCK, HIGH);
-    digitalWrite(SCK, LOW);
-  }
-  digitalWrite(cs, HIGH);
-  pinMode(MOSI, OUTPUT);
+  uint8_t status = EpdBitBangReadRegister(cs, dc, rst, 0x2F);
   // Lowest two bits A[1:0]: Chip ID [POR=01]
   return (status & 0x03) == 0x01;
+}
+
+bool DisplayHardware::detect_uc8151d(uint8_t cs, uint8_t dc, uint8_t rst) {
+  // UC8151D exposes a revision/status read at 0x70 in the Adafruit driver.
+  // Best-effort probe: a floating bus will read as 0xFF due to the pullup.
+  uint8_t rev = EpdBitBangReadRegister(cs, dc, rst, 0x70);
+  return rev != 0xFF;
+}
+
+bool DisplayHardware::detect_uc8179(uint8_t cs, uint8_t dc, uint8_t rst) {
+  // UC8179 has a DUALSPI register/command at 0x15 in the Adafruit driver.
+  // Best-effort probe: non-0xFF suggests the controller is responding.
+  uint8_t dualspi = EpdBitBangReadRegister(cs, dc, rst, 0x15);
+  return dualspi != 0xFF;
+}
+
+bool DisplayHardware::detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst) {
+  // UC8253 supports GET_STATUS at 0x71.
+  // This is a presence probe; it is not guaranteed unique across all EPD ICs.
+  uint8_t status = EpdBitBangReadRegister(cs, dc, rst, 0x71);
+  return status != 0xFF;
 }

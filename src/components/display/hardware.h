@@ -65,6 +65,9 @@ private:
   void removeSuffix(const char *suffix);
   bool detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst);
   bool detect_ssd1683(uint8_t cs, uint8_t dc, uint8_t rst);
+  bool detect_uc8151d(uint8_t cs, uint8_t dc, uint8_t rst);
+  bool detect_uc8179(uint8_t cs, uint8_t dc, uint8_t rst);
+  bool detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst);
   char _name[64]; ///< Identifies the hardware instance
   wippersnapper_display_v1_DisplayType _type; ///< Display type
   dispDrvBase *_drvDisp = nullptr;            ///< Base display driver
