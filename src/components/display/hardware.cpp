@@ -31,11 +31,110 @@ static const std::map<wippersnapper_display_v1_DisplayDriver,
            return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs,
                                                        busy);
          }},
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1683,
+        [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+          int16_t busy) -> dispDrvBase * {
+          return new dispDrvThinkInkGrayscale4MFGN(dc, rst, cs, sram_cs, busy);
+        }},
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8151,
+         [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+            int16_t busy) -> dispDrvBase * {
+           return new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
+         }},
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8179,
+         [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+            int16_t busy) -> dispDrvBase * {
+           return new dispDrvThinkInkMonoAAAMFGN(dc, rst, cs, sram_cs, busy);
+         }},
+        {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8253,
+         [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+            int16_t busy) -> dispDrvBase * {
+           return new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs, busy);
+         }},
         {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373,
          [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
             int16_t busy) -> dispDrvBase * {
            return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
          }}};
+
+dispDrvBase *CreateDrvDispEpd(wippersnapper_display_v1_DisplayDriver driver,
+                              int16_t dc, int16_t rst, int16_t cs,
+                              int16_t sram_cs, int16_t busy) {
+  auto it = FactoryDrvDispEpd.find(driver);
+  if (it == FactoryDrvDispEpd.end())
+    return nullptr;
+
+  return it->second(dc, rst, cs, sram_cs, busy);
+}
+
+static bool ApplyEpdDriverDefaultsFromComponentName(
+    const char *name, wippersnapper_display_v1_DisplayDriver *driver,
+    wippersnapper_display_v1_EPDConfig *config) {
+  if (!name || !driver || !config)
+    return false;
+
+  // NOTE: Component name is the stable identifier that can distinguish
+  // multiple panel variants sharing the same chipset.
+  const char *kEink29FlexMono296x128 = "eink-29-flexible-monochrome-296x128";
+  const char *kEink37Mono416x240 = "eink-37-monochrome-416x240";
+  const char *kEink42Gray300x400 = "eink-42-grayscale-300x400";
+  const char *kEink583Mono648x480 = "eink-583-monochrome-648x480";
+
+  if (strncmp(name, kEink29FlexMono296x128, strlen(kEink29FlexMono296x128)) ==
+      0) {
+    *driver = wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8151;
+    if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED)
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_MONO;
+    return true;
+  }
+  if (strncmp(name, kEink37Mono416x240, strlen(kEink37Mono416x240)) == 0) {
+    *driver = wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8253;
+    if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED)
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_MONO;
+    return true;
+  }
+  if (strncmp(name, kEink42Gray300x400, strlen(kEink42Gray300x400)) == 0) {
+    *driver = wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1683;
+    if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED)
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4;
+    return true;
+  }
+  if (strncmp(name, kEink583Mono648x480, strlen(kEink583Mono648x480)) == 0) {
+    *driver = wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_UC8179;
+    if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED)
+      config->mode = wippersnapper_display_v1_EPDMode_EPD_MODE_MONO;
+    return true;
+  }
+
+  return false;
+}
+
+static dispDrvBase *CreateDrvDispEpdForComponent(
+    const char *name, wippersnapper_display_v1_DisplayDriver driver,
+    int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs, int16_t busy) {
+  if (name) {
+    const char *kEink29FlexMono296x128 = "eink-29-flexible-monochrome-296x128";
+    const char *kEink37Mono416x240 = "eink-37-monochrome-416x240";
+    const char *kEink42Gray300x400 = "eink-42-grayscale-300x400";
+    const char *kEink583Mono648x480 = "eink-583-monochrome-648x480";
+
+    if (strncmp(name, kEink29FlexMono296x128, strlen(kEink29FlexMono296x128)) ==
+        0) {
+      return new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
+    }
+    if (strncmp(name, kEink37Mono416x240, strlen(kEink37Mono416x240)) == 0) {
+      return new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs, busy);
+    }
+    if (strncmp(name, kEink42Gray300x400, strlen(kEink42Gray300x400)) == 0) {
+      return new dispDrvThinkInkGrayscale4MFGN(dc, rst, cs, sram_cs, busy);
+    }
+    if (strncmp(name, kEink583Mono648x480, strlen(kEink583Mono648x480)) == 0) {
+      return new dispDrvThinkInkMonoAAAMFGN(dc, rst, cs, sram_cs, busy);
+    }
+  }
+
+  return CreateDrvDispEpd(driver, dc, rst, cs, sram_cs, busy);
+}
 
 /*!
     @brief  Lambda function to create a dispDrvBase SPI TFT instance
@@ -73,16 +172,6 @@ static const std::map<wippersnapper_display_v1_DisplayDriver,
     @return Pointer to the created display driver instance, or nullptr if the
             driver name is not recognized.
 */
-dispDrvBase *CreateDrvDispEpd(wippersnapper_display_v1_DisplayDriver driver,
-                              int16_t dc, int16_t rst, int16_t cs,
-                              int16_t sram_cs = -1, int16_t busy = -1) {
-  auto it = FactoryDrvDispEpd.find(driver);
-  if (it == FactoryDrvDispEpd.end())
-    return nullptr;
-
-  return it->second(dc, rst, cs, sram_cs, busy);
-}
-
 /*!
     @brief  Creates a new SPI TFT display driver instance based on the driver
    name.
@@ -226,14 +315,18 @@ bool DisplayHardware::beginEPD(
     }
   }
 
+  // For specific EPD components, use component name to select the exact panel
+  // driver (chipset alone is not sufficient when multiple panels share it).
+  ApplyEpdDriverDefaultsFromComponentName(_name, driver, config);
+
   // Validate mode
   if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
     WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
     return false;
   }
 
-  // Create display driver object using the factory function
-  _drvDisp = CreateDrvDispEpd(*driver, dc, rst, cs, srcs, busy);
+  // Create display driver object using component-name-aware selection.
+  _drvDisp = CreateDrvDispEpdForComponent(_name, *driver, dc, rst, cs, srcs, busy);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false; // Failed to create display driver
@@ -252,6 +345,9 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
+  _drvDisp->setWidth(config->width);
+  _drvDisp->setHeight(config->height);
+  // EPD config doesn't support rotation
   _drvDisp->setTextSize(config->text_size);
 
   if (!_drvDisp->begin(epd_mode)) {
@@ -388,6 +484,60 @@ void DisplayHardware::writeMessage(const char *message) {
   _drvDisp->writeMessage(message);
 }
 
+static uint8_t EpdBitBangReadRegister(uint8_t cs, uint8_t dc, uint8_t rst,
+                                     uint8_t cmd) {
+  // Configure SPI pins to bit-bang
+  pinMode(MOSI, OUTPUT);
+  pinMode(SCK, OUTPUT);
+  pinMode(cs, OUTPUT);
+  pinMode(dc, OUTPUT);
+  pinMode(rst, OUTPUT);
+
+  // Reset the display
+  digitalWrite(cs, HIGH);
+  digitalWrite(rst, HIGH);
+  delay(10);
+  digitalWrite(rst, LOW);
+  delay(10);
+  digitalWrite(rst, HIGH);
+  delay(200);
+
+  // Begin transaction by pulling cs and dc LOW
+  digitalWrite(cs, LOW);
+  digitalWrite(dc, LOW);
+  digitalWrite(MOSI, LOW);
+  digitalWrite(rst, HIGH);
+  digitalWrite(SCK, LOW);
+
+  // Write command
+  for (int i = 0; i < 8; i++) {
+    digitalWrite(MOSI, (cmd & (1 << (7 - i))) != 0);
+    digitalWrite(SCK, HIGH);
+    digitalWrite(SCK, LOW);
+  }
+
+  // Set DC high to indicate data and switch MOSI to input with PUR in case
+  // the controller does not send data back.
+  pinMode(MOSI, INPUT_PULLUP);
+  digitalWrite(dc, HIGH);
+
+  // Read response
+  uint8_t status = 0;
+  for (int i = 0; i < 8; i++) {
+    status <<= 1;
+    if (digitalRead(MOSI)) {
+      status |= 1;
+    }
+
+    digitalWrite(SCK, HIGH);
+    digitalWrite(SCK, LOW);
+  }
+
+  digitalWrite(cs, HIGH);
+  pinMode(MOSI, OUTPUT);
+  return status;
+}
+
 /*!
     @brief  Detects if an SSD1680 EPD is connected using bit-banged SPI.
     @param  cs
@@ -400,59 +550,34 @@ void DisplayHardware::writeMessage(const char *message) {
    EPD).
 */
 bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
-  // Configure SPI pins to bit-bang
-  pinMode(MOSI, OUTPUT);
-  pinMode(SCK, OUTPUT);
-  pinMode(cs, OUTPUT);
-  pinMode(dc, OUTPUT);
-  if (rst >= 0)
-    pinMode(rst, OUTPUT);
-
-  // Reset the display
-  digitalWrite(cs, HIGH);
-  if (rst >= 0) {
-    digitalWrite(rst, HIGH);
-    delay(10);
-    digitalWrite(rst, LOW);
-    delay(10);
-    digitalWrite(rst, HIGH);
-    delay(200);
-  }
-
-  // Begin transaction by pulling cs and dc LOW
-  digitalWrite(cs, LOW);
-  digitalWrite(dc, LOW);
-  digitalWrite(MOSI, LOW);
-  if (rst >= 0)
-    digitalWrite(rst, HIGH);
-  digitalWrite(SCK, LOW);
-
-  // Write to read register 0x71
-  uint8_t cmd = 0x71;
-  for (int i = 0; i < 8; i++) {
-    digitalWrite(MOSI, (cmd & (1 << (7 - i))) != 0);
-    digitalWrite(SCK, HIGH);
-    digitalWrite(SCK, LOW);
-  }
-
-  // Set DC high to indicate data and switch MOSI to input with PUR in case
-  // SSD1680 does not send data back
-  pinMode(MOSI, INPUT_PULLUP);
-  digitalWrite(dc, HIGH);
-
-  // Read response from register
-  uint8_t status = 0;
-  for (int i = 0; i < 8; i++) {
-    status <<= 1;
-    if (digitalRead(MOSI)) {
-      status |= 1;
-    }
-
-    digitalWrite(SCK, HIGH);
-    digitalWrite(SCK, LOW);
-  }
-  digitalWrite(cs, HIGH);
-  pinMode(MOSI, OUTPUT);
-
+  uint8_t status = EpdBitBangReadRegister(cs, dc, rst, 0x71);
   return status == 0xFF;
+}
+
+
+bool DisplayHardware::detect_ssd1683(uint8_t cs, uint8_t dc, uint8_t rst) {
+  uint8_t status = EpdBitBangReadRegister(cs, dc, rst, 0x2F);
+  // Lowest two bits A[1:0]: Chip ID [POR=01]
+  return (status & 0x03) == 0x01;
+}
+
+bool DisplayHardware::detect_uc8151d(uint8_t cs, uint8_t dc, uint8_t rst) {
+  // UC8151D exposes a revision/status read at 0x70 in the Adafruit driver.
+  // Best-effort probe: a floating bus will read as 0xFF due to the pullup.
+  uint8_t rev = EpdBitBangReadRegister(cs, dc, rst, 0x70);
+  return rev != 0xFF;
+}
+
+bool DisplayHardware::detect_uc8179(uint8_t cs, uint8_t dc, uint8_t rst) {
+  // UC8179 has a DUALSPI register/command at 0x15 in the Adafruit driver.
+  // Best-effort probe: non-0xFF suggests the controller is responding.
+  uint8_t dualspi = EpdBitBangReadRegister(cs, dc, rst, 0x15);
+  return dualspi != 0xFF;
+}
+
+bool DisplayHardware::detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst) {
+  // UC8253 supports GET_STATUS at 0x71.
+  // This is a presence probe; it is not guaranteed unique across all EPD ICs.
+  uint8_t status = EpdBitBangReadRegister(cs, dc, rst, 0x71);
+  return status != 0xFF;
 }

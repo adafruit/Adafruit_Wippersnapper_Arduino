@@ -293,7 +293,7 @@ public:
   // run() loop
   ws_status_t run();
   void processPackets();
-  void publish(const char *topic, uint8_t *payload, uint16_t bLen,
+  bool publish(const char *topic, uint8_t *payload, uint16_t bLen,
                uint8_t qos = 0);
 
   // Networking helpers
@@ -501,6 +501,10 @@ protected:
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
 };
-extern Wippersnapper WS; ///< Global member variable for callbacks
+
+// Include networking to get the platform-specific Wippersnapper_WiFi typedef
+#include "Wippersnapper_Networking.h"
+
+// Global WS instance - defined as platform-specific type in Wippersnapper.cpp
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H

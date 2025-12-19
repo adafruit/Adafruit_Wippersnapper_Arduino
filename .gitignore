@@ -55,3 +55,6 @@ tests/
 venv/
 
 Doxyfile
+
+# WS repos for reference
+repos/

@@ -18,7 +18,11 @@
 #include "drivers/dispDrvBase.h"
 #include "drivers/dispDrvSt7789.h"
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
+#include "drivers/dispDrvThinkInkGrayscale4MFGN.h"
 #include "drivers/dispDrvThinkInkGrayscale4T5.h"
+#include "drivers/dispDrvThinkInkMonoAAAMFGN.h"
+#include "drivers/dispDrvThinkInkMonoBAAMFGN.h"
+#include "drivers/dispDrvThinkInkMonoM06.h"
 #include <functional>
 #include <map>
 
@@ -60,6 +64,10 @@ private:
   int16_t parsePin(const char *pinStr);
   void removeSuffix(const char *suffix);
   bool detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst);
+  bool detect_ssd1683(uint8_t cs, uint8_t dc, uint8_t rst);
+  bool detect_uc8151d(uint8_t cs, uint8_t dc, uint8_t rst);
+  bool detect_uc8179(uint8_t cs, uint8_t dc, uint8_t rst);
+  bool detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst);
   char _name[64]; ///< Identifies the hardware instance
   wippersnapper_display_v1_DisplayType _type; ///< Display type
   dispDrvBase *_drvDisp = nullptr;            ///< Base display driver
