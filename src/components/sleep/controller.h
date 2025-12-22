@@ -43,6 +43,7 @@ public:
   bool Router(pb_istream_t *stream);
   bool Handle_Sleep_Enter(ws_sleep_Enter *msg);
   // Helper functions
+  void CheckBootButton();
   bool GetWakeupCause();
   bool GetSleepDuration();
 private:
@@ -50,6 +51,7 @@ private:
   SleepHardware *_sleep_hardware; ///< Sleep hardware
   esp_sleep_source_t _wake_cause; ///< Sleep wakeup cause
   int _sleep_time; ///< Time spent in sleep, in seconds
+  bool _btn_cfg_mode; ///< Value of BOOT button during class construction
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 

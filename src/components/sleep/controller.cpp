@@ -24,14 +24,17 @@ RTC_SLOW_ATTR static struct timeval sleep_enter_time;
 SleepController::SleepController() {
   _sleep_hardware = new SleepHardware();
   _sleep_model = new SleepModel();
+  CheckBootButton();
 }
 
 /*!
     @brief  Sleep controller destructor
 */
 SleepController::~SleepController() {
-  delete _sleep_hardware;
-  delete _sleep_model;
+  if (_sleep_hardware)
+    delete _sleep_hardware;
+  if (_sleep_model)
+    delete _sleep_model;
 }
 
 /*!
@@ -76,6 +79,19 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   return true;
 }
 
+/*!
+    @brief  Reads the state of the BOOT button and stores it. Must be called upon class init.
+*/
+void SleepController::CheckBootButton() {
+  // Read BOOT_BUTTON and set boolean based on value
+  pinMode(BOOT_BUTTON, INPUT_PULLUP);
+  _btn_cfg_mode = (digitalRead(BOOT_BUTTON) == LOW);
+}
+
+/*!
+    @brief  Calculates the duration of the last sleep period.
+    @returns True if the duration was successfully calculated, False otherwise.
+*/
 bool SleepController::GetSleepDuration() {
   /**
   * Prefer to use RTC mem instead of NVS to save the deep sleep enter time, unless the chip
@@ -110,6 +126,10 @@ bool SleepController::GetSleepDuration() {
     return true;
 }
 
+/*!
+    @brief  Determines the cause of the last wakeup from sleep.
+    @returns True if the wakeup cause was successfully determined, False otherwise.
+*/
 bool SleepController::GetWakeupCause() {
   _wake_cause = esp_sleep_get_wakeup_cause();
 
