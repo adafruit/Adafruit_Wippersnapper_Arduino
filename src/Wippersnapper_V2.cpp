@@ -58,10 +58,11 @@ Wippersnapper_V2::Wippersnapper_V2()
   _pixels_controller = new PixelsController();
   _pwm_controller = new PWMController();
   _servo_controller = new ServoController();
+  _sleep_controller = new SleepController();
 }
 
 /*!
-    @brief    Wippersnapper_V2 destructor
+    @brief    Wippersnapper_V2 destructor 
 */
 Wippersnapper_V2::~Wippersnapper_V2() {
   disconnect();
@@ -76,6 +77,7 @@ Wippersnapper_V2::~Wippersnapper_V2() {
   delete this->_pixels_controller;
   delete this->_pwm_controller;
   delete this->_servo_controller;
+  delete this->_sleep_controller;
 }
 
 /*!
@@ -198,6 +200,10 @@ void Wippersnapper_V2::provision() {
   _fileSystemV2 = new Wippersnapper_FS();
 #elif defined(USE_LITTLEFS)
   _littleFSV2 = new WipperSnapper_LittleFS();
+#endif
+
+#ifdef ARDUINO_ARCH_ESP32
+_sleep_controller->GetWakeupCause();
 #endif
 
 // Determine if app is in SDLogger mode

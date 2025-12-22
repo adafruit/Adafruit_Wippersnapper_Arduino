@@ -111,6 +111,7 @@
 #include "components/sensor/model.h"
 #include "components/servo/controller.h"
 #include "components/uart/controller.h"
+#include "components/sleep/controller.h"
 
 #include "provisioning/ConfigJson.h"
 #include "provisioning/sdcard/ws_sdcard.h"
@@ -147,6 +148,7 @@ class PixelsController;
 class PWMController;
 class ServoController;
 class UARTController;
+class SleepController;
 
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
@@ -240,6 +242,7 @@ public:
   ServoController *_servo_controller =
       nullptr;                                ///< Instance of Servo controller
   UARTController *_uart_controller = nullptr; ///< Instance of UART controller
+  SleepController *_sleep_controller = nullptr; ///< Instance of sleep controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
