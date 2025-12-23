@@ -607,6 +607,42 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 }
 
 /*!
+    @brief  Parses the sleep configuration from the JSON object.
+    @param  sleep_config
+            The JSON object containing the sleep configuration.
+    @param  timer_config
+            The JSON object containing the wake timer configuration.
+    @param  run_duration
+            The duration for which the device should run before sleeping.
+    @returns True if the sleep configuration was successfully parsed and
+   component configured, False otherwise.
+*/
+bool ws_sdcard::ParseSleepConfig(const JsonObject &sleep_config,
+                                 const JsonObject &timer_config,
+                                 int run_duration) {
+  bool res = false;
+  return res;
+}
+
+/*!
+    @brief  Parses the sleep configuration from the JSON object.
+    @param  sleep_config
+            The JSON object containing the sleep configuration.
+    @param  pin_config
+            The JSON object containing the wake pin configuration.
+    @param  run_duration
+            The duration for which the device should run before sleeping.
+    @returns True if the sleep configuration was successfully parsed and
+   component configured, False otherwise.
+*/
+bool ws_sdcard::ParseSleepConfig(const JsonObject &sleep_config,
+                                 const JsonObject &pin_config,
+                                 int run_duration) {
+  bool res = false;
+  return res;
+}
+
+/*!
     @brief  Searches for and parses the JSON configuration file and sets up
             the hardware accordingly.
     @returns True if the JSON file was successfully parsed and the hardware
@@ -658,6 +694,27 @@ bool ws_sdcard::parseConfigFile() {
 
   // We don't talk to IO in offline mode, so, mock the device check-in
   CheckIn(exportedFromDevice);
+
+  // Parse sleep configuration, if present
+  JsonObject sleep_config = doc["sleepConfig"][0];
+  if (!sleep_config.isNull()) {
+    JsonObject config_obj;
+    if (!sleep_config["pinConfig"].isNull()) {
+      config_obj = sleep_config["pinConfig"];
+    } else if (!sleep_config["timerConfig"].isNull()) {
+      config_obj = sleep_config["timerConfig"];
+    } else {
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Missing sleep configuration type!");
+      return false;
+    }
+
+    // Attempt to parse and configure sleep component
+    if (!ParseSleepConfig(sleep_config, config_obj,
+                          sleep_config["runDuration"])) {
+      WS_DEBUG_PRINT("[SD] Failed to parse sleep configuration!");
+      return false;
+    }
+  }
 
 #ifndef OFFLINE_MODE_WOKWI
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT";
