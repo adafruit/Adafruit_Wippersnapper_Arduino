@@ -24,6 +24,7 @@ RTC_SLOW_ATTR static struct timeval sleep_enter_time;
 SleepController::SleepController() {
   _sleep_hardware = new SleepHardware();
   _sleep_model = new SleepModel();
+  _btn_cfg_mode = false;
   CheckBootButton();
 }
 
@@ -80,64 +81,71 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
 }
 
 /*!
-    @brief  Reads the state of the BOOT button and stores it. Must be called upon class init.
+    @brief  Reads the state of the BOOT button and stores it. Must be called
+   upon class init.
 */
 void SleepController::CheckBootButton() {
-  // Read BOOT_BUTTON and set boolean based on value
   pinMode(BOOT_BUTTON, INPUT_PULLUP);
   _btn_cfg_mode = (digitalRead(BOOT_BUTTON) == LOW);
+  // Blink to signal we're not going to sleep again
+  statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME, 3);
 }
 
 /*!
     @brief  Calculates the duration of the last sleep period.
     @returns True if the duration was successfully calculated, False otherwise.
 */
-bool SleepController::GetSleepDuration() {
-  /**
-  * Prefer to use RTC mem instead of NVS to save the deep sleep enter time, unless the chip
-  * does not support RTC mem(such as esp32c2). Because the time overhead of NVS will cause
-  * the recorded deep sleep enter time to be not very accurate.
-  */
-  #if !SOC_RTC_FAST_MEM_SUPPORTED
-    // Initialize NVS
-    esp_err_t err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        // NVS partition was truncated and needs to be erased
-        // Retry nvs_flash_init
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(err);
+bool SleepController::CalculateSleepDuration() {
+/**
+ * Prefer to use RTC mem instead of NVS to save the deep sleep enter time,
+ * unless the chip does not support RTC mem(such as esp32c2). Because the time
+ * overhead of NVS will cause the recorded deep sleep enter time to be not very
+ * accurate.
+ */
+#if !SOC_RTC_FAST_MEM_SUPPORTED
+  // Initialize NVS
+  esp_err_t err = nvs_flash_init();
+  if (err == ESP_ERR_NVS_NO_FREE_PAGES ||
+      err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    // NVS partition was truncated and needs to be erased
+    // Retry nvs_flash_init
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    err = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(err);
 
-    nvs_handle_t nvs_handle;
-    err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
-    if (err != ESP_OK) {
-        WS_DEBUG_PRINTLN("[sleep] ERROR while opening NVS handle");
-        return false;
-    }
-    // Get deep sleep enter time
-    nvs_get_i32(nvs_handle, "slp_enter_sec", (int32_t *)&sleep_enter_time.tv_sec);
-    nvs_get_i32(nvs_handle, "slp_enter_usec", (int32_t *)&sleep_enter_time.tv_usec);
+  nvs_handle_t nvs_handle;
+  err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR while opening NVS handle");
+    return false;
+  }
+  // Get deep sleep enter time
+  nvs_get_i32(nvs_handle, "slp_enter_sec", (int32_t *)&sleep_enter_time.tv_sec);
+  nvs_get_i32(nvs_handle, "slp_enter_usec",
+              (int32_t *)&sleep_enter_time.tv_usec);
 #endif
 
-    struct timeval now;
-    gettimeofday(&now, NULL);
-    _sleep_time = (now.tv_sec - sleep_enter_time.tv_sec) + (now.tv_usec - sleep_enter_time.tv_usec) / 1000000;
-    return true;
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  _sleep_time = (now.tv_sec - sleep_enter_time.tv_sec) +
+                (now.tv_usec - sleep_enter_time.tv_usec) / 1000000;
+  return true;
 }
 
 /*!
     @brief  Determines the cause of the last wakeup from sleep.
-    @returns True if the wakeup cause was successfully determined, False otherwise.
+    @returns True if the wakeup cause was successfully determined, False
+   otherwise.
 */
 bool SleepController::GetWakeupCause() {
   _wake_cause = esp_sleep_get_wakeup_cause();
 
   if (_wake_cause == ESP_SLEEP_WAKEUP_TIMER) {
-    // TODO: From https://github.com/espressif/esp-idf/blob/v5.5.1/examples/system/deep_sleep/main/deep_sleep_example_main.c, audit this
-    // for clarity
-    // Calculate time spent in sleep
-    if (!GetSleepDuration()) {
+    // TODO: From
+    // https://github.com/espressif/esp-idf/blob/v5.5.1/examples/system/deep_sleep/main/deep_sleep_example_main.c,
+    // audit this for clarity Calculate time spent in sleep
+    if (!CalculateSleepDuration()) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to get sleep duration");
       return false;
     }
@@ -146,7 +154,8 @@ bool SleepController::GetWakeupCause() {
   } else if (_wake_cause == ESP_SLEEP_WAKEUP_EXT0) {
     WS_DEBUG_PRINTLN("Wakeup caused by external signal using RTC_IO");
   } else if (_wake_cause == ESP_SLEEP_WAKEUP_GPIO) {
-    WS_DEBUG_PRINTLN("(Light Sleep) Wakeup caused by external signal using RTC_IO");
+    WS_DEBUG_PRINTLN(
+        "(Light Sleep) Wakeup caused by external signal using RTC_IO");
   } else {
     WS_DEBUG_PRINT("Unknown ESP_SLEEP Wake Cause: ");
     WS_DEBUG_PRINTLN(_wake_cause);

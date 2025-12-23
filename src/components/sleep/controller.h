@@ -17,14 +17,13 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "Wippersnapper_V2.h"
+#include "esp_sleep.h"
 #include "hardware.h"
 #include "model.h"
-#include "esp_sleep.h"
-#include <time.h>
-#include <sys/time.h>
-#include "nvs_flash.h"
 #include "nvs.h"
-
+#include "nvs_flash.h"
+#include <sys/time.h>
+#include <time.h>
 
 class Wippersnapper_V2; ///< Forward declaration
 class SleepModel;       ///< Forward declaration
@@ -45,12 +44,13 @@ public:
   // Helper functions
   void CheckBootButton();
   bool GetWakeupCause();
-  bool GetSleepDuration();
+  bool CalculateSleepDuration();
+
 private:
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
   esp_sleep_source_t _wake_cause; ///< Sleep wakeup cause
-  int _sleep_time; ///< Time spent in sleep, in seconds
+  int _sleep_time;                ///< Time spent in sleep, in seconds
   bool _btn_cfg_mode; ///< Value of BOOT button during class construction
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance

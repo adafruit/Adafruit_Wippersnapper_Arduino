@@ -364,7 +364,7 @@ void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
     @param    statusState
               Hardware's status state.
 */
-void statusLEDBlink(ws_led_status_t statusState) {
+void statusLEDBlink(ws_led_status_t statusState, int blink_num) {
 #ifdef USE_STATUS_LED
   if (!WsV2.lockStatusLEDV2)
     return;
@@ -376,11 +376,11 @@ void statusLEDBlink(ws_led_status_t statusState) {
 #endif
 
   // set number of times to blink
-  int blinkNum = 3;
+  int blinkNum = blink_num;
   // set blink color
   uint32_t ledColor = ledStatusStateToColor(statusState);
 
-  while (blinkNum > 0) {
+  while (blink_num > 0) {
     setStatusLEDColor(ledColor);
     delay(100);
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
@@ -390,6 +390,6 @@ void statusLEDBlink(ws_led_status_t statusState) {
     setStatusLEDColor(BLACK);
 #endif
     delay(100);
-    blinkNum--;
+    blink_num--;
   }
 }

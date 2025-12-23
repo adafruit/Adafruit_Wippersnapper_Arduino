@@ -68,8 +68,7 @@ private:
   void calculateFileLimits();
   bool ValidateChecksum(JsonDocument &doc);
   bool ValidateJSONKey(const char *key, const char *error_msg);
-  void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
-               float ref_voltage);
+  void CheckIn(const JsonObject &exported_from_device);
   bool ConfigureRTC(const char *rtc_type);
   uint32_t GetTimestamp();
   bool InitDS1307();
@@ -79,16 +78,14 @@ private:
   void TickSoftRTC();
   uint32_t GetSoftRTCTime();
   ws_sensor_Type ParseSensorType(const char *sensor_type);
-  bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
-                         const char *pin, float period, bool value,
-                         const char *sample_mode, const char *direction,
-                         const char *pull);
-  bool ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd,
-                        const char *pin, float period, const char *mode);
-  bool ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add,
-                       const char *pin, int resolution, float period,
-                       int num_sensors, const char *sensor_type_1,
-                       const char *sensor_type_2);
+  bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd, const char *pin,
+                         float period, bool value, const char *sample_mode,
+                         const char *direction, const char *pull);
+  bool ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd, const char *pin,
+                        float period, const char *mode);
+  bool ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
+                       int resolution, float period, int num_sensors,
+                       const char *sensor_type_1, const char *sensor_type_2);
   bool ParseI2cDeviceAddReplace(
       JsonObject &component,
       ws_i2c_DeviceAddOrReplace &msg_i2c_device_add_replace);
@@ -101,8 +98,7 @@ private:
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                     ws_sensor_Type read_type);
   bool LogJSONDoc(JsonDocument &doc);
-  bool AddSignalMessageToSharedBuffer(
-      ws_signal_BrokerToDevice &msg_signal);
+  bool AddSignalMessageToSharedBuffer(ws_signal_BrokerToDevice &msg_signal);
 
   SdSpiConfig _sd_spi_cfg; ///< SPI configuration for the SD card
   SdFat _sd;               ///< SD object from Adafruit SDFat library

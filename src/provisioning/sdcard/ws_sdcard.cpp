@@ -196,20 +196,21 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
 }
 
 /*!
-    @brief  Configure's the hardware from the JSON's exportedFromDevice
-            object.
-    @param  max_digital_pins
-            The total number of digital pins on the device.
-    @param  max_analog_pins
-            The total number of analog pins on the device.
-    @param  ref_voltage
-            The reference voltage of the device, in Volts.
+    @brief  Mocks checking in with Adafruit IO servers
+    @param  exported_from_device
+            The JSON object containing the device configuration.
 */
-void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
-                        float ref_voltage) {
-  WsV2.digital_io_controller->SetMaxDigitalPins(max_digital_pins);
-  WsV2.analogio_controller->SetTotalAnalogPins(max_analog_pins);
-  WsV2.analogio_controller->SetRefVoltage(ref_voltage);
+void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
+  // Configure controllers
+  WsV2.digital_io_controller->SetMaxDigitalPins(
+      exported_from_device["maxDigitalPins"] | 0);
+  WsV2.analogio_controller->SetTotalAnalogPins(
+      exported_from_device["maxAnalogPins"] | 0);
+  WsV2.analogio_controller->SetRefVoltage(exported_from_device["refVoltage"] |
+                                          0.0f);
+  // Since `secrets.json` is unused in offline mode, use the status LED
+  // brightness from here instead
+  setStatusLEDBrightness(exported_from_device["statusLEDBrightness"] | 0.3f);
 }
 
 /*!
@@ -644,8 +645,8 @@ bool ws_sdcard::parseConfigFile() {
   if (!ValidateChecksum(doc)) {
     WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its "
                      "original state!");
+    return false;
   }
-  WS_DEBUG_PRINTLN("[SD] Checksum OK!");
 
   // Begin parsing the JSON document
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
@@ -655,40 +656,16 @@ bool ws_sdcard::parseConfigFile() {
     return false;
   }
 
-  WS_DEBUG_PRINTLN("Parsing components array...");
-  // TODO: It gets stuck here because we reformated how components works,
-  // try possibly adding another component like a button and then troubleshoot
-  JsonArray components_ar = doc["components"].as<JsonArray>();
-  if (components_ar.isNull()) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Required components array not found!");
-    return false;
-  }
+  // We don't talk to IO in offline mode, so, mock the device check-in
+  CheckIn(exportedFromDevice);
 
-  WS_DEBUG_PRINTLN("Parsing exportedFromDevice object...");
-
-  // We don't talk to IO here, mock an "offline" device check-in
-  CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
-          exportedFromDevice["totalAnalogPins"] | 0,
-          exportedFromDevice["referenceVoltage"] | 0.0);
-  WS_DEBUG_PRINT("status LED brightness: ");
-  int exportedFromDevice_statusLEDBrightness =
-      exportedFromDevice["statusLEDBrightness"];
-  WS_DEBUG_PRINTLN(exportedFromDevice_statusLEDBrightness);
-  setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
-
-  WS_DEBUG_PRINTLN("Configuring RTC...");
 #ifndef OFFLINE_MODE_WOKWI
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT";
-  WS_DEBUG_PRINT("RTC Type: ");
-  WS_DEBUG_PRINTLN(json_rtc);
   if (!ConfigureRTC(json_rtc)) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure RTC!");
     return false;
   }
 #endif
-
-  WS_DEBUG_PRINTLN("Parsing components array...");
 
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
