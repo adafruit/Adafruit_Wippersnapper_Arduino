@@ -163,4 +163,19 @@ bool SleepController::GetWakeupCause() {
   return true;
 }
 
+// TODO: Implement
+bool SleepController::Configure(bool lock, ws_sleep_SleepMode mode,
+                                ws_sleep_WakeupSource wake_source,
+                                int sleep_duration, int run_duration) {
+  return true;
+}
+
+// TODO: Implement
+bool SleepController::Configure(bool lock, ws_sleep_SleepMode mode,
+                                ws_sleep_WakeupSource wake_source,
+                                const char *pin_name, bool pin_level,
+                                bool pin_pull, int run_duration) {
+  return true;
+}
+
 #endif // ARDUINO_ARCH_ESP32

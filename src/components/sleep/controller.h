@@ -46,6 +46,14 @@ public:
   bool GetWakeupCause();
   bool CalculateSleepDuration();
 
+  // Helper functions to configure sleep options
+  bool Configure(bool lock, ws_sleep_SleepMode mode,
+                 ws_sleep_WakeupSource wake_source, int sleep_duration,
+                 int run_duration);
+  bool Configure(bool lock, ws_sleep_SleepMode mode,
+                 ws_sleep_WakeupSource wake_source, const char *pin_name,
+                 bool pin_level, bool pin_pull, int run_duration);
+
 private:
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware

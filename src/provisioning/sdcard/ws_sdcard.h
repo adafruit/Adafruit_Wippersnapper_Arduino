@@ -77,10 +77,13 @@ private:
   bool InitSoftRTC();
   void TickSoftRTC();
   uint32_t GetSoftRTCTime();
-  bool ParseSleepConfig(const JsonObject &sleep_config,
-                        const JsonObject &timer_config, int run_duration);
-  bool ParseSleepConfig(const JsonObject &sleep_config,
-                        const JsonObject &pin_config, int run_duration);
+  bool ParseSleepConfigTimer(const JsonObject &sleep_config,
+                             const JsonObject &timer_config, int run_duration);
+  bool ParseSleepConfigPin(const JsonObject &sleep_config,
+                           const JsonObject &pin_config, int run_duration);
+  bool ConvertSleepStrings(const char *mode_str, const char *source_str,
+                           ws_sleep_SleepMode &mode,
+                           ws_sleep_WakeupSource &source);
   ws_sensor_Type ParseSensorType(const char *sensor_type);
   bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd, const char *pin,
                          float period, bool value, const char *sample_mode,
