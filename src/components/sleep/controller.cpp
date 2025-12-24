@@ -25,6 +25,7 @@ SleepController::SleepController() {
   _sleep_hardware = new SleepHardware();
   _sleep_model = new SleepModel();
   _btn_cfg_mode = false;
+  _do_lock = false;
   CheckBootButton();
 }
 
@@ -163,19 +164,54 @@ bool SleepController::GetWakeupCause() {
   return true;
 }
 
-// TODO: Implement
-bool SleepController::Configure(bool lock, ws_sleep_SleepMode mode,
-                                ws_sleep_WakeupSource wake_source,
-                                int sleep_duration, int run_duration) {
+/*!
+    @brief  Configures timer-based sleep mode .
+    @param  mode
+            The sleep mode to configure.
+    @param  sleep_duration
+            The duration of the sleep period.
+    @param  run_duration
+            The duration of the run period.
+    @returns True if the configuration was successful, False otherwise.
+*/
+bool SleepController::Configure(ws_sleep_SleepMode mode, int sleep_duration,
+                                int run_duration) {
+#if CONFIG_IDF_TARGET_ESP32
+  // Isolate GPIO12 pin from external circuits. This is needed for modules
+  // which have an external pull-up resistor on GPIO12 (such as ESP32-WROVER)
+  // to minimize current consumption.
+  rtc_gpio_isolate(GPIO_NUM_12);
+#endif
+
+  if (mode == ws_sleep_SleepMode_S_DEEP) {
+    // Configure deep sleep timer
+    esp_err_t rc = esp_sleep_enable_timer_wakeup(sleep_duration * 1000000);
+    if (rc != ESP_OK) {
+      WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable timer wakeup");
+      return false;
+    }
+  } else if (mode == ws_sleep_SleepMode_S_LIGHT) {
+    // TODO: Implement light sleep timer configuration
+  } else {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Undefined sleep mode specified!");
+    return false;
+  }
+
   return true;
 }
 
 // TODO: Implement
-bool SleepController::Configure(bool lock, ws_sleep_SleepMode mode,
-                                ws_sleep_WakeupSource wake_source,
-                                const char *pin_name, bool pin_level,
-                                bool pin_pull, int run_duration) {
+bool SleepController::Configure(ws_sleep_SleepMode mode, const char *pin_name,
+                                bool pin_level, bool pin_pull,
+                                int run_duration) {
   return true;
 }
+
+/*!
+    @brief  Sets the lock state for the sleep configuration.
+    @param  lock
+            True to lock the sleep configuration, False to unlock.
+*/
+void SleepController::SetLock(bool lock) { _do_lock = lock; }
 
 #endif // ARDUINO_ARCH_ESP32

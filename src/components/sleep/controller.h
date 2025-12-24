@@ -47,12 +47,10 @@ public:
   bool CalculateSleepDuration();
 
   // Helper functions to configure sleep options
-  bool Configure(bool lock, ws_sleep_SleepMode mode,
-                 ws_sleep_WakeupSource wake_source, int sleep_duration,
-                 int run_duration);
-  bool Configure(bool lock, ws_sleep_SleepMode mode,
-                 ws_sleep_WakeupSource wake_source, const char *pin_name,
-                 bool pin_level, bool pin_pull, int run_duration);
+  void SetLock(bool lock);
+  bool Configure(ws_sleep_SleepMode mode, int sleep_duration, int run_duration);
+  bool Configure(ws_sleep_SleepMode mode, const char *pin_name, bool pin_level,
+                 bool pin_pull, int run_duration);
 
 private:
   SleepModel *_sleep_model;       ///< Sleep model
@@ -60,6 +58,7 @@ private:
   esp_sleep_source_t _wake_cause; ///< Sleep wakeup cause
   int _sleep_time;                ///< Time spent in sleep, in seconds
   bool _btn_cfg_mode; ///< Value of BOOT button during class construction
+  bool _do_lock;      ///< Whether the sleep configuration is locked
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 

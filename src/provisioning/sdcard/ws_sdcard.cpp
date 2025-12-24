@@ -669,8 +669,8 @@ bool ws_sdcard::ConvertSleepStrings(const char *mode_str,
 bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                                       const JsonObject &timer_config,
                                       int run_duration) {
-  bool lock = sleep_config["lock"];
-  int duration = timer_config["duration"];
+  // Set lock state for sleep state
+  WsV2._sleep_controller->SetLock(sleep_config["lock"]);
 
   // Convert strings to enums
   ws_sleep_SleepMode sleep_mode;
@@ -679,9 +679,8 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                            sleep_mode, wakeup_source)) {
     return false;
   }
-
-  return WsV2._sleep_controller->Configure(lock, sleep_mode, wakeup_source,
-                                           duration, run_duration);
+  int duration = timer_config["duration"];
+  return WsV2._sleep_controller->Configure(sleep_mode, duration, run_duration);
 }
 
 /*!
@@ -698,10 +697,8 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
 bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
                                     const JsonObject &pin_config,
                                     int run_duration) {
-  bool lock = sleep_config["lock"];
-  const char *pin_name = pin_config["name"];
-  bool pin_level = pin_config["level"];
-  bool pin_pull = pin_config["pull"];
+  // Set lock state for sleep state
+  WsV2._sleep_controller->SetLock(sleep_config["lock"]);
 
   // Convert strings to enums
   ws_sleep_SleepMode sleep_mode;
@@ -710,10 +707,12 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
                            sleep_mode, wakeup_source)) {
     return false;
   }
+  const char *pin_name = pin_config["name"];
+  bool pin_level = pin_config["level"];
+  bool pin_pull = pin_config["pull"];
 
-  return WsV2._sleep_controller->Configure(lock, sleep_mode, wakeup_source,
-                                           pin_name, pin_level, pin_pull,
-                                           run_duration);
+  return WsV2._sleep_controller->Configure(sleep_mode, pin_name, pin_level,
+                                           pin_pull, run_duration);
 }
 
 /*!
