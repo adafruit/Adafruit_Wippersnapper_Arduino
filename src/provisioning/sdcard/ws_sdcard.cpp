@@ -772,19 +772,20 @@ bool ws_sdcard::parseConfigFile() {
   // Parse sleep configuration, if present
   JsonObject sleep_config = doc["sleepConfig"][0];
   if (!sleep_config.isNull()) {
-    JsonObject config_obj;
+    bool parse_result = false;
     if (!sleep_config["pinConfig"].isNull()) {
-      config_obj = sleep_config["pinConfig"];
+      parse_result = ParseSleepConfigPin(
+          sleep_config, sleep_config["pinConfig"], sleep_config["runDuration"]);
     } else if (!sleep_config["timerConfig"].isNull()) {
-      config_obj = sleep_config["timerConfig"];
+      parse_result =
+          ParseSleepConfigTimer(sleep_config, sleep_config["timerConfig"],
+                                sleep_config["runDuration"]);
     } else {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Missing sleep configuration type!");
       return false;
     }
 
-    // Attempt to parse and configure sleep component
-    if (!ParseSleepConfig(sleep_config, config_obj,
-                          sleep_config["runDuration"])) {
+    if (!parse_result) {
       WS_DEBUG_PRINT("[SD] Failed to parse sleep configuration!");
       return false;
     }
