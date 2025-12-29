@@ -17,6 +17,11 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "Wippersnapper_V2.h"
+#include "esp_sleep.h"
+#include "nvs.h"
+#include "nvs_flash.h"
+#include <sys/time.h>
+#include <time.h>
 
 /*!
     @brief  Interface for interacting with hardware's sleep functionality.
@@ -25,6 +30,13 @@ class SleepHardware {
 public:
   SleepHardware();
   ~SleepHardware();
+  bool EnableDeepSleep(int duration);
+
+private:
+  void GetWakeupCause();
+  void CalculateSleepDuration();
+  esp_sleep_source_t _wakeup_cause; ///< Sleep wakeup cause
+  int _sleep_time;                  ///< Time spent sleeping, in seconds
 };
 
 #endif // ARDUINO_ARCH_ESP32

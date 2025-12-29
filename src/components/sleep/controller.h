@@ -17,13 +17,8 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "Wippersnapper_V2.h"
-#include "esp_sleep.h"
 #include "hardware.h"
 #include "model.h"
-#include "nvs.h"
-#include "nvs_flash.h"
-#include <sys/time.h>
-#include <time.h>
 
 class Wippersnapper_V2; ///< Forward declaration
 class SleepModel;       ///< Forward declaration
@@ -43,8 +38,6 @@ public:
   bool Handle_Sleep_Enter(ws_sleep_Enter *msg);
   // Helper functions
   void CheckBootButton();
-  bool GetWakeupCause();
-  bool CalculateSleepDuration();
 
   // Helper functions to configure sleep options
   void SetLock(bool lock);
@@ -55,8 +48,6 @@ public:
 private:
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
-  esp_sleep_source_t _wake_cause; ///< Sleep wakeup cause
-  int _sleep_time;                ///< Time spent in sleep, in seconds
   bool _btn_cfg_mode; ///< Value of BOOT button during class construction
   bool _do_lock;      ///< Whether the sleep configuration is locked
 };

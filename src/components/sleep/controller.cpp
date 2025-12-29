@@ -14,9 +14,6 @@
  */
 #ifdef ARDUINO_ARCH_ESP32
 #include "controller.h"
-#include "nanopb/ws_pb_helpers.h"
-
-RTC_SLOW_ATTR static struct timeval sleep_enter_time;
 
 /*!
     @brief  Sleep controller constructor
@@ -93,78 +90,6 @@ void SleepController::CheckBootButton() {
 }
 
 /*!
-    @brief  Calculates the duration of the last sleep period.
-    @returns True if the duration was successfully calculated, False otherwise.
-*/
-bool SleepController::CalculateSleepDuration() {
-/**
- * Prefer to use RTC mem instead of NVS to save the deep sleep enter time,
- * unless the chip does not support RTC mem(such as esp32c2). Because the time
- * overhead of NVS will cause the recorded deep sleep enter time to be not very
- * accurate.
- */
-#if !SOC_RTC_FAST_MEM_SUPPORTED
-  // Initialize NVS
-  esp_err_t err = nvs_flash_init();
-  if (err == ESP_ERR_NVS_NO_FREE_PAGES ||
-      err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-    // NVS partition was truncated and needs to be erased
-    // Retry nvs_flash_init
-    ESP_ERROR_CHECK(nvs_flash_erase());
-    err = nvs_flash_init();
-  }
-  ESP_ERROR_CHECK(err);
-
-  nvs_handle_t nvs_handle;
-  err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
-  if (err != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR while opening NVS handle");
-    return false;
-  }
-  // Get deep sleep enter time
-  nvs_get_i32(nvs_handle, "slp_enter_sec", (int32_t *)&sleep_enter_time.tv_sec);
-  nvs_get_i32(nvs_handle, "slp_enter_usec",
-              (int32_t *)&sleep_enter_time.tv_usec);
-#endif
-
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  _sleep_time = (now.tv_sec - sleep_enter_time.tv_sec) +
-                (now.tv_usec - sleep_enter_time.tv_usec) / 1000000;
-  return true;
-}
-
-/*!
-    @brief  Determines the cause of the last wakeup from sleep.
-    @returns True if the wakeup cause was successfully determined, False
-   otherwise.
-*/
-bool SleepController::GetWakeupCause() {
-  _wake_cause = esp_sleep_get_wakeup_cause();
-
-  if (_wake_cause == ESP_SLEEP_WAKEUP_TIMER) {
-    // TODO: From
-    // https://github.com/espressif/esp-idf/blob/v5.5.1/examples/system/deep_sleep/main/deep_sleep_example_main.c,
-    // audit this for clarity Calculate time spent in sleep
-    if (!CalculateSleepDuration()) {
-      WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to get sleep duration");
-      return false;
-    }
-    WS_DEBUG_PRINT("Time spent in sleep: ");
-    WS_DEBUG_PRINTLN(_sleep_time);
-  } else if (_wake_cause == ESP_SLEEP_WAKEUP_EXT0) {
-    WS_DEBUG_PRINTLN("Wakeup caused by external signal using RTC_IO");
-  } else if (_wake_cause == ESP_SLEEP_WAKEUP_GPIO) {
-    WS_DEBUG_PRINTLN(
-        "(Light Sleep) Wakeup caused by external signal using RTC_IO");
-  } else {
-    WS_DEBUG_PRINT("Unknown ESP_SLEEP Wake Cause: ");
-    WS_DEBUG_PRINTLN(_wake_cause);
-  }
-  return true;
-}
-
-/*!
     @brief  Configures timer-based sleep mode .
     @param  mode
             The sleep mode to configure.
@@ -176,27 +101,16 @@ bool SleepController::GetWakeupCause() {
 */
 bool SleepController::Configure(ws_sleep_SleepMode mode, int sleep_duration,
                                 int run_duration) {
-#if CONFIG_IDF_TARGET_ESP32
-  // Isolate GPIO12 pin from external circuits. This is needed for modules
-  // which have an external pull-up resistor on GPIO12 (such as ESP32-WROVER)
-  // to minimize current consumption.
-  rtc_gpio_isolate(GPIO_NUM_12);
-#endif
-
   if (mode == ws_sleep_SleepMode_S_DEEP) {
-    // Configure deep sleep timer
-    esp_err_t rc = esp_sleep_enable_timer_wakeup(sleep_duration * 1000000);
-    if (rc != ESP_OK) {
-      WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable timer wakeup");
-      return false;
-    }
+    // TODO: This is an incomplete implementation, lacks
+    // wake source configuration
+    return _sleep_hardware->EnableDeepSleep(sleep_duration);
   } else if (mode == ws_sleep_SleepMode_S_LIGHT) {
     // TODO: Implement light sleep timer configuration
   } else {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Undefined sleep mode specified!");
     return false;
   }
-
   return true;
 }
 

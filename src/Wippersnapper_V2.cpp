@@ -202,10 +202,6 @@ void Wippersnapper_V2::provision() {
   _littleFSV2 = new WipperSnapper_LittleFS();
 #endif
 
-#ifdef ARDUINO_ARCH_ESP32
-_sleep_controller->GetWakeupCause();
-#endif
-
 // Determine if app is in SDLogger mode
 #ifdef USE_TINYUSB
   _fileSystemV2->GetSDCSPin();
