@@ -21,9 +21,8 @@
 SleepController::SleepController() {
   _sleep_hardware = new SleepHardware();
   _sleep_model = new SleepModel();
-  _btn_cfg_mode = false;
-  _do_lock = false;
-  CheckBootButton();
+  _do_lock = false; // Class-level lock
+  _btn_cfg_mode = _sleep_hardware->CheckBootButton();
 }
 
 /*!
@@ -79,15 +78,10 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
 }
 
 /*!
-    @brief  Reads the state of the BOOT button and stores it. Must be called
-   upon class init.
+    @brief  Gets the internal SleepModel instance.
+    @return Pointer to the internal SleepModel.
 */
-void SleepController::CheckBootButton() {
-  pinMode(BOOT_BUTTON, INPUT_PULLUP);
-  _btn_cfg_mode = (digitalRead(BOOT_BUTTON) == LOW);
-  // Blink to signal we're not going to sleep again
-  statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME, 3);
-}
+SleepModel *SleepController::GetModel() { return _sleep_model; }
 
 /*!
     @brief  Configures timer-based sleep mode .

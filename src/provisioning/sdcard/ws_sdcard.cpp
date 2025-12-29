@@ -607,55 +607,6 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 }
 
 /*!
-    @brief  Converts sleep mode and wakeup source strings to their corresponding
-   enum values.
-    @param  mode_str
-            The sleep mode string
-    @param  source_str
-            The wakeup source string
-    @param  mode
-            The converted sleep mode enum.
-    @param  source
-            The converted wakeup source enum.
-    @returns True if both conversions were successful, False if either string
-   was invalid.
-*/
-bool ws_sdcard::ConvertSleepStrings(const char *mode_str,
-                                    const char *source_str,
-                                    ws_sleep_SleepMode &mode,
-                                    ws_sleep_WakeupSource &source) {
-  // Convert SleepMode to enum
-  mode = ws_sleep_SleepMode_S_UNSPECIFIED;
-  if (mode_str) {
-    if (strcmp(mode_str, "light") == 0) {
-      mode = ws_sleep_SleepMode_S_LIGHT;
-    } else if (strcmp(mode_str, "deep") == 0) {
-      mode = ws_sleep_SleepMode_S_DEEP;
-    } else {
-      WS_DEBUG_PRINT("[SD] Error: Invalid sleep mode: ");
-      WS_DEBUG_PRINTLN(mode_str);
-      return false;
-    }
-  }
-
-  // Convert WakeupSource to enum
-  source = ws_sleep_WakeupSource_W_UNSPECIFIED;
-  if (source_str) {
-    if (strcmp(source_str, "timer") == 0) {
-      source = ws_sleep_WakeupSource_W_TIMER;
-    } else if (strcmp(source_str, "pin") == 0) {
-      source = ws_sleep_WakeupSource_W_PIN;
-    } else {
-      WS_DEBUG_PRINT("[SD] Error: Invalid wakeup source: ");
-      WS_DEBUG_PRINTLN(source_str);
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/*!
     @brief  Parses the sleep configuration from the JSON object.
     @param  sleep_config
             The JSON object containing the sleep configuration.
@@ -672,15 +623,14 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
   // Set lock state for sleep state
   WsV2._sleep_controller->SetLock(sleep_config["lock"]);
 
-  // Convert strings to enums
-  ws_sleep_SleepMode sleep_mode;
-  ws_sleep_WakeupSource wakeup_source;
-  if (!ConvertSleepStrings(sleep_config["mode"], sleep_config["wakeup"],
-                           sleep_mode, wakeup_source)) {
-    return false;
-  }
-  int duration = timer_config["duration"];
-  return WsV2._sleep_controller->Configure(sleep_mode, duration, run_duration);
+  // Configure the sleep enter message using the model
+  WsV2._sleep_controller->GetModel()->SetSleepEnterTimer(
+      sleep_config["lock"], sleep_config["mode"], sleep_config["wakeup"],
+      run_duration, timer_config["duration"]);
+
+  // Pass the message directly to the sleep controller
+  return WsV2._sleep_controller->Handle_Sleep_Enter(
+      WsV2._sleep_controller->GetModel()->GetSleepEnterMsg());
 }
 
 /*!
@@ -700,19 +650,15 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
   // Set lock state for sleep state
   WsV2._sleep_controller->SetLock(sleep_config["lock"]);
 
-  // Convert strings to enums
-  ws_sleep_SleepMode sleep_mode;
-  ws_sleep_WakeupSource wakeup_source;
-  if (!ConvertSleepStrings(sleep_config["mode"], sleep_config["wakeup"],
-                           sleep_mode, wakeup_source)) {
-    return false;
-  }
-  const char *pin_name = pin_config["name"];
-  bool pin_level = pin_config["level"];
-  bool pin_pull = pin_config["pull"];
+  // Configure the sleep enter message using the model
+  WsV2._sleep_controller->GetModel()->SetSleepEnterPin(
+      sleep_config["lock"], sleep_config["mode"], sleep_config["wakeup"],
+      run_duration, pin_config["name"], pin_config["level"],
+      pin_config["pull"]);
 
-  return WsV2._sleep_controller->Configure(sleep_mode, pin_name, pin_level,
-                                           pin_pull, run_duration);
+  // Pass the message directly to the sleep controller
+  return WsV2._sleep_controller->Handle_Sleep_Enter(
+      WsV2._sleep_controller->GetModel()->GetSleepEnterMsg());
 }
 
 /*!

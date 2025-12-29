@@ -38,6 +38,7 @@ public:
   bool Handle_Sleep_Enter(ws_sleep_Enter *msg);
   // Helper functions
   void CheckBootButton();
+  SleepModel *GetModel();
 
   // Helper functions to configure sleep options
   void SetLock(bool lock);

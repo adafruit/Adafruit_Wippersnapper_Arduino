@@ -31,6 +31,7 @@ public:
   SleepHardware();
   ~SleepHardware();
   bool EnableDeepSleep(int duration);
+  bool CheckBootButton();
 
 private:
   void GetWakeupCause();

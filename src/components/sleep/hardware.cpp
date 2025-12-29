@@ -105,4 +105,16 @@ bool SleepHardware::EnableDeepSleep(int duration) {
   return true;
 }
 
+/*!
+    @brief  Reads the state of the BOOT button and stores it. Must be called
+   upon class init.
+*/
+bool SleepHardware::CheckBootButton() {
+  pinMode(BOOT_BUTTON, INPUT_PULLUP);
+  bool res = (digitalRead(BOOT_BUTTON) == LOW);
+  // Blink to signal we're not going to sleep again
+  statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME, 3);
+  return res;
+}
+
 #endif // ARDUINO_ARCH_ESP32
