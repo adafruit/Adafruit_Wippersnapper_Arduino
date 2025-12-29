@@ -40,13 +40,14 @@ public:
   void CheckBootButton();
   SleepModel *GetModel();
 private:
-  bool ConfigureDeepSleep(ws_sleep_TimerConfig cfg_timer);
-  bool ConfigureDeepSleep(ws_sleep_PinConfig cfg_pin);
+  bool ConfigureDeepSleep(const ws_sleep_Enter *msg);
   // TODO: Add ConfigureLightSleep() funcs here
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
+  ws_sleep_SleepMode _sleep_mode; ///< Current sleep mode
   bool _btn_cfg_mode; ///< Value of BOOT button during class construction
   bool _lock;      ///< Whether the sleep configuration is locked
+  uint32_t _loop_duration; ///< Duration of the main loop, in seconds
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 

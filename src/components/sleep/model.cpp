@@ -105,8 +105,6 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_du
             Whether sleep is locked/enabled.
     @param  mode
             The sleep mode (light/deep).
-    @param  wakeup
-            The wakeup source type.
     @param  run_duration
             Duration to run before sleeping, in seconds.
     @param  pin_name
@@ -116,7 +114,7 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_du
     @param  pin_pull
             Enable internal pull resistor.
 */
-void SleepModel::SetSleepEnterPin(bool lock, const char *mode, const char *wake,
+void SleepModel::SetSleepEnterPin(bool lock, const char *mode,
                                   uint32_t run_duration, const char *pin_name,
                                   bool pin_level, bool pin_pull) {
   // Clear the message
@@ -126,7 +124,7 @@ void SleepModel::SetSleepEnterPin(bool lock, const char *mode, const char *wake,
   _msg_sleep_enter.lock = lock;
   _msg_sleep_enter.run_duration = run_duration;
 
-  // Convert strings to enums for mode/wake
+  // Convert strings to enum for mode
   ws_sleep_SleepMode mode_enum = ws_sleep_SleepMode_S_UNSPECIFIED;
   ConvertSleepMode(mode, mode_enum);
   _msg_sleep_enter.mode = mode_enum;

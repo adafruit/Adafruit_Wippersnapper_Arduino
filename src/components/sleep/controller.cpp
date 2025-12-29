@@ -21,6 +21,7 @@
 SleepController::SleepController() {
   _sleep_hardware = new SleepHardware();
   _sleep_model = new SleepModel();
+  _sleep_mode = ws_sleep_SleepMode_S_UNSPECIFIED;
   _lock = false; // Class-level lock
   _btn_cfg_mode = _sleep_hardware->CheckBootButton();
 }
@@ -34,6 +35,13 @@ SleepController::~SleepController() {
   if (_sleep_model)
     delete _sleep_model;
 }
+
+/*!
+    @brief  Gets the internal SleepModel instance.
+    @return Pointer to the internal SleepModel.
+*/
+SleepModel *SleepController::GetModel() { return _sleep_model; }
+
 
 /*!
     @brief  Routes messages using the sleep.proto API to the
@@ -88,30 +96,45 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
     return true;
   }
 
+  // Parse app loop duration
+  _loop_duration = msg->run_duration;
 
-  return true;
+  // Parse sleep mode and dispatch based on mode
+  _sleep_mode = msg->mode;
+
+  // Configure sleep with the provided wakeup configuration
+  bool res = false;
+  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP) {
+    res = ConfigureDeepSleep(msg);
+  } else if (_sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
+    // TODO: Need a ConfigureLightSleep() func
+  } else {
+    WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported sleep mode");
+  }
+
+  return res;
 }
 
 /*!
-    @brief  Gets the internal SleepModel instance.
-    @return Pointer to the internal SleepModel.
+    @brief  Configures deep sleep with the provided wakeup configuration.
+    @param  msg
+            Pointer to the Sleep Enter message containing config union.
+    @return True if deep sleep was successfully configured, False otherwise.
 */
-SleepModel *SleepController::GetModel() { return _sleep_model; }
-
-/*!
-    @brief  Configures deep sleep with a timer wakeup source.
-    @param  wakeup
-            
-*/
-bool SleepController::ConfigureDeepSleep(ws_sleep_TimerConfig cfg_timer) {
-    // TODO
-}
-
-/*!
-    @brief  Configures deep sleep with a pin wakeup source.
-*/
-bool SleepController::ConfigureDeepSleep(ws_sleep_PinConfig cfg_pin) {
-    // TODO
+bool SleepController::ConfigureDeepSleep(const ws_sleep_Enter *msg) {
+    switch (msg->which_config) {
+    case ws_sleep_Enter_timer_tag:
+        // Handle timer-based wakeup
+        // TODO: Implement timer configuration
+        return true;
+    case ws_sleep_Enter_pin_tag:
+        // Handle pin-based wakeup
+        // TODO: Implement pin configuration
+        return true;
+    default:
+        WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown config type");
+        return false;
+    }
 }
 
 #endif // ARDUINO_ARCH_ESP32
