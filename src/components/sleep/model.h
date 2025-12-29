@@ -26,6 +26,16 @@ class SleepModel {
 public:
   SleepModel();
   ~SleepModel();
+  ws_sleep_Enter *GetSleepEnterMsg();
+  ws_sleep_Goodnight *GetSleepGoodnightMsg();
+  ws_sleep_Wake *GetSleepWakeMsg();
+  bool DecodeSleepEnter(pb_istream_t *stream);
+  bool EncodeSleepGoodnight(const char *msg);
+  bool EncodeSleepWake(ws_sleep_EspWakeCause cause, uint32_t sleep_duration);
+private:
+  ws_sleep_Goodnight _msg_sleep_goodnight; ///< Goodnight message object
+  ws_sleep_Wake _msg_sleep_wake;           ///< Wake message object
+  ws_sleep_Enter _msg_sleep_enter;         ///< Enter message object
 };
 
 #endif // ARDUINO_ARCH_ESP32
