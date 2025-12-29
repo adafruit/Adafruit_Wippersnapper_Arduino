@@ -117,4 +117,16 @@ bool SleepHardware::CheckBootButton() {
   return res;
 }
 
+/*!
+    @brief Enables wakeup by timer.
+    @param duration
+           Time before wakeup, in microseconds
+*/
+bool SleepHardware::RegisterRTCTimerWakeup(uint64_t duration) {
+  esp_err_t rc = esp_sleep_enable_timer_wakeup(duration);
+  if (rc != ESP_OK)
+    return false;
+  return true;
+}
+
 #endif // ARDUINO_ARCH_ESP32

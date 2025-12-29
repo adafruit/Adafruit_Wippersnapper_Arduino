@@ -114,7 +114,7 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_du
     @param  pin_pull
             Enable internal pull resistor.
 */
-void SleepModel::SetSleepEnterPin(bool lock, const char *mode,
+void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
                                   uint32_t run_duration, const char *pin_name,
                                   bool pin_level, bool pin_pull) {
   // Clear the message
@@ -130,13 +130,13 @@ void SleepModel::SetSleepEnterPin(bool lock, const char *mode,
   _msg_sleep_enter.mode = mode_enum;
 
   // Configure pin-specific fields
-  _msg_sleep_enter.which_config = ws_sleep_Enter_pin_tag;
-  strncpy(_msg_sleep_enter.config.pin.name, pin_name,
-          sizeof(_msg_sleep_enter.config.pin.name) - 1);
-  _msg_sleep_enter.config.pin.name[sizeof(_msg_sleep_enter.config.pin.name) -
+  _msg_sleep_enter.which_config = ws_sleep_Enter_ext0_tag;
+  strncpy(_msg_sleep_enter.config.ext0.name, pin_name,
+          sizeof(_msg_sleep_enter.config.ext0.name) - 1);
+  _msg_sleep_enter.config.ext0.name[sizeof(_msg_sleep_enter.config.ext0.name) -
                                     1] = '\0';
-  _msg_sleep_enter.config.pin.level = pin_level;
-  _msg_sleep_enter.config.pin.pull = pin_pull;
+  _msg_sleep_enter.config.ext0.level = pin_level;
+  _msg_sleep_enter.config.ext0.pull = pin_pull;
 }
 
 /*!

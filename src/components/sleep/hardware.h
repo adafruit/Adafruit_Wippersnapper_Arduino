@@ -32,6 +32,7 @@ public:
   ~SleepHardware();
   bool EnableDeepSleep(int duration);
   bool CheckBootButton();
+  bool RegisterRTCTimerWakeup(uint64_t duration);
 
 private:
   void GetWakeupCause();

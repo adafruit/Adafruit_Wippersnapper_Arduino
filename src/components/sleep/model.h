@@ -33,7 +33,7 @@ public:
   bool EncodeSleepGoodnight(const char *msg);
   bool EncodeSleepWake(ws_sleep_EspWakeCause cause, uint32_t sleep_duration);
   void SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_duration, uint32_t timer_duration);
-  void SetSleepEnterPin(bool lock, const char *mode, uint32_t run_duration, const char *pin_name, bool pin_level, bool pin_pull);
+  void SetSleepEnterExt0(bool lock, const char *mode, uint32_t run_duration, const char *pin_name, bool pin_level, bool pin_pull);
 private:
   void ConvertSleepMode(const char *mode_str, ws_sleep_SleepMode &mode);
   ws_sleep_Goodnight _msg_sleep_goodnight; ///< Goodnight message object

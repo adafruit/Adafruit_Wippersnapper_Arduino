@@ -122,19 +122,28 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
     @return True if deep sleep was successfully configured, False otherwise.
 */
 bool SleepController::ConfigureDeepSleep(const ws_sleep_Enter *msg) {
+    bool rc = false;
     switch (msg->which_config) {
     case ws_sleep_Enter_timer_tag:
-        // Handle timer-based wakeup
-        // TODO: Implement timer configuration
-        return true;
-    case ws_sleep_Enter_pin_tag:
-        // Handle pin-based wakeup
+        // Set timer-based wakeup
+        rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration * 1000000);
+        if (!rc) {
+          WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
+        }
+        break;
+    case ws_sleep_Enter_ext0_tag:
+        // Handle ext0-based wakeup
         // TODO: Implement pin configuration
-        return true;
+        break;
     default:
         WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown config type");
-        return false;
+        break;
     }
+
+    // Optionally disable all external peripherals
+    // TODO!
+
+    return rc;
 }
 
 #endif // ARDUINO_ARCH_ESP32
