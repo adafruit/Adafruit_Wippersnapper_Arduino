@@ -622,8 +622,8 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                                       int run_duration) {
   // Configure the sleep enter message using the model
   WsV2._sleep_controller->GetModel()->SetSleepEnterTimer(
-      sleep_config["lock"], sleep_config["mode"],
-      run_duration, timer_config["duration"]);
+      sleep_config["lock"], sleep_config["mode"], run_duration,
+      timer_config["duration"]);
 
   // Pass the message directly to the sleep controller
   return WsV2._sleep_controller->Handle_Sleep_Enter(
@@ -646,9 +646,8 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
                                     int run_duration) {
   // Configure the sleep enter message using the model
   WsV2._sleep_controller->GetModel()->SetSleepEnterExt0(
-      sleep_config["lock"], sleep_config["mode"],
-      run_duration, pin_config["name"], pin_config["level"],
-      pin_config["pull"]);
+      sleep_config["lock"], sleep_config["mode"], run_duration,
+      pin_config["name"], pin_config["level"], pin_config["pull"]);
 
   // Pass the message directly to the sleep controller
   return WsV2._sleep_controller->Handle_Sleep_Enter(

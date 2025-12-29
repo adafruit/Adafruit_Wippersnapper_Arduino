@@ -42,7 +42,6 @@ SleepController::~SleepController() {
 */
 SleepModel *SleepController::GetModel() { return _sleep_model; }
 
-
 /*!
     @brief  Routes messages using the sleep.proto API to the
             appropriate controller functions.
@@ -87,12 +86,14 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   // If boot button was pressed, override any existing lock
   // TODO: Area to refactor
   if (_btn_cfg_mode && _lock) {
-    WS_DEBUG_PRINTLN("[sleep] Boot button pressed during startup - overriding lock state");
+    WS_DEBUG_PRINTLN(
+        "[sleep] Boot button pressed during startup - overriding lock state");
     _lock = false;
   }
 
-  if (! _lock) {
-    WS_DEBUG_PRINTLN("[sleep] Unlocked device from sleep, resuming regular operation.");
+  if (!_lock) {
+    WS_DEBUG_PRINTLN(
+        "[sleep] Unlocked device from sleep, resuming regular operation.");
     return true;
   }
 
@@ -122,28 +123,32 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
     @return True if deep sleep was successfully configured, False otherwise.
 */
 bool SleepController::ConfigureDeepSleep(const ws_sleep_Enter *msg) {
-    bool rc = false;
-    switch (msg->which_config) {
-    case ws_sleep_Enter_timer_tag:
-        // Set timer-based wakeup
-        rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration * 1000000);
-        if (!rc) {
-          WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
-        }
-        break;
-    case ws_sleep_Enter_ext0_tag:
-        // Handle ext0-based wakeup
-        // TODO: Implement pin configuration
-        break;
-    default:
-        WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown config type");
-        break;
+  bool rc = false;
+  switch (msg->which_config) {
+  case ws_sleep_Enter_timer_tag:
+    // Set timer-based wakeup
+    rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration *
+                                                 1000000);
+    if (!rc) {
+      WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }
+    break;
+  case ws_sleep_Enter_ext0_tag:
+    rc = _sleep_hardware->RegisterExt0Wakeup(
+        msg->config.ext0.name, msg->config.ext0.level, msg->config.ext0.pull);
+    if (!rc) {
+      WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set ext0 wakeup");
+    }
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown config type");
+    break;
+  }
 
-    // Optionally disable all external peripherals
-    // TODO!
+  // Optionally disable all external peripherals
+  // TODO!
 
-    return rc;
+  return rc;
 }
 
 #endif // ARDUINO_ARCH_ESP32

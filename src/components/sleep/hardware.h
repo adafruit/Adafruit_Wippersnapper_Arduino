@@ -17,6 +17,8 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "Wippersnapper_V2.h"
+#include "driver/gpio.h"
+#include "driver/rtc_io.h"
 #include "esp_sleep.h"
 #include "nvs.h"
 #include "nvs_flash.h"
@@ -33,6 +35,7 @@ public:
   bool EnableDeepSleep(int duration);
   bool CheckBootButton();
   bool RegisterRTCTimerWakeup(uint64_t duration);
+  bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
 
 private:
   void GetWakeupCause();

@@ -14,6 +14,7 @@
  */
 #ifdef ARDUINO_ARCH_ESP32
 #include "hardware.h"
+#include <stdlib.h>
 RTC_SLOW_ATTR static struct timeval sleep_enter_time;
 
 /*!
@@ -126,6 +127,53 @@ bool SleepHardware::RegisterRTCTimerWakeup(uint64_t duration) {
   esp_err_t rc = esp_sleep_enable_timer_wakeup(duration);
   if (rc != ESP_OK)
     return false;
+  return true;
+}
+
+bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
+                                       bool pin_pull) {
+  esp_err_t rc;
+  if (!pin_name) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: pin_name is null");
+    return false;
+  }
+
+  const char *numeric = pin_name;
+  if ((pin_name[0] == 'D' || pin_name[0] == 'A') && pin_name[1] != '\0') {
+    numeric = pin_name + 1;
+  }
+
+  char *endptr = nullptr;
+  long pin_num = strtol(numeric, &endptr, 10);
+  if (endptr == numeric || pin_num < 0) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Invalid pin name for ext0 wakeup");
+    return false;
+  }
+  gpio_num_t pin = (gpio_num_t)pin_num;
+
+  // Configure pull resistor, if enabled
+  if (pin_pull) {
+    if (pin_level) {
+      // Waking on HIGH, pull DOWN to keep inactive
+      rtc_gpio_pullup_dis(pin);
+      rtc_gpio_pulldown_en(pin);
+    } else {
+      // Waking on LOW, pull UP to keep inactive
+      rtc_gpio_pulldown_dis(pin);
+      rtc_gpio_pullup_en(pin);
+    }
+  } else {
+    // No pull resistors enabled
+    rtc_gpio_pullup_dis(pin);
+    rtc_gpio_pulldown_dis(pin);
+  }
+
+  rc = esp_sleep_enable_ext0_wakeup(pin, pin_level ? 1 : 0);
+  if (rc != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable ext0 wakeup");
+    return false;
+  }
+
   return true;
 }
 
