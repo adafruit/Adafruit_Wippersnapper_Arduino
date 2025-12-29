@@ -81,7 +81,7 @@ bool SleepModel::DecodeSleepEnter(pb_istream_t *stream) {
     @param  timer_duration
             Duration of the sleep timer, in seconds.
 */
-void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, const char *wake, uint32_t run_duration, uint32_t timer_duration) {
+void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_duration, uint32_t timer_duration) {
   // Clear the message
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
@@ -91,10 +91,8 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, const char *wak
 
   // Convert strings to enums for mode/wake
   ws_sleep_SleepMode mode_enum = ws_sleep_SleepMode_S_UNSPECIFIED;
-  ws_sleep_WakeupSource wake_enum = ws_sleep_WakeupSource_W_UNSPECIFIED;
-  ConvertSleepStrings(mode, wake, mode_enum, wake_enum);
+  ConvertSleepMode(mode, mode_enum);
   _msg_sleep_enter.mode = mode_enum;
-  _msg_sleep_enter.wakeup = wake_enum;
 
   // Configure timer-specific fields
   _msg_sleep_enter.which_config = ws_sleep_Enter_timer_tag;
@@ -130,10 +128,8 @@ void SleepModel::SetSleepEnterPin(bool lock, const char *mode, const char *wake,
 
   // Convert strings to enums for mode/wake
   ws_sleep_SleepMode mode_enum = ws_sleep_SleepMode_S_UNSPECIFIED;
-  ws_sleep_WakeupSource wake_enum = ws_sleep_WakeupSource_W_UNSPECIFIED;
-  ConvertSleepStrings(mode, wake, mode_enum, wake_enum);
+  ConvertSleepMode(mode, mode_enum);
   _msg_sleep_enter.mode = mode_enum;
-  _msg_sleep_enter.wakeup = wake_enum;
 
   // Configure pin-specific fields
   _msg_sleep_enter.which_config = ws_sleep_Enter_pin_tag;
@@ -150,42 +146,22 @@ void SleepModel::SetSleepEnterPin(bool lock, const char *mode, const char *wake,
    enum values.
     @param  mode_str
             The sleep mode string
-    @param  source_str
-            The wakeup source string
     @param  mode
             The converted sleep mode enum.
-    @param  source
-            The converted wakeup source enum.
     @returns True if both conversions were successful, False if either string
    was invalid.
 */
-void SleepModel::ConvertSleepStrings(const char *mode_str,
-                                    const char *wake_str,
-                                    ws_sleep_SleepMode &mode,
-                                    ws_sleep_WakeupSource &source) {
+void SleepModel::ConvertSleepMode(const char *mode_str, ws_sleep_SleepMode &mode) {
   // Convert SleepMode to enum
   mode = ws_sleep_SleepMode_S_UNSPECIFIED;
   if (mode_str) {
-    if (strcmp(mode_str, "light") == 0) {
+    if (strncmp(mode_str, "light", strlen("light")) == 0) {
       mode = ws_sleep_SleepMode_S_LIGHT;
-    } else if (strcmp(mode_str, "deep") == 0) {
+    } else if (strncmp(mode_str, "deep", strlen("deep")) == 0) {
       mode = ws_sleep_SleepMode_S_DEEP;
     } else {
       WS_DEBUG_PRINT("[SD] Error: Invalid sleep mode: ");
       WS_DEBUG_PRINTLN(mode_str);
-    }
-  }
-
-  // Convert WakeupSource to enum
-  source = ws_sleep_WakeupSource_W_UNSPECIFIED;
-  if (wake_str) {
-    if (strcmp(wake_str, "timer") == 0) {
-      source = ws_sleep_WakeupSource_W_TIMER;
-    } else if (strcmp(wake_str, "pin") == 0) {
-      source = ws_sleep_WakeupSource_W_PIN;
-    } else {
-      WS_DEBUG_PRINT("[SD] Error: Invalid wakeup source: ");
-      WS_DEBUG_PRINTLN(wake_str);
     }
   }
 }

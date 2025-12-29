@@ -21,7 +21,7 @@
 SleepController::SleepController() {
   _sleep_hardware = new SleepHardware();
   _sleep_model = new SleepModel();
-  _do_lock = false; // Class-level lock
+  _lock = false; // Class-level lock
   _btn_cfg_mode = _sleep_hardware->CheckBootButton();
 }
 
@@ -72,8 +72,23 @@ bool SleepController::Router(pb_istream_t *stream) {
     @return True if the sleep mode was successfully entered, False otherwise.
 */
 bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
-  WS_DEBUG_PRINTLN("[sleep] Handle_Sleep_Enter MESSAGE...");
-  // TODO: Implement sleep enter logic
+  WS_DEBUG_PRINTLN("[sleep] Handle_Sleep_Enter()");
+
+  // Parse and handle lock state
+  _lock = msg->lock;
+  // If boot button was pressed, override any existing lock
+  // TODO: Area to refactor
+  if (_btn_cfg_mode && _lock) {
+    WS_DEBUG_PRINTLN("[sleep] Boot button pressed during startup - overriding lock state");
+    _lock = false;
+  }
+
+  if (! _lock) {
+    WS_DEBUG_PRINTLN("[sleep] Unlocked device from sleep, resuming regular operation.");
+    return true;
+  }
+
+
   return true;
 }
 
@@ -84,42 +99,19 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
 SleepModel *SleepController::GetModel() { return _sleep_model; }
 
 /*!
-    @brief  Configures timer-based sleep mode .
-    @param  mode
-            The sleep mode to configure.
-    @param  sleep_duration
-            The duration of the sleep period.
-    @param  run_duration
-            The duration of the run period.
-    @returns True if the configuration was successful, False otherwise.
+    @brief  Configures deep sleep with a timer wakeup source.
+    @param  wakeup
+            
 */
-bool SleepController::Configure(ws_sleep_SleepMode mode, int sleep_duration,
-                                int run_duration) {
-  if (mode == ws_sleep_SleepMode_S_DEEP) {
-    // TODO: This is an incomplete implementation, lacks
-    // wake source configuration
-    return _sleep_hardware->EnableDeepSleep(sleep_duration);
-  } else if (mode == ws_sleep_SleepMode_S_LIGHT) {
-    // TODO: Implement light sleep timer configuration
-  } else {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Undefined sleep mode specified!");
-    return false;
-  }
-  return true;
-}
-
-// TODO: Implement
-bool SleepController::Configure(ws_sleep_SleepMode mode, const char *pin_name,
-                                bool pin_level, bool pin_pull,
-                                int run_duration) {
-  return true;
+bool SleepController::ConfigureDeepSleep(ws_sleep_TimerConfig cfg_timer) {
+    // TODO
 }
 
 /*!
-    @brief  Sets the lock state for the sleep configuration.
-    @param  lock
-            True to lock the sleep configuration, False to unlock.
+    @brief  Configures deep sleep with a pin wakeup source.
 */
-void SleepController::SetLock(bool lock) { _do_lock = lock; }
+bool SleepController::ConfigureDeepSleep(ws_sleep_PinConfig cfg_pin) {
+    // TODO
+}
 
 #endif // ARDUINO_ARCH_ESP32

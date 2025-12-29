@@ -32,10 +32,10 @@ public:
   bool DecodeSleepEnter(pb_istream_t *stream);
   bool EncodeSleepGoodnight(const char *msg);
   bool EncodeSleepWake(ws_sleep_EspWakeCause cause, uint32_t sleep_duration);
-  void SetSleepEnterTimer(bool lock, const char *mode, const char *wake, uint32_t run_duration, uint32_t timer_duration);
-  void SetSleepEnterPin(bool lock, const char *mode, const char *wake, uint32_t run_duration, const char *pin_name, bool pin_level, bool pin_pull);
+  void SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_duration, uint32_t timer_duration);
+  void SetSleepEnterPin(bool lock, const char *mode, uint32_t run_duration, const char *pin_name, bool pin_level, bool pin_pull);
 private:
-  void ConvertSleepStrings(const char *mode_str, const char *wake_str, ws_sleep_SleepMode &mode, ws_sleep_WakeupSource &source);
+  void ConvertSleepMode(const char *mode_str, ws_sleep_SleepMode &mode);
   ws_sleep_Goodnight _msg_sleep_goodnight; ///< Goodnight message object
   ws_sleep_Wake _msg_sleep_wake;           ///< Wake message object
   ws_sleep_Enter _msg_sleep_enter;         ///< Enter message object

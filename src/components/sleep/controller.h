@@ -39,18 +39,14 @@ public:
   // Helper functions
   void CheckBootButton();
   SleepModel *GetModel();
-
-  // Helper functions to configure sleep options
-  void SetLock(bool lock);
-  bool Configure(ws_sleep_SleepMode mode, int sleep_duration, int run_duration);
-  bool Configure(ws_sleep_SleepMode mode, const char *pin_name, bool pin_level,
-                 bool pin_pull, int run_duration);
-
 private:
+  bool ConfigureDeepSleep(ws_sleep_TimerConfig cfg_timer);
+  bool ConfigureDeepSleep(ws_sleep_PinConfig cfg_pin);
+  // TODO: Add ConfigureLightSleep() funcs here
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
   bool _btn_cfg_mode; ///< Value of BOOT button during class construction
-  bool _do_lock;      ///< Whether the sleep configuration is locked
+  bool _lock;      ///< Whether the sleep configuration is locked
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 
