@@ -24,6 +24,13 @@ SleepController::SleepController() {
   _sleep_mode = ws_sleep_SleepMode_S_UNSPECIFIED;
   _lock = false; // Class-level lock
   _btn_cfg_mode = _sleep_hardware->CheckBootButton();
+
+  // Mark so we can disable all external peripherals that draw power during sleep (i.e: tft, i2c, neopixel, etc)
+  #if defined (NEOPIXEL_POWER) || defined (PIN_I2C_POWER) || defined (TFT_POWER) || defined (TFT_I2C_POWER)
+    _has_ext_pwr_components = true;
+  #else 
+    _has_ext_pwr_components = false;
+  #endif
 }
 
 /*!
@@ -144,9 +151,6 @@ bool SleepController::ConfigureDeepSleep(const ws_sleep_Enter *msg) {
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown config type");
     break;
   }
-
-  // Optionally disable all external peripherals
-  // TODO!
 
   return rc;
 }

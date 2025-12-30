@@ -36,11 +36,11 @@ public:
   bool CheckBootButton();
   bool RegisterRTCTimerWakeup(uint64_t duration);
   bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
-
+  void DisableExternalComponents();
 private:
-  void GetWakeupCause();
+  void GetSleepWakeupCause();
   void CalculateSleepDuration();
-  esp_sleep_source_t _wakeup_cause; ///< Sleep wakeup cause
+  esp_sleep_source_t _wakeup_cause; ///< Sleep wakeup cause, obtained during class construction
   int _sleep_time;                  ///< Time spent sleeping, in seconds
 };
 

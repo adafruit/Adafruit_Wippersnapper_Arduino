@@ -33,13 +33,12 @@ class SleepController {
 public:
   SleepController();
   ~SleepController();
+  SleepModel *GetModel();
   // Routing
   bool Router(pb_istream_t *stream);
   bool Handle_Sleep_Enter(ws_sleep_Enter *msg);
   // Helper functions
   void CheckBootButton();
-  SleepModel *GetModel();
-
 private:
   bool ConfigureDeepSleep(const ws_sleep_Enter *msg);
   // TODO: Add ConfigureLightSleep() funcs here
@@ -48,6 +47,7 @@ private:
   ws_sleep_SleepMode _sleep_mode; ///< Current sleep mode
   bool _btn_cfg_mode;      ///< Value of BOOT button during class construction
   bool _lock;              ///< Whether the sleep configuration is locked
+  bool _has_ext_pwr_components; ///< Whether externally powered components are present (i.e: tft, i2c, neopixel, etc)
   uint32_t _loop_duration; ///< Duration of the main loop, in seconds
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance

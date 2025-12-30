@@ -21,8 +21,7 @@ RTC_SLOW_ATTR static struct timeval sleep_enter_time;
     @brief  Sleep hardware constructor
 */
 SleepHardware::SleepHardware() {
-  _wakeup_cause = ESP_SLEEP_WAKEUP_UNDEFINED;
-  GetWakeupCause();
+  GetSleepWakeupCause();
 }
 
 /*!
@@ -31,15 +30,10 @@ SleepHardware::SleepHardware() {
 SleepHardware::~SleepHardware() {}
 
 /*!
-    @brief  Determines the cause of the last wakeup from sleep.
-    @returns True if the wakeup cause was successfully determined, False
-   otherwise.
+    @brief  Gets the wakeup source which caused wakeup from sleep.
 */
-void SleepHardware::GetWakeupCause() {
+void SleepHardware::GetSleepWakeupCause() {
   _wakeup_cause = esp_sleep_get_wakeup_cause();
-  if (_wakeup_cause == ESP_SLEEP_WAKEUP_TIMER) {
-    CalculateSleepDuration();
-  }
 }
 
 /*!
@@ -175,6 +169,33 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
   }
 
   return true;
+}
+
+/*!
+    @brief  Disables power to all external components that may draw power
+            during sleep (i.e: tft, i2c, neopixel, etc)
+*/
+void SleepHardware::DisableExternalComponents() {
+#if defined (NEOPIXEL_POWER)
+  pinMode(NEOPIXEL_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_POWER, LOW);
+#endif
+
+#if defined (TFT_POWER)
+  pinMode(TFT_POWER, OUTPUT);
+  digitalWrite(TFT_POWER, LOW);
+#endif
+
+#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
+  // (specific to adafruit feather esp32-s2) - turn off the I2C power by setting pin to rest state (off)
+  pinMode(PIN_I2C_POWER, INPUT);
+#elif defined (PIN_I2C_POWER)
+  pinMode(PIN_I2C_POWER, OUTPUT);
+  digitalWrite(PIN_I2C_POWER, LOW);
+#elif defined(TFT_I2C_POWER)
+  pinMode(TFT_I2C_POWER, OUTPUT);
+  digitalWrite(TFT_I2C_POWER, LOW);
+#endif
 }
 
 #endif // ARDUINO_ARCH_ESP32
