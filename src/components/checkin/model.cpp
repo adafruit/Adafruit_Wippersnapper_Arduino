@@ -49,6 +49,16 @@ bool CheckinModel::Checkin(const char *hardware_uid,
   strncpy(_CheckinD2B.payload.request.firmware_version, firmware_version,
           sizeof(_CheckinD2B.payload.request.firmware_version) - 1);
 
+  // Add wake cause info to checkin for ESP32x platforms
+#ifdef ARDUINO_ARCH_ESP32
+  _CheckinD2B.payload.request.has_wake_cause = true;
+  _CheckinD2B.payload.request.wake_cause.which_WakeCause = ws_sleep_Wake_esp_tag;
+  _CheckinD2B.payload.request.wake_cause.WakeCause.esp = WsV2._sleep_controller->GetEspWakeCause();
+  _CheckinD2B.payload.request.wake_cause.sleep_duration = WsV2._sleep_controller->GetSleepDuration();
+#else
+  _CheckinD2B.payload.request.has_wake_cause = false;
+#endif
+
   // Encode the D2B wrapper message
   WS_DEBUG_PRINTLN("[checkin] Encoding CheckinRequest message size...");
   size_t CheckinD2BSz;

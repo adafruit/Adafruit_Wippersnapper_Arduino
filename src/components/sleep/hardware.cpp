@@ -22,6 +22,7 @@ RTC_SLOW_ATTR static struct timeval sleep_enter_time;
 */
 SleepHardware::SleepHardware() {
   GetSleepWakeupCause();
+  CalculateSleepDuration();
 }
 
 /*!
@@ -34,6 +35,46 @@ SleepHardware::~SleepHardware() {}
 */
 void SleepHardware::GetSleepWakeupCause() {
   _wakeup_cause = esp_sleep_get_wakeup_cause();
+}
+
+/*!
+    @brief  Returns the ESP wake cause enum corresponding to the internal
+            wakeup cause.
+    @return The wake cause as a ws_sleep_EspWakeCause enum.
+*/
+ws_sleep_EspWakeCause SleepHardware::GetEspWakeCauseEnum() {
+  switch (_wakeup_cause) {
+  case ESP_SLEEP_WAKEUP_ALL:
+    return ws_sleep_EspWakeCause_ESP_ALL;
+  case ESP_SLEEP_WAKEUP_EXT0:
+    return ws_sleep_EspWakeCause_ESP_EXT0;
+  case ESP_SLEEP_WAKEUP_EXT1:
+    return ws_sleep_EspWakeCause_ESP_EXT1;
+  case ESP_SLEEP_WAKEUP_TIMER:
+    return ws_sleep_EspWakeCause_ESP_TIMER;
+  case ESP_SLEEP_WAKEUP_TOUCHPAD:
+    return ws_sleep_EspWakeCause_ESP_TOUCHPAD;
+  case ESP_SLEEP_WAKEUP_ULP:
+    return ws_sleep_EspWakeCause_ESP_ULP;
+  case ESP_SLEEP_WAKEUP_GPIO:
+    return ws_sleep_EspWakeCause_ESP_GPIO;
+  case ESP_SLEEP_WAKEUP_UART:
+    return ws_sleep_EspWakeCause_ESP_UART;
+  case ESP_SLEEP_WAKEUP_WIFI:
+    return ws_sleep_EspWakeCause_ESP_WIFI;
+  case ESP_SLEEP_WAKEUP_COCPU:
+    return ws_sleep_EspWakeCause_ESP_COCPU;
+  case ESP_SLEEP_WAKEUP_COCPU_TRAP_TRIG:
+    return ws_sleep_EspWakeCause_ESP_COCPU_TRAP;
+  case ESP_SLEEP_WAKEUP_BT:
+    return ws_sleep_EspWakeCause_ESP_BT;
+  case ESP_SLEEP_WAKEUP_VAD:
+    return ws_sleep_EspWakeCause_ESP_VAD;
+  case ESP_SLEEP_WAKEUP_VBAT_UNDER_VOLT:
+    return ws_sleep_EspWakeCause_ESP_VBAT_UNDER_VOLT;
+  default:
+    return ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
+  }
 }
 
 /*!
@@ -77,6 +118,12 @@ void SleepHardware::CalculateSleepDuration() {
   _sleep_time = (now.tv_sec - sleep_enter_time.tv_sec) +
                 (now.tv_usec - sleep_enter_time.tv_usec) / 1000000;
 }
+
+/*!
+    @brief  Returns the calculated sleep duration.
+    @return The sleep duration in seconds.
+*/
+int SleepHardware::GetSleepDuration() { return _sleep_time; }
 
 /*!
     @brief   Enables deep sleep mode for a specified duration.
@@ -176,20 +223,21 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
             during sleep (i.e: tft, i2c, neopixel, etc)
 */
 void SleepHardware::DisableExternalComponents() {
-#if defined (NEOPIXEL_POWER)
+#if defined(NEOPIXEL_POWER)
   pinMode(NEOPIXEL_POWER, OUTPUT);
   digitalWrite(NEOPIXEL_POWER, LOW);
 #endif
 
-#if defined (TFT_POWER)
+#if defined(TFT_POWER)
   pinMode(TFT_POWER, OUTPUT);
   digitalWrite(TFT_POWER, LOW);
 #endif
 
 #if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
-  // (specific to adafruit feather esp32-s2) - turn off the I2C power by setting pin to rest state (off)
+  // (specific to adafruit feather esp32-s2) - turn off the I2C power by setting
+  // pin to rest state (off)
   pinMode(PIN_I2C_POWER, INPUT);
-#elif defined (PIN_I2C_POWER)
+#elif defined(PIN_I2C_POWER)
   pinMode(PIN_I2C_POWER, OUTPUT);
   digitalWrite(PIN_I2C_POWER, LOW);
 #elif defined(TFT_I2C_POWER)

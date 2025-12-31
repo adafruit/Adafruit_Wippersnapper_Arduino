@@ -37,11 +37,15 @@ public:
   bool RegisterRTCTimerWakeup(uint64_t duration);
   bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
   void DisableExternalComponents();
+  ws_sleep_EspWakeCause GetEspWakeCauseEnum();
+  int GetSleepDuration();
+
 private:
   void GetSleepWakeupCause();
   void CalculateSleepDuration();
-  esp_sleep_source_t _wakeup_cause; ///< Sleep wakeup cause, obtained during class construction
-  int _sleep_time;                  ///< Time spent sleeping, in seconds
+  esp_sleep_source_t
+      _wakeup_cause; ///< Sleep wakeup cause, obtained during class construction
+  int _sleep_time;   ///< Time spent sleeping, in seconds
 };
 
 #endif // ARDUINO_ARCH_ESP32

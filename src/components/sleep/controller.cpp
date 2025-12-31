@@ -25,12 +25,14 @@ SleepController::SleepController() {
   _lock = false; // Class-level lock
   _btn_cfg_mode = _sleep_hardware->CheckBootButton();
 
-  // Mark so we can disable all external peripherals that draw power during sleep (i.e: tft, i2c, neopixel, etc)
-  #if defined (NEOPIXEL_POWER) || defined (PIN_I2C_POWER) || defined (TFT_POWER) || defined (TFT_I2C_POWER)
-    _has_ext_pwr_components = true;
-  #else 
-    _has_ext_pwr_components = false;
-  #endif
+// Mark so we can disable all external peripherals that draw power during sleep
+// (i.e: tft, i2c, neopixel, etc)
+#if defined(NEOPIXEL_POWER) || defined(PIN_I2C_POWER) || defined(TFT_POWER) || \
+    defined(TFT_I2C_POWER)
+  _has_ext_pwr_components = true;
+#else
+  _has_ext_pwr_components = false;
+#endif
 }
 
 /*!
@@ -153,6 +155,22 @@ bool SleepController::ConfigureDeepSleep(const ws_sleep_Enter *msg) {
   }
 
   return rc;
+}
+
+/*!
+    @brief  Returns the calculated sleep duration.
+    @return The sleep duration in seconds.
+*/
+int SleepController::GetSleepDuration() {
+  return _sleep_hardware->GetSleepDuration();
+}
+
+/*!
+    @brief  Gets the ESP wake cause enum from hardware.
+    @return The ESP wake cause enum.
+*/
+ws_sleep_EspWakeCause SleepController::GetEspWakeCause() {
+  return _sleep_hardware->GetEspWakeCauseEnum();
 }
 
 #endif // ARDUINO_ARCH_ESP32
