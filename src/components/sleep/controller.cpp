@@ -173,4 +173,12 @@ ws_sleep_EspWakeCause SleepController::GetEspWakeCause() {
   return _sleep_hardware->GetEspWakeCauseEnum();
 }
 
+/*!
+    @brief  Returns whether the device woke from a sleep mode.
+    @return True if the device woke from sleep, False otherwise.
+*/
+bool SleepController::DidWakeFromSleep() {
+  return _sleep_hardware->GetEspWakeCauseEnum() != ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
+}
+
 #endif // ARDUINO_ARCH_ESP32

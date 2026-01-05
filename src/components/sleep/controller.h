@@ -41,6 +41,7 @@ public:
   ws_sleep_EspWakeCause GetEspWakeCause();
   int GetSleepDuration();
   void CheckBootButton();
+  bool DidWakeFromSleep();
 
 private:
   bool ConfigureDeepSleep(const ws_sleep_Enter *msg);
