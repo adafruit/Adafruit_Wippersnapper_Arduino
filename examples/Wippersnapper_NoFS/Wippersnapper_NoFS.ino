@@ -11,7 +11,7 @@
 //
 // All text above must be included in any redistribution.
 
-#include "ws_adapters.h"
+#include "ws_platforms.h"
 #define WS_DEBUG // Enable debug output
 /************************ Adafruit IO Config *******************************/
 

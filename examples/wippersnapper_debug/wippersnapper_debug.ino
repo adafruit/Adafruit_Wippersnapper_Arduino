@@ -1,7 +1,7 @@
 // Adafruit IO WipperSnapper Beta (DEBUG BUILD ONLY!)
 // Brent Rubell for Adafruit Industries, 2021 - 2025
 
-#include "ws_adapters.h"
+#include "ws_platforms.h"
 ws_adapter_wifi wipper;
 // Uncomment the following line to use the offline adapter for Pico
 // ws_adapter_offline wipper;

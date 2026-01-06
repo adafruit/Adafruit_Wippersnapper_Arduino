@@ -1,5 +1,5 @@
 /*!
- * @file ws_offline_pico.h
+ * @file pico_offline.h
  *
  * This is a stub class for using the RP2040/RP2350 without a network interface
  *
@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef WS_OFFLINE_PICO
-#define WS_OFFLINE_PICO
+#ifndef PICO_OFFLINE_H
+#define PICO_OFFLINE_H
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
@@ -32,20 +32,20 @@ extern Wippersnapper_V2 WsV2;
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
 */
-class ws_offline_pico : public Wippersnapper_V2 {
+class pico_offline : public Wippersnapper_V2 {
 
 public:
   /*!
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
-  ws_offline_pico() : Wippersnapper_V2() {
+  pico_offline() : Wippersnapper_V2() {
     // Do-nothing
   }
 
   /*!
   @brief  Destructor
   */
-  ~ws_offline_pico() {
+  ~pico_offline() {
     // Do-nothing - this class has no resources to release
   }
 
@@ -57,7 +57,7 @@ public:
             WiFi network's password.
   */
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: set_ssid_pass() is not "
+    WS_DEBUG_PRINTLN("[pico_offline] Error: set_ssid_pass() is not "
                      "supported in this implementation!");
   }
 
@@ -65,7 +65,7 @@ public:
   @brief  Sets the WiFi client's ssid and password.
   */
   void set_ssid_pass() {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: set_ssid_pass() is not "
+    WS_DEBUG_PRINTLN("[pico_offline] Error: set_ssid_pass() is not "
                      "supported in this implementation!");
   }
 
@@ -74,7 +74,7 @@ public:
   @returns True if `_network_ssid` is found, False otherwise.
   */
   bool check_valid_ssid() {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: check_valid_ssid() is not "
+    WS_DEBUG_PRINTLN("[pico_offline] Error: check_valid_ssid() is not "
                      "supported in this implementation!");
     return false; // return an invalid value
   }
@@ -92,7 +92,7 @@ public:
   @return int32_t RSSI value
   */
   int32_t getRSSI() {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: getRSSI() is not supported in "
+    WS_DEBUG_PRINTLN("[pico_offline] Error: getRSSI() is not supported in "
                      "this implementation!");
     return -9999; // return an invalid value
   }
@@ -103,7 +103,7 @@ public:
           MQTT client identifier
   */
   void setupMQTTClient(const char *clientID) {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: setupMQTTClient() is not "
+    WS_DEBUG_PRINTLN("[pico_offline] Error: setupMQTTClient() is not "
                      "supported in this implementation!");
   }
 
@@ -112,7 +112,7 @@ public:
   @return ws_status_t
   */
   ws_status_t networkStatus() {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: networkStatus() is not "
+    WS_DEBUG_PRINTLN("[pico_offline] Error: networkStatus() is not "
                      "supported in this implementation!");
     return WS_NET_DISCONNECTED; // this value is valid, we are not connected to
                                 // a network
@@ -123,7 +123,7 @@ public:
   @return Pico
   */
   const char *connectionType() {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: connectionType() is not "
+    WS_DEBUG_PRINTLN("[pico_offline] Error: connectionType() is not "
                      "supported in this implementation!");
     return "ws-offline-pico";
   }
@@ -133,7 +133,7 @@ protected:
   @brief  Establishes a connection with the wireless network.
   */
   void _connect() {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: _connect() is not supported in "
+    WS_DEBUG_PRINTLN("[pico_offline] Error: _connect() is not supported in "
                      "this implementation!");
   }
 
@@ -141,10 +141,10 @@ protected:
       @brief  Disconnects from the wireless network.
   */
   void _disconnect() {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: _disconnect() is not supported "
+    WS_DEBUG_PRINTLN("[pico_offline] Error: _disconnect() is not supported "
                      "in this implementation!");
   }
 };
 
 #endif // RASPBERRY_PI_PICO
-#endif // WS_OFFLINE_PICO
+#endif // PICO_OFFLINE_H

@@ -1,5 +1,5 @@
 /*!
- * @file ws_wifi_esp32.h
+ * @file esp32_wifi.h
  *
  * This is a driver for using the ESP32's network interface
  * with Adafruit IO Wippersnapper.
@@ -8,14 +8,14 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef WS_WIFI_ESP32_H
-#define WS_WIFI_ESP32_H
+#ifndef ESP32_WIFI_H
+#define ESP32_WIFI_H
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "Wippersnapper_V2.h"
@@ -32,13 +32,13 @@ extern Wippersnapper_V2 WsV2; ///< Wippersnapper client instance
 /*!
     @brief  Class for using the ESP32 network interface.
 */
-class ws_wifi_esp32 : public Wippersnapper_V2 {
+class esp32_wifi : public Wippersnapper_V2 {
 
 public:
   /*!
   @brief  Initializes the Adafruit IO class for ESP32 devices.
   */
-  ws_wifi_esp32() : Wippersnapper_V2() {
+  esp32_wifi() : Wippersnapper_V2() {
     _ssid = 0;
     _pass = 0;
   }
@@ -58,7 +58,7 @@ public:
     @param  brokerPort
                 Adafruit IO broker port.
   */
-  ws_wifi_esp32(const char *aioUsername, const char *aioKey,
+  esp32_wifi(const char *aioUsername, const char *aioKey,
                 const char *netSSID, const char *netPass, const char *brokerURL,
                 uint16_t brokerPort)
       : Wippersnapper_V2() {
@@ -80,7 +80,7 @@ public:
   /*!
   @brief  Destructor for the Adafruit IO AirLift class.
   */
-  ~ws_wifi_esp32() {
+  ~esp32_wifi() {
     if (_mqtt_client_secure)
       delete _mqtt_client_secure;
     if (_mqtt_client_insecure)
