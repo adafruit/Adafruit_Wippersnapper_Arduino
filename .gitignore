@@ -65,4 +65,6 @@ report.xml
 # VSCode settings
 .vscode/settings.json
 
+# Claude settings
 CLAUDE.md
+.inbox.md

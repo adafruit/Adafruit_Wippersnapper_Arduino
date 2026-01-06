@@ -53,7 +53,6 @@ private:
   bool _lock;         ///< Whether the sleep configuration is locked
   bool _has_ext_pwr_components; ///< Whether externally powered components are
                                 ///< present (i.e: tft, i2c, neopixel, etc)
-  uint32_t _loop_duration;      ///< Duration of the main loop, in seconds
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 

@@ -106,9 +106,6 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
     return true;
   }
 
-  // Parse app loop duration
-  _loop_duration = msg->run_duration;
-
   // Parse sleep mode and dispatch based on mode
   _sleep_mode = msg->mode;
 
