@@ -87,7 +87,6 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_du
 
   // Set the common fields
   _msg_sleep_enter.lock = lock;
-  _msg_sleep_enter.run_duration = run_duration;
 
   // Convert strings to enums for mode/wake
   ws_sleep_SleepMode mode_enum = ws_sleep_SleepMode_S_UNSPECIFIED;

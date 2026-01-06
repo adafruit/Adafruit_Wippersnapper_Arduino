@@ -42,7 +42,7 @@ public:
   int GetSleepDuration();
   void CheckBootButton();
   bool DidWakeFromSleep();
-
+  bool IsSleepLoop();
 private:
   bool ConfigureDeepSleep(const ws_sleep_Enter *msg);
   // TODO: Add ConfigureLightSleep() funcs here

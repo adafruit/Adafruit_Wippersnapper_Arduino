@@ -98,6 +98,7 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
     WS_DEBUG_PRINTLN(
         "[sleep] Boot button pressed during startup - overriding lock state");
     _lock = false;
+    return true;
   }
 
   if (!_lock) {
@@ -176,6 +177,14 @@ ws_sleep_EspWakeCause SleepController::GetEspWakeCause() {
 */
 bool SleepController::DidWakeFromSleep() {
   return _sleep_hardware->GetEspWakeCauseEnum() != ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
+}
+
+/*!
+    @brief  Returns whether the device is in a sleep loop (locked).
+    @return True if the device is locked for sleep, False otherwise.
+*/
+bool SleepController::IsSleepLoop() {
+  return _lock;
 }
 
 #endif // ARDUINO_ARCH_ESP32

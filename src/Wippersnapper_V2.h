@@ -158,8 +158,8 @@ class Wippersnapper_V2 {
 public:
   Wippersnapper_V2();
   virtual ~Wippersnapper_V2();
-
   void provision();
+  void run();
 
   // Global flags for the status led
   bool
@@ -192,7 +192,6 @@ public:
   bool PublishD2b(pb_size_t which_payload, void *payload);
 
   // run() loop
-  ws_status_t run();
   void processPacketsV2();
 
   // Networking helpers
@@ -242,7 +241,9 @@ public:
   ServoController *_servo_controller =
       nullptr;                                ///< Instance of Servo controller
   UARTController *_uart_controller = nullptr; ///< Instance of UART controller
+#ifdef ARDUINO_ARCH_ESP32
   SleepController *_sleep_controller = nullptr; ///< Instance of sleep controller
+#endif
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
@@ -268,7 +269,12 @@ public:
   JsonDocument _config_doc; ///< Storage for the config.json file
   uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
-  void _initV2();
+
+  // Separate loop() functions, depending on power mode
+  void loop();
+#ifdef ARDUINO_ARCH_ESP32
+  void loopSleep();
+#endif
 
   // MQTT topics
   char *_topicB2d;

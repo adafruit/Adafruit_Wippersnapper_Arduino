@@ -58,7 +58,9 @@ Wippersnapper_V2::Wippersnapper_V2()
   _pixels_controller = new PixelsController();
   _pwm_controller = new PWMController();
   _servo_controller = new ServoController();
+#ifdef ARDUINO_ARCH_ESP32
   _sleep_controller = new SleepController();
+#endif
 }
 
 /*!
@@ -77,7 +79,9 @@ Wippersnapper_V2::~Wippersnapper_V2() {
   delete this->_pixels_controller;
   delete this->_pwm_controller;
   delete this->_servo_controller;
+#ifdef ARDUINO_ARCH_ESP32
   delete this->_sleep_controller;
+#endif
 }
 
 /*!
@@ -975,11 +979,22 @@ void Wippersnapper_V2::connect() {
 }
 
 /*!
-    @brief    Processes incoming commands and handles network connection.
-    @returns  Network status, as ws_status_t.
+    @brief    Determines which loop() to call depending on the power mode.
 */
-ws_status_t Wippersnapper_V2::run() {
-  WsV2.feedWDTV2();
+void Wippersnapper_V2::run() {
+#ifdef ARDUINO_ARCH_ESP32
+    if (_sleep_controller->IsSleepLoop()) {
+        loopSleep();
+    } else {
+        loop();
+    }
+#else
+    loop();
+#endif
+}
+
+void Wippersnapper_V2::loop() {
+      WsV2.feedWDTV2();
   if (!WsV2._sdCardV2->isModeOffline()) {
     // Handle networking functions
     runNetFSMV2();
@@ -1007,6 +1022,13 @@ ws_status_t Wippersnapper_V2::run() {
 
   // Process GPS controller events
   WsV2._gps_controller->update();
-
-  return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
+
+#ifdef ARDUINO_ARCH_ESP32
+/*!
+    @brief    loop() variant that uses a component-driven readiness tracking and a global timer for run duration and entrypoints for sleep management.
+*/
+void Wippersnapper_V2::loopSleep() {
+    // TODO: loop() but with a global timer for run duration, and checks
+}
+#endif
