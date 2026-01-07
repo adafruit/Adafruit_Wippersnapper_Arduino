@@ -14,7 +14,7 @@
  */
 #ifndef WS_GPS_MODEL_H
 #define WS_GPS_MODEL_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include <protos/gps.pb.h>
 #define MAX_COUNT_RMC_GGA 10 ///< Maximum number of RMC or GGA responses
 

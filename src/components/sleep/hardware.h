@@ -16,7 +16,7 @@
 #define WS_SLEEP_HARDWARE_H
 
 #ifdef ARDUINO_ARCH_ESP32
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "driver/gpio.h"
 #include "driver/rtc_io.h"
 #include "esp_sleep.h"

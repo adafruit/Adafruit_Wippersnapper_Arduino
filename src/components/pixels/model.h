@@ -14,7 +14,7 @@
  */
 #ifndef WS_PIXELS_MODEL_H
 #define WS_PIXELS_MODEL_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing

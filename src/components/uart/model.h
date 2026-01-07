@@ -14,7 +14,7 @@
  */
 #ifndef WS_UART_MODEL_H
 #define WS_UART_MODEL_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include <Adafruit_Sensor.h>
 #define MAX_UART_INPUT_EVENTS 15 ///< Maximum number of UART input events
 

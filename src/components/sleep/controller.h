@@ -16,11 +16,11 @@
 #define WS_SLEEP_CONTROLLER_H
 
 #ifdef ARDUINO_ARCH_ESP32
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
 
-class Wippersnapper_V2; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
 class SleepModel;       ///< Forward declaration
 class SleepHardware;    ///< Forward declaration
 
@@ -54,7 +54,7 @@ private:
   bool _has_ext_pwr_components; ///< Whether externally powered components are
                                 ///< present (i.e: tft, i2c, neopixel, etc)
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper WsV2; ///< Wippersnapper V2 instance
 
 #endif // ARDUINO_ARCH_ESP32
 #endif // WS_SLEEP_CONTROLLER_H

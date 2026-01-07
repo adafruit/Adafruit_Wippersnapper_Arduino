@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_V2.h
+ * @file wippersnapper.h
  *
  * This is the documentation for Adafruit's Wippersnapper firmware for the
  * Arduino platform. It is designed specifically to work with
@@ -9,13 +9,13 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * @copyright Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
+ * @copyright Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  */
 
-#ifndef WIPPERSNAPPER_V2_H
-#define WIPPERSNAPPER_V2_H
+#ifndef WIPPERSNAPPER_H
+#define WIPPERSNAPPER_H
 
 // Debug Flags
 // #DEBUG_PROFILE 1 ///< Enable debug output for function profiling
@@ -154,10 +154,10 @@ class SleepController;
     @brief  Class that provides storage and functions for the Adafruit IO
             Wippersnapper interface.
 */
-class Wippersnapper_V2 {
+class wippersnapper {
 public:
-  Wippersnapper_V2();
-  virtual ~Wippersnapper_V2();
+  wippersnapper();
+  virtual ~wippersnapper();
   void provision();
   void run();
 
@@ -298,6 +298,6 @@ protected:
   const char *_deviceIdV2; /*!< Adafruit IO+ device identifier string */
   char *_device_uidV2;     /*!< Unique device identifier  */
 };
-extern Wippersnapper_V2 WsV2; ///< Global member variable for callbacks
+extern wippersnapper WsV2; ///< Global member variable for callbacks
 
-#endif // WIPPERSNAPPER_V2_H
+#endif // WIPPERSNAPPER_H

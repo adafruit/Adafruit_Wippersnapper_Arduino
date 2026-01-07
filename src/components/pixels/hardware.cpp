@@ -13,7 +13,7 @@
  *
  */
 #include "hardware.h"
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 /*!
     @brief  Constructs a new PixelsHardware object

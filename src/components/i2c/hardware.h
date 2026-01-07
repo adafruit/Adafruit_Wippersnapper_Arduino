@@ -14,7 +14,7 @@
  */
 #ifndef WS_I2C_HARDWARE_H
 #define WS_I2C_HARDWARE_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "drivers/drvBase.h" ///< Base driver class
 
 #ifdef ARDUINO_ARCH_RP2040

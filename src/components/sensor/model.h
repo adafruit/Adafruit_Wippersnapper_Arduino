@@ -14,7 +14,7 @@
  */
 #ifndef WS_SENSOR_MODEL_H
 #define WS_SENSOR_MODEL_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "protos/sensor.pb.h"
 
 /*!

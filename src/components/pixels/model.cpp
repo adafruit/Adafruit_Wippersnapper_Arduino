@@ -13,7 +13,7 @@
  *
  */
 #include "model.h"
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "nanopb/ws_pb_helpers.h"
 
 /*!

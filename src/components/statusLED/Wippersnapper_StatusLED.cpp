@@ -14,9 +14,9 @@
  *
  */
 #include "Wippersnapper_StatusLED.h"
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
-extern Wippersnapper_V2 WsV2;
+extern wippersnapper WsV2;
 #ifdef USE_STATUS_NEOPIXEL
 Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
     STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);

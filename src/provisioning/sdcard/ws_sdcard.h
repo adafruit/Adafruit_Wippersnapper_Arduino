@@ -17,7 +17,7 @@
 #include "RTClib.h"
 #include "SdFat_Adafruit_Fork.h"
 #include "StreamUtils.h"
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "sdios.h"
 
 #if defined(ARDUINO_FEATHER_ESP32) ||                                          \
@@ -40,7 +40,7 @@
   4096 ///< Maximum length of the configuration JSON file, in Bytes
 
 // forward decl.
-class Wippersnapper_V2;
+class wippersnapper;
 
 /*!
     @brief  Class that handles Wippersnapper's optional filesystem commands
@@ -124,5 +124,5 @@ private:
   uint32_t _soft_rtc_counter; ///< Holds the counter for a "soft rtc"
   bool _use_test_data;        ///< True if sample data is being used for testing
 };
-extern Wippersnapper_V2 WsV2;
+extern wippersnapper WsV2;
 #endif // WS_SDCARD_H

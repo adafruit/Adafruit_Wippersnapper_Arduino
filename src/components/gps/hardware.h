@@ -14,7 +14,7 @@
  */
 #ifndef WS_GPS_HARDWARE_H
 #define WS_GPS_HARDWARE_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include <Adafruit_GPS.h>
 #include <Adafruit_UBX.h>
 #include <Adafruit_UBloxDDC.h>
@@ -33,7 +33,7 @@
 #define MAX_NMEA_SENTENCES 10    ///< Size of the NMEA buffer
 #define MAX_LEN_NMEA_SENTENCE 82 ///< Maximum length of a NMEA sentence
 
-class Wippersnapper_V2; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
 
 /**
@@ -150,5 +150,5 @@ private:
       const char *new_sentence); ///< Push a sentence to the NMEA ring buffer
   nmea_buffer_t _nmea_buff;      ///< NMEA ring buffer for storing sentences
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_HARDWARE_H

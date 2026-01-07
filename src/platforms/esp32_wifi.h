@@ -18,7 +18,7 @@
 #define ESP32_WIFI_H
 
 #ifdef ARDUINO_ARCH_ESP32
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
@@ -27,18 +27,18 @@
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper client instance
+extern wippersnapper WsV2; ///< Wippersnapper client instance
 
 /*!
     @brief  Class for using the ESP32 network interface.
 */
-class esp32_wifi : public Wippersnapper_V2 {
+class esp32_wifi : public wippersnapper {
 
 public:
   /*!
   @brief  Initializes the Adafruit IO class for ESP32 devices.
   */
-  esp32_wifi() : Wippersnapper_V2() {
+  esp32_wifi() : wippersnapper() {
     _ssid = 0;
     _pass = 0;
   }
@@ -61,7 +61,7 @@ public:
   esp32_wifi(const char *aioUsername, const char *aioKey,
                 const char *netSSID, const char *netPass, const char *brokerURL,
                 uint16_t brokerPort)
-      : Wippersnapper_V2() {
+      : wippersnapper() {
     _ssid = netSSID;
     _pass = netPass;
 

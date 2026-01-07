@@ -14,12 +14,12 @@
  */
 #ifndef WS_DS18X20_CONTROLLER_H
 #define WS_DS18X20_CONTROLLER_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
 #include <memory>
 
-class Wippersnapper_V2; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
 class DS18X20Model;     ///< Forward declaration
 class DS18X20Hardware;  ///< Forward declaration
 
@@ -42,5 +42,5 @@ private:
   std::vector<std::unique_ptr<DS18X20Hardware>> _DS18X20_pins;
   int _num_drivers;
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_DS18X20_CONTROLLER_H

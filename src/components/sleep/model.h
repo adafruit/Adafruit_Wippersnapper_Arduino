@@ -16,7 +16,7 @@
 #define WS_SLEEP_MODEL_H
 
 #ifdef ARDUINO_ARCH_ESP32
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing

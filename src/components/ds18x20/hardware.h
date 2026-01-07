@@ -14,7 +14,7 @@
  */
 #ifndef WS_DS18X20_HARDWARE_H
 #define WS_DS18X20_HARDWARE_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 #include "OneWireNg_CurrentPlatform.h"
 #include "drivers/DSTherm.h"

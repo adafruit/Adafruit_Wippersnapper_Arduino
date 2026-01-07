@@ -2,7 +2,7 @@
  * @file esp8266_wifi.h
  *
  * This is a driver for using the ESP8266's network interface
- *  with Wippersnapper_V2.
+ *  with wippersnapper.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -22,7 +22,7 @@
 #include "Adafruit_MQTT_Client.h"
 #include "ESP8266WiFi.h"
 #include "ESP8266WiFiMulti.h"
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
  * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is
@@ -37,13 +37,13 @@
 // static const char *fingerprint PROGMEM =  "4E C1 52 73 24 A8 36 D6 7A 4C 67
 // C7 91 0C 0A 22 B9 2D 5B CA";
 
-extern Wippersnapper_V2 WsV2;
+extern wippersnapper WsV2;
 
 /*!
     @brief  Class for interacting with the Espressif ESP8266's network
    interface.
 */
-class esp8266_wifi : public Wippersnapper_V2 {
+class esp8266_wifi : public wippersnapper {
 
 public:
   /*!
@@ -57,7 +57,7 @@ public:
   @param  netPass
           Wireless Network password
   */
-  esp8266_wifi() : Wippersnapper_V2() {
+  esp8266_wifi() : wippersnapper() {
     _ssid = 0;
     _pass = 0;
     _wifi_client = new WiFiClient;
@@ -210,7 +210,7 @@ public:
   }
 
   /*!
-  @brief  Returns the type of network connection used by Wippersnapper_V2
+  @brief  Returns the type of network connection used by wippersnapper
   @return "ESP8266"
   */
   const char *connectionType() { return "ESP8266"; }

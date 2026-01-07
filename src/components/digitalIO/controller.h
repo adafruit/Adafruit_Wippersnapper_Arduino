@@ -14,11 +14,11 @@
  */
 #ifndef WS_DIGITALIO_CONTROLLER_H
 #define WS_DIGITALIO_CONTROLLER_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
 
-class Wippersnapper_V2;
+class wippersnapper;
 
 /**
  * @struct DigitalIOPin
@@ -67,5 +67,5 @@ private:
   DigitalIOModel *_dio_model;
   DigitalIOHardware *_dio_hardware;
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_DIGITALIO_CONTROLLER_H

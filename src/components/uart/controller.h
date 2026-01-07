@@ -15,7 +15,7 @@
  */
 #ifndef WS_UART_CONTROLLER_H
 #define WS_UART_CONTROLLER_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
 // drivers
@@ -23,7 +23,7 @@
 #include "drivers/drvUartPm25.h"
 #include "drivers/drvUartUs100.h"
 
-class Wippersnapper_V2; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
 class UARTModel;        ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
 
@@ -49,5 +49,5 @@ private:
   std::vector<drvUartBase *>
       _uart_drivers; ///< Vector of UART device drivers (eg: PM2.5, etc.)
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_UART_CONTROLLER_H

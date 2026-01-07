@@ -14,7 +14,7 @@
  */
 #ifndef WS_PIXELS_HARDWARE_H
 #define WS_PIXELS_HARDWARE_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 /*!
     @brief  Interface for interacting with NeoPixel or Dotstar

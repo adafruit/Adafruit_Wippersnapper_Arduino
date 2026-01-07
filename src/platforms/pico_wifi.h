@@ -23,25 +23,25 @@
 #define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
-extern Wippersnapper_V2 WsV2;
+extern wippersnapper WsV2;
 
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
 */
-class pico_wifi : public Wippersnapper_V2 {
+class pico_wifi : public wippersnapper {
 
 public:
   /*!
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
-  pico_wifi() : Wippersnapper_V2() {
+  pico_wifi() : wippersnapper() {
     _ssid = 0;
     _pass = 0;
   }

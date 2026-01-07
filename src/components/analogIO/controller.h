@@ -14,11 +14,11 @@
  */
 #ifndef WS_ANALOGIO_CONTROLLER_H
 #define WS_ANALOGIO_CONTROLLER_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
 
-class Wippersnapper_V2; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
 class AnalogIOModel;    ///< Forward declaration
 class AnalogIOHardware; ///< Forward declaration
 
@@ -61,5 +61,5 @@ private:
   AnalogIOHardware *_analogio_hardware;    ///< AnalogIO hardware
   std::vector<analogioPin> _analogio_pins; ///< Vector of analogio pins
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_ANALOGIO_CONTROLLER_H

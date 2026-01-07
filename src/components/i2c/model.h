@@ -15,7 +15,7 @@
  */
 #ifndef WS_I2C_MODEL_H
 #define WS_I2C_MODEL_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include <Adafruit_Sensor.h>
 #include <protos/i2c_output.pb.h>
 #define MAX_DEVICE_EVENTS                                                      \

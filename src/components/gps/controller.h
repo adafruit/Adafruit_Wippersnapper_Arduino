@@ -15,12 +15,12 @@
  */
 #ifndef WS_GPS_CONTROLLER_H
 #define WS_GPS_CONTROLLER_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
 #include <Adafruit_GPS.h>
 
-class Wippersnapper_V2; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
 class GPSModel;         ///< Forward declaration
 class GPSHardware;      ///< Forward declaration
 
@@ -39,5 +39,5 @@ private:
   GPSModel *_gps_model;                    ///< GPS model instance
   std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_CONTROLLER_H

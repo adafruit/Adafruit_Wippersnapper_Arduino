@@ -14,7 +14,7 @@
  */
 #ifndef WS_I2C_CONTROLLER_H
 #define WS_I2C_CONTROLLER_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
 // I2C Drivers
@@ -72,7 +72,7 @@
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
 
-class Wippersnapper_V2; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
 class I2cOutputModel;   ///< Forward declaration
 class I2cHardware;      ///< Forward declaration
@@ -112,5 +112,5 @@ private:
   std::vector<drvOutputBase *>
       _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_I2C_CONTROLLER_H

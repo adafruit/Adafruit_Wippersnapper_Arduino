@@ -26,7 +26,7 @@
 #include "Arduino.h"
 #include "SPI.h"
 #include "WiFiNINA.h"
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 #define NINAFWVER                                                              \
   "2.0.0-rc.0+adafruit" /*!< min. nina-fw version compatible with this         \
@@ -36,17 +36,17 @@
 
 #define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
 
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper client instance
+extern wippersnapper WsV2; ///< Wippersnapper client instance
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
 */
-class airlift_wifi : public Wippersnapper_V2 {
+class airlift_wifi : public wippersnapper {
 
 public:
   /*!
   @brief  Initializes the Adafruit IO class for AirLift devices.
   */
-  airlift_wifi() : Wippersnapper_V2() {
+  airlift_wifi() : wippersnapper() {
     _ssPin = SPIWIFI_SS;     // 10;
     _ackPin = SPIWIFI_ACK;   // 7;
     _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals

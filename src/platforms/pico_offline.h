@@ -25,20 +25,20 @@
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
 #include "Arduino.h"
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
-extern Wippersnapper_V2 WsV2;
+extern wippersnapper WsV2;
 
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
 */
-class pico_offline : public Wippersnapper_V2 {
+class pico_offline : public wippersnapper {
 
 public:
   /*!
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
-  pico_offline() : Wippersnapper_V2() {
+  pico_offline() : wippersnapper() {
     // Do-nothing
   }
 

@@ -14,7 +14,7 @@
  */
 #ifndef WS_UART_HARDWARE_H
 #define WS_UART_HARDWARE_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
