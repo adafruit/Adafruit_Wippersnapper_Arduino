@@ -91,7 +91,7 @@
 #include <Wire.h>               // I2C
 
 // Wippersnapper API Helpers
-#include "Wippersnapper_Boards.h"
+#include "ws_boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
 #include "helpers/ws_helper_status.h"
 #ifdef ARDUINO_ARCH_ESP32

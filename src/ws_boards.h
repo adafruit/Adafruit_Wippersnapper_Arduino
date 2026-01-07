@@ -1,20 +1,20 @@
 /*!
- * @file Wippersnapper_Boards.h
+ * @file ws_boards.h
  *
- * This file determines hardware/board type at compile-time.
+ * This file contains all board-specific definitions for Adafruit Wippersnapper.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2022 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef ADAFRUIT_WIPPERSNAPPER_BOARDS_H
-#define ADAFRUIT_WIPPERSNAPPER_BOARDS_H
+#ifndef WS_BOARDS_H
+#define WS_BOARDS_H
 
 #if defined(ADAFRUIT_PYPORTAL)
 #define BOARD_ID "pyportal-tinyusb"
@@ -239,7 +239,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #else
-#warning "Board type not identified within Wippersnapper_Boards.h!"
+#warning "Board type not identified within ws_boards.h!"
 #endif
 
-#endif // ADAFRUIT_WIPPERSNAPPER_BOARDS_H
+#endif // WS_BOARDS_H
