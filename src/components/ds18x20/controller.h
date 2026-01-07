@@ -35,12 +35,13 @@ public:
   bool Handle_Ds18x20Add(ws_ds18x20_Add *msg);
   bool Handle_Ds18x20Remove(ws_ds18x20_Remove *msg);
   // Polling
-  void update();
+  void update(bool force_read_all = false);
+  bool UpdateComplete();
 
 private:
   DS18X20Model *_DS18X20_model; ///< ds18x20 model
   std::vector<std::unique_ptr<DS18X20Hardware>> _DS18X20_pins;
   int _num_drivers;
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                        // WS_DS18X20_CONTROLLER_H

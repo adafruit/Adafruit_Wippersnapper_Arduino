@@ -54,5 +54,5 @@ private:
                     pb_callback_t error_msg);
   ErrorModel *_model = nullptr; ///< Instance of ErrorModel class
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                        // WS_CONTROLLER_MODEL

@@ -36,7 +36,7 @@
 
 #define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
 
-extern wippersnapper WsV2; ///< Wippersnapper client instance
+extern wippersnapper Ws; ///< Wippersnapper client instance
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
 */
@@ -89,8 +89,8 @@ public:
             secrets.json provisioning file.
   */
   void set_ssid_pass() {
-    _ssid = WsV2._configV2.network.ssid;
-    _pass = WsV2._configV2.network.pass;
+    _ssid = Ws._configV2.network.ssid;
+    _pass = Ws._configV2.network.pass;
   }
 
   /*!
@@ -211,7 +211,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
-    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
+    memcpy(Ws._macAddrV2, mac, sizeof(mac));
   }
 
   /*!
@@ -226,9 +226,9 @@ public:
           MQTT client identifier
   */
   void setupMQTTClient(const char *clientID) {
-    WsV2._mqttV2 = new Adafruit_MQTT_Client(
-        _mqtt_client, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
-        WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+    Ws._mqttV2 = new Adafruit_MQTT_Client(
+        _mqtt_client, Ws._configV2.aio_url, Ws._configV2.io_port, clientID,
+        Ws._configV2.aio_user, Ws._configV2.aio_key);
   }
 
   /*!
@@ -280,16 +280,16 @@ protected:
       _wifi->end();
       delay(100);
       _wifi->begin();
-      WsV2.feedWDTV2();
+      Ws.feedWDTV2();
       // reset the esp32 if possible
       resetAirLift();
-      WsV2.feedWDTV2();
+      Ws.feedWDTV2();
 
       WS_DEBUG_PRINT("ESP32 booted, version: ");
       WS_PRINTER.flush();
       WS_DEBUG_PRINTLN(WiFi.firmwareVersion());
       WS_PRINTER.flush();
-      WsV2.feedWDTV2();
+      Ws.feedWDTV2();
 
       // validate co-processor's firmware version
       if (!firmwareCheck()) {
@@ -300,7 +300,7 @@ protected:
       WS_DEBUG_PRINT("Connecting to ");
       WS_DEBUG_PRINTLN(_ssid);
       WS_PRINTER.flush();
-      WsV2.feedWDTV2();
+      Ws.feedWDTV2();
       WiFi.begin(_ssid, _pass);
       _statusV2 = WS_NET_DISCONNECTED;
 

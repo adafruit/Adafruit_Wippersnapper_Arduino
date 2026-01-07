@@ -88,7 +88,7 @@ bool ServoController::PublishServoAddedMsg(const char *servo_pin,
                                            bool did_attach,
                                            ws_servo_Add *msg_add) {
   _servo_model->EncodeServoAdded(msg_add->servo_pin, did_attach);
-  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_servo_tag,
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_servo_tag,
                        _servo_model->GetServoAddedMsg())) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed publishing a ServoAdded message!");
     return false;

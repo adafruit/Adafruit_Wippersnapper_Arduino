@@ -52,5 +52,5 @@ private:
   ServoHardware *_servo_hardware[MAX_SERVOS] = {nullptr};
   int _active_servo_pins; ///< Number of active servo pins
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                        // WS_SERVO_CONTROLLER_H

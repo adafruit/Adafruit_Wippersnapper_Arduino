@@ -163,7 +163,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
 
   // If we're not in offline mode, publish a Ds18x20Added message back to the
   // broker
-  if (!WsV2._sdCardV2->isModeOffline()) {
+  if (!Ws._sdCardV2->isModeOffline()) {
     // Encode and publish a Ds18x20Added message back to the broker
     if (!_DS18X20_model->EncodeDS18x20Added(msg->onewire_pin, is_initialized)) {
       WS_DEBUG_PRINTLN(
@@ -171,7 +171,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
       return false;
     }
 
-    if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
+    if (!Ws.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
                          _DS18X20_model->GetDS18x20AddedMsg())) {
       WS_DEBUG_PRINTLN(
           "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
@@ -211,8 +211,10 @@ bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
 
 /*!
     @brief  Update/polling loop for the DS18X20 controller.
+    @param  force_read_all
+            If true, forces a read on all sensors regardless of period.
 */
-void DS18X20Controller::update() {
+void DS18X20Controller::update(bool force_read_all) {
 #ifdef DEBUG_PROFILE
   unsigned long total_start_time = millis();
 #endif
@@ -220,6 +222,13 @@ void DS18X20Controller::update() {
   // Bail out if there are no OneWire pins to poll
   if (_DS18X20_pins.empty())
     return;
+
+  // Reset did_read_send flags if forcing read all
+  if (force_read_all) {
+    for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
+      _DS18X20_pins[i]->did_read_send = false;
+    }
+  }
 
   // Iterate through the vector
   for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
@@ -230,8 +239,12 @@ void DS18X20Controller::update() {
     // Create a reference to the DS18X20Hardware object
     DS18X20Hardware &temp_dsx_driver = *(_DS18X20_pins[i]);
 
+    // (force_read_all only) - Was sensor previously read and sent?
+    if (temp_dsx_driver.did_read_send)
+      continue;
+
     // Check if the driver's timer has not expired yet
-    if (!temp_dsx_driver.IsTimerExpired()) {
+    if (!force_read_all && !temp_dsx_driver.IsTimerExpired()) {
       continue;
     }
 
@@ -243,6 +256,7 @@ void DS18X20Controller::update() {
     if (!temp_dsx_driver.ReadTemperatureC()) {
       WS_DEBUG_PRINTLN(
           "ERROR | DS18x20: Unable to read temperature in Celsius");
+      temp_dsx_driver.did_read_send = false;
       continue;
     }
 
@@ -272,29 +286,34 @@ void DS18X20Controller::update() {
     ws_ds18x20_Event *event_msg = _DS18X20_model->GetDS18x20EventMsg();
     pb_size_t event_count = event_msg->sensor_events_count;
 
-    if (!WsV2._sdCardV2->isModeOffline()) {
+    if (!Ws._sdCardV2->isModeOffline()) {
       // Encode the Ds18x20Event message
       if (!_DS18X20_model->EncodeDs18x20Event()) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to encode Ds18x20Event message");
+        temp_dsx_driver.did_read_send = false;
         continue;
       }
       // Publish the Ds18x20Event message to the broker
       WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
-      if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
+      if (!Ws.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
                            _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to publish Ds18x20Event message");
+        temp_dsx_driver.did_read_send = false;
         continue;
       }
       WS_DEBUG_PRINTLN("Published!");
+      temp_dsx_driver.did_read_send = true;
     } else {
-      if (!WsV2._sdCardV2->LogDS18xSensorEventToSD(
+      if (!Ws._sdCardV2->LogDS18xSensorEventToSD(
               _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to log DS18x20 event to SD card");
+        temp_dsx_driver.did_read_send = false;
         continue;
       }
+      temp_dsx_driver.did_read_send = true;
     }
 
 #ifdef DEBUG_PROFILE
@@ -311,4 +330,17 @@ void DS18X20Controller::update() {
     WS_DEBUG_PRINTLN(total_end_time - total_start_time);
   }
 #endif
+}
+
+/*!
+    @brief  Checks if all DS18X20 sensors have been read and their values sent.
+    @return True if all sensors have been read and sent, False otherwise.
+*/
+bool DS18X20Controller::UpdateComplete() {
+  for (size_t i = 0; i < _DS18X20_pins.size(); i++) {
+    if (!_DS18X20_pins[i]->did_read_send) {
+      return false;
+    }
+  }
+  return true;
 }

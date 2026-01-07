@@ -160,7 +160,7 @@ void GPSController::update() {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");
       } else {
         // Publish the GPSEvent to IO
-        if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_gps_tag,
+        if (!Ws.PublishD2b(ws_signal_DeviceToBroker_gps_tag,
                              _gps_model->GetGPSEvent())) {
           WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
         } else {

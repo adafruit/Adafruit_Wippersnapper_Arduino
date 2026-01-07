@@ -66,5 +66,5 @@ public:
 private:
   bool _is_secrets_file_empty = false;
 };
-extern wippersnapper WsV2;
+extern wippersnapper Ws;
 #endif // Wippersnapper_FS_V2_V2_H

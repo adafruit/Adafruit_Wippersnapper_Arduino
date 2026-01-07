@@ -43,5 +43,5 @@ private:
   PWMHardware *_pwm_hardware[MAX_PWM_PINS] = {nullptr};
   int _active_pwm_pins;
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                        // WS_PWM_CONTROLLER_H

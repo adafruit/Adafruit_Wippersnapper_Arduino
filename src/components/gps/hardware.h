@@ -150,5 +150,5 @@ private:
       const char *new_sentence); ///< Push a sentence to the NMEA ring buffer
   nmea_buffer_t _nmea_buff;      ///< NMEA ring buffer for storing sentences
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_HARDWARE_H

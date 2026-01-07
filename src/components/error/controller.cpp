@@ -66,12 +66,12 @@ bool ErrorController::Router(pb_istream_t *stream) {
 bool ErrorController::HandleBan(const ws_error_ErrorIOBan &ban) {
   WS_DEBUG_PRINTLN("[ERROR] Received IO Ban from broker");
   // Disconnect client from broker
-  if (!WsV2._mqttV2->disconnect()) {
+  if (!Ws._mqttV2->disconnect()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
 
   // Let the device fall into halted state
-  WsV2.haltErrorV2("IO MQTT Ban Error");
+  Ws.haltErrorV2("IO MQTT Ban Error");
   return true;
 }
 
@@ -107,8 +107,8 @@ bool ErrorController::HandleThrottle(const ws_error_ErrorIOThrottle &throttle) {
     time_elapsed += time_delay;
 
     // Feed the watchdog and ping MQTT to keep connection alive
-    WsV2.feedWDTV2();
-    WsV2._mqttV2->ping();
+    Ws.feedWDTV2();
+    Ws._mqttV2->ping();
   }
 
   WS_DEBUG_PRINTLN("[ERROR] Throttle period ended. Resuming normal operation.");
@@ -149,7 +149,7 @@ bool ErrorController::PublishError(pb_size_t which_component_type,
   }
 
   // Publish the ErrorD2B message to the broker
-  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_error_tag, (void *)buf)) {
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_error_tag, (void *)buf)) {
     WS_DEBUG_PRINTLN("[Error] ERROR: Unable to publish ErrorD2B message");
     return false;
   }

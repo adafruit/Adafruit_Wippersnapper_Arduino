@@ -27,7 +27,7 @@
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
-extern wippersnapper WsV2; ///< Wippersnapper client instance
+extern wippersnapper Ws; ///< Wippersnapper client instance
 
 /*!
     @brief  Class for using the ESP32 network interface.
@@ -66,15 +66,15 @@ public:
     _pass = netPass;
 
     // Move credentials to the config struct
-    strncpy(WsV2._configV2.network.ssid, _ssid,
-            sizeof(WsV2._configV2.network.ssid));
-    strncpy(WsV2._configV2.network.pass, _pass,
-            sizeof(WsV2._configV2.network.pass));
-    strncpy(WsV2._configV2.aio_key, aioKey, sizeof(WsV2._configV2.aio_key));
-    strncpy(WsV2._configV2.aio_user, aioUsername,
-            sizeof(WsV2._configV2.aio_user));
-    strncpy(WsV2._configV2.aio_url, brokerURL, sizeof(WsV2._configV2.aio_url));
-    WsV2._configV2.io_port = brokerPort;
+    strncpy(Ws._configV2.network.ssid, _ssid,
+            sizeof(Ws._configV2.network.ssid));
+    strncpy(Ws._configV2.network.pass, _pass,
+            sizeof(Ws._configV2.network.pass));
+    strncpy(Ws._configV2.aio_key, aioKey, sizeof(Ws._configV2.aio_key));
+    strncpy(Ws._configV2.aio_user, aioUsername,
+            sizeof(Ws._configV2.aio_user));
+    strncpy(Ws._configV2.aio_url, brokerURL, sizeof(Ws._configV2.aio_url));
+    Ws._configV2.io_port = brokerPort;
   }
 
   /*!
@@ -110,8 +110,8 @@ public:
   @brief  Sets the WiFi client's ssid and password.
   */
   void set_ssid_pass() {
-    _ssid = WsV2._configV2.network.ssid;
-    _pass = WsV2._configV2.network.pass;
+    _ssid = Ws._configV2.network.ssid;
+    _pass = Ws._configV2.network.pass;
   }
 
   /*!
@@ -142,13 +142,13 @@ public:
         WiFi.scanDelete(); // Free the scan result memory
         return true;
       }
-      if (WsV2._isWiFiMultiV2) {
+      if (Ws._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
+          if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
               0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
+            WS_DEBUG_PRINT(Ws._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             WiFi.scanDelete(); // Free the scan result memory
@@ -180,7 +180,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0};
     Network.macAddress(mac);
-    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
+    memcpy(Ws._macAddrV2, mac, sizeof(mac));
   }
 
   /*!
@@ -195,23 +195,23 @@ public:
           MQTT client identifier
   */
   void setupMQTTClient(const char *clientID) {
-    if (strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0 ||
-        strcmp(WsV2._configV2.aio_url, "io.adafruit.us") == 0) {
+    if (strcmp(Ws._configV2.aio_url, "io.adafruit.com") == 0 ||
+        strcmp(Ws._configV2.aio_url, "io.adafruit.us") == 0) {
       _mqtt_client_secure = new NetworkClientSecure();
       _mqtt_client_secure->setCACert(
-          strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0
+          strcmp(Ws._configV2.aio_url, "io.adafruit.com") == 0
               ? _aio_root_ca_prod
               : _aio_root_ca_staging);
-      WsV2._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_secure, WsV2._configV2.aio_url, WsV2._configV2.io_port,
-          clientID, WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+      Ws._mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_secure, Ws._configV2.aio_url, Ws._configV2.io_port,
+          clientID, Ws._configV2.aio_user, Ws._configV2.aio_key);
     } else {
       // Insecure connections require a NetworkClient object rather than a
       // NetworkClientSecure object
       _mqtt_client_insecure = new NetworkClient();
-      WsV2._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_insecure, WsV2._configV2.aio_url, WsV2._configV2.io_port,
-          clientID, WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+      Ws._mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_insecure, Ws._configV2.aio_url, Ws._configV2.io_port,
+          clientID, Ws._configV2.aio_user, Ws._configV2.aio_key);
     }
   }
 
@@ -329,7 +329,7 @@ protected:
       WiFi.setAutoReconnect(false);
       _disconnect();
       delay(100);
-      if (WsV2._isWiFiMultiV2) {
+      if (Ws._isWiFiMultiV2) {
         // multi network mode
         _wifiMulti.APlistClean();
         _wifiMulti.setAllowOpenAP(false);
@@ -337,9 +337,9 @@ protected:
         _wifiMulti.addAP(_ssid, _pass);
         // add array of alternative networks
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          if (strlen(WsV2._multiNetworksV2[i].ssid) > 0) {
-            _wifiMulti.addAP(WsV2._multiNetworksV2[i].ssid,
-                             WsV2._multiNetworksV2[i].pass);
+          if (strlen(Ws._multiNetworksV2[i].ssid) > 0) {
+            _wifiMulti.addAP(Ws._multiNetworksV2[i].ssid,
+                             Ws._multiNetworksV2[i].pass);
           }
         }
         if (_wifiMulti.run(20000) == WL_CONNECTED) {
@@ -351,10 +351,10 @@ protected:
         // single network mode
         WiFi.begin(_ssid, _pass);
         _statusV2 = WS_NET_DISCONNECTED;
-        WsV2.feedWDTV2();
+        Ws.feedWDTV2();
         delay(5000);
       }
-      WsV2.feedWDTV2();
+      Ws.feedWDTV2();
     }
   }
 

@@ -27,7 +27,7 @@
 #include "Arduino.h"
 #include "wippersnapper.h"
 
-extern wippersnapper WsV2;
+extern wippersnapper Ws;
 
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.

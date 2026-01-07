@@ -54,7 +54,7 @@ private:
   bool _has_ext_pwr_components; ///< Whether externally powered components are
                                 ///< present (i.e: tft, i2c, neopixel, etc)
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 
 #endif // ARDUINO_ARCH_ESP32
 #endif // WS_SLEEP_CONTROLLER_H

@@ -96,7 +96,7 @@ bool PixelsController::Handle_Pixels_Add(ws_pixels_Add *msg) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to encode PixelsAdded message!");
     return false;
   }
-  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_pixels_tag,
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_pixels_tag,
                        _pixels_model->GetPixelsAddedMsg())) {
     WS_DEBUG_PRINTLN("[pixels]: Unable to publish PixelsAdded message!");
     return false;

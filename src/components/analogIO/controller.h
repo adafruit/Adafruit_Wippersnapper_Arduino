@@ -14,11 +14,11 @@
  */
 #ifndef WS_ANALOGIO_CONTROLLER_H
 #define WS_ANALOGIO_CONTROLLER_H
-#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 
-class wippersnapper; ///< Forward declaration
+class wippersnapper;    ///< Forward declaration
 class AnalogIOModel;    ///< Forward declaration
 class AnalogIOHardware; ///< Forward declaration
 
@@ -31,6 +31,8 @@ struct analogioPin {
   ulong period;             ///< The pin's period, in milliseconds.
   ulong prv_period;         ///< The pin's previous period, in milliseconds.
   ws_sensor_Type read_mode; ///< Type of analog read to perform
+  bool
+      did_read_send; ///< True if the last read was sent to IO, False otherwise.
 };
 
 /*!
@@ -46,7 +48,8 @@ public:
   bool Router(pb_istream_t *stream);
   bool Handle_AnalogIOAdd(ws_analogio_Add *msg);
   bool Handle_AnalogIORemove(ws_analogio_Remove *msg);
-  void update();
+  void update(bool force_read_all = false);
+  bool UpdateComplete();
 
   void SetTotalAnalogPins(uint8_t total_pins);
   void SetRefVoltage(float voltage);
@@ -55,11 +58,10 @@ private:
   bool IsPinTimerExpired(analogioPin *pin, ulong cur_time);
   bool EncodePublishPinEvent(uint8_t pin, float value,
                              ws_sensor_Type read_type);
-  bool EncodePublishPinValue(uint8_t pin, uint16_t value);
-  bool EncodePublishPinVoltage(uint8_t pin, float value);
+  bool EncodePublishPin(uint8_t pin, float value, ws_sensor_Type sensor_type);
   AnalogIOModel *_analogio_model;          ///< AnalogIO model
   AnalogIOHardware *_analogio_hardware;    ///< AnalogIO hardware
   std::vector<analogioPin> _analogio_pins; ///< Vector of analogio pins
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
-#endif                        // WS_ANALOGIO_CONTROLLER_H
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
+#endif                   // WS_ANALOGIO_CONTROLLER_H

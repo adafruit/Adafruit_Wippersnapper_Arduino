@@ -577,7 +577,7 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
     const ws_i2c_DeviceDescriptor &device_descriptor,
     const ws_i2c_DeviceStatus &device_status) {
   // If we're in offline mode, don't publish out to IO
-  if (WsV2._sdCardV2->isModeOffline())
+  if (Ws._sdCardV2->isModeOffline())
     return true; // Back out if we're in offline mode
 
   // Encode the I2cDeviceAddedorReplaced message and publish it to IO
@@ -587,7 +587,7 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
         "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
     return false;
   }
-  if (!WsV2.PublishD2b(ws_signal_BrokerToDevice_i2c_tag,
+  if (!Ws.PublishD2b(ws_signal_BrokerToDevice_i2c_tag,
                        _i2c_model->GetMsgI2cDeviceAddedOrReplaced())) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish I2cDeviceAddedorReplaced "
                      "message to IO!");
@@ -894,8 +894,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   if (!IsBusStatusOK(use_alt_bus)) {
     WS_DEBUG_PRINTLN(
         "[i2c] I2C bus is stuck or not operational, reset the board!");
-    if (WsV2._sdCardV2->isModeOffline()) {
-      WsV2.haltErrorV2(" ", WS_LED_STATUS_ERROR_RUNTIME,
+    if (Ws._sdCardV2->isModeOffline()) {
+      Ws.haltErrorV2(" ", WS_LED_STATUS_ERROR_RUNTIME,
                        false); // doesn't return, halts
     }
     if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status)) {
@@ -912,7 +912,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     WS_DEBUG_PRINT("[i2c] Initializing MUX driver...");
     if (!InitMux(device_name, device_descriptor.mux_address, use_alt_bus)) {
       // TODO [Online]: Publish back out to IO here!
-      WsV2.haltErrorV2("[i2c] Failed to initialize MUX driver!",
+      Ws.haltErrorV2("[i2c] Failed to initialize MUX driver!",
                        WS_LED_STATUS_ERROR_RUNTIME, false);
     }
     WS_DEBUG_PRINTLN("OK!");
@@ -928,7 +928,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
       ConfigureMuxChannel(device_descriptor.mux_channel, use_alt_bus);
       did_set_mux_ch = true;
     } else {
-      WsV2.haltErrorV2("[i2c] Device requires a MUX but MUX not present "
+      Ws.haltErrorV2("[i2c] Device requires a MUX but MUX not present "
                        "within config.json!",
                        WS_LED_STATUS_ERROR_RUNTIME, false);
     }
@@ -960,7 +960,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     WS_DEBUG_PRINTLN("OK!");
   } else if (is_gps) {
     WS_DEBUG_PRINT("[i2c] Creating a GPS driver...");
-    if (!WsV2._gps_controller->AddGPS(bus, device_descriptor.device_address,
+    if (!Ws._gps_controller->AddGPS(bus, device_descriptor.device_address,
                                       &msg->gps_config)) {
       did_init = false;
       WS_DEBUG_PRINTLN("FAILURE!");
@@ -980,8 +980,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
 
   if (!did_init) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver failed to initialize!");
-    if (WsV2._sdCardV2->isModeOffline()) {
-      WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
+    if (Ws._sdCardV2->isModeOffline()) {
+      Ws.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
                        "the correct value for i2cDeviceName?\n\tDid you set "
                        "the correct value for"
                        "i2cDeviceAddress?",
@@ -1045,8 +1045,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
 
   if (!is_output) {
     if (!drv->begin()) {
-      if (WsV2._sdCardV2->isModeOffline()) {
-        WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
+      if (Ws._sdCardV2->isModeOffline()) {
+        Ws.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
                          "the correct value for i2cDeviceName?\n\tDid you set "
                          "the correct value for"
                          "i2cDeviceAddress?",
@@ -1056,8 +1056,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     _i2c_drivers.push_back(drv);
   } else {
     if (!drv_out->begin()) {
-      if (WsV2._sdCardV2->isModeOffline()) {
-        WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
+      if (Ws._sdCardV2->isModeOffline()) {
+        Ws.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
                          "the correct value for i2cDeviceName?\n\tDid you set "
                          "the correct value for"
                          "i2cDeviceAddress?",
@@ -1080,7 +1080,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     }
   }
 
-  if (WsV2._sdCardV2->isModeOffline() != true) {
+  if (Ws._sdCardV2->isModeOffline() != true) {
     // Create and publish the I2cDeviceAddedorReplaced message to the broker
     WS_DEBUG_PRINTLN("[i2c] MQTT Publish I2cDeviceAddedorReplaced not yet "
                      "implemented!");
@@ -1156,8 +1156,8 @@ void I2cController::update() {
     _i2c_model->EncodeI2cDeviceEvent();
 
     // Handle the DeviceEvent message
-    if (WsV2._sdCardV2->isModeOffline()) {
-      if (!WsV2._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
+    if (Ws._sdCardV2->isModeOffline()) {
+      if (!Ws._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
         WS_DEBUG_PRINTLN(
             "[i2c] ERROR: Unable to log the I2cDeviceEvent to SD!");
         statusLEDSolid(WS_LED_STATUS_FS_WRITE);

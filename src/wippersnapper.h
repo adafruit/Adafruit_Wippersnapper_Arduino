@@ -62,7 +62,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      WsV2.feedWDTV2();                                                        \
+      Ws.feedWDTV2();                                                        \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -298,6 +298,6 @@ protected:
   const char *_deviceIdV2; /*!< Adafruit IO+ device identifier string */
   char *_device_uidV2;     /*!< Unique device identifier  */
 };
-extern wippersnapper WsV2; ///< Global member variable for callbacks
+extern wippersnapper Ws; ///< Global member variable for callbacks
 
 #endif // WIPPERSNAPPER_H

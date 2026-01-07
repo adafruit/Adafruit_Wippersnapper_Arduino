@@ -37,7 +37,7 @@
 // static const char *fingerprint PROGMEM =  "4E C1 52 73 24 A8 36 D6 7A 4C 67
 // C7 91 0C 0A 22 B9 2D 5B CA";
 
-extern wippersnapper WsV2;
+extern wippersnapper Ws;
 
 /*!
     @brief  Class for interacting with the Espressif ESP8266's network
@@ -99,8 +99,8 @@ public:
             ESP8266's LittleFS.
   */
   void set_ssid_pass() {
-    _ssid = WsV2._configV2.network.ssid;
-    _pass = WsV2._configV2.network.pass;
+    _ssid = Ws._configV2.network.ssid;
+    _pass = Ws._configV2.network.pass;
   }
 
   /*!
@@ -130,13 +130,13 @@ public:
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
-      if (WsV2._isWiFiMultiV2) {
+      if (Ws._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
+          if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
               0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
+            WS_DEBUG_PRINT(Ws._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
@@ -165,7 +165,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
-    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
+    memcpy(Ws._macAddrV2, mac, sizeof(mac));
   }
 
   /*!
@@ -181,15 +181,15 @@ public:
   */
   void setupMQTTClient(const char *clientID) {
     // Uncomment the following lines to use MQTT/SSL. You will need to
-    // re-compile after. _wifi_client->setFingerprint(fingerprint); WsV2._mqttV2
-    // = new Adafruit_MQTT_Client(_wifi_client, WsV2._configV2.aio_url,
-    // WsV2._configV2.io_port, clientID, WsV2._configV2.aio_user,
-    // WsV2._configV2.aio_key);
-    if (WsV2._configV2.io_port == 8883)
-      WsV2._configV2.io_port = 1883;
-    WsV2._mqttV2 = new Adafruit_MQTT_Client(
-        _wifi_client, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
-        WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+    // re-compile after. _wifi_client->setFingerprint(fingerprint); Ws._mqttV2
+    // = new Adafruit_MQTT_Client(_wifi_client, Ws._configV2.aio_url,
+    // Ws._configV2.io_port, clientID, Ws._configV2.aio_user,
+    // Ws._configV2.aio_key);
+    if (Ws._configV2.io_port == 8883)
+      Ws._configV2.io_port = 1883;
+    Ws._mqttV2 = new Adafruit_MQTT_Client(
+        _wifi_client, Ws._configV2.aio_url, Ws._configV2.io_port, clientID,
+        Ws._configV2.aio_user, Ws._configV2.aio_key);
   }
 
   /*!
@@ -242,14 +242,14 @@ protected:
       _statusV2 = WS_NET_DISCONNECTED;
       delay(100);
 
-      if (WsV2._isWiFiMultiV2) {
+      if (Ws._isWiFiMultiV2) {
         // multi network mode
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          if (strlen(WsV2._multiNetworksV2[i].ssid) > 0 &&
-              (_wifiMulti.existsAP(WsV2._multiNetworksV2[i].ssid) == false)) {
+          if (strlen(Ws._multiNetworksV2[i].ssid) > 0 &&
+              (_wifiMulti.existsAP(Ws._multiNetworksV2[i].ssid) == false)) {
             // doesn't exist, add it
-            _wifiMulti.addAP(WsV2._multiNetworksV2[i].ssid,
-                             WsV2._multiNetworksV2[i].pass);
+            _wifiMulti.addAP(Ws._multiNetworksV2[i].ssid,
+                             Ws._multiNetworksV2[i].pass);
           }
         }
         // add default network
@@ -284,7 +284,7 @@ protected:
           _statusV2 = WS_NET_DISCONNECTED;
         }
       }
-      WsV2.feedWDTV2();
+      Ws.feedWDTV2();
     }
   }
 

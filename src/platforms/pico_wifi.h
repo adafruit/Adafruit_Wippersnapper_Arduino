@@ -30,7 +30,7 @@
 #include "Arduino.h"
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
-extern wippersnapper WsV2;
+extern wippersnapper Ws;
 
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
@@ -79,8 +79,8 @@ public:
   @brief  Sets the WiFi client's ssid and password.
   */
   void set_ssid_pass() {
-    _ssid = WsV2._configV2.network.ssid;
-    _pass = WsV2._configV2.network.pass;
+    _ssid = Ws._configV2.network.ssid;
+    _pass = Ws._configV2.network.pass;
   }
 
   /*!
@@ -110,12 +110,12 @@ public:
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
-      if (WsV2._isWiFiMultiV2) {
+      if (Ws._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i)) == 0) {
+          if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i)) == 0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
+            WS_DEBUG_PRINT(Ws._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
@@ -144,7 +144,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0};
     WiFi.macAddress(mac);
-    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
+    memcpy(Ws._macAddrV2, mac, sizeof(mac));
   }
 
   /*!
@@ -159,21 +159,21 @@ public:
           MQTT client identifier
   */
   void setupMQTTClient(const char *clientID) {
-    if (strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0 ||
-        strcmp(WsV2._configV2.aio_url, "io.adafruit.us") == 0) {
+    if (strcmp(Ws._configV2.aio_url, "io.adafruit.com") == 0 ||
+        strcmp(Ws._configV2.aio_url, "io.adafruit.us") == 0) {
       _mqtt_client_secure = new WiFiClientSecure();
       _mqtt_client_secure->setCACert(
-          strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0
+          strcmp(Ws._configV2.aio_url, "io.adafruit.com") == 0
               ? _aio_root_ca_prod
               : _aio_root_ca_staging);
-      WsV2._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_secure, WsV2._configV2.aio_url, WsV2._configV2.io_port,
-          clientID, WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+      Ws._mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_secure, Ws._configV2.aio_url, Ws._configV2.io_port,
+          clientID, Ws._configV2.aio_user, Ws._configV2.aio_key);
     } else {
       _mqtt_client_insecure = new WiFiClient();
-      WsV2._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_insecure, WsV2._configV2.aio_url, WsV2._configV2.io_port,
-          clientID, WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+      Ws._mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_insecure, Ws._configV2.aio_url, Ws._configV2.io_port,
+          clientID, Ws._configV2.aio_user, Ws._configV2.aio_key);
     }
   }
 
@@ -275,33 +275,33 @@ protected:
       return;
 
     WiFi.mode(WIFI_STA);
-    WsV2.feedWDTV2();
+    Ws.feedWDTV2();
     WiFi.setTimeout(20000);
-    WsV2.feedWDTV2();
+    Ws.feedWDTV2();
 
     if (strlen(_ssid) == 0) {
       _statusV2 = WS_SSID_INVALID;
     } else {
       _disconnect();
       delay(5000);
-      WsV2.feedWDTV2();
-      if (WsV2._isWiFiMultiV2) {
+      Ws.feedWDTV2();
+      if (Ws._isWiFiMultiV2) {
         // multi network mode
         _wifiMulti.clearAPList();
         // add default network
         _wifiMulti.addAP(_ssid, _pass);
         // add array of alternative networks
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          _wifiMulti.addAP(WsV2._multiNetworksV2[i].ssid,
-                           WsV2._multiNetworksV2[i].pass);
+          _wifiMulti.addAP(Ws._multiNetworksV2[i].ssid,
+                           Ws._multiNetworksV2[i].pass);
         }
-        WsV2.feedWDTV2();
+        Ws.feedWDTV2();
         if (_wifiMulti.run(10000) == WL_CONNECTED) {
-          WsV2.feedWDTV2();
+          Ws.feedWDTV2();
           _statusV2 = WS_NET_CONNECTED;
           return;
         }
-        WsV2.feedWDTV2();
+        Ws.feedWDTV2();
       } else {
         WiFi.begin(_ssid, _pass);
 
@@ -330,10 +330,10 @@ protected:
       @brief  Disconnects from the wireless network.
   */
   void _disconnect() {
-    WsV2.feedWDTV2();
+    Ws.feedWDTV2();
     WiFi.disconnect();
     delay(5000);
-    WsV2.feedWDTV2();
+    Ws.feedWDTV2();
   }
 };
 

@@ -51,12 +51,12 @@ bool CheckinModel::Checkin(const char *hardware_uid,
 
   // Add wake cause info to checkin for ESP32x platforms
 #ifdef ARDUINO_ARCH_ESP32
-  if (WsV2._sleep_controller->DidWakeFromSleep()) {
+  if (Ws._sleep_controller->DidWakeFromSleep()) {
   // We woke from a sleep mode, add wake cause info
   _CheckinD2B.payload.request.has_wake_cause = true;
   _CheckinD2B.payload.request.wake_cause.which_WakeCause = ws_sleep_Wake_esp_tag;
-  _CheckinD2B.payload.request.wake_cause.WakeCause.esp = WsV2._sleep_controller->GetEspWakeCause();
-  _CheckinD2B.payload.request.wake_cause.sleep_duration = WsV2._sleep_controller->GetSleepDuration();
+  _CheckinD2B.payload.request.wake_cause.WakeCause.esp = Ws._sleep_controller->GetEspWakeCause();
+  _CheckinD2B.payload.request.wake_cause.sleep_duration = Ws._sleep_controller->GetSleepDuration();
   }
 #endif
 
@@ -82,7 +82,7 @@ bool CheckinModel::Checkin(const char *hardware_uid,
   WS_DEBUG_PRINTLN("[checkin] Publishing CheckinRequest to broker...");
   WS_DEBUG_PRINT("Free heap: ");
   WS_DEBUG_PRINTLN(ESP.getFreeHeap());
-  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to publish CheckinRequest message!");
     return false;
@@ -142,11 +142,11 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
 void CheckinModel::ConfigureControllers() {
   WS_DEBUG_PRINTLN(
       "[checkin] Configuring controllers based on board definition...");
-  WsV2.digital_io_controller->SetMaxDigitalPins(
+  Ws.digital_io_controller->SetMaxDigitalPins(
       _CheckinB2D.payload.response.total_gpio_pins);
-  WsV2.analogio_controller->SetRefVoltage(
+  Ws.analogio_controller->SetRefVoltage(
       _CheckinB2D.payload.response.reference_voltage);
-  WsV2.analogio_controller->SetTotalAnalogPins(
+  Ws.analogio_controller->SetTotalAnalogPins(
       _CheckinB2D.payload.response.total_analog_pins);
   WS_DEBUG_PRINTLN("[checkin] Controllers configured successfully!");
 }
@@ -175,32 +175,32 @@ bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
   switch (component.which_payload) {
   case ws_checkin_ComponentAdd_digitalio_tag:
     WS_DEBUG_PRINTLN("DigitalIO");
-    return WsV2.digital_io_controller->Handle_DigitalIO_Add(
+    return Ws.digital_io_controller->Handle_DigitalIO_Add(
         &component.payload.digitalio);
   case ws_checkin_ComponentAdd_analogio_tag:
     WS_DEBUG_PRINTLN("AnalogIO");
-    return WsV2.analogio_controller->Handle_AnalogIOAdd(
+    return Ws.analogio_controller->Handle_AnalogIOAdd(
         &component.payload.analogio);
   case ws_checkin_ComponentAdd_servo_tag:
     WS_DEBUG_PRINTLN("Servo");
-    return WsV2._servo_controller->Handle_Servo_Add(&component.payload.servo);
+    return Ws._servo_controller->Handle_Servo_Add(&component.payload.servo);
   case ws_checkin_ComponentAdd_pwm_tag:
     WS_DEBUG_PRINTLN("PWM");
-    return WsV2._pwm_controller->Handle_PWM_Add(&component.payload.pwm);
+    return Ws._pwm_controller->Handle_PWM_Add(&component.payload.pwm);
   case ws_checkin_ComponentAdd_pixels_tag:
     WS_DEBUG_PRINTLN("Pixels");
-    return WsV2._pixels_controller->Handle_Pixels_Add(
+    return Ws._pixels_controller->Handle_Pixels_Add(
         &component.payload.pixels);
   case ws_checkin_ComponentAdd_ds18x20_tag:
     WS_DEBUG_PRINTLN("DS18x20");
-    return WsV2._ds18x20_controller->Handle_Ds18x20Add(
+    return Ws._ds18x20_controller->Handle_Ds18x20Add(
         &component.payload.ds18x20);
   case ws_checkin_ComponentAdd_uart_tag:
     WS_DEBUG_PRINTLN("UART");
-    return WsV2._uart_controller->Handle_UartAdd(&component.payload.uart);
+    return Ws._uart_controller->Handle_UartAdd(&component.payload.uart);
   case ws_checkin_ComponentAdd_i2c_tag:
     WS_DEBUG_PRINTLN("I2C");
-    return WsV2._i2c_controller->Handle_I2cDeviceAddOrReplace(
+    return Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(
         &component.payload.i2c);
   default:
     WS_DEBUG_PRINTLN("UNKNOWN COMPONENT TYPE!");
@@ -252,7 +252,7 @@ bool CheckinModel::Complete() {
 
   // Publish the message
   WS_DEBUG_PRINTLN("[checkin] Publishing Complete message to broker...");
-  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &completeMsg)) {
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &completeMsg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to publish Complete message!");
     return false;
   }

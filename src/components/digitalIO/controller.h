@@ -32,6 +32,7 @@ struct DigitalIOPin {
   bool prv_pin_value;                   ///< The pin's previous value.
   ulong pin_period;                     ///< The pin's period.
   ulong prv_pin_time;                   ///< The pin's previous time.
+  bool did_read_send;                   ///< True if the last read was sent to IO, False otherwise.
 };
 
 class DigitalIOModel;    // Forward declaration
@@ -50,7 +51,8 @@ public:
   bool Handle_DigitalIO_Add(ws_digitalio_Add *msg);
   bool Handle_DigitalIO_Remove(ws_digitalio_Remove *msg);
   bool Handle_DigitalIO_Write(ws_digitalio_Write *msg);
-  void update();
+  void update(bool force_read_all = false);
+  bool UpdateComplete();
 
   // Called once per-run, during CheckinResponse processing
   void SetMaxDigitalPins(uint8_t max_digital_pins);
@@ -67,5 +69,5 @@ private:
   DigitalIOModel *_dio_model;
   DigitalIOHardware *_dio_hardware;
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                        // WS_DIGITALIO_CONTROLLER_H

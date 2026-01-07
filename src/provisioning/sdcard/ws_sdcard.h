@@ -124,5 +124,5 @@ private:
   uint32_t _soft_rtc_counter; ///< Holds the counter for a "soft rtc"
   bool _use_test_data;        ///< True if sample data is being used for testing
 };
-extern wippersnapper WsV2;
+extern wippersnapper Ws;
 #endif // WS_SDCARD_H

@@ -112,5 +112,5 @@ private:
   std::vector<drvOutputBase *>
       _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                        // WS_I2C_CONTROLLER_H

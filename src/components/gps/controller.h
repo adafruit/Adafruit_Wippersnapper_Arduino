@@ -39,5 +39,5 @@ private:
   GPSModel *_gps_model;                    ///< GPS model instance
   std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_CONTROLLER_H

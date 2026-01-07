@@ -47,5 +47,5 @@ private:
   uint8_t _num_strands;                       ///< Number of pixel strands
   uint16_t GetStrandIndex(uint16_t pin_data); // Returns 0xFF if not found
 };
-extern wippersnapper WsV2; ///< Global V2 instance
+extern wippersnapper Ws; ///< Global V2 instance
 #endif                        // WS_PIXELS_CONTROLLER_H

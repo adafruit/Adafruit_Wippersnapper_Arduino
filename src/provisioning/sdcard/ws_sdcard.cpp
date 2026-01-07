@@ -19,9 +19,9 @@
 */
 ws_sdcard::ws_sdcard()
 #ifdef SD_USE_SPI_1
-    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
+    : _sd_spi_cfg(Ws.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
 #else
-    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
+    : _sd_spi_cfg(Ws.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
 #endif
   is_mode_offline = false;
   _use_test_data = false;
@@ -29,7 +29,7 @@ ws_sdcard::ws_sdcard()
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
-  if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR)
+  if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
     return;
 
   if (!_sd.begin(_sd_spi_cfg)) {
@@ -202,11 +202,11 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
 */
 void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
   // Configure controllers
-  WsV2.digital_io_controller->SetMaxDigitalPins(
+  Ws.digital_io_controller->SetMaxDigitalPins(
       exported_from_device["maxDigitalPins"] | 0);
-  WsV2.analogio_controller->SetTotalAnalogPins(
+  Ws.analogio_controller->SetTotalAnalogPins(
       exported_from_device["maxAnalogPins"] | 0);
-  WsV2.analogio_controller->SetRefVoltage(exported_from_device["refVoltage"] |
+  Ws.analogio_controller->SetRefVoltage(exported_from_device["refVoltage"] |
                                           0.0f);
   // Since `secrets.json` is unused in offline mode, use the status LED
   // brightness from here instead
@@ -549,7 +549,7 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
         "[SD] Runtime Error: Unable to encode D2B signal message!");
     return false;
   }
-  WsV2._sharedConfigBuffers.push_back(std::move(tempBuf));
+  Ws._sharedConfigBuffers.push_back(std::move(tempBuf));
   return true;
 }
 
@@ -621,13 +621,13 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                                       const JsonObject &timer_config,
                                       int run_duration) {
   // Configure the sleep enter message using the model
-  WsV2._sleep_controller->GetModel()->SetSleepEnterTimer(
+  Ws._sleep_controller->GetModel()->SetSleepEnterTimer(
       sleep_config["lock"], sleep_config["mode"], run_duration,
       timer_config["duration"]);
 
   // Pass the message directly to the sleep controller
-  return WsV2._sleep_controller->Handle_Sleep_Enter(
-      WsV2._sleep_controller->GetModel()->GetSleepEnterMsg());
+  return Ws._sleep_controller->Handle_Sleep_Enter(
+      Ws._sleep_controller->GetModel()->GetSleepEnterMsg());
 }
 
 /*!
@@ -645,13 +645,13 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
                                     const JsonObject &pin_config,
                                     int run_duration) {
   // Configure the sleep enter message using the model
-  WsV2._sleep_controller->GetModel()->SetSleepEnterExt0(
+  Ws._sleep_controller->GetModel()->SetSleepEnterExt0(
       sleep_config["lock"], sleep_config["mode"], run_duration,
       pin_config["name"], pin_config["level"], pin_config["pull"]);
 
   // Pass the message directly to the sleep controller
-  return WsV2._sleep_controller->Handle_Sleep_Enter(
-      WsV2._sleep_controller->GetModel()->GetSleepEnterMsg());
+  return Ws._sleep_controller->Handle_Sleep_Enter(
+      Ws._sleep_controller->GetModel()->GetSleepEnterMsg());
 }
 
 /*!
@@ -668,7 +668,7 @@ bool ws_sdcard::parseConfigFile() {
   // Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
-  doc = WsV2._config_doc;
+  doc = Ws._config_doc;
 #else
   // Use test data rather than data from the filesystem
   if (!_use_test_data) {

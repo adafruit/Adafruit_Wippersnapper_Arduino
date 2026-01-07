@@ -132,7 +132,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     return false;
   case ws_uart_DeviceType_DT_GPS:
     WS_DEBUG_PRINTLN("[uart] Adding GPS device..");
-    if (!WsV2._gps_controller->AddGPS(uart_hardware->GetHardwareSerial(),
+    if (!Ws._gps_controller->AddGPS(uart_hardware->GetHardwareSerial(),
                                       &cfg_device.config.gps)) {
       WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS device!");
       delete uart_hardware; // cleanup
@@ -181,7 +181,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   }
 
   // Are we in offline mode?
-  if (WsV2._sdCardV2->isModeOffline())
+  if (Ws._sdCardV2->isModeOffline())
     return true; // Don't publish to IO in offline mode
 
   // Encode and publish out to Adafruit IO
@@ -198,7 +198,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // TODO: Unsure why this is causing a crash on GPS, figure out later
   // Currently commented out to prevent crashes
   /*   if
-    (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_uart_added_tag,
+    (!Ws.PublishD2b(wippersnapper_signal_DeviceToBroker_uart_added_tag,
                             _uart_model->GetUartAddedMsg())) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to
     IO!"); return false;
@@ -298,17 +298,17 @@ void UARTController::update() {
     // Encode the UART input event message
     if (_uart_model->EncodeUartInputEvent()) {
       // Handle the UartInputEvent message
-      if (WsV2._sdCardV2->isModeOffline()) {
+      if (Ws._sdCardV2->isModeOffline()) {
         // TODO: This is UNIMPLEMENTED!
         // In offline mode, log to SD card
         /* if
-        (!WsV2._sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
+        (!Ws._sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
         { WS_DEBUG_PRINTLN("[uart] ERROR: Unable to log the UartInputEvent to
         SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE);
         } */
       } else {
         // In online mode, publish to Adafruit IO
-        if (!WsV2.PublishD2b(ws_signal_BrokerToDevice_uart_tag,
+        if (!Ws.PublishD2b(ws_signal_BrokerToDevice_uart_tag,
                              _uart_model->GetUartInputEventMsg())) {
           WS_DEBUG_PRINTLN(
               "[uart] ERROR: Unable to publish UartInputEvent to IO!");

@@ -49,5 +49,5 @@ private:
   std::vector<drvUartBase *>
       _uart_drivers; ///< Vector of UART device drivers (eg: PM2.5, etc.)
 };
-extern wippersnapper WsV2; ///< Wippersnapper V2 instance
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                        // WS_UART_CONTROLLER_H
