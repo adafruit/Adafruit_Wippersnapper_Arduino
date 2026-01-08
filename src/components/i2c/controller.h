@@ -85,7 +85,8 @@ class I2cController {
 public:
   I2cController();
   ~I2cController();
-  void update();
+  void update(bool force = false);
+  bool UpdateComplete();
   // Routing //
   bool Router(pb_istream_t *stream);
   bool Handle_I2cDeviceAddOrReplace(ws_i2c_DeviceAddOrReplace *msg);

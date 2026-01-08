@@ -228,10 +228,10 @@ bool AnalogIOController::EncodePublishPin(uint8_t pin, float value,
 
 /*!
     @brief  Update/polling loop for the AnalogIO controller.
-    @param  force_read_all
+    @param  force
             If true, forces a read on all pins regardless of period.
 */
-void AnalogIOController::update(bool force_read_all) {
+void AnalogIOController::update(bool force) {
   // Bail-out if the vector is empty
   if (_analogio_pins.empty()) {
     return;
@@ -243,14 +243,14 @@ void AnalogIOController::update(bool force_read_all) {
     // Create a pin object for this iteration
     analogioPin &pin = _analogio_pins[i];
 
-    // (force_read_all only) - Was pin previously read and sent?
+    // (force only) - Was pin previously read and sent?
     if (pin.did_read_send)
       continue;
 
     // Go to the next pin if the period hasn't expired yet or if we're not
     // forcing a read across all pins
     ulong cur_time = millis();
-    if (!IsPinTimerExpired(&pin, cur_time) && !force_read_all)
+    if (!IsPinTimerExpired(&pin, cur_time) && !force)
       continue;
 
     // Pins timer has expired, lets read the pin

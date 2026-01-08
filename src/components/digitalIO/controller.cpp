@@ -354,10 +354,10 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
 /*!
     @brief  Iterates through the digital pins and updates their values
       (if necessary) and publishes the event to the broker.
-    @param  force_read_all
+    @param  force
             If true, forces a read on all pins regardless of timers/events.
 */
-void DigitalIOController::update(bool force_read_all) {
+void DigitalIOController::update(bool force) {
   // Bail out if we have no digital input pins to poll
   if (_pins_input.empty())
     return;
@@ -368,12 +368,12 @@ void DigitalIOController::update(bool force_read_all) {
     // Create a pin object for this iteration
     DigitalIOPin &pin = _pins_input[i];
     
-    // (force_read_all only) - Was pin previously read and sent?
+    // (force only) - Was pin previously read and sent?
     if (pin.did_read_send)
       continue;
 
     // Skip normal checks if we're forcing a read
-    if (!force_read_all) {
+    if (!force) {
       switch (pin.sample_mode) {
       case ws_digitalio_SampleMode_SM_EVENT:
         // Check if the pin value has changed

@@ -33,7 +33,7 @@ public:
   ~GPSController();
   bool AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config);
   bool AddGPS(TwoWire *wire, uint32_t i2c_addr, ws_gps_Config *gps_config);
-  void update(bool force_read_all = false);
+  void update(bool force = false);
   bool UpdateComplete();
 
 private:

@@ -48,7 +48,7 @@ public:
   bool Router(pb_istream_t *stream);
   bool Handle_AnalogIOAdd(ws_analogio_Add *msg);
   bool Handle_AnalogIORemove(ws_analogio_Remove *msg);
-  void update(bool force_read_all = false);
+  void update(bool force = false);
   bool UpdateComplete();
 
   void SetTotalAnalogPins(uint8_t total_pins);

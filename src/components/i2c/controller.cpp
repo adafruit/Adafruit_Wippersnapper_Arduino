@@ -1112,9 +1112,11 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
 /*!
     @brief    Handles polling, reading, and logger for i2c devices
               attached to the I2C controller.
+    @param    force
+                True to force an update regardless of sensor period,
+                False to respect existing sensor period.
 */
-void I2cController::update() {
-  // WS_DEBUG_PRINTLN("[i2c] Updating I2C controller...");
+void I2cController::update(bool force) {
   if (_i2c_drivers.empty())
     return; // bail out if no drivers exist
 
@@ -1124,10 +1126,13 @@ void I2cController::update() {
     if (sensor_count == 0)
       continue; // bail out if driver has no sensors enabled
 
+    if (drv->GetDidReadSend())
+      continue; // bail out if driver has already read and sent data to IO
+
     // Did driver's period elapse yet?
     ulong cur_time = millis();
-    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod()) {
-      continue; // bail out if the period hasn't elapsed yet
+    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod() && !force) {
+      continue; // bail out if the period hasn't elapsed yet or we aren't forcing an update
     }
 
     // Optionally configure the I2C MUX
@@ -1155,20 +1160,36 @@ void I2cController::update() {
         drv->GetMuxAddress(), mux_channel);
     _i2c_model->EncodeI2cDeviceEvent();
 
-    // Handle the DeviceEvent message
-    if (Ws._sdCardV2->isModeOffline()) {
+    if (!Ws._sdCardV2->isModeOffline()) {
+      // TODO: Implement online mode publishing
+      drv->SetDidReadSend(true);
+    } else {
       if (!Ws._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
         WS_DEBUG_PRINTLN(
             "[i2c] ERROR: Unable to log the I2cDeviceEvent to SD!");
         statusLEDSolid(WS_LED_STATUS_FS_WRITE);
       }
-    } else {
-      // TODO: This needs to be implemented for online mode
-      WS_DEBUG_PRINTLN(
-          "[i2c] MQTT Publish I2cDeviceEvent not yet implemented!");
+      drv->SetDidReadSend(true);
     }
+
 
     cur_time = millis();
     drv->SetSensorPeriodPrv(cur_time);
   }
+}
+
+/*!
+    @brief    Checks if all I2C drivers have completed their read/send cycle.
+    @returns  True if all drivers have completed their read/send cycle,
+              False otherwise.
+*/
+bool I2cController::UpdateComplete() {
+    for (auto *drv : _i2c_drivers) {
+        if (drv->GetEnabledSensorCnt() == 0)
+        continue; // skip drivers with no enabled sensors
+    
+        if (!drv->GetDidReadSend())
+        return false; // found a driver that hasn't completed its read/send
+    }
+    return true; // all drivers have completed their read/send
 }

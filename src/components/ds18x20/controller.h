@@ -35,7 +35,7 @@ public:
   bool Handle_Ds18x20Add(ws_ds18x20_Add *msg);
   bool Handle_Ds18x20Remove(ws_ds18x20_Remove *msg);
   // Polling
-  void update(bool force_read_all = false);
+  void update(bool force = false);
   bool UpdateComplete();
 
 private:

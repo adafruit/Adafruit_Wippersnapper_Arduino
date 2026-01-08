@@ -40,7 +40,7 @@ public:
   bool Handle_UartRemove(ws_uart_Remove *msg);
   bool Handle_UartWrite(ws_uart_Write *msg);
   // Polling
-  void update(bool force_read_all = false);
+  void update(bool force = false);
   bool UpdateComplete();
 
 private:

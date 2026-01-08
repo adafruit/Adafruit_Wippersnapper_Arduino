@@ -23,7 +23,7 @@
  *
  * @section author Author
  *
- * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2026 for Adafruit Industries.
  *
  * @section license License
  *

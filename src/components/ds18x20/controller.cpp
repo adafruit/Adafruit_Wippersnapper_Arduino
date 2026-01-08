@@ -211,10 +211,10 @@ bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
 
 /*!
     @brief  Update/polling loop for the DS18X20 controller.
-    @param  force_read_all
+    @param  force
             If true, forces a read on all sensors regardless of period.
 */
-void DS18X20Controller::update(bool force_read_all) {
+void DS18X20Controller::update(bool force) {
 #ifdef DEBUG_PROFILE
   unsigned long total_start_time = millis();
 #endif
@@ -232,12 +232,12 @@ void DS18X20Controller::update(bool force_read_all) {
     // Create a reference to the DS18X20Hardware object
     DS18X20Hardware &temp_dsx_driver = *(_DS18X20_pins[i]);
 
-    // (force_read_all only) - Was sensor previously read and sent?
-    if (temp_dsx_driver.did_read_send && force_read_all)
+    // (force only) - Was sensor previously read and sent?
+    if (temp_dsx_driver.did_read_send && force)
       continue;
 
     // Check if the driver's timer has not expired yet
-    if (!force_read_all && !temp_dsx_driver.IsTimerExpired()) {
+    if (!force && !temp_dsx_driver.IsTimerExpired()) {
       continue;
     }
 

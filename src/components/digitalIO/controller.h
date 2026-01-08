@@ -51,7 +51,7 @@ public:
   bool Handle_DigitalIO_Add(ws_digitalio_Add *msg);
   bool Handle_DigitalIO_Remove(ws_digitalio_Remove *msg);
   bool Handle_DigitalIO_Write(ws_digitalio_Write *msg);
-  void update(bool force_read_all = false);
+  void update(bool force = false);
   bool UpdateComplete();
 
   // Called once per-run, during CheckinResponse processing

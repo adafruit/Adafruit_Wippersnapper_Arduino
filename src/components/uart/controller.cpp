@@ -261,16 +261,16 @@ bool UARTController::Handle_UartWrite(ws_uart_Write *msg) {
 /*!
     @brief  Polls the UARTController for updates, processes any pending events
    from the UART drivers and sends data to Adafruit IO.
-    @param  force_read_all
+    @param  force
             If true, forces a read on all drivers regardless of period.
 */
-void UARTController::update(bool force_read_all) {
+void UARTController::update(bool force) {
   if (_uart_drivers.empty())
     return; // bail-out
 
   for (drvUartBase *drv : _uart_drivers) {
-    // (force_read_all only) - Was driver previously read and sent?
-    if (drv->GetDidReadSend() && force_read_all)
+    // (force only) - Was driver previously read and sent?
+    if (drv->GetDidReadSend() && force)
       continue;
 
     size_t num_sensors = drv->GetNumSensors();
@@ -282,7 +282,7 @@ void UARTController::update(bool force_read_all) {
 
     // Did driver's read period elapse yet?
     ulong cur_time = millis();
-    if (!force_read_all &&
+    if (!force &&
         (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod()))
       continue;
 

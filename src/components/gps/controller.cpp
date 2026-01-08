@@ -106,15 +106,15 @@ bool GPSController::AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config) {
  * @brief Updates the GPSController, polling the GPS hardware for data.
  * This function checks if the read period has elapsed and processes the GPS
  * data accordingly.
- * @param force_read_all If true, forces a read on all GPS modules regardless of
+ * @param force If true, forces a read on all GPS modules regardless of
  * period.
  */
-void GPSController::update(bool force_read_all) {
+void GPSController::update(bool force) {
   if (_gps_drivers.empty())
     return; // bail-out!
 
   for (GPSHardware *drv : _gps_drivers) {
-    // (force_read_all only) - Was driver previously read and sent?
+    // (force only) - Was driver previously read and sent?
     if (drv->GetDidReadSend())
       continue;
 
@@ -128,7 +128,7 @@ void GPSController::update(bool force_read_all) {
 
     // Did read period elapse?
     ulong cur_time = millis();
-    if (!force_read_all &&
+    if (!force &&
         (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod()))
       continue; // Not yet elapsed, skip this driver
 

@@ -50,6 +50,7 @@ public:
     _has_alt_i2c_bus = false;
     strcpy(_pin_scl, "default");
     strcpy(_pin_sda, "default");
+    _did_read_send = false;
   }
 
   /*!
@@ -146,6 +147,20 @@ public:
       @returns  The number of enabled sensors.
   */
   size_t GetEnabledSensorCnt() { return _sensors_count; }
+
+  /*!
+      @brief    Gets whether the last read was sent to IO.
+      @returns  True if the last read was sent successfully, False otherwise.
+  */
+  bool GetDidReadSend() const { return _did_read_send; }
+
+  /*!
+      @brief    Sets whether the last read was sent to IO.
+      @param    value
+                True if the read was sent successfully, False otherwise.
+  */
+  void SetDidReadSend(bool did_read_send) { _did_read_send = did_read_send; }
+
 
   /*!
       @brief    Initializes the I2C sensor and begins I2C.
@@ -627,5 +642,6 @@ protected:
   ulong _sensor_period;      ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;     ///< Number of sensors on the device.
+  bool _did_read_send;       ///< True if data was read and sent to IO successfully.
 };
 #endif // DRV_BASE_H
