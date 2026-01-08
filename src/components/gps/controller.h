@@ -15,14 +15,14 @@
  */
 #ifndef WS_GPS_CONTROLLER_H
 #define WS_GPS_CONTROLLER_H
-#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 #include <Adafruit_GPS.h>
 
 class wippersnapper; ///< Forward declaration
-class GPSModel;         ///< Forward declaration
-class GPSHardware;      ///< Forward declaration
+class GPSModel;      ///< Forward declaration
+class GPSHardware;   ///< Forward declaration
 
 /*!
     @brief  Routes messages between the GPS.proto API and the hardware.
@@ -33,11 +33,12 @@ public:
   ~GPSController();
   bool AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config);
   bool AddGPS(TwoWire *wire, uint32_t i2c_addr, ws_gps_Config *gps_config);
-  void update();
+  void update(bool force_read_all = false);
+  bool UpdateComplete();
 
 private:
   GPSModel *_gps_model;                    ///< GPS model instance
   std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                        // WS_GPS_CONTROLLER_H
+#endif                   // WS_GPS_CONTROLLER_H

@@ -34,7 +34,7 @@
 #define MAX_LEN_NMEA_SENTENCE 82 ///< Maximum length of a NMEA sentence
 
 class wippersnapper; ///< Forward declaration
-class UARTHardware;     ///< Forward declaration
+class UARTHardware;  ///< Forward declaration
 
 /**
  * @brief Type of interface used by GPS.
@@ -149,6 +149,22 @@ private:
   int NmeaBufPush(
       const char *new_sentence); ///< Push a sentence to the NMEA ring buffer
   nmea_buffer_t _nmea_buff;      ///< NMEA ring buffer for storing sentences
+  bool _did_read_send =
+      false; ///< True if the last read was sent to IO, False otherwise
+
+public:
+  /*!
+      @brief    Gets whether the last read was sent to IO.
+      @returns  True if the last read was sent successfully, False otherwise.
+  */
+  bool GetDidReadSend() const { return _did_read_send; }
+
+  /*!
+      @brief    Sets whether the last read was sent to IO.
+      @param    value
+                True if the read was sent successfully, False otherwise.
+  */
+  void SetDidReadSend(bool value) { _did_read_send = value; }
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                        // WS_GPS_HARDWARE_H
+#endif                   // WS_GPS_HARDWARE_H

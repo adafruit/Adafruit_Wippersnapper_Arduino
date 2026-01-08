@@ -64,7 +64,7 @@ wippersnapper::wippersnapper()
 }
 
 /*!
-    @brief    wippersnapper destructor 
+    @brief    wippersnapper destructor
 */
 wippersnapper::~wippersnapper() {
   disconnect();
@@ -154,7 +154,7 @@ ws_status_t wippersnapper::networkStatus() {
               Your wireless network's password.
 */
 void wippersnapper::set_ssid_pass(const char * /*ssid*/,
-                                     const char * /*ssidPassword*/) {
+                                  const char * /*ssidPassword*/) {
   WS_DEBUG_PRINTLN("wippersnapper::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
@@ -426,8 +426,8 @@ bool wippersnapper::generateDeviceUID() {
 */
 bool wippersnapper::generateWSTopics() {
   // Calculate length for topic strings
-  size_t lenSignalTopic = strlen(Ws._configV2.aio_user) +
-                          WS_TOPIC_PREFIX_LEN + strlen(_device_uidV2) + 1;
+  size_t lenSignalTopic = strlen(Ws._configV2.aio_user) + WS_TOPIC_PREFIX_LEN +
+                          strlen(_device_uidV2) + 1;
 
   // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
@@ -439,8 +439,8 @@ bool wippersnapper::generateWSTopics() {
   if (Ws._topicB2d == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(Ws._topicB2d, lenSignalTopic, "%s/ws-b2d/%s",
-           Ws._configV2.aio_user, _device_uidV2);
+  snprintf(Ws._topicB2d, lenSignalTopic, "%s/ws-b2d/%s", Ws._configV2.aio_user,
+           _device_uidV2);
   // Subscribe to broker-to-device topic
   _subscribeB2d = new Adafruit_MQTT_Subscribe(Ws._mqttV2, Ws._topicB2d, 1);
   Ws._mqttV2->subscribe(_subscribeB2d);
@@ -464,8 +464,8 @@ bool wippersnapper::generateWSTopics() {
   }
 
   // Build the broker-to-device topic
-  snprintf(Ws._topicD2b, lenSignalTopic, "%s/ws-d2b/%s",
-           Ws._configV2.aio_user, _device_uidV2);
+  snprintf(Ws._topicD2b, lenSignalTopic, "%s/ws-d2b/%s", Ws._configV2.aio_user,
+           _device_uidV2);
   return true;
 }
 
@@ -613,8 +613,7 @@ void wippersnapper::runNetFSMV2() {
               instead hang indefinitely, holding the WIPPER drive open
 */
 void wippersnapper::haltErrorV2(const char *error,
-                                   ws_led_status_t ledStatusColor,
-                                   bool reboot) {
+                                ws_led_status_t ledStatusColor, bool reboot) {
   WS_DEBUG_PRINT("ERROR ");
   if (reboot) {
     WS_DEBUG_PRINT("[RESET]: ");
@@ -626,7 +625,7 @@ void wippersnapper::haltErrorV2(const char *error,
   for (;;) {
     if (!reboot) {
       Ws.feedWDTV2(); // Feed the WDT indefinitely to hold the WIPPER drive
-                        // open
+                      // open
     } else {
 // Let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266
@@ -958,7 +957,7 @@ void wippersnapper::connect() {
   // the WDT will reset the device and try again
   while (!Ws.CheckInModel->GotResponse()) {
     Ws._mqttV2->processPackets(10); // TODO: Test with lower timeout value
-    pingBrokerV2();                   // Keep MQTT connection alive
+    pingBrokerV2();                 // Keep MQTT connection alive
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
@@ -983,18 +982,18 @@ void wippersnapper::connect() {
 */
 void wippersnapper::run() {
 #ifdef ARDUINO_ARCH_ESP32
-    if (_sleep_controller->IsSleepLoop()) {
-        loopSleep();
-    } else {
-        loop();
-    }
-#else
+  if (_sleep_controller->IsSleepLoop()) {
+    loopSleep();
+  } else {
     loop();
+  }
+#else
+  loop();
 #endif
 }
 
 void wippersnapper::loop() {
-      Ws.feedWDTV2();
+  Ws.feedWDTV2();
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
     runNetFSMV2();
@@ -1026,10 +1025,11 @@ void wippersnapper::loop() {
 
 #ifdef ARDUINO_ARCH_ESP32
 /*!
-    @brief    loop() variant that uses a component-driven readiness tracking and a global timer for run duration and entrypoints for sleep management.
+    @brief    loop() variant that uses a component-driven readiness tracking and
+   a global timer for run duration and entrypoints for sleep management.
 */
 void wippersnapper::loopSleep() {
-          Ws.feedWDTV2();
+  Ws.feedWDTV2();
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
     runNetFSMV2();
@@ -1047,17 +1047,18 @@ void wippersnapper::loopSleep() {
   Ws.analogio_controller->update(true);
 
   // Process all DS18x20 sensor events
-  Ws._ds18x20_controller->update();
+  Ws._ds18x20_controller->update(true);
 
   // Process I2C driver events
   Ws._i2c_controller->update();
 
   // Process UART driver events
-  Ws._uart_controller->update();
+  Ws._uart_controller->update(true);
 
   // Process GPS controller events
-  Ws._gps_controller->update();
+  Ws._gps_controller->update(true);
 
-  // TODO: Check if we can enter sleep mode by validating each component's readiness (UpdateComplete() for now...)
+  // TODO: Check if we can enter sleep mode by validating each component's
+  // readiness (UpdateComplete() for now...)
 }
 #endif

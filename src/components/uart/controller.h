@@ -15,17 +15,17 @@
  */
 #ifndef WS_UART_CONTROLLER_H
 #define WS_UART_CONTROLLER_H
-#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 // drivers
 #include "drivers/drvUartBase.h"
 #include "drivers/drvUartPm25.h"
 #include "drivers/drvUartUs100.h"
 
 class wippersnapper; ///< Forward declaration
-class UARTModel;        ///< Forward declaration
-class UARTHardware;     ///< Forward declaration
+class UARTModel;     ///< Forward declaration
+class UARTHardware;  ///< Forward declaration
 
 /*!
     @brief  Routes messages between the uart.proto API and the hardware.
@@ -40,7 +40,8 @@ public:
   bool Handle_UartRemove(ws_uart_Remove *msg);
   bool Handle_UartWrite(ws_uart_Write *msg);
   // Polling
-  void update();
+  void update(bool force_read_all = false);
+  bool UpdateComplete();
 
 private:
   UARTModel *_uart_model; ///< UART model
@@ -50,4 +51,4 @@ private:
       _uart_drivers; ///< Vector of UART device drivers (eg: PM2.5, etc.)
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                        // WS_UART_CONTROLLER_H
+#endif                   // WS_UART_CONTROLLER_H

@@ -312,21 +312,19 @@ public:
        [this](sensors_event_t *event) -> bool {
          return this->getEventAmbientTemp(event);
        }},
-      {ws_sensor_Type_T_RAW,
-       [this](sensors_event_t *event) -> bool {
+      {ws_sensor_Type_T_RAW, [this](sensors_event_t *event) -> bool {
          return this->getEventRaw(event);
        }}}; ///< SensorType to function call map
 
-  ws_sensor_Type
-      _sensors[15]; ///< The sensors attached to the device.
+  ws_sensor_Type _sensors[15]; ///< The sensors attached to the device.
 protected:
   HardwareSerial *_hw_serial; ///< Pointer to a HardwareSerial instance
 #if HAS_SW_SERIAL
-  SoftwareSerial *_sw_serial; ///< Pointer to a SoftwareSerial instance
-#endif                        // HAS_SW_SERIAL
+  SoftwareSerial *_sw_serial;      ///< Pointer to a SoftwareSerial instance
+#endif                             // HAS_SW_SERIAL
   ws_uart_DeviceType _device_type; ///< The UART device type
-  char _name[15];                                 ///< The device's name
-  uint32_t _port_num = 0; ///< The port number for the UART device
+  char _name[15];                  ///< The device's name
+  uint32_t _port_num = 0;          ///< The port number for the UART device
   bool _is_software_serial =
       false; ///< Indicates if this driver uses SoftwareSerial
   // Sensor API - UART INPUT
@@ -336,5 +334,21 @@ protected:
   size_t _sensors_count;    ///< Number of sensors on the device
   ulong _sensor_period;     ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv; ///< The sensor's previous period, in milliseconds.
+  bool _did_read_send =
+      false; ///< True if the last read was sent to IO, False otherwise.
+
+public:
+  /*!
+      @brief    Gets whether the last read was sent to IO.
+      @returns  True if the last read was sent successfully, False otherwise.
+  */
+  bool GetDidReadSend() const { return _did_read_send; }
+
+  /*!
+      @brief    Sets whether the last read was sent to IO.
+      @param    value
+                True if the read was sent successfully, False otherwise.
+  */
+  void SetDidReadSend(bool value) { _did_read_send = value; }
 };
 #endif // DRV_UART_BASE_H
