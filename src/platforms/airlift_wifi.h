@@ -280,16 +280,16 @@ protected:
       _wifi->end();
       delay(100);
       _wifi->begin();
-      Ws.feedWDTV2();
+      Ws.FeedWDT();
       // reset the esp32 if possible
       resetAirLift();
-      Ws.feedWDTV2();
+      Ws.FeedWDT();
 
       WS_DEBUG_PRINT("ESP32 booted, version: ");
       WS_PRINTER.flush();
       WS_DEBUG_PRINTLN(WiFi.firmwareVersion());
       WS_PRINTER.flush();
-      Ws.feedWDTV2();
+      Ws.FeedWDT();
 
       // validate co-processor's firmware version
       if (!firmwareCheck()) {
@@ -300,7 +300,7 @@ protected:
       WS_DEBUG_PRINT("Connecting to ");
       WS_DEBUG_PRINTLN(_ssid);
       WS_PRINTER.flush();
-      Ws.feedWDTV2();
+      Ws.FeedWDT();
       WiFi.begin(_ssid, _pass);
       _statusV2 = WS_NET_DISCONNECTED;
 

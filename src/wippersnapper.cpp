@@ -487,7 +487,7 @@ void wippersnapper::errorWriteHangV2(const char *error) {
   while (1) {
     WS_DEBUG_PRINTLN("ERROR: Halted execution");
     WS_DEBUG_PRINTLN(error);
-    Ws.feedWDTV2();
+    Ws.FeedWDT();
     statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
   }
@@ -498,7 +498,7 @@ void wippersnapper::errorWriteHangV2(const char *error) {
               re-connection and mqtt re-establishment.
 */
 void wippersnapper::runNetFSMV2() {
-  Ws.feedWDTV2();
+  Ws.FeedWDT();
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
@@ -536,15 +536,15 @@ void wippersnapper::runNetFSMV2() {
       while (maxAttempts > 0) {
         // blink before we connect
         statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
-        feedWDTV2();
+        FeedWDT();
         // attempt to connect
         WS_DEBUG_PRINT("Connecting to WiFi (attempt #");
         WS_DEBUG_PRINT(5 - maxAttempts);
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
-        feedWDTV2();
+        FeedWDT();
         _connect();
-        feedWDTV2();
+        FeedWDT();
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
@@ -571,11 +571,11 @@ void wippersnapper::runNetFSMV2() {
         WS_DEBUG_PRINT("WiFi Status: ");
         WS_DEBUG_PRINTLN(networkStatus());
         WS_PRINTER.flush();
-        feedWDTV2();
+        FeedWDT();
         statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
-        feedWDTV2();
+        FeedWDT();
         int8_t mqttRC = Ws._mqttV2->connect();
-        feedWDTV2();
+        FeedWDT();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;
@@ -624,7 +624,7 @@ void wippersnapper::haltErrorV2(const char *error,
   statusLEDSolid(ledStatusColor);
   for (;;) {
     if (!reboot) {
-      Ws.feedWDTV2(); // Feed the WDT indefinitely to hold the WIPPER drive
+      Ws.FeedWDT(); // Feed the WDT indefinitely to hold the WIPPER drive
                       // open
     } else {
 // Let the WDT fail out and reset!
@@ -751,7 +751,7 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
 
   // Check that we are still connected
   runNetFSMV2();
-  Ws.feedWDTV2();
+  Ws.FeedWDT();
 
   // Attempt to publish the signal message to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
@@ -806,27 +806,36 @@ void wippersnapper::BlinkKATStatus() {
 /*!
     @brief    Feeds the WDT to prevent hardware reset.
 */
-void wippersnapper::feedWDTV2() {
+void wippersnapper::FeedWDT() {
 #ifndef OFFLINE_MODE_WOKWI
-  // TODO: This is a temporary fix for watchdog.reset() not firing
   Watchdog.reset();
-// esp_task_wdt_reset(); // TODO: Putback for ESP32 WDT
 #endif
 }
 
 /*!
-    @brief  Enables the watchdog timer.
-    @param  timeoutMS
+    @brief  Reconfigures the task watchdog timer's timeout.
+    @param  timeout_ms
             The desired amount of time to elapse before
             the WDT executes.
+    @returns timeoutMs if successful, 0 otherwise.
 */
-void wippersnapper::enableWDTV2(int timeoutMS) {
-#ifndef ARDUINO_ARCH_RP2040
-  Watchdog.disable();
+int wippersnapper::ReconfigureWDT(int timeout_ms) {
+#ifdef ARDUINO_ARCH_RP2040
+    return 0; // RP2040 WDT cannot be reconfigured after enabling
 #endif
-  if (Watchdog.enable(timeoutMS) == 0) {
-    Ws.haltErrorV2("WDT initialization failure!");
-  }
+  Watchdog.disable();
+  return Watchdog.enable(timeout_ms);
+}
+
+/*!
+    @brief  Enables the task watchdog timer.
+    @param  timeout_ms
+            The desired amount of time to elapse before
+            the WDT executes.
+    @returns timeoutMs if successful, 0 otherwise.
+*/
+int wippersnapper::EnableWDT(int timeout_ms) {
+  return Watchdog.enable(timeout_ms);
 }
 
 /*!
@@ -837,7 +846,7 @@ void wippersnapper::enableWDTV2(int timeoutMS) {
 void wippersnapper::processPacketsV2() {
   // runNetFSMV2(); // NOTE: Removed for now, causes error with virtual
   // _connect() method when caused with Ws object in another file.
-  Ws.feedWDTV2();
+  Ws.FeedWDT();
   // Process all incoming packets from wippersnapper MQTT Broker
   Ws._mqttV2->processPackets(10);
 }
@@ -885,7 +894,9 @@ void wippersnapper::connect() {
   Ws.error_controller = new ErrorController();
 
   // enable global WDT
-  Ws.enableWDTV2(WS_WDT_TIMEOUT);
+  if (!Ws.EnableWDT(WS_WDT_TIMEOUT)) {
+    haltErrorV2("Unable to enable watchdog timer!");
+  }
 
   // Generate device identifier
   if (!generateDeviceUID()) {
@@ -937,7 +948,7 @@ void wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Running Network FSM...");
   // Run the network fsm
   runNetFSMV2();
-  Ws.feedWDTV2();
+  Ws.FeedWDT();
 
   // TODO: Possibly refactor checkin process into its own function
   // or component class for clarity
@@ -952,7 +963,7 @@ void wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Published checkin request...");
   // Poll for checkin response
   WS_DEBUG_PRINTLN("Waiting for checkin response...");
-  Ws.feedWDTV2();
+  Ws.FeedWDT();
   // NOTE: If we do not receive a response within a certain time frame,
   // the WDT will reset the device and try again
   while (!Ws.CheckInModel->GotResponse()) {
@@ -993,7 +1004,7 @@ void wippersnapper::run() {
 }
 
 void wippersnapper::loop() {
-  Ws.feedWDTV2();
+  Ws.FeedWDT();
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
     runNetFSMV2();
@@ -1029,7 +1040,7 @@ void wippersnapper::loop() {
    a global timer for run duration and entrypoints for sleep management.
 */
 void wippersnapper::loopSleep() {
-  Ws.feedWDTV2();
+  Ws.FeedWDT();
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
     runNetFSMV2();

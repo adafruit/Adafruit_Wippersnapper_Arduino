@@ -25,7 +25,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      Ws.feedWDTV2();                                                        \
+      Ws.FeedWDT();                                                        \
       if (millis() < start) {                                                  \
         start = millis(); /* if rollover */                                    \
       }                                                                        \

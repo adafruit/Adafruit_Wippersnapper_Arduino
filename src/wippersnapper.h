@@ -62,7 +62,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      Ws.feedWDTV2();                                                        \
+      Ws.FeedWDT();                                                        \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -199,8 +199,9 @@ public:
   void runNetFSMV2();
 
   // WDT helpers
-  void enableWDTV2(int timeoutMS = 0);
-  void feedWDTV2();
+  int EnableWDT(int timeout_ms = 0);
+  int ReconfigureWDT(int timeout_ms);
+  void FeedWDT();
   void BlinkKATStatus();
 
   // Error handling helpers

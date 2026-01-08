@@ -284,7 +284,7 @@ protected:
           _statusV2 = WS_NET_DISCONNECTED;
         }
       }
-      Ws.feedWDTV2();
+      Ws.FeedWDT();
     }
   }
 

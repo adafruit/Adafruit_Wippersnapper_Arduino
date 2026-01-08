@@ -351,10 +351,10 @@ protected:
         // single network mode
         WiFi.begin(_ssid, _pass);
         _statusV2 = WS_NET_DISCONNECTED;
-        Ws.feedWDTV2();
+        Ws.FeedWDT();
         delay(5000);
       }
-      Ws.feedWDTV2();
+      Ws.FeedWDT();
     }
   }
 
