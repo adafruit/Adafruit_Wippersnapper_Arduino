@@ -44,6 +44,7 @@ public:
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
     _port_num = port_num;
+    _did_read_send = false;
   }
 
 #if HAS_SW_SERIAL
@@ -63,6 +64,7 @@ public:
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
     _port_num = port_num;
+    _did_read_send = false;
   }
 #endif // HAS_SW_SERIAL
 
@@ -72,6 +74,19 @@ public:
   virtual ~drvUartBase() {
     // This is a base class, nothing to clean up!
   }
+
+  /*!
+      @brief    Gets whether the last read was sent to IO.
+      @returns  True if the last read was sent successfully, False otherwise.
+  */
+  bool GetDidReadSend() const { return _did_read_send; }
+
+  /*!
+      @brief    Sets whether the last read was sent to IO.
+      @param    value
+                True if the read was sent successfully, False otherwise.
+  */
+  void SetDidReadSend(bool did_read_send) { _did_read_send = did_read_send; }
 
   /*!
       @brief    Configures the UART driver with device-specific settings.
@@ -334,21 +349,7 @@ protected:
   size_t _sensors_count;    ///< Number of sensors on the device
   ulong _sensor_period;     ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv; ///< The sensor's previous period, in milliseconds.
-  bool _did_read_send =
-      false; ///< True if the last read was sent to IO, False otherwise.
-
-public:
-  /*!
-      @brief    Gets whether the last read was sent to IO.
-      @returns  True if the last read was sent successfully, False otherwise.
-  */
-  bool GetDidReadSend() const { return _did_read_send; }
-
-  /*!
-      @brief    Sets whether the last read was sent to IO.
-      @param    value
-                True if the read was sent successfully, False otherwise.
-  */
-  void SetDidReadSend(bool value) { _did_read_send = value; }
+  bool _did_read_send;      ///< True if the last read was sent to IO, False
+                            ///< otherwise.
 };
 #endif // DRV_UART_BASE_H

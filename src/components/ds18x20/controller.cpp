@@ -223,13 +223,6 @@ void DS18X20Controller::update(bool force_read_all) {
   if (_DS18X20_pins.empty())
     return;
 
-  // Reset did_read_send flags if forcing read all
-  if (force_read_all) {
-    for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
-      _DS18X20_pins[i]->did_read_send = false;
-    }
-  }
-
   // Iterate through the vector
   for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
 #ifdef DEBUG_PROFILE
@@ -240,7 +233,7 @@ void DS18X20Controller::update(bool force_read_all) {
     DS18X20Hardware &temp_dsx_driver = *(_DS18X20_pins[i]);
 
     // (force_read_all only) - Was sensor previously read and sent?
-    if (temp_dsx_driver.did_read_send)
+    if (temp_dsx_driver.did_read_send && force_read_all)
       continue;
 
     // Check if the driver's timer has not expired yet

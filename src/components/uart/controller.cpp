@@ -172,7 +172,6 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     did_begin = uart_driver->begin();
     if (did_begin) {
       WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
-      uart_driver->SetDidReadSend(false);
       _uart_drivers.push_back(uart_driver);
     } else {
       WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
@@ -271,7 +270,7 @@ void UARTController::update(bool force_read_all) {
 
   for (drvUartBase *drv : _uart_drivers) {
     // (force_read_all only) - Was driver previously read and sent?
-    if (drv->GetDidReadSend())
+    if (drv->GetDidReadSend() && force_read_all)
       continue;
 
     size_t num_sensors = drv->GetNumSensors();

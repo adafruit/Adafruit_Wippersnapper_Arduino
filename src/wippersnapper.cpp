@@ -1050,7 +1050,7 @@ void wippersnapper::loopSleep() {
   Ws._ds18x20_controller->update(true);
 
   // Process I2C driver events
-  Ws._i2c_controller->update();
+  Ws._i2c_controller->update(true);
 
   // Process UART driver events
   Ws._uart_controller->update(true);
