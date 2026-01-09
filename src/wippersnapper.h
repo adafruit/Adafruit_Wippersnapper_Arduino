@@ -126,8 +126,8 @@
   "2.0.0-beta.1" ///< WipperSnapper app. version (semver-formatted)
 
 #define WS_KEEPALIVE_INTERVAL_MS 5000 ///< Session keepalive interval time, in milliseconds
-#define WS_SLEEP_LOOP_TIMEOUT_MS 60000 ///< Sleep loop timeout duration, in milliseconds
-#define WS_WDT_TIMEOUT 60000       ///< WDT timeout
+#define WS_TIMEOUT_WDT 60000       ///< App WDT timeout, in milliseconds
+#define WS_TIMEOUT_WDT_SLEEP 60000 ///< Sleep mode loop timeout duration, in milliseconds
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
 #define WS_TOPIC_PREFIX_LEN 9 ///< (i.e: "/ws-d2b/")

@@ -183,7 +183,7 @@ bool SleepController::DidWakeFromSleep() {
     @brief  Returns whether the device is in a sleep loop (locked).
     @return True if the device is locked for sleep, False otherwise.
 */
-bool SleepController::IsSleepLoop() {
+bool SleepController::IsSleepMode() {
   return _lock;
 }
 

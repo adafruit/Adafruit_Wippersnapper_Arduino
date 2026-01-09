@@ -894,7 +894,7 @@ void wippersnapper::connect() {
   Ws.error_controller = new ErrorController();
 
   // enable global WDT
-  if (!Ws.EnableWDT(WS_WDT_TIMEOUT)) {
+  if (!Ws.EnableWDT(WS_TIMEOUT_WDT)) {
     haltErrorV2("Unable to enable watchdog timer!");
   }
 
@@ -993,10 +993,15 @@ void wippersnapper::connect() {
 */
 void wippersnapper::run() {
 #ifdef ARDUINO_ARCH_ESP32
-  if (_sleep_controller->IsSleepLoop()) {
-    loopSleep();
-  } else {
+  if (! _sleep_controller->IsSleepMode()) {
     loop();
+  } else {
+    // Attempt to reconfigure the WDT for sleep mode
+    if (!Ws.ReconfigureWDT(WS_TIMEOUT_WDT_SLEEP))
+      haltErrorV2("Unable to reconfigure watchdog timer for sleep mode!");
+    // Feed TWDT and enter loopSleep()
+    Ws.FeedWDT();
+    loopSleep();
   }
 #else
   loop();
@@ -1040,15 +1045,14 @@ void wippersnapper::loop() {
    a global timer for run duration and entrypoints for sleep management.
 */
 void wippersnapper::loopSleep() {
-  Ws.FeedWDT();
+  // NOTE: It is assumed that loopSleep() will eventually lead to sleep entry,
+  // whether by global TWDT expiry or component-driven sleep readiness.
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
     runNetFSMV2();
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
     Ws._mqttV2->processPackets(10);
-  } else {
-    BlinkKATStatus(); // Offline Mode - Blink every KAT interval
   }
 
   // Process all digital events
