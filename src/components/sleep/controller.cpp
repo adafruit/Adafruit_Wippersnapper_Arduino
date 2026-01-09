@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -176,15 +176,48 @@ ws_sleep_EspWakeCause SleepController::GetEspWakeCause() {
     @return True if the device woke from sleep, False otherwise.
 */
 bool SleepController::DidWakeFromSleep() {
-  return _sleep_hardware->GetEspWakeCauseEnum() != ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
+  // If SLEEP wake cause is not unspecified, device woke from sleep mode,
+  // so we assume we're locked unless overridden by boot button or Enter message
+  _lock = _sleep_hardware->GetEspWakeCauseEnum() !=
+          ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
+  return _lock;
 }
 
 /*!
     @brief  Returns whether the device is in a sleep loop (locked).
     @return True if the device is locked for sleep, False otherwise.
 */
-bool SleepController::IsSleepMode() {
-  return _lock;
+bool SleepController::IsSleepMode() { return _lock; }
+
+/*!
+    @brief  Handles a network FSM failure when attempting to connect to WiFi
+            or Adafruit IO by putting the device into sleep mode for a fixed
+            duration instead of kicking the WDT.
+*/
+void SleepController::HandleNetFSMFailure() {
+  // NOTE: We should only get here if NET_FSM_FAILURE was triggered
+  // during network connection or Adafruit IO MQTT connection.
+  WS_DEBUG_PRINTLN(
+      "[sleep] Handling network FSM failure, entering sleep mode"); // TODO:
+                                                                    // Remove in
+                                                                    // production,
+                                                                    // debug
+                                                                    // only!
+  // Create a sleep enter message to enter sleep depending on the mode we came
+  // out of
+  ws_sleep_Enter sleep_enter_msg = ws_sleep_Enter_init_zero;
+  sleep_enter_msg.lock = true;
+  // Set sleep mode to the last known sleep
+  sleep_enter_msg.mode = _sleep_mode;
+  sleep_enter_msg.which_config =
+      _sleep_hardware->GetEspSleepSource() == ESP_SLEEP_WAKEUP_TIMER
+          ? ws_sleep_Enter_timer_tag
+          : ws_sleep_Enter_ext0_tag;
+  // TODO: Get the previous expected sleep duration from RTC mem
+  sleep_enter_msg.config.timer.duration = 60; // Sleep for 60 seconds
+  // Configure sleep
+  Handle_Sleep_Enter(&sleep_enter_msg);
+  // TODO: Add entrypoint to for sleep here
 }
 
 #endif // ARDUINO_ARCH_ESP32

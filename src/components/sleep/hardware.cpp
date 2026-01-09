@@ -16,6 +16,7 @@
 #include "hardware.h"
 #include <stdlib.h>
 RTC_SLOW_ATTR static struct timeval sleep_enter_time;
+RTC_DATA_ATTR ws_sleep_SleepMode sleep_mode;
 
 /*!
     @brief  Sleep hardware constructor
@@ -36,6 +37,12 @@ SleepHardware::~SleepHardware() {}
 void SleepHardware::GetSleepWakeupCause() {
   _wakeup_cause = esp_sleep_get_wakeup_cause();
 }
+
+/*!
+    @brief  Returns the esp_sleep_source_t wakeup cause.
+    @return The wakeup cause as esp_sleep_source_t.
+*/
+esp_sleep_source_t SleepHardware::GetEspSleepSource() { return _wakeup_cause; }
 
 /*!
     @brief  Returns the ESP wake cause enum corresponding to the internal
@@ -76,6 +83,14 @@ ws_sleep_EspWakeCause SleepHardware::GetEspWakeCauseEnum() {
     return ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
   }
 }
+
+/*!
+    @brief  Returns the current (or previously entered) sleep mode. This mode
+            is set when enabling deep or light sleep, and can be retrieved
+            post-sleep from the RTC memory.
+    @return The sleep mode.
+*/
+ws_sleep_SleepMode SleepHardware::GetSleepMode() { return sleep_mode; }
 
 /*!
     @brief  Calculates the duration of the last sleep period.
@@ -144,6 +159,13 @@ bool SleepHardware::EnableDeepSleep(int duration) {
   rtc_gpio_isolate(GPIO_NUM_12);
 #endif
 
+  sleep_mode = ws_sleep_SleepMode_S_DEEP;
+  return true;
+}
+
+// TODO: Not implemented yet!
+bool SleepHardware::EnableLightSleep(int duration) {
+  sleep_mode = ws_sleep_SleepMode_S_LIGHT;
   return true;
 }
 

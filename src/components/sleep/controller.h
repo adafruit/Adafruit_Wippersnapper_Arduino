@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -16,13 +16,13 @@
 #define WS_SLEEP_CONTROLLER_H
 
 #ifdef ARDUINO_ARCH_ESP32
-#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 
 class wippersnapper; ///< Forward declaration
-class SleepModel;       ///< Forward declaration
-class SleepHardware;    ///< Forward declaration
+class SleepModel;    ///< Forward declaration
+class SleepHardware; ///< Forward declaration
 
 /*!
     @brief  Routes messages using the sleep.proto API to the
@@ -43,6 +43,8 @@ public:
   void CheckBootButton();
   bool DidWakeFromSleep();
   bool IsSleepMode();
+  void HandleNetFSMFailure();
+
 private:
   bool ConfigureDeepSleep(const ws_sleep_Enter *msg);
   // TODO: Add ConfigureLightSleep() funcs here

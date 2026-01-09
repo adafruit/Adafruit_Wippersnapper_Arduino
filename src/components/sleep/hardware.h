@@ -16,12 +16,12 @@
 #define WS_SLEEP_HARDWARE_H
 
 #ifdef ARDUINO_ARCH_ESP32
-#include "wippersnapper.h"
 #include "driver/gpio.h"
 #include "driver/rtc_io.h"
 #include "esp_sleep.h"
 #include "nvs.h"
 #include "nvs_flash.h"
+#include "wippersnapper.h"
 #include <sys/time.h>
 #include <time.h>
 
@@ -33,11 +33,14 @@ public:
   SleepHardware();
   ~SleepHardware();
   bool EnableDeepSleep(int duration);
+  bool EnableLightSleep(int duration);
   bool CheckBootButton();
   bool RegisterRTCTimerWakeup(uint64_t duration);
   bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
   void DisableExternalComponents();
   ws_sleep_EspWakeCause GetEspWakeCauseEnum();
+  esp_sleep_source_t GetEspSleepSource();
+  ws_sleep_SleepMode GetSleepMode();
   int GetSleepDuration();
 
 private:
