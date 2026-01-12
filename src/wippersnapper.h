@@ -275,6 +275,7 @@ private:
   void loop();
 #ifdef ARDUINO_ARCH_ESP32
   void loopSleep();
+  bool AllControllersUpdateComplete();
 #endif
 
   // MQTT topics

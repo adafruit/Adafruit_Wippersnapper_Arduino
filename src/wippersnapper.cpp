@@ -1083,24 +1083,66 @@ void wippersnapper::loopSleep() {
   }
 
   // Process all digital events
-  Ws.digital_io_controller->update(true);
+  if (!Ws.digital_io_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing digital IO events...");
+    Ws.digital_io_controller->update(true);
+  }
 
   // Process all analog input events
-  Ws.analogio_controller->update(true);
+  if (!Ws.analogio_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing analog IO events...");
+    Ws.analogio_controller->update(true);
+  }
 
   // Process all DS18x20 sensor events
-  Ws._ds18x20_controller->update(true);
+  if (!Ws._ds18x20_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing DS18x20 events...");
+    Ws._ds18x20_controller->update(true);
+  }
 
   // Process I2C driver events
-  Ws._i2c_controller->update(true);
+  if (!Ws._i2c_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing I2C events...");
+    Ws._i2c_controller->update(true);
+  }
 
   // Process UART driver events
-  Ws._uart_controller->update(true);
+  if (!Ws._uart_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing UART events...");
+    Ws._uart_controller->update(true);
+  }
 
   // Process GPS controller events
-  Ws._gps_controller->update(true);
+  if (!Ws._gps_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing GPS events...");
+    Ws._gps_controller->update(true);
+  }
 
-  // TODO: Check if we can enter sleep mode by validating each component's
-  // readiness (UpdateComplete() for now...)
+  // Can we enter sleep mode?
+  if (AllControllersUpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] All components have completed updates, entering sleep...");
+    // TODO
+  }
 }
+
+/*!
+    @brief    Checks if all controllers have completed and published their updates,
+              app is ready for sleep mode.
+    @returns  True if all controllers are ready for sleep mode,
+              False otherwise.
+*/
+bool wippersnapper::AllControllersUpdateComplete() {
+  // Check all components for sleep readiness
+  if (Ws.digital_io_controller->UpdateComplete() &&
+      Ws.analogio_controller->UpdateComplete() &&
+      Ws._ds18x20_controller->UpdateComplete() &&
+      Ws._i2c_controller->UpdateComplete() &&
+      Ws._uart_controller->UpdateComplete() &&
+      Ws._gps_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] All components ready for sleep mode.");
+    return true;
+  }
+  return false;
+}
+
 #endif
