@@ -260,12 +260,12 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response message");
     return false;
   }
-  Ws.runNetFSMV2();
+  Ws.NetworkFSM();
 
   // Configure controller settings using Response
   WS_DEBUG_PRINTLN("[app] Configuring controllers");
   Ws.CheckInModel->ConfigureControllers();
-  Ws.runNetFSMV2();
+  Ws.NetworkFSM();
 
   // Publish the complete response message to indicate the checkin
   // routine is done and the device is ready for use
@@ -496,13 +496,20 @@ void wippersnapper::errorWriteHangV2(const char *error) {
 /*!
     @brief    Checks network and MQTT connectivity. Handles network
               re-connection and mqtt re-establishment.
+    @param    initial_connect
+                If true, the FSM operates the initial connection routine with a
+   failure mode for sleep mode.
 */
-void wippersnapper::runNetFSMV2() {
+void wippersnapper::NetworkFSM(bool initial_connect) {
   Ws.FeedWDT();
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
   int maxAttempts;
+#ifdef ARDUINO_ARCH_ESP32
+  // Handle sleep mode network failures
+  bool handle_sleep_mode_error = initial_connect && _sleep_controller->IsSleepMode();
+#endif
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
@@ -528,6 +535,11 @@ void wippersnapper::runNetFSMV2() {
       // secrets.json is within the scanned SSIDs
       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
       if (!check_valid_ssid()) {
+#ifdef ARDUINO_ARCH_ESP32
+        if (handle_sleep_mode_error) {
+          _sleep_controller->HandleNetFSMFailure();
+        }
+#endif
         haltErrorV2("ERROR: Unable to find WiFi network, rebooting soon...",
                     WS_LED_STATUS_WIFI_CONNECTING);
       }
@@ -553,6 +565,11 @@ void wippersnapper::runNetFSMV2() {
       // Validate connection
       if (networkStatus() != WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
+#ifdef ARDUINO_ARCH_ESP32
+        if (handle_sleep_mode_error) {
+          _sleep_controller->HandleNetFSMFailure();
+        }
+#endif
         haltErrorV2("ERROR: Unable to connect to WiFi, rebooting soon...",
                     WS_LED_STATUS_WIFI_CONNECTING);
       }
@@ -589,6 +606,11 @@ void wippersnapper::runNetFSMV2() {
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
+#ifdef ARDUINO_ARCH_ESP32
+        if (handle_sleep_mode_error) {
+          _sleep_controller->HandleNetFSMFailure();
+        }
+#endif
         haltErrorV2(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
             WS_LED_STATUS_MQTT_CONNECTING);
@@ -625,7 +647,7 @@ void wippersnapper::haltErrorV2(const char *error,
   for (;;) {
     if (!reboot) {
       Ws.FeedWDT(); // Feed the WDT indefinitely to hold the WIPPER drive
-                      // open
+                    // open
     } else {
 // Let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266
@@ -750,7 +772,7 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   WS_DEBUG_PRINTLN("Encoded!");
 
   // Check that we are still connected
-  runNetFSMV2();
+  NetworkFSM();
   Ws.FeedWDT();
 
   // Attempt to publish the signal message to the broker
@@ -782,7 +804,7 @@ void wippersnapper::pingBrokerV2() {
     } else {
       WS_DEBUG_PRINTLN("FAILURE! Running network FSM...");
       Ws._mqttV2->disconnect();
-      runNetFSMV2();
+      NetworkFSM();
     }
     _prv_pingV2 = millis();
     WS_DEBUG_PRINT("WiFi RSSI: ");
@@ -821,7 +843,7 @@ void wippersnapper::FeedWDT() {
 */
 int wippersnapper::ReconfigureWDT(int timeout_ms) {
 #ifdef ARDUINO_ARCH_RP2040
-    return 0; // RP2040 WDT cannot be reconfigured after enabling
+  return 0; // RP2040 WDT cannot be reconfigured after enabling
 #endif
   Watchdog.disable();
   return Watchdog.enable(timeout_ms);
@@ -844,7 +866,7 @@ int wippersnapper::EnableWDT(int timeout_ms) {
             connectivity.
 */
 void wippersnapper::processPacketsV2() {
-  // runNetFSMV2(); // NOTE: Removed for now, causes error with virtual
+  // NetworkFSM(); // NOTE: Removed for now, causes error with virtual
   // _connect() method when caused with Ws object in another file.
   Ws.FeedWDT();
   // Process all incoming packets from wippersnapper MQTT Broker
@@ -946,8 +968,13 @@ void wippersnapper::connect() {
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");
-  // Run the network fsm
-  runNetFSMV2();
+  // Connect to wireless network and Adafruit IO's MQTT broker
+  #ifdef ARDUINO_ARCH_ESP32
+    bool sleepMode = _sleep_controller && _sleep_controller->IsSleepMode();
+    NetworkFSM(sleepMode);
+  #else
+    NetworkFSM();
+  #endif
   Ws.FeedWDT();
 
   // TODO: Possibly refactor checkin process into its own function
@@ -993,7 +1020,7 @@ void wippersnapper::connect() {
 */
 void wippersnapper::run() {
 #ifdef ARDUINO_ARCH_ESP32
-  if (! _sleep_controller->IsSleepMode()) {
+  if (!_sleep_controller->IsSleepMode()) {
     loop();
   } else {
     // Attempt to reconfigure the WDT for sleep mode
@@ -1012,7 +1039,7 @@ void wippersnapper::loop() {
   Ws.FeedWDT();
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
-    runNetFSMV2();
+    NetworkFSM();
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
     Ws._mqttV2->processPackets(10);
@@ -1049,7 +1076,7 @@ void wippersnapper::loopSleep() {
   // whether by global TWDT expiry or component-driven sleep readiness.
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
-    runNetFSMV2();
+    NetworkFSM();
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
     Ws._mqttV2->processPackets(10);

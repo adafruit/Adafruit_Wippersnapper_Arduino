@@ -213,10 +213,11 @@ void SleepController::HandleNetFSMFailure() {
       _sleep_hardware->GetEspSleepSource() == ESP_SLEEP_WAKEUP_TIMER
           ? ws_sleep_Enter_timer_tag
           : ws_sleep_Enter_ext0_tag;
-  // TODO: Get the previous expected sleep duration from RTC mem
-  sleep_enter_msg.config.timer.duration = 60; // Sleep for 60 seconds
-  // Configure sleep
+  // Get the previous sleep duration from RTC mem
+  sleep_enter_msg.config.timer.duration = _sleep_hardware->GetSleepDuration();
+  // Configure sleep mode
   Handle_Sleep_Enter(&sleep_enter_msg);
+  // Enter sleep mode
   // TODO: Add entrypoint to for sleep here
 }
 

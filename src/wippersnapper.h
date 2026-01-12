@@ -196,7 +196,7 @@ public:
 
   // Networking helpers
   void pingBrokerV2();
-  void runNetFSMV2();
+  void NetworkFSM(bool initial_connect = false);
 
   // WDT helpers
   int EnableWDT(int timeout_ms = 0);

@@ -94,7 +94,6 @@ ws_sleep_SleepMode SleepHardware::GetSleepMode() { return sleep_mode; }
 
 /*!
     @brief  Calculates the duration of the last sleep period.
-    @returns True if the duration was successfully calculated, False otherwise.
 */
 void SleepHardware::CalculateSleepDuration() {
 /**
