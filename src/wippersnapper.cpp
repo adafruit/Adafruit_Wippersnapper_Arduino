@@ -508,7 +508,8 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
   int maxAttempts;
 #ifdef ARDUINO_ARCH_ESP32
   // Handle sleep mode network failures
-  bool handle_sleep_mode_error = initial_connect && _sleep_controller->IsSleepMode();
+  bool handle_sleep_mode_error =
+      initial_connect && _sleep_controller->IsSleepMode();
 #endif
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
@@ -968,13 +969,13 @@ void wippersnapper::connect() {
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");
-  // Connect to wireless network and Adafruit IO's MQTT broker
-  #ifdef ARDUINO_ARCH_ESP32
-    bool sleepMode = _sleep_controller && _sleep_controller->IsSleepMode();
-    NetworkFSM(sleepMode);
-  #else
-    NetworkFSM();
-  #endif
+// Connect to wireless network and Adafruit IO's MQTT broker
+#ifdef ARDUINO_ARCH_ESP32
+  bool sleepMode = _sleep_controller && _sleep_controller->IsSleepMode();
+  NetworkFSM(sleepMode);
+#else
+  NetworkFSM();
+#endif
   Ws.FeedWDT();
 
   // TODO: Possibly refactor checkin process into its own function
@@ -1042,7 +1043,7 @@ void wippersnapper::loop() {
     NetworkFSM();
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
-    Ws._mqttV2->processPackets(10);
+    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
   } else {
     BlinkKATStatus(); // Offline Mode - Blink every KAT interval
   }
@@ -1079,70 +1080,53 @@ void wippersnapper::loopSleep() {
     NetworkFSM();
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
-    Ws._mqttV2->processPackets(10);
+    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
   }
 
-  // Process all digital events
+  // Track completion of all controllers
+  bool all_controllers_complete = true;
+
   if (!Ws.digital_io_controller->UpdateComplete()) {
     WS_DEBUG_PRINTLN("[app] Processing digital IO events...");
     Ws.digital_io_controller->update(true);
+    all_controllers_complete = false;
   }
 
-  // Process all analog input events
   if (!Ws.analogio_controller->UpdateComplete()) {
     WS_DEBUG_PRINTLN("[app] Processing analog IO events...");
     Ws.analogio_controller->update(true);
+    all_controllers_complete = false;
   }
 
-  // Process all DS18x20 sensor events
   if (!Ws._ds18x20_controller->UpdateComplete()) {
     WS_DEBUG_PRINTLN("[app] Processing DS18x20 events...");
     Ws._ds18x20_controller->update(true);
+    all_controllers_complete = false;
   }
 
-  // Process I2C driver events
   if (!Ws._i2c_controller->UpdateComplete()) {
     WS_DEBUG_PRINTLN("[app] Processing I2C events...");
     Ws._i2c_controller->update(true);
+    all_controllers_complete = false;
   }
 
-  // Process UART driver events
   if (!Ws._uart_controller->UpdateComplete()) {
     WS_DEBUG_PRINTLN("[app] Processing UART events...");
     Ws._uart_controller->update(true);
+    all_controllers_complete = false;
   }
 
-  // Process GPS controller events
   if (!Ws._gps_controller->UpdateComplete()) {
     WS_DEBUG_PRINTLN("[app] Processing GPS events...");
     Ws._gps_controller->update(true);
+    all_controllers_complete = false;
   }
 
-  // Can we enter sleep mode?
-  if (AllControllersUpdateComplete()) {
-    WS_DEBUG_PRINTLN("[app] All components have completed updates, entering sleep...");
+  if (all_controllers_complete) {
+    WS_DEBUG_PRINTLN(
+        "[app] All components completed updates, entering sleep...");
     _sleep_controller->StartSleep();
   }
-}
-
-/*!
-    @brief    Checks if all controllers have completed and published their updates,
-              app is ready for sleep mode.
-    @returns  True if all controllers are ready for sleep mode,
-              False otherwise.
-*/
-bool wippersnapper::AllControllersUpdateComplete() {
-  // Check all components for sleep readiness
-  if (Ws.digital_io_controller->UpdateComplete() &&
-      Ws.analogio_controller->UpdateComplete() &&
-      Ws._ds18x20_controller->UpdateComplete() &&
-      Ws._i2c_controller->UpdateComplete() &&
-      Ws._uart_controller->UpdateComplete() &&
-      Ws._gps_controller->UpdateComplete()) {
-    WS_DEBUG_PRINTLN("[app] All components ready for sleep mode.");
-    return true;
-  }
-  return false;
 }
 
 #endif

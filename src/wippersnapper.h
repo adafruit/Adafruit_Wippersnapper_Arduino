@@ -62,7 +62,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      Ws.FeedWDT();                                                        \
+      Ws.FeedWDT();                                                            \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -91,9 +91,9 @@
 #include <Wire.h>               // I2C
 
 // Wippersnapper API Helpers
-#include "ws_boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
 #include "helpers/ws_helper_status.h"
+#include "ws_boards.h"
 #ifdef ARDUINO_ARCH_ESP32
 #include "helpers/ws_helper_esp.h"
 #endif
@@ -110,8 +110,8 @@
 #include "components/pwm/controller.h"
 #include "components/sensor/model.h"
 #include "components/servo/controller.h"
-#include "components/uart/controller.h"
 #include "components/sleep/controller.h"
+#include "components/uart/controller.h"
 
 #include "provisioning/ConfigJson.h"
 #include "provisioning/sdcard/ws_sdcard.h"
@@ -125,12 +125,17 @@
 #define WS_VERSION                                                             \
   "2.0.0-beta.1" ///< WipperSnapper app. version (semver-formatted)
 
-#define WS_KEEPALIVE_INTERVAL_MS 5000 ///< Session keepalive interval time, in milliseconds
-#define WS_TIMEOUT_WDT 60000       ///< App WDT timeout, in milliseconds
-#define WS_TIMEOUT_WDT_SLEEP 60000 ///< Sleep mode loop timeout duration, in milliseconds
+// Timeouts and intervals
+#define WS_KEEPALIVE_INTERVAL_MS                                               \
+  5000 ///< Session keepalive interval time, in milliseconds
+#define WS_TIMEOUT_WDT 60000 ///< App WDT timeout, in milliseconds
+#define WS_TIMEOUT_WDT_SLEEP                                                   \
+  60000 ///< Sleep mode loop timeout duration, in milliseconds
+#define WS_MQTT_POLL_TIMEOUT_MS                                                \
+  10 ///< MQTT polling (processPackets()) timeout, in milliseconds
+
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
-/* MQTT Configuration */
-#define WS_TOPIC_PREFIX_LEN 9 ///< (i.e: "/ws-d2b/")
+#define WS_TOPIC_PREFIX_LEN 9      ///< (i.e: "/ws-d2b/")
 
 // Forward declarations
 class Wippersnapper_FS;
@@ -243,7 +248,8 @@ public:
       nullptr;                                ///< Instance of Servo controller
   UARTController *_uart_controller = nullptr; ///< Instance of UART controller
 #ifdef ARDUINO_ARCH_ESP32
-  SleepController *_sleep_controller = nullptr; ///< Instance of sleep controller
+  SleepController *_sleep_controller =
+      nullptr; ///< Instance of sleep controller
 #endif
 
   // TODO: does this really need to be global?
@@ -270,12 +276,10 @@ public:
   JsonDocument _config_doc; ///< Storage for the config.json file
   uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
-
   // Separate loop() functions, depending on power mode
   void loop();
 #ifdef ARDUINO_ARCH_ESP32
   void loopSleep();
-  bool AllControllersUpdateComplete();
 #endif
 
   // MQTT topics

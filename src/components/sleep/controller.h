@@ -33,20 +33,21 @@ class SleepController {
 public:
   SleepController();
   ~SleepController();
-  SleepModel *GetModel();
   // Routing
   bool Router(pb_istream_t *stream);
   bool Handle_Sleep_Enter(ws_sleep_Enter *msg);
-  // Hardware-related getters
-  // TODO: Can soem of these be private?
+  // PB API Accessors
+  SleepModel *GetModel();
+  // Sleep API
+  void StartSleep();
+  bool IsSleepMode();
+  bool DidWakeFromSleep();
   ws_sleep_EspWakeCause GetEspWakeCause();
   int GetSleepDuration();
-  void CheckBootButton();
-  bool DidWakeFromSleep();
-  bool IsSleepMode();
   void HandleNetFSMFailure();
-  void StartSleep();
+
 private:
+  // Sleep configuration
   bool ConfigureSleep(const ws_sleep_Enter *msg);
   bool ConfigureLightSleep(const ws_sleep_Enter *msg);
   SleepModel *_sleep_model;       ///< Sleep model
