@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -138,6 +138,53 @@ void SleepHardware::CalculateSleepDuration() {
     @return The sleep duration in seconds.
 */
 int SleepHardware::GetSleepDuration() { return _sleep_time; }
+
+/*!
+    @brief  Sets the sleep enter time before entering sleep mode.
+            On chips with RTC memory, stores in RTC_SLOW_ATTR variable.
+            On chips without RTC memory (ESP32-C2), also persists to NVS.
+*/
+void SleepHardware::SetSleepEnterTime() {
+  // Capture current time
+  int rc = gettimeofday(&sleep_enter_time, NULL);
+  if (rc != 0) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to get current time");
+    return;
+  }
+
+#if !SOC_RTC_FAST_MEM_SUPPORTED
+  // For chips without RTC memory (ESP32-C2), persist to NVS
+  nvs_handle_t nvs_handle;
+  esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to open NVS for writing sleep time");
+    return;
+  }
+
+  err = nvs_set_i32(nvs_handle, "slp_enter_sec", (int32_t)sleep_enter_time.tv_sec);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to write sleep enter sec to NVS");
+    nvs_close(nvs_handle);
+    return;
+  }
+
+  err = nvs_set_i32(nvs_handle, "slp_enter_usec", (int32_t)sleep_enter_time.tv_usec);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to write sleep enter usec to NVS");
+    nvs_close(nvs_handle);
+    return;
+  }
+
+  err = nvs_commit(nvs_handle);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to commit sleep time to NVS");
+    nvs_close(nvs_handle);
+    return;
+  }
+
+  nvs_close(nvs_handle);
+#endif
+}
 
 /*!
     @brief   Enables deep sleep mode for a specified duration.

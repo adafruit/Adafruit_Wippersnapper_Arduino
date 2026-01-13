@@ -38,16 +38,17 @@ public:
   bool Router(pb_istream_t *stream);
   bool Handle_Sleep_Enter(ws_sleep_Enter *msg);
   // Hardware-related getters
+  // TODO: Can soem of these be private?
   ws_sleep_EspWakeCause GetEspWakeCause();
   int GetSleepDuration();
   void CheckBootButton();
   bool DidWakeFromSleep();
   bool IsSleepMode();
   void HandleNetFSMFailure();
-
+  void StartSleep();
 private:
-  bool ConfigureDeepSleep(const ws_sleep_Enter *msg);
-  // TODO: Add ConfigureLightSleep() funcs here
+  bool ConfigureSleep(const ws_sleep_Enter *msg);
+  bool ConfigureLightSleep(const ws_sleep_Enter *msg);
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
   ws_sleep_SleepMode _sleep_mode; ///< Current sleep mode

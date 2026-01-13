@@ -1121,7 +1121,7 @@ void wippersnapper::loopSleep() {
   // Can we enter sleep mode?
   if (AllControllersUpdateComplete()) {
     WS_DEBUG_PRINTLN("[app] All components have completed updates, entering sleep...");
-    // TODO
+    _sleep_controller->StartSleep();
   }
 }
 

@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -42,7 +42,7 @@ public:
   esp_sleep_source_t GetEspSleepSource();
   ws_sleep_SleepMode GetSleepMode();
   int GetSleepDuration();
-
+  void SetSleepEnterTime();
 private:
   void GetSleepWakeupCause();
   void CalculateSleepDuration();

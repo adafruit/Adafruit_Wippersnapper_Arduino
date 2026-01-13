@@ -112,10 +112,8 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
 
   // Configure sleep with the provided wakeup configuration
   bool res = false;
-  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP) {
-    res = ConfigureDeepSleep(msg);
-  } else if (_sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
-    // TODO: Need a ConfigureLightSleep() func
+  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP || _sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
+    res = ConfigureSleep(msg);
   } else {
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported sleep mode");
   }
@@ -124,21 +122,24 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
 }
 
 /*!
-    @brief  Configures deep sleep with the provided wakeup configuration.
+    @brief  Configures the sleep mode based on the provided Enter message.
     @param  msg
             Pointer to the Sleep Enter message containing config union.
     @return True if deep sleep was successfully configured, False otherwise.
 */
-bool SleepController::ConfigureDeepSleep(const ws_sleep_Enter *msg) {
+bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
   bool rc = false;
   switch (msg->which_config) {
   case ws_sleep_Enter_timer_tag:
     // Set timer-based wakeup
-    rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration *
-                                                 1000000);
+    rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration * 1000000);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }
+    // TODO: Remove this debug print in production build
+    WS_DEBUG_PRINT("[sleep] Timer wakeup set for ");
+    WS_DEBUG_PRINT(msg->config.timer.duration);
+    WS_DEBUG_PRINTLN(" seconds");
     break;
   case ws_sleep_Enter_ext0_tag:
     rc = _sleep_hardware->RegisterExt0Wakeup(
@@ -146,9 +147,15 @@ bool SleepController::ConfigureDeepSleep(const ws_sleep_Enter *msg) {
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set ext0 wakeup");
     }
+    // TODO: Remove this debug print in production build
+    WS_DEBUG_PRINT("[sleep] EXT0 wakeup set on pin ");
+    WS_DEBUG_PRINT(msg->config.ext0.name);
+    WS_DEBUG_PRINT(" with level ");
+    WS_DEBUG_PRINT(msg->config.ext0.level ? "HIGH" : "LOW");
+    WS_DEBUG_PRINTLN("");
     break;
   default:
-    WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown config type");
+    WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown sleep config type");
     break;
   }
 
@@ -190,6 +197,29 @@ bool SleepController::DidWakeFromSleep() {
 bool SleepController::IsSleepMode() { return _lock; }
 
 /*!
+    @brief  Enters the configured sleep mode.
+    @return True if the device successfully entered sleep, False otherwise.
+*/
+void SleepController::StartSleep() {
+  // Set current time before entering sleep
+  _sleep_hardware->SetSleepEnterTime();
+
+  // Enter deep sleep
+  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP) {
+    WS_DEBUG_PRINTLN("[sleep] Entering deep sleep mode with settings:");
+    esp_deep_sleep_start();
+  }
+
+  // Attempt to enter light sleep
+  WS_DEBUG_PRINTLN("[sleep] Entering light sleep mode with settings:");
+  esp_err_t err = esp_light_sleep_start();
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINT("[sleep] WARNING: Failed light sleep start: ");
+    WS_DEBUG_PRINTLN(esp_err_to_name(err));
+  }
+}
+
+/*!
     @brief  Handles a network FSM failure when attempting to connect to WiFi
             or Adafruit IO by putting the device into sleep mode for a fixed
             duration instead of kicking the WDT.
@@ -218,7 +248,7 @@ void SleepController::HandleNetFSMFailure() {
   // Configure sleep mode
   Handle_Sleep_Enter(&sleep_enter_msg);
   // Enter sleep mode
-  // TODO: Add entrypoint to for sleep here
+  StartSleep();
 }
 
 #endif // ARDUINO_ARCH_ESP32
