@@ -871,7 +871,7 @@ void wippersnapper::processPacketsV2() {
   // _connect() method when caused with Ws object in another file.
   Ws.FeedWDT();
   // Process all incoming packets from wippersnapper MQTT Broker
-  Ws._mqttV2->processPackets(10);
+  Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
 }
 
 /*!
@@ -995,7 +995,7 @@ void wippersnapper::connect() {
   // NOTE: If we do not receive a response within a certain time frame,
   // the WDT will reset the device and try again
   while (!Ws.CheckInModel->GotResponse()) {
-    Ws._mqttV2->processPackets(10); // TODO: Test with lower timeout value
+    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
     pingBrokerV2();                 // Keep MQTT connection alive
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
