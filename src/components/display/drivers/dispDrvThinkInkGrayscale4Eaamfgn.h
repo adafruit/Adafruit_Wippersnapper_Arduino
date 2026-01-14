@@ -87,6 +87,7 @@ public:
     return true;
   }
 
+  #ifndef ARDUINO_ARCH_ESP8266
   /*!
       @brief  Displays a splash screen
   */
@@ -209,6 +210,9 @@ public:
 
     _display->display();
   }
+
+  #endif // ARDUINO_ARCH_ESP8266
+
 
   /*!
       @brief  Writes a message to the display.
