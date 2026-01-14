@@ -17,8 +17,8 @@
 #include "RTClib.h"
 #include "SdFat_Adafruit_Fork.h"
 #include "StreamUtils.h"
-#include "wippersnapper.h"
 #include "sdios.h"
+#include "wippersnapper.h"
 
 #if defined(ARDUINO_FEATHER_ESP32) ||                                          \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
@@ -50,6 +50,7 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
+  void end();
   bool isSDCardInitialized() { return is_mode_offline; }
   bool parseConfigFile();
   bool CreateNewLogFile();

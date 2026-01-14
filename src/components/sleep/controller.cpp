@@ -92,14 +92,16 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
 
   // Parse and handle lock state
   _lock = msg->lock;
+  WS_DEBUG_PRINT("[sleep] Sleep lock state: ");
+  WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
   // If boot button was pressed, override any existing lock
-  // TODO: Area to refactor
-  if (_btn_cfg_mode && _lock) {
-    WS_DEBUG_PRINTLN(
-        "[sleep] Boot button pressed during startup - overriding lock state");
-    _lock = false;
-    return true;
-  }
+  // TODO: Not working on hardware, commented out for now, needs debugging
+  /*   if (_btn_cfg_mode && _lock) {
+      WS_DEBUG_PRINTLN(
+          "[sleep] Boot button pressed during startup - overriding lock state");
+      _lock = false;
+      return true;
+    } */
 
   if (!_lock) {
     WS_DEBUG_PRINTLN(
@@ -109,14 +111,35 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
 
   // Parse sleep mode and dispatch based on mode
   _sleep_mode = msg->mode;
+  // TODO: Debug output, remove in production build
+  WS_DEBUG_PRINT("[sleep] Sleep mode: ");
+  switch (_sleep_mode) {
+  case ws_sleep_SleepMode_S_DEEP:
+    WS_DEBUG_PRINTLN("DEEP SLEEP");
+    break;
+  case ws_sleep_SleepMode_S_LIGHT:
+    WS_DEBUG_PRINTLN("LIGHT SLEEP");
+    break;
+  default:
+    WS_DEBUG_PRINTLN("UNSPECIFIED/UNKNOWN");
+    break;
+  }
 
   // Configure sleep with the provided wakeup configuration
   bool res = false;
-  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP || _sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
+  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP ||
+      _sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
+    WS_DEBUG_PRINTLN(
+        "[sleep] Configuring sleep mode..."); // TODO: Debug output, remove in
+                                              // production build
     res = ConfigureSleep(msg);
   } else {
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported sleep mode");
   }
+
+  WS_DEBUG_PRINTLN("[sleep] Sleep configuration complete.");
+  WS_DEBUG_PRINT("Lock Status: ");
+  WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
 
   return res;
 }
@@ -132,12 +155,13 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
   switch (msg->which_config) {
   case ws_sleep_Enter_timer_tag:
     // Set timer-based wakeup
-    rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration * 1000000);
+    rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration *
+                                                 1000000);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }
     // TODO: Remove this debug print in production build
-    WS_DEBUG_PRINT("[sleep] Timer wakeup set for ");
+    WS_DEBUG_PRINT("[sleep] Timer wakeup set to ");
     WS_DEBUG_PRINT(msg->config.timer.duration);
     WS_DEBUG_PRINTLN(" seconds");
     break;
@@ -194,7 +218,10 @@ bool SleepController::DidWakeFromSleep() {
     @brief  Returns whether the device is in a sleep loop (locked).
     @return True if the device is locked for sleep, False otherwise.
 */
-bool SleepController::IsSleepMode() { return _lock; }
+bool SleepController::IsSleepMode() {
+  WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
+  return _lock;
+}
 
 /*!
     @brief  Enters the configured sleep mode.
@@ -204,18 +231,31 @@ void SleepController::StartSleep() {
   // Set current time before entering sleep
   _sleep_hardware->SetSleepEnterTime();
 
-  // Enter deep sleep
-  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP) {
-    WS_DEBUG_PRINTLN("[sleep] Entering deep sleep mode with settings:");
-    esp_deep_sleep_start();
+  // Disable any external components that draw power during sleep
+  if (_has_ext_pwr_components) {
+    WS_DEBUG_PRINTLN("[sleep] Disabling externally powered components before sleep...");
+    _sleep_hardware->DisableExternalComponents();
+  }
+  // Disable SD Card, if present
+  if (Ws._sdCardV2->isSDCardInitialized()) {
+    WS_DEBUG_PRINTLN("[sleep] Disabling SD card before sleep...");
+    Ws._sdCardV2->end();
   }
 
-  // Attempt to enter light sleep
-  WS_DEBUG_PRINTLN("[sleep] Entering light sleep mode with settings:");
-  esp_err_t err = esp_light_sleep_start();
-  if (err != ESP_OK) {
-    WS_DEBUG_PRINT("[sleep] WARNING: Failed light sleep start: ");
-    WS_DEBUG_PRINTLN(esp_err_to_name(err));
+  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP) {
+    WS_DEBUG_PRINTLN("[sleep] Entering deep sleep mode:");
+    esp_deep_sleep_start();
+  } else if (_sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
+    // Attempt to enter light sleep
+    WS_DEBUG_PRINTLN("[sleep] Entering light sleep mode:");
+    esp_err_t err = esp_light_sleep_start();
+    if (err != ESP_OK) {
+      WS_DEBUG_PRINT("[sleep] WARNING: Failed light sleep start: ");
+      WS_DEBUG_PRINTLN(esp_err_to_name(err));
+    }
+  } else {
+    WS_DEBUG_PRINTLN(
+        "[sleep] WARNING: Unsupported sleep mode, not entering sleep.");
   }
 }
 

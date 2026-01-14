@@ -157,18 +157,21 @@ void SleepHardware::SetSleepEnterTime() {
   nvs_handle_t nvs_handle;
   esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
   if (err != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to open NVS for writing sleep time");
+    WS_DEBUG_PRINTLN(
+        "[sleep] ERROR: Failed to open NVS for writing sleep time");
     return;
   }
 
-  err = nvs_set_i32(nvs_handle, "slp_enter_sec", (int32_t)sleep_enter_time.tv_sec);
+  err = nvs_set_i32(nvs_handle, "slp_enter_sec",
+                    (int32_t)sleep_enter_time.tv_sec);
   if (err != ESP_OK) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to write sleep enter sec to NVS");
     nvs_close(nvs_handle);
     return;
   }
 
-  err = nvs_set_i32(nvs_handle, "slp_enter_usec", (int32_t)sleep_enter_time.tv_usec);
+  err = nvs_set_i32(nvs_handle, "slp_enter_usec",
+                    (int32_t)sleep_enter_time.tv_usec);
   if (err != ESP_OK) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to write sleep enter usec to NVS");
     nvs_close(nvs_handle);
@@ -220,11 +223,14 @@ bool SleepHardware::EnableLightSleep(int duration) {
    upon class init.
 */
 bool SleepHardware::CheckBootButton() {
+#if defined(BOOT_BUTTON)
   pinMode(BOOT_BUTTON, INPUT_PULLUP);
   bool res = (digitalRead(BOOT_BUTTON) == LOW);
   // Blink to signal we're not going to sleep again
   statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME, 3);
   return res;
+#endif
+  return true; // If no boot button defined, just return true
 }
 
 /*!
@@ -301,6 +307,15 @@ void SleepHardware::DisableExternalComponents() {
   digitalWrite(TFT_POWER, LOW);
 #endif
 
+#if defined(PIN_NEOPIXEL)
+  ReleaseStatusPixel();
+#endif
+
+// Turn off the neopixel data pin to avoid power draw
+#if defined(PIN_NEOPIXEL)
+  pinMode(PIN_NEOPIXEL, INPUT);
+#endif
+
 #if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
   // (specific to adafruit feather esp32-s2) - turn off the I2C power by setting
   // pin to rest state (off)
@@ -311,6 +326,9 @@ void SleepHardware::DisableExternalComponents() {
 #elif defined(TFT_I2C_POWER)
   pinMode(TFT_I2C_POWER, OUTPUT);
   digitalWrite(TFT_I2C_POWER, LOW);
+#elif defined(NEOPIXEL_I2C_POWER)
+  pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
 #endif
 }
 

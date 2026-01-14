@@ -995,8 +995,9 @@ void wippersnapper::connect() {
   // NOTE: If we do not receive a response within a certain time frame,
   // the WDT will reset the device and try again
   while (!Ws.CheckInModel->GotResponse()) {
-    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
-    pingBrokerV2();                 // Keep MQTT connection alive
+    Ws._mqttV2->processPackets(
+        WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
+    pingBrokerV2();               // Keep MQTT connection alive
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
@@ -1021,18 +1022,30 @@ void wippersnapper::connect() {
 */
 void wippersnapper::run() {
 #ifdef ARDUINO_ARCH_ESP32
-  if (!_sleep_controller->IsSleepMode()) {
-    loop();
+  if (!Ws._sleep_controller->IsSleepMode()) {
+    WS_DEBUG_PRINTLN(
+        "[app] Running normal loop..."); // TODO: Debug, remove in prod build
+    while (true) {
+      loop();
+    }
   } else {
     // Attempt to reconfigure the WDT for sleep mode
+    WS_DEBUG_PRINTLN(
+        "[app] Reconfiguring the TWDT..."); // TODO: Debug, remove in prod build
     if (!Ws.ReconfigureWDT(WS_TIMEOUT_WDT_SLEEP))
       haltErrorV2("Unable to reconfigure watchdog timer for sleep mode!");
     // Feed TWDT and enter loopSleep()
     Ws.FeedWDT();
-    loopSleep();
+    WS_DEBUG_PRINTLN(
+        "[app] Running sleep loop..."); // TODO: Debug, remove in prod build
+    while (true) {
+      loopSleep();
+    }
   }
 #else
-  loop();
+  while (true) {
+    loop();
+  }
 #endif
 }
 
@@ -1125,7 +1138,7 @@ void wippersnapper::loopSleep() {
   if (all_controllers_complete) {
     WS_DEBUG_PRINTLN(
         "[app] All components completed updates, entering sleep...");
-    _sleep_controller->StartSleep();
+    Ws._sleep_controller->StartSleep();
   }
 }
 

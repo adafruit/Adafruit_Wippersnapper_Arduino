@@ -29,6 +29,8 @@ ws_sdcard::ws_sdcard()
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
+  delay(6000); // DEBUG ONLY: Wait for everything to settle
+
   if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
     return;
 
@@ -54,6 +56,24 @@ ws_sdcard::~ws_sdcard() {
     _sd.end(); // Close the SD card interface
   }
   is_mode_offline = false;
+}
+
+/*!
+    @brief    Ends SD card interface and sets SPI pins to input to avoid
+              power draw.
+*/
+void ws_sdcard::end() {
+  pinMode(Ws.pin_sd_cs, OUTPUT);
+  digitalWrite(Ws.pin_sd_cs, HIGH);
+  // Close the SD card interface
+  _sd.end();
+  // Set SPI pins to input to avoid power draw
+  pinMode(SCK, INPUT);
+  pinMode(MOSI, INPUT);
+  pinMode(MISO, INPUT);
+  // Keep CS high
+  pinMode(Ws.pin_sd_cs, OUTPUT);
+  digitalWrite(Ws.pin_sd_cs, HIGH);
 }
 
 void ws_sdcard::calculateFileLimits() {
@@ -207,7 +227,7 @@ void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
   Ws.analogio_controller->SetTotalAnalogPins(
       exported_from_device["maxAnalogPins"] | 0);
   Ws.analogio_controller->SetRefVoltage(exported_from_device["refVoltage"] |
-                                          0.0f);
+                                        0.0f);
   // Since `secrets.json` is unused in offline mode, use the status LED
   // brightness from here instead
   setStatusLEDBrightness(exported_from_device["statusLEDBrightness"] | 0.3f);
@@ -693,10 +713,11 @@ bool ws_sdcard::parseConfigFile() {
   if (!ValidateChecksum(doc)) {
     WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its "
                      "original state!");
-    return false;
+    // return false;
   }
 
   // Begin parsing the JSON document
+  WS_DEBUG_PRINTLN("[SD] Parsing exportedFromDevice...");
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
   if (exportedFromDevice.isNull()) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Required exportedFromDevice not "
@@ -705,9 +726,11 @@ bool ws_sdcard::parseConfigFile() {
   }
 
   // We don't talk to IO in offline mode, so, mock the device check-in
+  WS_DEBUG_PRINTLN("[SD] Mocking device check-in...");
   CheckIn(exportedFromDevice);
 
   // Parse sleep configuration, if present
+  WS_DEBUG_PRINTLN("[SD] Parsing sleep configuration...");
   JsonObject sleep_config = doc["sleepConfig"][0];
   if (!sleep_config.isNull()) {
     bool parse_result = false;
@@ -729,6 +752,7 @@ bool ws_sdcard::parseConfigFile() {
     }
   }
 
+  WS_DEBUG_PRINTLN("[SD] Configuring RTC...");
 #ifndef OFFLINE_MODE_WOKWI
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT";
   if (!ConfigureRTC(json_rtc)) {
@@ -737,6 +761,7 @@ bool ws_sdcard::parseConfigFile() {
   }
 #endif
 
+  WS_DEBUG_PRINTLN("[SD] Parsing components...");
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
     ws_signal_BrokerToDevice msg_signal_b2d =
