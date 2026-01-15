@@ -81,7 +81,7 @@ public:
     return true;
   }
 
-  #ifndef ARDUINO_ARCH_ESP8266
+#ifndef ARDUINO_ARCH_ESP8266
   /*!
       @brief  Draws a status bar at the top of the display.
         @param  io_username
