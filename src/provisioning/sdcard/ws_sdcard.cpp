@@ -28,6 +28,8 @@ ws_sdcard::ws_sdcard()
   _is_soft_rtc = false;
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
+  _heartbeat_interval_ms = WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS;
+  _prv_heartbeat_interval_ms = 0;
 
   delay(6000); // DEBUG ONLY: Wait for everything to settle
 
@@ -56,6 +58,28 @@ ws_sdcard::~ws_sdcard() {
     _sd.end(); // Close the SD card interface
   }
   is_mode_offline = false;
+}
+
+/*!
+    @brief    Returns the offline mode heartbeat interval.
+    @returns  The heartbeat interval in milliseconds.
+*/
+uint32_t ws_sdcard::getHeartbeatIntervalMs() { return _heartbeat_interval_ms; }
+
+/*!
+    @brief    Returns the previous heartbeat timestamp.
+    @returns  The previous heartbeat timestamp in milliseconds.
+*/
+uint32_t ws_sdcard::getPreviousHeartbeatIntervalMs() {
+  return _prv_heartbeat_interval_ms;
+}
+
+/*!
+    @brief    Sets the previous heartbeat timestamp.
+    @param    timestamp The timestamp to set, in milliseconds.
+*/
+void ws_sdcard::setPreviousHeartbeatIntervalMs(uint32_t timestamp) {
+  _prv_heartbeat_interval_ms = timestamp;
 }
 
 /*!
@@ -231,6 +255,11 @@ void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
   // Since `secrets.json` is unused in offline mode, use the status LED
   // brightness from here instead
   setStatusLEDBrightness(exported_from_device["statusLEDBrightness"] | 0.3f);
+
+  // Parse offline mode heartbeat interval (in seconds), convert to ms
+  uint32_t heartbeat_sec = exported_from_device["heartbeatInterval"] |
+                           (WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS / 1000);
+  _heartbeat_interval_ms = heartbeat_sec * 1000;
 }
 
 /*!

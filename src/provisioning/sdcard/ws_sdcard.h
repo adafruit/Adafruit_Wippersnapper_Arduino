@@ -55,6 +55,9 @@ public:
   bool parseConfigFile();
   bool CreateNewLogFile();
   bool isModeOffline() { return is_mode_offline; }
+  uint32_t getHeartbeatIntervalMs();
+  uint32_t getPreviousHeartbeatIntervalMs();
+  void setPreviousHeartbeatIntervalMs(uint32_t timestamp);
   void waitForSerialConfig();
   bool LogGPIOSensorEventToSD(uint8_t pin, float value,
                               ws_sensor_Type read_type);
@@ -115,7 +118,9 @@ private:
   int _sd_cur_log_files; ///< Current number of log files that can fit on the SD
                          ///< card
   bool is_mode_offline;  ///< True if offline mode is enabled, False otherwise
-  String _serialInput;   ///< Serial input buffer
+  uint32_t _heartbeat_interval_ms; ///< Offline mode heartbeat interval, in ms
+  uint32_t _prv_heartbeat_interval_ms; ///< Previous heartbeat timestamp, in ms
+  String _serialInput;                 ///< Serial input buffer
   const char *json_test_data;          ///< Json test data
   const char *_log_filename;           ///< Path to the log file
   RTC_DS3231 *_rtc_ds3231 = nullptr;   ///< DS3231 RTC object

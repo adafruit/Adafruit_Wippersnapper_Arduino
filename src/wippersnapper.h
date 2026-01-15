@@ -133,6 +133,8 @@
   60000 ///< Sleep mode loop timeout duration, in milliseconds
 #define WS_MQTT_POLL_TIMEOUT_MS                                                \
   10 ///< MQTT polling (processPackets()) timeout, in milliseconds
+#define WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS                               \
+  60000 ///< Default offline mode heartbeat interval, in milliseconds
 
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 #define WS_TOPIC_PREFIX_LEN 9      ///< (i.e: "/ws-d2b/")
@@ -281,6 +283,7 @@ private:
 #ifdef ARDUINO_ARCH_ESP32
   void loopSleep();
 #endif
+  void blinkOfflineHeartbeat();
 
   // MQTT topics
   char *_topicB2d;

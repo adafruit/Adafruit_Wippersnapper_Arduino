@@ -37,7 +37,7 @@ typedef enum ws_led_status_t {
   WS_LED_STATUS_MQTT_CONNECTING,
   WS_LED_STATUS_WAITING_FOR_REG_MSG,
   WS_LED_STATUS_ERROR_RUNTIME,
-  WS_LED_STATUS_KAT,
+  WS_LED_STATUS_HEARTBEAT,
 } ws_led_status_t;
 
 #define RED 0xFF0000    ///< Red (as a uint32)

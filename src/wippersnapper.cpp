@@ -821,8 +821,20 @@ void wippersnapper::pingBrokerV2() {
 */
 void wippersnapper::BlinkKATStatus() {
   if (millis() > (_prvKATBlinkV2 + STATUS_LED_KAT_BLINK_TIME)) {
-    statusLEDBlink(WS_LED_STATUS_KAT);
+    statusLEDBlink(WS_LED_STATUS_HEARTBEAT);
     _prvKATBlinkV2 = millis();
+  }
+}
+
+/*!
+    @brief  Blinks the status LED at a configurable interval for offline mode.
+            Interval is parsed from config.json, defaults to 60 seconds.
+*/
+void wippersnapper::blinkOfflineHeartbeat() {
+  if (millis() > (_sdCardV2->getPreviousHeartbeatIntervalMs() +
+                  _sdCardV2->getHeartbeatIntervalMs())) {
+    statusLEDBlink(WS_LED_STATUS_HEARTBEAT);
+    _sdCardV2->setPreviousHeartbeatIntervalMs(millis());
   }
 }
 
@@ -1058,7 +1070,7 @@ void wippersnapper::loop() {
     // Process all incoming packets from wippersnapper MQTT Broker
     Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
   } else {
-    BlinkKATStatus(); // Offline Mode - Blink every KAT interval
+    blinkOfflineHeartbeat();
   }
 
   // Process all digital events

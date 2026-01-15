@@ -312,7 +312,7 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 uint32_t ledStatusStateToColor(ws_led_status_t statusState) {
   uint32_t ledColor;
   switch (statusState) {
-  case WS_LED_STATUS_KAT:
+  case WS_LED_STATUS_HEARTBEAT:
     ledColor = GREEN;
     break;
   case WS_LED_STATUS_ERROR_RUNTIME:

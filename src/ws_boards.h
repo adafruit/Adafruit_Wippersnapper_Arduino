@@ -56,6 +56,7 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 46
 #define STATUS_NEOPIXEL_NUM 1
+#define BOOT_BUTTON PIN_BUTTON1 ///< Normalized boot button pin
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_MAGTAG29_ESP32S2)
 #define BOARD_ID "magtag"

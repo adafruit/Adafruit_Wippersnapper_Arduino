@@ -95,13 +95,12 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   WS_DEBUG_PRINT("[sleep] Sleep lock state: ");
   WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
   // If boot button was pressed, override any existing lock
-  // TODO: Not working on hardware, commented out for now, needs debugging
-  /*   if (_btn_cfg_mode && _lock) {
-      WS_DEBUG_PRINTLN(
-          "[sleep] Boot button pressed during startup - overriding lock state");
-      _lock = false;
-      return true;
-    } */
+  if (_btn_cfg_mode && _lock) {
+    WS_DEBUG_PRINTLN(
+        "[sleep] Boot button pressed during startup - overriding lock");
+    _lock = false;
+    return true;
+  }
 
   if (!_lock) {
     WS_DEBUG_PRINTLN(
@@ -233,7 +232,8 @@ void SleepController::StartSleep() {
 
   // Disable any external components that draw power during sleep
   if (_has_ext_pwr_components) {
-    WS_DEBUG_PRINTLN("[sleep] Disabling externally powered components before sleep...");
+    WS_DEBUG_PRINTLN(
+        "[sleep] Disabling externally powered components before sleep...");
     _sleep_hardware->DisableExternalComponents();
   }
   // Disable SD Card, if present
