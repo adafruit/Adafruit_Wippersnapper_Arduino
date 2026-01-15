@@ -202,6 +202,14 @@ ws_sleep_EspWakeCause SleepController::GetEspWakeCause() {
 }
 
 /*!
+    @brief  Gets the wakeup reason as a human-readable string.
+    @return C string describing the wakeup reason.
+*/
+const char *SleepController::GetWakeupReasonName() {
+  return _sleep_hardware->GetWakeupReasonName();
+}
+
+/*!
     @brief  Returns whether the device woke from a sleep mode.
     @return True if the device woke from sleep, False otherwise.
 */

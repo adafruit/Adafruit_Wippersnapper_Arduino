@@ -914,6 +914,11 @@ void printDeviceInfoV2() {
   esp_reset_reason_t r = esp_reset_reason();
   WS_DEBUG_PRINT("ESP Reset Reason: ");
   WS_DEBUG_PRINTLN(resetReasonName(r));
+  // If reset was caused by sleep wakeup, print the wakeup reason
+  if (Ws._sleep_controller->DidWakeFromSleep()) {
+    WS_DEBUG_PRINT("ESP Sleep Wakeup Reason: ");
+    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetWakeupReasonName());
+  }
 #endif
 }
 

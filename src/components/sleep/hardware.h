@@ -40,6 +40,7 @@ public:
   void DisableExternalComponents();
   ws_sleep_EspWakeCause GetEspWakeCauseEnum();
   esp_sleep_source_t GetEspSleepSource();
+  const char *GetWakeupReasonName();
   ws_sleep_SleepMode GetSleepMode();
   int GetSleepDuration();
   void SetSleepEnterTime();

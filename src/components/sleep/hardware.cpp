@@ -85,6 +85,43 @@ ws_sleep_EspWakeCause SleepHardware::GetEspWakeCauseEnum() {
 }
 
 /*!
+    @brief  Returns a human-readable name for the wakeup cause.
+    @return C string describing the wakeup reason.
+*/
+const char *SleepHardware::GetWakeupReasonName() {
+  switch (_wakeup_cause) {
+  case ESP_SLEEP_WAKEUP_UNDEFINED:
+    return "Undefined";
+  case ESP_SLEEP_WAKEUP_ALL:
+    return "All";
+  case ESP_SLEEP_WAKEUP_EXT0:
+    return "EXT0";
+  case ESP_SLEEP_WAKEUP_EXT1:
+    return "EXT1";
+  case ESP_SLEEP_WAKEUP_TIMER:
+    return "Timer";
+  case ESP_SLEEP_WAKEUP_TOUCHPAD:
+    return "Touchpad";
+  case ESP_SLEEP_WAKEUP_ULP:
+    return "ULP";
+  case ESP_SLEEP_WAKEUP_GPIO:
+    return "GPIO";
+  case ESP_SLEEP_WAKEUP_UART:
+    return "UART";
+  case ESP_SLEEP_WAKEUP_WIFI:
+    return "WiFi";
+  case ESP_SLEEP_WAKEUP_COCPU:
+    return "COCPU";
+  case ESP_SLEEP_WAKEUP_COCPU_TRAP_TRIG:
+    return "COCPU_Trap";
+  case ESP_SLEEP_WAKEUP_BT:
+    return "Bluetooth";
+  default:
+    return "Unknown";
+  }
+}
+
+/*!
     @brief  Returns the current (or previously entered) sleep mode. This mode
             is set when enabling deep or light sleep, and can be retrieved
             post-sleep from the RTC memory.

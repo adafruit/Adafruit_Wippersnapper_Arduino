@@ -43,6 +43,7 @@ public:
   bool IsSleepMode();
   bool DidWakeFromSleep();
   ws_sleep_EspWakeCause GetEspWakeCause();
+  const char *GetWakeupReasonName();
   int GetSleepDuration();
   void HandleNetFSMFailure();
 
