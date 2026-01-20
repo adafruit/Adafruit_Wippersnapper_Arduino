@@ -351,3 +351,12 @@ bool UARTController::UpdateComplete() {
   }
   return true;
 }
+
+/*!
+    @brief  Resets all UART drivers' did_read_send flags to false.
+*/
+void UARTController::ResetFlags() {
+  for (drvUartBase *drv : _uart_drivers) {
+    drv->SetDidReadSend(false);
+  }
+}

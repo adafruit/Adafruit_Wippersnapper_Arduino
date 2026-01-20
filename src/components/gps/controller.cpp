@@ -199,3 +199,12 @@ bool GPSController::UpdateComplete() {
   }
   return true;
 }
+
+/*!
+ * @brief Resets all GPS drivers' did_read_send flags to false.
+ */
+void GPSController::ResetFlags() {
+  for (GPSHardware *drv : _gps_drivers) {
+    drv->SetDidReadSend(false);
+  }
+}

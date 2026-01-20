@@ -37,6 +37,7 @@ public:
   // Polling
   void update(bool force = false);
   bool UpdateComplete();
+  void ResetFlags();
 
 private:
   DS18X20Model *_DS18X20_model; ///< ds18x20 model

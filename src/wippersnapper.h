@@ -199,7 +199,7 @@ public:
   bool PublishD2b(pb_size_t which_payload, void *payload);
 
   // run() loop
-  void processPacketsV2();
+  void ProcessPackets();
 
   // Networking helpers
   void pingBrokerV2();
@@ -282,6 +282,7 @@ private:
   void loop();
 #ifdef ARDUINO_ARCH_ESP32
   void loopSleep();
+  void ResetAllControllerFlags();
 #endif
   void blinkOfflineHeartbeat();
 

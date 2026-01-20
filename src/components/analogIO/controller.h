@@ -50,6 +50,7 @@ public:
   bool Handle_AnalogIORemove(ws_analogio_Remove *msg);
   void update(bool force = false);
   bool UpdateComplete();
+  void ResetFlags();
 
   void SetTotalAnalogPins(uint8_t total_pins);
   void SetRefVoltage(float voltage);

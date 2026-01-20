@@ -337,3 +337,12 @@ bool DS18X20Controller::UpdateComplete() {
   }
   return true;
 }
+
+/*!
+    @brief  Resets all DS18X20 sensors' did_read_send flags to false.
+*/
+void DS18X20Controller::ResetFlags() {
+  for (size_t i = 0; i < _DS18X20_pins.size(); i++) {
+    _DS18X20_pins[i]->did_read_send = false;
+  }
+}

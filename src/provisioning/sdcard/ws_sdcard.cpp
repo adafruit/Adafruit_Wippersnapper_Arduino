@@ -31,7 +31,7 @@ ws_sdcard::ws_sdcard()
   _heartbeat_interval_ms = WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS;
   _prv_heartbeat_interval_ms = 0;
 
-  delay(6000); // DEBUG ONLY: Wait for everything to settle
+  //delay(6000); // DEBUG ONLY: Wait for everything to settle
 
   if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
     return;

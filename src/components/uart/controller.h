@@ -42,6 +42,7 @@ public:
   // Polling
   void update(bool force = false);
   bool UpdateComplete();
+  void ResetFlags();
 
 private:
   UARTModel *_uart_model; ///< UART model

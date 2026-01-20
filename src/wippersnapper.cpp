@@ -878,7 +878,7 @@ int wippersnapper::EnableWDT(int timeout_ms) {
             Adafruit IO MQTT broker. Handles network
             connectivity.
 */
-void wippersnapper::processPacketsV2() {
+void wippersnapper::ProcessPackets() {
   // NetworkFSM(); // NOTE: Removed for now, causes error with virtual
   // _connect() method when caused with Ws object in another file.
   Ws.FeedWDT();
@@ -889,7 +889,7 @@ void wippersnapper::processPacketsV2() {
 /*!
     @brief    Prints information about the Ws device to the serial monitor.
 */
-void printDeviceInfoV2() {
+void PrintDeviceInfo() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINT("Firmware Version: ");
   WS_DEBUG_PRINTLN(WS_VERSION);
@@ -909,7 +909,7 @@ void printDeviceInfoV2() {
   WS_DEBUG_PRINTLN(sMAC);
   WS_DEBUG_PRINTLN("-------------------------------");
 
-// (ESP32-Only) Print reason why device was reset
+// (ESP32-Only) - Print reset reason
 #ifdef ARDUINO_ARCH_ESP32
   esp_reset_reason_t r = esp_reset_reason();
   WS_DEBUG_PRINT("ESP Reset Reason: ");
@@ -918,6 +918,10 @@ void printDeviceInfoV2() {
   if (Ws._sleep_controller->DidWakeFromSleep()) {
     WS_DEBUG_PRINT("ESP Sleep Wakeup Reason: ");
     WS_DEBUG_PRINTLN(Ws._sleep_controller->GetWakeupReasonName());
+    WS_DEBUG_PRINT("Prv. Sleep Mode: ");
+    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetPrvSleepMode());
+    WS_DEBUG_PRINT("Total Sleep Duration (sec): ");
+    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetSleepDuration());
   }
 #endif
 }
@@ -928,7 +932,7 @@ void printDeviceInfoV2() {
 void wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
-  printDeviceInfoV2();
+  PrintDeviceInfo();
 
   // TODO: Does this need to be here?
   Ws.error_controller = new ErrorController();
@@ -1153,10 +1157,26 @@ void wippersnapper::loopSleep() {
   }
 
   if (all_controllers_complete) {
-    WS_DEBUG_PRINTLN(
-        "[app] All components completed updates, entering sleep...");
+    WS_DEBUG_PRINTLN("[app] All components updated, entering sleep...");
+    // Resets all polling flags for use in the next loopsleep() cycle
+    ResetAllControllerFlags();
+
+    // Enter sleep
     Ws._sleep_controller->StartSleep();
   }
+}
+
+/*!
+    @brief  Resets all controller polling flags for use
+            in the next loopsleep() cycle.
+*/
+void wippersnapper::ResetAllControllerFlags() {
+  Ws.digital_io_controller->ResetFlags();
+  Ws.analogio_controller->ResetFlags();
+  Ws._ds18x20_controller->ResetFlags();
+  Ws._i2c_controller->ResetFlags();
+  Ws._uart_controller->ResetFlags();
+  Ws._gps_controller->ResetFlags();
 }
 
 #endif

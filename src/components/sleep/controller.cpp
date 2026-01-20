@@ -20,10 +20,10 @@
 */
 SleepController::SleepController() {
   _sleep_hardware = new SleepHardware();
+  _btn_cfg_mode = _sleep_hardware->CheckBootButton();
   _sleep_model = new SleepModel();
   _sleep_mode = ws_sleep_SleepMode_S_UNSPECIFIED;
   _lock = false; // Class-level lock
-  _btn_cfg_mode = _sleep_hardware->CheckBootButton();
 
 // Mark so we can disable all external peripherals that draw power during sleep
 // (i.e: tft, i2c, neopixel, etc)
@@ -220,6 +220,12 @@ bool SleepController::DidWakeFromSleep() {
           ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
   return _lock;
 }
+
+/*!
+    @brief  Returns the previous sleep mode before wakeup.
+    @return The previous sleep cycle's mode as ws_sleep_SleepMode enum.
+*/
+ws_sleep_SleepMode SleepController::GetPrvSleepMode() { return _sleep_hardware->GetSleepMode(); }
 
 /*!
     @brief  Returns whether the device is in a sleep loop (locked).

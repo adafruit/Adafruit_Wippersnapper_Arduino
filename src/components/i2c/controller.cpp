@@ -1187,9 +1187,18 @@ bool I2cController::UpdateComplete() {
     for (auto *drv : _i2c_drivers) {
         if (drv->GetEnabledSensorCnt() == 0)
         continue; // skip drivers with no enabled sensors
-    
+
         if (!drv->GetDidReadSend())
         return false; // found a driver that hasn't completed its read/send
     }
     return true; // all drivers have completed their read/send
+}
+
+/*!
+    @brief  Resets all I2C drivers' did_read_send flags to false.
+*/
+void I2cController::ResetFlags() {
+  for (auto *drv : _i2c_drivers) {
+    drv->SetDidReadSend(false);
+  }
 }

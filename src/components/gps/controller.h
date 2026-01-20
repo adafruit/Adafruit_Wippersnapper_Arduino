@@ -35,6 +35,7 @@ public:
   bool AddGPS(TwoWire *wire, uint32_t i2c_addr, ws_gps_Config *gps_config);
   void update(bool force = false);
   bool UpdateComplete();
+  void ResetFlags();
 
 private:
   GPSModel *_gps_model;                    ///< GPS model instance

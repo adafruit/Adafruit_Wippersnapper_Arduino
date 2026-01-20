@@ -87,6 +87,7 @@ public:
   ~I2cController();
   void update(bool force = false);
   bool UpdateComplete();
+  void ResetFlags();
   // Routing //
   bool Router(pb_istream_t *stream);
   bool Handle_I2cDeviceAddOrReplace(ws_i2c_DeviceAddOrReplace *msg);

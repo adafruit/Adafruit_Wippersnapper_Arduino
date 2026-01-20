@@ -52,7 +52,9 @@ public:
   bool Handle_DigitalIO_Remove(ws_digitalio_Remove *msg);
   bool Handle_DigitalIO_Write(ws_digitalio_Write *msg);
   void update(bool force = false);
+  // For sleep cycles
   bool UpdateComplete();
+  void ResetFlags();
 
   // Called once per-run, during CheckinResponse processing
   void SetMaxDigitalPins(uint8_t max_digital_pins);

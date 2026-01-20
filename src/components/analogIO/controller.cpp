@@ -295,3 +295,12 @@ bool AnalogIOController::UpdateComplete() {
   }
   return true;
 }
+
+/*!
+    @brief  Resets all analog pins' did_read_send flags to false.
+*/
+void AnalogIOController::ResetFlags() {
+  for (size_t i = 0; i < _analogio_pins.size(); i++) {
+    _analogio_pins[i].did_read_send = false;
+  }
+}

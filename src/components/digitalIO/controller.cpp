@@ -415,3 +415,12 @@ bool DigitalIOController::UpdateComplete() {
   }
   return true;
 }
+
+/*!
+    @brief  Resets all digital input pins' did_read_send flags to false.
+*/
+void DigitalIOController::ResetFlags() {
+  for (size_t i = 0; i < _pins_input.size(); i++) {
+    _pins_input[i].did_read_send = false;
+  }
+}
