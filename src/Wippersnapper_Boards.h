@@ -245,6 +245,13 @@
 #define STATUS_NEOPIXEL_NUM 1
 #define SD_USE_SPI_1
 #define SD_CS_PIN 23
+#elif defined(ARDUINO_ADAFRUIT_FEATHER_RP2350_HSTX)
+#define BOARD_ID "feather-rp2350-hstx"
+#define USE_TINYUSB
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
+#define SD_CS_PIN 1
 #elif defined(ARDUINO_ADAFRUIT_METRO_RP2350)
 #define BOARD_ID "metro-rp2350"
 #define USE_TINYUSB
