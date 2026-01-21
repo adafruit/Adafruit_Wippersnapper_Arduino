@@ -1,0 +1,59 @@
+Map summary for output_8266.map
+(Static RAM = .bss + .data; sizes in bytes)\n
+== Top archives (.bss+.data) ==
+   18574  libpp.a
+    3112  libnet80211.a
+    1194  libmain.a
+     772  libc.a
+     714  libwpa.a
+     485  libFrameworkArduino.a
+     485  libsmartconfig.a
+     458  libphy.a
+     323  liblwip2-536-feat.a
+      20  libWire.a
+      12  libLittleFS.a
+      12  libgcc.a
+       5  libOneWireNg@src-58855cd00c3238949176d3d22303ec3a.a
+       4  Library.a
+       2  libSPI.a
+       1  libESP8266WiFi.a
+\n== Top object files (.bss+.data) ==
+   12176  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libpp.a(wdev.o)
+    3796  .pio/build/huzzah_esp8266/src/Wippersnapper_demo.ino.cpp.o
+    3784  .pio/build/huzzah_esp8266/src/Wippersnapper.cpp.o
+    2724  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libpp.a(esf_buf.o)
+    1720  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libpp.a(trc.o)
+    1704  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libnet80211.a(ieee80211.o)
+     941  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libnet80211.a(wl_cnx.o)
+     862  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libpp.a(pp.o)
+     618  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libwpa.a(wpa.o)
+     607  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libmain.a(user_interface.o)
+     452  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libmain.a(nmi-vector.o)
+     430  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libphy.a(phy_chip_v6.o)
+     368  c:/users/tyeth/.platformio/packages/toolchain-xtensa/bin/../lib/gcc/xtensa-lx106-elf/10.3.0/../../../../xtensa-lx106-elf/lib/libc.a(lib_a-locale.o)
+     336  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libpp.a(lmac.o)
+     320  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libpp.a(rate_control.o)
+     315  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libpp.a(pm.o)
+     244  c:/users/tyeth/.platformio/packages/toolchain-xtensa/bin/../lib/gcc/xtensa-lx106-elf/10.3.0/../../../../xtensa-lx106-elf/lib/libc.a(lib_a-impure.o)
+     228  .pio/build/huzzah_esp8266/libFrameworkArduino.a(Updater.cpp.o)
+     221  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libsmartconfig.a(sc_esptouch.o)
+     220  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/liblwip2-536-feat.a(espconn.o)
+     205  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libnet80211.a(ieee80211_scan.o)
+     202  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libsmartconfig.a(sc_airkiss.o)
+     172  .pio/build/huzzah_esp8266/libFrameworkArduino.a(core_esp8266_si2c.cpp.o)
+     140  .pio/build/huzzah_esp8266/src/components/pixels/ws_pixels.cpp.o
+      96  C:/Users/tyeth/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lib/NONOSDK22x_190703/libwpa.a(wpa_auth.o)
+\n== Top buckets (.bss+.data) ==
+   24860  esp8266-core
+    3796  src/Wippersnapper_demo.ino.cpp.o
+    3784  src/Wippersnapper.cpp.o
+     784  xtensa-lib
+     485  other
+     140  src/components/pixels
+      20  lib3e1/libWire.a(Wire.cpp.o)
+      12  libf8f/libLittleFS.a(LittleFS.cpp.o)
+       6  src/provisioning/tinyusb
+       5  libd6a/libOneWireNg@src-58855cd00c3238949176d3d22303ec3a.a(Platform_TimeCritical.cpp.o)
+       4  libed2/libAdafruit SleepyDog Library.a(Adafruit_SleepyDog.cpp.o)
+       2  lib6ad/libSPI.a(SPI.cpp.o)
+       1  lib8a4/libESP8266WiFi.a(ESP8266WiFi.cpp.o)

@@ -21,7 +21,6 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "ESP8266WiFi.h"
-#include "ESP8266WiFiMulti.h"
 #include "Wippersnapper.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
@@ -122,53 +121,16 @@ public:
   */
   /***********************************************************/
   bool check_valid_ssid() {
-    // Set WiFi to station mode and disconnect from an AP if it was previously
-    // connected
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
-    delay(100);
-
-    // Perform a network scan
-    int n = WiFi.scanNetworks();
-    if (n == 0) {
-      WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
+    // ESP8266 WiFi scans are memory/fragmentation heavy and can crash on
+    // low-RAM boards (HUZZAH) during connect. Instead of scanning, just
+    // validate we have an SSID and let the connect attempt determine success.
+    if (_ssid == NULL || strlen(_ssid) == 0) {
+      WS_DEBUG_PRINTLN("ERROR: SSID is empty!");
       return false;
     }
 
-    bool foundNetwork = false;
-
-    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
-    for (uint8_t i = 0; i < n; i++) {
-      if (!foundNetwork && strcmp(WiFi.SSID(i).c_str(), _ssid) == 0) {
-        foundNetwork = true;
-      } else if (!foundNetwork && WS._isWiFiMulti) {
-        // multi network mode
-        for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
-            foundNetwork = true;
-          }
-        }
-      }
-      WS_DEBUG_PRINT(WiFi.SSID(i));
-      WS_DEBUG_PRINT(" (");
-      uint8_t BSSID[WL_MAC_ADDR_LENGTH];
-      memcpy(BSSID, WiFi.BSSID(i), WL_MAC_ADDR_LENGTH);
-      for (int m = 0; m < WL_MAC_ADDR_LENGTH; m++) {
-        if (m != 0)
-          WS_DEBUG_PRINT(":");
-        WS_DEBUG_PRINTHEX(BSSID[m]);
-      }
-      WS_DEBUG_PRINT(") ");
-      WS_DEBUG_PRINT(WiFi.RSSI(i));
-      WS_DEBUG_PRINT("dB (ch");
-      WS_DEBUG_PRINT(WiFi.channel(i))
-      WS_DEBUG_PRINTLN(")");
-    }
-
-    if (!foundNetwork) {
-      WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-    }
-    return foundNetwork;
+    WS_DEBUG_PRINTLN("Skipping WiFi scan on ESP8266");
+    return true;
   }
 
   /********************************************************/
@@ -241,7 +203,28 @@ protected:
   const char *_ssid = NULL;
   const char *_pass = NULL;
   WiFiClient *_wifi_client;
-  ESP8266WiFiMulti _wifiMulti;
+
+  bool _tryConnectSingle(const char *ssid, const char *pass,
+                         uint32_t timeout_ms) {
+    if (ssid == NULL || strlen(ssid) == 0)
+      return false;
+
+    WS_DEBUG_PRINT("WiFi.begin('");
+    WS_DEBUG_PRINT(ssid);
+    WS_DEBUG_PRINTLN("')");
+
+    WiFi.begin(ssid, pass);
+
+    uint32_t start = millis();
+    while (WiFi.status() != WL_CONNECTED && (millis() - start) < timeout_ms) {
+      delay(50);
+      yield();
+      WS.feedWDT();
+    }
+    WS_DEBUG_PRINT("WiFi.status(): ");
+    WS_DEBUG_PRINTLN(WiFi.status());
+    return (WiFi.status() == WL_CONNECTED);
+  }
 
   /**************************************************************************/
   /*!
@@ -265,33 +248,31 @@ protected:
       _status = WS_NET_DISCONNECTED;
       delay(100);
 
-      if (WS._isWiFiMulti) {
-        // multi network mode
-        for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          if (strlen(WS._multiNetworks[i].ssid) > 0 &&
-              (_wifiMulti.existsAP(WS._multiNetworks[i].ssid) == false)) {
-            // doesn't exist, add it
-            _wifiMulti.addAP(WS._multiNetworks[i].ssid,
-                             WS._multiNetworks[i].pass);
-          }
+      WS_DEBUG_PRINT("Free heap before connect: ");
+      WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+
+      bool connected = false;
+
+      // Try primary network first.
+      connected = _tryConnectSingle(_ssid, _pass, 25000);
+
+      // If multi-network mode is enabled, try alternates sequentially.
+      if (!connected && WS._isWiFiMulti) {
+        for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS && !connected; i++) {
+          if (strlen(WS._multiNetworks[i].ssid) == 0)
+            continue;
+
+          _disconnect();
+          delay(100);
+          connected = _tryConnectSingle(WS._multiNetworks[i].ssid,
+                                        WS._multiNetworks[i].pass, 25000);
         }
       }
 
-      // add default network
-      if (_wifiMulti.existsAP(_ssid) == false) {
-        _wifiMulti.addAP(_ssid, _pass);
-      }
+      WS_DEBUG_PRINT("Free heap after connect: ");
+      WS_DEBUG_PRINTLN(ESP.getFreeHeap());
 
-      long startRetry = millis();
-      WS_DEBUG_PRINTLN("CONNECTING");
-
-      while (_wifiMulti.run(5000) != WL_CONNECTED &&
-             millis() - startRetry < 10000) {
-        // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
-        yield();
-      }
-
-      if (WiFi.status() == WL_CONNECTED) {
+      if (connected) {
         _status = WS_NET_CONNECTED;
       } else {
         _status = WS_NET_DISCONNECTED;
