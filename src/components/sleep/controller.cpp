@@ -21,7 +21,8 @@
 SleepController::SleepController() {
   _sleep_hardware = new SleepHardware();
   _sleep_model = new SleepModel();
-  _wake_enable_pin = 255; // No pin assigned
+  _wake_enable_pin = 255;    // No pin assigned
+  _wake_enable_pin_pull = 0; // Default: no pull
   _sleep_mode = ws_sleep_SleepMode_S_UNSPECIFIED;
   _lock = false; // Class-level lock
 
@@ -95,12 +96,10 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   WS_DEBUG_PRINT("[sleep] Sleep lock state: ");
   WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
 
-
-  // If boot button was pressed, override any existing lock
-  _btn_cfg_mode = CheckWakeEnablePin();
-  if (_btn_cfg_mode && _lock) {
-    WS_DEBUG_PRINTLN(
-        "[sleep] Boot button pressed during startup - overriding lock");
+  // If config pin is HIGH during startup, override any existing lock
+  _wake_enable_pin_state = CheckWakeEnablePin();
+  if (_wake_enable_pin_state && _lock) {
+    WS_DEBUG_PRINTLN("[sleep] Wake enable pin is HIGH, overriding sleep lock.");
     _lock = false;
     return true;
   }
@@ -113,19 +112,6 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
 
   // Parse sleep mode and dispatch based on mode
   _sleep_mode = msg->mode;
-  // TODO: Debug output, remove in production build
-  WS_DEBUG_PRINT("[sleep] Sleep mode: ");
-  switch (_sleep_mode) {
-  case ws_sleep_SleepMode_S_DEEP:
-    WS_DEBUG_PRINTLN("DEEP SLEEP");
-    break;
-  case ws_sleep_SleepMode_S_LIGHT:
-    WS_DEBUG_PRINTLN("LIGHT SLEEP");
-    break;
-  default:
-    WS_DEBUG_PRINTLN("UNSPECIFIED/UNKNOWN");
-    break;
-  }
 
   // Configure sleep with the provided wakeup configuration
   bool res = false;
@@ -192,9 +178,12 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
     @brief  Sets the wake enable pin to check before entering sleep.
     @param  pin
             The GPIO pin number.
+    @param  pull
+            Pull mode: 0=none (INPUT), 1=pulldown, 2=pullup.
 */
-void SleepController::SetWakeEnablePin(uint8_t pin) {
+void SleepController::SetWakeEnablePin(uint8_t pin, uint8_t pull) {
   _wake_enable_pin = pin;
+  _wake_enable_pin_pull = pull;
 }
 
 /*!
@@ -202,13 +191,26 @@ void SleepController::SetWakeEnablePin(uint8_t pin) {
     @return True if wake enable pin is HIGH or unassigned, False if LOW.
 */
 bool SleepController::CheckWakeEnablePin() {
-  pinMode(_wake_enable_pin, INPUT_PULLUP);
-  if (digitalRead(_wake_enable_pin) != HIGH)
-    return false;
+  // Configure pin with specified pull mode
+  switch (_wake_enable_pin_pull) {
+  case 1:
+    pinMode(_wake_enable_pin, INPUT_PULLDOWN);
+    break;
+  case 2:
+    pinMode(_wake_enable_pin, INPUT_PULLUP);
+    break;
+  default:
+    pinMode(_wake_enable_pin, INPUT);
+    break;
+  }
+  delay(10); // TODO: Remove in prod? This was added to stabilize reading
+  int pinState = digitalRead(_wake_enable_pin);
 
-  // Blink to signal we're not going to sleep again
-  statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME, 3);
-  return true;
+  // Pin HIGH = wake enabled, stay awake
+  if (pinState == HIGH)
+    return true;
+
+  return false;
 }
 
 /*!
@@ -251,7 +253,9 @@ bool SleepController::DidWakeFromSleep() {
     @brief  Returns the previous sleep mode before wakeup.
     @return The previous sleep cycle's mode as ws_sleep_SleepMode enum.
 */
-ws_sleep_SleepMode SleepController::GetPrvSleepMode() { return _sleep_hardware->GetSleepMode(); }
+ws_sleep_SleepMode SleepController::GetPrvSleepMode() {
+  return _sleep_hardware->GetSleepMode();
+}
 
 /*!
     @brief  Returns whether the device is in a sleep loop (locked).

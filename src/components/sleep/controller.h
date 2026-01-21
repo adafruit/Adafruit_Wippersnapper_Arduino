@@ -47,8 +47,9 @@ public:
   ws_sleep_SleepMode GetPrvSleepMode();
   int GetSleepDuration();
   void HandleNetFSMFailure();
-  void SetWakeEnablePin(uint8_t pin);
+  void SetWakeEnablePin(uint8_t pin, uint8_t pull = 0);
   bool CheckWakeEnablePin();
+
 private:
   // Sleep configuration
   bool ConfigureSleep(const ws_sleep_Enter *msg);
@@ -56,11 +57,13 @@ private:
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
   ws_sleep_SleepMode _sleep_mode; ///< Current sleep mode
-  bool _btn_cfg_mode; ///< Value of BOOT button during class construction
-  bool _lock;         ///< Whether the sleep configuration is locked
-  bool _has_ext_pwr_components; ///< Whether externally powered components are
-                                ///< present (i.e: tft, i2c, neopixel, etc)
-  uint8_t _wake_enable_pin; ///< Pin to check for wake enable
+  bool _wake_enable_pin_state;    ///< Value of BOOT button during class
+                                  ///< construction
+  bool _lock;                     ///< Whether the sleep configuration is locked
+  bool _has_ext_pwr_components;   ///< Whether externally powered components are
+                                  ///< present (i.e: tft, i2c, neopixel, etc)
+  uint8_t _wake_enable_pin;       ///< Pin to check for wake enable
+  uint8_t _wake_enable_pin_pull;  ///< Pull mode: 0=none, 1=pulldown, 2=pullup
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 

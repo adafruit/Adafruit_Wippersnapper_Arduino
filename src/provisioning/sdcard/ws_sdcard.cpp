@@ -31,7 +31,7 @@ ws_sdcard::ws_sdcard()
   _heartbeat_interval_ms = WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS;
   _prv_heartbeat_interval_ms = 0;
 
-  //delay(6000); // DEBUG ONLY: Wait for everything to settle
+  // delay(6000); // DEBUG ONLY: Wait for everything to settle
 
   if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
     return;
@@ -670,11 +670,12 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                                       const JsonObject &timer_config,
                                       int run_duration) {
   // Configure the sleep enter message using the model
+  // Note: lock is always true for offline mode
   Ws._sleep_controller->GetModel()->SetSleepEnterTimer(
-      sleep_config["lock"], sleep_config["mode"], run_duration,
-      timer_config["duration"]);
+      true, sleep_config["mode"], run_duration, timer_config["duration"]);
 
-  Ws._sleep_controller->SetWakeEnablePin(timer_config["wake_enable_pin"] | 255);
+  Ws._sleep_controller->SetWakeEnablePin(sleep_config["wakeEnablePin"] | 255,
+                                         sleep_config["wakeEnablePinPull"] | 0);
 
   // Pass the message directly to the sleep controller
   return Ws._sleep_controller->Handle_Sleep_Enter(
@@ -696,9 +697,10 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
                                     const JsonObject &pin_config,
                                     int run_duration) {
   // Configure the sleep enter message using the model
+  // Note: lock is always true for offline mode
   Ws._sleep_controller->GetModel()->SetSleepEnterExt0(
-      sleep_config["lock"], sleep_config["mode"], run_duration,
-      pin_config["name"], pin_config["level"], pin_config["pull"]);
+      true, sleep_config["mode"], run_duration, pin_config["name"],
+      pin_config["level"], pin_config["pull"]);
 
   // Pass the message directly to the sleep controller
   return Ws._sleep_controller->Handle_Sleep_Enter(
@@ -714,7 +716,7 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
 bool ws_sdcard::parseConfigFile() {
   DeserializationError error;
   JsonDocument doc;
-  // delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
+  delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
 
   // Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG

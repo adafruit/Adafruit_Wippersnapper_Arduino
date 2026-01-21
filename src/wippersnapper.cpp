@@ -1052,7 +1052,7 @@ void wippersnapper::run() {
   } else {
     // Attempt to reconfigure the WDT for sleep mode
     WS_DEBUG_PRINTLN(
-        "[app] Reconfiguring the TWDT..."); // TODO: Debug, remove in prod build
+        "[app] Reconfiguring TWDT..."); // TODO: Debug, remove in prod build
     if (!Ws.ReconfigureWDT(WS_TIMEOUT_WDT_SLEEP))
       haltErrorV2("Unable to reconfigure watchdog timer for sleep mode!");
     // Feed TWDT and enter loopSleep()
@@ -1071,7 +1071,9 @@ void wippersnapper::run() {
 }
 
 void wippersnapper::loop() {
+  WS_DEBUG_PRINTLN("[app] Running main loop...");
   Ws.FeedWDT();
+  WS_DEBUG_PRINTLN("[app] Checking network mode...");
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
     NetworkFSM();
@@ -1083,21 +1085,27 @@ void wippersnapper::loop() {
   }
 
   // Process all digital events
+  WS_DEBUG_PRINTLN("[app] Processing digital IO events...");
   Ws.digital_io_controller->update();
 
   // Process all analog input events
+  WS_DEBUG_PRINTLN("[app] Processing analog IO events...");
   Ws.analogio_controller->update();
 
   // Process all DS18x20 sensor events
+  WS_DEBUG_PRINTLN("[app] Processing DS18x20 events...");
   Ws._ds18x20_controller->update();
 
   // Process I2C driver events
+  WS_DEBUG_PRINTLN("[app] Processing I2C events...");
   Ws._i2c_controller->update();
 
   // Process UART driver events
+  WS_DEBUG_PRINTLN("[app] Processing UART events...");
   Ws._uart_controller->update();
 
   // Process GPS controller events
+  WS_DEBUG_PRINTLN("[app] Processing GPS events...");
   Ws._gps_controller->update();
 }
 
