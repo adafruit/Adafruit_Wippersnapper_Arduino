@@ -12,7 +12,7 @@
 // Brent Rubell for Adafruit Industries, 2021-2022
 //
 // All text above must be included in any redistribution.
-
+// #include <GDBStub.h> // Include GDB Stub for debugging esp8266
 #include "Wippersnapper_Networking.h"
 Wippersnapper_WiFi wipper;
 
@@ -25,6 +25,7 @@ void setup() {
 
   Serial.begin(115200);
   // while (!Serial) delay(10);
+  // gdbstub_init();
 
   wipper.connect();
 
