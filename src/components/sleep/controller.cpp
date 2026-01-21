@@ -20,8 +20,8 @@
 */
 SleepController::SleepController() {
   _sleep_hardware = new SleepHardware();
-  _btn_cfg_mode = _sleep_hardware->CheckBootButton();
   _sleep_model = new SleepModel();
+  _wake_enable_pin = 255; // No pin assigned
   _sleep_mode = ws_sleep_SleepMode_S_UNSPECIFIED;
   _lock = false; // Class-level lock
 
@@ -94,7 +94,10 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   _lock = msg->lock;
   WS_DEBUG_PRINT("[sleep] Sleep lock state: ");
   WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
+
+
   // If boot button was pressed, override any existing lock
+  _btn_cfg_mode = CheckWakeEnablePin();
   if (_btn_cfg_mode && _lock) {
     WS_DEBUG_PRINTLN(
         "[sleep] Boot button pressed during startup - overriding lock");
@@ -183,6 +186,29 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
   }
 
   return rc;
+}
+
+/*!
+    @brief  Sets the wake enable pin to check before entering sleep.
+    @param  pin
+            The GPIO pin number.
+*/
+void SleepController::SetWakeEnablePin(uint8_t pin) {
+  _wake_enable_pin = pin;
+}
+
+/*!
+    @brief  Checks the wake enable pin state before entering sleep.
+    @return True if wake enable pin is HIGH or unassigned, False if LOW.
+*/
+bool SleepController::CheckWakeEnablePin() {
+  pinMode(_wake_enable_pin, INPUT_PULLUP);
+  if (digitalRead(_wake_enable_pin) != HIGH)
+    return false;
+
+  // Blink to signal we're not going to sleep again
+  statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME, 3);
+  return true;
 }
 
 /*!

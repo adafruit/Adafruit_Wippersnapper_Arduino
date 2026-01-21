@@ -674,6 +674,8 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
       sleep_config["lock"], sleep_config["mode"], run_duration,
       timer_config["duration"]);
 
+  Ws._sleep_controller->SetWakeEnablePin(timer_config["wake_enable_pin"] | 255);
+
   // Pass the message directly to the sleep controller
   return Ws._sleep_controller->Handle_Sleep_Enter(
       Ws._sleep_controller->GetModel()->GetSleepEnterMsg());

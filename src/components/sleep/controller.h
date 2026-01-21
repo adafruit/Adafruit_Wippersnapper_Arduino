@@ -47,7 +47,8 @@ public:
   ws_sleep_SleepMode GetPrvSleepMode();
   int GetSleepDuration();
   void HandleNetFSMFailure();
-
+  void SetWakeEnablePin(uint8_t pin);
+  bool CheckWakeEnablePin();
 private:
   // Sleep configuration
   bool ConfigureSleep(const ws_sleep_Enter *msg);
@@ -59,6 +60,7 @@ private:
   bool _lock;         ///< Whether the sleep configuration is locked
   bool _has_ext_pwr_components; ///< Whether externally powered components are
                                 ///< present (i.e: tft, i2c, neopixel, etc)
+  uint8_t _wake_enable_pin; ///< Pin to check for wake enable
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 

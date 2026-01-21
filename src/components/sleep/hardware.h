@@ -34,7 +34,6 @@ public:
   ~SleepHardware();
   bool EnableDeepSleep(int duration);
   bool EnableLightSleep(int duration);
-  bool CheckBootButton();
   bool RegisterRTCTimerWakeup(uint64_t duration);
   bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
   void DisableExternalComponents();

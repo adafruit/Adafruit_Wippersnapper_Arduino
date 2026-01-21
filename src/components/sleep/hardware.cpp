@@ -256,21 +256,6 @@ bool SleepHardware::EnableLightSleep(int duration) {
 }
 
 /*!
-    @brief  Reads the state of the BOOT button and stores it. Must be called
-   upon class init.
-*/
-bool SleepHardware::CheckBootButton() {
-#if defined(BOOT_BUTTON)
-  pinMode(BOOT_BUTTON, INPUT_PULLUP);
-  bool res = (digitalRead(BOOT_BUTTON) == LOW);
-  // Blink to signal we're not going to sleep again
-  statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME, 3);
-  return res;
-#endif
-  return true; // If no boot button defined, just return true
-}
-
-/*!
     @brief Enables wakeup by timer.
     @param duration
            Time before wakeup, in microseconds
