@@ -655,6 +655,7 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
   return true;
 }
 
+#ifdef ARDUINO_ARCH_ESP32
 /*!
     @brief  Parses the sleep configuration from the JSON object.
     @param  sleep_config
@@ -706,6 +707,7 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
   return Ws._sleep_controller->Handle_Sleep_Enter(
       Ws._sleep_controller->GetModel()->GetSleepEnterMsg());
 }
+#endif // ARDUINO_ARCH_ESP32
 
 /*!
     @brief  Searches for and parses the JSON configuration file and sets up
@@ -762,6 +764,7 @@ bool ws_sdcard::parseConfigFile() {
   WS_DEBUG_PRINTLN("[SD] Mocking device check-in...");
   CheckIn(exportedFromDevice);
 
+#ifdef ARDUINO_ARCH_ESP32
   // Parse sleep configuration, if present
   WS_DEBUG_PRINTLN("[SD] Parsing sleep configuration...");
   JsonObject sleep_config = doc["sleepConfig"][0];
@@ -784,6 +787,7 @@ bool ws_sdcard::parseConfigFile() {
       return false;
     }
   }
+#endif // ARDUINO_ARCH_ESP32
 
   WS_DEBUG_PRINTLN("[SD] Configuring RTC...");
 #ifndef OFFLINE_MODE_WOKWI

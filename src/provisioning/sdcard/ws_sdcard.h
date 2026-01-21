@@ -81,10 +81,12 @@ private:
   bool InitSoftRTC();
   void TickSoftRTC();
   uint32_t GetSoftRTCTime();
+#ifdef ARDUINO_ARCH_ESP32
   bool ParseSleepConfigTimer(const JsonObject &sleep_config,
                              const JsonObject &timer_config, int run_duration);
   bool ParseSleepConfigPin(const JsonObject &sleep_config,
                            const JsonObject &pin_config, int run_duration);
+#endif
   ws_sensor_Type ParseSensorType(const char *sensor_type);
   bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd, const char *pin,
                          float period, bool value, const char *sample_mode,
