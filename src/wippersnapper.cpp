@@ -831,6 +831,9 @@ void wippersnapper::BlinkKATStatus() {
             Interval is parsed from config.json, defaults to 60 seconds.
 */
 void wippersnapper::blinkOfflineHeartbeat() {
+  if (_sdCardV2 == nullptr)
+    return;
+
   if (millis() > (_sdCardV2->getPreviousHeartbeatIntervalMs() +
                   _sdCardV2->getHeartbeatIntervalMs())) {
     statusLEDBlink(WS_LED_STATUS_HEARTBEAT);
@@ -1071,11 +1074,10 @@ void wippersnapper::run() {
 }
 
 void wippersnapper::loop() {
-  WS_DEBUG_PRINTLN("[app] Running main loop...");
   Ws.FeedWDT();
-  WS_DEBUG_PRINTLN("[app] Checking network mode...");
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
+    WS_DEBUG_PRINTLN("[app] Online mode active, processing network...");
     NetworkFSM();
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
@@ -1085,27 +1087,21 @@ void wippersnapper::loop() {
   }
 
   // Process all digital events
-  WS_DEBUG_PRINTLN("[app] Processing digital IO events...");
   Ws.digital_io_controller->update();
 
   // Process all analog input events
-  WS_DEBUG_PRINTLN("[app] Processing analog IO events...");
   Ws.analogio_controller->update();
 
   // Process all DS18x20 sensor events
-  WS_DEBUG_PRINTLN("[app] Processing DS18x20 events...");
   Ws._ds18x20_controller->update();
 
   // Process I2C driver events
-  WS_DEBUG_PRINTLN("[app] Processing I2C events...");
   Ws._i2c_controller->update();
 
   // Process UART driver events
-  WS_DEBUG_PRINTLN("[app] Processing UART events...");
   Ws._uart_controller->update();
 
   // Process GPS controller events
-  WS_DEBUG_PRINTLN("[app] Processing GPS events...");
   Ws._gps_controller->update();
 }
 
