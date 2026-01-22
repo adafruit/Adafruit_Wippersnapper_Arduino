@@ -195,6 +195,11 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#elif defined(WS_WAVESHARE_ESP32P4_WIFI6_STICK) || defined(ARDUINO_ESP32P4)
+// No status LED nor RGB LED on this board
+#define BOARD_ID "waveshare-esp32p4-wifi6-stick"
+#define USE_TINYUSB
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ESP32C3_DEV)
 // Note: this board reuses a generic preprocessor define
 // espressif/arduino-esp32@fcd4799c6de6eb5a5a8eba94818adf770238ecc0
