@@ -70,3 +70,5 @@ CLAUDE.md
 .inbox.md
 results.md
 testplan.md
+tests/sleep_timer_patterns.md
+tests/test_sleep_timer.py

@@ -933,6 +933,7 @@ void PrintDeviceInfo() {
     @brief    Connects to Adafruit IO+ wippersnapper broker.
 */
 void wippersnapper::connect() {
+  // delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   PrintDeviceInfo();
@@ -953,6 +954,7 @@ void wippersnapper::connect() {
   // If we are running in offline mode, we skip the network setup
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
+  // TODO: This is kinda gnarly, refactor into its own function?
   if (Ws._sdCardV2->isModeOffline() == true) {
     WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
 // If debug mode, wait for serial config
@@ -1053,10 +1055,12 @@ void wippersnapper::run() {
       loop();
     }
   } else {
-    // Attempt to reconfigure the WDT for sleep mode
-    WS_DEBUG_PRINTLN(
-        "[app] Reconfiguring TWDT..."); // TODO: Debug, remove in prod build
-    if (!Ws.ReconfigureWDT(WS_TIMEOUT_WDT_SLEEP))
+    // Attempt to reconfigure the WDT for sleep mode using run_duration
+    uint32_t run_duration_ms = Ws._sleep_controller->GetModel()->GetRunDuration() * 1000;
+    WS_DEBUG_PRINT("[app] Reconfiguring TWDT to "); // TODO: Debug, remove in prod build
+    WS_DEBUG_PRINT(run_duration_ms);
+    WS_DEBUG_PRINTLN("ms...");
+    if (!Ws.ReconfigureWDT(run_duration_ms))
       haltErrorV2("Unable to reconfigure watchdog timer for sleep mode!");
     // Feed TWDT and enter loopSleep()
     Ws.FeedWDT();

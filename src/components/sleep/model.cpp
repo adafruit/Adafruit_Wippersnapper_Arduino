@@ -54,6 +54,12 @@ ws_sleep_Goodnight *SleepModel::GetSleepGoodnightMsg() {
 ws_sleep_Wake *SleepModel::GetSleepWakeMsg() { return &_msg_sleep_wake; }
 
 /*!
+    @brief  Gets the run duration before sleep, in seconds.
+    @return Run duration in seconds.
+*/
+uint32_t SleepModel::GetRunDuration() { return _run_duration; }
+
+/*!
     @brief  Decodes a Sleep Enter message into the _msg_sleep_enter
             object from a nanopb stream.
     @param  stream
@@ -87,6 +93,7 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_du
 
   // Set the common fields
   _msg_sleep_enter.lock = lock;
+  _run_duration = run_duration;
 
   // Convert strings to enums for mode/wake
   ws_sleep_SleepMode mode_enum = ws_sleep_SleepMode_S_UNSPECIFIED;
@@ -121,6 +128,7 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
 
   // Set the common fields
   _msg_sleep_enter.lock = lock;
+  _run_duration = run_duration;
 
   // Convert strings to enum for mode
   ws_sleep_SleepMode mode_enum = ws_sleep_SleepMode_S_UNSPECIFIED;

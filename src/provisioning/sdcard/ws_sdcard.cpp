@@ -718,7 +718,6 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
 bool ws_sdcard::parseConfigFile() {
   DeserializationError error;
   JsonDocument doc;
-  delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
 
   // Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG
@@ -771,6 +770,7 @@ bool ws_sdcard::parseConfigFile() {
   if (!sleep_config.isNull()) {
     bool parse_result = false;
     if (!sleep_config["pinConfig"].isNull()) {
+      WS_DEBUG_PRINTLN("[SD] Sleep config: Pin wakeup found."); // TODO: Remove in production
       parse_result = ParseSleepConfigPin(
           sleep_config, sleep_config["pinConfig"], sleep_config["runDuration"]);
     } else if (!sleep_config["timerConfig"].isNull()) {
