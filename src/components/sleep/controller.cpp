@@ -179,7 +179,7 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
     @param  pin
             The GPIO pin number.
     @param  pull
-            Pull mode: 0=none (INPUT), 1=pulldown, 2=pullup.
+            Pull mode (0 = none, 1 = pull-down, 2 = pull-up)
 */
 void SleepController::SetWakeEnablePin(uint8_t pin, uint8_t pull) {
   _wake_enable_pin = pin;
@@ -219,6 +219,14 @@ bool SleepController::CheckWakeEnablePin() {
 */
 int SleepController::GetSleepDuration() {
   return _sleep_hardware->GetSleepDuration();
+}
+
+/*!
+    @brief  Returns the run duration before sleep entry, in milliseconds.
+    @return The run duration in milliseconds.
+*/
+unsigned long SleepController::GetRunDuration() {
+  return (unsigned long)_sleep_model->GetRunDuration() * 1000UL;
 }
 
 /*!

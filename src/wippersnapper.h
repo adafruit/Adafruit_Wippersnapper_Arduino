@@ -129,8 +129,6 @@
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
 #define WS_TIMEOUT_WDT 60000 ///< App WDT timeout, in milliseconds
-#define WS_TIMEOUT_WDT_SLEEP                                                   \
-  60000 ///< Sleep mode loop timeout duration, in milliseconds
 #define WS_MQTT_POLL_TIMEOUT_MS                                                \
   10 ///< MQTT polling (processPackets()) timeout, in milliseconds
 #define WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS                               \

@@ -29,6 +29,7 @@
 #include "drivers/drvDps310.h"
 #include "drivers/drvDs2484.h"
 #include "drivers/drvEns160.h"
+#include "drivers/drvGenericSensorMock.h"
 #include "drivers/drvHts221.h"
 #include "drivers/drvHtu21d.h"
 #include "drivers/drvIna219.h"

@@ -933,7 +933,7 @@ void PrintDeviceInfo() {
     @brief    Connects to Adafruit IO+ wippersnapper broker.
 */
 void wippersnapper::connect() {
-  // delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
+  delay(1000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   PrintDeviceInfo();
@@ -1055,17 +1055,9 @@ void wippersnapper::run() {
       loop();
     }
   } else {
-    // Attempt to reconfigure the WDT for sleep mode using run_duration
-    uint32_t run_duration_ms = Ws._sleep_controller->GetModel()->GetRunDuration() * 1000;
-    WS_DEBUG_PRINT("[app] Reconfiguring TWDT to "); // TODO: Debug, remove in prod build
-    WS_DEBUG_PRINT(run_duration_ms);
-    WS_DEBUG_PRINTLN("ms...");
-    if (!Ws.ReconfigureWDT(run_duration_ms))
-      haltErrorV2("Unable to reconfigure watchdog timer for sleep mode!");
     // Feed TWDT and enter loopSleep()
     Ws.FeedWDT();
-    WS_DEBUG_PRINTLN(
-        "[app] Running sleep loop..."); // TODO: Debug, remove in prod build
+    WS_DEBUG_PRINTLN("[app] Running sleep loop..."); // TODO: Debug, remove in prod build
     while (true) {
       loopSleep();
     }
@@ -1116,7 +1108,16 @@ void wippersnapper::loop() {
 */
 void wippersnapper::loopSleep() {
   // NOTE: It is assumed that loopSleep() will eventually lead to sleep entry,
-  // whether by global TWDT expiry or component-driven sleep readiness.
+  // whether by global timestamp expiry or component-driven sleep readiness.
+
+  // Track when the loop started for run duration timeout
+  static unsigned long loop_start_time = 0;
+  static bool loop_timer_started = false;
+  if (!loop_timer_started) {
+    loop_start_time = millis();
+    loop_timer_started = true;
+  }
+
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
     NetworkFSM();
@@ -1164,13 +1165,29 @@ void wippersnapper::loopSleep() {
     all_controllers_complete = false;
   }
 
+  // Check if all controllers have completed their updates
   if (all_controllers_complete) {
-    WS_DEBUG_PRINTLN("[app] All components updated, entering sleep...");
-    // Resets all polling flags for use in the next loopsleep() cycle
+    // Reset all flags and variables for use in the next loopsleep() cycle (if light sleep)
     ResetAllControllerFlags();
-
+    loop_start_time = 0;
+    loop_timer_started = false;
     // Enter sleep
+    WS_DEBUG_PRINTLN("[app] All components updated, entering sleep...");
     Ws._sleep_controller->StartSleep();
+  }
+
+  // Check if run duration timeout exceeded
+  unsigned long run_duration_ms = Ws._sleep_controller->GetRunDuration();
+  if (run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) {
+    // Reset all flags and variables for use in the next loopsleep() cycle (if light sleep)
+    ResetAllControllerFlags();
+    loop_start_time = 0;
+    loop_timer_started = false;
+    // Enter sleep
+    WS_DEBUG_PRINTLN("[app] loopSleep() duration elapsed, entering sleep...");
+    Ws._sleep_controller->StartSleep();
+    // For light sleep, this allows the next loopSleep() cycle to begin
+    return;
   }
 }
 

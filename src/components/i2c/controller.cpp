@@ -33,6 +33,11 @@ using FnCreateI2CSensorDriver =
 // Factory for creating a new I2C SENSOR drivers
 // NOTE: When you add a new SENSOR driver, make sure to add it to the factory!
 static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
+    {"sensor_mock",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvGenericSensorMock(i2c, addr, mux_channel, driver_name);
+     }},
     {"bme280",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -1143,16 +1148,21 @@ void I2cController::update(bool force) {
 
     // Read the driver's sensors
     _i2c_model->ClearI2cDeviceEvent();
+    bool read_succeeded = true;
     for (size_t i = 0; i < sensor_count; i++) {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
       if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to read sensor!");
+        read_succeeded = false;
         continue;
       }
       // Fill the I2cDeviceEvent's sensor_event array submsg.
       _i2c_model->AddI2cDeviceSensorEvent(event, drv->_sensors[i]);
     }
+
+    if (!read_succeeded)
+      continue;
 
     // Configure the DeviceEvent's DeviceDescription sub-msg
     _i2c_model->SetI2cDeviceEventDeviceDescripton(
@@ -1162,15 +1172,14 @@ void I2cController::update(bool force) {
 
     if (!Ws._sdCardV2->isModeOffline()) {
       // TODO: Implement online mode publishing
-      drv->SetDidReadSend(true);
     } else {
       if (!Ws._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
         WS_DEBUG_PRINTLN(
             "[i2c] ERROR: Unable to log the I2cDeviceEvent to SD!");
         statusLEDSolid(WS_LED_STATUS_FS_WRITE);
       }
-      drv->SetDidReadSend(true);
     }
+    drv->SetDidReadSend(true);
 
 
     cur_time = millis();

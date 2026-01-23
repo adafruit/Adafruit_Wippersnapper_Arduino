@@ -46,6 +46,7 @@ public:
   const char *GetWakeupReasonName();
   ws_sleep_SleepMode GetPrvSleepMode();
   int GetSleepDuration();
+  unsigned long GetRunDuration();
   void HandleNetFSMFailure();
   void SetWakeEnablePin(uint8_t pin, uint8_t pull = 0);
   bool CheckWakeEnablePin();
