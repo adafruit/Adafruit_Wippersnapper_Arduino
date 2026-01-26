@@ -197,7 +197,7 @@
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(WS_WAVESHARE_ESP32P4_WIFI6_STICK) || defined(ARDUINO_ESP32P4)
 // No status LED nor RGB LED on this board
-#define BOARD_ID "waveshare-esp32p4-wifi6-stick"
+#define BOARD_ID "waveshare-p4-wifi6"
 #define USE_LITTLEFS
 // #define USE_TINYUSB
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
