@@ -154,6 +154,8 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
       - name: fetch tinyuf2 combined.bin
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           BOARD_NAME="${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}"
           set +e
