@@ -159,12 +159,12 @@ jobs:
           set +e
           for attempt in 1 2 3; do
             echo "Attempt $attempt: Fetching tinyuf2 release info for board $BOARD_NAME"
-            API_RESPONSE=$(curl --silent --fail https://api.github.com/repos/adafruit/tinyuf2/releases/latest)
+            API_RESPONSE=$(gh release view --repo adafruit/tinyuf2 --json assets)
             if [ $? -ne 0 ]; then
               echo "Attempt $attempt: curl failed to fetch release info."
               if [ "$attempt" -eq 3 ]; then exit 1; else sleep $((60 + RANDOM % 40)); continue; fi
             fi
-            DOWNLOAD_URL=$(echo "$API_RESPONSE" | jq -r '.assets[] | select(.browser_download_url | contains("tinyuf2-'$BOARD_NAME'-") and endswith(".zip")) | .browser_download_url // empty'); JQ_EXIT=$?
+            DOWNLOAD_URL=$(echo "$API_RESPONSE" | jq -r '.assets[] | select(.url | contains("tinyuf2-'$BOARD_NAME'-") and endswith(".zip")) | .url // empty'); JQ_EXIT=$?
             if [ $JQ_EXIT -ne 0 ] || [ -z "$DOWNLOAD_URL" ]; then
               echo "Attempt $attempt: jq failed or no matching zip found."
               if [ "$attempt" -eq 3 ]; then exit 1; else sleep $((60 + RANDOM % 40)); continue; fi
