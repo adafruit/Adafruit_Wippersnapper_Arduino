@@ -1057,7 +1057,8 @@ void wippersnapper::run() {
   } else {
     // Feed TWDT and enter loopSleep()
     Ws.FeedWDT();
-    WS_DEBUG_PRINTLN("[app] Running sleep loop..."); // TODO: Debug, remove in prod build
+    WS_DEBUG_PRINTLN(
+        "[app] Running sleep loop..."); // TODO: Debug, remove in prod build
     while (true) {
       loopSleep();
     }
@@ -1167,25 +1168,33 @@ void wippersnapper::loopSleep() {
 
   // Check if all controllers have completed their updates
   if (all_controllers_complete) {
-    // Reset all flags and variables for use in the next loopsleep() cycle (if light sleep)
+    // Reset all flags and variables for use in the next loopsleep() cycle (if
+    // light sleep)
     ResetAllControllerFlags();
     loop_start_time = 0;
     loop_timer_started = false;
     // Enter sleep
     WS_DEBUG_PRINTLN("[app] All components updated, entering sleep...");
     Ws._sleep_controller->StartSleep();
+    // For light sleep, we woke up here
+    Ws._sleep_controller->WakeFromLightSleep();
+    // For light sleep, this allows the next loopSleep() cycle to begin
+    return;
   }
 
   // Check if run duration timeout exceeded
   unsigned long run_duration_ms = Ws._sleep_controller->GetRunDuration();
   if (run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) {
-    // Reset all flags and variables for use in the next loopsleep() cycle (if light sleep)
+    // Reset all flags and variables for use in the next loopsleep() cycle (if
+    // light sleep)
     ResetAllControllerFlags();
     loop_start_time = 0;
     loop_timer_started = false;
     // Enter sleep
     WS_DEBUG_PRINTLN("[app] loopSleep() duration elapsed, entering sleep...");
     Ws._sleep_controller->StartSleep();
+    // For light sleep, we woke up here
+    Ws._sleep_controller->WakeFromLightSleep();
     // For light sleep, this allows the next loopSleep() cycle to begin
     return;
   }

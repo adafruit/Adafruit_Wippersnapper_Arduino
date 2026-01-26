@@ -83,6 +83,31 @@ void ws_sdcard::setPreviousHeartbeatIntervalMs(uint32_t timestamp) {
 }
 
 /*!
+    @brief    Re-initializes the SD card interface after sleep.
+    @returns  True if the SD card was successfully re-initialized, False
+   otherwise.
+*/
+bool ws_sdcard::begin() {
+  if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
+    return false;
+
+  // Restore SPI pins from input state
+  pinMode(SCK, OUTPUT);
+  pinMode(MOSI, OUTPUT);
+  pinMode(MISO, INPUT);
+
+  if (!_sd.begin(_sd_spi_cfg)) {
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: SD re-initialization failed after "
+                     "sleep wake.");
+    is_mode_offline = false;
+    return false;
+  }
+
+  is_mode_offline = true;
+  return true;
+}
+
+/*!
     @brief    Ends SD card interface and sets SPI pins to input to avoid
               power draw.
 */
@@ -770,7 +795,8 @@ bool ws_sdcard::parseConfigFile() {
   if (!sleep_config.isNull()) {
     bool parse_result = false;
     if (!sleep_config["pinConfig"].isNull()) {
-      WS_DEBUG_PRINTLN("[SD] Sleep config: Pin wakeup found."); // TODO: Remove in production
+      WS_DEBUG_PRINTLN(
+          "[SD] Sleep config: Pin wakeup found."); // TODO: Remove in production
       parse_result = ParseSleepConfigPin(
           sleep_config, sleep_config["pinConfig"], sleep_config["runDuration"]);
     } else if (!sleep_config["timerConfig"].isNull()) {

@@ -37,15 +37,17 @@ public:
   bool RegisterRTCTimerWakeup(uint64_t duration);
   bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
   void DisableExternalComponents();
+  void ReenableExternalComponents();
   ws_sleep_EspWakeCause GetEspWakeCauseEnum();
   esp_sleep_source_t GetEspSleepSource();
   const char *GetWakeupReasonName();
   ws_sleep_SleepMode GetSleepMode();
+  void CalculateSleepDuration();
   int GetSleepDuration();
   void SetSleepEnterTime();
-private:
   void GetSleepWakeupCause();
-  void CalculateSleepDuration();
+
+private:
   esp_sleep_source_t
       _wakeup_cause; ///< Sleep wakeup cause, obtained during class construction
   int _sleep_time;   ///< Time spent sleeping, in seconds

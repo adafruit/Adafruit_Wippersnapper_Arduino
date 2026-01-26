@@ -50,6 +50,7 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
+  bool begin();
   void end();
   bool isSDCardInitialized() { return is_mode_offline; }
   bool parseConfigFile();

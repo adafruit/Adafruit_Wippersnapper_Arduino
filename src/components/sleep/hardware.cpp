@@ -315,6 +315,37 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
 }
 
 /*!
+    @brief  For Light Sleep Mode - Re-enable power to all external components
+   that were disabled before entering light sleep (i.e: tft, i2c, neopixel, etc)
+*/
+void SleepHardware::ReenableExternalComponents() {
+#if defined(NEOPIXEL_POWER)
+  pinMode(NEOPIXEL_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_POWER, HIGH);
+#endif
+
+#if defined(TFT_POWER)
+  pinMode(TFT_POWER, OUTPUT);
+  digitalWrite(TFT_POWER, HIGH);
+#endif
+
+#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
+  // (specific to adafruit feather esp32-s2) - turn on the I2C power
+  pinMode(PIN_I2C_POWER, OUTPUT);
+  digitalWrite(PIN_I2C_POWER, HIGH);
+#elif defined(PIN_I2C_POWER)
+  pinMode(PIN_I2C_POWER, OUTPUT);
+  digitalWrite(PIN_I2C_POWER, HIGH);
+#elif defined(TFT_I2C_POWER)
+  pinMode(TFT_I2C_POWER, OUTPUT);
+  digitalWrite(TFT_I2C_POWER, HIGH);
+#elif defined(NEOPIXEL_I2C_POWER)
+  pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_I2C_POWER, LOW);
+#endif
+}
+
+/*!
     @brief  Disables power to all external components that may draw power
             during sleep (i.e: tft, i2c, neopixel, etc)
 */

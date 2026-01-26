@@ -132,6 +132,42 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   return res;
 }
 
+void SleepController::WakeFromLightSleep() {
+  // Refresh the cached sleep wakeup cause from hardware
+  _sleep_hardware->GetSleepWakeupCause();
+  // Verify that we woke up from light sleep
+  if (!DidWakeFromSleep() &&
+      (GetPrvSleepMode() == ws_sleep_SleepMode_S_LIGHT)) {
+    WS_DEBUG_PRINTLN(
+        "[sleep] WARN: This function should never get here!"); // TODO: Debug
+                                                               // output, remove
+                                                               // in production
+                                                               // build
+    return;
+  }
+  WS_DEBUG_PRINTLN("[sleep] Woke up from light sleep!");
+
+  // Recalculate sleep duration
+  _sleep_hardware->CalculateSleepDuration();
+  WS_DEBUG_PRINT("Slept for ");
+  WS_DEBUG_PRINT(GetSleepDuration());
+  WS_DEBUG_PRINTLN(" seconds");
+
+  // Re-enable external components that were disabled before sleep
+  if (_has_ext_pwr_components) {
+    _sleep_hardware->ReenableExternalComponents();
+    WS_DEBUG_PRINTLN("[sleep] Re-enabled external components");
+  }
+
+  // Re-initialize SD card if it was previously initialized
+  if (Ws._sdCardV2 != nullptr) {
+    if (!Ws._sdCardV2->begin()) {
+      WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to re-initialize SD card after wake");
+    }
+    WS_DEBUG_PRINTLN("[sleep] SD card re-initialized successfully");
+  }
+}
+
 /*!
     @brief  Configures the sleep mode based on the provided Enter message.
     @param  msg
@@ -252,8 +288,8 @@ const char *SleepController::GetWakeupReasonName() {
 bool SleepController::DidWakeFromSleep() {
   // If SLEEP wake cause is not unspecified, device woke from sleep mode,
   // so we assume we're locked unless overridden by boot button or Enter message
-  _lock = _sleep_hardware->GetEspWakeCauseEnum() !=
-          ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
+  ws_sleep_EspWakeCause wake_cause = _sleep_hardware->GetEspWakeCauseEnum();
+  _lock = wake_cause != ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
   return _lock;
 }
 
@@ -295,11 +331,11 @@ void SleepController::StartSleep() {
   }
 
   if (_sleep_mode == ws_sleep_SleepMode_S_DEEP) {
-    WS_DEBUG_PRINTLN("[sleep] Entering deep sleep mode:");
+    WS_DEBUG_PRINTLN("[sleep] Entering deep sleep");
     esp_deep_sleep_start();
   } else if (_sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
     // Attempt to enter light sleep
-    WS_DEBUG_PRINTLN("[sleep] Entering light sleep mode:");
+    WS_DEBUG_PRINTLN("[sleep] Entering light sleep");
     esp_err_t err = esp_light_sleep_start();
     if (err != ESP_OK) {
       WS_DEBUG_PRINT("[sleep] WARNING: Failed light sleep start: ");
