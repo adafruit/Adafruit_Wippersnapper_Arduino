@@ -78,6 +78,7 @@ var searchData=
   ['status_5fbar_5ficon_5fspacing',['STATUS_BAR_ICON_SPACING',['../disp_drv_think_ink_grayscale4_eaamfgn_8h.html#ad7c8d8ef7a39574a3edf6def296b5f8e',1,'dispDrvThinkInkGrayscale4Eaamfgn.h']]],
   ['status_5fbar_5ficon_5fsz',['STATUS_BAR_ICON_SZ',['../disp_drv_think_ink_grayscale4_eaamfgn_8h.html#a14c3541cc5f6ce7a766b1b30f77bd9c0',1,'dispDrvThinkInkGrayscale4Eaamfgn.h']]],
   ['status_5fdotstar_5fcolor_5forder',['STATUS_DOTSTAR_COLOR_ORDER',['../_wippersnapper___boards_8h.html#a8bf6b21e770886d409a5266b34dbc40b',1,'Wippersnapper_Boards.h']]],
+  ['status_5fdotstar_5fdefault_5fcolor_5forder',['STATUS_DOTSTAR_DEFAULT_COLOR_ORDER',['../_wippersnapper___status_l_e_d_8h.html#a1035f8118741374de283a536e22f781c',1,'Wippersnapper_StatusLED.h']]],
   ['status_5fdotstar_5fnum',['STATUS_DOTSTAR_NUM',['../_wippersnapper___boards_8h.html#a064728df19116a95cb2b2672e85c01bc',1,'Wippersnapper_Boards.h']]],
   ['status_5fdotstar_5fpin_5fclk',['STATUS_DOTSTAR_PIN_CLK',['../_wippersnapper___boards_8h.html#a882cdccd2b9725880419c51137a383fd',1,'Wippersnapper_Boards.h']]],
   ['status_5fdotstar_5fpin_5fdata',['STATUS_DOTSTAR_PIN_DATA',['../_wippersnapper___boards_8h.html#aa305e729336f340cfa357a9b05ab73d0',1,'Wippersnapper_Boards.h']]],
