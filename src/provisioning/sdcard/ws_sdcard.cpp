@@ -26,6 +26,7 @@ ws_sdcard::ws_sdcard()
   is_mode_offline = false;
   _use_test_data = false;
   _is_soft_rtc = false;
+  _is_battery_low = false;
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
   _heartbeat_interval_ms = WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS;
@@ -81,6 +82,32 @@ uint32_t ws_sdcard::getPreviousHeartbeatIntervalMs() {
 void ws_sdcard::setPreviousHeartbeatIntervalMs(uint32_t timestamp) {
   _prv_heartbeat_interval_ms = timestamp;
 }
+
+/*!
+    @brief    Sets the battery percentage and updates low battery state.
+              Logs an alert to the SD card when transitioning to low battery.
+    @param    percent
+              The current battery percentage from the battery monitor.
+*/
+void ws_sdcard::SetBatteryPercent(float percent) {
+  // Write an alert to the log once when transitioning to a "low battery state"
+  if (!_is_battery_low && percent < LOW_SD_WRITE_BATT_THRESH) {
+    JsonDocument doc;
+    doc["timestamp"] = GetTimestamp();
+    doc["alert"] = "Device battery is low (< 10% remaining), data will no "
+                   "longer be logged to SD card to prevent corruption";
+    doc["battery_percent"] = percent;
+    LogJSONDoc(doc);
+  }
+  _is_battery_low = (percent < LOW_SD_WRITE_BATT_THRESH);
+}
+
+/*!
+    @brief    Returns the low battery state.
+    @returns  True if battery is below LOW_SD_WRITE_BATT_THRESH, False
+              otherwise.
+*/
+bool ws_sdcard::IsBatteryLow() const { return _is_battery_low; }
 
 /*!
     @brief    Re-initializes the SD card interface after sleep.
@@ -199,7 +226,7 @@ bool ws_sdcard::InitDS3231() {
 */
 bool ws_sdcard::InitPCF8523() {
   _rtc_pcf8523 = new RTC_PCF8523();
-  if (!_rtc_pcf8523->begin(&Wire)) {
+  if (!_rtc_pcf8523->begin()) {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE");
 #if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_SAMD) &&           \
@@ -1142,6 +1169,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, float value,
                                        ws_sensor_Type read_type) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1161,6 +1190,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, float value,
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
                                        ws_sensor_Type read_type) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1180,6 +1211,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, bool value,
                                        ws_sensor_Type read_type) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1198,6 +1231,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, bool value,
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   // Iterate over the event message's sensor events
   // TODO: Standardize this Event with I2C
@@ -1219,6 +1254,8 @@ bool ws_sdcard::LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg) {
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   // Pull the DeviceDescriptor out
   ws_i2c_DeviceDescriptor descriptor = msg_device_event->device_description;

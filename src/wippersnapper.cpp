@@ -933,7 +933,7 @@ void PrintDeviceInfo() {
     @brief    Connects to Adafruit IO+ wippersnapper broker.
 */
 void wippersnapper::connect() {
-  delay(1000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
+  delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   PrintDeviceInfo();

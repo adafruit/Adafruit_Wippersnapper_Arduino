@@ -38,6 +38,8 @@
 #define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
 #define MAX_LEN_CFG_JSON                                                       \
   4096 ///< Maximum length of the configuration JSON file, in Bytes
+#define LOW_SD_WRITE_BATT_THRESH                                               \
+  10.0f ///< Battery percentage threshold for disabling SD writes
 
 // forward decl.
 class wippersnapper;
@@ -68,6 +70,8 @@ public:
                               ws_sensor_Type read_type);
   bool LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg);
   bool LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event);
+  void SetBatteryPercent(float percent);
+  bool IsBatteryLow() const;
 
 private:
   void calculateFileLimits();
@@ -132,6 +136,7 @@ private:
   bool _is_soft_rtc; ///< True if a "soft rtc" is being used, False otherwise
   uint32_t _soft_rtc_counter; ///< Holds the counter for a "soft rtc"
   bool _use_test_data;        ///< True if sample data is being used for testing
+  bool _is_battery_low;       ///< True if battery < LOW_SD_WRITE_BATT_THRESH
 };
 extern wippersnapper Ws;
 #endif // WS_SDCARD_H

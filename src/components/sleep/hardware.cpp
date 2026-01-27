@@ -350,11 +350,6 @@ void SleepHardware::ReenableExternalComponents() {
             during sleep (i.e: tft, i2c, neopixel, etc)
 */
 void SleepHardware::DisableExternalComponents() {
-#if defined(NEOPIXEL_POWER)
-  pinMode(NEOPIXEL_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_POWER, LOW);
-#endif
-
 #if defined(TFT_POWER)
   pinMode(TFT_POWER, OUTPUT);
   digitalWrite(TFT_POWER, LOW);
@@ -364,14 +359,14 @@ void SleepHardware::DisableExternalComponents() {
   ReleaseStatusPixel();
 #endif
 
-// Turn off the neopixel data pin to avoid power draw
-#if defined(PIN_NEOPIXEL)
-  pinMode(PIN_NEOPIXEL, INPUT);
+#if defined(NEOPIXEL_POWER)
+  pinMode(NEOPIXEL_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_POWER, LOW);
 #endif
 
 #if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
-  // (specific to adafruit feather esp32-s2) - turn off the I2C power by setting
-  // pin to rest state (off)
+  // (case specific to only the adafruit feather esp32-s2) - turn off the I2C
+  // power by setting pin to rest state (off)
   pinMode(PIN_I2C_POWER, INPUT);
 #elif defined(PIN_I2C_POWER)
   pinMode(PIN_I2C_POWER, OUTPUT);
@@ -381,7 +376,7 @@ void SleepHardware::DisableExternalComponents() {
   digitalWrite(TFT_I2C_POWER, LOW);
 #elif defined(NEOPIXEL_I2C_POWER)
   pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
+  digitalWrite(NEOPIXEL_I2C_POWER, LOW);
 #endif
 }
 
