@@ -38,6 +38,7 @@ jobs:
             "feather_esp32s3_tft",
             "qtpy_esp32s3_n4r2",
             "xiao_esp32s3",
+            "waveshare_p4_wifi6"
           ]
 
     steps:
@@ -72,13 +73,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-p4s
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
+          ref: waveshare-p4-wifi6
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
