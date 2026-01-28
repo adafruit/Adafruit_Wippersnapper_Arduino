@@ -195,7 +195,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
-#elif defined(WS_WAVESHARE_ESP32P4_WIFI6_STICK) || defined(ARDUINO_ESP32P4)
+#elif defined(WS_WAVESHARE_ESP32P4_WIFI6_STICK) || defined(ARDUINO_ESP32P4_DEV)
 // No status LED nor RGB LED on this board
 #define BOARD_ID "waveshare-p4-wifi6"
 #define USE_LITTLEFS
