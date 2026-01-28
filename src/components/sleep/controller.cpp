@@ -380,4 +380,8 @@ void SleepController::HandleNetFSMFailure() {
   StartSleep();
 }
 
+uint32_t SleepController::GetSoftRtcCounter() {
+  return _sleep_hardware->GetPrvSoftRtcCounter();
+}
+
 #endif // ARDUINO_ARCH_ESP32

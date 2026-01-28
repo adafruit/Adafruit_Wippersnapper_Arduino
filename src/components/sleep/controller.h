@@ -52,6 +52,9 @@ public:
   void SetWakeEnablePin(uint8_t pin, uint8_t pull = 0);
   bool CheckWakeEnablePin();
 
+  // Exposed storage API from hardware for RTC timestamps
+  uint32_t GetSoftRtcCounter();
+
 private:
   // Sleep configuration
   bool ConfigureSleep(const ws_sleep_Enter *msg);

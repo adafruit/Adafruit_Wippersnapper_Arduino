@@ -16,6 +16,7 @@
 #include "hardware.h"
 #include <stdlib.h>
 RTC_SLOW_ATTR static struct timeval sleep_enter_time;
+RTC_SLOW_ATTR static uint32_t cnt_soft_rtc;
 RTC_DATA_ATTR ws_sleep_SleepMode sleep_mode;
 
 /*!
@@ -24,6 +25,7 @@ RTC_DATA_ATTR ws_sleep_SleepMode sleep_mode;
 SleepHardware::SleepHardware() {
   GetSleepWakeupCause();
   CalculateSleepDuration();
+  cnt_soft_rtc = 0;
 }
 
 /*!
@@ -140,28 +142,18 @@ void SleepHardware::CalculateSleepDuration() {
  * accurate.
  */
 #if !SOC_RTC_FAST_MEM_SUPPORTED
-  // Initialize NVS
+  // Initialize NVS (required once before any NVS operations)
   esp_err_t err = nvs_flash_init();
   if (err == ESP_ERR_NVS_NO_FREE_PAGES ||
       err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-    // NVS partition was truncated and needs to be erased
-    // Retry nvs_flash_init
     ESP_ERROR_CHECK(nvs_flash_erase());
     err = nvs_flash_init();
   }
   ESP_ERROR_CHECK(err);
 
-  nvs_handle_t nvs_handle;
-  err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
-  if (err != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR while opening NVS handle");
-    return;
-  }
-
-  // Get deep sleep enter time
-  nvs_get_i32(nvs_handle, "slp_enter_sec", (int32_t *)&sleep_enter_time.tv_sec);
-  nvs_get_i32(nvs_handle, "slp_enter_usec",
-              (int32_t *)&sleep_enter_time.tv_usec);
+  // Get deep sleep enter time from NVS
+  NvsReadI32("slp_enter_sec", (int32_t *)&sleep_enter_time.tv_sec);
+  NvsReadI32("slp_enter_usec", (int32_t *)&sleep_enter_time.tv_usec);
 #endif
 
   struct timeval now;
@@ -191,38 +183,8 @@ void SleepHardware::SetSleepEnterTime() {
 
 #if !SOC_RTC_FAST_MEM_SUPPORTED
   // For chips without RTC memory (ESP32-C2), persist to NVS
-  nvs_handle_t nvs_handle;
-  esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
-  if (err != ESP_OK) {
-    WS_DEBUG_PRINTLN(
-        "[sleep] ERROR: Failed to open NVS for writing sleep time");
-    return;
-  }
-
-  err = nvs_set_i32(nvs_handle, "slp_enter_sec",
-                    (int32_t)sleep_enter_time.tv_sec);
-  if (err != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to write sleep enter sec to NVS");
-    nvs_close(nvs_handle);
-    return;
-  }
-
-  err = nvs_set_i32(nvs_handle, "slp_enter_usec",
-                    (int32_t)sleep_enter_time.tv_usec);
-  if (err != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to write sleep enter usec to NVS");
-    nvs_close(nvs_handle);
-    return;
-  }
-
-  err = nvs_commit(nvs_handle);
-  if (err != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to commit sleep time to NVS");
-    nvs_close(nvs_handle);
-    return;
-  }
-
-  nvs_close(nvs_handle);
+  NvsWriteI32("slp_enter_sec", (int32_t)sleep_enter_time.tv_sec);
+  NvsWriteI32("slp_enter_usec", (int32_t)sleep_enter_time.tv_usec);
 #endif
 }
 
@@ -379,5 +341,114 @@ void SleepHardware::DisableExternalComponents() {
   digitalWrite(NEOPIXEL_I2C_POWER, LOW);
 #endif
 }
+
+/*!
+    @brief  Retrieves the previous soft RTC counter value from RTC memory.
+            On chips without RTC memory (ESP32-C2), reads from NVS.
+    @return The stored soft RTC counter value.
+*/
+uint32_t SleepHardware::GetPrvSoftRtcCounter() {
+#if !SOC_RTC_FAST_MEM_SUPPORTED
+  uint32_t counter = 0;
+  NvsReadU32("cnt_soft_rtc", &counter);
+  return counter;
+#else
+  return cnt_soft_rtc;
+#endif
+}
+
+/*!
+    @brief  Stores the soft RTC counter value to RTC memory.
+            On chips without RTC memory (ESP32-C2), persists to NVS.
+    @param  counter The counter value to store.
+*/
+void SleepHardware::StoreSoftRtcCounter(uint32_t counter) {
+  cnt_soft_rtc = counter;
+#if !SOC_RTC_FAST_MEM_SUPPORTED
+  NvsWriteU32("cnt_soft_rtc", counter);
+#endif
+}
+
+#if !SOC_RTC_FAST_MEM_SUPPORTED
+/*!
+    @brief  Reads a uint32_t value from NVS storage.
+    @param  key   The NVS key to read from (max 15 chars).
+    @param  value Pointer to store the read value.
+    @return True if read succeeded or key not found, false on error.
+*/
+bool SleepHardware::NvsReadU32(const char *key, uint32_t *value) {
+  nvs_handle_t nvs_handle;
+  esp_err_t err = nvs_open("storage", NVS_READONLY, &nvs_handle);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to open NVS for read");
+    return false;
+  }
+
+  err = nvs_get_u32(nvs_handle, key, value);
+  nvs_close(nvs_handle);
+  return (err == ESP_OK || err == ESP_ERR_NVS_NOT_FOUND);
+}
+
+/*!
+    @brief  Writes a uint32_t value to NVS storage.
+    @param  key   The NVS key to write to (max 15 chars).
+    @param  value The value to store.
+    @return True if write and commit succeeded, false on error.
+*/
+bool SleepHardware::NvsWriteU32(const char *key, uint32_t value) {
+  nvs_handle_t nvs_handle;
+  esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to open NVS for write");
+    return false;
+  }
+
+  err = nvs_set_u32(nvs_handle, key, value);
+  if (err == ESP_OK)
+    err = nvs_commit(nvs_handle);
+  nvs_close(nvs_handle);
+  return (err == ESP_OK);
+}
+
+/*!
+    @brief  Reads an int32_t value from NVS storage.
+    @param  key   The NVS key to read from (max 15 chars).
+    @param  value Pointer to store the read value.
+    @return True if read succeeded or key not found, false on error.
+*/
+bool SleepHardware::NvsReadI32(const char *key, int32_t *value) {
+  nvs_handle_t nvs_handle;
+  esp_err_t err = nvs_open("storage", NVS_READONLY, &nvs_handle);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to open NVS for read");
+    return false;
+  }
+
+  err = nvs_get_i32(nvs_handle, key, value);
+  nvs_close(nvs_handle);
+  return (err == ESP_OK || err == ESP_ERR_NVS_NOT_FOUND);
+}
+
+/*!
+    @brief  Writes an int32_t value to NVS storage.
+    @param  key   The NVS key to write to (max 15 chars).
+    @param  value The value to store.
+    @return True if write and commit succeeded, false on error.
+*/
+bool SleepHardware::NvsWriteI32(const char *key, int32_t value) {
+  nvs_handle_t nvs_handle;
+  esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to open NVS for write");
+    return false;
+  }
+
+  err = nvs_set_i32(nvs_handle, key, value);
+  if (err == ESP_OK)
+    err = nvs_commit(nvs_handle);
+  nvs_close(nvs_handle);
+  return (err == ESP_OK);
+}
+#endif // !SOC_RTC_FAST_MEM_SUPPORTED
 
 #endif // ARDUINO_ARCH_ESP32

@@ -46,11 +46,20 @@ public:
   int GetSleepDuration();
   void SetSleepEnterTime();
   void GetSleepWakeupCause();
+  // Storage API for RTC timestamps
+  uint32_t GetPrvSoftRtcCounter();
+  void StoreSoftRtcCounter(uint32_t counter);
 
 private:
   esp_sleep_source_t
       _wakeup_cause; ///< Sleep wakeup cause, obtained during class construction
   int _sleep_time;   ///< Time spent sleeping, in seconds
+
+  // NVS helpers (for chips without RTC memory)
+  bool NvsReadU32(const char *key, uint32_t *value);
+  bool NvsWriteU32(const char *key, uint32_t value);
+  bool NvsReadI32(const char *key, int32_t *value);
+  bool NvsWriteI32(const char *key, int32_t value);
 };
 
 #endif // ARDUINO_ARCH_ESP32
