@@ -73,6 +73,34 @@ public:
       @returns  False always.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) { return false; }
+
+  /*!
+      @brief    Returns a low battery percentage for testing SD card
+                write protection (below LOW_SD_WRITE_BATT_THRESH).
+      @param    unitlessPercentEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True always.
+  */
+  bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
+    /*
+    How to configure this mock sensor in config.json:
+    {
+        "name": "Battery Mock",
+        "componentAPI": "i2c",
+        "period": 30,
+        "i2cDeviceName": "sensor_mock",
+        "i2cDeviceAddress": "0x36",
+        "i2cDeviceSensorTypes": [
+            {
+                "type": "unitless-percent"
+            }
+        ],
+        "autoConfig": "false"
+    }
+    */
+    unitlessPercentEvent->unitless_percent = 5.0f;
+    return true;
+  }
 };
 
 #endif // DRV_GENERIC_SENSOR_MOCK_H

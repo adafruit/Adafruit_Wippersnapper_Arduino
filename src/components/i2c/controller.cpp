@@ -1162,7 +1162,8 @@ void I2cController::update(bool force) {
       if (Ws._sdCardV2 != nullptr &&
           drv->_sensors[i] == ws_sensor_Type_T_UNITLESS_PERCENT &&
           (strcmp(drv->GetDrvName(), "max17048") == 0 ||
-           strcmp(drv->GetDrvName(), "lc709203f") == 0)) {
+           strcmp(drv->GetDrvName(), "lc709203f") == 0 ||
+           strcmp(drv->GetDrvName(), "sensor_mock") == 0)) {
         Ws._sdCardV2->SetBatteryPercent(event.unitless_percent);
       }
 

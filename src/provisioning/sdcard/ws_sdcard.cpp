@@ -96,7 +96,7 @@ void ws_sdcard::SetBatteryPercent(float percent) {
     doc["timestamp"] = GetTimestamp();
     doc["alert"] = "Device battery is low (< 10% remaining), data will no "
                    "longer be logged to SD card to prevent corruption";
-    doc["battery_percent"] = percent;
+    doc["unitless_percent"] = percent;
     LogJSONDoc(doc);
   }
   _is_battery_low = (percent < LOW_SD_WRITE_BATT_THRESH);
