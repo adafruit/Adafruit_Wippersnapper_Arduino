@@ -97,14 +97,18 @@ void initStatusLED() {
 */
 void ReleaseStatusPixel() {
 #ifdef USE_STATUS_NEOPIXEL
-  delete statusPixel; // Deallocate Adafruit_NeoPixel object, set data pin back
-                      // to INPUT.
+  if (statusPixel != nullptr) {
+    delete statusPixel;
+    statusPixel = nullptr;
+  }
   Ws.lockStatusNeoPixelV2 = false; // unlock
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  delete statusPixelDotStar; // Deallocate Adafruit_DotStar object, set data pin
-                             // back to INPUT.
+  if (statusPixelDotStar != nullptr) {
+    delete statusPixelDotStar;
+    statusPixelDotStar = nullptr;
+  }
   Ws.lockStatusDotStarV2 = false; // unlock
 #endif
 

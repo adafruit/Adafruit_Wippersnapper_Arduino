@@ -49,6 +49,7 @@ public:
   // Storage API for RTC timestamps
   uint32_t GetPrvSoftRtcCounter();
   void StoreSoftRtcCounter(uint32_t counter);
+  uint32_t GetSleepCycleCount();
 
 private:
   esp_sleep_source_t

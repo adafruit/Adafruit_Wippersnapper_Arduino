@@ -15,9 +15,11 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include "hardware.h"
 #include <stdlib.h>
+// Stored in RTC memory to persist across deep sleep cycles
 RTC_SLOW_ATTR static struct timeval sleep_enter_time;
 RTC_SLOW_ATTR static uint32_t cnt_soft_rtc;
 RTC_DATA_ATTR ws_sleep_SleepMode sleep_mode;
+RTC_DATA_ATTR static uint32_t sleep_cycles;
 
 /*!
     @brief  Sleep hardware constructor
@@ -160,6 +162,12 @@ void SleepHardware::CalculateSleepDuration() {
   gettimeofday(&now, NULL);
   _sleep_time = (now.tv_sec - sleep_enter_time.tv_sec) +
                 (now.tv_usec - sleep_enter_time.tv_usec) / 1000000;
+
+  // Update sleep cycle count
+  sleep_cycles += 1;
+#if !SOC_RTC_FAST_MEM_SUPPORTED
+  NvsWriteU32("cnt_sleep_cycles", sleep_cycles);
+#endif
 }
 
 /*!
@@ -339,6 +347,19 @@ void SleepHardware::DisableExternalComponents() {
 #elif defined(NEOPIXEL_I2C_POWER)
   pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
   digitalWrite(NEOPIXEL_I2C_POWER, LOW);
+#endif
+}
+
+/*!
+    @brief  Retrieves the current sleep cycle count.
+    @return The number of sleep cycles completed.
+*/
+uint32_t SleepHardware::GetSleepCycleCount() {
+#if !SOC_RTC_FAST_MEM_SUPPORTED
+  NvsReadU32("cnt_sleep_cycles", &sleep_cycles);
+  return sleep_cycles;
+#else
+  return sleep_cycles;
 #endif
 }
 

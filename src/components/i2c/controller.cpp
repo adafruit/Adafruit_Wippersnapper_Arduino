@@ -1136,9 +1136,8 @@ void I2cController::update(bool force) {
 
     // Did driver's period elapse yet?
     ulong cur_time = millis();
-    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod() && !force) {
+    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod() && !force)
       continue; // bail out if the period hasn't elapsed yet or we aren't forcing an update
-    }
 
     // Optionally configure the I2C MUX
     uint32_t mux_channel = drv->GetMuxChannel();

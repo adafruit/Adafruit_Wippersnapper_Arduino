@@ -117,9 +117,6 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   bool res = false;
   if (_sleep_mode == ws_sleep_SleepMode_S_DEEP ||
       _sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
-    WS_DEBUG_PRINTLN(
-        "[sleep] Configuring sleep mode..."); // TODO: Debug output, remove in
-                                              // production build
     res = ConfigureSleep(msg);
   } else {
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported sleep mode");
@@ -136,15 +133,8 @@ void SleepController::WakeFromLightSleep() {
   // Refresh the cached sleep wakeup cause from hardware
   _sleep_hardware->GetSleepWakeupCause();
   // Verify that we woke up from light sleep
-  if (!DidWakeFromSleep() &&
-      (GetPrvSleepMode() == ws_sleep_SleepMode_S_LIGHT)) {
-    WS_DEBUG_PRINTLN(
-        "[sleep] WARN: This function should never get here!"); // TODO: Debug
-                                                               // output, remove
-                                                               // in production
-                                                               // build
+  if (!DidWakeFromSleep() && (GetPrvSleepMode() == ws_sleep_SleepMode_S_LIGHT))
     return;
-  }
   WS_DEBUG_PRINTLN("[sleep] Woke up from light sleep!");
 
   // Recalculate sleep duration
@@ -152,6 +142,10 @@ void SleepController::WakeFromLightSleep() {
   WS_DEBUG_PRINT("Slept for ");
   WS_DEBUG_PRINT(GetSleepDuration());
   WS_DEBUG_PRINTLN(" seconds");
+
+  // Print sleep cycles
+  WS_DEBUG_PRINT("Total sleep cycles: ");
+  WS_DEBUG_PRINTLN(_sleep_hardware->GetSleepCycleCount());
 
   // Re-enable external components that were disabled before sleep
   if (_has_ext_pwr_components) {
@@ -185,7 +179,6 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }
-    // TODO: Remove this debug print in production build
     WS_DEBUG_PRINT("[sleep] Timer wakeup set to ");
     WS_DEBUG_PRINT(msg->config.timer.duration);
     WS_DEBUG_PRINTLN(" seconds");
@@ -196,7 +189,6 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set ext0 wakeup");
     }
-    // TODO: Remove this debug print in production build
     WS_DEBUG_PRINT("[sleep] EXT0 wakeup set on pin ");
     WS_DEBUG_PRINT(msg->config.ext0.name);
     WS_DEBUG_PRINT(" with level ");
@@ -326,6 +318,7 @@ void SleepController::StartSleep() {
     _sleep_hardware->DisableExternalComponents();
   }
   // Disable SD Card, if present
+
   if (Ws._sdCardV2->isSDCardInitialized()) {
     WS_DEBUG_PRINTLN("[sleep] Disabling SD card before sleep...");
     Ws._sdCardV2->end();
