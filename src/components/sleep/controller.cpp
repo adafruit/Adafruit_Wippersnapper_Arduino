@@ -133,7 +133,7 @@ void SleepController::WakeFromLightSleep() {
   // Refresh the cached sleep wakeup cause from hardware
   _sleep_hardware->GetSleepWakeupCause();
   // Verify that we woke up from light sleep
-  if (!DidWakeFromSleep() && (GetPrvSleepMode() == ws_sleep_SleepMode_S_LIGHT))
+  if (!DidWakeFromSleep() || (GetPrvSleepMode() != ws_sleep_SleepMode_S_LIGHT))
     return;
   WS_DEBUG_PRINTLN("[sleep] Woke up from light sleep!");
 
