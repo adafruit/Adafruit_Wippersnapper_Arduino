@@ -38,7 +38,6 @@ jobs:
             "feather_esp32s3_tft",
             "qtpy_esp32s3_n4r2",
             "xiao_esp32s3",
-            "waveshare_p4_wifi6"
           ]
 
     steps:
@@ -372,7 +371,8 @@ jobs:
             "dfrobot_beetle_esp32c3",
             "wippersnapper_qtpy_esp32c3",
             "espressif_esp32c5_devkitc_1_n8r4",
-            "wippersnapper_feather_esp32c6"
+            "wippersnapper_feather_esp32c6",
+            "waveshare_p4_wifi6"
           ]
         include:
           - offset: "0x1000"
@@ -382,6 +382,8 @@ jobs:
             arduino-platform: "wippersnapper_qtpy_esp32c3"
           - offset: "0x2000"
             arduino-platform: "espressif_esp32c5_devkitc_1_n8r4"
+          - offset: "0x2000"
+            arduino-platform: "waveshare_p4_wifi6"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
