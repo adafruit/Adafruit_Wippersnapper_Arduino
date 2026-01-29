@@ -351,6 +351,34 @@ void SleepHardware::DisableExternalComponents() {
 }
 
 /*!
+    @brief  Attempts to stop the WiFi radio to save power before entering light
+   sleep.
+    @return True if WiFi was successfully stopped, False otherwise.
+*/
+bool SleepHardware::StopWiFi() {
+  esp_err_t rc = esp_wifi_stop();
+  if (rc != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to stop WiFi");
+    return false;
+  }
+  return true;
+}
+
+/*!
+    @brief  Restore WiFi stack persistent settings to default value after waking
+   from light sleep.
+    @return True if WiFi was successfully started, False otherwise.
+*/
+bool SleepHardware::RestoreWiFi() {
+  esp_err_t rc = esp_wifi_restore();
+  if (rc != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to restore WiFi");
+    return false;
+  }
+  return true;
+}
+
+/*!
     @brief  Retrieves the current sleep cycle count.
     @return The number of sleep cycles completed.
 */

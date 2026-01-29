@@ -19,6 +19,7 @@
 #include "driver/gpio.h"
 #include "driver/rtc_io.h"
 #include "esp_sleep.h"
+#include "esp_wifi.h"
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "wippersnapper.h"
@@ -34,6 +35,8 @@ public:
   ~SleepHardware();
   bool EnableDeepSleep(int duration);
   bool EnableLightSleep(int duration);
+  bool StopWiFi();
+  bool RestoreWiFi();
   bool RegisterRTCTimerWakeup(uint64_t duration);
   bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
   void DisableExternalComponents();

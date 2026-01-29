@@ -154,12 +154,16 @@ void SleepController::WakeFromLightSleep() {
   }
 
   // Re-initialize SD card if it was previously initialized
-  if (Ws._sdCardV2 != nullptr) {
+  if (Ws._sdCardV2->isModeOffline()) {
     if (!Ws._sdCardV2->begin()) {
       WS_DEBUG_PRINTLN(
           "[sleep] ERROR: Failed to re-initialize SD card after wake");
     }
     WS_DEBUG_PRINTLN("[sleep] SD card re-initialized successfully");
+  } else {
+    WS_DEBUG_PRINTLN("[sleep] Enabling WiFi after light sleep wakeup");
+    // Run NetFSM to reconnect WiFi and MQTT
+    Ws.NetworkFSM(true);
   }
 }
 
@@ -317,8 +321,8 @@ void SleepController::StartSleep() {
         "[sleep] Disabling externally powered components before sleep...");
     _sleep_hardware->DisableExternalComponents();
   }
-  // Disable SD Card, if present
 
+  // Disable SD Card, if present
   if (Ws._sdCardV2->isSDCardInitialized()) {
     WS_DEBUG_PRINTLN("[sleep] Disabling SD card before sleep...");
     Ws._sdCardV2->end();
@@ -328,8 +332,16 @@ void SleepController::StartSleep() {
     WS_DEBUG_PRINTLN("[sleep] Entering deep sleep");
     esp_deep_sleep_start();
   } else if (_sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
-    // Attempt to enter light sleep
     WS_DEBUG_PRINTLN("[sleep] Entering light sleep");
+    // Disconnect MQTT and stop WiFi before light sleep, if in IO Mode
+    if (Ws._mqttV2 != nullptr) {
+      WS_DEBUG_PRINTLN("[sleep] Disconnecting MQTT client before sleep");
+      Ws._mqttV2->disconnect();
+      if (!_sleep_hardware->StopWiFi()) {
+        WS_DEBUG_PRINTLN("[sleep] WARNING: Failed to stop WiFi before sleep");
+      }
+    }
+    // Attempt to start light sleep
     esp_err_t err = esp_light_sleep_start();
     if (err != ESP_OK) {
       WS_DEBUG_PRINT("[sleep] WARNING: Failed light sleep start: ");
