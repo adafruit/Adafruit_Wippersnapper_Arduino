@@ -404,7 +404,12 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          ## if not adafruit owner then unshallow to get tags
+          if [ "$(git remote get-url origin | cut -d'/' -f2)" != "adafruit" ]; then
+            git fetch --prune --unshallow --all --tags
+          else
+            git fetch --prune --all --tags
+          fi
           if git describe --dirty --tags >/dev/null 2>&1; then
             echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
           else
