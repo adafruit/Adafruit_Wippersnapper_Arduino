@@ -360,17 +360,6 @@ jobs:
       matrix:
         arduino-platform:
           [
-            "wippersnapper_feather_esp32",
-            "qtpy_esp32",
-            "sparklemotion_esp32",
-            "sparklemotionmini_esp32",
-            "sparklemotionstick_esp32",
-            "feather_esp32_v2",
-            "itsybitsy_esp32",
-            "dfrobot_beetle_esp32c3",
-            "wippersnapper_qtpy_esp32c3",
-            "espressif_esp32c5_devkitc_1_n8r4",
-            "wippersnapper_feather_esp32c6",
             "esp32p4",
             "waveshare_p4_wifi6"
           ]
@@ -405,7 +394,7 @@ jobs:
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
           ## if not adafruit owner then unshallow to get tags
-          if [ "$(git remote get-url origin | cut -d'/' -f2)" != "adafruit" ]; then
+          if [ "$(git remote get-url origin | cut -d'/' -f4)" != "adafruit" ]; then
             git fetch --prune --unshallow --all --tags
           else
             git fetch --prune --all --tags
