@@ -21,6 +21,7 @@
     defined(ARDUINO_SPARKLEMOTIONMINI_ESP32) ||                                \
     defined(ARDUINO_SPARKLEMOTIONSTICK_ESP32) ||                               \
     defined(WS_WAVESHARE_ESP32P4_WIFI6_STICK) ||                               \
+    defined(WS_DFROBOT_FIREBEETLE2_ESP32P4) ||                                 \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || defined(ARDUINO_ESP32P4_DEV) ||  \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) || defined(ARDUINO_ESP32C5_DEV)
 #include "WipperSnapper_LittleFS.h"
