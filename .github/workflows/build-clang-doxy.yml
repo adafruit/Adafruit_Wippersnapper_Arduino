@@ -72,14 +72,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper-p4s
+          ref: ci-wippersnapper
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
-          ref: waveshare-p4-wifi6
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
@@ -415,13 +414,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-p4s
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
+          ref: waveshare-p4-wifi6
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
