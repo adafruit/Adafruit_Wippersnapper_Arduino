@@ -45,6 +45,7 @@ public:
   esp_sleep_source_t GetEspSleepSource();
   const char *GetWakeupReasonName();
   ws_sleep_SleepMode GetSleepMode();
+  void SetSleepMode(ws_sleep_SleepMode mode);
   void CalculateSleepDuration();
   int GetSleepDuration();
   void SetSleepEnterTime();
@@ -53,6 +54,9 @@ public:
   uint32_t GetPrvSoftRtcCounter();
   void StoreSoftRtcCounter(uint32_t counter);
   uint32_t GetSleepCycleCount();
+  // Storage API for log filename persistence
+  void StoreLogFilename(const char *filename);
+  const char *GetLogFilename();
 
 private:
   esp_sleep_source_t
@@ -64,6 +68,8 @@ private:
   bool NvsWriteU32(const char *key, uint32_t value);
   bool NvsReadI32(const char *key, int32_t *value);
   bool NvsWriteI32(const char *key, int32_t value);
+  bool NvsReadStr(const char *key, char *value, size_t max_len);
+  bool NvsWriteStr(const char *key, const char *value);
 };
 
 #endif // ARDUINO_ARCH_ESP32

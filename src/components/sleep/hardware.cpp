@@ -15,11 +15,12 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include "hardware.h"
 #include <stdlib.h>
-// Stored in RTC memory to persist across deep sleep cycles
+// Stored in RTC memory to persist across sleep cycles
 RTC_SLOW_ATTR static struct timeval sleep_enter_time;
 RTC_SLOW_ATTR static uint32_t cnt_soft_rtc;
 RTC_DATA_ATTR ws_sleep_SleepMode sleep_mode;
 RTC_DATA_ATTR static uint32_t sleep_cycles;
+RTC_DATA_ATTR static char log_filename_rtc[64];
 
 /*!
     @brief  Sleep hardware constructor
@@ -134,6 +135,12 @@ const char *SleepHardware::GetWakeupReasonName() {
 ws_sleep_SleepMode SleepHardware::GetSleepMode() { return sleep_mode; }
 
 /*!
+    @brief  Sets the sleep mode in RTC memory for persistence across sleep.
+    @param  mode The sleep mode to set.
+*/
+void SleepHardware::SetSleepMode(ws_sleep_SleepMode mode) { sleep_mode = mode; }
+
+/*!
     @brief  Calculates the duration of the last sleep period.
 */
 void SleepHardware::CalculateSleepDuration() {
@@ -196,34 +203,6 @@ void SleepHardware::SetSleepEnterTime() {
 #endif
 }
 
-/*!
-    @brief   Enables deep sleep mode for a specified duration.
-    @param   duration Time to deep sleep, in seconds.
-    @returns True if deep sleep was successfully enabled, False otherwise.
-*/
-bool SleepHardware::EnableDeepSleep(int duration) {
-  esp_err_t rc = esp_sleep_enable_timer_wakeup(duration * 1000000);
-  if (rc != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable timer wakeup");
-    return false;
-  }
-
-#if CONFIG_IDF_TARGET_ESP32
-  // Isolate GPIO12 pin from external circuits. This is needed for modules
-  // which have an external pull-up resistor on GPIO12 (such as ESP32-WROVER)
-  // to minimize current consumption.
-  rtc_gpio_isolate(GPIO_NUM_12);
-#endif
-
-  sleep_mode = ws_sleep_SleepMode_S_DEEP;
-  return true;
-}
-
-// TODO: Not implemented yet!
-bool SleepHardware::EnableLightSleep(int duration) {
-  sleep_mode = ws_sleep_SleepMode_S_LIGHT;
-  return true;
-}
 
 /*!
     @brief Enables wakeup by timer.
@@ -498,6 +477,98 @@ bool SleepHardware::NvsWriteI32(const char *key, int32_t value) {
   nvs_close(nvs_handle);
   return (err == ESP_OK);
 }
+
+/*!
+    @brief  Reads a string value from NVS storage.
+    @param  key     The NVS key to read from (max 15 chars).
+    @param  value   Buffer to store the read string.
+    @param  max_len Maximum length of the buffer.
+    @return True if read succeeded or key not found, false on error.
+*/
+bool SleepHardware::NvsReadStr(const char *key, char *value, size_t max_len) {
+  nvs_handle_t nvs_handle;
+  esp_err_t err = nvs_open("storage", NVS_READONLY, &nvs_handle);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to open NVS for read");
+    return false;
+  }
+
+  size_t required_size = max_len;
+  err = nvs_get_str(nvs_handle, key, value, &required_size);
+  nvs_close(nvs_handle);
+  return (err == ESP_OK || err == ESP_ERR_NVS_NOT_FOUND);
+}
+
+/*!
+    @brief  Writes a string value to NVS storage.
+    @param  key   The NVS key to write to (max 15 chars).
+    @param  value The string to store.
+    @return True if write and commit succeeded, false on error.
+*/
+bool SleepHardware::NvsWriteStr(const char *key, const char *value) {
+  nvs_handle_t nvs_handle;
+  esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
+  if (err != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to open NVS for write");
+    return false;
+  }
+
+  err = nvs_set_str(nvs_handle, key, value);
+  if (err == ESP_OK)
+    err = nvs_commit(nvs_handle);
+  nvs_close(nvs_handle);
+  return (err == ESP_OK);
+}
 #endif // !SOC_RTC_FAST_MEM_SUPPORTED
+
+/*!
+    @brief  Stores the log filename to RTC memory for persistence across sleep.
+            On chips without RTC memory (ESP32-C2), persists to NVS.
+    @param  filename The log filename to store.
+*/
+void SleepHardware::StoreLogFilename(const char *filename) {
+  if (filename == nullptr)
+    return;
+
+  WS_DEBUG_PRINT("[sleep] Storing log filename for persistence: ");
+  WS_DEBUG_PRINTLN(filename);
+
+#if !SOC_RTC_FAST_MEM_SUPPORTED
+  NvsWriteStr("log_filename", filename);
+  WS_DEBUG_PRINTLN("[sleep] Log filename stored to NVS");
+#else
+  strncpy(log_filename_rtc, filename, sizeof(log_filename_rtc) - 1);
+  log_filename_rtc[sizeof(log_filename_rtc) - 1] = '\0';
+  WS_DEBUG_PRINTLN("[sleep] Log filename stored to RTC memory");
+#endif
+}
+
+/*!
+    @brief  Retrieves the stored log filename from RTC memory.
+            On chips without RTC memory (ESP32-C2), reads from NVS.
+    @return The stored log filename, or nullptr if not set.
+*/
+const char *SleepHardware::GetLogFilename() {
+#if !SOC_RTC_FAST_MEM_SUPPORTED
+  static char nvs_log_filename[64];
+  nvs_log_filename[0] = '\0';
+  NvsReadStr("log_filename", nvs_log_filename, sizeof(nvs_log_filename));
+  if (nvs_log_filename[0] == '\0') {
+    WS_DEBUG_PRINTLN("[sleep] No stored log filename found in NVS");
+    return nullptr;
+  }
+  WS_DEBUG_PRINT("[sleep] Retrieved log filename from NVS: ");
+  WS_DEBUG_PRINTLN(nvs_log_filename);
+  return nvs_log_filename;
+#else
+  if (log_filename_rtc[0] == '\0') {
+    WS_DEBUG_PRINTLN("[sleep] No stored log filename found in RTC memory");
+    return nullptr;
+  }
+  WS_DEBUG_PRINT("[sleep] Retrieved log filename from RTC memory: ");
+  WS_DEBUG_PRINTLN(log_filename_rtc);
+  return log_filename_rtc;
+#endif
+}
 
 #endif // ARDUINO_ARCH_ESP32

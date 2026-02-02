@@ -657,15 +657,62 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
 /*!
     @brief  Creates a new logging file on the SD card using the RTC's
             timestamp and sets the current log file path to reflect this
-            file.
-    @returns True if a log file was successfully created, False otherwise.
+            file. On ESP32, this function first attempts to restore a
+            previously used log file from RTC/NVS memory if waking from sleep.
+    @returns True if a log file was successfully created or restored, False
+   otherwise.
 */
 bool ws_sdcard::CreateNewLogFile() {
+  static char log_filename_buffer[256];
+
   if (_sd_cur_log_files >= _sd_max_num_log_files) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Maximum number of log files for SD "
                      "card capacity reached!");
     return false;
   }
+
+#ifdef ARDUINO_ARCH_ESP32
+  // Check if we should restore a previous log file (waking from sleep)
+  WS_DEBUG_PRINTLN("[SD] Checking for previous log file to restore...");
+  if (Ws._sleep_controller != nullptr) {
+    const char *prev_filename = Ws._sleep_controller->GetLogFilename();
+    if (prev_filename != nullptr && prev_filename[0] != '\0') {
+      WS_DEBUG_PRINT("[SD] Found stored filename: ");
+      WS_DEBUG_PRINTLN(prev_filename);
+      // Try to open the existing file to get its size
+      File32 file;
+      if (file.open(prev_filename, O_RDWR)) {
+        _sz_cur_log_file = file.size();
+        file.close();
+        WS_DEBUG_PRINT("[SD] Previous log file size: ");
+        WS_DEBUG_PRINT(_sz_cur_log_file);
+        WS_DEBUG_PRINT(" / ");
+        WS_DEBUG_PRINTLN(_max_sz_log_file);
+
+        // Check if file is still under size limit
+        if (_sz_cur_log_file < _max_sz_log_file) {
+          strncpy(log_filename_buffer, prev_filename,
+                  sizeof(log_filename_buffer) - 1);
+          log_filename_buffer[sizeof(log_filename_buffer) - 1] = '\0';
+          _log_filename = log_filename_buffer;
+          WS_DEBUG_PRINT("[SD] SUCCESS: Restored previous log file: ");
+          WS_DEBUG_PRINTLN(_log_filename);
+          return true;
+        } else {
+          WS_DEBUG_PRINTLN(
+              "[SD] Previous log file exceeds size limit, creating new file");
+        }
+      } else {
+        WS_DEBUG_PRINTLN(
+            "[SD] Could not open previous log file, creating new file");
+      }
+    } else {
+      WS_DEBUG_PRINTLN("[SD] No stored filename found, creating new file");
+    }
+  } else {
+    WS_DEBUG_PRINTLN("[SD] Sleep controller not available, creating new file");
+  }
+#endif
 
   String logFilename;
   // Generate a name for the new log file using the RTC's timestamp
@@ -673,7 +720,6 @@ bool ws_sdcard::CreateNewLogFile() {
     logFilename = "log_" + String(GetTimestamp()) + ".log";
   else
     logFilename = "log_" + String(millis()) + ".log";
-  static char log_filename_buffer[256];
   strncpy(log_filename_buffer, logFilename.c_str(),
           sizeof(log_filename_buffer) - 1);
   log_filename_buffer[sizeof(log_filename_buffer) - 1] = '\0';
@@ -684,9 +730,18 @@ bool ws_sdcard::CreateNewLogFile() {
   File32 file;
   if (!file.open(_log_filename, O_RDWR | O_CREAT | O_AT_END))
     return false;
+  file.close();
   WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
   WS_DEBUG_PRINTLN(_log_filename);
   _sd_cur_log_files++;
+
+#ifdef ARDUINO_ARCH_ESP32
+  // Store the new filename for persistence across sleep cycles
+  if (Ws._sleep_controller != nullptr) {
+    Ws._sleep_controller->StoreLogFilename(_log_filename);
+  }
+#endif
+
   return true;
 }
 
@@ -1124,6 +1179,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
 
 #ifndef OFFLINE_MODE_DEBUG
   File32 file;
+  WS_DEBUG_PRINT("_log_filename: ");
+  WS_DEBUG_PRINTLN(_log_filename);
   file = _sd.open(_log_filename, O_RDWR | O_CREAT | O_AT_END);
   if (!file) {
     WS_DEBUG_PRINTLN(

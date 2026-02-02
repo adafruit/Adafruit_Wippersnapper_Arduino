@@ -54,6 +54,9 @@ public:
 
   // Exposed storage API from hardware for RTC timestamps
   uint32_t GetSoftRtcCounter();
+  // Exposed storage API from hardware for log filename persistence
+  void StoreLogFilename(const char *filename);
+  const char *GetLogFilename();
 
 private:
   // Sleep configuration
@@ -61,7 +64,6 @@ private:
   bool ConfigureLightSleep(const ws_sleep_Enter *msg);
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
-  ws_sleep_SleepMode _sleep_mode; ///< Current sleep mode
   bool _wake_enable_pin_state;    ///< Value of BOOT button during class
                                   ///< construction
   bool _lock;                     ///< Whether the sleep configuration is locked

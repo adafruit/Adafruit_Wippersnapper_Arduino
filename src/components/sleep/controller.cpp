@@ -23,8 +23,7 @@ SleepController::SleepController() {
   _sleep_model = new SleepModel();
   _wake_enable_pin = 255;    // No pin assigned
   _wake_enable_pin_pull = 0; // Default: no pull
-  _sleep_mode = ws_sleep_SleepMode_S_UNSPECIFIED;
-  _lock = false; // Class-level lock
+  _lock = false;             // Class-level lock
 
 // Mark so we can disable all external peripherals that draw power during sleep
 // (i.e: tft, i2c, neopixel, etc)
@@ -110,13 +109,14 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
     return true;
   }
 
-  // Parse sleep mode and dispatch based on mode
-  _sleep_mode = msg->mode;
+  // Parse sleep mode and store to RTC memory for persistence across sleep
+  _sleep_hardware->SetSleepMode(msg->mode);
 
   // Configure sleep with the provided wakeup configuration
   bool res = false;
-  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP ||
-      _sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
+  ws_sleep_SleepMode sleep_mode = _sleep_hardware->GetSleepMode();
+  if (sleep_mode == ws_sleep_SleepMode_S_DEEP ||
+      sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
     res = ConfigureSleep(msg);
   } else {
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported sleep mode");
@@ -328,10 +328,11 @@ void SleepController::StartSleep() {
     Ws._sdCardV2->end();
   }
 
-  if (_sleep_mode == ws_sleep_SleepMode_S_DEEP) {
+  ws_sleep_SleepMode sleep_mode = _sleep_hardware->GetSleepMode();
+  if (sleep_mode == ws_sleep_SleepMode_S_DEEP) {
     WS_DEBUG_PRINTLN("[sleep] Entering deep sleep");
     esp_deep_sleep_start();
-  } else if (_sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
+  } else if (sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
     WS_DEBUG_PRINTLN("[sleep] Entering light sleep");
     // Disconnect MQTT and stop WiFi before light sleep, if in IO Mode
     if (Ws._mqttV2 != nullptr) {
@@ -372,7 +373,7 @@ void SleepController::HandleNetFSMFailure() {
   ws_sleep_Enter sleep_enter_msg = ws_sleep_Enter_init_zero;
   sleep_enter_msg.lock = true;
   // Set sleep mode to the last known sleep
-  sleep_enter_msg.mode = _sleep_mode;
+  sleep_enter_msg.mode = _sleep_hardware->GetSleepMode();
   sleep_enter_msg.which_config =
       _sleep_hardware->GetEspSleepSource() == ESP_SLEEP_WAKEUP_TIMER
           ? ws_sleep_Enter_timer_tag
@@ -387,6 +388,14 @@ void SleepController::HandleNetFSMFailure() {
 
 uint32_t SleepController::GetSoftRtcCounter() {
   return _sleep_hardware->GetPrvSoftRtcCounter();
+}
+
+void SleepController::StoreLogFilename(const char *filename) {
+  _sleep_hardware->StoreLogFilename(filename);
+}
+
+const char *SleepController::GetLogFilename() {
+  return _sleep_hardware->GetLogFilename();
 }
 
 #endif // ARDUINO_ARCH_ESP32
