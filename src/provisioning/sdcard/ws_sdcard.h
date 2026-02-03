@@ -72,6 +72,7 @@ public:
   bool LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event);
   void SetBatteryPercent(float percent);
   bool IsBatteryLow() const;
+  uint32_t GetSoftRTCTime();
 
 private:
   void calculateFileLimits();
@@ -85,7 +86,7 @@ private:
   bool InitPCF8523();
   bool InitSoftRTC();
   void TickSoftRTC();
-  uint32_t GetSoftRTCTime();
+  void SetSoftRTCCounter(uint32_t counter);
 #ifdef ARDUINO_ARCH_ESP32
   bool ParseSleepConfigTimer(const JsonObject &sleep_config,
                              const JsonObject &timer_config, int run_duration);

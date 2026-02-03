@@ -28,7 +28,10 @@ RTC_DATA_ATTR static char log_filename_rtc[64];
 SleepHardware::SleepHardware() {
   GetSleepWakeupCause();
   CalculateSleepDuration();
-  cnt_soft_rtc = 0;
+  // Only reset soft RTC counter on power-on boot, not when waking from sleep
+  if (_wakeup_cause == ESP_SLEEP_WAKEUP_UNDEFINED) {
+    cnt_soft_rtc = 0;
+  }
 }
 
 /*!

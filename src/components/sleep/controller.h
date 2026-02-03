@@ -54,8 +54,9 @@ public:
 
   // Exposed storage API from hardware for RTC timestamps
   uint32_t GetSoftRtcCounter();
+  void SetSoftRtcCounter(uint32_t counter);
   // Exposed storage API from hardware for log filename persistence
-  void StoreLogFilename(const char *filename);
+  void SetLogFilename(const char *filename);
   const char *GetLogFilename();
 
 private:

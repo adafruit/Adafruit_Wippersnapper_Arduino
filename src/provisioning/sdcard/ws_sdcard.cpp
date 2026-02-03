@@ -249,13 +249,28 @@ bool ws_sdcard::InitPCF8523() {
 
 /*!
     @brief    Initializes a "soft" RTC for devices without a physical
-              RTC module attached.
+              RTC module attached. Restores counter from RTC memory
+              if waking from sleep.
     @returns  True if the soft RTC was successfully initialized, False
               otherwise.
 */
 bool ws_sdcard::InitSoftRTC() {
   _is_soft_rtc = true;
+#ifdef ARDUINO_ARCH_ESP32
+  // Restore counter from RTC memory if waking from sleep
+  // Check wake cause directly to avoid side effects on lock state
+  if (Ws._sleep_controller != nullptr &&
+      Ws._sleep_controller->GetEspWakeCause() !=
+          ws_sleep_EspWakeCause_ESP_UNSPECIFIED) {
+    _soft_rtc_counter = Ws._sleep_controller->GetSoftRtcCounter();
+    WS_DEBUG_PRINT("[SD] Restored soft RTC counter from sleep: ");
+    WS_DEBUG_PRINTLN(_soft_rtc_counter);
+  } else {
+    _soft_rtc_counter = 0;
+  }
+#else
   _soft_rtc_counter = 0;
+#endif
   return _is_soft_rtc;
 }
 
@@ -263,6 +278,14 @@ bool ws_sdcard::InitSoftRTC() {
     @brief    Increments the "soft" RTC.
 */
 void ws_sdcard::TickSoftRTC() { _soft_rtc_counter++; }
+
+/*!
+    @brief    Sets the soft RTC counter to a specific value.
+    @param    counter The value to set the counter to.
+*/
+void ws_sdcard::SetSoftRTCCounter(uint32_t counter) {
+  _soft_rtc_counter = counter;
+}
 
 /*!
     @brief    Returns the current timestamp from the RTC.
@@ -738,7 +761,7 @@ bool ws_sdcard::CreateNewLogFile() {
 #ifdef ARDUINO_ARCH_ESP32
   // Store the new filename for persistence across sleep cycles
   if (Ws._sleep_controller != nullptr) {
-    Ws._sleep_controller->StoreLogFilename(_log_filename);
+    Ws._sleep_controller->SetLogFilename(_log_filename);
   }
 #endif
 

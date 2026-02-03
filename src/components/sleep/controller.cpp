@@ -315,6 +315,14 @@ void SleepController::StartSleep() {
   // Set current time before entering sleep
   _sleep_hardware->SetSleepEnterTime();
 
+  // Store soft RTC counter to RTC memory before sleep
+  if (Ws._sdCardV2 != nullptr) {
+    uint32_t counter = Ws._sdCardV2->GetSoftRTCTime();
+    SetSoftRtcCounter(counter);
+    WS_DEBUG_PRINT("[sleep] Stored soft RTC counter: ");
+    WS_DEBUG_PRINTLN(counter);
+  }
+
   // Disable any external components that draw power during sleep
   if (_has_ext_pwr_components) {
     WS_DEBUG_PRINTLN(
@@ -386,14 +394,37 @@ void SleepController::HandleNetFSMFailure() {
   StartSleep();
 }
 
+/*!
+    @brief  Gets the stored software RTC counter from RTC memory.
+    @return The stored software RTC counter.
+*/
 uint32_t SleepController::GetSoftRtcCounter() {
   return _sleep_hardware->GetPrvSoftRtcCounter();
 }
 
-void SleepController::StoreLogFilename(const char *filename) {
+/*!
+    @brief  Sets the software RTC counter in RTC memory for persistence
+            across sleep cycles.
+    @param  counter
+            The counter value to store.
+*/
+void SleepController::SetSoftRtcCounter(uint32_t counter) {
+  _sleep_hardware->StoreSoftRtcCounter(counter);
+}
+
+/*!
+    @brief  Sets the log filename in RTC memory for persistence across sleep.
+    @param  filename
+            The log filename to store.
+*/
+void SleepController::SetLogFilename(const char *filename) {
   _sleep_hardware->StoreLogFilename(filename);
 }
 
+/*!
+    @brief  Gets the stored log filename from NVS.
+    @return The stored log filename.
+*/
 const char *SleepController::GetLogFilename() {
   return _sleep_hardware->GetLogFilename();
 }
