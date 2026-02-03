@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """
-Timestamp Concurrency and Persistence Test for WipperSnapper's Sleep Modes
-
-Test 5.2.1 - Validates softRTC (cycle counter) behavior without external RTC.
+External RTC Timestamp Test for WipperSnapper's Sleep Mode
 """
 
 import serial
@@ -38,16 +36,32 @@ except ImportError:
     )
 
 
+# Minimum Unix timestamp to consider as "external RTC" (year 2023+)
+MIN_UNIX_TIMESTAMP = 1700000000
+
+# Tolerance for cross-cycle gap validation (accounts for boot time, sensor reads, RTC drift)
+CROSS_CYCLE_TOLERANCE_SECONDS = 30
+
+
 @dataclass
-class TimestampAnalysis:
-    """Results of timestamp analysis."""
+class ExternalRTCAnalysis:
+    """Results of external RTC timestamp analysis."""
     entries: list = field(default_factory=list)
     duplicates: list = field(default_factory=list)
     out_of_order: list = field(default_factory=list)
     gaps_by_source: dict = field(default_factory=dict)
     # Cross-cycle persistence analysis
     cross_cycle_gaps: list = field(default_factory=list)  # List of CrossCycleGap
-    timestamp_resets: list = field(default_factory=list)  # Cycles where timestamp reset to 0
+    timestamp_resets: list = field(default_factory=list)  # Cycles where timestamp reset
+    # External RTC specific
+    non_unix_timestamps: list = field(default_factory=list)  # Timestamps < MIN_UNIX_TIMESTAMP
+
+    @property
+    def is_external_rtc(self) -> bool:
+        """Check if timestamps indicate external RTC is being used."""
+        if not self.entries:
+            return False
+        return len(self.non_unix_timestamps) == 0
 
     @property
     def is_valid(self) -> bool:
@@ -70,7 +84,7 @@ class TimestampAnalysis:
         """Generate analysis summary."""
         lines = [
             "\n" + "=" * 60,
-            "TIMESTAMP CONCURRENCY ANALYSIS",
+            "EXTERNAL RTC TIMESTAMP ANALYSIS",
             "=" * 60,
             f"Total Entries: {self.total_entries}",
         ]
@@ -78,14 +92,23 @@ class TimestampAnalysis:
         if self.entries:
             timestamps = [e.timestamp for e in self.entries]
             lines.append(f"Timestamp Range: {min(timestamps)} - {max(timestamps)}")
-            lines.append(f"Unique Timestamps: {len(set(timestamps))}")
+
+        # External RTC detection
+        if self.non_unix_timestamps:
+            lines.append(f"[FAIL] {len(self.non_unix_timestamps)} timestamps are NOT Unix time (external RTC not detected)")
+            for entry in self.non_unix_timestamps[:5]:
+                lines.append(f"  ts={entry.timestamp} (source={entry.source})")
+            if len(self.non_unix_timestamps) > 5:
+                lines.append(f"  ... and {len(self.non_unix_timestamps) - 5} more")
+        else:
+            lines.append("[PASS] All timestamps are Unix time (external RTC detected)")
 
         lines.append("-" * 60)
 
         # Monotonicity check
         if self.out_of_order:
             lines.append(f"[FAIL] Out-of-order timestamps: {len(self.out_of_order)}")
-            for prev, curr in self.out_of_order[:5]:  # Show first 5
+            for prev, curr in self.out_of_order[:5]:
                 lines.append(f"  {prev.timestamp} -> {curr.timestamp} ({curr.source})")
             if len(self.out_of_order) > 5:
                 lines.append(f"  ... and {len(self.out_of_order) - 5} more")
@@ -95,7 +118,7 @@ class TimestampAnalysis:
         # Duplicate check
         if self.duplicates:
             lines.append(f"[FAIL] Duplicate timestamps: {len(self.duplicates)}")
-            for entries in self.duplicates[:5]:  # Show first 5 groups
+            for entries in self.duplicates[:5]:
                 ts = entries[0].timestamp
                 sources = [e.source for e in entries]
                 lines.append(f"  timestamp={ts}: {sources}")
@@ -104,24 +127,14 @@ class TimestampAnalysis:
         else:
             lines.append("[PASS] No duplicate timestamps")
 
-        # Per-source analysis
+        # Cross-cycle persistence analysis
         lines.append("-" * 60)
-        lines.append("PER-SOURCE TIMESTAMP GAPS:")
-        for source, gaps in sorted(self.gaps_by_source.items()):
-            if gaps:
-                avg_gap = sum(gaps) / len(gaps)
-                lines.append(f"  {source}: avg_gap={avg_gap:.2f}, count={len(gaps) + 1}")
-            else:
-                lines.append(f"  {source}: single reading")
-
-        # Cross-cycle persistence analysis (soft RTC is a cycle counter)
-        lines.append("-" * 60)
-        lines.append("CROSS-CYCLE PERSISTENCE (cycle counter):")
+        lines.append("CROSS-CYCLE PERSISTENCE:")
 
         if self.timestamp_resets:
             lines.append(f"[FAIL] Timestamp resets detected in {len(self.timestamp_resets)} cycles")
             for cycle_idx in self.timestamp_resets[:5]:
-                lines.append(f"  Cycle {cycle_idx}: timestamp reset to 0")
+                lines.append(f"  Cycle {cycle_idx}: timestamp reset detected")
         else:
             lines.append("[PASS] No timestamp resets detected")
 
@@ -134,21 +147,24 @@ class TimestampAnalysis:
                 for gap in invalid_gaps[:5]:
                     lines.append(f"  Cycle {gap.cycle_index}: {gap.error_message}")
             else:
-                lines.append(f"[PASS] All {len(valid_gaps)} cross-cycle gaps valid (counter incremented)")
+                lines.append(f"[PASS] All {len(valid_gaps)} cross-cycle gaps valid (within ±{CROSS_CYCLE_TOLERANCE_SECONDS}s tolerance)")
 
             lines.append("  Gap details:")
             for gap in self.cross_cycle_gaps:
                 status_mark = "✓" if gap.is_valid else "✗"
+                expected_str = f"expected={gap.reported_sleep_duration}s ±{CROSS_CYCLE_TOLERANCE_SECONDS}s" if gap.reported_sleep_duration else "no expected duration"
                 lines.append(
                     f"  {status_mark} Cycle {gap.cycle_index-1}→{gap.cycle_index}: "
-                    f"ts {gap.last_timestamp}→{gap.first_timestamp} (delta=+{gap.timestamp_delta})"
+                    f"ts {gap.last_timestamp}→{gap.first_timestamp} (delta={gap.timestamp_delta}s, {expected_str})"
                 )
         else:
             lines.append("[INFO] No cross-cycle gaps to analyze (single cycle or no data)")
 
         lines.append("=" * 60)
+        external_rtc_status = "PASS" if self.is_external_rtc else "FAIL"
         concurrency_status = "PASS" if self.is_valid else "FAIL"
         persistence_status = "PASS" if self.persistence_valid else "FAIL"
+        lines.append(f"External RTC: {external_rtc_status}")
         lines.append(f"Concurrency: {concurrency_status}")
         lines.append(f"Persistence: {persistence_status}")
         lines.append("=" * 60)
@@ -156,14 +172,14 @@ class TimestampAnalysis:
         return "\n".join(lines)
 
 
-class TestTimestampConcurrency:
-    """Test class for timestamp concurrency validation."""
+class TestExternalRTCTimestamps:
+    """Test class for external RTC timestamp validation."""
 
-    def test_timestamp_concurrency(self, serial_port, timeout, baud_rate, cycles):
+    def test_external_rtc_timestamps(self, serial_port, timeout, baud_rate, cycles):
         """
         Connects to device via serial, captures JSONL log output during
-        multiple wake cycles, parses sleep duration from debug output,
-        and validates both concurrency and persistence.
+        multiple wake cycles, and validates that timestamps are Unix time
+        from an external RTC with proper persistence across deep sleep.
         """
         # Resolve port - wait for device if auto-detect
         port = serial_port
@@ -186,6 +202,8 @@ class TestTimestampConcurrency:
         print(f"Timeout per cycle: {timeout}s")
         print(f"Baud rate: {baud_rate}")
         print(f"Cycles to capture: {cycles}")
+        print(f"Expected: Unix timestamps (>{MIN_UNIX_TIMESTAMP})")
+        print(f"Cross-cycle tolerance: ±{CROSS_CYCLE_TOLERANCE_SECONDS}s")
         print("=" * 60)
 
         all_entries: list[LogEntry] = []
@@ -245,6 +263,12 @@ class TestTimestampConcurrency:
         analysis = self._analyze_timestamps(all_entries, cycle_data_list)
         print(analysis.summary())
 
+        # External RTC Assertion
+        assert len(analysis.non_unix_timestamps) == 0, (
+            f"[External RTC] Found {len(analysis.non_unix_timestamps)} timestamps below {MIN_UNIX_TIMESTAMP}. "
+            "External RTC should provide Unix timestamps. Is the RTC connected and configured?"
+        )
+
         # Concurrency Assertions
         assert len(analysis.out_of_order) == 0, (
             f"[Concurrency] Found {len(analysis.out_of_order)} out-of-order timestamps. "
@@ -263,8 +287,8 @@ class TestTimestampConcurrency:
 
         # Persistence Assertions
         assert len(analysis.timestamp_resets) == 0, (
-            f"[Persistence] Found {len(analysis.timestamp_resets)} cycles where timestamp reset to 0. "
-            "Timestamps must persist across deep sleep using RTC_SLOW_ATTR memory."
+            f"[Persistence] Found {len(analysis.timestamp_resets)} cycles where timestamp reset. "
+            "External RTC timestamps must persist across deep sleep."
         )
 
         invalid_gaps = [g for g in analysis.cross_cycle_gaps if not g.is_valid]
@@ -273,7 +297,8 @@ class TestTimestampConcurrency:
             f"First error: {invalid_gaps[0].error_message if invalid_gaps else 'N/A'}"
         )
 
-        print(f"\nConcurrency passed: {analysis.total_entries} entries with valid monotonic timestamps")
+        print(f"\nExternal RTC passed: All {analysis.total_entries} timestamps are Unix time")
+        print(f"Concurrency passed: {analysis.total_entries} entries with valid monotonic timestamps")
         print(f"Persistence passed: {len(analysis.cross_cycle_gaps)} cross-cycle gaps validated")
 
     def _capture_cycle(self, port: str, baud_rate: int, timeout: int) -> CycleData:
@@ -341,12 +366,17 @@ class TestTimestampConcurrency:
         self,
         entries: list[LogEntry],
         cycle_data_list: Optional[list[CycleData]] = None
-    ) -> TimestampAnalysis:
-        """Analyze timestamps for monotonicity, duplicates, and cross-cycle persistence."""
-        analysis = TimestampAnalysis(entries=entries)
+    ) -> ExternalRTCAnalysis:
+        """Analyze timestamps for external RTC validation."""
+        analysis = ExternalRTCAnalysis(entries=entries)
 
         if not entries:
             return analysis
+
+        # Check for Unix timestamps (external RTC detection)
+        for entry in entries:
+            if entry.timestamp < MIN_UNIX_TIMESTAMP:
+                analysis.non_unix_timestamps.append(entry)
 
         # Check for out-of-order timestamps
         for i in range(1, len(entries)):
@@ -387,13 +417,10 @@ class TestTimestampConcurrency:
 
     def _analyze_cross_cycle_persistence(
         self,
-        analysis: TimestampAnalysis,
+        analysis: ExternalRTCAnalysis,
         cycle_data_list: list[CycleData]
     ) -> None:
-        """Analyze timestamp persistence across deep sleep cycles."""
-        # Tolerance for timestamp gap validation (accounts for boot time, sensor read time)
-        TOLERANCE_SECONDS = 5
-
+        """Analyze timestamp persistence across deep sleep cycles for external RTC."""
         for i in range(1, len(cycle_data_list)):
             prev_cycle = cycle_data_list[i - 1]
             curr_cycle = cycle_data_list[i]
@@ -406,8 +433,8 @@ class TestTimestampConcurrency:
             first_ts = curr_cycle.entries[0].timestamp
             delta = first_ts - last_ts
 
-            # Check for timestamp reset (first timestamp is 0 or very small)
-            if first_ts == 0:
+            # Check for timestamp reset (goes backwards significantly)
+            if first_ts < last_ts:
                 analysis.timestamp_resets.append(i)
 
             # Create cross-cycle gap record
@@ -419,14 +446,32 @@ class TestTimestampConcurrency:
                 reported_sleep_duration=curr_cycle.sleep_duration
             )
 
-            # Validate the gap - soft RTC is a cycle counter, not wall-clock time
-            # We only check that timestamps persist and increment (don't go backwards)
+            # Validate the gap - for external RTC, delta should match reported sleep duration
             if first_ts < last_ts:
                 gap.is_valid = False
                 gap.error_message = f"Timestamp went backwards: {last_ts} -> {first_ts}"
-            elif delta <= 0:
-                gap.is_valid = False
-                gap.error_message = f"Timestamp did not increment: {last_ts} -> {first_ts}"
+            elif curr_cycle.sleep_duration is not None:
+                # External RTC: check that delta approximately matches sleep duration
+                expected_min = curr_cycle.sleep_duration - CROSS_CYCLE_TOLERANCE_SECONDS
+                expected_max = curr_cycle.sleep_duration + CROSS_CYCLE_TOLERANCE_SECONDS
+
+                if delta < expected_min:
+                    gap.is_valid = False
+                    gap.error_message = (
+                        f"Delta {delta}s is too small for sleep duration {curr_cycle.sleep_duration}s "
+                        f"(expected {expected_min}s-{expected_max}s)"
+                    )
+                elif delta > expected_max:
+                    gap.is_valid = False
+                    gap.error_message = (
+                        f"Delta {delta}s is too large for sleep duration {curr_cycle.sleep_duration}s "
+                        f"(expected {expected_min}s-{expected_max}s)"
+                    )
+            else:
+                # No reported sleep duration - just check timestamps don't go backwards
+                if delta <= 0:
+                    gap.is_valid = False
+                    gap.error_message = f"Timestamp did not advance: {last_ts} -> {first_ts}"
 
             analysis.cross_cycle_gaps.append(gap)
 
@@ -436,7 +481,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Timestamp Concurrency & Persistence Tests for WipperSnapper Sleep Mode"
+        description="External RTC Timestamp Tests for WipperSnapper Sleep Mode"
     )
     parser.add_argument(
         "-p", "--port",
@@ -458,12 +503,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "-c", "--cycles",
         type=int,
-        default=20,
-        help="Number of wake cycles to capture (default: 20)"
+        default=5,
+        help="Number of wake cycles to capture (default: 5)"
     )
 
     args = parser.parse_args()
 
     # Run test directly
-    test = TestTimestampConcurrency()
-    test.test_timestamp_concurrency(args.port, args.timeout, args.baud, args.cycles)
+    test = TestExternalRTCTimestamps()
+    test.test_external_rtc_timestamps(args.port, args.timeout, args.baud, args.cycles)
