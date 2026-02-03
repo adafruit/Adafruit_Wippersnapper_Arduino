@@ -37,6 +37,7 @@ public:
   TwoWire *GetBus();
   ws_i2c_BusStatus GetBusStatus();
   bool ScanBus(ws_i2c_BusScanned *scan_results);
+  void TogglePowerPin();
   // MUX
   bool AddMuxToBus(uint32_t address_register, const char *name);
   void RemoveMux();
@@ -46,7 +47,6 @@ public:
   bool ScanMux(ws_i2c_BusScanned *scan_results);
 
 private:
-  void TogglePowerPin();
   ws_i2c_BusStatus _bus_status;   ///< I2C bus status
   TwoWire *_bus = nullptr;        ///< I2C bus
   uint8_t _bus_sda;               ///< SDA pin

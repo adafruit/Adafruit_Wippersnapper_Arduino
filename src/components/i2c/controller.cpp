@@ -1220,3 +1220,23 @@ void I2cController::ResetFlags() {
     drv->SetDidReadSend(false);
   }
 }
+
+/*!
+    @brief  Toggles the power pin on the default I2C bus.
+*/
+void I2cController::ToggleDefaultPowerPin() {
+  _i2c_bus_default->TogglePowerPin();
+}
+
+/*!
+    @brief  Returns a pointer to the I2C bus.
+    @param  is_alt_bus
+            True to return the alternative bus, false for the default bus.
+    @returns  Pointer to the TwoWire bus.
+*/
+TwoWire *I2cController::GetI2cBus(bool is_alt_bus) {
+  if (is_alt_bus && _i2c_bus_alt != nullptr) {
+    return _i2c_bus_alt->GetBus();
+  }
+  return _i2c_bus_default->GetBus();
+}
