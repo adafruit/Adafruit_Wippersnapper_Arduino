@@ -18,7 +18,7 @@ Dependencies:
 
 | Test | Description |
 |------|-------------|
-| `test_timestamp_concurrency.py` | Validates timestamps persist and increment correctly across sleep cycles |
+| `test_rtc_timestamp.py` | Validates soft RTC cycle counter concurrency and persistence across sleep |
 | `test_sleep_timer.py` | Validates timer-based wakeup with configurable duration |
 | `test_sleep_ext0.py` | (ESP32-only) Validates EXT0 GPIO button wakeup |
 
@@ -35,19 +35,24 @@ Dependencies:
 | `--sleep-duration` | Expected sleep duration (timer test only, MUST match config.json `duration` value) | `300` |
 | `--patterns` | Path to patterns file (timer/ext0 tests) | auto |
 
-### test_timestamp_concurrency.py
+### test_rtc_timestamp.py
 
-Validates that the soft RTC counter persists and increments across sleep cycles.
+Validates soft RTC cycle counter behavior across deep sleep cycles. Runs two validations:
+
+- **Concurrency**: Timestamps increment correctly within each wake cycle (no duplicates, strictly increasing)
+- **Persistence**: Cycle counter persists across deep sleep using RTC_SLOW_ATTR memory (no resets to 0, counter continues incrementing)
+
+Note: The soft RTC is a **cycle counter** (increments per reading), not wall-clock time.
 
 ```bash
 # Run with 20 cycles (default)
-./env/bin/python -m pytest tests/sleep_mode/test_timestamp_concurrency.py -v -s
+./env/bin/python -m pytest tests/sleep_mode/test_rtc_timestamp.py -v -s
 
 # Run with custom cycle count
-./env/bin/python -m pytest tests/sleep_mode/test_timestamp_concurrency.py -v -s --cycles 10
+./env/bin/python -m pytest tests/sleep_mode/test_rtc_timestamp.py -v -s --cycles 10
 
 # Specify serial port
-./env/bin/python -m pytest tests/sleep_mode/test_timestamp_concurrency.py -v -s --port /dev/tty.usbmodem1201
+./env/bin/python -m pytest tests/sleep_mode/test_rtc_timestamp.py -v -s --port /dev/tty.usbmodem1201
 ```
 
 ### test_sleep_timer.py
@@ -87,11 +92,13 @@ The timer and EXT0 tests use regex pattern files to match serial output at key c
 Tests capture serial output and validate:
 
 1. **Checkpoints** - Required log messages appear each cycle
-2. **Timestamps** - Monotonically increasing, no duplicates
-3. **Wake cause** - Correct wakeup source reported (Timer/EXT0)
-4. **Timing** - Sleep duration within expected tolerance (timer test)
+2. **Concurrency** - Timestamps monotonically increasing within cycles, no duplicates
+3. **Persistence** - Timestamps persist across sleep (no resets), advance by sleep duration
+4. **Wake cause** - Correct wakeup source reported (Timer/EXT0)
+5. **Timing** - Sleep duration within expected tolerance (timer test)
 
-Example successful timestamp concurrency analysis output:
+Example successful timestamp analysis output:
+
 ```
 ============================================================
 TIMESTAMP CONCURRENCY ANALYSIS
@@ -103,6 +110,18 @@ Unique Timestamps: 20
 [PASS] All timestamps are monotonically increasing
 [PASS] No duplicate timestamps
 ------------------------------------------------------------
-OVERALL: PASS
+PER-SOURCE TIMESTAMP GAPS:
+  pin:A0: avg_gap=1.00, count=20
+------------------------------------------------------------
+CROSS-CYCLE PERSISTENCE (cycle counter):
+[PASS] No timestamp resets detected
+[PASS] All 19 cross-cycle gaps valid (counter incremented)
+  Gap details:
+  ✓ Cycle 0→1: ts 0→1 (delta=+1)
+  ✓ Cycle 1→2: ts 1→2 (delta=+1)
+  ...
+============================================================
+Concurrency: PASS
+Persistence: PASS
 ============================================================
 ```

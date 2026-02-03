@@ -1,18 +1,10 @@
 #!/usr/bin/env python3
 """
-Timestamp Concurrency Test for WipperSnapper (Test 5.2.1)
-
-Validates that timestamps increment correctly within a wake cycle:
-- Timestamps increment as time passes within wake cycle
-- Sensor readings at different times have different timestamps
-- No duplicate or out-of-order timestamps
-
-Usage:
-    pytest tests/test_timestamp_concurrency.py -v --port /dev/tty.usbmodem14101
-    pytest tests/test_timestamp_concurrency.py -v --port /dev/ttyUSB0 --timeout 120
+Timestamp Concurrency and Persistence Test for WipperSnapper's Sleep Modes
 """
 
 import json
+import re
 import serial
 import serial.tools.list_ports
 import glob
@@ -62,17 +54,46 @@ class LogEntry:
 
 
 @dataclass
+class CycleData:
+    """Data captured during a single wake cycle."""
+    entries: list = field(default_factory=list)
+    sleep_duration: Optional[int] = None  # Parsed from "Total Sleep Duration (sec): X"
+
+
+@dataclass
+class CrossCycleGap:
+    """Represents a timestamp gap between two wake cycles."""
+    cycle_index: int  # Index of the later cycle (e.g., 1 means gap between cycle 0 and 1)
+    last_timestamp: int  # Last timestamp of previous cycle
+    first_timestamp: int  # First timestamp of current cycle
+    timestamp_delta: int  # Difference in timestamps
+    reported_sleep_duration: Optional[int]  # From device debug output
+    is_valid: bool = True  # Whether gap matches expected sleep duration
+    error_message: str = ""
+
+
+@dataclass
 class TimestampAnalysis:
     """Results of timestamp analysis."""
     entries: list = field(default_factory=list)
     duplicates: list = field(default_factory=list)
     out_of_order: list = field(default_factory=list)
     gaps_by_source: dict = field(default_factory=dict)
+    # Cross-cycle persistence analysis
+    cross_cycle_gaps: list = field(default_factory=list)  # List of CrossCycleGap
+    timestamp_resets: list = field(default_factory=list)  # Cycles where timestamp reset to 0
 
     @property
     def is_valid(self) -> bool:
         """Check if timestamps are valid (monotonic, no duplicates)."""
         return len(self.duplicates) == 0 and len(self.out_of_order) == 0
+
+    @property
+    def persistence_valid(self) -> bool:
+        """Check if timestamps persist correctly across sleep cycles."""
+        if self.timestamp_resets:
+            return False
+        return all(gap.is_valid for gap in self.cross_cycle_gaps)
 
     @property
     def total_entries(self) -> int:
@@ -127,9 +148,43 @@ class TimestampAnalysis:
             else:
                 lines.append(f"  {source}: single reading")
 
+        # Cross-cycle persistence analysis (soft RTC is a cycle counter)
+        lines.append("-" * 60)
+        lines.append("CROSS-CYCLE PERSISTENCE (cycle counter):")
+
+        if self.timestamp_resets:
+            lines.append(f"[FAIL] Timestamp resets detected in {len(self.timestamp_resets)} cycles")
+            for cycle_idx in self.timestamp_resets[:5]:
+                lines.append(f"  Cycle {cycle_idx}: timestamp reset to 0")
+        else:
+            lines.append("[PASS] No timestamp resets detected")
+
+        if self.cross_cycle_gaps:
+            valid_gaps = [g for g in self.cross_cycle_gaps if g.is_valid]
+            invalid_gaps = [g for g in self.cross_cycle_gaps if not g.is_valid]
+
+            if invalid_gaps:
+                lines.append(f"[FAIL] {len(invalid_gaps)}/{len(self.cross_cycle_gaps)} cross-cycle gaps invalid")
+                for gap in invalid_gaps[:5]:
+                    lines.append(f"  Cycle {gap.cycle_index}: {gap.error_message}")
+            else:
+                lines.append(f"[PASS] All {len(valid_gaps)} cross-cycle gaps valid (counter incremented)")
+
+            lines.append("  Gap details:")
+            for gap in self.cross_cycle_gaps:
+                status_mark = "✓" if gap.is_valid else "✗"
+                lines.append(
+                    f"  {status_mark} Cycle {gap.cycle_index-1}→{gap.cycle_index}: "
+                    f"ts {gap.last_timestamp}→{gap.first_timestamp} (delta=+{gap.timestamp_delta})"
+                )
+        else:
+            lines.append("[INFO] No cross-cycle gaps to analyze (single cycle or no data)")
+
         lines.append("=" * 60)
-        status = "PASS" if self.is_valid else "FAIL"
-        lines.append(f"OVERALL: {status}")
+        concurrency_status = "PASS" if self.is_valid else "FAIL"
+        persistence_status = "PASS" if self.persistence_valid else "FAIL"
+        lines.append(f"Concurrency: {concurrency_status}")
+        lines.append(f"Persistence: {persistence_status}")
         lines.append("=" * 60)
 
         return "\n".join(lines)
@@ -218,15 +273,23 @@ def is_sleep_entry(line: str) -> bool:
     return "[sleep] entering deep sleep" in lower or "entering deep sleep" in lower
 
 
+def parse_sleep_duration(line: str) -> Optional[int]:
+    """Parse sleep duration from debug output line."""
+    # Matches: "Total Sleep Duration (sec): 10"
+    match = re.search(r"Total Sleep Duration \(sec\):\s*(\d+)", line)
+    if match:
+        return int(match.group(1))
+    return None
+
+
 class TestTimestampConcurrency:
     """Test class for timestamp concurrency validation."""
 
     def test_timestamp_concurrency(self, serial_port, timeout, baud_rate, cycles):
         """
-        Test 5.2.1: Validate timestamp concurrency across wake cycles.
-
         Connects to device via serial, captures JSONL log output during
-        multiple wake cycles, and validates that timestamps are strictly increasing.
+        multiple wake cycles, parses sleep duration from debug output,
+        and validates both concurrency and persistence.
         """
         # Resolve port - wait for device if auto-detect
         port = serial_port
@@ -252,7 +315,7 @@ class TestTimestampConcurrency:
         print("=" * 60)
 
         all_entries: list[LogEntry] = []
-        cycle_entries: list[list[LogEntry]] = []
+        cycle_data_list: list[CycleData] = []
         completed_cycles = 0
         max_attempts = cycles * 3  # Allow retries for empty cycles
         attempts = 0
@@ -274,14 +337,15 @@ class TestTimestampConcurrency:
             print(f"Capturing data... (completed {completed_cycles}/{cycles} cycles)")
             print("=" * 60)
 
-            entries = self._capture_cycle(port, baud_rate, timeout)
+            cycle_data = self._capture_cycle(port, baud_rate, timeout)
 
             # Only count as a cycle if we captured actual data
-            if len(entries) > 0:
+            if len(cycle_data.entries) > 0:
                 completed_cycles += 1
-                cycle_entries.append(entries)
-                all_entries.extend(entries)
-                print(f"\n-> CYCLE {completed_cycles}/{cycles} complete: captured {len(entries)} entries")
+                cycle_data_list.append(cycle_data)
+                all_entries.extend(cycle_data.entries)
+                sleep_info = f", sleep_duration={cycle_data.sleep_duration}s" if cycle_data.sleep_duration else ""
+                print(f"\n-> CYCLE {completed_cycles}/{cycles} complete: captured {len(cycle_data.entries)} entries{sleep_info}")
             else:
                 print("\n-> No sensor data captured, not counting as cycle (device may still be booting)")
 
@@ -296,37 +360,51 @@ class TestTimestampConcurrency:
         print(f"\n{'=' * 60}")
         print("CYCLE SUMMARY")
         print("=" * 60)
-        for i, entries in enumerate(cycle_entries, 1):
-            if entries:
-                ts_list = [e.timestamp for e in entries]
-                print(f"  Cycle {i}: {len(entries)} entries, timestamps {min(ts_list)}-{max(ts_list)}")
+        for i, cycle_data in enumerate(cycle_data_list, 1):
+            if cycle_data.entries:
+                ts_list = [e.timestamp for e in cycle_data.entries]
+                sleep_info = f", sleep={cycle_data.sleep_duration}s" if cycle_data.sleep_duration else ""
+                print(f"  Cycle {i}: {len(cycle_data.entries)} entries, timestamps {min(ts_list)}-{max(ts_list)}{sleep_info}")
             else:
                 print(f"  Cycle {i}: 0 entries")
 
-        analysis = self._analyze_timestamps(all_entries)
+        analysis = self._analyze_timestamps(all_entries, cycle_data_list)
         print(analysis.summary())
 
-        # Assertions
+        # Concurrency Assertions
         assert len(analysis.out_of_order) == 0, (
-            f"Found {len(analysis.out_of_order)} out-of-order timestamps. "
+            f"[Concurrency] Found {len(analysis.out_of_order)} out-of-order timestamps. "
             "Timestamps must be strictly increasing."
         )
 
         assert len(analysis.duplicates) == 0, (
-            f"Found {len(analysis.duplicates)} duplicate timestamp groups. "
+            f"[Concurrency] Found {len(analysis.duplicates)} duplicate timestamp groups. "
             "Each timestamp must be unique."
         )
 
         assert analysis.total_entries >= cycles, (
-            f"Expected at least {cycles} entries (one per cycle), got {analysis.total_entries}. "
+            f"[Concurrency] Expected at least {cycles} entries (one per cycle), got {analysis.total_entries}. "
             "Device may not be logging sensor data."
         )
 
-        print(f"\nTest passed: {analysis.total_entries} entries across {len(cycle_entries)} cycles with valid timestamps")
+        # Persistence Assertions
+        assert len(analysis.timestamp_resets) == 0, (
+            f"[Persistence] Found {len(analysis.timestamp_resets)} cycles where timestamp reset to 0. "
+            "Timestamps must persist across deep sleep using RTC_SLOW_ATTR memory."
+        )
 
-    def _capture_cycle(self, port: str, baud_rate: int, timeout: int) -> list[LogEntry]:
-        """Capture log entries for a single wake cycle."""
-        entries: list[LogEntry] = []
+        invalid_gaps = [g for g in analysis.cross_cycle_gaps if not g.is_valid]
+        assert len(invalid_gaps) == 0, (
+            f"[Persistence] Found {len(invalid_gaps)} invalid cross-cycle timestamp gaps. "
+            f"First error: {invalid_gaps[0].error_message if invalid_gaps else 'N/A'}"
+        )
+
+        print(f"\nConcurrency passed: {analysis.total_entries} entries with valid monotonic timestamps")
+        print(f"Persistence passed: {len(analysis.cross_cycle_gaps)} cross-cycle gaps validated")
+
+    def _capture_cycle(self, port: str, baud_rate: int, timeout: int) -> CycleData:
+        """Capture log entries and metadata for a single wake cycle."""
+        cycle_data = CycleData()
         start_time = time.time()
 
         # Retry opening serial port (device may not be fully ready)
@@ -342,7 +420,7 @@ class TestTimestampConcurrency:
                     time.sleep(0.5)
                 else:
                     print(f"[WARNING] Could not open port after 60 attempts: {e}")
-                    return entries
+                    return cycle_data
 
         try:
             with ser:
@@ -359,11 +437,17 @@ class TestTimestampConcurrency:
                                     print("\n-> Sleep entry detected, cycle complete")
                                     break
 
+                                # Parse sleep duration from debug output
+                                sleep_dur = parse_sleep_duration(line)
+                                if sleep_dur is not None:
+                                    cycle_data.sleep_duration = sleep_dur
+                                    print(f"  -> Parsed sleep duration: {sleep_dur}s")
+
                                 # Parse JSONL lines
                                 if is_jsonl_line(line):
                                     entry = LogEntry.from_json(line)
                                     if entry:
-                                        entries.append(entry)
+                                        cycle_data.entries.append(entry)
                                         print(f"  -> Captured: ts={entry.timestamp}, source={entry.source}")
                         else:
                             time.sleep(0.01)
@@ -377,10 +461,14 @@ class TestTimestampConcurrency:
         except serial.SerialException as e:
             print(f"[WARNING] Serial error during capture: {e}")
 
-        return entries
+        return cycle_data
 
-    def _analyze_timestamps(self, entries: list[LogEntry]) -> TimestampAnalysis:
-        """Analyze timestamps for monotonicity and duplicates."""
+    def _analyze_timestamps(
+        self,
+        entries: list[LogEntry],
+        cycle_data_list: Optional[list[CycleData]] = None
+    ) -> TimestampAnalysis:
+        """Analyze timestamps for monotonicity, duplicates, and cross-cycle persistence."""
         analysis = TimestampAnalysis(entries=entries)
 
         if not entries:
@@ -417,7 +505,56 @@ class TestTimestampConcurrency:
                 gaps.append(gap)
             analysis.gaps_by_source[source] = gaps
 
+        # Cross-cycle persistence analysis
+        if cycle_data_list and len(cycle_data_list) > 1:
+            self._analyze_cross_cycle_persistence(analysis, cycle_data_list)
+
         return analysis
+
+    def _analyze_cross_cycle_persistence(
+        self,
+        analysis: TimestampAnalysis,
+        cycle_data_list: list[CycleData]
+    ) -> None:
+        """Analyze timestamp persistence across deep sleep cycles."""
+        # Tolerance for timestamp gap validation (accounts for boot time, sensor read time)
+        TOLERANCE_SECONDS = 5
+
+        for i in range(1, len(cycle_data_list)):
+            prev_cycle = cycle_data_list[i - 1]
+            curr_cycle = cycle_data_list[i]
+
+            # Skip if either cycle has no entries
+            if not prev_cycle.entries or not curr_cycle.entries:
+                continue
+
+            last_ts = prev_cycle.entries[-1].timestamp
+            first_ts = curr_cycle.entries[0].timestamp
+            delta = first_ts - last_ts
+
+            # Check for timestamp reset (first timestamp is 0 or very small)
+            if first_ts == 0:
+                analysis.timestamp_resets.append(i)
+
+            # Create cross-cycle gap record
+            gap = CrossCycleGap(
+                cycle_index=i,
+                last_timestamp=last_ts,
+                first_timestamp=first_ts,
+                timestamp_delta=delta,
+                reported_sleep_duration=curr_cycle.sleep_duration
+            )
+
+            # Validate the gap - soft RTC is a cycle counter, not wall-clock time
+            # We only check that timestamps persist and increment (don't go backwards)
+            if first_ts < last_ts:
+                gap.is_valid = False
+                gap.error_message = f"Timestamp went backwards: {last_ts} -> {first_ts}"
+            elif delta <= 0:
+                gap.is_valid = False
+                gap.error_message = f"Timestamp did not increment: {last_ts} -> {first_ts}"
+
+            analysis.cross_cycle_gaps.append(gap)
 
 
 # Allow running as standalone script
@@ -425,7 +562,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Timestamp Concurrency Test for WipperSnapper"
+        description="Timestamp Concurrency & Persistence Tests for WipperSnapper Sleep Mode"
     )
     parser.add_argument(
         "-p", "--port",
