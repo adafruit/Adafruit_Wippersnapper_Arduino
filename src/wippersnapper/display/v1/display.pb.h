@@ -59,9 +59,12 @@ typedef struct _wippersnapper_display_v1_EPDConfig {
 
 typedef struct _wippersnapper_display_v1_EpdSpiConfig {
     int32_t bus;
-    char pin_dc[6];
-    char pin_rst[6];
     char pin_cs[6];
+    char pin_dc[6];
+    char pin_mosi[6];
+    char pin_sck[6];
+    char pin_rst[6];
+    char pin_miso[6];
     char pin_sram_cs[6];
     char pin_busy[6];
 } wippersnapper_display_v1_EpdSpiConfig;

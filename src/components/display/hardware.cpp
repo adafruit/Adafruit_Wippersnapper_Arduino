@@ -17,8 +17,8 @@
 /*!
     @brief  Lambda function to create a dispDrvBase EPD instance.
 */
-using FnCreateDispDrvEpd =
-    std::function<dispDrvBase *(int16_t, int16_t, int16_t, int16_t, int16_t)>;
+using FnCreateDispDrvEpd = std::function<dispDrvBase *(
+    int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, int16_t)>;
 
 // Factory for creating new display drivers
 // NOTE: When you add a new display driver, make sure to add it to the factory!
@@ -26,16 +26,27 @@ static const std::map<wippersnapper_display_v1_DisplayDriver,
                       FnCreateDispDrvEpd>
     FactoryDrvDispEpd = {
         {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1680,
-         [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
-            int16_t busy) -> dispDrvBase * {
-           return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs,
+         [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst, int16_t miso, int16_t sram_cs, int16_t busy) -> dispDrvBase * {
+           return new drvDispThinkInkGrayscale4Eaamfgn(cs, dc, mosi, sck, rst, miso, sram_cs,
                                                        busy);
          }},
         {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373,
-         [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+         [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst, int16_t miso, int16_t sram_cs,
             int16_t busy) -> dispDrvBase * {
-           return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+           return new dispDrvThinkInkGrayscale4T5(cs, dc, mosi, sck, rst, miso, sram_cs, busy);
          }}};
+    // FactoryDrvDispEpd = {
+    //     {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_SSD1680,
+    //      [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+    //         int16_t busy) -> dispDrvBase * {
+    //        return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs,
+    //                                                    busy);
+    //      }},
+    //     {wippersnapper_display_v1_DisplayDriver_DISPLAY_DRIVER_EPD_ILI0373,
+    //      [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+    //         int16_t busy) -> dispDrvBase * {
+    //        return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+    //      }}};
 
 /*!
     @brief  Lambda function to create a dispDrvBase SPI TFT instance
@@ -73,14 +84,15 @@ static const std::map<wippersnapper_display_v1_DisplayDriver,
     @return Pointer to the created display driver instance, or nullptr if the
             driver name is not recognized.
 */
-dispDrvBase *CreateDrvDispEpd(wippersnapper_display_v1_DisplayDriver driver,
-                              int16_t dc, int16_t rst, int16_t cs,
+dispDrvBase *CreateDrvDispEpd(wippersnapper_display_v1_DisplayDriver driver, 
+                              int16_t cs, int16_t dc, int16_t mosi, int16_t sck,
+                              int16_t rst, int16_t miso = -1,
                               int16_t sram_cs = -1, int16_t busy = -1) {
   auto it = FactoryDrvDispEpd.find(driver);
   if (it == FactoryDrvDispEpd.end())
     return nullptr;
 
-  return it->second(dc, rst, cs, sram_cs, busy);
+  return it->second(cs, dc, mosi, sck, rst, miso, sram_cs, busy);
 }
 
 /*!
@@ -193,12 +205,17 @@ bool DisplayHardware::beginEPD(
   }
 
   // Parse and assign pins
-  int16_t srcs = -1, busy = -1;
+  int16_t srcs = -1, busy = -1, miso = -1;
   int16_t dc = parsePin(spi_config->pin_dc);
   int16_t rst = parsePin(spi_config->pin_rst);
   int16_t cs = parsePin(spi_config->pin_cs);
+  int16_t mosi = parsePin(spi_config->pin_mosi);
+  int16_t sck = parsePin(spi_config->pin_sck);
 
-  // Optionally parse SRAM CS and BUSY pins
+  // Optionally parse MISO, SRAM CS and BUSY pins
+  if (strlen(spi_config->pin_miso) >= 2) {
+    miso = parsePin(spi_config->pin_miso);
+  }
   if (strlen(spi_config->pin_sram_cs) >= 2) {
     srcs = parsePin(spi_config->pin_sram_cs);
   }
@@ -206,7 +223,7 @@ bool DisplayHardware::beginEPD(
     busy = parsePin(spi_config->pin_busy);
   }
 
-  // Configure SPI bus
+  // Configure SPI bus - Possibly need to pass bus number around in V2
   if (spi_config->bus != 0) {
     WS_DEBUG_PRINTLN(
         "[display] ERROR: Non-default SPI buses are currently not supported!");
@@ -233,7 +250,7 @@ bool DisplayHardware::beginEPD(
   }
 
   // Create display driver object using the factory function
-  _drvDisp = CreateDrvDispEpd(*driver, dc, rst, cs, srcs, busy);
+  _drvDisp = CreateDrvDispEpd(*driver, cs, dc, mosi, sck, rst, miso, srcs, busy);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false; // Failed to create display driver

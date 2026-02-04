@@ -75,12 +75,12 @@ public:
       @return True if the display was initialized successfully, false otherwise.
   */
   bool begin() override {
-    WS_DEBUG_PRINTLN("Initializing ST7789 display driver with these pins:");
-    WS_DEBUG_PRINTLN("  CS: " + String(_pin_cs));
-    WS_DEBUG_PRINTLN("  DC: " + String(_pin_dc));
-    WS_DEBUG_PRINTLN("  RST: " + String(_pin_rst));
-    WS_DEBUG_PRINTLN("  MOSI: " + String(_pin_mosi));
-    WS_DEBUG_PRINTLN("  SCK: " + String(_pin_sck));
+    // WS_DEBUG_PRINTLN("Initializing ST7789 display driver with these pins:");
+    // WS_DEBUG_PRINTLN("  CS: " + String(_pin_cs));
+    // WS_DEBUG_PRINTLN("  DC: " + String(_pin_dc));
+    // WS_DEBUG_PRINTLN("  RST: " + String(_pin_rst));
+    // WS_DEBUG_PRINTLN("  MOSI: " + String(_pin_mosi));
+    // WS_DEBUG_PRINTLN("  SCK: " + String(_pin_sck));
     _display = new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_mosi, _pin_sck, _pin_rst);
     if (!_display)
       return false;

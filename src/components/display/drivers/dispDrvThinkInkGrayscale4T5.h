@@ -37,9 +37,10 @@ public:
       @param  busy
               Optional Busy pin for the display.
   */
-  dispDrvThinkInkGrayscale4T5(int16_t dc, int16_t rst, int16_t cs,
-                              int16_t sram_cs = -1, int16_t busy = -1)
-      : dispDrvBase(dc, rst, cs, sram_cs, busy), _display(nullptr) {}
+  dispDrvThinkInkGrayscale4T5(int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst, int16_t miso = -1,
+                                   int16_t sram_cs = -1, int16_t busy = -1)
+      : dispDrvBase(cs, dc, mosi, sck, rst, miso, sram_cs, busy),
+        _display(nullptr) {}
 
   ~dispDrvThinkInkGrayscale4T5() {
     if (_display) {
@@ -61,8 +62,10 @@ public:
       @return True if the display was initialized successfully, false otherwise.
   */
   bool begin(thinkinkmode_t mode, bool reset = true) override {
-    _display = new ThinkInk_290_Grayscale4_T5(_pin_dc, _pin_rst, _pin_cs,
-                                              _pin_sram_cs, _pin_busy);
+    _display = new ThinkInk_290_Grayscale4_T5(0, _pin_sck, _pin_dc,
+                                                   _pin_rst, _pin_cs,
+                                                   _pin_sram_cs, _pin_miso,
+                                                   _pin_busy);
     if (!_display)
       return false; // Allocation failed
 

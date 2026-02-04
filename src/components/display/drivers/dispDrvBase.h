@@ -29,21 +29,27 @@ class dispDrvBase {
 public:
   /*!
       @brief  Constructor for the base display driver for E-Ink displays.
-      @param  dc
-              Data/Command pin for the display.
-      @param  rst
-              Reset pin for the display.
       @param  cs
               Chip Select pin for the display.
+      @param  dc
+              Data/Command pin for the display.
+      @param  mosi
+              MOSI pin for the display.
+      @param  sck
+              SCK pin for the display.
+      @param  rst
+              Reset pin for the display.
+      @param  miso
+              Optional MISO pin for the display.
       @param  sram_cs
               Optional SRAM Chip Select pin for E-Ink displays that support it.
       @param  busy
               Optional Busy pin for the display.
   */
-  dispDrvBase(int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs = -1,
-              int16_t busy = -1)
-      : _pin_dc(dc), _pin_rst(rst), _pin_cs(cs), _pin_sram_cs(sram_cs),
-        _pin_busy(busy) {}
+  dispDrvBase(int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
+              int16_t miso = -1, int16_t sram_cs = -1, int16_t busy = -1)
+      : _pin_cs(cs), _pin_dc(dc), _pin_mosi(mosi), _pin_sck(sck), _pin_rst(rst),
+        _pin_miso(miso), _pin_sram_cs(sram_cs), _pin_busy(busy) {}
 
   /*!
       @brief  Constructor for the base display driver for SPI TFT displays.
