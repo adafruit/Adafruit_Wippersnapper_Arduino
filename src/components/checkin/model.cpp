@@ -80,8 +80,6 @@ bool CheckinModel::Checkin(const char *hardware_uid,
 
   // Publish out
   WS_DEBUG_PRINTLN("[checkin] Publishing CheckinRequest to broker...");
-  WS_DEBUG_PRINT("Free heap: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to publish CheckinRequest message!");

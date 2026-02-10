@@ -996,12 +996,8 @@ void wippersnapper::connect() {
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
-  WS_DEBUG_PRINT("Free heap before freeing checkin model: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
   delete Ws.CheckInModel;
   Ws.CheckInModel = nullptr;
-  WS_DEBUG_PRINT("Free heap going into loop: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
 
   // Set the status LED to green to indicate successful configuration
   setStatusLEDColor(0x00A300, Ws.status_pixel_brightnessV2);

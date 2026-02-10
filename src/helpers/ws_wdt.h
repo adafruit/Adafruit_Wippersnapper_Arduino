@@ -34,6 +34,13 @@ public:
   void disable();
   int reconfigure(int timeout_ms);
   void feed();
+  // Advanced Sleep API for RP2350
+  #ifdef ARDUINO_ARCH_RP2350
+  void rp2350SleepUntil(int max_period_ms = 0);
+  void rp2350SleepUntilPin(uint gpio_pin, bool edge = false, bool high = false);
+  long rp2350GetSleepDuration();
+  void rp2350ResumeFromSleep();
+  #endif
 };
 
 #endif // WS_WDT_H

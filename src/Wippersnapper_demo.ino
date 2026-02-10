@@ -4,14 +4,14 @@
 // Please support Adafruit and open source hardware by purchasing
 // products from Adafruit!
 //
-// Brent Rubell for Adafruit Industries, 2025
+// Brent Rubell for Adafruit Industries, 2026
 //
 // All text above must be included in any redistribution.
 
 #include "ws_platforms.h"
-ws_adapter_wifi wipper;
+//ws_adapter_wifi wipper;
 // Uncomment the following line to use the offline adapter for Pico
-// ws_adapter_offline wipper;
+ws_adapter_offline wipper;
 #define WS_DEBUG // Enable debug output!
 
 void setup() {

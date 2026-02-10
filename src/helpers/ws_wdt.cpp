@@ -91,3 +91,49 @@ void ws_wdt::feed() {
   Watchdog.reset();
 #endif
 }
+
+
+// Advanced Sleep API for RP2350
+#ifdef ARDUINO_ARCH_RP2350
+
+/*!
+    @brief  Puts the RP2350 to dormant sleep mode until a specified timer duration elapses.
+    @param  max_period_ms
+            The maximum sleep duration in milliseconds. If 0, sleeps indefinitely
+            until an external wake event occurs.
+*/
+void ws_wdt::rp2350SleepUntil(int max_period_ms) {
+  Watchdog.goToSleepUntil(max_period_ms, true);
+}
+
+/*!
+    @brief  Puts the RP2350 to sleep until a specified GPIO pin event occurs.
+    @param  gpio_pin
+            The GPIO pin number to monitor for the wake event.
+    @param  edge
+            If true, wake on any change (rising or falling edge). If false, wake
+            on the specified level.
+    @param  high
+            If edge is false, specifies whether to wake on a high level (true)
+            or low level (false) on the GPIO pin.
+*/
+void ws_wdt::rp2350SleepUntilPin(uint gpio_pin, bool edge, bool high) {
+  Watchdog.goToSleepUntilPin(gpio_pin, edge, high);
+}
+
+/*!
+    @brief  Gets the duration of the most recent sleep period for RP2350.
+    @returns The sleep duration in milliseconds.
+*/
+long ws_wdt::rp2350GetSleepDuration() {
+  return Watchdog.getSleepDuration();
+}
+
+/*!
+    @brief  Resumes the RP2350 from sleep mode. Should be called after waking up
+            to properly reset the WDT state.
+*/
+void ws_wdt::rp2350ResumeFromSleep() {
+  Watchdog.resumeFromSleep();
+}
+#endif
