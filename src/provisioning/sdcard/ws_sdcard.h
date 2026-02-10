@@ -87,7 +87,7 @@ private:
   bool InitSoftRTC();
   void TickSoftRTC();
   void SetSoftRTCCounter(uint32_t counter);
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   bool ParseSleepConfigTimer(const JsonObject &sleep_config,
                              const JsonObject &timer_config, int run_duration);
   bool ParseSleepConfigPin(const JsonObject &sleep_config,

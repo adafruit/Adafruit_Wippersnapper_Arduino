@@ -246,12 +246,10 @@ bool ws_sdcard::InitPCF8523() {
 */
 bool ws_sdcard::InitSoftRTC() {
   _is_soft_rtc = true;
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Restore counter from RTC memory if waking from sleep
-  // Check wake cause directly to avoid side effects on lock state
   if (Ws._sleep_controller != nullptr &&
-      Ws._sleep_controller->GetEspWakeCause() !=
-          ws_sleep_EspWakeCause_ESP_UNSPECIFIED) {
+      Ws._sleep_controller->DidWakeFromSleep()) {
     _soft_rtc_counter = Ws._sleep_controller->GetSoftRtcCounter();
     WS_DEBUG_PRINT("[SD] Restored soft RTC counter from sleep: ");
     WS_DEBUG_PRINTLN(_soft_rtc_counter);
@@ -684,7 +682,7 @@ bool ws_sdcard::CreateNewLogFile() {
     return false;
   }
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Check if we should restore a previous log file (waking from sleep)
   WS_DEBUG_PRINTLN("[SD] Checking for previous log file to restore...");
   if (Ws._sleep_controller != nullptr) {
@@ -748,7 +746,7 @@ bool ws_sdcard::CreateNewLogFile() {
   WS_DEBUG_PRINTLN(_log_filename);
   _sd_cur_log_files++;
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Store the new filename for persistence across sleep cycles
   if (Ws._sleep_controller != nullptr) {
     Ws._sleep_controller->SetLogFilename(_log_filename);
@@ -775,7 +773,7 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
   return true;
 }
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 /*!
     @brief  Parses the sleep configuration from the JSON object.
     @param  sleep_config
@@ -827,7 +825,7 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
   return Ws._sleep_controller->Handle_Sleep_Enter(
       Ws._sleep_controller->GetModel()->GetSleepEnterMsg());
 }
-#endif // ARDUINO_ARCH_ESP32
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
 
 /*!
     @brief  Searches for and parses the JSON configuration file and sets up
@@ -883,7 +881,7 @@ bool ws_sdcard::parseConfigFile() {
   WS_DEBUG_PRINTLN("[SD] Mocking device check-in...");
   CheckIn(exportedFromDevice);
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Parse sleep configuration, if present
   WS_DEBUG_PRINTLN("[SD] Parsing sleep configuration...");
   JsonObject sleep_config = doc["sleepConfig"][0];
@@ -908,7 +906,7 @@ bool ws_sdcard::parseConfigFile() {
       return false;
     }
   }
-#endif // ARDUINO_ARCH_ESP32
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
 
   WS_DEBUG_PRINTLN("[SD] Configuring RTC...");
 #ifndef OFFLINE_MODE_WOKWI

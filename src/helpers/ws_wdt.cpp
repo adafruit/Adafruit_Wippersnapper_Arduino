@@ -170,9 +170,15 @@ void ws_wdt::resumeFromSleep() {
 }
 
 /*!
+    @brief  Checks if the sleep configuration is timer-based.
+    @returns True if timer-based, False if GPIO-based.
+*/
+bool ws_wdt::isSleepConfigTimer() { return _is_sleep_cfg_timer; }
+
+/*!
     @brief  Checks if the RP2350 woke from sleep mode.
     @returns True if the device woke from sleep, False otherwise.
 */
-bool ws_wdt::isSleepConfigTimer() { return _is_sleep_cfg_timer; }
+bool ws_wdt::didWakeFromSleep() { return _did_wake_from_sleep; }
 
 #endif

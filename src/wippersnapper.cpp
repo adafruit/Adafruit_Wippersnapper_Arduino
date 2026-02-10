@@ -61,7 +61,7 @@ wippersnapper::wippersnapper()
   _pixels_controller = new PixelsController();
   _pwm_controller = new PWMController();
   _servo_controller = new ServoController();
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   _sleep_controller = new SleepController();
 #endif
 }
@@ -83,7 +83,7 @@ wippersnapper::~wippersnapper() {
   delete this->_pixels_controller;
   delete this->_pwm_controller;
   delete this->_servo_controller;
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   delete this->_sleep_controller;
 #endif
 }
@@ -510,7 +510,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
   int maxAttempts;
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Handle sleep mode network failures
   bool handle_sleep_mode_error =
       initial_connect && _sleep_controller->IsSleepMode();
@@ -540,7 +540,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       // secrets.json is within the scanned SSIDs
       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
       if (!check_valid_ssid()) {
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
           _sleep_controller->HandleNetFSMFailure();
         }
@@ -570,7 +570,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       // Validate connection
       if (networkStatus() != WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
           _sleep_controller->HandleNetFSMFailure();
         }
@@ -611,7 +611,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
           _sleep_controller->HandleNetFSMFailure();
         }
@@ -886,9 +886,11 @@ void PrintDeviceInfo() {
   esp_reset_reason_t r = esp_reset_reason();
   WS_DEBUG_PRINT("ESP Reset Reason: ");
   WS_DEBUG_PRINTLN(resetReasonName(r));
+#endif
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // If reset was caused by sleep wakeup, print the wakeup reason
   if (Ws._sleep_controller->DidWakeFromSleep()) {
-    WS_DEBUG_PRINT("ESP Sleep Wakeup Reason: ");
+    WS_DEBUG_PRINT("Sleep Wakeup Reason: ");
     WS_DEBUG_PRINTLN(Ws._sleep_controller->GetWakeupReasonName());
     WS_DEBUG_PRINT("Prv. Sleep Mode: ");
     WS_DEBUG_PRINTLN(Ws._sleep_controller->GetPrvSleepMode());
@@ -965,7 +967,7 @@ void wippersnapper::connect() {
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");
 // Connect to wireless network and Adafruit IO's MQTT broker
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   bool sleepMode = _sleep_controller && _sleep_controller->IsSleepMode();
   NetworkFSM(sleepMode);
 #else
@@ -1012,7 +1014,7 @@ void wippersnapper::connect() {
     @brief    Determines which loop() to call depending on the power mode.
 */
 void wippersnapper::run() {
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   if (!Ws._sleep_controller->IsSleepMode()) {
     WS_DEBUG_PRINTLN(
         "[app] Running normal loop..."); // TODO: Debug, remove in prod build
@@ -1067,7 +1069,7 @@ void wippersnapper::loop() {
   Ws._gps_controller->update();
 }
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 /*!
     @brief    loop() variant that uses a component-driven readiness tracking and
    a global timer for run duration and entrypoints for sleep management.
@@ -1178,4 +1180,4 @@ void wippersnapper::ResetAllControllerFlags() {
   Ws._gps_controller->ResetFlags();
 }
 
-#endif
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350

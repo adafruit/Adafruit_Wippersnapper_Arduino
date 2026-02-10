@@ -201,8 +201,16 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set ext0 wakeup");
     }
 #else
-    Ws._wdt->registerGPIOWakeup(msg->config.ext0.name, true,
-                                msg->config.ext0.level);
+  {
+    // Convert pin name string to numeric GPIO pin
+    const char *pin_num = msg->config.ext0.name;
+    if ((pin_num[0] == 'D' || pin_num[0] == 'A') && pin_num[1] != '\0') {
+      pin_num = pin_num + 1;
+    }
+    uint gpio_pin = (uint)strtol(pin_num, nullptr, 10);
+    Ws._wdt->registerGPIOWakeup(gpio_pin, true, msg->config.ext0.level);
+    rc = true;
+  }
 #endif
     WS_DEBUG_PRINT("[sleep] EXT0 wakeup set on pin ");
     WS_DEBUG_PRINT(msg->config.ext0.name);
@@ -384,7 +392,7 @@ void SleepController::StartSleep() {
       WS_DEBUG_PRINTLN(esp_err_to_name(err));
     }
 #else
-// RP2350 TODO: Add light sleep implementation for RP2350
+    Ws._wdt->startSleep();
 #endif
   } else {
     WS_DEBUG_PRINTLN(

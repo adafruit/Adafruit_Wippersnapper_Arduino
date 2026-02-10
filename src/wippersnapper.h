@@ -246,7 +246,7 @@ public:
   ServoController *_servo_controller =
       nullptr;                                ///< Instance of Servo controller
   UARTController *_uart_controller = nullptr; ///< Instance of UART controller
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   SleepController *_sleep_controller =
       nullptr; ///< Instance of sleep controller
 #endif
@@ -277,7 +277,7 @@ public:
 private:
   // Separate loop() functions, depending on power mode
   void loop();
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   void loopSleep();
   void ResetAllControllerFlags();
 #endif
