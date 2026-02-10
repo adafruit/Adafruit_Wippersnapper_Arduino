@@ -283,15 +283,16 @@ const char *SleepController::GetWakeupReasonName() {
     @return True if the device woke from sleep, False otherwise.
 */
 bool SleepController::DidWakeFromSleep() {
-  #ifdef ARDUINO_ARCH_ESP32
+#ifdef ARDUINO_ARCH_ESP32
   // If SLEEP wake cause is not unspecified, device woke from sleep mode,
   // so we assume we're locked unless overridden by boot button or Enter message
   ws_sleep_EspWakeCause wake_cause = _sleep_hardware->GetEspWakeCauseEnum();
   _lock = wake_cause != ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
-  #else
-  // RP2350 doesn't track wake cause but does internally track if we slept or not
-  _lock = Ws._wdt->rp2350DidWakeFromSleep();
-  #endif
+#else
+  // RP2350 doesn't track wake cause but does internally track if we slept or
+  // not
+  _lock = Ws._wdt->didWakeFromSleep();
+#endif
   return _lock;
 }
 
@@ -344,7 +345,12 @@ void SleepController::StartSleep() {
   ws_sleep_SleepMode sleep_mode = _sleep_hardware->GetSleepMode();
   if (sleep_mode == ws_sleep_SleepMode_S_DEEP) {
     WS_DEBUG_PRINTLN("[sleep] Entering deep sleep");
+#ifdef ARDUINO_ARCH_ESP32
     esp_deep_sleep_start();
+#else
+    // RP2350 does not support deep sleep
+    WS_DEBUG_PRINTLN("[sleep] WARNING: Deep sleep not supported on this MCU");
+#endif
   } else if (sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
     WS_DEBUG_PRINTLN("[sleep] Entering light sleep");
     // Disconnect MQTT and stop WiFi before light sleep, if in IO Mode
@@ -355,12 +361,16 @@ void SleepController::StartSleep() {
         WS_DEBUG_PRINTLN("[sleep] WARNING: Failed to stop WiFi before sleep");
       }
     }
-    // Attempt to start light sleep
+// Attempt to start light sleep
+#ifdef ARDUINO_ARCH_ESP32
     esp_err_t err = esp_light_sleep_start();
     if (err != ESP_OK) {
       WS_DEBUG_PRINT("[sleep] WARNING: Failed light sleep start: ");
       WS_DEBUG_PRINTLN(esp_err_to_name(err));
     }
+#else
+// RP2350 TODO: Add light sleep implementation for RP2350
+#endif
   } else {
     WS_DEBUG_PRINTLN(
         "[sleep] WARNING: Unsupported sleep mode, not entering sleep.");
