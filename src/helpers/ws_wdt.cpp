@@ -168,4 +168,11 @@ void ws_wdt::resumeFromSleep() {
   _did_wake_from_sleep = true;
   Watchdog.resumeFromSleep();
 }
+
+/*!
+    @brief  Checks if the RP2350 woke from sleep mode.
+    @returns True if the device woke from sleep, False otherwise.
+*/
+bool ws_wdt::isSleepConfigTimer() { return _is_sleep_cfg_timer; }
+
 #endif

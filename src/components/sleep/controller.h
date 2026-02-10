@@ -15,7 +15,7 @@
 #ifndef WS_SLEEP_CONTROLLER_H
 #define WS_SLEEP_CONTROLLER_H
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
@@ -75,5 +75,5 @@ private:
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 
-#endif // ARDUINO_ARCH_ESP32
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
 #endif // WS_SLEEP_CONTROLLER_H

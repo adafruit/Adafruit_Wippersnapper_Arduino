@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -42,6 +42,7 @@ public:
   long getSleepDuration();
   void resumeFromSleep();
   bool didWakeFromSleep();
+  bool isSleepConfigTimer();
 #endif
 private:
 #ifdef ARDUINO_ARCH_RP2350

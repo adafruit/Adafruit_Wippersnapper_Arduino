@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "model.h"
 
 /*!
@@ -87,7 +87,9 @@ bool SleepModel::DecodeSleepEnter(pb_istream_t *stream) {
     @param  timer_duration
             Duration of the sleep timer, in seconds.
 */
-void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_duration, uint32_t timer_duration) {
+void SleepModel::SetSleepEnterTimer(bool lock, const char *mode,
+                                    uint32_t run_duration,
+                                    uint32_t timer_duration) {
   // Clear the message
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
@@ -121,8 +123,8 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_du
             Enable internal pull resistor.
 */
 void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
-                                  uint32_t run_duration, const char *pin_name,
-                                  bool pin_level, bool pin_pull) {
+                                   uint32_t run_duration, const char *pin_name,
+                                   bool pin_level, bool pin_pull) {
   // Clear the message
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
@@ -139,8 +141,8 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
   _msg_sleep_enter.which_config = ws_sleep_Enter_ext0_tag;
   strncpy(_msg_sleep_enter.config.ext0.name, pin_name,
           sizeof(_msg_sleep_enter.config.ext0.name) - 1);
-  _msg_sleep_enter.config.ext0.name[sizeof(_msg_sleep_enter.config.ext0.name) -
-                                    1] = '\0';
+  _msg_sleep_enter.config.ext0
+      .name[sizeof(_msg_sleep_enter.config.ext0.name) - 1] = '\0';
   _msg_sleep_enter.config.ext0.level = pin_level;
   _msg_sleep_enter.config.ext0.pull = pin_pull;
 }
@@ -155,7 +157,8 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
     @returns True if both conversions were successful, False if either string
    was invalid.
 */
-void SleepModel::ConvertSleepMode(const char *mode_str, ws_sleep_SleepMode &mode) {
+void SleepModel::ConvertSleepMode(const char *mode_str,
+                                  ws_sleep_SleepMode &mode) {
   // Convert SleepMode to enum
   mode = ws_sleep_SleepMode_S_UNSPECIFIED;
   if (mode_str) {
@@ -185,8 +188,7 @@ static bool _encode_goodnight_message(pb_ostream_t *stream,
   const char *msg = (const char *)(*arg);
   if (!pb_encode_tag_for_field(stream, field))
     return false;
-  return pb_encode_string(stream, (const uint8_t *)msg,
-                          (size_t)strlen(msg));
+  return pb_encode_string(stream, (const uint8_t *)msg, (size_t)strlen(msg));
 }
 
 /*!
@@ -250,4 +252,4 @@ bool SleepModel::EncodeSleepWake(ws_sleep_EspWakeCause cause,
   return pb_encode(&msg_stream, ws_sleep_Wake_fields, &_msg_sleep_wake);
 }
 
-#endif // ARDUINO_ARCH_ESP32
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350

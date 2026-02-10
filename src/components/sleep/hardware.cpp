@@ -12,8 +12,9 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "hardware.h"
+#ifdef ARDUINO_ARCH_ESP32
 #include <stdlib.h>
 // Stored in RTC memory to persist across sleep cycles
 RTC_SLOW_ATTR static struct timeval sleep_enter_time;
@@ -21,9 +22,8 @@ RTC_SLOW_ATTR static uint32_t cnt_soft_rtc;
 RTC_DATA_ATTR ws_sleep_SleepMode sleep_mode;
 RTC_DATA_ATTR static uint32_t sleep_cycles;
 RTC_DATA_ATTR static char log_filename_rtc[64];
-
 /*!
-    @brief  Sleep hardware constructor
+    @brief  Sleep hardware constructor for ESP32x MCUs.
 */
 SleepHardware::SleepHardware() {
   GetSleepWakeupCause();
@@ -33,6 +33,22 @@ SleepHardware::SleepHardware() {
     cnt_soft_rtc = 0;
   }
 }
+#elif defined(ARDUINO_ARCH_RP2350)
+static uint32_t cnt_soft_rtc = 0;
+static ws_sleep_SleepMode sleep_mode = ws_sleep_SleepMode_S_DEEP;
+static uint32_t sleep_cycles = 0;
+static char log_filename_rtc[64] = {0};
+/*!
+    @brief  Sleep hardware constructor for RP2350.
+*/
+SleepHardware::SleepHardware() {
+  _did_wake_from_sleep = Ws._wdt->didWakeFromSleep();
+  CalculateSleepDuration();
+  if (!_did_wake_from_sleep) {
+    cnt_soft_rtc = 0;
+  }
+}
+#endif
 
 /*!
     @brief  Sleep hardware destructor
@@ -48,6 +64,7 @@ void SleepHardware::GetSleepWakeupCause() {
 #endif
 }
 
+#ifdef ARDUINO_ARCH_ESP32
 /*!
     @brief  Returns the esp_sleep_source_t wakeup cause.
     @return The wakeup cause as esp_sleep_source_t.
@@ -130,6 +147,13 @@ const char *SleepHardware::GetWakeupReasonName() {
     return "Unknown";
   }
 }
+#else
+/*!
+    @brief  Returns a human-readable name for the wakeup cause (RP2350).
+    @return C string describing the wakeup reason.
+*/
+const char *SleepHardware::GetWakeupReasonName() { return "Unknown"; }
+#endif // ARDUINO_ARCH_ESP32
 
 /*!
     @brief  Returns the current (or previously entered) sleep mode. This mode
@@ -216,8 +240,9 @@ void SleepHardware::SetSleepEnterTime() {
 #endif // ARDUINO_ARCH_ESP32
 }
 
+#ifdef ARDUINO_ARCH_ESP32
 /*!
-    @brief Enables wakeup by timer.
+    @brief Enables wakeup by timer on ESP32x MCUs.
     @param duration
            Time before wakeup, in microseconds
 */
@@ -228,6 +253,18 @@ bool SleepHardware::RegisterRTCTimerWakeup(uint64_t duration) {
   return true;
 }
 
+/*!
+    @brief  Registers an external GPIO wakeup source on ESP32x MCUs.
+    @param  pin_name
+            The GPIO pin name as a string (e.g. "D5", "A0", "5").
+    @param  pin_level
+            The GPIO level to trigger wakeup (true for HIGH, false for LOW).
+    @param  pin_pull
+            Whether to enable internal pull resistors (true to enable, false for
+   none).
+    @return True if the wakeup source was successfully registered, False
+   otherwise.
+*/
 bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
                                        bool pin_pull) {
   esp_err_t rc;
@@ -274,6 +311,7 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
 
   return true;
 }
+#endif // ARDUINO_ARCH_ESP32
 
 /*!
     @brief  For Light Sleep Mode - Re-enable power to all external components
@@ -347,11 +385,13 @@ void SleepHardware::DisableExternalComponents() {
     @return True if WiFi was successfully stopped, False otherwise.
 */
 bool SleepHardware::StopWiFi() {
+#ifdef ARDUINO_ARCH_ESP32
   esp_err_t rc = esp_wifi_stop();
   if (rc != ESP_OK) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to stop WiFi");
     return false;
   }
+#endif
   return true;
 }
 
@@ -361,11 +401,13 @@ bool SleepHardware::StopWiFi() {
     @return True if WiFi was successfully started, False otherwise.
 */
 bool SleepHardware::RestoreWiFi() {
+#ifdef ARDUINO_ARCH_ESP32
   esp_err_t rc = esp_wifi_restore();
   if (rc != ESP_OK) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to restore WiFi");
     return false;
   }
+#endif
   return true;
 }
 
@@ -374,12 +416,10 @@ bool SleepHardware::RestoreWiFi() {
     @return The number of sleep cycles completed.
 */
 uint32_t SleepHardware::GetSleepCycleCount() {
-#if !SOC_RTC_FAST_MEM_SUPPORTED
+#if defined(ARDUINO_ARCH_ESP32) && !SOC_RTC_FAST_MEM_SUPPORTED
   NvsReadU32("cnt_sleep_cycles", &sleep_cycles);
-  return sleep_cycles;
-#else
-  return sleep_cycles;
 #endif
+  return sleep_cycles;
 }
 
 /*!
@@ -388,7 +428,7 @@ uint32_t SleepHardware::GetSleepCycleCount() {
     @return The stored soft RTC counter value.
 */
 uint32_t SleepHardware::GetPrvSoftRtcCounter() {
-#if !SOC_RTC_FAST_MEM_SUPPORTED
+#if defined(ARDUINO_ARCH_ESP32) && !SOC_RTC_FAST_MEM_SUPPORTED
   uint32_t counter = 0;
   NvsReadU32("cnt_soft_rtc", &counter);
   return counter;
@@ -404,11 +444,64 @@ uint32_t SleepHardware::GetPrvSoftRtcCounter() {
 */
 void SleepHardware::StoreSoftRtcCounter(uint32_t counter) {
   cnt_soft_rtc = counter;
-#if !SOC_RTC_FAST_MEM_SUPPORTED
+#if defined(ARDUINO_ARCH_ESP32) && !SOC_RTC_FAST_MEM_SUPPORTED
   NvsWriteU32("cnt_soft_rtc", counter);
 #endif
 }
 
+/*!
+    @brief  Stores the log filename to RTC memory for persistence across sleep.
+            On chips without RTC memory (ESP32-C2), persists to NVS.
+    @param  filename The log filename to store.
+*/
+void SleepHardware::StoreLogFilename(const char *filename) {
+  if (filename == nullptr)
+    return;
+
+  WS_DEBUG_PRINT("[sleep] Storing log filename for persistence: ");
+  WS_DEBUG_PRINTLN(filename);
+
+#if defined(ARDUINO_ARCH_ESP32) && !SOC_RTC_FAST_MEM_SUPPORTED
+  NvsWriteStr("log_filename", filename);
+  WS_DEBUG_PRINTLN("[sleep] Log filename stored to NVS");
+#else
+  strncpy(log_filename_rtc, filename, sizeof(log_filename_rtc) - 1);
+  log_filename_rtc[sizeof(log_filename_rtc) - 1] = '\0';
+  WS_DEBUG_PRINTLN("[sleep] Log filename stored to RTC memory");
+#endif
+}
+
+/*!
+    @brief  Retrieves the stored log filename from RTC memory.
+            On chips without RTC memory (ESP32-C2), reads from NVS.
+    @return The stored log filename, or nullptr if not set.
+*/
+const char *SleepHardware::GetLogFilename() {
+#if defined(ARDUINO_ARCH_ESP32) && !SOC_RTC_FAST_MEM_SUPPORTED
+  static char nvs_log_filename[64];
+  nvs_log_filename[0] = '\0';
+  NvsReadStr("log_filename", nvs_log_filename, sizeof(nvs_log_filename));
+  if (nvs_log_filename[0] == '\0') {
+    WS_DEBUG_PRINTLN("[sleep] No stored log filename found in NVS");
+    return nullptr;
+  }
+  WS_DEBUG_PRINT("[sleep] Retrieved log filename from NVS: ");
+  WS_DEBUG_PRINTLN(nvs_log_filename);
+  return nvs_log_filename;
+#else
+  if (log_filename_rtc[0] == '\0') {
+    WS_DEBUG_PRINTLN("[sleep] No stored log filename found in RTC memory");
+    return nullptr;
+  }
+  WS_DEBUG_PRINT("[sleep] Retrieved log filename from RTC memory: ");
+  WS_DEBUG_PRINTLN(log_filename_rtc);
+  return log_filename_rtc;
+#endif
+}
+
+/* NVS helper functions for ESP32x MCUs without RTC memory (e.g. ESP32-C2) to
+ * persist data across sleep cycles */
+#ifdef ARDUINO_ARCH_ESP32
 #if !SOC_RTC_FAST_MEM_SUPPORTED
 /*!
     @brief  Reads a uint32_t value from NVS storage.
@@ -532,55 +625,5 @@ bool SleepHardware::NvsWriteStr(const char *key, const char *value) {
   return (err == ESP_OK);
 }
 #endif // !SOC_RTC_FAST_MEM_SUPPORTED
-
-/*!
-    @brief  Stores the log filename to RTC memory for persistence across sleep.
-            On chips without RTC memory (ESP32-C2), persists to NVS.
-    @param  filename The log filename to store.
-*/
-void SleepHardware::StoreLogFilename(const char *filename) {
-  if (filename == nullptr)
-    return;
-
-  WS_DEBUG_PRINT("[sleep] Storing log filename for persistence: ");
-  WS_DEBUG_PRINTLN(filename);
-
-#if !SOC_RTC_FAST_MEM_SUPPORTED
-  NvsWriteStr("log_filename", filename);
-  WS_DEBUG_PRINTLN("[sleep] Log filename stored to NVS");
-#else
-  strncpy(log_filename_rtc, filename, sizeof(log_filename_rtc) - 1);
-  log_filename_rtc[sizeof(log_filename_rtc) - 1] = '\0';
-  WS_DEBUG_PRINTLN("[sleep] Log filename stored to RTC memory");
-#endif
-}
-
-/*!
-    @brief  Retrieves the stored log filename from RTC memory.
-            On chips without RTC memory (ESP32-C2), reads from NVS.
-    @return The stored log filename, or nullptr if not set.
-*/
-const char *SleepHardware::GetLogFilename() {
-#if !SOC_RTC_FAST_MEM_SUPPORTED
-  static char nvs_log_filename[64];
-  nvs_log_filename[0] = '\0';
-  NvsReadStr("log_filename", nvs_log_filename, sizeof(nvs_log_filename));
-  if (nvs_log_filename[0] == '\0') {
-    WS_DEBUG_PRINTLN("[sleep] No stored log filename found in NVS");
-    return nullptr;
-  }
-  WS_DEBUG_PRINT("[sleep] Retrieved log filename from NVS: ");
-  WS_DEBUG_PRINTLN(nvs_log_filename);
-  return nvs_log_filename;
-#else
-  if (log_filename_rtc[0] == '\0') {
-    WS_DEBUG_PRINTLN("[sleep] No stored log filename found in RTC memory");
-    return nullptr;
-  }
-  WS_DEBUG_PRINT("[sleep] Retrieved log filename from RTC memory: ");
-  WS_DEBUG_PRINTLN(log_filename_rtc);
-  return log_filename_rtc;
-#endif
-}
-
 #endif // ARDUINO_ARCH_ESP32
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350

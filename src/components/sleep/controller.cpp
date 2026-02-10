@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "controller.h"
 
 /*!
@@ -177,22 +177,33 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
   bool rc = false;
   switch (msg->which_config) {
   case ws_sleep_Enter_timer_tag:
-    // Set timer-based wakeup
+// Configure timer-based wakeup source
+#ifdef ARDUINO_ARCH_ESP32
     rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration *
                                                  1000000);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }
+#else
+    Ws._wdt->registerTimerWakeup(msg->config.timer.duration * 1000);
+    rc = true;
+#endif
+
     WS_DEBUG_PRINT("[sleep] Timer wakeup set to ");
     WS_DEBUG_PRINT(msg->config.timer.duration);
     WS_DEBUG_PRINTLN(" seconds");
     break;
   case ws_sleep_Enter_ext0_tag:
+#ifdef ARDUINO_ARCH_ESP32
     rc = _sleep_hardware->RegisterExt0Wakeup(
         msg->config.ext0.name, msg->config.ext0.level, msg->config.ext0.pull);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set ext0 wakeup");
     }
+#else
+    Ws._wdt->registerGPIOWakeup(msg->config.ext0.name, true,
+                                msg->config.ext0.level);
+#endif
     WS_DEBUG_PRINT("[sleep] EXT0 wakeup set on pin ");
     WS_DEBUG_PRINT(msg->config.ext0.name);
     WS_DEBUG_PRINT(" with level ");
@@ -267,7 +278,11 @@ unsigned long SleepController::GetRunDuration() {
     @return The ESP wake cause enum.
 */
 ws_sleep_EspWakeCause SleepController::GetEspWakeCause() {
+#ifdef ARDUINO_ARCH_ESP32
   return _sleep_hardware->GetEspWakeCauseEnum();
+#else
+  return ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
+#endif
 }
 
 /*!
@@ -397,10 +412,16 @@ void SleepController::HandleNetFSMFailure() {
   sleep_enter_msg.lock = true;
   // Set sleep mode to the last known sleep
   sleep_enter_msg.mode = _sleep_hardware->GetSleepMode();
+#ifdef ARDUINO_ARCH_ESP32
   sleep_enter_msg.which_config =
       _sleep_hardware->GetEspSleepSource() == ESP_SLEEP_WAKEUP_TIMER
           ? ws_sleep_Enter_timer_tag
           : ws_sleep_Enter_ext0_tag;
+#else
+  sleep_enter_msg.which_config = Ws._wdt->isSleepConfigTimer()
+                                     ? ws_sleep_Enter_timer_tag
+                                     : ws_sleep_Enter_ext0_tag;
+#endif
   // Get the previous sleep duration from RTC mem
   sleep_enter_msg.config.timer.duration = _sleep_hardware->GetSleepDuration();
   // Configure sleep mode
@@ -444,4 +465,4 @@ const char *SleepController::GetLogFilename() {
   return _sleep_hardware->GetLogFilename();
 }
 
-#endif // ARDUINO_ARCH_ESP32
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350

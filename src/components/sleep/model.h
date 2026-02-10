@@ -15,7 +15,7 @@
 #ifndef WS_SLEEP_MODEL_H
 #define WS_SLEEP_MODEL_H
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "wippersnapper.h"
 
 /*!
@@ -32,15 +32,18 @@ public:
   bool DecodeSleepEnter(pb_istream_t *stream);
   bool EncodeSleepGoodnight(const char *msg);
   bool EncodeSleepWake(ws_sleep_EspWakeCause cause, uint32_t sleep_duration);
-  void SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_duration, uint32_t timer_duration);
-  void SetSleepEnterExt0(bool lock, const char *mode, uint32_t run_duration, const char *pin_name, bool pin_level, bool pin_pull);
+  void SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_duration,
+                          uint32_t timer_duration);
+  void SetSleepEnterExt0(bool lock, const char *mode, uint32_t run_duration,
+                         const char *pin_name, bool pin_level, bool pin_pull);
   uint32_t GetRunDuration();
+
 private:
   void ConvertSleepMode(const char *mode_str, ws_sleep_SleepMode &mode);
   ws_sleep_Goodnight _msg_sleep_goodnight; ///< Goodnight message object
   ws_sleep_Wake _msg_sleep_wake;           ///< Wake message object
   ws_sleep_Enter _msg_sleep_enter;         ///< Enter message object
-  uint32_t _run_duration = 60;             ///< Duration to run before sleeping, in seconds
+  uint32_t _run_duration = 60; ///< Duration to run before sleeping, in seconds
 };
 
 #endif // ARDUINO_ARCH_ESP32
