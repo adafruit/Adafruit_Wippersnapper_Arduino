@@ -74,3 +74,4 @@ tests/sleep_timer_patterns.md
 tests/test_sleep_timer.py
 tests/sleep_ext0_patterns.md
 tests/test_sleep_ext0.py
+tests/sleep_mode/__pycache__/

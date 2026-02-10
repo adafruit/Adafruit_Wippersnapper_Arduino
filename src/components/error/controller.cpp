@@ -107,7 +107,7 @@ bool ErrorController::HandleThrottle(const ws_error_ErrorIOThrottle &throttle) {
     time_elapsed += time_delay;
 
     // Feed the watchdog and ping MQTT to keep connection alive
-    Ws.FeedWDT();
+    Ws._wdt->feed();
     Ws._mqttV2->ping();
   }
 

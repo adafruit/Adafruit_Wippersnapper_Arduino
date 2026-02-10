@@ -275,16 +275,16 @@ protected:
       return;
 
     WiFi.mode(WIFI_STA);
-    Ws.FeedWDT();
+    Ws._wdt->feed();
     WiFi.setTimeout(20000);
-    Ws.FeedWDT();
+    Ws._wdt->feed();
 
     if (strlen(_ssid) == 0) {
       _statusV2 = WS_SSID_INVALID;
     } else {
       _disconnect();
       delay(5000);
-      Ws.FeedWDT();
+      Ws._wdt->feed();
       if (Ws._isWiFiMultiV2) {
         // multi network mode
         _wifiMulti.clearAPList();
@@ -295,13 +295,13 @@ protected:
           _wifiMulti.addAP(Ws._multiNetworksV2[i].ssid,
                            Ws._multiNetworksV2[i].pass);
         }
-        Ws.FeedWDT();
+        Ws._wdt->feed();
         if (_wifiMulti.run(10000) == WL_CONNECTED) {
-          Ws.FeedWDT();
+          Ws._wdt->feed();
           _statusV2 = WS_NET_CONNECTED;
           return;
         }
-        Ws.FeedWDT();
+        Ws._wdt->feed();
       } else {
         WiFi.begin(_ssid, _pass);
 
@@ -330,10 +330,10 @@ protected:
       @brief  Disconnects from the wireless network.
   */
   void _disconnect() {
-    Ws.FeedWDT();
+    Ws._wdt->feed();
     WiFi.disconnect();
     delay(5000);
-    Ws.FeedWDT();
+    Ws._wdt->feed();
   }
 };
 

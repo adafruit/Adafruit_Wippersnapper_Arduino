@@ -62,7 +62,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      Ws.FeedWDT();                                                            \
+      Ws._wdt->feed();                                                         \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -84,15 +84,15 @@
 #include <nanopb/ws_pb_helpers.h>
 
 // External libraries
-#include "Adafruit_MQTT.h"      // MQTT Client
-#include "Adafruit_SleepyDog.h" // Watchdog
-#include "Arduino.h"            // Wiring
+#include "Adafruit_MQTT.h" // MQTT Client
+#include "Arduino.h"       // Wiring
 #include <SPI.h>                // SPI
 #include <Wire.h>               // I2C
 
 // Wippersnapper API Helpers
 #include "components/statusLED/Wippersnapper_StatusLED.h"
 #include "helpers/ws_helper_status.h"
+#include "helpers/ws_wdt.h"
 #include "ws_boards.h"
 #ifdef ARDUINO_ARCH_ESP32
 #include "helpers/ws_helper_esp.h"
@@ -203,10 +203,9 @@ public:
   void pingBrokerV2();
   void NetworkFSM(bool initial_connect = false);
 
-  // WDT helpers
-  int EnableWDT(int timeout_ms = 0);
-  int ReconfigureWDT(int timeout_ms);
-  void FeedWDT();
+  // WDT wrapper
+  ws_wdt *_wdt = nullptr; ///< Instance of WDT wrapper class
+
   void BlinkKATStatus();
 
   // Error handling helpers
