@@ -40,6 +40,11 @@ public:
   void rp2350SleepUntilPin(uint gpio_pin, bool edge = false, bool high = false);
   long rp2350GetSleepDuration();
   void rp2350ResumeFromSleep();
+  bool rp2350DidWakeFromSleep();
+  #endif
+private:
+  #ifdef ARDUINO_ARCH_RP2350
+   bool _did_wake_from_sleep;
   #endif
 };
 

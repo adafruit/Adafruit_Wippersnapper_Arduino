@@ -283,10 +283,15 @@ const char *SleepController::GetWakeupReasonName() {
     @return True if the device woke from sleep, False otherwise.
 */
 bool SleepController::DidWakeFromSleep() {
+  #ifdef ARDUINO_ARCH_ESP32
   // If SLEEP wake cause is not unspecified, device woke from sleep mode,
   // so we assume we're locked unless overridden by boot button or Enter message
   ws_sleep_EspWakeCause wake_cause = _sleep_hardware->GetEspWakeCauseEnum();
   _lock = wake_cause != ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
+  #else
+  // RP2350 doesn't track wake cause but does internally track if we slept or not
+  _lock = Ws._wdt->rp2350DidWakeFromSleep();
+  #endif
   return _lock;
 }
 

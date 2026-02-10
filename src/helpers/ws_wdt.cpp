@@ -103,6 +103,7 @@ void ws_wdt::feed() {
             until an external wake event occurs.
 */
 void ws_wdt::rp2350SleepUntil(int max_period_ms) {
+  _did_wake_from_sleep = false;
   Watchdog.goToSleepUntil(max_period_ms, true);
 }
 
@@ -118,6 +119,7 @@ void ws_wdt::rp2350SleepUntil(int max_period_ms) {
             or low level (false) on the GPIO pin.
 */
 void ws_wdt::rp2350SleepUntilPin(uint gpio_pin, bool edge, bool high) {
+  _did_wake_from_sleep = false;
   Watchdog.goToSleepUntilPin(gpio_pin, edge, high);
 }
 
@@ -134,6 +136,7 @@ long ws_wdt::rp2350GetSleepDuration() {
             to properly reset the WDT state.
 */
 void ws_wdt::rp2350ResumeFromSleep() {
+  _did_wake_from_sleep = true;
   Watchdog.resumeFromSleep();
 }
 #endif

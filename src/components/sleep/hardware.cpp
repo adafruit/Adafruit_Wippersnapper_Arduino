@@ -43,7 +43,9 @@ SleepHardware::~SleepHardware() {}
     @brief  Gets the wakeup source which caused wakeup from sleep.
 */
 void SleepHardware::GetSleepWakeupCause() {
+  #ifdef ARDUINO_ARCH_ESP32
   _wakeup_cause = esp_sleep_get_wakeup_cause();
+  #endif 
 }
 
 /*!
@@ -147,6 +149,7 @@ void SleepHardware::SetSleepMode(ws_sleep_SleepMode mode) { sleep_mode = mode; }
     @brief  Calculates the duration of the last sleep period.
 */
 void SleepHardware::CalculateSleepDuration() {
+#ifdef ARDUINO_ARCH_ESP32
 /**
  * Prefer to use RTC mem instead of NVS to save the deep sleep enter time,
  * unless the chip does not support RTC mem(such as esp32c2). Because the time
@@ -166,7 +169,7 @@ void SleepHardware::CalculateSleepDuration() {
   // Get deep sleep enter time from NVS
   NvsReadI32("slp_enter_sec", (int32_t *)&sleep_enter_time.tv_sec);
   NvsReadI32("slp_enter_usec", (int32_t *)&sleep_enter_time.tv_usec);
-#endif
+#endif // !SOC_RTC_FAST_MEM_SUPPORTED
 
   struct timeval now;
   gettimeofday(&now, NULL);
@@ -177,14 +180,21 @@ void SleepHardware::CalculateSleepDuration() {
   sleep_cycles += 1;
 #if !SOC_RTC_FAST_MEM_SUPPORTED
   NvsWriteU32("cnt_sleep_cycles", sleep_cycles);
-#endif
+#endif // !SOC_RTC_FAST_MEM_SUPPORTED
+#else
+    // For chips without RTC memory, we rely on the WDT sleep duration tracking
+    _sleep_time = (int)(Ws._wdt->rp2350GetSleepDuration() / 1000);
+    sleep_cycles += 1;
+#endif // ARDUINO_ARCH_ESP32
 }
 
 /*!
     @brief  Returns the calculated sleep duration.
     @return The sleep duration in seconds.
 */
-int SleepHardware::GetSleepDuration() { return _sleep_time; }
+int SleepHardware::GetSleepDuration() {
+  return _sleep_time;
+}
 
 /*!
     @brief  Sets the sleep enter time before entering sleep mode.
