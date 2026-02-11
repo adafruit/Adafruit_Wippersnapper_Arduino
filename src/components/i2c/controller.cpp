@@ -33,11 +33,6 @@ using FnCreateI2CSensorDriver =
 // Factory for creating a new I2C SENSOR drivers
 // NOTE: When you add a new SENSOR driver, make sure to add it to the factory!
 static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
-    {"bme280",
-     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
-        const char *driver_name) -> drvBase * {
-       return new drvBme280(i2c, addr, mux_channel, driver_name);
-     }},
     {"adt7410",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -73,6 +68,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvBh1750(i2c, addr, mux_channel, driver_name);
      }},
+    {"bme280",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBme280(i2c, addr, mux_channel, driver_name);
+     }},
     {"bme680",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -82,11 +82,6 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvBme680(i2c, addr, mux_channel, driver_name);
-     }},
-    {"BMP280",
-     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
-        const char *driver_name) -> drvBase * {
-       return new drvBmp3xx(i2c, addr, mux_channel, driver_name);
      }},
     {"bmp388",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
