@@ -118,6 +118,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvEns160(i2c, addr, mux_channel, driver_name);
      }},
+    {"ens161",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvEns160(i2c, addr, mux_channel, driver_name);
+     }},
     {"hdc302x",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -440,8 +445,8 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x4E, {"pct2075"}},
         {0x4F, {"pct2075"}},
         {0x51, {"vcnl4200"}},
-        {0x52, {"ens160"}},
-        {0x53, {"ens160", "ltr390"}},
+        {0x52, {"ens161", "ens160"}},
+        {0x53, {"ens161", "ens160", "ltr390"}},
         {0x58, {"sgp30"}},
         {0x59, {"sgp40"}},
         {0x5C,
