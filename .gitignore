@@ -35,6 +35,8 @@
 *.bak
 html/*
 
+# WS reference submodules
+repos/
 
 # VSCode artifacts
 .vscode/*
