@@ -146,12 +146,13 @@ void ws_wdt::registerGPIOWakeup(uint gpio_pin, bool edge, bool high) {
     @brief  Starts sleep mode based on the registered wakeup configuration.
 */
 void ws_wdt::startSleep() {
-  if (_is_sleep_cfg_timer) {
-    Watchdog.goToSleepUntil(_max_sleep_period_ms, true);
+  Watchdog.goToSleepUntil(5000, true);
+/*   if (_is_sleep_cfg_timer) {
+    Watchdog.goToSleepUntil(5000, true);
   } else {
     Watchdog.goToSleepUntilPin(_sleep_gpio_pin, _sleep_gpio_edge,
                                _sleep_gpio_level);
-  }
+  } */
 }
 
 /*!

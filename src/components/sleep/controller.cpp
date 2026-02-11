@@ -345,7 +345,7 @@ void SleepController::StartSleep() {
   _sleep_hardware->SetSleepEnterTime();
 
   // Store soft RTC counter to RTC memory before sleep
-  if (Ws._sdCardV2 != nullptr) {
+  if (Ws._sdCardV2 != nullptr && Ws._sdCardV2->isRTCSoft()) {
     uint32_t counter = Ws._sdCardV2->GetSoftRTCTime();
     SetSoftRtcCounter(counter);
     WS_DEBUG_PRINT("[sleep] Stored soft RTC counter: ");
@@ -360,7 +360,7 @@ void SleepController::StartSleep() {
   }
 
   // Disable SD Card, if present
-  if (Ws._sdCardV2->isSDCardInitialized()) {
+  if (Ws._sdCardV2 != nullptr && Ws._sdCardV2->isSDCardInitialized()) {
     WS_DEBUG_PRINTLN("[sleep] Disabling SD card before sleep...");
     Ws._sdCardV2->end();
   }
@@ -371,8 +371,7 @@ void SleepController::StartSleep() {
 #ifdef ARDUINO_ARCH_ESP32
     esp_deep_sleep_start();
 #else
-    // RP2350 does not support deep sleep
-    WS_DEBUG_PRINTLN("[sleep] WARNING: Deep sleep not supported on this MCU");
+WS_DEBUG_PRINTLN("[sleep] ERROR: RP2350 does not support deep sleep mode, cannot enter deep sleep.");
 #endif
   } else if (sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
     WS_DEBUG_PRINTLN("[sleep] Entering light sleep");

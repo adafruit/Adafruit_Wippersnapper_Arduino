@@ -263,6 +263,14 @@ bool ws_sdcard::InitSoftRTC() {
 }
 
 /*!
+    @brief    Returns whether the RTC in use is a "soft" RTC.
+    @returns  True if the RTC is a soft RTC, False otherwise.
+*/
+bool ws_sdcard::isRTCSoft() const {
+    return _is_soft_rtc;
+}
+
+/*!
     @brief    Increments the "soft" RTC.
 */
 void ws_sdcard::TickSoftRTC() { _soft_rtc_counter++; }

@@ -72,6 +72,7 @@ public:
   bool LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event);
   void SetBatteryPercent(float percent);
   bool IsBatteryLow() const;
+  bool isRTCSoft() const;
   uint32_t GetSoftRTCTime();
 
 private:
