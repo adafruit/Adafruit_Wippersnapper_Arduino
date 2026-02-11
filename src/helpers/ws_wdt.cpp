@@ -15,6 +15,13 @@
 
 #include "ws_wdt.h"
 
+// Static member definitions for RP2350 sleep callback
+#ifdef ARDUINO_ARCH_RP2350
+volatile bool ws_wdt::_awake = false;
+
+void ws_wdt::wakeCallback() { _awake = true; }
+#endif
+
 /*!
     @brief  Constructor for the watchdog timer wrapper class.
 */
@@ -26,6 +33,10 @@ ws_wdt::ws_wdt() {
   _sleep_gpio_pin = 0;
   _sleep_gpio_edge = false;
   _sleep_gpio_level = false;
+  _awake = false;
+
+  // Register wake callback for timer-based sleep
+  Watchdog.setWakeCb(wakeCallback);
 #endif
 }
 
@@ -144,15 +155,30 @@ void ws_wdt::registerGPIOWakeup(uint gpio_pin, bool edge, bool high) {
 
 /*!
     @brief  Starts sleep mode based on the registered wakeup configuration.
+            For timer-based sleep, uses the Adafruit Watchdog Library pattern:
+            callback setup -> sleep entry -> wait loop -> resume.
+            For GPIO-based sleep, the device enters dormant mode and returns
+            directly after the wake event (no callback involved).
 */
 void ws_wdt::startSleep() {
-  Watchdog.goToSleepUntil(5000, true);
-/*   if (_is_sleep_cfg_timer) {
-    Watchdog.goToSleepUntil(5000, true);
+  if (_is_sleep_cfg_timer) {
+    // Timer-based sleep = use callback + wait loop
+    _awake = false;
+    Watchdog.goToSleepUntil(_max_sleep_period_ms, true);
+
+    // Wait for wake callback to fire
+    while (!_awake) {
+      // Tight polling loop, waits for callback to set _awake = true
+    }
   } else {
+    // GPIO-based sleep = no callback, continues execution after wake
     Watchdog.goToSleepUntilPin(_sleep_gpio_pin, _sleep_gpio_edge,
                                _sleep_gpio_level);
-  } */
+  }
+
+  // MUST call to re-enable clocks (calls sleep_power_up())
+  Watchdog.resumeFromSleep();
+  _did_wake_from_sleep = true;
 }
 
 /*!
@@ -162,12 +188,15 @@ void ws_wdt::startSleep() {
 long ws_wdt::getSleepDuration() { return Watchdog.getSleepDuration(); }
 
 /*!
-    @brief  Resumes the RP2350 from sleep mode. Should be called after waking up
-            to properly reset the WDT state.
+    @brief  Resumes the RP2350 from sleep mode.
+    @note   The actual resume (Watchdog.resumeFromSleep()) is now called
+            inside startSleep() as part of the wake sequence. This method
+            exists for external callers that need to ensure the wake flag
+            is set.
 */
 void ws_wdt::resumeFromSleep() {
+  // Resume is handled inside startSleep() - this ensures the flag is set
   _did_wake_from_sleep = true;
-  Watchdog.resumeFromSleep();
 }
 
 /*!

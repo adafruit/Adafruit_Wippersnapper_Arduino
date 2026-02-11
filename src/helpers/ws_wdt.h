@@ -46,12 +46,16 @@ public:
 #endif
 private:
 #ifdef ARDUINO_ARCH_RP2350
-  bool _did_wake_from_sleep;
-  bool _is_sleep_cfg_timer;
-  int _max_sleep_period_ms;
-  uint _sleep_gpio_pin;
-  bool _sleep_gpio_edge;
-  bool _sleep_gpio_level;
+  bool
+      _did_wake_from_sleep; ///< True if device woke from sleep, False otherwise
+  bool _is_sleep_cfg_timer; ///< True if timer-based sleep, False if GPIO-based
+  int _max_sleep_period_ms; ///< Maximum sleep period in milliseconds
+  uint _sleep_gpio_pin;     ///< Desired GPIO pin number for wakeup
+  bool _sleep_gpio_edge;    ///< Specifies whether to wake on edge or level
+  bool _sleep_gpio_level; ///< Specifies whether to wake on a high or low level
+  static volatile bool _awake; ///< Static flag for wake callback
+  static void
+  wakeCallback(); ///< Static callback for RP2350 Watchdog.setWakeCb()
 #endif
 };
 
