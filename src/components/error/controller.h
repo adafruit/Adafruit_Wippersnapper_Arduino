@@ -14,10 +14,10 @@
  */
 #ifndef WS_CONTROLLER_MODEL
 #define WS_CONTROLLER_MODEL
-#include "wippersnapper.h"
 #include "model.h"
+#include "wippersnapper.h"
 
-class ErrorModel;       ///< Forward declaration
+class ErrorModel;    ///< Forward declaration
 class wippersnapper; ///< Forward declaration
 
 /*!
@@ -55,4 +55,4 @@ private:
   ErrorModel *_model = nullptr; ///< Instance of ErrorModel class
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                        // WS_CONTROLLER_MODEL
+#endif                   // WS_CONTROLLER_MODEL

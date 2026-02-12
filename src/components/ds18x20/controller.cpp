@@ -172,7 +172,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
     }
 
     if (!Ws.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
-                         _DS18X20_model->GetDS18x20AddedMsg())) {
+                       _DS18X20_model->GetDS18x20AddedMsg())) {
       WS_DEBUG_PRINTLN(
           "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
       return false;
@@ -290,7 +290,7 @@ void DS18X20Controller::update(bool force) {
       // Publish the Ds18x20Event message to the broker
       WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
       if (!Ws.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
-                           _DS18X20_model->GetDS18x20EventMsg())) {
+                         _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to publish Ds18x20Event message");
         temp_dsx_driver.did_read_send = false;

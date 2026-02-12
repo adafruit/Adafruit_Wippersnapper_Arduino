@@ -40,4 +40,4 @@ private:
   ws_error_ErrorD2B _error_d2b_msg; ///< ErrorD2B message instance;
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                        // WS_ERROR_MODEL_H
+#endif                   // WS_ERROR_MODEL_H

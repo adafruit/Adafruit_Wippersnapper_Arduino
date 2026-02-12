@@ -161,12 +161,12 @@ const char *SleepHardware::GetWakeupReasonName() { return "Unknown"; }
             post-sleep from the RTC memory.
     @return The sleep mode.
 */
-ws_sleep_SleepMode SleepHardware::GetSleepMode() { 
-    #ifdef ARDUINO_ARCH_RP2350
-    // For RP2350, we only support light sleep
-    sleep_mode = ws_sleep_SleepMode_S_LIGHT;
-    #endif
-    return sleep_mode;
+ws_sleep_SleepMode SleepHardware::GetSleepMode() {
+#ifdef ARDUINO_ARCH_RP2350
+  // For RP2350, we only support light sleep
+  sleep_mode = ws_sleep_SleepMode_S_LIGHT;
+#endif
+  return sleep_mode;
 }
 
 /*!

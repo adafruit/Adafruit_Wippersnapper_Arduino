@@ -128,8 +128,7 @@ void GPSController::update(bool force) {
 
     // Did read period elapse?
     ulong cur_time = millis();
-    if (!force &&
-        (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod()))
+    if (!force && (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod()))
       continue; // Not yet elapsed, skip this driver
 
     // Discard the GPS buffer before we attempt to do a fresh read

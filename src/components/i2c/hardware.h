@@ -14,8 +14,8 @@
  */
 #ifndef WS_I2C_HARDWARE_H
 #define WS_I2C_HARDWARE_H
-#include "wippersnapper.h"
 #include "drivers/drvBase.h" ///< Base driver class
+#include "wippersnapper.h"
 
 #ifdef ARDUINO_ARCH_RP2040
 // Wire uses GPIO4 (SDA) and GPIO5 (SCL) automatically.

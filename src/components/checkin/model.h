@@ -43,4 +43,4 @@ private:
   bool _got_response;           ///< Flag indicating if response was received
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                        // WS_CHECKIN_H
+#endif                   // WS_CHECKIN_H

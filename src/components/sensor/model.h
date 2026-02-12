@@ -14,8 +14,8 @@
  */
 #ifndef WS_SENSOR_MODEL_H
 #define WS_SENSOR_MODEL_H
-#include "wippersnapper.h"
 #include "protos/sensor.pb.h"
+#include "wippersnapper.h"
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing

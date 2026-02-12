@@ -14,17 +14,17 @@
  */
 #ifndef WS_PIXELS_CONTROLLER_H
 #define WS_PIXELS_CONTROLLER_H
-#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 
 #define MAX_PIXEL_STRANDS                                                      \
   10 ///< Maximum number of pixel strands connected to a WipperSnapper device
 #define STRAND_NOT_FOUND 0xFF ///< Strand not found in the array
 
-class wippersnapper; ///< Forward declaration
-class PixelsModel;      ///< Forward declaration
-class PixelsHardware;   ///< Forward declaration
+class wippersnapper;  ///< Forward declaration
+class PixelsModel;    ///< Forward declaration
+class PixelsHardware; ///< Forward declaration
 
 /*!
     @brief  Routes messages using the pixels.proto API to the
@@ -48,4 +48,4 @@ private:
   uint16_t GetStrandIndex(uint16_t pin_data); // Returns 0xFF if not found
 };
 extern wippersnapper Ws; ///< Global V2 instance
-#endif                        // WS_PIXELS_CONTROLLER_H
+#endif                   // WS_PIXELS_CONTROLLER_H

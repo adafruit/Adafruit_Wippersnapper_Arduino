@@ -14,9 +14,9 @@
  */
 #ifndef WS_SERVO_CONTROLLER_H
 #define WS_SERVO_CONTROLLER_H
-#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 
 #ifdef ARDUINO_ARCH_RP2040
 #define MAX_SERVOS                                                             \
@@ -27,8 +27,8 @@
 #endif
 
 class wippersnapper; // Forward declaration
-class ServoModel;       // Forward declaration
-class ServoHardware;    // Forward declaration
+class ServoModel;    // Forward declaration
+class ServoHardware; // Forward declaration
 
 /*!
     @brief  Routes messages using the servo.proto API to the
@@ -53,4 +53,4 @@ private:
   int _active_servo_pins; ///< Number of active servo pins
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                        // WS_SERVO_CONTROLLER_H
+#endif                   // WS_SERVO_CONTROLLER_H

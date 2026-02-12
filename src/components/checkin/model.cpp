@@ -52,11 +52,14 @@ bool CheckinModel::Checkin(const char *hardware_uid,
   // Add wake cause info to checkin for ESP32x platforms
 #ifdef ARDUINO_ARCH_ESP32
   if (Ws._sleep_controller->DidWakeFromSleep()) {
-  // We woke from a sleep mode, add wake cause info
-  _CheckinD2B.payload.request.has_wake_cause = true;
-  _CheckinD2B.payload.request.wake_cause.which_WakeCause = ws_sleep_Wake_esp_tag;
-  _CheckinD2B.payload.request.wake_cause.WakeCause.esp = Ws._sleep_controller->GetEspWakeCause();
-  _CheckinD2B.payload.request.wake_cause.sleep_duration = Ws._sleep_controller->GetSleepDuration();
+    // We woke from a sleep mode, add wake cause info
+    _CheckinD2B.payload.request.has_wake_cause = true;
+    _CheckinD2B.payload.request.wake_cause.which_WakeCause =
+        ws_sleep_Wake_esp_tag;
+    _CheckinD2B.payload.request.wake_cause.WakeCause.esp =
+        Ws._sleep_controller->GetEspWakeCause();
+    _CheckinD2B.payload.request.wake_cause.sleep_duration =
+        Ws._sleep_controller->GetSleepDuration();
   }
 #endif
 
@@ -187,8 +190,7 @@ bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
     return Ws._pwm_controller->Handle_PWM_Add(&component.payload.pwm);
   case ws_checkin_ComponentAdd_pixels_tag:
     WS_DEBUG_PRINTLN("Pixels");
-    return Ws._pixels_controller->Handle_Pixels_Add(
-        &component.payload.pixels);
+    return Ws._pixels_controller->Handle_Pixels_Add(&component.payload.pixels);
   case ws_checkin_ComponentAdd_ds18x20_tag:
     WS_DEBUG_PRINTLN("DS18x20");
     return Ws._ds18x20_controller->Handle_Ds18x20Add(

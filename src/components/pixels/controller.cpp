@@ -81,8 +81,8 @@ bool PixelsController::Handle_Pixels_Add(ws_pixels_Add *msg) {
   // Configure the pixel strand
   bool did_init = false;
   did_init = _pixel_strands[_num_strands]->AddStrand(
-      msg->type, msg->ordering, msg->num, msg->brightness,
-      msg->pin_data, msg->pin_dotstar_clock);
+      msg->type, msg->ordering, msg->num, msg->brightness, msg->pin_data,
+      msg->pin_dotstar_clock);
   if (!did_init) {
     WS_DEBUG_PRINTLN("[pixels] Failed to create strand!");
   } else {
@@ -97,7 +97,7 @@ bool PixelsController::Handle_Pixels_Add(ws_pixels_Add *msg) {
     return false;
   }
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_pixels_tag,
-                       _pixels_model->GetPixelsAddedMsg())) {
+                     _pixels_model->GetPixelsAddedMsg())) {
     WS_DEBUG_PRINTLN("[pixels]: Unable to publish PixelsAdded message!");
     return false;
   }

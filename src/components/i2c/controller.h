@@ -14,9 +14,9 @@
  */
 #ifndef WS_I2C_CONTROLLER_H
 #define WS_I2C_CONTROLLER_H
-#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
@@ -73,10 +73,10 @@
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
 
-class wippersnapper; ///< Forward declaration
-class I2cModel;         ///< Forward declaration
-class I2cOutputModel;   ///< Forward declaration
-class I2cHardware;      ///< Forward declaration
+class wippersnapper;  ///< Forward declaration
+class I2cModel;       ///< Forward declaration
+class I2cOutputModel; ///< Forward declaration
+class I2cHardware;    ///< Forward declaration
 
 /*!
     @brief  Routes messages using the i2c.proto API to the
@@ -118,4 +118,4 @@ private:
       _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                        // WS_I2C_CONTROLLER_H
+#endif                   // WS_I2C_CONTROLLER_H

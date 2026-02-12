@@ -106,16 +106,15 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   }
 
   // Create the digital pin and add it to the vector
-  DigitalIOPin new_pin = {
-      .pin_name = pin_name,
-      .pin_direction = msg->gpio_direction,
-      .sample_mode = msg->sample_mode,
-      .pin_value = msg->value,
-      .prv_pin_value = msg->value,
-      .pin_period = (ulong)(msg->period * 1000.0f),
-      .prv_pin_time = 0, // Set to 0 so timer pins trigger immediately
-      .did_read_send = false
-  };
+  DigitalIOPin new_pin = {.pin_name = pin_name,
+                          .pin_direction = msg->gpio_direction,
+                          .sample_mode = msg->sample_mode,
+                          .pin_value = msg->value,
+                          .prv_pin_value = msg->value,
+                          .pin_period = (ulong)(msg->period * 1000.0f),
+                          .prv_pin_time =
+                              0, // Set to 0 so timer pins trigger immediately
+                          .did_read_send = false};
 
   // Add the pin to the controller's list of pins
   if (msg->gpio_direction == ws_digitalio_Direction_D_INPUT ||
@@ -335,7 +334,7 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
 
     // Publish the DigitalIOEvent message to the broker
     if (!Ws.PublishD2b(ws_signal_DeviceToBroker_digitalio_tag,
-                         _dio_model->GetDigitalIOEventMsg())) {
+                       _dio_model->GetDigitalIOEventMsg())) {
       WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to publish event message, "
                        "moving onto the next pin!");
       return false;
@@ -344,7 +343,7 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
   } else {
     // let's log the event to the SD card
     if (!Ws._sdCardV2->LogGPIOSensorEventToSD(pin_name, pin_value,
-                                                ws_sensor_Type_T_BOOLEAN))
+                                              ws_sensor_Type_T_BOOLEAN))
       return false;
   }
 
@@ -367,7 +366,7 @@ void DigitalIOController::update(bool force) {
   for (size_t i = 0; i < num_input_pins; i++) {
     // Create a pin object for this iteration
     DigitalIOPin &pin = _pins_input[i];
-    
+
     // (force only) - Was pin previously read and sent?
     if (pin.did_read_send)
       continue;
@@ -404,7 +403,8 @@ void DigitalIOController::update(bool force) {
 }
 
 /*!
-    @brief  Checks if all digital input pins have been read and their values sent.
+    @brief  Checks if all digital input pins have been read and their values
+   sent.
     @return True if all pins have been read and sent, False otherwise.
 */
 bool DigitalIOController::UpdateComplete() {

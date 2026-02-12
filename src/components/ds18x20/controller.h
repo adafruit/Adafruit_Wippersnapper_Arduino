@@ -14,14 +14,14 @@
  */
 #ifndef WS_DS18X20_CONTROLLER_H
 #define WS_DS18X20_CONTROLLER_H
-#include "wippersnapper.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 #include <memory>
 
-class wippersnapper; ///< Forward declaration
-class DS18X20Model;     ///< Forward declaration
-class DS18X20Hardware;  ///< Forward declaration
+class wippersnapper;   ///< Forward declaration
+class DS18X20Model;    ///< Forward declaration
+class DS18X20Hardware; ///< Forward declaration
 
 /*!
     @brief  Routes messages between the ds18x20.proto API and the hardware.
@@ -45,4 +45,4 @@ private:
   int _num_drivers;
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                        // WS_DS18X20_CONTROLLER_H
+#endif                   // WS_DS18X20_CONTROLLER_H

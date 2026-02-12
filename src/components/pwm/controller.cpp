@@ -90,7 +90,7 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
     return false;
   }
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_pwm_tag,
-                       _pwm_model->GetPWMAddedMsg())) {
+                     _pwm_model->GetPWMAddedMsg())) {
     WS_DEBUG_PRINTLN("[PWM]: Unable to publish PWMAdded message!");
     return false;
   }

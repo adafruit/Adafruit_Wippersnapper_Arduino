@@ -166,12 +166,11 @@ void SleepController::WakeFromLightSleep() {
     Ws.NetworkFSM(true);
   }
 
-    #ifdef ARDUINO_ARCH_RP2350
+#ifdef ARDUINO_ARCH_RP2350
   // Visual indication for configuring sleep in RP2350
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
-  #endif
-
+#endif
 }
 
 /*!
@@ -230,11 +229,11 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
     break;
   }
 
-  #ifdef ARDUINO_ARCH_RP2350
+#ifdef ARDUINO_ARCH_RP2350
   // Visual indication for configuring sleep in RP2350
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
-  #endif
+#endif
 
   return rc;
 }
@@ -384,7 +383,8 @@ void SleepController::StartSleep() {
 #ifdef ARDUINO_ARCH_ESP32
     esp_deep_sleep_start();
 #else
-WS_DEBUG_PRINTLN("[sleep] ERROR: RP2350 does not support deep sleep mode, cannot enter deep sleep.");
+    WS_DEBUG_PRINTLN("[sleep] ERROR: RP2350 does not support deep sleep mode, "
+                     "cannot enter deep sleep.");
 #endif
   } else if (sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
     WS_DEBUG_PRINTLN("[sleep] Entering light sleep");

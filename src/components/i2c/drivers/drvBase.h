@@ -161,7 +161,6 @@ public:
   */
   void SetDidReadSend(bool did_read_send) { _did_read_send = did_read_send; }
 
-
   /*!
       @brief    Initializes the I2C sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
@@ -623,8 +622,7 @@ public:
        [this](sensors_event_t *event) -> bool {
          return this->getEventNOxIndex(event);
        }},
-      {ws_sensor_Type_T_TVOC,
-       [this](sensors_event_t *event) -> bool {
+      {ws_sensor_Type_T_TVOC, [this](sensors_event_t *event) -> bool {
          return this->getEventTVOC(event);
        }}}; ///< SensorType to function call map
 
@@ -642,6 +640,6 @@ protected:
   ulong _sensor_period;      ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;     ///< Number of sensors on the device.
-  bool _did_read_send;       ///< True if data was read and sent to IO successfully.
+  bool _did_read_send; ///< True if data was read and sent to IO successfully.
 };
 #endif // DRV_BASE_H
