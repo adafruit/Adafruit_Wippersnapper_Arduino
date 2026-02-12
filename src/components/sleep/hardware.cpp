@@ -102,10 +102,6 @@ ws_sleep_EspWakeCause SleepHardware::GetEspWakeCauseEnum() {
     return ws_sleep_EspWakeCause_ESP_COCPU_TRAP;
   case ESP_SLEEP_WAKEUP_BT:
     return ws_sleep_EspWakeCause_ESP_BT;
-  case ESP_SLEEP_WAKEUP_VAD:
-    return ws_sleep_EspWakeCause_ESP_VAD;
-  case ESP_SLEEP_WAKEUP_VBAT_UNDER_VOLT:
-    return ws_sleep_EspWakeCause_ESP_VBAT_UNDER_VOLT;
   default:
     return ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
   }
