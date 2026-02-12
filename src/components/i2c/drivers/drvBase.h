@@ -17,6 +17,8 @@
 #define DRV_BASE_H
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
+#include <Wire.h>
+#include <map>
 #include <protos/i2c.pb.h>
 
 #define NO_MUX_CH 0xFFFF; ///< No MUX channel specified
