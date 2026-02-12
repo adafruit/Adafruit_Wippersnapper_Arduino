@@ -385,19 +385,18 @@ void SleepHardware::DisableExternalComponents() {
 #endif
 }
 
+#ifdef ARDUINO_ARCH_ESP32
 /*!
     @brief  Attempts to stop the WiFi radio to save power before entering light
    sleep.
     @return True if WiFi was successfully stopped, False otherwise.
 */
 bool SleepHardware::StopWiFi() {
-#ifdef ARDUINO_ARCH_ESP32
   esp_err_t rc = esp_wifi_stop();
   if (rc != ESP_OK) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to stop WiFi");
     return false;
   }
-#endif
   return true;
 }
 
@@ -407,15 +406,14 @@ bool SleepHardware::StopWiFi() {
     @return True if WiFi was successfully started, False otherwise.
 */
 bool SleepHardware::RestoreWiFi() {
-#ifdef ARDUINO_ARCH_ESP32
   esp_err_t rc = esp_wifi_restore();
   if (rc != ESP_OK) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to restore WiFi");
     return false;
   }
-#endif
   return true;
 }
+#endif // ARDUINO_ARCH_ESP32
 
 /*!
     @brief  Retrieves the current sleep cycle count.

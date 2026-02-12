@@ -165,6 +165,13 @@ void SleepController::WakeFromLightSleep() {
     // Run NetFSM to reconnect WiFi and MQTT
     Ws.NetworkFSM(true);
   }
+
+    #ifdef ARDUINO_ARCH_RP2350
+  // Visual indication for configuring sleep in RP2350
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+  #endif
+
 }
 
 /*!
@@ -222,6 +229,12 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown sleep config type");
     break;
   }
+
+  #ifdef ARDUINO_ARCH_RP2350
+  // Visual indication for configuring sleep in RP2350
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+  #endif
 
   return rc;
 }
@@ -375,6 +388,8 @@ WS_DEBUG_PRINTLN("[sleep] ERROR: RP2350 does not support deep sleep mode, cannot
 #endif
   } else if (sleep_mode == ws_sleep_SleepMode_S_LIGHT) {
     WS_DEBUG_PRINTLN("[sleep] Entering light sleep");
+// Attempt to start light sleep
+#ifdef ARDUINO_ARCH_ESP32
     // Disconnect MQTT and stop WiFi before light sleep, if in IO Mode
     if (Ws._mqttV2 != nullptr) {
       WS_DEBUG_PRINTLN("[sleep] Disconnecting MQTT client before sleep");
@@ -383,14 +398,15 @@ WS_DEBUG_PRINTLN("[sleep] ERROR: RP2350 does not support deep sleep mode, cannot
         WS_DEBUG_PRINTLN("[sleep] WARNING: Failed to stop WiFi before sleep");
       }
     }
-// Attempt to start light sleep
-#ifdef ARDUINO_ARCH_ESP32
+    // Start light sleep
     esp_err_t err = esp_light_sleep_start();
     if (err != ESP_OK) {
       WS_DEBUG_PRINT("[sleep] WARNING: Failed light sleep start: ");
       WS_DEBUG_PRINTLN(esp_err_to_name(err));
     }
 #else
+    // Start light sleep using sleepydog for RP2350
+    digitalWrite(LED_BUILTIN, LOW);
     Ws._wdt->startSleep();
 #endif
   } else {

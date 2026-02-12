@@ -37,10 +37,6 @@ class SleepHardware {
 public:
   SleepHardware();
   ~SleepHardware();
-  bool EnableDeepSleep(int duration);
-  bool EnableLightSleep(int duration);
-  bool StopWiFi();
-  bool RestoreWiFi();
   void DisableExternalComponents();
   void ReenableExternalComponents();
   const char *GetWakeupReasonName();
@@ -49,6 +45,8 @@ public:
   bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
   ws_sleep_EspWakeCause GetEspWakeCauseEnum();
   esp_sleep_source_t GetEspSleepSource();
+  bool StopWiFi();
+  bool RestoreWiFi();
 #endif
   ws_sleep_SleepMode GetSleepMode();
   void SetSleepMode(ws_sleep_SleepMode mode);

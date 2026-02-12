@@ -49,6 +49,39 @@ def pytest_addoption(parser):
         default=None,
         help="Path to patterns markdown file (default: auto-detect based on test)"
     )
+    # Offline mode log file validation options
+    parser.addoption(
+        "--sd-log-file",
+        action="store",
+        default=None,
+        help="Path to JSONL log file from SD card (for offline mode tests)"
+    )
+    parser.addoption(
+        "--sd-config-file",
+        action="store",
+        default=None,
+        help="Path to config.json from SD card (for offline mode tests)"
+    )
+    parser.addoption(
+        "--tolerance",
+        action="store",
+        type=int,
+        default=None,
+        help="Allowed deviation in seconds (default: 20%% of sleep duration, min 2s)"
+    )
+    parser.addoption(
+        "--skip-first-cycle",
+        action="store_true",
+        default=False,
+        help="Exclude first boot cycle from timing analysis"
+    )
+    parser.addoption(
+        "--min-cycles",
+        action="store",
+        type=int,
+        default=3,
+        help="Minimum wake cycles required to pass (default: 3)"
+    )
 
 
 @pytest.fixture
@@ -88,3 +121,35 @@ def patterns_file(request):
     if patterns_path:
         return Path(patterns_path)
     return None
+
+
+@pytest.fixture
+def sd_log_file(request) -> Path | None:
+    """Path to the JSONL log file for offline mode tests."""
+    path = request.config.getoption("--sd-log-file")
+    return Path(path) if path else None
+
+
+@pytest.fixture
+def sd_config_file(request) -> Path | None:
+    """Path to config.json for offline mode tests."""
+    path = request.config.getoption("--sd-config-file")
+    return Path(path) if path else None
+
+
+@pytest.fixture
+def tolerance(request) -> int | None:
+    """Tolerance override for sleep timing validation."""
+    return request.config.getoption("--tolerance")
+
+
+@pytest.fixture
+def skip_first_cycle(request) -> bool:
+    """Whether to skip the first boot cycle."""
+    return request.config.getoption("--skip-first-cycle")
+
+
+@pytest.fixture
+def min_cycles(request) -> int:
+    """Minimum number of cycles required."""
+    return request.config.getoption("--min-cycles")
