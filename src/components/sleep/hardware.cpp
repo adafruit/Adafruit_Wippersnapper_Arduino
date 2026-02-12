@@ -292,7 +292,38 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
   }
   gpio_num_t pin = (gpio_num_t)pin_num;
 
-  // Configure pull resistor, if enabled
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+  // ESP32-C3 and C6 do not support RTC GPIO - use deep sleep GPIO wakeup
+
+  // Configure pull resistor using standard GPIO API
+  if (pin_pull) {
+    if (pin_level) {
+      // Waking on HIGH, pull DOWN to keep inactive
+      gpio_pullup_dis(pin);
+      gpio_pulldown_en(pin);
+    } else {
+      // Waking on LOW, pull UP to keep inactive
+      gpio_pulldown_dis(pin);
+      gpio_pullup_en(pin);
+    }
+  } else {
+    gpio_pullup_dis(pin);
+    gpio_pulldown_dis(pin);
+  }
+
+  // Use GPIO wakeup for C3/C6
+  esp_deep_sleep_enable_gpio_wakeup_mode_t wakeup_mode =
+      pin_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW;
+  rc = esp_deep_sleep_enable_gpio_wakeup(1ULL << pin, wakeup_mode);
+  if (rc != ESP_OK) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable GPIO wakeup");
+    return false;
+  }
+
+#else
+  // Standard ESP32, S2, S3 - use RTC GPIO wakeup
+
+  // Configure pull resistor using RTC GPIO API
   if (pin_pull) {
     if (pin_level) {
       // Waking on HIGH, pull DOWN to keep inactive
@@ -304,7 +335,6 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
       rtc_gpio_pullup_en(pin);
     }
   } else {
-    // No pull resistors enabled
     rtc_gpio_pullup_dis(pin);
     rtc_gpio_pulldown_dis(pin);
   }
@@ -314,6 +344,7 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
     WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable ext0 wakeup");
     return false;
   }
+#endif
 
   return true;
 }
