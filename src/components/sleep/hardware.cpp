@@ -312,7 +312,7 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
   }
 
   // Use GPIO wakeup for C3/C6
-  esp_deep_sleep_enable_gpio_wakeup_mode_t wakeup_mode =
+  esp_gpio_wakeup_mode_t wakeup_mode =
       pin_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW;
   rc = esp_deep_sleep_enable_gpio_wakeup(1ULL << pin, wakeup_mode);
   if (rc != ESP_OK) {
