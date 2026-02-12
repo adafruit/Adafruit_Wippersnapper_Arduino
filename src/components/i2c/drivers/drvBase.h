@@ -18,6 +18,7 @@
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <Wire.h>
+#include <functional>
 #include <map>
 #include <protos/i2c.pb.h>
 
