@@ -35,6 +35,8 @@
 *.bak
 html/*
 
+# WS reference submodules
+repos/
 
 # VSCode artifacts
 .vscode/*
@@ -43,6 +45,7 @@ src/.vscode/settings.json
 examples/Wippersnapper_demo/build/
 src/Wippersnapper_demo.ino.cpp
 build_output_*.txt
+COM*.txt
 
 # Virtual environment directories
 .venv/
