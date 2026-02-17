@@ -204,8 +204,8 @@
 #elif defined(WS_DFROBOT_FIREBEETLE2_ESP32P4)
 // No status LED nor RGB LED on this board
 #define BOARD_ID "dfrobot-firebeetle2-esp32p4"
-#define USE_LITTLEFS
-// #define USE_TINYUSB
+#define USE_FATFS
+#define USE_TINYUSB
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ESP32C3_DEV)
 // Note: this board reuses a generic preprocessor define
