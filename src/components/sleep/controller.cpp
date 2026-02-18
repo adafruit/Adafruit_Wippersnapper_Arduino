@@ -28,7 +28,7 @@ SleepController::SleepController() {
 // Mark so we can disable all external peripherals that draw power during sleep
 // (i.e: tft, i2c, neopixel, etc)
 #if defined(NEOPIXEL_POWER) || defined(PIN_I2C_POWER) || defined(TFT_POWER) || \
-    defined(TFT_I2C_POWER)
+    defined(TFT_I2C_POWER) || defined(NEOPIXEL_I2C_POWER)
   _has_ext_pwr_components = true;
 #else
   _has_ext_pwr_components = false;
