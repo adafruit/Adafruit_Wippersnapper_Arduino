@@ -74,7 +74,6 @@ bool SleepController::Router(pb_istream_t *stream) {
     break;
   default:
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported Sleep payload");
-    res = false;
     break;
   }
 
@@ -98,7 +97,8 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   // If wake enable pin is "active", override any existing lock
   _wake_enable_pin_state = CheckWakeEnablePin();
   if (_wake_enable_pin_state && _lock) {
-    WS_DEBUG_PRINTLN("[sleep] Wake enable pin is active, overriding sleep lock.");
+    WS_DEBUG_PRINTLN(
+        "[sleep] Wake enable pin is active, overriding sleep lock.");
     _lock = false;
     return true;
   }
@@ -156,7 +156,8 @@ void SleepController::WakeFromLightSleep() {
   // Re-initialize SD card if it was previously initialized
   if (Ws._sdCardV2->isModeOffline()) {
     if (!Ws._sdCardV2->begin()) {
-      Ws.haltErrorV2("[sleep] ERROR: Failed to re-initialize SD card after wake");
+      Ws.haltErrorV2(
+          "[sleep] ERROR: Failed to re-initialize SD card after wake");
     }
     WS_DEBUG_PRINTLN("[sleep] SD card re-initialized successfully");
   } else {
@@ -407,10 +408,10 @@ void SleepController::StartSleep() {
       WS_DEBUG_PRINTLN(esp_err_to_name(err));
     }
 #else
-    // Start light sleep using sleepydog for RP2350
-    #ifdef USE_STATUS_LED
+// Start light sleep using sleepydog for RP2350
+#ifdef USE_STATUS_LED
     digitalWrite(STATUS_LED_PIN, LOW);
-    #endif
+#endif
     Ws._wdt->startSleep();
 #endif
   } else {
@@ -450,7 +451,8 @@ void SleepController::HandleNetFSMFailure() {
                                      : ws_sleep_Enter_ext0_tag;
 #endif
   // Get the previous sleep duration from RTC mem
-  sleep_enter_msg.config.timer.duration = _sleep_hardware->GetSleepDurationSecs();
+  sleep_enter_msg.config.timer.duration =
+      _sleep_hardware->GetSleepDurationSecs();
   // Configure sleep mode
   Handle_Sleep_Enter(&sleep_enter_msg);
   // Enter sleep mode

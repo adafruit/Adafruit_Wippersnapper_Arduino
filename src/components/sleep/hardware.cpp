@@ -289,9 +289,7 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
   gpio_num_t pin = (gpio_num_t)pin_num;
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
-  // ESP32-C3 and C6 do not support RTC GPIO - use deep sleep GPIO wakeup
-
-  // Configure pull resistor using standard GPIO API
+  // Configure pull resistor
   if (pin_pull) {
     if (pin_level) {
       // Waking on HIGH, pull DOWN to keep inactive
@@ -307,13 +305,39 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
     gpio_pulldown_dis(pin);
   }
 
-  // Use GPIO wakeup for C3/C6
-  esp_deepsleep_gpio_wake_up_mode_t wakeup_mode =
-      pin_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW;
-  rc = esp_deep_sleep_enable_gpio_wakeup(1ULL << pin, wakeup_mode);
-  if (rc != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable GPIO wakeup");
-    return false;
+  // NOTE: For ESP32-C3/C5/C6, deep sleep requires RTC-capable pins, otherwise
+  // we fall back to light sleep for other pins Check if pin is RTC-capable for
+  // deep sleep GPIO wakeup
+  if (esp_sleep_is_valid_wakeup_gpio(pin)) {
+    // RTC-capable, use deep sleep GPIO wakeup
+    esp_deepsleep_gpio_wake_up_mode_t wakeup_mode =
+        pin_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW;
+    rc = esp_deep_sleep_enable_gpio_wakeup(1ULL << pin, wakeup_mode);
+    if (rc != ESP_OK) {
+      WS_DEBUG_PRINTLN(
+          "[sleep] ERROR: Failed to enable deep sleep GPIO wakeup");
+      return false;
+    }
+  } else {
+    // Not RTC-capable, fall back to light sleep GPIO wakeup
+    WS_DEBUG_PRINTLN(
+        "[sleep] Pin not valid for deep sleep, falling back to light sleep");
+
+    gpio_int_type_t intr_type =
+        pin_level ? GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL;
+    rc = gpio_wakeup_enable(pin, intr_type);
+    if (rc != ESP_OK) {
+      WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable GPIO wakeup");
+      return false;
+    }
+    rc = esp_sleep_enable_gpio_wakeup();
+    if (rc != ESP_OK) {
+      WS_DEBUG_PRINTLN(
+          "[sleep] ERROR: Failed to enable light sleep GPIO wakeup");
+      return false;
+    }
+    // Override existing sleep mode to light sleep
+    SetSleepMode(ws_sleep_SleepMode_S_LIGHT);
   }
 
 #else
@@ -383,7 +407,7 @@ void SleepHardware::DisableExternalComponents() {
   digitalWrite(TFT_POWER, LOW);
 #endif
 
-ReleaseStatusPixel();
+  ReleaseStatusPixel();
 
 #if defined(NEOPIXEL_POWER)
   pinMode(NEOPIXEL_POWER, OUTPUT);
