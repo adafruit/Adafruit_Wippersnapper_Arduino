@@ -324,6 +324,11 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     return Ws._i2c_controller->Router(stream);
   case ws_signal_BrokerToDevice_uart_tag:
     return Ws._uart_controller->Router(stream);
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  case ws_signal_BrokerToDevice_sleep_tag:
+    WS_DEBUG_PRINTLN("sleep");
+    return Ws._sleep_controller->Router(stream);
+#endif
   default:
     WS_DEBUG_PRINTLN("WARNING: Unhandled BrokerToDevice message tag!");
     return false;
@@ -895,7 +900,7 @@ void PrintDeviceInfo() {
     WS_DEBUG_PRINT("Prv. Sleep Mode: ");
     WS_DEBUG_PRINTLN(Ws._sleep_controller->GetPrvSleepMode());
     WS_DEBUG_PRINT("Total Sleep Duration (sec): ");
-    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetSleepDuration());
+    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetSleepDurationSecs());
   }
 #endif
 }
@@ -1150,7 +1155,7 @@ void wippersnapper::loopSleep() {
   }
 
   // Check if run duration timeout exceeded
-  unsigned long run_duration_ms = Ws._sleep_controller->GetRunDuration();
+  unsigned long run_duration_ms = Ws._sleep_controller->getRunDurationMs();
   if (run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) {
     // Reset all flags and variables for use in the next loopsleep() cycle (if
     // light sleep)

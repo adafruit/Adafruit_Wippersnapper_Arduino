@@ -59,7 +59,7 @@ bool CheckinModel::Checkin(const char *hardware_uid,
     _CheckinD2B.payload.request.wake_cause.WakeCause.esp =
         Ws._sleep_controller->GetEspWakeCause();
     _CheckinD2B.payload.request.wake_cause.sleep_duration =
-        Ws._sleep_controller->GetSleepDuration();
+        Ws._sleep_controller->GetSleepDurationSecs();
   }
 #endif
 

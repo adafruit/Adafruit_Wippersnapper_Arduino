@@ -218,7 +218,7 @@ void SleepHardware::CalculateSleepDuration() {
     @brief  Returns the calculated sleep duration.
     @return The sleep duration in seconds.
 */
-int SleepHardware::GetSleepDuration() { return _sleep_time; }
+int SleepHardware::GetSleepDurationSecs() { return _sleep_time; }
 
 /*!
     @brief  Sets the sleep enter time before entering sleep mode.
@@ -387,9 +387,7 @@ void SleepHardware::DisableExternalComponents() {
   digitalWrite(TFT_POWER, LOW);
 #endif
 
-#if defined(PIN_NEOPIXEL)
-  ReleaseStatusPixel();
-#endif
+ReleaseStatusPixel();
 
 #if defined(NEOPIXEL_POWER)
   pinMode(NEOPIXEL_POWER, OUTPUT);

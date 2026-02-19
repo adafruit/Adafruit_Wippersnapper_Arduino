@@ -36,7 +36,7 @@ public:
                           uint32_t timer_duration);
   void SetSleepEnterExt0(bool lock, const char *mode, uint32_t run_duration,
                          const char *pin_name, bool pin_level, bool pin_pull);
-  uint32_t GetRunDuration();
+  uint32_t getRunDurationMs();
 
 private:
   void ConvertSleepMode(const char *mode_str, ws_sleep_SleepMode &mode);

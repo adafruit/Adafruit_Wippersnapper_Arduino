@@ -140,7 +140,7 @@ void SleepController::WakeFromLightSleep() {
   // Recalculate sleep duration
   _sleep_hardware->CalculateSleepDuration();
   WS_DEBUG_PRINT("Slept for ");
-  WS_DEBUG_PRINT(GetSleepDuration());
+  WS_DEBUG_PRINT(GetSleepDurationSecs());
   WS_DEBUG_PRINTLN(" seconds");
 
   // Print sleep cycles
@@ -156,8 +156,7 @@ void SleepController::WakeFromLightSleep() {
   // Re-initialize SD card if it was previously initialized
   if (Ws._sdCardV2->isModeOffline()) {
     if (!Ws._sdCardV2->begin()) {
-      WS_DEBUG_PRINTLN(
-          "[sleep] ERROR: Failed to re-initialize SD card after wake");
+      Ws.haltErrorV2("[sleep] ERROR: Failed to re-initialize SD card after wake");
     }
     WS_DEBUG_PRINTLN("[sleep] SD card re-initialized successfully");
   } else {
@@ -166,7 +165,7 @@ void SleepController::WakeFromLightSleep() {
     Ws.NetworkFSM(true);
   }
 
-#ifdef ARDUINO_ARCH_RP2350
+#ifdef USE_STATUS_LED
   // Visual indication for configuring sleep in RP2350
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
@@ -229,7 +228,7 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
     break;
   }
 
-#ifdef ARDUINO_ARCH_RP2350
+#ifdef USE_STATUS_LED
   // Visual indication for configuring sleep in RP2350
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
@@ -281,16 +280,16 @@ bool SleepController::CheckWakeEnablePin() {
     @brief  Returns the calculated sleep duration.
     @return The sleep duration in seconds.
 */
-int SleepController::GetSleepDuration() {
-  return _sleep_hardware->GetSleepDuration();
+int SleepController::GetSleepDurationSecs() {
+  return _sleep_hardware->GetSleepDurationSecs();
 }
 
 /*!
     @brief  Returns the run duration before sleep entry, in milliseconds.
     @return The run duration in milliseconds.
 */
-unsigned long SleepController::GetRunDuration() {
-  return (unsigned long)_sleep_model->GetRunDuration() * 1000UL;
+unsigned long SleepController::getRunDurationMs() {
+  return (unsigned long)_sleep_model->getRunDurationMs() * 1000UL;
 }
 
 /*!
@@ -448,7 +447,7 @@ void SleepController::HandleNetFSMFailure() {
                                      : ws_sleep_Enter_ext0_tag;
 #endif
   // Get the previous sleep duration from RTC mem
-  sleep_enter_msg.config.timer.duration = _sleep_hardware->GetSleepDuration();
+  sleep_enter_msg.config.timer.duration = _sleep_hardware->GetSleepDurationSecs();
   // Configure sleep mode
   Handle_Sleep_Enter(&sleep_enter_msg);
   // Enter sleep mode

@@ -57,7 +57,7 @@ ws_sleep_Wake *SleepModel::GetSleepWakeMsg() { return &_msg_sleep_wake; }
     @brief  Gets the run duration before sleep, in seconds.
     @return Run duration in seconds.
 */
-uint32_t SleepModel::GetRunDuration() { return _run_duration; }
+uint32_t SleepModel::getRunDurationMs() { return _run_duration; }
 
 /*!
     @brief  Decodes a Sleep Enter message into the _msg_sleep_enter
