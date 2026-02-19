@@ -95,10 +95,10 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   WS_DEBUG_PRINT("[sleep] Sleep lock state: ");
   WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
 
-  // If config pin is HIGH during startup, override any existing lock
+  // If wake enable pin is "active", override any existing lock
   _wake_enable_pin_state = CheckWakeEnablePin();
   if (_wake_enable_pin_state && _lock) {
-    WS_DEBUG_PRINTLN("[sleep] Wake enable pin is HIGH, overriding sleep lock.");
+    WS_DEBUG_PRINTLN("[sleep] Wake enable pin is active, overriding sleep lock.");
     _lock = false;
     return true;
   }
@@ -251,7 +251,9 @@ void SleepController::SetWakeEnablePin(uint8_t pin, uint8_t pull) {
 
 /*!
     @brief  Checks the wake enable pin state before entering sleep.
-    @return True if wake enable pin is HIGH or unassigned, False if LOW.
+    @return True if wake enable pin is active (stay awake), False otherwise.
+    @note   For pull-up: active = LOW (button pressed to GND)
+            For pull-down/no pull: active = HIGH (button pressed to VCC)
 */
 bool SleepController::CheckWakeEnablePin() {
   // Configure pin with specified pull mode
@@ -266,14 +268,15 @@ bool SleepController::CheckWakeEnablePin() {
     pinMode(_wake_enable_pin, INPUT);
     break;
   }
-  delay(10); // TODO: Remove in prod? This was added to stabilize reading
   int pinState = digitalRead(_wake_enable_pin);
 
-  // Pin HIGH = wake enabled, stay awake
-  if (pinState == HIGH)
-    return true;
-
-  return false;
+  // Return whether pin state indicates "active" based on pull mode
+  if (_wake_enable_pin_pull == 2) {
+    // Pull-up is an active LOW
+    return (pinState == LOW);
+  }
+  // Otherwise, pull-down/no pull is an active HIGH
+  return (pinState == HIGH);
 }
 
 /*!

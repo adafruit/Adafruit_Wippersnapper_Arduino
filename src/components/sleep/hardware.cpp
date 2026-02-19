@@ -361,11 +361,7 @@ void SleepHardware::ReenableExternalComponents() {
   digitalWrite(TFT_POWER, HIGH);
 #endif
 
-#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
-  // (specific to adafruit feather esp32-s2) - turn on the I2C power
-  pinMode(PIN_I2C_POWER, OUTPUT);
-  digitalWrite(PIN_I2C_POWER, HIGH);
-#elif defined(PIN_I2C_POWER)
+#if defined(PIN_I2C_POWER)
   pinMode(PIN_I2C_POWER, OUTPUT);
   digitalWrite(PIN_I2C_POWER, HIGH);
 #elif defined(TFT_I2C_POWER)
