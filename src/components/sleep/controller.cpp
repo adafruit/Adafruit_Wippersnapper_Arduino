@@ -406,7 +406,9 @@ void SleepController::StartSleep() {
     }
 #else
     // Start light sleep using sleepydog for RP2350
-    digitalWrite(LED_BUILTIN, LOW);
+    #ifdef USE_STATUS_LED
+    digitalWrite(STATUS_LED_PIN, LOW);
+    #endif
     Ws._wdt->startSleep();
 #endif
   } else {
