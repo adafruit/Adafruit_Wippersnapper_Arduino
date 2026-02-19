@@ -33,7 +33,7 @@ typedef esp32_wifi ws_adapter_wifi;
 #include "platforms/pico_wifi.h"
 typedef pico_wifi ws_adapter_wifi;
 // Adafruit "AirLift" (ESP32 coprocessor)
-#elif defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                      \
+#elif defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                    \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT)
 #include "platforms/airlift_wifi.h"

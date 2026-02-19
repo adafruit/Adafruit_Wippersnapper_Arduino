@@ -58,9 +58,8 @@ public:
     @param  brokerPort
                 Adafruit IO broker port.
   */
-  esp32_wifi(const char *aioUsername, const char *aioKey,
-                const char *netSSID, const char *netPass, const char *brokerURL,
-                uint16_t brokerPort)
+  esp32_wifi(const char *aioUsername, const char *aioKey, const char *netSSID,
+             const char *netPass, const char *brokerURL, uint16_t brokerPort)
       : wippersnapper() {
     _ssid = netSSID;
     _pass = netPass;
@@ -71,8 +70,7 @@ public:
     strncpy(Ws._configV2.network.pass, _pass,
             sizeof(Ws._configV2.network.pass));
     strncpy(Ws._configV2.aio_key, aioKey, sizeof(Ws._configV2.aio_key));
-    strncpy(Ws._configV2.aio_user, aioUsername,
-            sizeof(Ws._configV2.aio_user));
+    strncpy(Ws._configV2.aio_user, aioUsername, sizeof(Ws._configV2.aio_user));
     strncpy(Ws._configV2.aio_url, brokerURL, sizeof(Ws._configV2.aio_url));
     Ws._configV2.io_port = brokerPort;
   }
@@ -145,8 +143,7 @@ public:
       if (Ws._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
-              0) {
+          if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) == 0) {
             WS_DEBUG_PRINT("SSID (");
             WS_DEBUG_PRINT(Ws._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
@@ -249,9 +246,11 @@ public:
 protected:
   const char *_ssid; ///< WiFi SSID
   const char *_pass; ///< WiFi password
-  NetworkClientSecure *_mqtt_client_secure = nullptr; ///< Pointer to a secure network client object
-  NetworkClient *_mqtt_client_insecure = nullptr; ///< Pointer to an insecure network client object
-  WiFiMulti _wifiMulti;       ///< WiFiMulti object for multi-network mode
+  NetworkClientSecure *_mqtt_client_secure =
+      nullptr; ///< Pointer to a secure network client object
+  NetworkClient *_mqtt_client_insecure =
+      nullptr;          ///< Pointer to an insecure network client object
+  WiFiMulti _wifiMulti; ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"

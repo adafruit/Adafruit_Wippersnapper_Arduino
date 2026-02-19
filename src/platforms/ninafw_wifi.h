@@ -45,8 +45,8 @@ public:
   @param  netPass
           Wireless Network password
   */
-  ninafw_wifi(const char *aioUsername, const char *aioKey,
-                 const char *netSSID, const char *netPass)
+  ninafw_wifi(const char *aioUsername, const char *aioKey, const char *netSSID,
+              const char *netPass)
       : Wippersnapper() {
     _ssid = netSSID;
     _pass = netPass;

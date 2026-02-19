@@ -657,7 +657,7 @@ void wippersnapper::haltErrorV2(const char *error,
   for (;;) {
     if (!reboot) {
       Ws._wdt->feed(); // Feed the WDT indefinitely to hold the WIPPER drive
-                    // open
+                       // open
     } else {
 // Let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266
