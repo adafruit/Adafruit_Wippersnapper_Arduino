@@ -19,7 +19,9 @@
 // Stored in RTC memory to persist across sleep cycles
 RTC_SLOW_ATTR static struct timeval sleep_enter_time;
 RTC_SLOW_ATTR static uint32_t cnt_soft_rtc;
-RTC_DATA_ATTR ws_sleep_SleepMode sleep_mode; ///< Current sleep mode (deep/light), persists across sleep cycles
+RTC_DATA_ATTR ws_sleep_SleepMode
+    sleep_mode; ///< Current sleep mode (deep/light), persists across sleep
+                ///< cycles
 RTC_DATA_ATTR static uint32_t sleep_cycles;
 RTC_DATA_ATTR static char log_filename_rtc[64];
 /*!

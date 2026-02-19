@@ -133,8 +133,7 @@ public:
       if (Ws._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
-              0) {
+          if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) == 0) {
             WS_DEBUG_PRINT("SSID (");
             WS_DEBUG_PRINT(Ws._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");

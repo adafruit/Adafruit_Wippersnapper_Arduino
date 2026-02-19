@@ -86,8 +86,8 @@
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
-#include <SPI.h>                // SPI
-#include <Wire.h>               // I2C
+#include <SPI.h>           // SPI
+#include <Wire.h>          // I2C
 
 // Wippersnapper API Helpers
 #include "components/statusLED/Wippersnapper_StatusLED.h"
