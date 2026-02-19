@@ -50,6 +50,18 @@ bool encode_string_callback(pb_ostream_t *stream, const pb_field_t *field,
   return pb_encode_string(stream, (const uint8_t *)str, len);
 }
 
+/*!
+    @brief  Fills the ErrorD2B message with component information.
+    @param  which_component_type
+            The component type identifier.
+    @param  which_component_id
+            The component ID field selector.
+    @param  pin
+            Callback containing the pin name string.
+    @param  error_msg
+            Callback containing the error message string.
+    @return True if successful.
+*/
 bool ErrorModel::FillErrorD2B(pb_size_t which_component_type,
                               pb_size_t which_component_id, pb_callback_t pin,
                               pb_callback_t error_msg) {
@@ -62,8 +74,22 @@ bool ErrorModel::FillErrorD2B(pb_size_t which_component_type,
   return true;
 }
 
+/*!
+    @brief  Returns a pointer to the ErrorD2B message.
+    @return Pointer to the internal ErrorD2B message struct.
+*/
 ws_error_ErrorD2B *ErrorModel::getErrorD2BMessage() { return &_error_d2b_msg; }
 
+/*!
+    @brief  Encodes the ErrorD2B message into a buffer.
+    @param  buffer
+            Output buffer to write encoded data.
+    @param  buffer_size
+            Size of the output buffer.
+    @param  encoded_size
+            Output parameter for the number of bytes written.
+    @return True if encoding was successful, False otherwise.
+*/
 bool ErrorModel::encodeErrorD2B(uint8_t *buffer, size_t buffer_size,
                                 size_t *encoded_size) {
   // Get size of the encoded ErrorD2B message

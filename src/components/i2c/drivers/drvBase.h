@@ -159,7 +159,7 @@ public:
 
   /*!
       @brief    Sets whether the last read was sent to IO.
-      @param    value
+      @param    did_read_send
                 True if the read was sent successfully, False otherwise.
   */
   void SetDidReadSend(bool did_read_send) { _did_read_send = did_read_send; }

@@ -320,3 +320,67 @@ bool ErrorController::PublishServo(const char *error_msg,
                       ws_error_ErrorD2B_pin_tag, pin_callback,
                       error_msg_callback);
 }
+
+/*!
+    @brief  Publishes a GPS error message for an I2C device.
+    @param  error_msg
+            The error message to publish.
+    @param  i2c_device
+            Pointer to the I2C device descriptor.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool ErrorController::PublishGPS(const char *error_msg,
+                                 ws_i2c_DeviceDescriptor *i2c_device) {
+  // TODO: Implement GPS error publishing for I2C devices
+  (void)error_msg;
+  (void)i2c_device;
+  return false;
+}
+
+/*!
+    @brief  Publishes a GPS error message for a UART device.
+    @param  error_msg
+            The error message to publish.
+    @param  uart_device
+            Pointer to the UART device descriptor.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool ErrorController::PublishGPS(const char *error_msg,
+                                 ws_uart_Descriptor *uart_device) {
+  // TODO: Implement GPS error publishing for UART devices
+  (void)error_msg;
+  (void)uart_device;
+  return false;
+}
+
+/*!
+    @brief  Publishes an I2C device error message to the broker.
+    @param  error_msg
+            The error message to publish.
+    @param  i2c_device
+            Pointer to the I2C device descriptor.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool ErrorController::PublishI2C(const char *error_msg,
+                                 ws_i2c_DeviceDescriptor *i2c_device) {
+  // TODO: Implement I2C error publishing
+  (void)error_msg;
+  (void)i2c_device;
+  return false;
+}
+
+/*!
+    @brief  Publishes a UART device error message to the broker.
+    @param  error_msg
+            The error message to publish.
+    @param  uart_device
+            Pointer to the UART device descriptor.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool ErrorController::PublishUART(const char *error_msg,
+                                  ws_uart_Descriptor *uart_device) {
+  // TODO: Implement UART error publishing
+  (void)error_msg;
+  (void)uart_device;
+  return false;
+}

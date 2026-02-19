@@ -367,6 +367,8 @@ void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
               the hardware's state.
     @param    statusState
               Hardware's status state.
+    @param    blink_num
+              Number of times to blink the LED.
 */
 void statusLEDBlink(ws_led_status_t statusState, int blink_num) {
 #ifdef USE_STATUS_LED

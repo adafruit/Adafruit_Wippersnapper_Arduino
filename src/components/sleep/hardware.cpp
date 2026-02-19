@@ -19,7 +19,7 @@
 // Stored in RTC memory to persist across sleep cycles
 RTC_SLOW_ATTR static struct timeval sleep_enter_time;
 RTC_SLOW_ATTR static uint32_t cnt_soft_rtc;
-RTC_DATA_ATTR ws_sleep_SleepMode sleep_mode;
+RTC_DATA_ATTR ws_sleep_SleepMode sleep_mode; ///< Current sleep mode (deep/light), persists across sleep cycles
 RTC_DATA_ATTR static uint32_t sleep_cycles;
 RTC_DATA_ATTR static char log_filename_rtc[64];
 /*!
@@ -244,9 +244,10 @@ void SleepHardware::SetSleepEnterTime() {
 
 #ifdef ARDUINO_ARCH_ESP32
 /*!
-    @brief Enables wakeup by timer on ESP32x MCUs.
-    @param duration
-           Time before wakeup, in microseconds
+    @brief  Enables wakeup by timer on ESP32x MCUs.
+    @param  duration
+            Time before wakeup, in microseconds.
+    @return True if timer wakeup was enabled, False otherwise.
 */
 bool SleepHardware::RegisterRTCTimerWakeup(uint64_t duration) {
   esp_err_t rc = esp_sleep_enable_timer_wakeup(duration);

@@ -129,6 +129,10 @@ bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
   return res;
 }
 
+/*!
+    @brief  Handles wake-up from light sleep mode. Refreshes the cached
+            wakeup cause and re-registers the RTC timer if applicable.
+*/
 void SleepController::WakeFromLightSleep() {
   // Refresh the cached sleep wakeup cause from hardware
   _sleep_hardware->GetSleepWakeupCause();
@@ -353,7 +357,6 @@ bool SleepController::IsSleepMode() {
 
 /*!
     @brief  Enters the configured sleep mode.
-    @return True if the device successfully entered sleep, False otherwise.
 */
 void SleepController::StartSleep() {
   // Set current time before entering sleep

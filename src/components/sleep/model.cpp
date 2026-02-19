@@ -80,8 +80,6 @@ bool SleepModel::DecodeSleepEnter(pb_istream_t *stream) {
             Whether sleep is locked/enabled.
     @param  mode
             The sleep mode (light/deep).
-    @param  wakeup
-            The wakeup source type.
     @param  run_duration
             Duration to run before sleeping, in seconds.
     @param  timer_duration

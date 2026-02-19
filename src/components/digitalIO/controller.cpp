@@ -187,8 +187,8 @@ int DigitalIOController::GetPinIdx(uint8_t pin_name) {
 
 /*!
     @brief  Write a digital pin
-    @param  stream
-            The nanopb input stream.
+    @param  msg
+            Pointer to the DigitalIO write message.
     @return True if the digital pin was successfully written.
 */
 bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {

@@ -603,8 +603,8 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
 
 /*!
     @brief    Implements handling for a I2cDeviceRemove message
-    @param    stream
-                A pointer to the pb_istream_t stream.
+    @param    msg
+              Pointer to the I2cDeviceRemove message.
     @returns  True if the I2cDeviceRemove message was handled, False
               otherwise.
 */
@@ -703,9 +703,9 @@ bool I2cController::InitMux(const char *name, uint32_t address,
 }
 
 /*!
-    @brief   Configures the MUX channel on the bus.
-    @param   stream
-                Pointer to the pb_istream
+    @brief   Handles an I2C bus scan request.
+    @param   msg
+             Pointer to the I2cBusScan message.
     @returns True if the I2C bus was successfully scanned and the
              I2cBusScan message was published to IO, False otherwise.
 */
@@ -797,10 +797,10 @@ bool I2cController::Handle_I2cBusScan(ws_i2c_BusScan *msg) {
 
 /*!
     @brief    Handler for an I2cDeviceOutputWrite message
-    @param    stream
-                A pointer to the pb_istream_t stream.
+    @param    msg
+              Pointer to the I2cDeviceOutputWrite message.
     @returns  True if the callback was successfully executed by the driver,
-   False otherwise.
+              False otherwise.
 */
 bool I2cController::Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg) {
   ws_i2c_DeviceDescriptor descriptor = msg->device_description;
@@ -859,8 +859,8 @@ bool I2cController::Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg) {
 
 /*!
     @brief    Implements handling for a I2cDeviceAddOrReplace message
-    @param    stream
-                A pointer to the pb_istream_t stream.
+    @param    msg
+              Pointer to the I2cDeviceAddOrReplace message.
     @returns  True if the I2cDeviceAddOrReplace message was handled
               (created or replaced), False otherwise.
 */
