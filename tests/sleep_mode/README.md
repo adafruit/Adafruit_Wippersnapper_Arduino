@@ -126,20 +126,48 @@ python tests/sleep_mode/test_offline_sleep.py \
     --config-file /Volumes/SDCARD/config.json
 ```
 
-**Expected config.json structure:**
+**Example config.json structure (Adafruit Metro ESP32-S3 and BME280):**
 ```json
 {
-  "exportedFromDevice": {
-    "rtc": "DS3231"
-  },
-  "sleepConfig": [
-    {
-      "timerConfig": {
-        "duration": 12
-      }
-    }
-  ],
-  "components": [...]
+    "exportedFromDevice": {
+        "referenceVoltage": 2.6,
+        "totalGPIOPins": 27,
+        "totalAnalogPins": 18,
+        "statusLEDBrightness": 0.5,
+        "autoConfig": false,
+        "sd_cs_pin": 45
+    },
+    "components": [
+        {
+            "name": "BME280",
+            "componentAPI": "i2c",
+            "period": 30,
+            "i2cDeviceName": "bme280",
+            "i2cDeviceAddress": "0x77",
+            "i2cDeviceSensorTypes": [
+                {
+                    "type": "ambient-temp"
+                },
+                {
+                    "type": "relative-humidity"
+                },
+                {
+                    "type": "pressure"
+                }
+            ],
+            "autoConfig": "false"
+        }
+    ],
+    "sleepConfig": [
+        {
+            "lock": true,
+            "mode": "deep",
+            "runDuration": 60,
+            "timerConfig": {
+                "duration": 300
+            }
+        }
+    ]
 }
 ```
 
