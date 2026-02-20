@@ -40,6 +40,12 @@ html/*
 .vscode/*
 src/.vscode/settings.json
 
+# Visual Studio artifacts
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
 .DS_STORE
 
 examples/Wippersnapper_demo/build/

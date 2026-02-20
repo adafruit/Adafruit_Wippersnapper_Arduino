@@ -528,6 +528,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _sgp40->configureDriver(msgDeviceInitReq);
     drivers.push_back(_sgp40);
     WS_DEBUG_PRINTLN("SGP40 Initialized Successfully!");
+  } else if (strcmp("sgp41", msgDeviceInitReq->i2c_device_name) == 0) {
+    _sgp41 = new WipperSnapper_I2C_Driver_SGP41(this->_i2c, i2cAddress);
+    if (!_sgp41->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize SGP41!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _sgp41->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_sgp41);
+    WS_DEBUG_PRINTLN("SGP41 Initialized Successfully!");
   } else if ((strcmp("sht20", msgDeviceInitReq->i2c_device_name) == 0) ||
              (strcmp("si7021", msgDeviceInitReq->i2c_device_name) == 0)) {
     _si7021 = new WipperSnapper_I2C_Driver_SI7021(this->_i2c, i2cAddress);

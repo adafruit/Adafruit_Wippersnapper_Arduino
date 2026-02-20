@@ -72,6 +72,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_SEN6X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SGP30.h"
 #include "drivers/WipperSnapper_I2C_Driver_SGP40.h"
+#include "drivers/WipperSnapper_I2C_Driver_SGP41.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHT3X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHT4X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHTC3.h"
@@ -205,6 +206,7 @@ private:
   WipperSnapper_I2C_Driver_SEN6X *_sen6x = nullptr;
   WipperSnapper_I2C_Driver_SGP30 *_sgp30 = nullptr;
   WipperSnapper_I2C_Driver_SGP40 *_sgp40 = nullptr;
+  WipperSnapper_I2C_Driver_SGP41 *_sgp41 = nullptr;
   WipperSnapper_I2C_Driver_SPA06_003 *_spa06_003 = nullptr;
   WipperSnapper_I2C_Driver_PCT2075 *_pct2075 = nullptr;
   WipperSnapper_I2C_Driver_PM25 *_pm25 = nullptr;
