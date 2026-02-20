@@ -18,7 +18,7 @@
 #define PICO_WIFI_H
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                    \
-    defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+    defined(ARDUINO_RASPBERRY_PI_PICO_2W) || defined(PICO_CYW43_SUPPORTED)
 
 #define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
