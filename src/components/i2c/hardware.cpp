@@ -236,7 +236,7 @@ bool I2cHardware::ScanBus(ws_i2c_BusScanned *scan_results) {
   /*
   #ifndef ARDUINO_ARCH_ESP32
       // re-enable WipperSnapper SAMD WDT global timeout
-      WS.enableWDT(WS_WDT_TIMEOUT);
+      WS.enableWDT(WS_TIMEOUT_WDT);
       WS.feedWDT();
   #endif
   */

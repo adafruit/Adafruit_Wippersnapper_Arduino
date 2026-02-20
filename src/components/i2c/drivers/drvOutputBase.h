@@ -117,8 +117,7 @@ public:
                 Pointer to a ws_i2c_output_CharLCDWrite message.
       @returns  True if the message was written successfully, False otherwise.
   */
-  bool
-  WriteMessageCharLCD(ws_i2c_output_CharLCDWrite *write_char_lcd) {
+  bool WriteMessageCharLCD(ws_i2c_output_CharLCDWrite *write_char_lcd) {
     EnableBackLightCharLCD(write_char_lcd->enable_backlight);
     WriteMessage(write_char_lcd->message);
     return true;

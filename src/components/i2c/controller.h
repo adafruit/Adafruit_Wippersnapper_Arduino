@@ -14,9 +14,9 @@
  */
 #ifndef WS_I2C_CONTROLLER_H
 #define WS_I2C_CONTROLLER_H
-#include "Wippersnapper_V2.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
@@ -29,6 +29,7 @@
 #include "drivers/drvDps310.h"
 #include "drivers/drvDs2484.h"
 #include "drivers/drvEns160.h"
+#include "drivers/drvGenericSensorMock.h"
 #include "drivers/drvHts221.h"
 #include "drivers/drvHtu21d.h"
 #include "drivers/drvIna219.h"
@@ -72,10 +73,10 @@
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
 
-class Wippersnapper_V2; ///< Forward declaration
-class I2cModel;         ///< Forward declaration
-class I2cOutputModel;   ///< Forward declaration
-class I2cHardware;      ///< Forward declaration
+class wippersnapper;  ///< Forward declaration
+class I2cModel;       ///< Forward declaration
+class I2cOutputModel; ///< Forward declaration
+class I2cHardware;    ///< Forward declaration
 
 /*!
     @brief  Routes messages using the i2c.proto API to the
@@ -85,7 +86,9 @@ class I2cController {
 public:
   I2cController();
   ~I2cController();
-  void update();
+  void update(bool force = false);
+  bool UpdateComplete();
+  void ResetFlags();
   // Routing //
   bool Router(pb_istream_t *stream);
   bool Handle_I2cDeviceAddOrReplace(ws_i2c_DeviceAddOrReplace *msg);
@@ -101,6 +104,8 @@ public:
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
   bool RemoveDriver(uint32_t address, bool is_output_device);
+  void ToggleDefaultPowerPin();
+  TwoWire *GetI2cBus(bool is_alt_bus = false);
 
 private:
   I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
@@ -112,5 +117,5 @@ private:
   std::vector<drvOutputBase *>
       _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
-#endif                        // WS_I2C_CONTROLLER_H
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
+#endif                   // WS_I2C_CONTROLLER_H

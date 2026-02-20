@@ -358,8 +358,7 @@ bool GPSHardware::DetectMtkUart() {
   // Attempt to use Adafruit_GPS
   _ada_gps = new Adafruit_GPS(_hw_serial);
   int baud_rate;
-#if defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                    \
-    defined(ARDUINO_RASPBERRY_PI_PICO_2W) ||                                   \
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350) ||            \
     defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                      \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO)

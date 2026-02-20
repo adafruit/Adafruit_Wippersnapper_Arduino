@@ -132,8 +132,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     return false;
   case ws_uart_DeviceType_DT_GPS:
     WS_DEBUG_PRINTLN("[uart] Adding GPS device..");
-    if (!WsV2._gps_controller->AddGPS(uart_hardware->GetHardwareSerial(),
-                                      &cfg_device.config.gps)) {
+    if (!Ws._gps_controller->AddGPS(uart_hardware->GetHardwareSerial(),
+                                    &cfg_device.config.gps)) {
       WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS device!");
       delete uart_hardware; // cleanup
       return false;
@@ -181,7 +181,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   }
 
   // Are we in offline mode?
-  if (WsV2._sdCardV2->isModeOffline())
+  if (Ws._sdCardV2->isModeOffline())
     return true; // Don't publish to IO in offline mode
 
   // Encode and publish out to Adafruit IO
@@ -198,7 +198,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // TODO: Unsure why this is causing a crash on GPS, figure out later
   // Currently commented out to prevent crashes
   /*   if
-    (!WsV2.PublishD2b(wippersnapper_signal_DeviceToBroker_uart_added_tag,
+    (!Ws.PublishD2b(wippersnapper_signal_DeviceToBroker_uart_added_tag,
                             _uart_model->GetUartAddedMsg())) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to
     IO!"); return false;
@@ -261,12 +261,17 @@ bool UARTController::Handle_UartWrite(ws_uart_Write *msg) {
 /*!
     @brief  Polls the UARTController for updates, processes any pending events
    from the UART drivers and sends data to Adafruit IO.
+    @param  force
+            If true, forces a read on all drivers regardless of period.
 */
-void UARTController::update() {
+void UARTController::update(bool force) {
   if (_uart_drivers.empty())
     return; // bail-out
 
   for (drvUartBase *drv : _uart_drivers) {
+    // (force only) - Was driver previously read and sent?
+    if (drv->GetDidReadSend() && force)
+      continue;
 
     size_t num_sensors = drv->GetNumSensors();
     if (num_sensors == 0) {
@@ -277,7 +282,8 @@ void UARTController::update() {
 
     // Did driver's read period elapse yet?
     ulong cur_time = millis();
-    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod())
+    if (!force &&
+        (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod()))
       continue;
 
     // Read the events from the drivers
@@ -289,6 +295,7 @@ void UARTController::update() {
       sensors_event_t event = {0};
       if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
         WS_DEBUG_PRINTLN("[uart] ERROR: Failed to read sensor!");
+        drv->SetDidReadSend(false);
         continue; // skip this sensor if reading failed
       }
       // Fill the event with the sensor data
@@ -298,28 +305,58 @@ void UARTController::update() {
     // Encode the UART input event message
     if (_uart_model->EncodeUartInputEvent()) {
       // Handle the UartInputEvent message
-      if (WsV2._sdCardV2->isModeOffline()) {
+      if (Ws._sdCardV2->isModeOffline()) {
         // TODO: This is UNIMPLEMENTED!
         // In offline mode, log to SD card
         /* if
-        (!WsV2._sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
+        (!Ws._sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
         { WS_DEBUG_PRINTLN("[uart] ERROR: Unable to log the UartInputEvent to
         SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+        drv->SetDidReadSend(false);
+        } else {
+        drv->SetDidReadSend(true);
         } */
+        drv->SetDidReadSend(true); // For now, assume success in offline mode
       } else {
         // In online mode, publish to Adafruit IO
-        if (!WsV2.PublishD2b(ws_signal_BrokerToDevice_uart_tag,
-                             _uart_model->GetUartInputEventMsg())) {
+        if (!Ws.PublishD2b(ws_signal_BrokerToDevice_uart_tag,
+                           _uart_model->GetUartInputEventMsg())) {
           WS_DEBUG_PRINTLN(
               "[uart] ERROR: Unable to publish UartInputEvent to IO!");
+          drv->SetDidReadSend(false);
+        } else {
+          drv->SetDidReadSend(true);
         }
       }
     } else {
       WS_DEBUG_PRINTLN(
           "[uart] ERROR: Failed to encode UartInputEvent message!");
+      drv->SetDidReadSend(false);
     }
     // Update the driver's previous period timestamp
     cur_time = millis();
     drv->SetSensorPeriodPrv(cur_time);
+  }
+}
+
+/*!
+    @brief  Checks if all UART drivers have been read and their values sent.
+    @return True if all drivers have been read and sent, False otherwise.
+*/
+bool UARTController::UpdateComplete() {
+  for (drvUartBase *drv : _uart_drivers) {
+    if (!drv->GetDidReadSend()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/*!
+    @brief  Resets all UART drivers' did_read_send flags to false.
+*/
+void UARTController::ResetFlags() {
+  for (drvUartBase *drv : _uart_drivers) {
+    drv->SetDidReadSend(false);
   }
 }

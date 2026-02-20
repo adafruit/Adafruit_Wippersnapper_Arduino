@@ -66,12 +66,12 @@ bool ErrorController::Router(pb_istream_t *stream) {
 bool ErrorController::HandleBan(const ws_error_ErrorIOBan &ban) {
   WS_DEBUG_PRINTLN("[ERROR] Received IO Ban from broker");
   // Disconnect client from broker
-  if (!WsV2._mqttV2->disconnect()) {
+  if (!Ws._mqttV2->disconnect()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
 
   // Let the device fall into halted state
-  WsV2.haltErrorV2("IO MQTT Ban Error");
+  Ws.haltErrorV2("IO MQTT Ban Error");
   return true;
 }
 
@@ -107,8 +107,8 @@ bool ErrorController::HandleThrottle(const ws_error_ErrorIOThrottle &throttle) {
     time_elapsed += time_delay;
 
     // Feed the watchdog and ping MQTT to keep connection alive
-    WsV2.feedWDTV2();
-    WsV2._mqttV2->ping();
+    Ws._wdt->feed();
+    Ws._mqttV2->ping();
   }
 
   WS_DEBUG_PRINTLN("[ERROR] Throttle period ended. Resuming normal operation.");
@@ -149,7 +149,7 @@ bool ErrorController::PublishError(pb_size_t which_component_type,
   }
 
   // Publish the ErrorD2B message to the broker
-  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_error_tag, (void *)buf)) {
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_error_tag, (void *)buf)) {
     WS_DEBUG_PRINTLN("[Error] ERROR: Unable to publish ErrorD2B message");
     return false;
   }
@@ -319,4 +319,68 @@ bool ErrorController::PublishServo(const char *error_msg,
   return PublishError(ws_signal_DeviceToBroker_servo_tag,
                       ws_error_ErrorD2B_pin_tag, pin_callback,
                       error_msg_callback);
+}
+
+/*!
+    @brief  Publishes a GPS error message for an I2C device.
+    @param  error_msg
+            The error message to publish.
+    @param  i2c_device
+            Pointer to the I2C device descriptor.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool ErrorController::PublishGPS(const char *error_msg,
+                                 ws_i2c_DeviceDescriptor *i2c_device) {
+  // TODO: Implement GPS error publishing for I2C devices
+  (void)error_msg;
+  (void)i2c_device;
+  return false;
+}
+
+/*!
+    @brief  Publishes a GPS error message for a UART device.
+    @param  error_msg
+            The error message to publish.
+    @param  uart_device
+            Pointer to the UART device descriptor.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool ErrorController::PublishGPS(const char *error_msg,
+                                 ws_uart_Descriptor *uart_device) {
+  // TODO: Implement GPS error publishing for UART devices
+  (void)error_msg;
+  (void)uart_device;
+  return false;
+}
+
+/*!
+    @brief  Publishes an I2C device error message to the broker.
+    @param  error_msg
+            The error message to publish.
+    @param  i2c_device
+            Pointer to the I2C device descriptor.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool ErrorController::PublishI2C(const char *error_msg,
+                                 ws_i2c_DeviceDescriptor *i2c_device) {
+  // TODO: Implement I2C error publishing
+  (void)error_msg;
+  (void)i2c_device;
+  return false;
+}
+
+/*!
+    @brief  Publishes a UART device error message to the broker.
+    @param  error_msg
+            The error message to publish.
+    @param  uart_device
+            Pointer to the UART device descriptor.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool ErrorController::PublishUART(const char *error_msg,
+                                  ws_uart_Descriptor *uart_device) {
+  // TODO: Implement UART error publishing
+  (void)error_msg;
+  (void)uart_device;
+  return false;
 }

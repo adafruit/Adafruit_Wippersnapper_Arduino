@@ -14,7 +14,7 @@
  */
 #ifndef WS_DS18X20_HARDWARE_H
 #define WS_DS18X20_HARDWARE_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 #include "OneWireNg_CurrentPlatform.h"
 #include "drivers/DSTherm.h"
@@ -48,6 +48,7 @@ public:
                        ///< in degrees Celsius
   bool is_read_temp_f; ///< Flag telling the controller to read the temperature
                        ///< in degrees Fahrenheit
+  bool did_read_send; ///< True if the last read was sent to IO, False otherwise
 private:
   Placeholder<OneWireNg_CurrentPlatform> _ow; ///< OneWire bus object
   OneWireNg::Id _sensorId;                    ///< Sensor ID

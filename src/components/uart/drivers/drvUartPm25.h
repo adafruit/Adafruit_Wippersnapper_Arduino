@@ -54,8 +54,7 @@ public:
               The port number for the UART device corresponding to the Serial
     instance.
 */
-  drvUartPm25(SoftwareSerial *sw_serial,
-              ws_uart_DeviceType device_type,
+  drvUartPm25(SoftwareSerial *sw_serial, ws_uart_DeviceType device_type,
               const char *driver_name, uint32_t port_num)
       : drvUartBase(sw_serial, driver_name, port_num) {
     _device_type = device_type; // Set device type after base constructor

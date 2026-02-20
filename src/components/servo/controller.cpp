@@ -88,8 +88,8 @@ bool ServoController::PublishServoAddedMsg(const char *servo_pin,
                                            bool did_attach,
                                            ws_servo_Add *msg_add) {
   _servo_model->EncodeServoAdded(msg_add->servo_pin, did_attach);
-  if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_servo_tag,
-                       _servo_model->GetServoAddedMsg())) {
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_servo_tag,
+                     _servo_model->GetServoAddedMsg())) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed publishing a ServoAdded message!");
     return false;
   }
@@ -118,8 +118,7 @@ bool ServoController::Handle_Servo_Add(ws_servo_Add *msg) {
 
   // Write the pulse width to the servo
   if (did_attach) {
-    _servo_hardware[_active_servo_pins]->ServoWrite(
-        (int)msg->min_pulse_width);
+    _servo_hardware[_active_servo_pins]->ServoWrite((int)msg->min_pulse_width);
     WS_DEBUG_PRINT("[servo] Servo attached to pin: ");
     WS_DEBUG_PRINTLN(msg->servo_pin);
     _active_servo_pins++;

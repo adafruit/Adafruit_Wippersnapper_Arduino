@@ -168,20 +168,20 @@ void Wippersnapper_FS::GetSDCSPin() {
   // Attempt to open and deserialize the config.json file
   file_cfg = wipperFatFs_v2.open("/config.json");
   if (!file_cfg) {
-    WsV2.pin_sd_cs = 255;
+    Ws.pin_sd_cs = 255;
     return;
   }
 
-  error = deserializeJson(WsV2._config_doc, file_cfg);
+  error = deserializeJson(Ws._config_doc, file_cfg);
   if (error) {
     file_cfg.close();
-    WsV2.pin_sd_cs = 255;
+    Ws.pin_sd_cs = 255;
     return;
   }
 
   // Parse config.json and save the SD CS pin
-  JsonObject exportedFromDevice = WsV2._config_doc["exportedFromDevice"];
-  WsV2.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
+  JsonObject exportedFromDevice = Ws._config_doc["exportedFromDevice"];
+  Ws.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
   file_cfg.close();
 }
 
@@ -314,9 +314,9 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("Board ID: ");
     bootFile.println(BOARD_ID);
 
-    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WsV2._macAddrV2[0],
-            WsV2._macAddrV2[1], WsV2._macAddrV2[2], WsV2._macAddrV2[3],
-            WsV2._macAddrV2[4], WsV2._macAddrV2[5]);
+    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", Ws._macAddrV2[0],
+            Ws._macAddrV2[1], Ws._macAddrV2[2], Ws._macAddrV2[3],
+            Ws._macAddrV2[4], Ws._macAddrV2[5]);
     bootFile.print("MAC Address: ");
     bootFile.println(sMAC);
 
@@ -388,7 +388,7 @@ void Wippersnapper_FS::parseSecrets() {
 
   if (doc.containsKey("network_type_wifi")) {
     // set default network config
-    convertFromJson(doc["network_type_wifi"], WsV2._configV2.network);
+    convertFromJson(doc["network_type_wifi"], Ws._configV2.network);
 
     if (!doc["network_type_wifi"].containsKey("alternative_networks")) {
       // do nothing extra, we already have the only network
@@ -415,13 +415,13 @@ void Wippersnapper_FS::parseSecrets() {
           WS_DEBUG_PRINTLN(altnetworks[i]["network_ssid"].as<const char *>());
           break;
         }
-        convertFromJson(altnetworks[i], WsV2._multiNetworksV2[i]);
+        convertFromJson(altnetworks[i], Ws._multiNetworksV2[i]);
         WS_DEBUG_PRINT("Added SSID: ");
-        WS_DEBUG_PRINTLN(WsV2._multiNetworksV2[i].ssid);
+        WS_DEBUG_PRINTLN(Ws._multiNetworksV2[i].ssid);
         WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLN(WsV2._multiNetworksV2[i].pass);
+        WS_DEBUG_PRINTLN(Ws._multiNetworksV2[i].pass);
       }
-      WsV2._isWiFiMultiV2 = true;
+      Ws._isWiFiMultiV2 = true;
     } else {
       fsHalt("ERROR: Unrecognised value type for "
              "network_type_wifi.alternative_networks in secrets.json!");
@@ -431,11 +431,11 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // Extract a config struct from the JSON document
-  WsV2._configV2 = doc.as<secretsConfig>();
+  Ws._configV2 = doc.as<secretsConfig>();
 
   // Validate the config struct is not filled with default values
-  if (strcmp(WsV2._configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
-      strcmp(WsV2._configV2.aio_key, "YOUR_IO_KEY_HERE") == 0) {
+  if (strcmp(Ws._configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
+      strcmp(Ws._configV2.aio_key, "YOUR_IO_KEY_HERE") == 0) {
     writeToBootOut(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!\n");
@@ -444,8 +444,8 @@ void Wippersnapper_FS::parseSecrets() {
         "io_username and io_key to match your Adafruit IO credentials!");
   }
 
-  if (strcmp(WsV2._configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
-      strcmp(WsV2._configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
+  if (strcmp(Ws._configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
+      strcmp(Ws._configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
     writeToBootOut("ERROR: Invalid network credentials in secrets.json! TO "
                    "FIX: Please change network_ssid and network_password to "
                    "match your Adafruit IO credentials!\n");
@@ -456,11 +456,11 @@ void Wippersnapper_FS::parseSecrets() {
 
   writeToBootOut("Secrets Contents\n");
   writeToBootOut("Network Info\n: ");
-  writeToBootOut(WsV2._configV2.network.ssid);
-  writeToBootOut(WsV2._configV2.network.pass);
+  writeToBootOut(Ws._configV2.network.ssid);
+  writeToBootOut(Ws._configV2.network.pass);
   writeToBootOut("IO Creds.\n: ");
-  writeToBootOut(WsV2._configV2.aio_user);
-  writeToBootOut(WsV2._configV2.aio_key);
+  writeToBootOut(Ws._configV2.aio_user);
+  writeToBootOut(Ws._configV2.aio_key);
 
   // Close secrets.json file
   secretsFile.close();

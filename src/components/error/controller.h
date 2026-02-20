@@ -14,11 +14,11 @@
  */
 #ifndef WS_CONTROLLER_MODEL
 #define WS_CONTROLLER_MODEL
-#include "Wippersnapper_V2.h"
 #include "model.h"
+#include "wippersnapper.h"
 
-class ErrorModel;       ///< Forward declaration
-class Wippersnapper_V2; ///< Forward declaration
+class ErrorModel;    ///< Forward declaration
+class wippersnapper; ///< Forward declaration
 
 /*!
     @brief  Provides an interface for routing and handling
@@ -54,5 +54,5 @@ private:
                     pb_callback_t error_msg);
   ErrorModel *_model = nullptr; ///< Instance of ErrorModel class
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
-#endif                        // WS_CONTROLLER_MODEL
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
+#endif                   // WS_CONTROLLER_MODEL

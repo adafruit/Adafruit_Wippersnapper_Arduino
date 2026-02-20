@@ -14,17 +14,17 @@
  */
 #ifndef WS_ERROR_MODEL_H
 #define WS_ERROR_MODEL_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
-class Wippersnapper_V2; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
+
+bool encode_string_callback(pb_ostream_t *stream, const pb_field_t *field,
+                            void *const *arg);
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from error.proto.
 */
-bool encode_string_callback(pb_ostream_t *stream, const pb_field_t *field,
-                            void *const *arg);
-
 class ErrorModel {
 public:
   ErrorModel();
@@ -39,5 +39,5 @@ public:
 private:
   ws_error_ErrorD2B _error_d2b_msg; ///< ErrorD2B message instance;
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
-#endif                        // WS_ERROR_MODEL_H
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
+#endif                   // WS_ERROR_MODEL_H

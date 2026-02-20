@@ -33,6 +33,11 @@ using FnCreateI2CSensorDriver =
 // Factory for creating a new I2C SENSOR drivers
 // NOTE: When you add a new SENSOR driver, make sure to add it to the factory!
 static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
+    {"sensor_mock",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvGenericSensorMock(i2c, addr, mux_channel, driver_name);
+     }},
     {"bme280",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -577,7 +582,7 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
     const ws_i2c_DeviceDescriptor &device_descriptor,
     const ws_i2c_DeviceStatus &device_status) {
   // If we're in offline mode, don't publish out to IO
-  if (WsV2._sdCardV2->isModeOffline())
+  if (Ws._sdCardV2->isModeOffline())
     return true; // Back out if we're in offline mode
 
   // Encode the I2cDeviceAddedorReplaced message and publish it to IO
@@ -587,8 +592,8 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
         "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
     return false;
   }
-  if (!WsV2.PublishD2b(ws_signal_BrokerToDevice_i2c_tag,
-                       _i2c_model->GetMsgI2cDeviceAddedOrReplaced())) {
+  if (!Ws.PublishD2b(ws_signal_BrokerToDevice_i2c_tag,
+                     _i2c_model->GetMsgI2cDeviceAddedOrReplaced())) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish I2cDeviceAddedorReplaced "
                      "message to IO!");
     return false;
@@ -598,8 +603,8 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
 
 /*!
     @brief    Implements handling for a I2cDeviceRemove message
-    @param    stream
-                A pointer to the pb_istream_t stream.
+    @param    msg
+              Pointer to the I2cDeviceRemove message.
     @returns  True if the I2cDeviceRemove message was handled, False
               otherwise.
 */
@@ -698,9 +703,9 @@ bool I2cController::InitMux(const char *name, uint32_t address,
 }
 
 /*!
-    @brief   Configures the MUX channel on the bus.
-    @param   stream
-                Pointer to the pb_istream
+    @brief   Handles an I2C bus scan request.
+    @param   msg
+             Pointer to the I2cBusScan message.
     @returns True if the I2C bus was successfully scanned and the
              I2cBusScan message was published to IO, False otherwise.
 */
@@ -792,10 +797,10 @@ bool I2cController::Handle_I2cBusScan(ws_i2c_BusScan *msg) {
 
 /*!
     @brief    Handler for an I2cDeviceOutputWrite message
-    @param    stream
-                A pointer to the pb_istream_t stream.
+    @param    msg
+              Pointer to the I2cDeviceOutputWrite message.
     @returns  True if the callback was successfully executed by the driver,
-   False otherwise.
+              False otherwise.
 */
 bool I2cController::Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg) {
   ws_i2c_DeviceDescriptor descriptor = msg->device_description;
@@ -854,8 +859,8 @@ bool I2cController::Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg) {
 
 /*!
     @brief    Implements handling for a I2cDeviceAddOrReplace message
-    @param    stream
-                A pointer to the pb_istream_t stream.
+    @param    msg
+              Pointer to the I2cDeviceAddOrReplace message.
     @returns  True if the I2cDeviceAddOrReplace message was handled
               (created or replaced), False otherwise.
 */
@@ -894,9 +899,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   if (!IsBusStatusOK(use_alt_bus)) {
     WS_DEBUG_PRINTLN(
         "[i2c] I2C bus is stuck or not operational, reset the board!");
-    if (WsV2._sdCardV2->isModeOffline()) {
-      WsV2.haltErrorV2(" ", WS_LED_STATUS_ERROR_RUNTIME,
-                       false); // doesn't return, halts
+    if (Ws._sdCardV2->isModeOffline()) {
+      Ws.haltErrorV2(" ", WS_LED_STATUS_ERROR_RUNTIME,
+                     false); // doesn't return, halts
     }
     if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish message to IO!");
@@ -912,8 +917,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     WS_DEBUG_PRINT("[i2c] Initializing MUX driver...");
     if (!InitMux(device_name, device_descriptor.mux_address, use_alt_bus)) {
       // TODO [Online]: Publish back out to IO here!
-      WsV2.haltErrorV2("[i2c] Failed to initialize MUX driver!",
-                       WS_LED_STATUS_ERROR_RUNTIME, false);
+      Ws.haltErrorV2("[i2c] Failed to initialize MUX driver!",
+                     WS_LED_STATUS_ERROR_RUNTIME, false);
     }
     WS_DEBUG_PRINTLN("OK!");
     return true;
@@ -928,9 +933,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
       ConfigureMuxChannel(device_descriptor.mux_channel, use_alt_bus);
       did_set_mux_ch = true;
     } else {
-      WsV2.haltErrorV2("[i2c] Device requires a MUX but MUX not present "
-                       "within config.json!",
-                       WS_LED_STATUS_ERROR_RUNTIME, false);
+      Ws.haltErrorV2("[i2c] Device requires a MUX but MUX not present "
+                     "within config.json!",
+                     WS_LED_STATUS_ERROR_RUNTIME, false);
     }
   }
 
@@ -960,8 +965,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     WS_DEBUG_PRINTLN("OK!");
   } else if (is_gps) {
     WS_DEBUG_PRINT("[i2c] Creating a GPS driver...");
-    if (!WsV2._gps_controller->AddGPS(bus, device_descriptor.device_address,
-                                      &msg->gps_config)) {
+    if (!Ws._gps_controller->AddGPS(bus, device_descriptor.device_address,
+                                    &msg->gps_config)) {
       did_init = false;
       WS_DEBUG_PRINTLN("FAILURE!");
     } else {
@@ -980,12 +985,12 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
 
   if (!did_init) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver failed to initialize!");
-    if (WsV2._sdCardV2->isModeOffline()) {
-      WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
-                       "the correct value for i2cDeviceName?\n\tDid you set "
-                       "the correct value for"
-                       "i2cDeviceAddress?",
-                       WS_LED_STATUS_ERROR_RUNTIME, false);
+    if (Ws._sdCardV2->isModeOffline()) {
+      Ws.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
+                     "the correct value for i2cDeviceName?\n\tDid you set "
+                     "the correct value for"
+                     "i2cDeviceAddress?",
+                     WS_LED_STATUS_ERROR_RUNTIME, false);
     }
   }
 
@@ -1045,23 +1050,23 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
 
   if (!is_output) {
     if (!drv->begin()) {
-      if (WsV2._sdCardV2->isModeOffline()) {
-        WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
-                         "the correct value for i2cDeviceName?\n\tDid you set "
-                         "the correct value for"
-                         "i2cDeviceAddress?",
-                         WS_LED_STATUS_ERROR_RUNTIME, false);
+      if (Ws._sdCardV2->isModeOffline()) {
+        Ws.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
+                       "the correct value for i2cDeviceName?\n\tDid you set "
+                       "the correct value for"
+                       "i2cDeviceAddress?",
+                       WS_LED_STATUS_ERROR_RUNTIME, false);
       }
     }
     _i2c_drivers.push_back(drv);
   } else {
     if (!drv_out->begin()) {
-      if (WsV2._sdCardV2->isModeOffline()) {
-        WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
-                         "the correct value for i2cDeviceName?\n\tDid you set "
-                         "the correct value for"
-                         "i2cDeviceAddress?",
-                         WS_LED_STATUS_ERROR_RUNTIME, false);
+      if (Ws._sdCardV2->isModeOffline()) {
+        Ws.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
+                       "the correct value for i2cDeviceName?\n\tDid you set "
+                       "the correct value for"
+                       "i2cDeviceAddress?",
+                       WS_LED_STATUS_ERROR_RUNTIME, false);
       }
     }
     _i2c_drivers_output.push_back(drv_out);
@@ -1080,7 +1085,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     }
   }
 
-  if (WsV2._sdCardV2->isModeOffline() != true) {
+  if (Ws._sdCardV2->isModeOffline() != true) {
     // Create and publish the I2cDeviceAddedorReplaced message to the broker
     WS_DEBUG_PRINTLN("[i2c] MQTT Publish I2cDeviceAddedorReplaced not yet "
                      "implemented!");
@@ -1112,9 +1117,11 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
 /*!
     @brief    Handles polling, reading, and logger for i2c devices
               attached to the I2C controller.
+    @param    force
+                True to force an update regardless of sensor period,
+                False to respect existing sensor period.
 */
-void I2cController::update() {
-  // WS_DEBUG_PRINTLN("[i2c] Updating I2C controller...");
+void I2cController::update(bool force) {
   if (_i2c_drivers.empty())
     return; // bail out if no drivers exist
 
@@ -1124,11 +1131,14 @@ void I2cController::update() {
     if (sensor_count == 0)
       continue; // bail out if driver has no sensors enabled
 
+    if (drv->GetDidReadSend())
+      continue; // bail out if driver has already read and sent data to IO
+
     // Did driver's period elapse yet?
     ulong cur_time = millis();
-    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod()) {
-      continue; // bail out if the period hasn't elapsed yet
-    }
+    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod() && !force)
+      continue; // bail out if the period hasn't elapsed yet or we aren't
+                // forcing an update
 
     // Optionally configure the I2C MUX
     uint32_t mux_channel = drv->GetMuxChannel();
@@ -1138,16 +1148,31 @@ void I2cController::update() {
 
     // Read the driver's sensors
     _i2c_model->ClearI2cDeviceEvent();
+    bool read_succeeded = true;
     for (size_t i = 0; i < sensor_count; i++) {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
       if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to read sensor!");
+        read_succeeded = false;
         continue;
       }
+
+      // Check if this is a battery monitor reporting percentage
+      if (Ws._sdCardV2 != nullptr &&
+          drv->_sensors[i] == ws_sensor_Type_T_UNITLESS_PERCENT &&
+          (strcmp(drv->GetDrvName(), "max17048") == 0 ||
+           strcmp(drv->GetDrvName(), "lc709203f") == 0 ||
+           strcmp(drv->GetDrvName(), "sensor_mock") == 0)) {
+        Ws._sdCardV2->SetBatteryPercent(event.unitless_percent);
+      }
+
       // Fill the I2cDeviceEvent's sensor_event array submsg.
       _i2c_model->AddI2cDeviceSensorEvent(event, drv->_sensors[i]);
     }
+
+    if (!read_succeeded)
+      continue;
 
     // Configure the DeviceEvent's DeviceDescription sub-msg
     _i2c_model->SetI2cDeviceEventDeviceDescripton(
@@ -1155,20 +1180,63 @@ void I2cController::update() {
         drv->GetMuxAddress(), mux_channel);
     _i2c_model->EncodeI2cDeviceEvent();
 
-    // Handle the DeviceEvent message
-    if (WsV2._sdCardV2->isModeOffline()) {
-      if (!WsV2._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
+    if (!Ws._sdCardV2->isModeOffline()) {
+      // TODO: Implement online mode publishing
+    } else {
+      if (!Ws._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
         WS_DEBUG_PRINTLN(
             "[i2c] ERROR: Unable to log the I2cDeviceEvent to SD!");
         statusLEDSolid(WS_LED_STATUS_FS_WRITE);
       }
-    } else {
-      // TODO: This needs to be implemented for online mode
-      WS_DEBUG_PRINTLN(
-          "[i2c] MQTT Publish I2cDeviceEvent not yet implemented!");
     }
+    drv->SetDidReadSend(true);
 
     cur_time = millis();
     drv->SetSensorPeriodPrv(cur_time);
   }
+}
+
+/*!
+    @brief    Checks if all I2C drivers have completed their read/send cycle.
+    @returns  True if all drivers have completed their read/send cycle,
+              False otherwise.
+*/
+bool I2cController::UpdateComplete() {
+  for (auto *drv : _i2c_drivers) {
+    if (drv->GetEnabledSensorCnt() == 0)
+      continue; // skip drivers with no enabled sensors
+
+    if (!drv->GetDidReadSend())
+      return false; // found a driver that hasn't completed its read/send
+  }
+  return true; // all drivers have completed their read/send
+}
+
+/*!
+    @brief  Resets all I2C drivers' did_read_send flags to false.
+*/
+void I2cController::ResetFlags() {
+  for (auto *drv : _i2c_drivers) {
+    drv->SetDidReadSend(false);
+  }
+}
+
+/*!
+    @brief  Toggles the power pin on the default I2C bus.
+*/
+void I2cController::ToggleDefaultPowerPin() {
+  _i2c_bus_default->TogglePowerPin();
+}
+
+/*!
+    @brief  Returns a pointer to the I2C bus.
+    @param  is_alt_bus
+            True to return the alternative bus, false for the default bus.
+    @returns  Pointer to the TwoWire bus.
+*/
+TwoWire *I2cController::GetI2cBus(bool is_alt_bus) {
+  if (is_alt_bus && _i2c_bus_alt != nullptr) {
+    return _i2c_bus_alt->GetBus();
+  }
+  return _i2c_bus_default->GetBus();
 }

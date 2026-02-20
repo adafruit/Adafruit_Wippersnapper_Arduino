@@ -1,0 +1,79 @@
+/*!
+ * @file src/components/sleep/controller.h
+ *
+ * Controller for the Sleep API
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
+ *
+ * BSD license, all text here must be included in any redistribution.
+ *
+ */
+#ifndef WS_SLEEP_CONTROLLER_H
+#define WS_SLEEP_CONTROLLER_H
+
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+#include "hardware.h"
+#include "model.h"
+#include "wippersnapper.h"
+
+class wippersnapper; ///< Forward declaration
+class SleepModel;    ///< Forward declaration
+class SleepHardware; ///< Forward declaration
+
+/*!
+    @brief  Routes messages using the sleep.proto API to the
+            appropriate hardware and model classes, controls and tracks
+            the state of the hardware's sleep functionality.
+*/
+class SleepController {
+public:
+  SleepController();
+  ~SleepController();
+  // Routing
+  bool Router(pb_istream_t *stream);
+  bool Handle_Sleep_Enter(ws_sleep_Enter *msg);
+  // PB API Accessors
+  SleepModel *GetModel();
+  // Sleep API
+  void WakeFromLightSleep();
+  void StartSleep();
+  bool IsSleepMode();
+  bool DidWakeFromSleep();
+  ws_sleep_EspWakeCause GetEspWakeCause();
+  const char *GetWakeupReasonName();
+  ws_sleep_SleepMode GetPrvSleepMode();
+  int GetSleepDurationSecs();
+  unsigned long getRunDurationMs();
+  void HandleNetFSMFailure();
+  void SetWakeEnablePin(uint8_t pin, uint8_t pull = 0);
+  bool CheckWakeEnablePin();
+
+  // Exposed storage API from hardware for RTC timestamps
+  uint32_t GetSoftRtcCounter();
+  void SetSoftRtcCounter(uint32_t counter);
+  // Exposed storage API from hardware for log filename persistence
+  void SetLogFilename(const char *filename);
+  const char *GetLogFilename();
+
+private:
+  // Sleep configuration
+  bool ConfigureSleep(const ws_sleep_Enter *msg);
+  bool ConfigureLightSleep(const ws_sleep_Enter *msg);
+  SleepModel *_sleep_model;       ///< Sleep model
+  SleepHardware *_sleep_hardware; ///< Sleep hardware
+  bool _wake_enable_pin_state;    ///< Value of BOOT button during class
+                                  ///< construction
+  bool _lock;                     ///< Whether the sleep configuration is locked
+  bool _has_ext_pwr_components;   ///< Whether externally powered components are
+                                  ///< present (i.e: tft, i2c, neopixel, etc)
+  uint8_t _wake_enable_pin;       ///< Pin to check for wake enable
+  uint8_t _wake_enable_pin_pull;  ///< Pull mode: 0=none, 1=pulldown, 2=pullup
+};
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
+
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
+#endif // WS_SLEEP_CONTROLLER_H

@@ -14,14 +14,14 @@
  */
 #ifndef WS_DS18X20_CONTROLLER_H
 #define WS_DS18X20_CONTROLLER_H
-#include "Wippersnapper_V2.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 #include <memory>
 
-class Wippersnapper_V2; ///< Forward declaration
-class DS18X20Model;     ///< Forward declaration
-class DS18X20Hardware;  ///< Forward declaration
+class wippersnapper;   ///< Forward declaration
+class DS18X20Model;    ///< Forward declaration
+class DS18X20Hardware; ///< Forward declaration
 
 /*!
     @brief  Routes messages between the ds18x20.proto API and the hardware.
@@ -35,12 +35,14 @@ public:
   bool Handle_Ds18x20Add(ws_ds18x20_Add *msg);
   bool Handle_Ds18x20Remove(ws_ds18x20_Remove *msg);
   // Polling
-  void update();
+  void update(bool force = false);
+  bool UpdateComplete();
+  void ResetFlags();
 
 private:
   DS18X20Model *_DS18X20_model; ///< ds18x20 model
   std::vector<std::unique_ptr<DS18X20Hardware>> _DS18X20_pins;
   int _num_drivers;
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
-#endif                        // WS_DS18X20_CONTROLLER_H
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
+#endif                   // WS_DS18X20_CONTROLLER_H

@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_V2.h
+ * @file wippersnapper.h
  *
  * This is the documentation for Adafruit's Wippersnapper firmware for the
  * Arduino platform. It is designed specifically to work with
@@ -9,13 +9,13 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * @copyright Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
+ * @copyright Copyright (c) Brent Rubell 2020-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  */
 
-#ifndef WIPPERSNAPPER_V2_H
-#define WIPPERSNAPPER_V2_H
+#ifndef WIPPERSNAPPER_H
+#define WIPPERSNAPPER_H
 
 // Debug Flags
 // #DEBUG_PROFILE 1 ///< Enable debug output for function profiling
@@ -30,9 +30,7 @@
 */
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
-  {                                                                            \
-    WS_PRINTER.print(__VA_ARGS__);                                             \
-  } /**< Print debug message to serial */
+  { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {                                                                            \
     WS_PRINTER.println(__VA_ARGS__);                                           \
@@ -44,11 +42,9 @@
   } /**< Print debug message in hexadecimal */
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {                                                                            \
-  } /**< Debug print */
+  {} /**< Debug print */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {                                                                            \
-  } /**< Debug println */
+  {} /**< Debug println */
 #endif
 
 /*!
@@ -62,7 +58,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      WsV2.feedWDTV2();                                                        \
+      Ws._wdt->feed();                                                         \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -84,16 +80,16 @@
 #include <nanopb/ws_pb_helpers.h>
 
 // External libraries
-#include "Adafruit_MQTT.h"      // MQTT Client
-#include "Adafruit_SleepyDog.h" // Watchdog
-#include "Arduino.h"            // Wiring
-#include <SPI.h>                // SPI
-#include <Wire.h>               // I2C
+#include "Adafruit_MQTT.h" // MQTT Client
+#include "Arduino.h"       // Wiring
+#include <SPI.h>           // SPI
+#include <Wire.h>          // I2C
 
 // Wippersnapper API Helpers
-#include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
 #include "helpers/ws_helper_status.h"
+#include "helpers/ws_wdt.h"
+#include "ws_boards.h"
 #ifdef ARDUINO_ARCH_ESP32
 #include "helpers/ws_helper_esp.h"
 #endif
@@ -110,6 +106,7 @@
 #include "components/pwm/controller.h"
 #include "components/sensor/model.h"
 #include "components/servo/controller.h"
+#include "components/sleep/controller.h"
 #include "components/uart/controller.h"
 
 #include "provisioning/ConfigJson.h"
@@ -124,12 +121,17 @@
 #define WS_VERSION                                                             \
   "2.0.0-beta.1" ///< WipperSnapper app. version (semver-formatted)
 
-#define WS_WDT_TIMEOUT 60000       ///< WDT timeout
-#define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
-/* MQTT Configuration */
+// Timeouts and intervals
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
-#define WS_TOPIC_PREFIX_LEN 9 ///< (i.e: "/ws-d2b/")
+#define WS_TIMEOUT_WDT 60000 ///< App WDT timeout, in milliseconds
+#define WS_MQTT_POLL_TIMEOUT_MS                                                \
+  10 ///< MQTT polling (processPackets()) timeout, in milliseconds
+#define WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS                               \
+  60000 ///< Default offline mode heartbeat interval, in milliseconds
+
+#define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
+#define WS_TOPIC_PREFIX_LEN 9      ///< (i.e: "/ws-d2b/")
 
 // Forward declarations
 class Wippersnapper_FS;
@@ -147,17 +149,18 @@ class PixelsController;
 class PWMController;
 class ServoController;
 class UARTController;
+class SleepController;
 
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
             Wippersnapper interface.
 */
-class Wippersnapper_V2 {
+class wippersnapper {
 public:
-  Wippersnapper_V2();
-  virtual ~Wippersnapper_V2();
-
+  wippersnapper();
+  virtual ~wippersnapper();
   void provision();
+  void run();
 
   // Global flags for the status led
   bool
@@ -190,16 +193,15 @@ public:
   bool PublishD2b(pb_size_t which_payload, void *payload);
 
   // run() loop
-  ws_status_t run();
-  void processPacketsV2();
+  void ProcessPackets();
 
   // Networking helpers
   void pingBrokerV2();
-  void runNetFSMV2();
+  void NetworkFSM(bool initial_connect = false);
 
-  // WDT helpers
-  void enableWDTV2(int timeoutMS = 0);
-  void feedWDTV2();
+  // WDT wrapper
+  ws_wdt *_wdt = nullptr; ///< Instance of WDT wrapper class
+
   void BlinkKATStatus();
 
   // Error handling helpers
@@ -240,6 +242,10 @@ public:
   ServoController *_servo_controller =
       nullptr;                                ///< Instance of Servo controller
   UARTController *_uart_controller = nullptr; ///< Instance of UART controller
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  SleepController *_sleep_controller =
+      nullptr; ///< Instance of sleep controller
+#endif
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
@@ -265,7 +271,13 @@ public:
   JsonDocument _config_doc; ///< Storage for the config.json file
   uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
-  void _initV2();
+  // Separate loop() functions, depending on power mode
+  void loop();
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  void loopSleep();
+  void ResetAllControllerFlags();
+#endif
+  void blinkOfflineHeartbeat();
 
   // MQTT topics
   char *_topicB2d;
@@ -289,6 +301,6 @@ protected:
   const char *_deviceIdV2; /*!< Adafruit IO+ device identifier string */
   char *_device_uidV2;     /*!< Unique device identifier  */
 };
-extern Wippersnapper_V2 WsV2; ///< Global member variable for callbacks
+extern wippersnapper Ws; ///< Global member variable for callbacks
 
-#endif // WIPPERSNAPPER_V2_H
+#endif // WIPPERSNAPPER_H

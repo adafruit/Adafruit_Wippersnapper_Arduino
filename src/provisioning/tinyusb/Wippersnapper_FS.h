@@ -22,10 +22,10 @@
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
 
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 // forward decl.
-class Wippersnapper_V2;
+class wippersnapper;
 struct displayConfig;
 
 // global TinyUSB callbacks
@@ -66,5 +66,5 @@ public:
 private:
   bool _is_secrets_file_empty = false;
 };
-extern Wippersnapper_V2 WsV2;
+extern wippersnapper Ws;
 #endif // Wippersnapper_FS_V2_V2_H

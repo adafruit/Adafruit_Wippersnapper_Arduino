@@ -37,7 +37,7 @@ typedef enum ws_led_status_t {
   WS_LED_STATUS_MQTT_CONNECTING,
   WS_LED_STATUS_WAITING_FOR_REG_MSG,
   WS_LED_STATUS_ERROR_RUNTIME,
-  WS_LED_STATUS_KAT,
+  WS_LED_STATUS_HEARTBEAT,
 } ws_led_status_t;
 
 #define RED 0xFF0000    ///< Red (as a uint32)
@@ -67,7 +67,8 @@ uint32_t ledStatusStateToColor(ws_led_status_t statusState);
 void setStatusLEDBrightness(float brightness);
 void setStatusLEDColor(uint32_t color);
 void setStatusLEDColor(uint32_t color, int brightness);
-void statusLEDBlink(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME);
+void statusLEDBlink(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME,
+                    int blink_num = 3);
 void statusLEDFade(uint32_t color, int numFades);
 void statusLEDSolid(ws_led_status_t statusState);
 

@@ -25,6 +25,7 @@ DS18X20Hardware::DS18X20Hardware(uint8_t onewire_pin, int sensor_num)
     : _drv_therm(_ow) {
   is_read_temp_c = false;
   is_read_temp_f = false;
+  did_read_send = false;
   _sensor_num = sensor_num;
   // Initialize the OneWire bus object
   _onewire_pin = onewire_pin;

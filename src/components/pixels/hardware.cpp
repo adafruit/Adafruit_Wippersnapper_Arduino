@@ -13,7 +13,7 @@
  *
  */
 #include "hardware.h"
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 /*!
     @brief  Constructs a new PixelsHardware object
@@ -39,7 +39,7 @@ PixelsHardware::~PixelsHardware() {}
 */
 bool PixelsHardware::AddNeoPixel(uint16_t num_pixels, uint16_t pin_data,
                                  neoPixelType order, uint8_t brightness) {
-  if (getStatusNeoPixelPin() == pin_data && WsV2.lockStatusNeoPixelV2) {
+  if (getStatusNeoPixelPin() == pin_data && Ws.lockStatusNeoPixelV2) {
     WS_DEBUG_PRINTLN("[pixels] Releasing status pixel for use");
     ReleaseStatusPixel(); // Release the status pixel for use
   }
@@ -75,7 +75,7 @@ bool PixelsHardware::AddNeoPixel(uint16_t num_pixels, uint16_t pin_data,
 bool PixelsHardware::AddDotStar(uint16_t num_pixels, uint16_t pin_data,
                                 uint16_t pin_clock, ws_pixels_Order order,
                                 uint8_t brightness) {
-  if (getStatusDotStarDataPin() == pin_data && WsV2.lockStatusDotStarV2)
+  if (getStatusDotStarDataPin() == pin_data && Ws.lockStatusDotStarV2)
     ReleaseStatusPixel(); // Release the status pixel for use
 
   _dotstar = new Adafruit_DotStar(num_pixels, pin_data, pin_clock,
@@ -200,7 +200,7 @@ void PixelsHardware::RemoveStrand() {
     WS_DEBUG_PRINTLN("[pixels] Unknown pixel type!");
   }
   // Optionally re-init the status pixel for reuse by app.
-  if (getStatusNeoPixelPin() == _pin_data && !WsV2.lockStatusNeoPixelV2) {
+  if (getStatusNeoPixelPin() == _pin_data && !Ws.lockStatusNeoPixelV2) {
     WS_DEBUG_PRINTLN("[pixels] Re-initializing status pixel");
     initStatusLED();
   }

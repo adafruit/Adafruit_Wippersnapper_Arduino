@@ -14,7 +14,7 @@
  */
 #ifndef WS_SERVO_HARDWARE_H
 #define WS_SERVO_HARDWARE_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "esp32-hal-ledc.h"

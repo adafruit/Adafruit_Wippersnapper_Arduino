@@ -15,11 +15,11 @@
 #ifndef WIPPERSNAPPER_LITTLEFS_V2_H
 #define WIPPERSNAPPER_LITTLEFS_V2_H
 
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 #include <LittleFS.h>
 
 // forward decl.
-class Wippersnapper_V2;
+class wippersnapper;
 
 /*!
     @brief  Class that handles WipperSnapper's LittleFS filesystem.
@@ -33,5 +33,5 @@ public:
               ws_led_status_t status_state = WS_LED_STATUS_ERROR_RUNTIME);
   void GetSDCSPin();
 };
-extern Wippersnapper_V2 WsV2;
+extern wippersnapper Ws;
 #endif // WIPPERSNAPPER_LITTLEFS_H

@@ -14,14 +14,14 @@
  */
 #ifndef WS_PWM_CONTROLLER_H
 #define WS_PWM_CONTROLLER_H
-#include "Wippersnapper_V2.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 #define MAX_PWM_PINS 25 ///< Maximum number of PWM pins supported
 
-class Wippersnapper_V2; // Forward declaration
-class PWMModel;         // Forward declaration
-class PWMHardware;      // Forward declaration
+class wippersnapper; // Forward declaration
+class PWMModel;      // Forward declaration
+class PWMHardware;   // Forward declaration
 
 /*!
     @brief  Routes messages using the pwm.proto API to the
@@ -43,5 +43,5 @@ private:
   PWMHardware *_pwm_hardware[MAX_PWM_PINS] = {nullptr};
   int _active_pwm_pins;
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
-#endif                        // WS_PWM_CONTROLLER_H
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
+#endif                   // WS_PWM_CONTROLLER_H

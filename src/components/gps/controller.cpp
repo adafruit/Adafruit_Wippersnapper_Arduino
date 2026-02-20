@@ -61,6 +61,7 @@ bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr,
     return false;
   }
 
+  gps_hw->SetDidReadSend(false);
   _gps_drivers.push_back(gps_hw);
   WS_DEBUG_PRINTLN("[gps] GPS hardware added successfully!");
   return true;
@@ -95,6 +96,7 @@ bool GPSController::AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config) {
     return false;
   }
 
+  gps_hw->SetDidReadSend(false);
   _gps_drivers.push_back(gps_hw);
   WS_DEBUG_PRINTLN("[gps] GPS hardware added successfully!");
   return true;
@@ -104,12 +106,18 @@ bool GPSController::AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config) {
  * @brief Updates the GPSController, polling the GPS hardware for data.
  * This function checks if the read period has elapsed and processes the GPS
  * data accordingly.
+ * @param force If true, forces a read on all GPS modules regardless of
+ * period.
  */
-void GPSController::update() {
+void GPSController::update(bool force) {
   if (_gps_drivers.empty())
     return; // bail-out!
 
   for (GPSHardware *drv : _gps_drivers) {
+    // (force only) - Was driver previously read and sent?
+    if (drv->GetDidReadSend())
+      continue;
+
     // TODO: Commented out due to parsing failures, stability issue (failed to
     // parse NMEA acks for this) Perform a keep-alive check by sending an
     // antenna check command every 2 seconds
@@ -120,7 +128,7 @@ void GPSController::update() {
 
     // Did read period elapse?
     ulong cur_time = millis();
-    if (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod())
+    if (!force && (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod()))
       continue; // Not yet elapsed, skip this driver
 
     // Discard the GPS buffer before we attempt to do a fresh read
@@ -147,27 +155,55 @@ void GPSController::update() {
       // Using the Model, process the NMEA sentence into a GPSEvent
       WS_DEBUG_PRINTLN("[gps] Processing NMEA sentence...");
       _gps_model->ProcessNMEASentence(nmea_sentence, drv);
+    }
 
-      // We did not create a GPSEvent because the NMEA sentences were not
-      // GGA/RMC or parsed correctly
-      if (!has_gps_event)
-        continue;
-
+    // Only try to encode/publish if we had at least one valid GPS event
+    if (has_gps_event) {
       // Encode and publish to IO
       WS_DEBUG_PRINT("[gps] Encoding and publishing GPSEvent to IO...");
       bool did_encode = _gps_model->EncodeGPSEvent();
       if (!did_encode) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");
+        drv->SetDidReadSend(false);
       } else {
         // Publish the GPSEvent to IO
-        if (!WsV2.PublishD2b(ws_signal_DeviceToBroker_gps_tag,
-                             _gps_model->GetGPSEvent())) {
+        if (!Ws.PublishD2b(ws_signal_DeviceToBroker_gps_tag,
+                           _gps_model->GetGPSEvent())) {
           WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
+          drv->SetDidReadSend(false);
         } else {
           WS_DEBUG_PRINTLN("...ok!");
+          drv->SetDidReadSend(true);
         }
       }
-      drv->SetPollPeriodPrv(cur_time);
+    } else {
+      // No valid GPS events were parsed
+      drv->SetDidReadSend(false);
     }
+
+    // Update the period timestamp
+    drv->SetPollPeriodPrv(cur_time);
+  }
+}
+
+/*!
+ * @brief Checks if all GPS drivers have been read and their values sent.
+ * @return True if all drivers have been read and sent, False otherwise.
+ */
+bool GPSController::UpdateComplete() {
+  for (GPSHardware *drv : _gps_drivers) {
+    if (!drv->GetDidReadSend()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/*!
+ * @brief Resets all GPS drivers' did_read_send flags to false.
+ */
+void GPSController::ResetFlags() {
+  for (GPSHardware *drv : _gps_drivers) {
+    drv->SetDidReadSend(false);
   }
 }

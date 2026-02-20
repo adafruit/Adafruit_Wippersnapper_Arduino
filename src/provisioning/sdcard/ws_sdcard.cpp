@@ -19,17 +19,22 @@
 */
 ws_sdcard::ws_sdcard()
 #ifdef SD_USE_SPI_1
-    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
+    : _sd_spi_cfg(Ws.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
 #else
-    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
+    : _sd_spi_cfg(Ws.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
 #endif
   is_mode_offline = false;
   _use_test_data = false;
   _is_soft_rtc = false;
+  _is_battery_low = false;
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
+  _heartbeat_interval_ms = WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS;
+  _prv_heartbeat_interval_ms = 0;
 
-  if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR)
+  // delay(6000); // DEBUG ONLY: Wait for everything to settle
+
+  if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
     return;
 
   if (!_sd.begin(_sd_spi_cfg)) {
@@ -54,6 +59,97 @@ ws_sdcard::~ws_sdcard() {
     _sd.end(); // Close the SD card interface
   }
   is_mode_offline = false;
+}
+
+/*!
+    @brief    Returns the offline mode heartbeat interval.
+    @returns  The heartbeat interval in milliseconds.
+*/
+uint32_t ws_sdcard::getHeartbeatIntervalMs() { return _heartbeat_interval_ms; }
+
+/*!
+    @brief    Returns the previous heartbeat timestamp.
+    @returns  The previous heartbeat timestamp in milliseconds.
+*/
+uint32_t ws_sdcard::getPreviousHeartbeatIntervalMs() {
+  return _prv_heartbeat_interval_ms;
+}
+
+/*!
+    @brief    Sets the previous heartbeat timestamp.
+    @param    timestamp The timestamp to set, in milliseconds.
+*/
+void ws_sdcard::setPreviousHeartbeatIntervalMs(uint32_t timestamp) {
+  _prv_heartbeat_interval_ms = timestamp;
+}
+
+/*!
+    @brief    Sets the battery percentage and updates low battery state.
+              Logs an alert to the SD card when transitioning to low battery.
+    @param    percent
+              The current battery percentage from the battery monitor.
+*/
+void ws_sdcard::SetBatteryPercent(float percent) {
+  // Write an alert to the log once when transitioning to a "low battery state"
+  if (!_is_battery_low && percent < LOW_SD_WRITE_BATT_THRESH) {
+    JsonDocument doc;
+    doc["timestamp"] = GetTimestamp();
+    doc["alert"] = "Device battery is low (< 10% remaining), data will no "
+                   "longer be logged to SD card to prevent corruption";
+    doc["unitless_percent"] = percent;
+    LogJSONDoc(doc);
+  }
+  _is_battery_low = (percent < LOW_SD_WRITE_BATT_THRESH);
+}
+
+/*!
+    @brief    Returns the low battery state.
+    @returns  True if battery is below LOW_SD_WRITE_BATT_THRESH, False
+              otherwise.
+*/
+bool ws_sdcard::IsBatteryLow() const { return _is_battery_low; }
+
+/*!
+    @brief    Re-initializes the SD card interface after sleep.
+    @returns  True if the SD card was successfully re-initialized, False
+   otherwise.
+*/
+bool ws_sdcard::begin() {
+  if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
+    return false;
+
+  // Restore SPI pins from input state
+  pinMode(SCK, OUTPUT);
+  pinMode(MOSI, OUTPUT);
+  pinMode(MISO, INPUT);
+
+  if (!_sd.begin(_sd_spi_cfg)) {
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: SD re-initialization failed after "
+                     "sleep wake.");
+    is_mode_offline = false;
+    return false;
+  }
+
+  is_mode_offline = true;
+  return true;
+}
+
+/*!
+    @brief    Ends SD card interface and sets SPI pins to input to avoid
+              power draw.
+*/
+void ws_sdcard::end() {
+  pinMode(Ws.pin_sd_cs, OUTPUT);
+  digitalWrite(Ws.pin_sd_cs, HIGH);
+  // Close the SD card interface
+  _sd.end();
+  // Set SPI pins to input to avoid power draw
+  pinMode(SCK, INPUT);
+  pinMode(MOSI, INPUT);
+  pinMode(MISO, INPUT);
+  // Keep CS high
+  pinMode(Ws.pin_sd_cs, OUTPUT);
+  digitalWrite(Ws.pin_sd_cs, HIGH);
 }
 
 void ws_sdcard::calculateFileLimits() {
@@ -82,17 +178,15 @@ void ws_sdcard::calculateFileLimits() {
     @returns  True if the RTC was successfully initialized, False otherwise.
 */
 bool ws_sdcard::InitDS1307() {
+  WS_DEBUG_PRINTLN("Begin DS1307 init");
   _rtc_ds1307 = new RTC_DS1307();
-  if (!_rtc_ds1307->begin()) {
-#if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_SAMD) &&           \
-    !defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) &&                              \
-    !defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3)
-    if (!_rtc_ds1307->begin(&Wire1)) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS1307 RTC");
+  if (!_rtc_ds1307->begin(Ws._i2c_controller->GetI2cBus())) {
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS1307 RTC on WIRE");
+    if (!_rtc_ds1307->begin(Ws._i2c_controller->GetI2cBus(true))) {
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS1307 RTC on WIRE1");
       delete _rtc_ds1307;
       return false;
     }
-#endif
   }
   if (!_rtc_ds1307->isrunning())
     _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -107,16 +201,13 @@ bool ws_sdcard::InitDS1307() {
 bool ws_sdcard::InitDS3231() {
   WS_DEBUG_PRINTLN("Begin DS3231 init");
   _rtc_ds3231 = new RTC_DS3231();
-  if (!_rtc_ds3231->begin(&Wire)) {
-#if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_SAMD) &&           \
-    !defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) &&                              \
-    !defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3)
-    if (!_rtc_ds3231->begin(&Wire1)) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS3231 RTC");
+  if (!_rtc_ds3231->begin(Ws._i2c_controller->GetI2cBus())) {
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on WIRE");
+    if (!_rtc_ds3231->begin(Ws._i2c_controller->GetI2cBus(true))) {
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on WIRE1");
       delete _rtc_ds3231;
       return false;
     }
-#endif
   }
   if (_rtc_ds3231->lostPower())
     _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -129,20 +220,15 @@ bool ws_sdcard::InitDS3231() {
               otherwise.
 */
 bool ws_sdcard::InitPCF8523() {
+  WS_DEBUG_PRINTLN("Begin PCF8523 init");
   _rtc_pcf8523 = new RTC_PCF8523();
-  if (!_rtc_pcf8523->begin(&Wire)) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE");
-#if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_SAMD) &&           \
-    !defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) &&                              \
-    !defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3)
-    if (!_rtc_pcf8523->begin(&Wire1)) {
-      WS_DEBUG_PRINTLN(
-          "[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE1");
+  if (!_rtc_pcf8523->begin(Ws._i2c_controller->GetI2cBus())) {
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE");
+    if (!_rtc_pcf8523->begin(Ws._i2c_controller->GetI2cBus(true))) {
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE1");
       delete _rtc_pcf8523;
       return false;
     }
-#endif
   }
   if (!_rtc_pcf8523->initialized() || _rtc_pcf8523->lostPower()) {
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -153,20 +239,47 @@ bool ws_sdcard::InitPCF8523() {
 
 /*!
     @brief    Initializes a "soft" RTC for devices without a physical
-              RTC module attached.
+              RTC module attached. Restores counter from RTC memory
+              if waking from sleep.
     @returns  True if the soft RTC was successfully initialized, False
               otherwise.
 */
 bool ws_sdcard::InitSoftRTC() {
   _is_soft_rtc = true;
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // Restore counter from RTC memory if waking from sleep
+  if (Ws._sleep_controller != nullptr &&
+      Ws._sleep_controller->DidWakeFromSleep()) {
+    _soft_rtc_counter = Ws._sleep_controller->GetSoftRtcCounter();
+    WS_DEBUG_PRINT("[SD] Restored soft RTC counter from sleep: ");
+    WS_DEBUG_PRINTLN(_soft_rtc_counter);
+  } else {
+    _soft_rtc_counter = 0;
+  }
+#else
   _soft_rtc_counter = 0;
+#endif
   return _is_soft_rtc;
 }
+
+/*!
+    @brief    Returns whether the RTC in use is a "soft" RTC.
+    @returns  True if the RTC is a soft RTC, False otherwise.
+*/
+bool ws_sdcard::isRTCSoft() const { return _is_soft_rtc; }
 
 /*!
     @brief    Increments the "soft" RTC.
 */
 void ws_sdcard::TickSoftRTC() { _soft_rtc_counter++; }
+
+/*!
+    @brief    Sets the soft RTC counter to a specific value.
+    @param    counter The value to set the counter to.
+*/
+void ws_sdcard::SetSoftRTCCounter(uint32_t counter) {
+  _soft_rtc_counter = counter;
+}
 
 /*!
     @brief    Returns the current timestamp from the RTC.
@@ -196,20 +309,26 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
 }
 
 /*!
-    @brief  Configure's the hardware from the JSON's exportedFromDevice
-            object.
-    @param  max_digital_pins
-            The total number of digital pins on the device.
-    @param  max_analog_pins
-            The total number of analog pins on the device.
-    @param  ref_voltage
-            The reference voltage of the device, in Volts.
+    @brief  Mocks checking in with Adafruit IO servers
+    @param  exported_from_device
+            The JSON object containing the device configuration.
 */
-void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
-                        float ref_voltage) {
-  WsV2.digital_io_controller->SetMaxDigitalPins(max_digital_pins);
-  WsV2.analogio_controller->SetTotalAnalogPins(max_analog_pins);
-  WsV2.analogio_controller->SetRefVoltage(ref_voltage);
+void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
+  // Configure controllers
+  Ws.digital_io_controller->SetMaxDigitalPins(
+      exported_from_device["maxDigitalPins"] | 0);
+  Ws.analogio_controller->SetTotalAnalogPins(
+      exported_from_device["maxAnalogPins"] | 0);
+  Ws.analogio_controller->SetRefVoltage(exported_from_device["refVoltage"] |
+                                        0.0f);
+  // Since `secrets.json` is unused in offline mode, use the status LED
+  // brightness from here instead
+  setStatusLEDBrightness(exported_from_device["statusLEDBrightness"] | 0.3f);
+
+  // Parse offline mode heartbeat interval (in seconds), convert to ms
+  uint32_t heartbeat_sec = exported_from_device["heartbeatInterval"] |
+                           (WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS / 1000);
+  _heartbeat_interval_ms = heartbeat_sec * 1000;
 }
 
 /*!
@@ -548,22 +667,69 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
         "[SD] Runtime Error: Unable to encode D2B signal message!");
     return false;
   }
-  WsV2._sharedConfigBuffers.push_back(std::move(tempBuf));
+  Ws._sharedConfigBuffers.push_back(std::move(tempBuf));
   return true;
 }
 
 /*!
     @brief  Creates a new logging file on the SD card using the RTC's
             timestamp and sets the current log file path to reflect this
-            file.
-    @returns True if a log file was successfully created, False otherwise.
+            file. On ESP32, this function first attempts to restore a
+            previously used log file from RTC/NVS memory if waking from sleep.
+    @returns True if a log file was successfully created or restored, False
+   otherwise.
 */
 bool ws_sdcard::CreateNewLogFile() {
+  static char log_filename_buffer[256];
+
   if (_sd_cur_log_files >= _sd_max_num_log_files) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Maximum number of log files for SD "
                      "card capacity reached!");
     return false;
   }
+
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // Check if we should restore a previous log file (waking from sleep)
+  WS_DEBUG_PRINTLN("[SD] Checking for previous log file to restore...");
+  if (Ws._sleep_controller != nullptr) {
+    const char *prev_filename = Ws._sleep_controller->GetLogFilename();
+    if (prev_filename != nullptr && prev_filename[0] != '\0') {
+      WS_DEBUG_PRINT("[SD] Found stored filename: ");
+      WS_DEBUG_PRINTLN(prev_filename);
+      // Try to open the existing file to get its size
+      File32 file;
+      if (file.open(prev_filename, O_RDWR)) {
+        _sz_cur_log_file = file.size();
+        file.close();
+        WS_DEBUG_PRINT("[SD] Previous log file size: ");
+        WS_DEBUG_PRINT(_sz_cur_log_file);
+        WS_DEBUG_PRINT(" / ");
+        WS_DEBUG_PRINTLN(_max_sz_log_file);
+
+        // Check if file is still under size limit
+        if (_sz_cur_log_file < _max_sz_log_file) {
+          strncpy(log_filename_buffer, prev_filename,
+                  sizeof(log_filename_buffer) - 1);
+          log_filename_buffer[sizeof(log_filename_buffer) - 1] = '\0';
+          _log_filename = log_filename_buffer;
+          WS_DEBUG_PRINT("[SD] SUCCESS: Restored previous log file: ");
+          WS_DEBUG_PRINTLN(_log_filename);
+          return true;
+        } else {
+          WS_DEBUG_PRINTLN(
+              "[SD] Previous log file exceeds size limit, creating new file");
+        }
+      } else {
+        WS_DEBUG_PRINTLN(
+            "[SD] Could not open previous log file, creating new file");
+      }
+    } else {
+      WS_DEBUG_PRINTLN("[SD] No stored filename found, creating new file");
+    }
+  } else {
+    WS_DEBUG_PRINTLN("[SD] Sleep controller not available, creating new file");
+  }
+#endif
 
   String logFilename;
   // Generate a name for the new log file using the RTC's timestamp
@@ -571,7 +737,6 @@ bool ws_sdcard::CreateNewLogFile() {
     logFilename = "log_" + String(GetTimestamp()) + ".log";
   else
     logFilename = "log_" + String(millis()) + ".log";
-  static char log_filename_buffer[256];
   strncpy(log_filename_buffer, logFilename.c_str(),
           sizeof(log_filename_buffer) - 1);
   log_filename_buffer[sizeof(log_filename_buffer) - 1] = '\0';
@@ -582,9 +747,18 @@ bool ws_sdcard::CreateNewLogFile() {
   File32 file;
   if (!file.open(_log_filename, O_RDWR | O_CREAT | O_AT_END))
     return false;
+  file.close();
   WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
   WS_DEBUG_PRINTLN(_log_filename);
   _sd_cur_log_files++;
+
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // Store the new filename for persistence across sleep cycles
+  if (Ws._sleep_controller != nullptr) {
+    Ws._sleep_controller->SetLogFilename(_log_filename);
+  }
+#endif
+
   return true;
 }
 
@@ -605,6 +779,60 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
   return true;
 }
 
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+/*!
+    @brief  Parses the sleep configuration from the JSON object.
+    @param  sleep_config
+            The JSON object containing the sleep configuration.
+    @param  timer_config
+            The JSON object containing the wake timer configuration.
+    @param  run_duration
+            The duration for which the device should run before sleeping.
+    @returns True if the sleep configuration was successfully parsed and
+   component configured, False otherwise.
+*/
+bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
+                                      const JsonObject &timer_config,
+                                      int run_duration) {
+  // Configure the sleep enter message using the model
+  // Note: lock is always true for offline mode
+  Ws._sleep_controller->GetModel()->SetSleepEnterTimer(
+      true, sleep_config["mode"], run_duration, timer_config["duration"]);
+
+  Ws._sleep_controller->SetWakeEnablePin(sleep_config["wakeEnablePin"] | 255,
+                                         sleep_config["wakeEnablePinPull"] | 0);
+
+  // Pass the message directly to the sleep controller
+  return Ws._sleep_controller->Handle_Sleep_Enter(
+      Ws._sleep_controller->GetModel()->GetSleepEnterMsg());
+}
+
+/*!
+    @brief  Parses the sleep configuration from the JSON object.
+    @param  sleep_config
+            The JSON object containing the sleep configuration.
+    @param  pin_config
+            The JSON object containing the wake pin configuration.
+    @param  run_duration
+            The duration for which the device should run before sleeping.
+    @returns True if the sleep configuration was successfully parsed and
+   component configured, False otherwise.
+*/
+bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
+                                    const JsonObject &pin_config,
+                                    int run_duration) {
+  // Configure the sleep enter message using the model
+  // Note: lock is always true for offline mode
+  Ws._sleep_controller->GetModel()->SetSleepEnterExt0(
+      true, sleep_config["mode"], run_duration, pin_config["name"],
+      pin_config["level"], pin_config["pull"]);
+
+  // Pass the message directly to the sleep controller
+  return Ws._sleep_controller->Handle_Sleep_Enter(
+      Ws._sleep_controller->GetModel()->GetSleepEnterMsg());
+}
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
+
 /*!
     @brief  Searches for and parses the JSON configuration file and sets up
             the hardware accordingly.
@@ -614,12 +842,11 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 bool ws_sdcard::parseConfigFile() {
   DeserializationError error;
   JsonDocument doc;
-  // delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
 
   // Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
-  doc = WsV2._config_doc;
+  doc = Ws._config_doc;
 #else
   // Use test data rather than data from the filesystem
   if (!_use_test_data) {
@@ -644,10 +871,11 @@ bool ws_sdcard::parseConfigFile() {
   if (!ValidateChecksum(doc)) {
     WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its "
                      "original state!");
+    // return false;
   }
-  WS_DEBUG_PRINTLN("[SD] Checksum OK!");
 
   // Begin parsing the JSON document
+  WS_DEBUG_PRINTLN("[SD] Parsing exportedFromDevice...");
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
   if (exportedFromDevice.isNull()) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Required exportedFromDevice not "
@@ -655,41 +883,47 @@ bool ws_sdcard::parseConfigFile() {
     return false;
   }
 
-  WS_DEBUG_PRINTLN("Parsing components array...");
-  // TODO: It gets stuck here because we reformated how components works,
-  // try possibly adding another component like a button and then troubleshoot
-  JsonArray components_ar = doc["components"].as<JsonArray>();
-  if (components_ar.isNull()) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Required components array not found!");
-    return false;
+  // We don't talk to IO in offline mode, so, mock the device check-in
+  WS_DEBUG_PRINTLN("[SD] Mocking device check-in...");
+  CheckIn(exportedFromDevice);
+
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // Parse sleep configuration, if present
+  WS_DEBUG_PRINTLN("[SD] Parsing sleep configuration...");
+  JsonObject sleep_config = doc["sleepConfig"][0];
+  if (!sleep_config.isNull()) {
+    bool parse_result = false;
+    if (!sleep_config["pinConfig"].isNull()) {
+      WS_DEBUG_PRINTLN(
+          "[SD] Sleep config: Pin wakeup found."); // TODO: Remove in production
+      parse_result = ParseSleepConfigPin(
+          sleep_config, sleep_config["pinConfig"], sleep_config["runDuration"]);
+    } else if (!sleep_config["timerConfig"].isNull()) {
+      parse_result =
+          ParseSleepConfigTimer(sleep_config, sleep_config["timerConfig"],
+                                sleep_config["runDuration"]);
+    } else {
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Missing sleep configuration type!");
+      return false;
+    }
+
+    if (!parse_result) {
+      WS_DEBUG_PRINT("[SD] Failed to parse sleep configuration!");
+      return false;
+    }
   }
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
 
-  WS_DEBUG_PRINTLN("Parsing exportedFromDevice object...");
-
-  // We don't talk to IO here, mock an "offline" device check-in
-  CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
-          exportedFromDevice["totalAnalogPins"] | 0,
-          exportedFromDevice["referenceVoltage"] | 0.0);
-  WS_DEBUG_PRINT("status LED brightness: ");
-  int exportedFromDevice_statusLEDBrightness =
-      exportedFromDevice["statusLEDBrightness"];
-  WS_DEBUG_PRINTLN(exportedFromDevice_statusLEDBrightness);
-  setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
-
-  WS_DEBUG_PRINTLN("Configuring RTC...");
+  WS_DEBUG_PRINTLN("[SD] Configuring RTC...");
 #ifndef OFFLINE_MODE_WOKWI
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT";
-  WS_DEBUG_PRINT("RTC Type: ");
-  WS_DEBUG_PRINTLN(json_rtc);
   if (!ConfigureRTC(json_rtc)) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure RTC!");
     return false;
   }
 #endif
 
-  WS_DEBUG_PRINTLN("Parsing components array...");
-
+  WS_DEBUG_PRINTLN("[SD] Parsing components...");
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
     ws_signal_BrokerToDevice msg_signal_b2d =
@@ -962,6 +1196,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
 
 #ifndef OFFLINE_MODE_DEBUG
   File32 file;
+  WS_DEBUG_PRINT("_log_filename: ");
+  WS_DEBUG_PRINTLN(_log_filename);
   file = _sd.open(_log_filename, O_RDWR | O_CREAT | O_AT_END);
   if (!file) {
     WS_DEBUG_PRINTLN(
@@ -1007,6 +1243,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, float value,
                                        ws_sensor_Type read_type) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1026,6 +1264,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, float value,
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
                                        ws_sensor_Type read_type) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1045,6 +1285,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, bool value,
                                        ws_sensor_Type read_type) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1063,6 +1305,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, bool value,
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   // Iterate over the event message's sensor events
   // TODO: Standardize this Event with I2C
@@ -1084,6 +1328,8 @@ bool ws_sdcard::LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg) {
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event) {
+  if (IsBatteryLow())
+    return true;
   JsonDocument doc;
   // Pull the DeviceDescriptor out
   ws_i2c_DeviceDescriptor descriptor = msg_device_event->device_description;

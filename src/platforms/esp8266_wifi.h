@@ -1,8 +1,8 @@
 /*!
- * @file ws_wifi_esp8266.h
+ * @file esp8266_wifi.h
  *
  * This is a driver for using the ESP8266's network interface
- *  with Wippersnapper_V2.
+ *  with wippersnapper.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -14,15 +14,15 @@
  *
  */
 
-#ifndef WS_WIFI_ESP8266_H
-#define WS_WIFI_ESP8266_H
+#ifndef ESP8266_WIFI_H
+#define ESP8266_WIFI_H
 
 #ifdef ARDUINO_ARCH_ESP8266
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "ESP8266WiFi.h"
 #include "ESP8266WiFiMulti.h"
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
  * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is
@@ -37,13 +37,13 @@
 // static const char *fingerprint PROGMEM =  "4E C1 52 73 24 A8 36 D6 7A 4C 67
 // C7 91 0C 0A 22 B9 2D 5B CA";
 
-extern Wippersnapper_V2 WsV2;
+extern wippersnapper Ws;
 
 /*!
     @brief  Class for interacting with the Espressif ESP8266's network
    interface.
 */
-class ws_wifi_esp8266 : public Wippersnapper_V2 {
+class esp8266_wifi : public wippersnapper {
 
 public:
   /*!
@@ -57,7 +57,7 @@ public:
   @param  netPass
           Wireless Network password
   */
-  ws_wifi_esp8266() : Wippersnapper_V2() {
+  esp8266_wifi() : wippersnapper() {
     _ssid = 0;
     _pass = 0;
     _wifi_client = new WiFiClient;
@@ -68,7 +68,7 @@ public:
   /*!
   @brief  Destructor for the ESP8266's network iface.
   */
-  ~ws_wifi_esp8266() {
+  ~esp8266_wifi() {
     if (_wifi_client)
       delete _wifi_client;
     if (_mqttV2)
@@ -99,8 +99,8 @@ public:
             ESP8266's LittleFS.
   */
   void set_ssid_pass() {
-    _ssid = WsV2._configV2.network.ssid;
-    _pass = WsV2._configV2.network.pass;
+    _ssid = Ws._configV2.network.ssid;
+    _pass = Ws._configV2.network.pass;
   }
 
   /*!
@@ -130,13 +130,12 @@ public:
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
-      if (WsV2._isWiFiMultiV2) {
+      if (Ws._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
-              0) {
+          if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) == 0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
+            WS_DEBUG_PRINT(Ws._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
@@ -165,7 +164,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
-    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
+    memcpy(Ws._macAddrV2, mac, sizeof(mac));
   }
 
   /*!
@@ -181,15 +180,15 @@ public:
   */
   void setupMQTTClient(const char *clientID) {
     // Uncomment the following lines to use MQTT/SSL. You will need to
-    // re-compile after. _wifi_client->setFingerprint(fingerprint); WsV2._mqttV2
-    // = new Adafruit_MQTT_Client(_wifi_client, WsV2._configV2.aio_url,
-    // WsV2._configV2.io_port, clientID, WsV2._configV2.aio_user,
-    // WsV2._configV2.aio_key);
-    if (WsV2._configV2.io_port == 8883)
-      WsV2._configV2.io_port = 1883;
-    WsV2._mqttV2 = new Adafruit_MQTT_Client(
-        _wifi_client, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
-        WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+    // re-compile after. _wifi_client->setFingerprint(fingerprint); Ws._mqttV2
+    // = new Adafruit_MQTT_Client(_wifi_client, Ws._configV2.aio_url,
+    // Ws._configV2.io_port, clientID, Ws._configV2.aio_user,
+    // Ws._configV2.aio_key);
+    if (Ws._configV2.io_port == 8883)
+      Ws._configV2.io_port = 1883;
+    Ws._mqttV2 = new Adafruit_MQTT_Client(
+        _wifi_client, Ws._configV2.aio_url, Ws._configV2.io_port, clientID,
+        Ws._configV2.aio_user, Ws._configV2.aio_key);
   }
 
   /*!
@@ -210,7 +209,7 @@ public:
   }
 
   /*!
-  @brief  Returns the type of network connection used by Wippersnapper_V2
+  @brief  Returns the type of network connection used by wippersnapper
   @return "ESP8266"
   */
   const char *connectionType() { return "ESP8266"; }
@@ -242,14 +241,14 @@ protected:
       _statusV2 = WS_NET_DISCONNECTED;
       delay(100);
 
-      if (WsV2._isWiFiMultiV2) {
+      if (Ws._isWiFiMultiV2) {
         // multi network mode
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          if (strlen(WsV2._multiNetworksV2[i].ssid) > 0 &&
-              (_wifiMulti.existsAP(WsV2._multiNetworksV2[i].ssid) == false)) {
+          if (strlen(Ws._multiNetworksV2[i].ssid) > 0 &&
+              (_wifiMulti.existsAP(Ws._multiNetworksV2[i].ssid) == false)) {
             // doesn't exist, add it
-            _wifiMulti.addAP(WsV2._multiNetworksV2[i].ssid,
-                             WsV2._multiNetworksV2[i].pass);
+            _wifiMulti.addAP(Ws._multiNetworksV2[i].ssid,
+                             Ws._multiNetworksV2[i].pass);
           }
         }
         // add default network
@@ -284,7 +283,7 @@ protected:
           _statusV2 = WS_NET_DISCONNECTED;
         }
       }
-      WsV2.feedWDTV2();
+      Ws._wdt->feed();
     }
   }
 
@@ -298,4 +297,4 @@ protected:
 };
 
 #endif // ARDUINO_ARCH_ESP8266
-#endif // WS_WIFI_ESP8266_H
+#endif // ESP8266_WIFI_H

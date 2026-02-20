@@ -14,9 +14,9 @@
  */
 #ifndef WS_CHECKIN_MODEL_H
 #define WS_CHECKIN_MODEL_H
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
-class Wippersnapper_V2; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -42,5 +42,5 @@ private:
       ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;           ///< Flag indicating if response was received
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
-#endif                        // WS_CHECKIN_H
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
+#endif                   // WS_CHECKIN_H

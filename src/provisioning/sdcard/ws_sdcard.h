@@ -17,8 +17,8 @@
 #include "RTClib.h"
 #include "SdFat_Adafruit_Fork.h"
 #include "StreamUtils.h"
-#include "Wippersnapper_V2.h"
 #include "sdios.h"
+#include "wippersnapper.h"
 
 #if defined(ARDUINO_FEATHER_ESP32) ||                                          \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
@@ -38,9 +38,11 @@
 #define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
 #define MAX_LEN_CFG_JSON                                                       \
   4096 ///< Maximum length of the configuration JSON file, in Bytes
+#define LOW_SD_WRITE_BATT_THRESH                                               \
+  10.0f ///< Battery percentage threshold for disabling SD writes
 
 // forward decl.
-class Wippersnapper_V2;
+class wippersnapper;
 
 /*!
     @brief  Class that handles Wippersnapper's optional filesystem commands
@@ -50,10 +52,15 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
+  bool begin();
+  void end();
   bool isSDCardInitialized() { return is_mode_offline; }
   bool parseConfigFile();
   bool CreateNewLogFile();
   bool isModeOffline() { return is_mode_offline; }
+  uint32_t getHeartbeatIntervalMs();
+  uint32_t getPreviousHeartbeatIntervalMs();
+  void setPreviousHeartbeatIntervalMs(uint32_t timestamp);
   void waitForSerialConfig();
   bool LogGPIOSensorEventToSD(uint8_t pin, float value,
                               ws_sensor_Type read_type);
@@ -63,13 +70,16 @@ public:
                               ws_sensor_Type read_type);
   bool LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg);
   bool LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event);
+  void SetBatteryPercent(float percent);
+  bool IsBatteryLow() const;
+  bool isRTCSoft() const;
+  uint32_t GetSoftRTCTime();
 
 private:
   void calculateFileLimits();
   bool ValidateChecksum(JsonDocument &doc);
   bool ValidateJSONKey(const char *key, const char *error_msg);
-  void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
-               float ref_voltage);
+  void CheckIn(const JsonObject &exported_from_device);
   bool ConfigureRTC(const char *rtc_type);
   uint32_t GetTimestamp();
   bool InitDS1307();
@@ -77,18 +87,22 @@ private:
   bool InitPCF8523();
   bool InitSoftRTC();
   void TickSoftRTC();
-  uint32_t GetSoftRTCTime();
+  void SetSoftRTCCounter(uint32_t counter);
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  bool ParseSleepConfigTimer(const JsonObject &sleep_config,
+                             const JsonObject &timer_config, int run_duration);
+  bool ParseSleepConfigPin(const JsonObject &sleep_config,
+                           const JsonObject &pin_config, int run_duration);
+#endif
   ws_sensor_Type ParseSensorType(const char *sensor_type);
-  bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
-                         const char *pin, float period, bool value,
-                         const char *sample_mode, const char *direction,
-                         const char *pull);
-  bool ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd,
-                        const char *pin, float period, const char *mode);
-  bool ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add,
-                       const char *pin, int resolution, float period,
-                       int num_sensors, const char *sensor_type_1,
-                       const char *sensor_type_2);
+  bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd, const char *pin,
+                         float period, bool value, const char *sample_mode,
+                         const char *direction, const char *pull);
+  bool ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd, const char *pin,
+                        float period, const char *mode);
+  bool ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
+                       int resolution, float period, int num_sensors,
+                       const char *sensor_type_1, const char *sensor_type_2);
   bool ParseI2cDeviceAddReplace(
       JsonObject &component,
       ws_i2c_DeviceAddOrReplace &msg_i2c_device_add_replace);
@@ -101,8 +115,7 @@ private:
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                     ws_sensor_Type read_type);
   bool LogJSONDoc(JsonDocument &doc);
-  bool AddSignalMessageToSharedBuffer(
-      ws_signal_BrokerToDevice &msg_signal);
+  bool AddSignalMessageToSharedBuffer(ws_signal_BrokerToDevice &msg_signal);
 
   SdSpiConfig _sd_spi_cfg; ///< SPI configuration for the SD card
   SdFat _sd;               ///< SD object from Adafruit SDFat library
@@ -114,7 +127,9 @@ private:
   int _sd_cur_log_files; ///< Current number of log files that can fit on the SD
                          ///< card
   bool is_mode_offline;  ///< True if offline mode is enabled, False otherwise
-  String _serialInput;   ///< Serial input buffer
+  uint32_t _heartbeat_interval_ms; ///< Offline mode heartbeat interval, in ms
+  uint32_t _prv_heartbeat_interval_ms; ///< Previous heartbeat timestamp, in ms
+  String _serialInput;                 ///< Serial input buffer
   const char *json_test_data;          ///< Json test data
   const char *_log_filename;           ///< Path to the log file
   RTC_DS3231 *_rtc_ds3231 = nullptr;   ///< DS3231 RTC object
@@ -123,6 +138,7 @@ private:
   bool _is_soft_rtc; ///< True if a "soft rtc" is being used, False otherwise
   uint32_t _soft_rtc_counter; ///< Holds the counter for a "soft rtc"
   bool _use_test_data;        ///< True if sample data is being used for testing
+  bool _is_battery_low;       ///< True if battery < LOW_SD_WRITE_BATT_THRESH
 };
-extern Wippersnapper_V2 WsV2;
+extern wippersnapper Ws;
 #endif // WS_SDCARD_H

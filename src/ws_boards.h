@@ -1,20 +1,20 @@
 /*!
- * @file Wippersnapper_Boards.h
+ * @file ws_boards.h
  *
- * This file determines hardware/board type at compile-time.
+ * This file contains all board-specific definitions for Adafruit Wippersnapper.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2022 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef ADAFRUIT_WIPPERSNAPPER_BOARDS_H
-#define ADAFRUIT_WIPPERSNAPPER_BOARDS_H
+#ifndef WS_BOARDS_H
+#define WS_BOARDS_H
 
 #if defined(ADAFRUIT_PYPORTAL)
 #define BOARD_ID "pyportal-tinyusb"
@@ -56,6 +56,7 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 46
 #define STATUS_NEOPIXEL_NUM 1
+#define BOOT_BUTTON PIN_BUTTON1 ///< Normalized boot button pin
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_MAGTAG29_ESP32S2)
 #define BOARD_ID "magtag"
@@ -71,6 +72,7 @@
 #define STATUS_NEOPIXEL_PIN 33
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
 #define BOARD_ID "feather-esp32s2-tft"
 #define USE_TINYUSB
@@ -79,6 +81,7 @@
 #define STATUS_NEOPIXEL_NUM 1
 #define PIN_I2C_POWER_INVERTED 7
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT)
 #define BOARD_ID "feather-esp32s2-reverse-tft"
 #define USE_TINYUSB
@@ -86,12 +89,14 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NEOPIXEL_NUM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
 #define BOARD_ID "feather-esp32s3"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NEOPIXEL_NUM
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3)
 #define BOARD_ID "feather-esp32s3-4mbflash-2mbpsram"
 #define USE_TINYUSB
@@ -99,6 +104,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NEOPIXEL_NUM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT)
 #define BOARD_ID "feather-esp32s3-tft"
 #define USE_TINYUSB
@@ -106,6 +112,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NEOPIXEL_NUM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT)
 #define BOARD_ID "feather-esp32s3-reverse-tft"
 #define USE_TINYUSB
@@ -113,6 +120,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NEOPIXEL_NUM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2)
 #define BOARD_ID "qtpy-esp32s2"
 #define USE_TINYUSB
@@ -121,6 +129,7 @@
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #define I2c_STEMMA_WIRE1
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM)
 #define BOARD_ID "qtpy-esp32s3"
 #define USE_TINYUSB
@@ -128,6 +137,7 @@
 #define STATUS_NEOPIXEL_NUM 1
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define I2c_STEMMA_WIRE1
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2)
 #define BOARD_ID "qtpy-esp32s3-n4r2"
 #define USE_TINYUSB
@@ -136,12 +146,14 @@
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #define I2c_STEMMA_WIRE1
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3)
 #define BOARD_ID "qtpy-esp32c3"
 #define USE_LITTLEFS
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#define BOOT_BUTTON 0
 #elif defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
 #define BOARD_ID "feather-esp8266"
 #define USE_LITTLEFS
@@ -170,6 +182,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#define BOOT_BUTTON BUTTON
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO)
 #define BOARD_ID "qtpy-esp32"
 #define USE_LITTLEFS
@@ -227,7 +240,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #else
-#warning "Board type not identified within Wippersnapper_Boards.h!"
+#warning "Board type not identified within ws_boards.h!"
 #endif
 
-#endif // ADAFRUIT_WIPPERSNAPPER_BOARDS_H
+#endif // WS_BOARDS_H

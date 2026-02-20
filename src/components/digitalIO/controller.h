@@ -14,11 +14,11 @@
  */
 #ifndef WS_DIGITALIO_CONTROLLER_H
 #define WS_DIGITALIO_CONTROLLER_H
-#include "Wippersnapper_V2.h"
 #include "hardware.h"
 #include "model.h"
+#include "wippersnapper.h"
 
-class Wippersnapper_V2;
+class wippersnapper;
 
 /**
  * @struct DigitalIOPin
@@ -32,6 +32,8 @@ struct DigitalIOPin {
   bool prv_pin_value;                   ///< The pin's previous value.
   ulong pin_period;                     ///< The pin's period.
   ulong prv_pin_time;                   ///< The pin's previous time.
+  bool
+      did_read_send; ///< True if the last read was sent to IO, False otherwise.
 };
 
 class DigitalIOModel;    // Forward declaration
@@ -50,7 +52,10 @@ public:
   bool Handle_DigitalIO_Add(ws_digitalio_Add *msg);
   bool Handle_DigitalIO_Remove(ws_digitalio_Remove *msg);
   bool Handle_DigitalIO_Write(ws_digitalio_Write *msg);
-  void update();
+  void update(bool force = false);
+  // For sleep cycles
+  bool UpdateComplete();
+  void ResetFlags();
 
   // Called once per-run, during CheckinResponse processing
   void SetMaxDigitalPins(uint8_t max_digital_pins);
@@ -67,5 +72,5 @@ private:
   DigitalIOModel *_dio_model;
   DigitalIOHardware *_dio_hardware;
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
-#endif                        // WS_DIGITALIO_CONTROLLER_H
+extern wippersnapper Ws; ///< Wippersnapper V2 instance
+#endif                   // WS_DIGITALIO_CONTROLLER_H

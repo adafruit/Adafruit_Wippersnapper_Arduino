@@ -13,8 +13,8 @@
  *
  */
 #include "model.h"
-#include "Wippersnapper_V2.h"
 #include "nanopb/ws_pb_helpers.h"
+#include "wippersnapper.h"
 
 /*!
     @brief  Constructs a new PixelsModel object

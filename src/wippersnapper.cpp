@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_v2.cpp
+ * @file wippersnapper.cpp
  *
  * @mainpage Adafruit Wippersnapper Wrapper
  *
@@ -23,7 +23,7 @@
  *
  * @section author Author
  *
- * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2026 for Adafruit Industries.
  *
  * @section license License
  *
@@ -31,20 +31,23 @@
  *
  */
 
-#include "Wippersnapper_V2.h"
+#include "wippersnapper.h"
 
-Wippersnapper_V2 WsV2;
+wippersnapper Ws;
 
 /*!
-    @brief    Wippersnapper_V2 constructor
+    @brief    wippersnapper constructor
 */
-Wippersnapper_V2::Wippersnapper_V2()
+wippersnapper::wippersnapper()
     : _mqttV2(nullptr), sensor_model(nullptr), error_controller(nullptr),
       digital_io_controller(nullptr), analogio_controller(nullptr),
       _ds18x20_controller(nullptr), _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
       _pixels_controller(nullptr), _pwm_controller(nullptr),
-      _servo_controller(nullptr) {
+      _servo_controller(nullptr), _wdt(nullptr) {
+  // Initialize WDT wrapper
+  _wdt = new ws_wdt();
+
   // Initialize model classes
   sensor_model = new SensorModel();
 
@@ -58,13 +61,17 @@ Wippersnapper_V2::Wippersnapper_V2()
   _pixels_controller = new PixelsController();
   _pwm_controller = new PWMController();
   _servo_controller = new ServoController();
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  _sleep_controller = new SleepController();
+#endif
 }
 
 /*!
-    @brief    Wippersnapper_V2 destructor
+    @brief    wippersnapper destructor
 */
-Wippersnapper_V2::~Wippersnapper_V2() {
+wippersnapper::~wippersnapper() {
   disconnect();
+  delete this->_wdt;
   delete this->sensor_model;
   // delete this->error_controller;
   delete this->digital_io_controller;
@@ -76,27 +83,30 @@ Wippersnapper_V2::~Wippersnapper_V2() {
   delete this->_pixels_controller;
   delete this->_pwm_controller;
   delete this->_servo_controller;
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  delete this->_sleep_controller;
+#endif
 }
 
 /*!
-    @brief    Disconnects from Adafruit IO+ Wippersnapper_V2.
+    @brief    Disconnects from Adafruit IO+ wippersnapper.
 */
-void Wippersnapper_V2::disconnect() { _disconnect(); }
+void wippersnapper::disconnect() { _disconnect(); }
 
 // Concrete class definition for abstract classes
 
 /*!
     @brief    Connects to wireless network.
 */
-void Wippersnapper_V2::_connect() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::_connect()");
+void wippersnapper::_connect() {
+  WS_DEBUG_PRINTLN("wippersnapper::_connect()");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /*!
     @brief    Disconnect Wippersnapper MQTT session and network.
 */
-void Wippersnapper_V2::_disconnect() {
+void wippersnapper::_disconnect() {
   WS_DEBUG_PRINTLN("WIppersnapper_V2::_disconnect");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
@@ -105,8 +115,8 @@ void Wippersnapper_V2::_disconnect() {
     @brief    Sets the network interface's unique identifer, typically the
               MAC address.
 */
-void Wippersnapper_V2::getMacAddr() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::getMacAddr");
+void wippersnapper::getMacAddr() {
+  WS_DEBUG_PRINTLN("wippersnapper::getMacAddr");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -114,7 +124,7 @@ void Wippersnapper_V2::getMacAddr() {
     @brief    Gets the network's RSSI.
     @return   int32_t RSSI value, 0 to 255, in dB
 */
-int32_t Wippersnapper_V2::getRSSI() {
+int32_t wippersnapper::getRSSI() {
   WS_DEBUG_PRINTLN("Wiippersnapper_V2::getRSSI");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return 0;
@@ -125,8 +135,8 @@ int32_t Wippersnapper_V2::getRSSI() {
     @param    clientID
               A unique client identifier string.
 */
-void Wippersnapper_V2::setupMQTTClient(const char * /*clientID*/) {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::setupMQTTClient");
+void wippersnapper::setupMQTTClient(const char * /*clientID*/) {
+  WS_DEBUG_PRINTLN("wippersnapper::setupMQTTClient");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -134,8 +144,8 @@ void Wippersnapper_V2::setupMQTTClient(const char * /*clientID*/) {
     @brief    Returns the network's connection status
     @returns  Network status as ws_status_t.
 */
-ws_status_t Wippersnapper_V2::networkStatus() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::networkStatus");
+ws_status_t wippersnapper::networkStatus() {
+  WS_DEBUG_PRINTLN("wippersnapper::networkStatus");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return WS_IDLE;
 }
@@ -147,9 +157,9 @@ ws_status_t Wippersnapper_V2::networkStatus() {
     @param    ssidPassword
               Your wireless network's password.
 */
-void Wippersnapper_V2::set_ssid_pass(const char * /*ssid*/,
-                                     const char * /*ssidPassword*/) {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_pass");
+void wippersnapper::set_ssid_pass(const char * /*ssid*/,
+                                  const char * /*ssidPassword*/) {
+  WS_DEBUG_PRINTLN("wippersnapper::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -157,8 +167,8 @@ void Wippersnapper_V2::set_ssid_pass(const char * /*ssid*/,
     @brief    Sets the device's wireless network credentials from the
               secrets.json configuration file.
 */
-void Wippersnapper_V2::set_ssid_pass() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_pass");
+void wippersnapper::set_ssid_pass() {
+  WS_DEBUG_PRINTLN("wippersnapper::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -166,8 +176,8 @@ void Wippersnapper_V2::set_ssid_pass() {
 @brief   Performs a scan of local WiFi networks.
 @returns True if `_network_ssid` is found, False otherwise.
 */
-bool Wippersnapper_V2::check_valid_ssid() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::check_valid_ssid");
+bool wippersnapper::check_valid_ssid() {
+  WS_DEBUG_PRINTLN("wippersnapper::check_valid_ssid");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return false;
 }
@@ -177,8 +187,8 @@ bool Wippersnapper_V2::check_valid_ssid() {
               should be used only if filesystem-backed provisioning is
               not avaliable.
 */
-void Wippersnapper_V2::set_user_key() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_user_key");
+void wippersnapper::set_user_key() {
+  WS_DEBUG_PRINTLN("wippersnapper::set_user_key");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -186,7 +196,7 @@ void Wippersnapper_V2::set_user_key() {
     @brief    Provisions a WipperSnapper device with its network
               configuration and Adafruit IO credentials.
 */
-void Wippersnapper_V2::provision() {
+void wippersnapper::provision() {
   // Obtain device's MAC address
   getMacAddr();
 
@@ -207,14 +217,14 @@ void Wippersnapper_V2::provision() {
   _littleFSV2->GetSDCSPin();
 #elif defined(OFFLINE_MODE_WOKWI)
   WS_DEBUG_PRINTLN("Wokwi offline mode detected, setting SD CS pin to 15");
-  WsV2.pin_sd_cs = 15;
+  Ws.pin_sd_cs = 15;
 #endif
   WS_DEBUG_PRINT("SD CS Pin: ");
-  WS_DEBUG_PRINTLN(WsV2.pin_sd_cs);
-  WsV2._sdCardV2 = new ws_sdcard();
+  WS_DEBUG_PRINTLN(Ws.pin_sd_cs);
+  Ws._sdCardV2 = new ws_sdcard();
   WS_DEBUG_PRINTLN("Is SD Card initialized?");
-  WS_DEBUG_PRINTLN(WsV2._sdCardV2->isSDCardInitialized());
-  if (WsV2._sdCardV2->isSDCardInitialized()) {
+  WS_DEBUG_PRINTLN(Ws._sdCardV2->isSDCardInitialized());
+  if (Ws._sdCardV2->isSDCardInitialized()) {
     return; // SD card initialized, cede control back to loop()
   } else {
 #ifdef BUILD_OFFLINE_ONLY
@@ -234,7 +244,7 @@ void Wippersnapper_V2::provision() {
                       // iface
 #endif
   // Set the status pixel's brightness
-  setStatusLEDBrightness(WsV2._configV2.status_pixel_brightness);
+  setStatusLEDBrightness(Ws._configV2.status_pixel_brightness);
   // Set device's wireless credentials
   set_ssid_pass();
 }
@@ -250,21 +260,21 @@ void Wippersnapper_V2::provision() {
 bool handleCheckinResponse(pb_istream_t *stream) {
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
-  if (!WsV2.CheckInModel->ProcessResponse(stream)) {
+  if (!Ws.CheckInModel->ProcessResponse(stream)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response message");
     return false;
   }
-  WsV2.runNetFSMV2();
+  Ws.NetworkFSM();
 
   // Configure controller settings using Response
   WS_DEBUG_PRINTLN("[app] Configuring controllers");
-  WsV2.CheckInModel->ConfigureControllers();
-  WsV2.runNetFSMV2();
+  Ws.CheckInModel->ConfigureControllers();
+  Ws.NetworkFSM();
 
   // Publish the complete response message to indicate the checkin
   // routine is done and the device is ready for use
   WS_DEBUG_PRINTLN("[app] Publishing complete response message");
-  return WsV2.CheckInModel->Complete();
+  return Ws.CheckInModel->Complete();
 }
 
 // Decoders //
@@ -294,26 +304,31 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   switch (field->tag) {
   case ws_signal_BrokerToDevice_error_tag:
     WS_DEBUG_PRINTLN("error");
-    return WsV2.error_controller->Router(stream);
+    return Ws.error_controller->Router(stream);
   case ws_signal_BrokerToDevice_checkin_tag:
     WS_DEBUG_PRINTLN("checkin");
     return handleCheckinResponse(stream);
   case ws_signal_BrokerToDevice_digitalio_tag:
-    return WsV2.digital_io_controller->Router(stream);
+    return Ws.digital_io_controller->Router(stream);
   case ws_signal_BrokerToDevice_analogio_tag:
-    return WsV2.analogio_controller->Router(stream);
+    return Ws.analogio_controller->Router(stream);
   case ws_signal_BrokerToDevice_pixels_tag:
-    return WsV2._pixels_controller->Router(stream);
+    return Ws._pixels_controller->Router(stream);
   case ws_signal_BrokerToDevice_pwm_tag:
-    return WsV2._pwm_controller->Router(stream);
+    return Ws._pwm_controller->Router(stream);
   case ws_signal_BrokerToDevice_servo_tag:
-    return WsV2._servo_controller->Router(stream);
+    return Ws._servo_controller->Router(stream);
   case ws_signal_BrokerToDevice_ds18x20_tag:
-    return WsV2._ds18x20_controller->Router(stream);
+    return Ws._ds18x20_controller->Router(stream);
   case ws_signal_BrokerToDevice_i2c_tag:
-    return WsV2._i2c_controller->Router(stream);
+    return Ws._i2c_controller->Router(stream);
   case ws_signal_BrokerToDevice_uart_tag:
-    return WsV2._uart_controller->Router(stream);
+    return Ws._uart_controller->Router(stream);
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  case ws_signal_BrokerToDevice_sleep_tag:
+    WS_DEBUG_PRINTLN("sleep");
+    return Ws._sleep_controller->Router(stream);
+#endif
   default:
     WS_DEBUG_PRINTLN("WARNING: Unhandled BrokerToDevice message tag!");
     return false;
@@ -350,11 +365,11 @@ void cbBrokerToDevice(char *data, uint16_t len) {
               messages from the SD card.
 */
 void callDecodeB2D() {
-  for (size_t i = 0; i < WsV2._sharedConfigBuffers.size(); i++) {
+  for (size_t i = 0; i < Ws._sharedConfigBuffers.size(); i++) {
     ws_signal_BrokerToDevice msg_signal = ws_signal_BrokerToDevice_init_default;
     // Configure the payload callback
     msg_signal.cb_payload.funcs.decode = routeBrokerToDevice;
-    const std::vector<uint8_t> &buffer = WsV2._sharedConfigBuffers[i];
+    const std::vector<uint8_t> &buffer = Ws._sharedConfigBuffers[i];
     pb_istream_t istream = pb_istream_from_buffer(buffer.data(), buffer.size());
     // Decode the message
     if (!pb_decode(&istream, ws_signal_BrokerToDevice_fields, &msg_signal)) {
@@ -369,23 +384,23 @@ void callDecodeB2D() {
     @returns  True if device identifier generated successfully,
               False otherwise.
 */
-bool Wippersnapper_V2::generateDeviceUID() {
+bool wippersnapper::generateDeviceUID() {
   // Generate device unique identifier
   // Set machine_name
-  WsV2._boardIdV2 = BOARD_ID;
+  Ws._boardIdV2 = BOARD_ID;
   // Move the top 3 bytes from the UID
   for (int i = 5; i > 2; i--) {
-    WsV2._macAddrV2[6 - 1 - i] = WsV2._macAddrV2[i];
+    Ws._macAddrV2[6 - 1 - i] = Ws._macAddrV2[i];
   }
-  snprintf(WsV2.sUIDV2, sizeof(WsV2.sUIDV2), "%02d%02d%02d", WsV2._macAddrV2[0],
-           WsV2._macAddrV2[1], WsV2._macAddrV2[2]);
+  snprintf(Ws.sUIDV2, sizeof(Ws.sUIDV2), "%02d%02d%02d", Ws._macAddrV2[0],
+           Ws._macAddrV2[1], Ws._macAddrV2[2]);
   // Conversion to match integer UID sent by createMsgCheckinRequest()
-  itoa(atoi(WsV2.sUIDV2), WsV2.sUIDV2, 10);
+  itoa(atoi(Ws.sUIDV2), Ws.sUIDV2, 10);
 
   // Calculate the length of device and UID strings
   WS_DEBUG_PRINTLN("Calculating device UID length...");
-  size_t lenBoardId = strlen(WsV2._boardIdV2);
-  size_t lenUID = strlen(WsV2.sUIDV2);
+  size_t lenBoardId = strlen(Ws._boardIdV2);
+  size_t lenUID = strlen(Ws.sUIDV2);
   size_t lenIOWipper = strlen("io-wipper-");
   size_t lenDeviceUID = lenBoardId + lenUID + lenIOWipper + 1;
 
@@ -404,8 +419,8 @@ bool Wippersnapper_V2::generateDeviceUID() {
   }
 
   // Create the device identifier
-  snprintf(_device_uidV2, lenDeviceUID, "io-wipper-%s%s", WsV2._boardIdV2,
-           WsV2.sUIDV2);
+  snprintf(_device_uidV2, lenDeviceUID, "io-wipper-%s%s", Ws._boardIdV2,
+           Ws.sUIDV2);
   WS_DEBUG_PRINT("Device UID: ");
   WS_DEBUG_PRINTLN(_device_uidV2);
 
@@ -418,48 +433,48 @@ bool Wippersnapper_V2::generateDeviceUID() {
     @returns  True if memory for control topics allocated successfully,
                 False otherwise.
 */
-bool Wippersnapper_V2::generateWSTopics() {
+bool wippersnapper::generateWSTopics() {
   // Calculate length for topic strings
-  size_t lenSignalTopic = strlen(WsV2._configV2.aio_user) +
-                          WS_TOPIC_PREFIX_LEN + strlen(_device_uidV2) + 1;
+  size_t lenSignalTopic = strlen(Ws._configV2.aio_user) + WS_TOPIC_PREFIX_LEN +
+                          strlen(_device_uidV2) + 1;
 
   // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
-  WsV2._topicB2d = (char *)ps_malloc(sizeof(char) * lenSignalTopic);
+  Ws._topicB2d = (char *)ps_malloc(sizeof(char) * lenSignalTopic);
 #else
-  WsV2._topicB2d = (char *)malloc(sizeof(char) * lenSignalTopic);
+  Ws._topicB2d = (char *)malloc(sizeof(char) * lenSignalTopic);
 #endif
   // Check if memory allocation was successful
-  if (WsV2._topicB2d == NULL)
+  if (Ws._topicB2d == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicB2d, lenSignalTopic, "%s/ws-b2d/%s",
-           WsV2._configV2.aio_user, _device_uidV2);
+  snprintf(Ws._topicB2d, lenSignalTopic, "%s/ws-b2d/%s", Ws._configV2.aio_user,
+           _device_uidV2);
   // Subscribe to broker-to-device topic
-  _subscribeB2d = new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicB2d, 1);
-  WsV2._mqttV2->subscribe(_subscribeB2d);
+  _subscribeB2d = new Adafruit_MQTT_Subscribe(Ws._mqttV2, Ws._topicB2d, 1);
+  Ws._mqttV2->subscribe(_subscribeB2d);
   _subscribeB2d->setCallback(cbBrokerToDevice);
 
   // Create global device to broker topic
   // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
-  WsV2._topicD2b = (char *)ps_malloc(sizeof(char) * lenSignalTopic);
+  Ws._topicD2b = (char *)ps_malloc(sizeof(char) * lenSignalTopic);
 #else
-  WsV2._topicD2b = (char *)malloc(sizeof(char) * lenSignalTopic);
+  Ws._topicD2b = (char *)malloc(sizeof(char) * lenSignalTopic);
 #endif
   // Check if memory allocation was successful
-  if (WsV2._topicD2b == NULL) {
+  if (Ws._topicD2b == NULL) {
     // Release resources and return false
-    free(WsV2._topicB2d);
-    WsV2._topicB2d = NULL;
+    free(Ws._topicB2d);
+    Ws._topicB2d = NULL;
     delete _subscribeB2d;
     _subscribeB2d = NULL;
     return false;
   }
 
   // Build the broker-to-device topic
-  snprintf(WsV2._topicD2b, lenSignalTopic, "%s/ws-d2b/%s",
-           WsV2._configV2.aio_user, _device_uidV2);
+  snprintf(Ws._topicD2b, lenSignalTopic, "%s/ws-d2b/%s", Ws._configV2.aio_user,
+           _device_uidV2);
   return true;
 }
 
@@ -469,7 +484,7 @@ bool Wippersnapper_V2::generateWSTopics() {
     @param    error
               The error message to write to the serial and filesystem.
 */
-void Wippersnapper_V2::errorWriteHangV2(const char *error) {
+void wippersnapper::errorWriteHangV2(const char *error) {
   // Print error
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
@@ -481,7 +496,7 @@ void Wippersnapper_V2::errorWriteHangV2(const char *error) {
   while (1) {
     WS_DEBUG_PRINTLN("ERROR: Halted execution");
     WS_DEBUG_PRINTLN(error);
-    WsV2.feedWDTV2();
+    Ws._wdt->feed();
     statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
   }
@@ -490,17 +505,25 @@ void Wippersnapper_V2::errorWriteHangV2(const char *error) {
 /*!
     @brief    Checks network and MQTT connectivity. Handles network
               re-connection and mqtt re-establishment.
+    @param    initial_connect
+                If true, the FSM operates the initial connection routine with a
+   failure mode for sleep mode.
 */
-void Wippersnapper_V2::runNetFSMV2() {
-  WsV2.feedWDTV2();
+void wippersnapper::NetworkFSM(bool initial_connect) {
+  Ws._wdt->feed();
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
   int maxAttempts;
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // Handle sleep mode network failures
+  bool handle_sleep_mode_error =
+      initial_connect && _sleep_controller->IsSleepMode();
+#endif
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
-      if (WsV2._mqttV2->connected()) {
+      if (Ws._mqttV2->connected()) {
         // WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
@@ -522,6 +545,11 @@ void Wippersnapper_V2::runNetFSMV2() {
       // secrets.json is within the scanned SSIDs
       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
       if (!check_valid_ssid()) {
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+        if (handle_sleep_mode_error) {
+          _sleep_controller->HandleNetFSMFailure();
+        }
+#endif
         haltErrorV2("ERROR: Unable to find WiFi network, rebooting soon...",
                     WS_LED_STATUS_WIFI_CONNECTING);
       }
@@ -530,15 +558,15 @@ void Wippersnapper_V2::runNetFSMV2() {
       while (maxAttempts > 0) {
         // blink before we connect
         statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
-        feedWDTV2();
+        _wdt->feed();
         // attempt to connect
         WS_DEBUG_PRINT("Connecting to WiFi (attempt #");
         WS_DEBUG_PRINT(5 - maxAttempts);
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
-        feedWDTV2();
+        _wdt->feed();
         _connect();
-        feedWDTV2();
+        _wdt->feed();
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
@@ -547,6 +575,11 @@ void Wippersnapper_V2::runNetFSMV2() {
       // Validate connection
       if (networkStatus() != WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+        if (handle_sleep_mode_error) {
+          _sleep_controller->HandleNetFSMFailure();
+        }
+#endif
         haltErrorV2("ERROR: Unable to connect to WiFi, rebooting soon...",
                     WS_LED_STATUS_WIFI_CONNECTING);
       }
@@ -554,7 +587,7 @@ void Wippersnapper_V2::runNetFSMV2() {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      WsV2._mqttV2->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
+      Ws._mqttV2->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -565,24 +598,29 @@ void Wippersnapper_V2::runNetFSMV2() {
         WS_DEBUG_PRINT("WiFi Status: ");
         WS_DEBUG_PRINTLN(networkStatus());
         WS_PRINTER.flush();
-        feedWDTV2();
+        _wdt->feed();
         statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
-        feedWDTV2();
-        int8_t mqttRC = WsV2._mqttV2->connect();
-        feedWDTV2();
+        _wdt->feed();
+        int8_t mqttRC = Ws._mqttV2->connect();
+        _wdt->feed();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;
         }
         WS_DEBUG_PRINT("MQTT Connection Error: ");
         WS_DEBUG_PRINTLN(mqttRC);
-        WS_DEBUG_PRINTLN(WsV2._mqttV2->connectErrorString(mqttRC));
+        WS_DEBUG_PRINTLN(Ws._mqttV2->connectErrorString(mqttRC));
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
         delay(3000);
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+        if (handle_sleep_mode_error) {
+          _sleep_controller->HandleNetFSMFailure();
+        }
+#endif
         haltErrorV2(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
             WS_LED_STATUS_MQTT_CONNECTING);
@@ -606,9 +644,8 @@ void Wippersnapper_V2::runNetFSMV2() {
               If false, the device will not allow the WDT to bite and
               instead hang indefinitely, holding the WIPPER drive open
 */
-void Wippersnapper_V2::haltErrorV2(const char *error,
-                                   ws_led_status_t ledStatusColor,
-                                   bool reboot) {
+void wippersnapper::haltErrorV2(const char *error,
+                                ws_led_status_t ledStatusColor, bool reboot) {
   WS_DEBUG_PRINT("ERROR ");
   if (reboot) {
     WS_DEBUG_PRINT("[RESET]: ");
@@ -619,8 +656,8 @@ void Wippersnapper_V2::haltErrorV2(const char *error,
   statusLEDSolid(ledStatusColor);
   for (;;) {
     if (!reboot) {
-      WsV2.feedWDTV2(); // Feed the WDT indefinitely to hold the WIPPER drive
-                        // open
+      Ws._wdt->feed(); // Feed the WDT indefinitely to hold the WIPPER drive
+                       // open
     } else {
 // Let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266
@@ -644,7 +681,7 @@ void Wippersnapper_V2::haltErrorV2(const char *error,
     @returns  True if the signal message published successfully,
               False otherwise.
 */
-bool Wippersnapper_V2::PublishD2b(pb_size_t which_payload, void *payload) {
+bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   WS_DEBUG_PRINTLN("=> Publishing DeviceToBroker signal message...");
 
   // Alloc memory on heap for the DeviceToBroker message
@@ -745,12 +782,12 @@ bool Wippersnapper_V2::PublishD2b(pb_size_t which_payload, void *payload) {
   WS_DEBUG_PRINTLN("Encoded!");
 
   // Check that we are still connected
-  runNetFSMV2();
-  WsV2.feedWDTV2();
+  NetworkFSM();
+  Ws._wdt->feed();
 
   // Attempt to publish the signal message to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
-  if (!WsV2._mqttV2->publish(WsV2._topicD2b, msgBuf, szMessageBuf, 1)) {
+  if (!Ws._mqttV2->publish(Ws._topicD2b, msgBuf, szMessageBuf, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish d2b message to broker!");
     free(msg);
     return false;
@@ -767,17 +804,17 @@ bool Wippersnapper_V2::PublishD2b(pb_size_t which_payload, void *payload) {
             to keep the connection alive. Blinks the keepalive LED
             every STATUS_LED_KAT_BLINK_TIME milliseconds.
 */
-void Wippersnapper_V2::pingBrokerV2() {
+void wippersnapper::pingBrokerV2() {
   // ping within keepalive-10% to keep connection open
   if (millis() > (_prv_pingV2 + (WS_KEEPALIVE_INTERVAL_MS -
                                  (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
     WS_DEBUG_PRINT("Sending MQTT PING: ");
-    if (WsV2._mqttV2->ping()) {
+    if (Ws._mqttV2->ping()) {
       WS_DEBUG_PRINTLN("SUCCESS!");
     } else {
       WS_DEBUG_PRINTLN("FAILURE! Running network FSM...");
-      WsV2._mqttV2->disconnect();
-      runNetFSMV2();
+      Ws._mqttV2->disconnect();
+      NetworkFSM();
     }
     _prv_pingV2 = millis();
     WS_DEBUG_PRINT("WiFi RSSI: ");
@@ -791,36 +828,25 @@ void Wippersnapper_V2::pingBrokerV2() {
     @brief  Blinks the status LED every STATUS_LED_KAT_BLINK_TIME
             milliseconds to indicate that the device is still alive.
 */
-void Wippersnapper_V2::BlinkKATStatus() {
+void wippersnapper::BlinkKATStatus() {
   if (millis() > (_prvKATBlinkV2 + STATUS_LED_KAT_BLINK_TIME)) {
-    statusLEDBlink(WS_LED_STATUS_KAT);
+    statusLEDBlink(WS_LED_STATUS_HEARTBEAT);
     _prvKATBlinkV2 = millis();
   }
 }
 
 /*!
-    @brief    Feeds the WDT to prevent hardware reset.
+    @brief  Blinks the status LED at a configurable interval for offline mode.
+            Interval is parsed from config.json, defaults to 60 seconds.
 */
-void Wippersnapper_V2::feedWDTV2() {
-#ifndef OFFLINE_MODE_WOKWI
-  // TODO: This is a temporary fix for watchdog.reset() not firing
-  Watchdog.reset();
-// esp_task_wdt_reset(); // TODO: Putback for ESP32 WDT
-#endif
-}
+void wippersnapper::blinkOfflineHeartbeat() {
+  if (_sdCardV2 == nullptr)
+    return;
 
-/*!
-    @brief  Enables the watchdog timer.
-    @param  timeoutMS
-            The desired amount of time to elapse before
-            the WDT executes.
-*/
-void Wippersnapper_V2::enableWDTV2(int timeoutMS) {
-#ifndef ARDUINO_ARCH_RP2040
-  Watchdog.disable();
-#endif
-  if (Watchdog.enable(timeoutMS) == 0) {
-    WsV2.haltErrorV2("WDT initialization failure!");
+  if (millis() > (_sdCardV2->getPreviousHeartbeatIntervalMs() +
+                  _sdCardV2->getHeartbeatIntervalMs())) {
+    statusLEDBlink(WS_LED_STATUS_HEARTBEAT);
+    _sdCardV2->setPreviousHeartbeatIntervalMs(millis());
   }
 }
 
@@ -829,18 +855,18 @@ void Wippersnapper_V2::enableWDTV2(int timeoutMS) {
             Adafruit IO MQTT broker. Handles network
             connectivity.
 */
-void Wippersnapper_V2::processPacketsV2() {
-  // runNetFSMV2(); // NOTE: Removed for now, causes error with virtual
-  // _connect() method when caused with WsV2 object in another file.
-  WsV2.feedWDTV2();
-  // Process all incoming packets from Wippersnapper_V2 MQTT Broker
-  WsV2._mqttV2->processPackets(10);
+void wippersnapper::ProcessPackets() {
+  // NetworkFSM(); // NOTE: Removed for now, causes error with virtual
+  // _connect() method when caused with Ws object in another file.
+  Ws._wdt->feed();
+  // Process all incoming packets from wippersnapper MQTT Broker
+  Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
 }
 
 /*!
-    @brief    Prints information about the WsV2 device to the serial monitor.
+    @brief    Prints information about the Ws device to the serial monitor.
 */
-void printDeviceInfoV2() {
+void PrintDeviceInfo() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINT("Firmware Version: ");
   WS_DEBUG_PRINTLN(WS_VERSION);
@@ -848,39 +874,53 @@ void printDeviceInfoV2() {
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLN(BOARD_ID);
   WS_DEBUG_PRINT("Adafruit.io User: ");
-  WS_DEBUG_PRINTLN(WsV2._configV2.aio_user);
+  WS_DEBUG_PRINTLN(Ws._configV2.aio_user);
   WS_DEBUG_PRINT("WiFi Network: ");
-  WS_DEBUG_PRINTLN(WsV2._configV2.network.ssid);
+  WS_DEBUG_PRINTLN(Ws._configV2.network.ssid);
 
   char sMAC[18] = {0};
-  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WsV2._macAddrV2[0],
-          WsV2._macAddrV2[1], WsV2._macAddrV2[2], WsV2._macAddrV2[3],
-          WsV2._macAddrV2[4], WsV2._macAddrV2[5]);
+  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", Ws._macAddrV2[0],
+          Ws._macAddrV2[1], Ws._macAddrV2[2], Ws._macAddrV2[3],
+          Ws._macAddrV2[4], Ws._macAddrV2[5]);
   WS_DEBUG_PRINT("MAC Address: ");
   WS_DEBUG_PRINTLN(sMAC);
   WS_DEBUG_PRINTLN("-------------------------------");
 
-// (ESP32-Only) Print reason why device was reset
+// (ESP32-Only) - Print reset reason
 #ifdef ARDUINO_ARCH_ESP32
   esp_reset_reason_t r = esp_reset_reason();
   WS_DEBUG_PRINT("ESP Reset Reason: ");
   WS_DEBUG_PRINTLN(resetReasonName(r));
 #endif
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // If reset was caused by sleep wakeup, print the wakeup reason
+  if (Ws._sleep_controller->DidWakeFromSleep()) {
+    WS_DEBUG_PRINT("Sleep Wakeup Reason: ");
+    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetWakeupReasonName());
+    WS_DEBUG_PRINT("Prv. Sleep Mode: ");
+    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetPrvSleepMode());
+    WS_DEBUG_PRINT("Total Sleep Duration (sec): ");
+    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetSleepDurationSecs());
+  }
+#endif
 }
 
 /*!
-    @brief    Connects to Adafruit IO+ Wippersnapper_V2 broker.
+    @brief    Connects to Adafruit IO+ wippersnapper broker.
 */
-void Wippersnapper_V2::connect() {
+void wippersnapper::connect() {
+  // delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
-  printDeviceInfoV2();
+  PrintDeviceInfo();
 
   // TODO: Does this need to be here?
-  WsV2.error_controller = new ErrorController();
+  Ws.error_controller = new ErrorController();
 
   // enable global WDT
-  WsV2.enableWDTV2(WS_WDT_TIMEOUT);
+  if (!Ws._wdt->enable(WS_TIMEOUT_WDT)) {
+    haltErrorV2("Unable to enable watchdog timer!");
+  }
 
   // Generate device identifier
   if (!generateDeviceUID()) {
@@ -890,18 +930,19 @@ void Wippersnapper_V2::connect() {
   // If we are running in offline mode, we skip the network setup
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
-  if (WsV2._sdCardV2->isModeOffline() == true) {
+  // TODO: This is kinda gnarly, refactor into its own function?
+  if (Ws._sdCardV2->isModeOffline() == true) {
     WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
 // If debug mode, wait for serial config
 #ifdef OFFLINE_MODE_DEBUG
-    WsV2._sdCardV2->waitForSerialConfig();
+    Ws._sdCardV2->waitForSerialConfig();
 #endif
     // Parse the JSON file
-    if (!WsV2._sdCardV2->parseConfigFile())
+    if (!Ws._sdCardV2->parseConfigFile())
       haltErrorV2("Failed to parse config.json!");
     WS_DEBUG_PRINTLN("[Offline] Attempting to configure hardware...");
 #ifndef OFFLINE_MODE_DEBUG
-    if (!WsV2._sdCardV2->CreateNewLogFile())
+    if (!Ws._sdCardV2->CreateNewLogFile())
       haltErrorV2("Unable to create new .log file on SD card!");
 #endif
     // Call the TL signal decoder to parse the incoming JSON data
@@ -909,9 +950,9 @@ void Wippersnapper_V2::connect() {
     WS_DEBUG_PRINTLN("[Offline] Hardware configured, skipping network setup "
                      "and running app...");
     // Blink status LED to green to indicate successful configuration
-    setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2 * 255.0);
+    setStatusLEDColor(0x00A300, Ws.status_pixel_brightnessV2 * 255.0);
     delay(500);
-    setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2 * 255.0);
+    setStatusLEDColor(0x000000, Ws.status_pixel_brightnessV2 * 255.0);
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");
@@ -930,81 +971,218 @@ void Wippersnapper_V2::connect() {
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");
-  // Run the network fsm
-  runNetFSMV2();
-  WsV2.feedWDTV2();
+// Connect to wireless network and Adafruit IO's MQTT broker
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  bool sleepMode = _sleep_controller && _sleep_controller->IsSleepMode();
+  NetworkFSM(sleepMode);
+#else
+  NetworkFSM();
+#endif
+  Ws._wdt->feed();
 
   // TODO: Possibly refactor checkin process into its own function
   // or component class for clarity
   // TODO: Remove logging from checkin process,
   // but only after we test on staging
-  WsV2.CheckInModel = new CheckinModel();
+  Ws.CheckInModel = new CheckinModel();
   WS_DEBUG_PRINTLN("Creating checkin request...");
   // Publish the checkin request
-  if (!WsV2.CheckInModel->Checkin(BOARD_ID, WS_VERSION)) {
+  if (!Ws.CheckInModel->Checkin(BOARD_ID, WS_VERSION)) {
     haltErrorV2("ERROR: Unable to create and/or checkin request");
   }
   WS_DEBUG_PRINTLN("Published checkin request...");
   // Poll for checkin response
   WS_DEBUG_PRINTLN("Waiting for checkin response...");
-  WsV2.feedWDTV2();
+  Ws._wdt->feed();
   // NOTE: If we do not receive a response within a certain time frame,
   // the WDT will reset the device and try again
-  while (!WsV2.CheckInModel->GotResponse()) {
-    WsV2._mqttV2->processPackets(10); // TODO: Test with lower timeout value
-    pingBrokerV2();                   // Keep MQTT connection alive
+  while (!Ws.CheckInModel->GotResponse()) {
+    Ws._mqttV2->processPackets(
+        WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
+    pingBrokerV2();               // Keep MQTT connection alive
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
-  WS_DEBUG_PRINT("Free heap before freeing checkin model: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
-  delete WsV2.CheckInModel;
-  WsV2.CheckInModel = nullptr;
-  WS_DEBUG_PRINT("Free heap going into loop: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  delete Ws.CheckInModel;
+  Ws.CheckInModel = nullptr;
 
   // Set the status LED to green to indicate successful configuration
-  setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2);
+  setStatusLEDColor(0x00A300, Ws.status_pixel_brightnessV2);
   delay(100);
   // Set the status LED to off during app runtime
-  setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2);
+  setStatusLEDColor(0x000000, Ws.status_pixel_brightnessV2);
 
   WS_DEBUG_PRINTLN("Running app loop...");
 }
 
 /*!
-    @brief    Processes incoming commands and handles network connection.
-    @returns  Network status, as ws_status_t.
+    @brief    Determines which loop() to call depending on the power mode.
 */
-ws_status_t Wippersnapper_V2::run() {
-  WsV2.feedWDTV2();
-  if (!WsV2._sdCardV2->isModeOffline()) {
-    // Handle networking functions
-    runNetFSMV2();
-    pingBrokerV2();
-    // Process all incoming packets from Wippersnapper_V2 MQTT Broker
-    WsV2._mqttV2->processPackets(10);
+void wippersnapper::run() {
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  if (!Ws._sleep_controller->IsSleepMode()) {
+    WS_DEBUG_PRINTLN(
+        "[app] Running normal loop..."); // TODO: Debug, remove in prod build
+    while (true) {
+      loop();
+    }
   } else {
-    BlinkKATStatus(); // Offline Mode - Blink every KAT interval
+    // Feed TWDT and enter loopSleep()
+    Ws._wdt->feed();
+    WS_DEBUG_PRINTLN(
+        "[app] Running sleep loop..."); // TODO: Debug, remove in prod build
+    while (true) {
+      loopSleep();
+    }
+  }
+#else
+  while (true) {
+    loop();
+  }
+#endif
+}
+
+void wippersnapper::loop() {
+  Ws._wdt->feed();
+  if (!Ws._sdCardV2->isModeOffline()) {
+    // Handle networking functions
+    WS_DEBUG_PRINTLN("[app] Online mode active, processing network...");
+    NetworkFSM();
+    pingBrokerV2();
+    // Process all incoming packets from wippersnapper MQTT Broker
+    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
+  } else {
+    blinkOfflineHeartbeat();
   }
 
   // Process all digital events
-  WsV2.digital_io_controller->update();
+  Ws.digital_io_controller->update();
 
-  // Process all analog inputs
-  WsV2.analogio_controller->update();
+  // Process all analog input events
+  Ws.analogio_controller->update();
 
   // Process all DS18x20 sensor events
-  WsV2._ds18x20_controller->update();
+  Ws._ds18x20_controller->update();
 
   // Process I2C driver events
-  WsV2._i2c_controller->update();
+  Ws._i2c_controller->update();
 
   // Process UART driver events
-  WsV2._uart_controller->update();
+  Ws._uart_controller->update();
 
   // Process GPS controller events
-  WsV2._gps_controller->update();
-
-  return WS_NET_CONNECTED; // TODO: Make this funcn void!
+  Ws._gps_controller->update();
 }
+
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+/*!
+    @brief    loop() variant that uses a component-driven readiness tracking and
+   a global timer for run duration and entrypoints for sleep management.
+*/
+void wippersnapper::loopSleep() {
+  // NOTE: It is assumed that loopSleep() will eventually lead to sleep entry,
+  // whether by global timestamp expiry or component-driven sleep readiness.
+
+  // Track when the loop started for run duration timeout
+  static unsigned long loop_start_time = 0;
+  static bool loop_timer_started = false;
+  if (!loop_timer_started) {
+    loop_start_time = millis();
+    loop_timer_started = true;
+  }
+
+  if (!Ws._sdCardV2->isModeOffline()) {
+    // Handle networking functions
+    NetworkFSM();
+    pingBrokerV2();
+    // Process all incoming packets from wippersnapper MQTT Broker
+    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
+  }
+
+  // Track completion of all controllers
+  bool all_controllers_complete = true;
+
+  if (!Ws.digital_io_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing digital IO events...");
+    Ws.digital_io_controller->update(true);
+    all_controllers_complete = false;
+  }
+
+  if (!Ws.analogio_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing analog IO events...");
+    Ws.analogio_controller->update(true);
+    all_controllers_complete = false;
+  }
+
+  if (!Ws._ds18x20_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing DS18x20 events...");
+    Ws._ds18x20_controller->update(true);
+    all_controllers_complete = false;
+  }
+
+  if (!Ws._i2c_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing I2C events...");
+    Ws._i2c_controller->update(true);
+    all_controllers_complete = false;
+  }
+
+  if (!Ws._uart_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing UART events...");
+    Ws._uart_controller->update(true);
+    all_controllers_complete = false;
+  }
+
+  if (!Ws._gps_controller->UpdateComplete()) {
+    WS_DEBUG_PRINTLN("[app] Processing GPS events...");
+    Ws._gps_controller->update(true);
+    all_controllers_complete = false;
+  }
+
+  // Check if all controllers have completed their updates
+  if (all_controllers_complete) {
+    // Reset all flags and variables for use in the next loopsleep() cycle (if
+    // light sleep)
+    ResetAllControllerFlags();
+    loop_start_time = 0;
+    loop_timer_started = false;
+    // Enter sleep
+    WS_DEBUG_PRINTLN("[app] All components updated, entering sleep...");
+    Ws._sleep_controller->StartSleep();
+    // For light sleep, we woke up here
+    Ws._sleep_controller->WakeFromLightSleep();
+    // For light sleep, this allows the next loopSleep() cycle to begin
+    return;
+  }
+
+  // Check if run duration timeout exceeded
+  unsigned long run_duration_ms = Ws._sleep_controller->getRunDurationMs();
+  if (run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) {
+    // Reset all flags and variables for use in the next loopsleep() cycle (if
+    // light sleep)
+    ResetAllControllerFlags();
+    loop_start_time = 0;
+    loop_timer_started = false;
+    // Enter sleep
+    WS_DEBUG_PRINTLN("[app] loopSleep() duration elapsed, entering sleep...");
+    Ws._sleep_controller->StartSleep();
+    // For light sleep, we woke up here
+    Ws._sleep_controller->WakeFromLightSleep();
+    // For light sleep, this allows the next loopSleep() cycle to begin
+    return;
+  }
+}
+
+/*!
+    @brief  Resets all controller polling flags for use
+            in the next loopsleep() cycle.
+*/
+void wippersnapper::ResetAllControllerFlags() {
+  Ws.digital_io_controller->ResetFlags();
+  Ws.analogio_controller->ResetFlags();
+  Ws._ds18x20_controller->ResetFlags();
+  Ws._i2c_controller->ResetFlags();
+  Ws._uart_controller->ResetFlags();
+  Ws._gps_controller->ResetFlags();
+}
+
+#endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
