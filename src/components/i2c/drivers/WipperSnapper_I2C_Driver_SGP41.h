@@ -23,9 +23,9 @@
 #include <Wire.h>
 
 #define SGP41_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz cadence
-#define SGP41_CONDITIONING_TICKS 10      ///< Recommended warmup cycles
-#define SGP41_VOC_LEARNING_MS 60000UL    ///< VOC index meaningful after ~60s
-#define SGP41_NOX_LEARNING_MS 300000UL   ///< NOx index meaningful after ~300s
+#define SGP41_CONDITIONING_TICKS 10     ///< Recommended warmup cycles
+#define SGP41_VOC_LEARNING_MS 60000UL   ///< VOC index meaningful after ~60s
+#define SGP41_NOX_LEARNING_MS 300000UL  ///< NOx index meaningful after ~300s
 
 /**************************************************************************/
 /*!
@@ -231,21 +231,21 @@ protected:
    * Cached latest measurements from the sensor.
    * - _rawValue: raw VOC sensor output (ticks)
    * - _rawNOxValue: raw NOx sensor output (ticks)
-    * - _vocIdx: calculated VOC Gas Index
-    * - _noxIdx: calculated NOx Gas Index
+   * - _vocIdx: calculated VOC Gas Index
+   * - _noxIdx: calculated NOx Gas Index
    */
-  uint16_t _rawValue = 0;                ///< Raw VOC sensor output (ticks)
-  uint16_t _rawNOxValue = 0;             ///< Raw NOx sensor output (ticks)
-    float _vocIdx = 0;                     ///< Calculated VOC Gas Index
-    float _noxIdx = 0;                     ///< Calculated NOx Gas Index
-    VOCGasIndexAlgorithm _vocAlgorithm;    ///< VOC gas index state machine
-    NOxGasIndexAlgorithm _noxAlgorithm;    ///< NOx gas index state machine
-  uint8_t _conditioningTicks = 0;        ///< Completed initial conditioning cycles
-    uint32_t _algoStartMs = 0;             ///< Timestamp when gas index learning began
+  uint16_t _rawValue = 0;             ///< Raw VOC sensor output (ticks)
+  uint16_t _rawNOxValue = 0;          ///< Raw NOx sensor output (ticks)
+  float _vocIdx = 0;                  ///< Calculated VOC Gas Index
+  float _noxIdx = 0;                  ///< Calculated NOx Gas Index
+  VOCGasIndexAlgorithm _vocAlgorithm; ///< VOC gas index state machine
+  NOxGasIndexAlgorithm _noxAlgorithm; ///< NOx gas index state machine
+  uint8_t _conditioningTicks = 0;     ///< Completed initial conditioning cycles
+  uint32_t _algoStartMs = 0; ///< Timestamp when gas index learning began
   uint16_t _serialNumber[3] = {0, 0, 0}; ///< Optional serial number cache
   uint16_t _selfTestResult = 0;          ///< Optional self-test cache
-  bool _hasSerial = false;               ///< True if serial number read succeeded
-  uint32_t _lastFastMs = 0;              ///< Last poll timestamp to enforce cadence
+  bool _hasSerial = false;  ///< True if serial number read succeeded
+  uint32_t _lastFastMs = 0; ///< Last poll timestamp to enforce cadence
 
   /*******************************************************************************/
   /*!
