@@ -53,30 +53,28 @@ tests/__pycache__/
 # Platformio artifacts
 .pio/
 
-# These sometimes contain credentials, don't commit them!
+# Secrets/credentials
 src/Wippersnapper_demo_wokwi.ino
 data/
+
+# Offline example artifacts
 examples/Wippersnapper_demo_offline/.theia/
 examples/Wippersnapper_demo_offline/.vscode/
 examples/Wippersnapper_demo_offline/build/
 
 # Test results
 report.xml
-
-# VSCode settings
-.vscode/settings.json
-
-# Claude settings
-CLAUDE.md
-.inbox.md
-results.md
-testplan.md
-tests/sleep_timer_patterns.md
-tests/test_sleep_timer.py
-tests/sleep_ext0_patterns.md
-tests/test_sleep_ext0.py
 tests/sleep_mode/__pycache__/
+
+# VSCode/IDE settings
+.vscode/settings.json
 .vs/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+# Claude Code / dev files
+CLAUDE.md
+.inbox.md
+results.md
+testplan.md
