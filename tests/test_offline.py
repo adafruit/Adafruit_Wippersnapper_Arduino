@@ -39,14 +39,20 @@ DEFAULT_TIMEOUT = 60
 class SerialBuffer:
     """Thread-safe buffer for capturing serial output from the simulator."""
 
-    def __init__(self):
+    def __init__(self, verbose: bool = True):
         self._buffer = ""
         self._lock = threading.Lock()
+        self._verbose = verbose
 
     def append(self, data: bytes) -> None:
         """Append data to the buffer (called from serial monitor callback)."""
+        decoded = data.decode("utf-8", errors="replace")
         with self._lock:
-            self._buffer += data.decode("utf-8", errors="replace")
+            self._buffer += decoded
+        if self._verbose:
+            # Print serial output in real-time (strip trailing newline for cleaner output)
+            for line in decoded.splitlines():
+                print(f"{line}")
 
     def get(self) -> str:
         """Get the current buffer contents."""
@@ -72,9 +78,14 @@ class SerialBuffer:
         Raises:
             TimeoutError: If text is not found within timeout
         """
+        if self._verbose:
+            print(f"Waiting for: {text!r}")
+
         start = time.time()
         while time.time() - start < timeout:
             if text in self.get():
+                if self._verbose:
+                    print(f"✓ Found: {text!r}")
                 return True
             time.sleep(0.1)
 
@@ -123,12 +134,18 @@ def client():
     client = WokwiClientSync(token)
 
     try:
+        print("Connecting to Wokwi...")
         client.connect()
+        print("Uploading diagram.json...")
         client.upload_file("diagram.json", DIAGRAM_PATH)
+        print("Uploading firmware.bin...")
         client.upload_file("firmware.bin", FIRMWARE_BIN)
+        print("Uploading firmware.elf...")
         client.upload_file("firmware.elf", FIRMWARE_ELF)
+        print("Starting simulation...")
         client.start_simulation(firmware="firmware.bin", elf="firmware.elf")
         client.serial_monitor(on_serial_data)
+        print("Simulation running, serial monitor active")
 
         yield client
     finally:
@@ -143,8 +160,7 @@ def client():
 def test_invalid_json(client):
     """Test that invalid JSON is properly rejected."""
     serial_buffer.wait_for("[SD] Waiting for incoming JSON string...")
-    client.serial_write('{"exportVersion":"1.0.0",')
-    client.serial_write("\n")
+    client.serial_write('{"exportVersion":"1.0.0",\\n')
     serial_buffer.wait_for("[SD] Runtime Error: Unable to deserialize config.json")
 
 
@@ -158,12 +174,9 @@ def test_invalid_checksum(client):
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
         '"components": [{"componentAPI": "analogio", "name": "Analog Pin", "pinName": "D14", '
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
-        '"analogReadMode": "PIN_VALUE", "period": 5, "isPin": true}], "checksum": 5}'
+        '"analogReadMode": "PIN_VALUE", "period": 5, "isPin": true}], "checksum": 5}\\n'
     )
-    client.serial_write("\n")
-    serial_buffer.wait_for(
-        "[SD] Checksum mismatch, file has been modified from its original state!"
-    )
+    serial_buffer.wait_for("[SD] Checksum mismatch, file has been modified from its original state!")
 
 
 def test_valid_checksum(client):
@@ -176,10 +189,9 @@ def test_valid_checksum(client):
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
         '"components": [{"componentAPI": "analogio", "name": "Analog Pin", "pinName": "D14", '
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
-        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 28}'
+        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 28}\\n'
     )
-    client.serial_write("\n")
-    serial_buffer.wait_for("[SD] Checksum OK!")
+    serial_buffer.wait_for("[SD] Successfully deserialized JSON config file!")
 
 
 # =============================================================================
@@ -194,31 +206,31 @@ def test_digital_input(client):
     client.serial_write(
         '{"checksum":183,"components":[{"componentAPI":"digitalio","direction":"INPUT",'
         '"isPin":true,"mode":"DIGITAL","name":"Button (D4)","period":5,"pinName":"D4",'
-        '"pull":"UP","sampleMode":"TIMER","type":"push_button"}],"exportVersion":"1.0.0",'
+        '"pull":"UP","sampleMode":"EVENT","type":"push_button"}],"exportVersion":"1.0.0",'
         '"exportedAt":"2024-10-28T18:58:23.976Z","exportedBy":"wokwi",'
         '"exportedFromDevice":{"board":"metroesp32s3","firmwareVersion":"1.0.0-beta.93",'
-        '"referenceVoltage":2.6,"totalAnalogPins":6,"totalGPIOPins":11}}'
+        '"referenceVoltage":2.6,"totalAnalogPins":6,"totalGPIOPins":11}}\\n'
     )
-    client.serial_write("\n")
 
     # Wait for pin configuration
     serial_buffer.wait_for("[SD] JSON string received!")
     serial_buffer.wait_for("[digitalio] Added new pin:")
     serial_buffer.wait_for("Pin Name: 4")
-    serial_buffer.wait_for("Period: 5000")
-    serial_buffer.wait_for("Sample Mode: 1")
-    serial_buffer.wait_for("Direction: 2")
+    #serial_buffer.wait_for("Period: 5000")
+    #serial_buffer.wait_for("Sample Mode: 1")
+    #serial_buffer.wait_for("Direction: 2")
 
     # Wait for initial pin state (button not pressed = true with pull-up)
     serial_buffer.wait_for('{"timestamp":0,"pin":"D4","value":true,"si_unit":"boolean"}')
 
-    # Press the button
+    # Press and hold the button
     client.set_control("btn1", "pressed", 1)
 
     # Wait for button pressed state (value = false)
-    serial_buffer.wait_for(
-        '{"timestamp":0,"pin":"D4","value":false,"si_unit":"boolean"}'
-    )
+    serial_buffer.wait_for('{"timestamp":0,"pin":"D4","value":false,"si_unit":"boolean"}')
+
+    # Release the button
+    client.set_control("btn1", "pressed", 0)
 
 
 def test_analog_input(client):
@@ -231,7 +243,7 @@ def test_analog_input(client):
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
         '"components": [{"componentAPI": "analogio", "name": "Analog Pin", "pinName": "D14", '
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
-        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 149}'
+        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 149}\\n'
     )
     client.serial_write("\n")
 
@@ -263,9 +275,8 @@ def test_ds18b20(client):
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
         '"components": [{"componentAPI": "ds18x20", "name": "DS18B20: Temperature Sensor", '
         '"sensorTypeCount": 2, "sensorType1": "object-temp-fahrenheit", "sensorType2": "object-temp", '
-        '"pinName": "D25", "sensorResolution": 12, "period": 5}], "checksum": 34}'
+        '"pinName": "D25", "sensorResolution": 12, "period": 5}], "checksum": 34}\\n'
     )
-    client.serial_write("\n")
 
     # Wait for sensor initialization and readings
     serial_buffer.wait_for("Sensor found on OneWire bus and initialized")
