@@ -65,8 +65,7 @@ ws_wdt::~ws_wdt() {
 int ws_wdt::enable(int timeout_ms) {
 #ifdef OFFLINE_MODE_WOKWI
   // Wokwi simulator does not support WDT
-  _enabled = true;
-  _timeout_ms = timeout_ms;
+  timeout_ms = timeout_ms;
   return timeout_ms;
 #else
   int rc = Watchdog.enable(timeout_ms);
@@ -101,7 +100,7 @@ int ws_wdt::reconfigure(int timeout_ms) {
 #endif
 
 #ifdef OFFLINE_MODE_WOKWI
-  _timeout_ms = timeout_ms;
+  timeout_ms = timeout_ms;
   return timeout_ms;
 #else
   Watchdog.disable();

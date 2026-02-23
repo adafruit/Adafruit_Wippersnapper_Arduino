@@ -172,8 +172,8 @@ void SleepController::WakeFromLightSleep() {
 
 #ifdef USE_STATUS_LED
   // Visual indication for configuring sleep in RP2350
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
+  pinMode(STATUS_LED_PIN, OUTPUT);
+  digitalWrite(STATUS_LED_PIN, HIGH);
 #endif
 }
 
@@ -235,8 +235,8 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
 
 #ifdef USE_STATUS_LED
   // Visual indication for configuring sleep in RP2350
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
+  pinMode(STATUS_LED_PIN, OUTPUT);
+  digitalWrite(STATUS_LED_PIN, HIGH);
 #endif
 
   return rc;
