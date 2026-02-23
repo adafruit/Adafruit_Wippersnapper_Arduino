@@ -106,7 +106,7 @@ public:
   */
   bool getEventProximity(sensors_event_t *proximityEvent) {
     uint8_t NewDataReady = 0;
-    VL53L4CD_Result_t results = {0};
+    VL53L4CD_Result_t results;
     uint8_t status;
     // Start fresh reading, seemed to be accepting stale value
     _VL53L4CD->VL53L4CD_ClearInterrupt();

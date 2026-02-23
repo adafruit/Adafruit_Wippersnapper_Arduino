@@ -22,8 +22,8 @@ void convertToJson(const networkConfig &src, JsonVariant dst) {
 
 // Extracts a network configuration structure from a JSON variant
 void convertFromJson(JsonVariantConst src, networkConfig &dst) {
-  strlcpy(dst.ssid, src["network_ssid"] | "unset-ssid", sizeof(dst.ssid));
-  strlcpy(dst.pass, src["network_password"] | "", sizeof(dst.pass));
+  strlcpy(dst.ssid, src["network_ssid"] | "testvar", sizeof(dst.ssid));
+  strlcpy(dst.pass, src["network_password"] | "testvar", sizeof(dst.pass));
 }
 
 // Converts a secretsConfig structure to a JSON variant
@@ -47,4 +47,40 @@ void convertFromJson(JsonVariantConst src, secretsConfig &dst) {
   dst.status_pixel_brightness = src["status_pixel_brightness"] | 0.2;
   // Parse MQTT port from secrets, if exists
   dst.io_port = src["io_port"] | 8883;
+}
+
+// Converts a displayConfigSPI structure to a JSON variant
+void convertToJson(const displayConfigSPI &src, JsonVariant dst) {
+  dst["pin_cs"] = src.pinCs;
+  dst["pin_dc"] = src.pinDc;
+  dst["pin_mosi"] = src.pinMosi;
+  dst["pin_sck"] = src.pinSck;
+  dst["pin_rst"] = src.pinRst;
+}
+
+// Extracts a displayConfigSPI structure from a JSON variant
+void convertFromJson(JsonVariantConst src, displayConfigSPI &dst) {
+  dst.pinCs = src["pin_cs"] | 40;
+  dst.pinDc = src["pin_dc"] | 39;
+  dst.pinMosi = src["pin_mosi"] | 0;
+  dst.pinSck = src["pin_sck"] | 0;
+  dst.pinRst = src["pin_rst"] | 41;
+}
+
+// Converts a displayConfig structure to a JSON variant
+void convertToJson(const displayConfig &src, JsonVariant dst) {
+  dst["driver"] = src.driver;
+  dst["width"] = src.width;
+  dst["height"] = src.height;
+  dst["rotation"] = src.rotation;
+  dst["spi_config"] = src.spiConfig;
+}
+
+// Extracts a displayConfig structure from a JSON variant
+void convertFromJson(JsonVariantConst src, displayConfig &dst) {
+  strlcpy(dst.driver, src["driver"] | "ST7789", sizeof(dst.driver));
+  dst.width = src["width"] | 128;
+  dst.height = src["height"] | 64;
+  dst.rotation = src["rotation"] | 0;
+  dst.spiConfig = src["spi_config"];
 }

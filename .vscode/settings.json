@@ -2,21 +2,26 @@
     "files.associations": {
         "limits": "c",
         "type_traits": "c",
+        "vector": "cpp",
         "array": "cpp",
         "deque": "cpp",
-        "list": "cpp",
         "string": "cpp",
         "unordered_map": "cpp",
-        "unordered_set": "cpp",
-        "vector": "cpp",
         "string_view": "cpp",
-        "format": "cpp",
         "initializer_list": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "*.tcc": "cpp",
+        "list": "cpp",
+        "unordered_set": "cpp",
+        "format": "cpp",
+        "text_encoding": "cpp",
+        "regex": "cpp",
+        "*.inc": "cpp"
     },
-    "C_Cpp.dimInactiveRegions": true,
+    "C_Cpp.dimInactiveRegions": false,
     "dotnet.defaultSolution": "disable",
     "cmake.configureOnOpen": false,
-    "C_Cpp.clang_format_fallbackStyle": "Google",
-    "C_Cpp.clang_format_style": "file"
+    "workbench.panel.defaultLocation": "right",
+    "terminal.integrated.defaultLocation": "view"
+
 }

@@ -57,7 +57,6 @@ typedef enum ws_led_status_t {
 #define LED_ERROR RED             ///< Error state
 
 #define STATUS_PIXEL_BRIGHTNESS_DEFAULT 0.5 ///< Default status pixel brightness
-#define STATUS_DOTSTAR_DEFAULT_COLOR_ORDER DOTSTAR_BGR ///< FunHouse default
 
 // Status LED
 void initStatusLED();
