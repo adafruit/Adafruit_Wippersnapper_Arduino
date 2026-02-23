@@ -1,7 +1,7 @@
-# SPDX-FileCopyrightText: Brent Rubell for Adafruit Industries, 2023
+# SPDX-FileCopyrightText: Brent Rubell for Adafruit Industries, 2026
 #
 # SPDX-License-Identifier: MIT
-name: WipperSnapper Build CI (migrate-api-v2)
+name: Build CI (migrate-api-v2 branch)
 
 on:
   push:
@@ -9,164 +9,6 @@ on:
       - migrate-api-v2
 
 jobs:
-  build-esp32sx-esptool:
-    name: 🏗️ESP32-Sx(lvgl)
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arduino-platform: ["funhouse_noota"]
-        include:
-          - offset: "0x1000"
-    steps:
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - uses: actions/checkout@v4
-      - name: Get WipperSnapper version
-        run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
-        with:
-          repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
-          path: ci
-      - name: Checkout Board Definitions
-        uses: actions/checkout@v4
-        with:
-          repository: adafruit/Wippersnapper_Boards
-          path: ws-boards
-      - name: Install CI-Arduino
-        run: bash ci/actions_install.sh
-      - name: Install extra Arduino libraries
-        run: |
-          git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
-          git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
-          git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
-          git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
-          git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
-          git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
-          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
-          git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
-        id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
-      - name: Install stable Nanopb
-        run: |
-          tar -xf nanopb-0.4.8.tar.gz
-          # Copy files to WipperSnapper's src/nanopb directory
-          cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
-          mv nanopb/pb.h src/nanopb/nanopb.pb.h
-      - name: List all files in Adafruit_LittlevGL_Glue_Library folder
-        run: |
-          ls /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
-      - name: Copy lv_conf.h file in Adafruit_LittlevGL_Glue_Library to the arduino library folder
-        run: |
-          cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
-      - name: Install Dependencies (esptool)
-        run: |
-          pip3 install esptool
-      - name: Build for ESP32-SX (esptool)
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
-      - name: list files
-        run: |
-          ls -Rla examples/
-      - name: Rename build artifacts to reflect the platform name
-        run: |
-          mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin
-          mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.elf
-          mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.map
-          mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bootloader.bin
-          mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin
-      - name: Get Board Flash Parameters
-        id: get_board_json
-        run: |
-          board_name=${{ matrix.arduino-platform }}
-          # Remove '_noota' suffix if present
-          board_name=${board_name%_noota}
-          # Remove 'wippersnapper_' prefix if present
-          board_name=${board_name#wippersnapper_}
-          content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
-          {
-            echo 'boardJson<<EOF'
-            echo $content
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
-      - name: Check boot_app0 file existence (esp32sx built from core, not-source)
-        id: check_files
-        uses: andstor/file-existence-action@v3
-        with:
-          files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
-      - name: list arduino esp32 core files
-        if: steps.check_files.outputs.files_exists == 'true'
-        run: |
-          ls /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions
-      - name: list arduino esp32 bsp core files
-        if: steps.check_files.outputs.files_exists == 'false'
-        run: |
-          ls /home/runner/Arduino/hardware/espressif/esp32/tools/partitions
-      - name: boot_app0 file from arduino-cli core
-        if: steps.check_files.outputs.files_exists == 'true'
-        run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
-      - name: boot_app0 file from esp32 source bsp
-        if: steps.check_files.outputs.files_exists == 'false'
-        run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
-      - name: Create combined binary using Esptool merge_bin
-        run: |
-          echo ${{ steps.get_board_json.outputs.boardJson }}
-          echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
-            -o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin \
-            ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bootloader.bin \
-            0x8000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin \
-            0xe000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin \
-            0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin
-      - name: Zip build artifacts
-        run: |
-          zip -r wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.*
-      - name: Upload build artifacts zip
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-files-${{ matrix.arduino-platform }}-zip
-          path: |
-            wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip
-      - name: Rename build artifacts to reflect the platform name
-        run: |
-          mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-      - name: Upload build artifact UF2 file
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-files-${{ matrix.arduino-platform }}-uf2
-          path: |
-            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-
   build-esp32sx:
     name: 🏗️ESP32-Sx
     runs-on: ubuntu-latest
@@ -175,6 +17,7 @@ jobs:
       matrix:
         arduino-platform:
           [
+            "funhouse_noota",
             "magtag",
             "metroesp32s2",
             "metro_esp32s3",
@@ -216,8 +59,6 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
-          git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -683,8 +524,6 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
-          git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
