@@ -1,9 +1,0 @@
-name: Offline Mode - Invalid Checksum Value
-version: 1
-author: Brent Rubell for Adafruit Industries
-
-steps:
-  - wait-serial: '[SD] Waiting for incoming JSON string...'
-  - write-serial: '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", "exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", "referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, "components": [{"componentAPI": "analogio", "name": "Analog Pin", "pinName": "D14", "type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", "analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 28}'
-  - write-serial: '\n'
-  - wait-serial: '[SD] Checksum OK!'
