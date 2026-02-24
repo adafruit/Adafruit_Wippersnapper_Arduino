@@ -457,7 +457,11 @@ bool ws_sdcard::ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
     return false;
   }
   msg_DigitalIOAdd.period = period;
-  msg_DigitalIOAdd.value = value;
+  // Set up the write submessage with the initial value
+  msg_DigitalIOAdd.has_write = true;
+  msg_DigitalIOAdd.write.has_value = true;
+  msg_DigitalIOAdd.write.value.which_value = ws_sensor_Event_bool_value_tag;
+  msg_DigitalIOAdd.write.value.value.bool_value = value;
 
   // Determine the sample mode
   if (!ValidateJSONKey(

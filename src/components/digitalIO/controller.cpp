@@ -64,11 +64,9 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
     break;
   case ws_digitalio_B2D_write_tag:
     res = Handle_DigitalIO_Write(&b2d.payload.write);
-    WS_DEBUG_PRINTLN("[digitalio] WARNING: Write handler not implemented yet");
     break;
   case ws_digitalio_B2D_remove_tag:
     res = Handle_DigitalIO_Remove(&b2d.payload.remove);
-    WS_DEBUG_PRINTLN("[digitalio] WARNING: Remove handler not implemented yet");
     break;
   default:
     WS_DEBUG_PRINTLN("[digitalio] WARNING: Unsupported DigitalIO payload");
@@ -105,12 +103,18 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     return false;
   }
 
+  // Get the initial value from the write message (if present)
+  bool initial_value = false;
+  if (msg->has_write && msg->write.has_value) {
+    initial_value = msg->write.value.value.bool_value;
+  }
+
   // Create the digital pin and add it to the vector
   DigitalIOPin new_pin = {.pin_name = pin_name,
                           .pin_direction = msg->gpio_direction,
                           .sample_mode = msg->sample_mode,
-                          .pin_value = msg->value,
-                          .prv_pin_value = msg->value,
+                          .pin_value = initial_value,
+                          .prv_pin_value = initial_value,
                           .pin_period = (ulong)(msg->period * 1000.0f),
                           .prv_pin_time =
                               0, // Set to 0 so timer pins trigger immediately
@@ -122,7 +126,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     _pins_input.push_back(new_pin);
   } else if (msg->gpio_direction == ws_digitalio_Direction_D_OUTPUT) {
     // Write the initial value to the output pin
-    _dio_hardware->SetValue(pin_name, msg->value);
+    _dio_hardware->SetValue(pin_name, initial_value);
     _pins_output.push_back(new_pin);
   }
 

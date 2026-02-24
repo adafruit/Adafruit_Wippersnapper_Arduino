@@ -49,19 +49,6 @@ bool CheckinModel::Checkin(const char *hardware_uid,
   strncpy(_CheckinD2B.payload.request.firmware_version, firmware_version,
           sizeof(_CheckinD2B.payload.request.firmware_version) - 1);
 
-  // Add wake cause info to checkin for ESP32x platforms
-#ifdef ARDUINO_ARCH_ESP32
-  if (Ws._sleep_controller->DidWakeFromSleep()) {
-    // We woke from a sleep mode, add wake cause info
-    _CheckinD2B.payload.request.has_wake_cause = true;
-    _CheckinD2B.payload.request.wake_cause.which_WakeCause =
-        ws_sleep_Wake_esp_tag;
-    _CheckinD2B.payload.request.wake_cause.WakeCause.esp =
-        Ws._sleep_controller->GetEspWakeCause();
-    _CheckinD2B.payload.request.wake_cause.sleep_duration =
-        Ws._sleep_controller->GetSleepDurationSecs();
-  }
-#endif
 
   // Encode the D2B wrapper message
   WS_DEBUG_PRINTLN("[checkin] Encoding CheckinRequest message size...");
@@ -102,13 +89,14 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[checkin] Zero out CheckinB2D wrapper...");
   memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
 
-  // Configure the callback for the component_adds field
-  WS_DEBUG_PRINTLN("[checkin] Configuring callback for component_adds...");
-  _CheckinB2D.payload.response.component_adds.funcs.decode = &cbComponentAdds;
-  _CheckinB2D.payload.response.component_adds.arg = this;
+  // Set up the pre-decode callback (cb_payload) which will be called BEFORE
+  // the Response submessage is decoded. This allows us to set up the
+  // component_adds callback before nanopb initializes the Response struct.
+  WS_DEBUG_PRINTLN("[checkin] Setting up pre-decode callback...");
+  _CheckinB2D.cb_payload.funcs.decode = &cbSetupResponse;
+  _CheckinB2D.cb_payload.arg = this;
 
-  // Decode the B2d wrapper message
-  // NOTE: This also decodes the component_adds message
+  // Decode the B2D wrapper message
   WS_DEBUG_PRINTLN("[checkin] Decoding CheckinB2D message from broker...");
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
     WS_DEBUG_PRINTLN(
@@ -132,6 +120,14 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
     return false;
   }
 
+  WS_DEBUG_PRINTLN("[checkin] CheckinResponse content:");
+  WS_DEBUG_PRINTLN("Total GPIO pins: " +
+                   String(_CheckinB2D.payload.response.total_gpio_pins));
+  WS_DEBUG_PRINTLN("Total Analog pins: " +
+                   String(_CheckinB2D.payload.response.total_analog_pins));
+  WS_DEBUG_PRINTLN("Reference voltage: " +
+                   String(_CheckinB2D.payload.response.reference_voltage));
+
   // Set flag to indicate response received
   _got_response = true;
   return true;
@@ -153,6 +149,36 @@ void CheckinModel::ConfigureControllers() {
 }
 
 /*!
+    @brief    Pre-decode callback for setting up component_adds callback.
+              Called by nanopb via MSG_W_CB before the Response submessage
+              is decoded. This allows us to set up nested callbacks before
+              nanopb initializes the struct.
+    @param    stream
+              Incoming data stream (Response submessage bytes).
+    @param    field
+              Field descriptor for the Response field.
+    @param    arg
+              Pointer to CheckinModel instance.
+    @returns  True to continue decoding (don't consume stream).
+*/
+bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
+                                   const pb_field_t *field, void **arg) {
+  WS_DEBUG_PRINTLN("[checkin] cbSetupResponse: Setting up component_adds callback");
+
+  // Get the Response struct that nanopb will decode into
+  ws_checkin_Response *response = (ws_checkin_Response *)field->pData;
+
+  // Set up the component_adds callback before nanopb decodes the Response
+  CheckinModel *model = (CheckinModel *)*arg;
+  response->component_adds.funcs.decode = &cbComponentAdds;
+  response->component_adds.arg = model;
+
+  // Return true WITHOUT consuming the stream - nanopb will continue
+  // to decode the Response submessage with our callback now set up
+  return true;
+}
+
+/*!
     @brief    Callback for decoding ComponentAdd messages during Checkin
               Response processing.
     @param    stream
@@ -165,13 +191,24 @@ void CheckinModel::ConfigureControllers() {
 */
 bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
-  ws_checkin_ComponentAdd component = ws_checkin_ComponentAdd_init_default;
   WS_DEBUG_PRINTLN("[checkin] Decoding ComponentAdd message...");
+  WS_DEBUG_PRINT("[checkin] Stream bytes_left: ");
+  WS_DEBUG_PRINTLN(stream->bytes_left);
+
+  // Use static to avoid stack overflow - this struct is ~2.4KB
+  static ws_checkin_ComponentAdd component;
+  memset(&component, 0, sizeof(component));
+  WS_DEBUG_PRINTLN("[checkin] Component struct initialized");
+
   if (!pb_decode(stream, ws_checkin_ComponentAdd_fields, &component)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode ComponentAdd message!");
+    return false;
   }
+  WS_DEBUG_PRINTLN("[checkin] Decode successful");
 
-  // TODO: Remove debug prints after testing
+  WS_DEBUG_PRINT("[checkin] which_payload: ");
+  WS_DEBUG_PRINTLN(component.which_payload);
+
   WS_DEBUG_PRINT("[checkin] Adding component: ");
   switch (component.which_payload) {
   case ws_checkin_ComponentAdd_digitalio_tag:

@@ -34,6 +34,9 @@ public:
 
 private:
   static bool
+  cbSetupResponse(pb_istream_t *stream, const pb_field_t *field,
+                  void **arg); //< Pre-decode callback to set up component_adds
+  static bool
   cbComponentAdds(pb_istream_t *stream, const pb_field_t *field,
                   void **arg); //< Callback for decoding ComponentAdd messages
   ws_checkin_B2D _CheckinB2D =
