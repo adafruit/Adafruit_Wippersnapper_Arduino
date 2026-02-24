@@ -239,6 +239,25 @@ void wippersnapper::provision() {
   _fileSystemV2->parseSecrets();
 #elif defined(USE_LITTLEFS)
   _littleFSV2->parseSecrets();
+#elif defined(WOKWI_MQTT_TEST)
+  // Pre-baked credentials for Wokwi + ProtoMQ testing
+  // These are defined as build flags in platformio.ini
+  WS_DEBUG_PRINTLN("WOKWI_MQTT_TEST: Using pre-baked credentials");
+  strlcpy(Ws._configV2.network.ssid, WIFI_SSID,
+          sizeof(Ws._configV2.network.ssid));
+  strlcpy(Ws._configV2.network.pass, WIFI_PASS,
+          sizeof(Ws._configV2.network.pass));
+  strlcpy(Ws._configV2.aio_user, IO_USERNAME, sizeof(Ws._configV2.aio_user));
+  strlcpy(Ws._configV2.aio_key, IO_KEY, sizeof(Ws._configV2.aio_key));
+  strlcpy(Ws._configV2.aio_url, IO_URL, sizeof(Ws._configV2.aio_url));
+  Ws._configV2.io_port = IO_PORT;
+  Ws._configV2.status_pixel_brightness = 0.2;
+  WS_DEBUG_PRINT("WiFi SSID: ");
+  WS_DEBUG_PRINTLN(Ws._configV2.network.ssid);
+  WS_DEBUG_PRINT("AIO URL: ");
+  WS_DEBUG_PRINTLN(Ws._configV2.aio_url);
+  WS_DEBUG_PRINT("AIO Port: ");
+  WS_DEBUG_PRINTLN(Ws._configV2.io_port);
 #else
   check_valid_ssid(); // non-fs-backed, sets global credentials within network
                       // iface

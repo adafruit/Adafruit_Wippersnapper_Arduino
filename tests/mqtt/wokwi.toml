@@ -1,0 +1,10 @@
+[wokwi]
+version = 1
+elf = "../../.pio/build/esp32dev_mqtt_test/firmware.elf"
+firmware = "../../.pio/build/esp32dev_mqtt_test/firmware.bin"
+gdbServerPort = 3333
+rfc2217ServerPort = 4000
+
+# The Wokwi VS Code extension bundles the Private IoT Gateway
+# which enables the ESP32 to connect to local services via
+# the hostname "host.wokwi.internal"

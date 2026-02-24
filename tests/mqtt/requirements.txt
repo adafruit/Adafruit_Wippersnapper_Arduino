@@ -1,0 +1,14 @@
+# Requirements for MQTT testing with Wokwi and ProtoMQ
+#
+# Usage:
+#   pip install -r requirements.txt
+#
+# Note: Also requires Adafruit_Wippersnapper_Python to be installed:
+#   cd ../Adafruit_Wippersnapper_Python && pip install -e .
+
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+wokwi-client
+python-dotenv
+aiomqtt>=2.1.0
+aiohttp
