@@ -1,7 +1,7 @@
 /*!
- * @file WipperSnapper_I2C_Driver_ENS160.h
+ * @file WipperSnapper_I2C_Driver_ENS16X.h
  *
- * Device driver for a ENS160 MOX Gas Sensor.
+ * Device driver for a ENS160/ENS161 MOX Gas Sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_ENS160_H
-#define WipperSnapper_I2C_Driver_ENS160_H
+#ifndef WipperSnapper_I2C_Driver_ENS16X_H
+#define WipperSnapper_I2C_Driver_ENS16X_H
 
 #include "WipperSnapper_I2C_Driver.h"
 #include <ScioSense_ENS160.h>
@@ -23,23 +23,23 @@
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the ENS160 temperature
-            and humidity sensor.
+    @brief  Class that provides a sensor driver for the ENS16x temperature
+            and humidity sensors.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_ENS160 : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_ENS16x : public WipperSnapper_I2C_Driver {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an ENS160 sensor.
+      @brief    Constructor for an ENS16x sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_ENS160(TwoWire *i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_ENS16x(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -47,14 +47,14 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an ENS160 sensor.
+      @brief    Destructor for an ENS16x sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_ENS160() { delete _ens16x; }
+  ~WipperSnapper_I2C_Driver_ENS16x() { delete _ens16x; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the ENS160 sensor and begins I2C.
+      @brief    Initializes the ENS16x sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
@@ -84,7 +84,7 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the ENS160's eCO2 sensor into an event.
+      @brief    Reads the ENS16x's eCO2 sensor into an event.
       @param    eco2Event
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -100,7 +100,7 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the ENS160's TVOC sensor into an event.
+      @brief    Reads the ENS16x's TVOC sensor into an event.
       @param    tvocEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -116,7 +116,7 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the ENS160's AQI value into an event.
+      @brief    Reads the ENS16x's AQI value into an event.
       @param    rawEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -131,7 +131,7 @@ public:
   }
 
 protected:
-  ScioSense_ENS160 *_ens16x; ///< ENS160/1 object
+  ScioSense_ENS160 *_ens16x; ///< ENS16x object
 };
 
-#endif // WipperSnapper_I2C_Driver_ENS160
+#endif // WipperSnapper_I2C_Driver_ENS16X_H

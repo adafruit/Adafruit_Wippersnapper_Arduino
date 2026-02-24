@@ -167,7 +167,7 @@ private:
   WipperSnapper_I2C_Driver_D6T1A *_d6t1a = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
   WipperSnapper_I2C_Driver_DS2484 *_ds2484 = nullptr;
-  WipperSnapper_I2C_Driver_ENS160 *_ens160 = nullptr;
+  WipperSnapper_I2C_Driver_ENS16x *_ens16x = nullptr;
   WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
   WipperSnapper_I2C_Driver_BH1750 *_bh1750 = nullptr;
   WipperSnapper_I2C_Driver_BME280 *_bme280 = nullptr;
