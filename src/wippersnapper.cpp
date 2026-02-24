@@ -1021,16 +1021,12 @@ void wippersnapper::connect() {
 void wippersnapper::run() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   if (!Ws._sleep_controller->IsSleepMode()) {
-    WS_DEBUG_PRINTLN(
-        "[app] Running normal loop..."); // TODO: Debug, remove in prod build
     while (true) {
       loop();
     }
   } else {
     // Feed TWDT and enter loopSleep()
     Ws._wdt->feed();
-    WS_DEBUG_PRINTLN(
-        "[app] Running sleep loop..."); // TODO: Debug, remove in prod build
     while (true) {
       loopSleep();
     }
@@ -1046,7 +1042,6 @@ void wippersnapper::loop() {
   Ws._wdt->feed();
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
-    WS_DEBUG_PRINTLN("[app] Online mode active, processing network...");
     NetworkFSM();
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
@@ -1103,37 +1098,31 @@ void wippersnapper::loopSleep() {
   bool all_controllers_complete = true;
 
   if (!Ws.digital_io_controller->UpdateComplete()) {
-    WS_DEBUG_PRINTLN("[app] Processing digital IO events...");
     Ws.digital_io_controller->update(true);
     all_controllers_complete = false;
   }
 
   if (!Ws.analogio_controller->UpdateComplete()) {
-    WS_DEBUG_PRINTLN("[app] Processing analog IO events...");
     Ws.analogio_controller->update(true);
     all_controllers_complete = false;
   }
 
   if (!Ws._ds18x20_controller->UpdateComplete()) {
-    WS_DEBUG_PRINTLN("[app] Processing DS18x20 events...");
     Ws._ds18x20_controller->update(true);
     all_controllers_complete = false;
   }
 
   if (!Ws._i2c_controller->UpdateComplete()) {
-    WS_DEBUG_PRINTLN("[app] Processing I2C events...");
     Ws._i2c_controller->update(true);
     all_controllers_complete = false;
   }
 
   if (!Ws._uart_controller->UpdateComplete()) {
-    WS_DEBUG_PRINTLN("[app] Processing UART events...");
     Ws._uart_controller->update(true);
     all_controllers_complete = false;
   }
 
   if (!Ws._gps_controller->UpdateComplete()) {
-    WS_DEBUG_PRINTLN("[app] Processing GPS events...");
     Ws._gps_controller->update(true);
     all_controllers_complete = false;
   }
