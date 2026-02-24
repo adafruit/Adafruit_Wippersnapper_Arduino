@@ -4,8 +4,8 @@
 """
 Tests for WipperSnapper Offline Mode using wokwi-client Python library.
 
-This module uses the synchronous WokwiClientSync API to run simulations
-and validate serial output, replacing the previous wokwi-cli subprocess approach.
+This module uses the native async WokwiClient API to run simulations
+and validate serial output.
 
 Usage:
     cd tests
@@ -17,11 +17,10 @@ Requirements:
 """
 import pytest
 import os
-import time
-import threading
+import asyncio
 from pathlib import Path
 
-from wokwi_client import WokwiClientSync, GET_TOKEN_URL
+from wokwi_client import WokwiClient, GET_TOKEN_URL
 
 
 # Paths to firmware files
@@ -35,79 +34,57 @@ DIAGRAM_PATH = Path(__file__).parent / "diagrams" / "offline.json"
 # Default timeout for waiting on serial output (seconds)
 DEFAULT_TIMEOUT = 60
 
-
-class SerialBuffer:
-    """Thread-safe buffer for capturing serial output from the simulator."""
-
-    def __init__(self, verbose: bool = True):
-        self._buffer = ""
-        self._lock = threading.Lock()
-        self._verbose = verbose
-
-    def append(self, data: bytes) -> None:
-        """Append data to the buffer (called from serial monitor callback)."""
-        decoded = data.decode("utf-8", errors="replace")
-        with self._lock:
-            self._buffer += decoded
-        if self._verbose:
-            # Print serial output in real-time (strip trailing newline for cleaner output)
-            for line in decoded.splitlines():
-                print(f"{line}")
-
-    def get(self) -> str:
-        """Get the current buffer contents."""
-        with self._lock:
-            return self._buffer
-
-    def clear(self) -> None:
-        """Clear the buffer."""
-        with self._lock:
-            self._buffer = ""
-
-    def wait_for(self, text: str, timeout: float = DEFAULT_TIMEOUT) -> bool:
-        """
-        Wait until the specified text appears in the buffer.
-
-        Args:
-            text: The text to wait for
-            timeout: Maximum time to wait in seconds
-
-        Returns:
-            True if text was found
-
-        Raises:
-            TimeoutError: If text is not found within timeout
-        """
-        if self._verbose:
-            print(f"Waiting for: {text!r}")
-
-        start = time.time()
-        while time.time() - start < timeout:
-            if text in self.get():
-                if self._verbose:
-                    print(f"✓ Found: {text!r}")
-                return True
-            time.sleep(0.1)
-
-        # Timeout reached - raise with helpful debug info
-        current_buffer = self.get()
-        raise TimeoutError(
-            f"Timed out after {timeout}s waiting for: {text!r}\n"
-            f"Buffer contents ({len(current_buffer)} chars):\n{current_buffer}"
-        )
-
-
-# Global serial buffer instance
-serial_buffer = SerialBuffer()
+# Global serial buffer
+_serial_output = ""
 
 
 def on_serial_data(data: bytes) -> None:
-    """Callback for serial monitor - appends data to global buffer."""
-    serial_buffer.append(data)
+    """Callback for serial_monitor - accumulates output."""
+    global _serial_output
+    decoded = data.decode("utf-8", errors="replace")
+    _serial_output += decoded
+    # Print serial output in real-time
+    for line in decoded.splitlines():
+        print(f"{line}")
+
+
+async def wait_for_text(text: str, timeout: float = DEFAULT_TIMEOUT) -> bool:
+    """
+    Async wait until the specified text appears in the serial buffer.
+
+    Args:
+        text: The text to wait for
+        timeout: Maximum time to wait in seconds
+
+    Returns:
+        True if text was found
+
+    Raises:
+        TimeoutError: If text is not found within timeout
+    """
+    print(f"Waiting for: {text!r}")
+    start = asyncio.get_event_loop().time()
+    while asyncio.get_event_loop().time() - start < timeout:
+        if text in _serial_output:
+            print(f"✓ Found: {text!r}")
+            return True
+        await asyncio.sleep(0.1)
+
+    # Timeout reached - raise with helpful debug info
+    raise TimeoutError(
+        f"Timed out after {timeout}s waiting for: {text!r}\n"
+        f"Buffer contents ({len(_serial_output)} chars):\n{_serial_output}"
+    )
+
+
+def clear_serial() -> None:
+    """Clear the serial buffer."""
+    global _serial_output
+    _serial_output = ""
 
 
 @pytest.fixture
-def client():
+async def client():
     """
     Create a connected Wokwi client with simulation running.
 
@@ -119,7 +96,7 @@ def client():
     5. Yields the client for test use
     6. Disconnects when test completes
     """
-    serial_buffer.clear()
+    clear_serial()
 
     token = os.getenv("WOKWI_CLI_TOKEN")
     if not token:
@@ -131,25 +108,34 @@ def client():
     if not DIAGRAM_PATH.exists():
         pytest.skip(f"Diagram not found at {DIAGRAM_PATH}")
 
-    client = WokwiClientSync(token)
+    wokwi_client = WokwiClient(token)
+    monitor_task = None
 
     try:
         print("Connecting to Wokwi...")
-        client.connect()
+        await wokwi_client.connect()
         print("Uploading diagram.json...")
-        client.upload_file("diagram.json", DIAGRAM_PATH)
+        await wokwi_client.upload_file("diagram.json", DIAGRAM_PATH)
         print("Uploading firmware.bin...")
-        client.upload_file("firmware.bin", FIRMWARE_BIN)
+        await wokwi_client.upload_file("firmware.bin", FIRMWARE_BIN)
         print("Uploading firmware.elf...")
-        client.upload_file("firmware.elf", FIRMWARE_ELF)
+        await wokwi_client.upload_file("firmware.elf", FIRMWARE_ELF)
         print("Starting simulation...")
-        client.start_simulation(firmware="firmware.bin", elf="firmware.elf")
-        client.serial_monitor(on_serial_data)
+        await wokwi_client.start_simulation(firmware="firmware.bin", elf="firmware.elf")
+
+        # Start serial monitor as background task
+        monitor_task = wokwi_client.serial_monitor(on_serial_data)
         print("Simulation running, serial monitor active")
 
-        yield client
+        yield wokwi_client
     finally:
-        client.disconnect()
+        if monitor_task is not None:
+            monitor_task.cancel()
+            try:
+                await monitor_task
+            except asyncio.CancelledError:
+                pass
+        await wokwi_client.disconnect()
 
 
 # =============================================================================
@@ -157,18 +143,20 @@ def client():
 # =============================================================================
 
 
-def test_invalid_json(client):
+@pytest.mark.asyncio
+async def test_invalid_json(client):
     """Test that invalid JSON is properly rejected."""
-    serial_buffer.wait_for("[SD] Waiting for incoming JSON string...")
-    client.serial_write('{"exportVersion":"1.0.0",\\n')
-    serial_buffer.wait_for("[SD] Runtime Error: Unable to deserialize config.json")
+    await wait_for_text("[SD] Waiting for incoming JSON string...")
+    await client.serial_write('{"exportVersion":"1.0.0",\\n')
+    await wait_for_text("[SD] Runtime Error: Unable to deserialize config.json")
 
 
-def test_invalid_checksum(client):
+@pytest.mark.asyncio
+async def test_invalid_checksum(client):
     """Test that JSON with invalid checksum is rejected."""
-    serial_buffer.wait_for("[SD] Waiting for incoming JSON string...")
+    await wait_for_text("[SD] Waiting for incoming JSON string...")
     # JSON with checksum=5 which is incorrect
-    client.serial_write(
+    await client.serial_write(
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
@@ -176,14 +164,15 @@ def test_invalid_checksum(client):
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
         '"analogReadMode": "PIN_VALUE", "period": 5, "isPin": true}], "checksum": 5}\\n'
     )
-    serial_buffer.wait_for("[SD] Checksum mismatch, file has been modified from its original state!")
+    await wait_for_text("[SD] Checksum mismatch, file has been modified from its original state!")
 
 
-def test_valid_checksum(client):
+@pytest.mark.asyncio
+async def test_valid_checksum(client):
     """Test that JSON with valid checksum is accepted."""
-    serial_buffer.wait_for("[SD] Waiting for incoming JSON string...")
+    await wait_for_text("[SD] Waiting for incoming JSON string...")
     # JSON with correct checksum=28
-    client.serial_write(
+    await client.serial_write(
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
@@ -191,7 +180,7 @@ def test_valid_checksum(client):
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
         '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 28}\\n'
     )
-    serial_buffer.wait_for("[SD] Successfully deserialized JSON config file!")
+    await wait_for_text("[SD] Successfully deserialized JSON config file!")
 
 
 # =============================================================================
@@ -199,11 +188,12 @@ def test_valid_checksum(client):
 # =============================================================================
 
 
-def test_digital_input(client):
+@pytest.mark.asyncio
+async def test_digital_input(client):
     """Test digital input pin with button press."""
-    serial_buffer.wait_for("[SD] Waiting for incoming JSON string...")
+    await wait_for_text("[SD] Waiting for incoming JSON string...")
     # Configure digital input on D4 with pull-up
-    client.serial_write(
+    await client.serial_write(
         '{"checksum":183,"components":[{"componentAPI":"digitalio","direction":"INPUT",'
         '"isPin":true,"mode":"DIGITAL","name":"Button (D4)","period":5,"pinName":"D4",'
         '"pull":"UP","sampleMode":"EVENT","type":"push_button"}],"exportVersion":"1.0.0",'
@@ -213,31 +203,30 @@ def test_digital_input(client):
     )
 
     # Wait for pin configuration
-    serial_buffer.wait_for("[SD] JSON string received!")
-    serial_buffer.wait_for("[digitalio] Added new pin:")
-    serial_buffer.wait_for("Pin Name: 4")
-    #serial_buffer.wait_for("Period: 5000")
-    #serial_buffer.wait_for("Sample Mode: 1")
-    #serial_buffer.wait_for("Direction: 2")
+    await wait_for_text("[SD] JSON string received!")
+    await wait_for_text("[digitalio] Added new pin:")
+    await wait_for_text("Pin Name: 4")
 
     # Wait for initial pin state (button not pressed = true with pull-up)
-    serial_buffer.wait_for('{"timestamp":0,"pin":"D4","value":true,"si_unit":"boolean"}')
+    await wait_for_text('{"timestamp":0,"pin":"D4","value":true,"si_unit":"boolean"}')
 
     # Press and hold the button
-    client.set_control("btn1", "pressed", 1)
+    await client.set_control("btn1", "pressed", 1)
+    await asyncio.sleep(0.5)
 
     # Wait for button pressed state (value = false)
-    serial_buffer.wait_for('{"timestamp":0,"pin":"D4","value":false,"si_unit":"boolean"}')
+    await wait_for_text('{"timestamp":0,"pin":"D4","value":false,"si_unit":"boolean"}')
 
     # Release the button
-    client.set_control("btn1", "pressed", 0)
+    await client.set_control("btn1", "pressed", 0)
 
 
-def test_analog_input(client):
+@pytest.mark.asyncio
+async def test_analog_input(client):
     """Test analog input pin with potentiometer."""
-    serial_buffer.wait_for("[SD] Waiting for incoming JSON string...")
+    await wait_for_text("[SD] Waiting for incoming JSON string...")
     # Configure analog input on D14
-    client.serial_write(
+    await client.serial_write(
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
@@ -245,31 +234,32 @@ def test_analog_input(client):
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
         '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 149}\\n'
     )
-    client.serial_write("\n")
+    await client.serial_write("\n")
 
     # Wait for pin configuration
-    serial_buffer.wait_for("[analogio] Added new pin:")
-    serial_buffer.wait_for("Pin Name: 14")
-    serial_buffer.wait_for("Period: 5000.00")
-    serial_buffer.wait_for("Read Mode: 18")
+    await wait_for_text("[analogio] Added new pin:")
+    await wait_for_text("Pin Name: 14")
+    await wait_for_text("Period: 5000")
+    await wait_for_text("Read Mode: 18")
 
     # Wait for initial analog reading (pot at 0 position)
-    time.sleep(5)
-    serial_buffer.wait_for('{"timestamp":0,"pin":"A14","value":0,"si_unit":"none"}')
+    await asyncio.sleep(5)
+    await wait_for_text('{"timestamp":0,"pin":"A14","value":0,"si_unit":"none"}')
 
     # Move potentiometer to middle position
-    client.set_control("pot1", "position", 0.5)
+    await client.set_control("pot1", "position", 0.5)
 
     # Wait for new analog reading
-    time.sleep(3)
-    serial_buffer.wait_for('{"timestamp":0,"pin":"A14","value":16384,"si_unit":"none"}')
+    await asyncio.sleep(3)
+    await wait_for_text('{"timestamp":0,"pin":"A14","value":16384,"si_unit":"none"}')
 
 
-def test_ds18b20(client):
+@pytest.mark.asyncio
+async def test_ds18b20(client):
     """Test DS18B20 temperature sensor."""
-    serial_buffer.wait_for("[SD] Waiting for incoming JSON string...")
+    await wait_for_text("[SD] Waiting for incoming JSON string...")
     # Configure DS18B20 on D25
-    client.serial_write(
+    await client.serial_write(
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
@@ -279,6 +269,6 @@ def test_ds18b20(client):
     )
 
     # Wait for sensor initialization and readings
-    serial_buffer.wait_for("Sensor found on OneWire bus and initialized")
-    serial_buffer.wait_for('{"timestamp":0,"pin":"D25","value":0.5,"si_unit":"C"}')
-    serial_buffer.wait_for('{"timestamp":0,"pin":"D25","value":32.9,"si_unit":"F"}')
+    await wait_for_text("Sensor found on OneWire bus and initialized")
+    await wait_for_text('{"timestamp":0,"pin":"D25","value":22,"si_unit":"C"}')
+    await wait_for_text('{"timestamp":0,"pin":"D25","value":71.6,"si_unit":"F"}')

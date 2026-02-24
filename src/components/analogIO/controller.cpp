@@ -244,7 +244,7 @@ void AnalogIOController::update(bool force) {
     analogioPin &pin = _analogio_pins[i];
 
     // (force only) - Was pin previously read and sent?
-    if (pin.did_read_send)
+    if (pin.did_read_send && force)
       continue;
 
     // Go to the next pin if the period hasn't expired yet or if we're not

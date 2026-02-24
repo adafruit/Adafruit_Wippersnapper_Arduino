@@ -368,7 +368,7 @@ void DigitalIOController::update(bool force) {
     DigitalIOPin &pin = _pins_input[i];
 
     // (force only) - Was pin previously read and sent?
-    if (pin.did_read_send)
+    if (pin.did_read_send && force)
       continue;
 
     // Skip normal checks if we're forcing a read
