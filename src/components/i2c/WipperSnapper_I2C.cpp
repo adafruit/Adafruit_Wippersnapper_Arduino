@@ -350,17 +350,18 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _ds2484->configureDriver(msgDeviceInitReq);
     drivers.push_back(_ds2484);
     WS_DEBUG_PRINTLN("DS2484 Initialized Successfully!");
-  } else if (strcmp("ens160", msgDeviceInitReq->i2c_device_name) == 0) {
-    _ens160 = new WipperSnapper_I2C_Driver_ENS160(this->_i2c, i2cAddress);
-    if (!_ens160->begin()) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to initialize ENS160!");
+  } else if ((strcmp("ens160", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("ens161", msgDeviceInitReq->i2c_device_name) == 0)) {
+    _ens16x = new WipperSnapper_I2C_Driver_ENS16x(this->_i2c, i2cAddress);
+    if (!_ens16x->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize ENS16x!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
       return false;
     }
-    _ens160->configureDriver(msgDeviceInitReq);
-    drivers.push_back(_ens160);
-    WS_DEBUG_PRINTLN("ENS160 Initialized Successfully!");
+    _ens16x->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_ens16x);
+    WS_DEBUG_PRINTLN("ENS16x Initialized Successfully!");
   } else if (strcmp("hdc302x", msgDeviceInitReq->i2c_device_name) == 0) {
     _hdc302x = new WipperSnapper_I2C_Driver_HDC302X(this->_i2c, i2cAddress);
     if (!_hdc302x->begin()) {
