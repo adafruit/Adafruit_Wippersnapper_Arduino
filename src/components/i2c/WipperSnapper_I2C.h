@@ -32,7 +32,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_D6T1A.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_DS2484.h"
-#include "drivers/WipperSnapper_I2C_Driver_ENS160.h"
+#include "drivers/WipperSnapper_I2C_Driver_ENS16X.h"
 #include "drivers/WipperSnapper_I2C_Driver_HDC302X.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTS221.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTU21D.h"
