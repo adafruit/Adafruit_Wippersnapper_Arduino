@@ -49,7 +49,6 @@ bool CheckinModel::Checkin(const char *hardware_uid,
   strncpy(_CheckinD2B.payload.request.firmware_version, firmware_version,
           sizeof(_CheckinD2B.payload.request.firmware_version) - 1);
 
-
   // Encode the D2B wrapper message
   WS_DEBUG_PRINTLN("[checkin] Encoding CheckinRequest message size...");
   size_t CheckinD2BSz;
@@ -163,7 +162,8 @@ void CheckinModel::ConfigureControllers() {
 */
 bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
-  WS_DEBUG_PRINTLN("[checkin] cbSetupResponse: Setting up component_adds callback");
+  WS_DEBUG_PRINTLN(
+      "[checkin] cbSetupResponse: Setting up component_adds callback");
 
   // Get the Response struct that nanopb will decode into
   ws_checkin_Response *response = (ws_checkin_Response *)field->pData;
@@ -193,7 +193,8 @@ bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
   WS_DEBUG_PRINTLN("[checkin] Decoding ComponentAdd message...");
 
-  // Attempt to alloc. on the heap to avoid stack overflow (ComponentAdd is a ~2.4K struct)
+  // Attempt to alloc. on the heap to avoid stack overflow (ComponentAdd is a
+  // ~2.4K struct)
   ws_checkin_ComponentAdd *component = new ws_checkin_ComponentAdd();
   if (component == nullptr) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to allocate ComponentAdd!");
@@ -201,7 +202,8 @@ bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
   }
 
   if (!pb_decode(stream, ws_checkin_ComponentAdd_fields, component)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode ComponentAdd message!");
+    WS_DEBUG_PRINTLN(
+        "[checkin] SYNC ERROR: Unable to decode ComponentAdd message!");
     delete component;
     return false;
   }

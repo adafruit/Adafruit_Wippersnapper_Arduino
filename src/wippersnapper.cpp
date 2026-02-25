@@ -44,7 +44,8 @@ wippersnapper::wippersnapper()
       _ds18x20_controller(nullptr), _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
       _pixels_controller(nullptr), _pwm_controller(nullptr),
-      _servo_controller(nullptr), _wdt(nullptr) {
+      _servo_controller(nullptr), _wdt(nullptr), _device_uidV2(nullptr),
+      _mqtt_client_id(nullptr) {
   // Initialize WDT wrapper
   _wdt = new ws_wdt();
 
@@ -219,11 +220,7 @@ void wippersnapper::provision() {
   WS_DEBUG_PRINTLN("Wokwi offline mode detected, setting SD CS pin to 15");
   Ws.pin_sd_cs = 15;
 #endif
-  WS_DEBUG_PRINT("SD CS Pin: ");
-  WS_DEBUG_PRINTLN(Ws.pin_sd_cs);
   Ws._sdCardV2 = new ws_sdcard();
-  WS_DEBUG_PRINTLN("Is SD Card initialized?");
-  WS_DEBUG_PRINTLN(Ws._sdCardV2->isSDCardInitialized());
   if (Ws._sdCardV2->isSDCardInitialized()) {
     return; // SD card initialized, cede control back to loop()
   } else {
@@ -401,8 +398,7 @@ bool wippersnapper::generateDeviceUID() {
   WS_DEBUG_PRINTLN("Calculating device UID length...");
   size_t lenBoardId = strlen(Ws._boardIdV2);
   size_t lenUID = strlen(Ws.sUIDV2);
-  size_t lenIOWipper = strlen("io-wipper-");
-  size_t lenDeviceUID = lenBoardId + lenUID + lenIOWipper + 1;
+  size_t lenDeviceUID = lenBoardId + lenUID + 1;
 
   // Attempt to allocate memory for the _device_uid
   WS_DEBUG_PRINTLN("Allocating memory for device UID");
@@ -419,12 +415,47 @@ bool wippersnapper::generateDeviceUID() {
   }
 
   // Create the device identifier
-  snprintf(_device_uidV2, lenDeviceUID, "io-wipper-%s%s", Ws._boardIdV2,
-           Ws.sUIDV2);
+  snprintf(_device_uidV2, lenDeviceUID, "%s%s", Ws._boardIdV2, Ws.sUIDV2);
   WS_DEBUG_PRINT("Device UID: ");
   WS_DEBUG_PRINTLN(_device_uidV2);
 
   return true;
+}
+
+/*!
+    @brief    Generates MQTT client ID by prepending "io-wipper" to device UID.
+              Stores result in _mqtt_client_id member variable.
+    @returns  Pointer to _mqtt_client_id, or NULL on failure.
+              The string persists for the lifetime of the wippersnapper object.
+*/
+char *wippersnapper::generateMQTTClientID() {
+  if (_device_uidV2 == NULL) {
+    WS_DEBUG_PRINTLN("ERROR: Device UID not initialized");
+    return NULL;
+  }
+
+  // Free any existing client ID
+  if (_mqtt_client_id != NULL) {
+    free(_mqtt_client_id);
+    _mqtt_client_id = NULL;
+  }
+
+  // Calculate required length: "io-wipper" + device UID + null terminator
+  size_t clientIdLen = strlen("io-wipper") + strlen(_device_uidV2) + 1;
+
+  // Allocate memory for the client ID
+  _mqtt_client_id = (char *)malloc(clientIdLen);
+  if (_mqtt_client_id == NULL) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for MQTT client ID");
+    return NULL;
+  }
+
+  // Build the prefixed client ID
+  snprintf(_mqtt_client_id, clientIdLen, "io-wipper%s", _device_uidV2);
+  WS_DEBUG_PRINT("Generated MQTT Client ID: ");
+  WS_DEBUG_PRINTLN(_mqtt_client_id);
+
+  return _mqtt_client_id;
 }
 
 /*!
@@ -960,7 +991,12 @@ void wippersnapper::connect() {
 
   // Configures an Adafruit Arduino MQTT object
   WS_DEBUG_PRINTLN("Setting up MQTT client...");
-  setupMQTTClient(_device_uidV2);
+  char *mqttClientId = generateMQTTClientID();
+  if (mqttClientId == NULL) {
+    haltErrorV2("Unable to generate MQTT client ID");
+    return;
+  }
+  setupMQTTClient(mqttClientId);
   WS_DEBUG_PRINTLN("Set up MQTT client successfully!");
 
   WS_DEBUG_PRINTLN("Generating device's MQTT topics...");

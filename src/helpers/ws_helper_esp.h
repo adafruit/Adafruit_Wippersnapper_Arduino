@@ -14,9 +14,9 @@
  */
 #ifndef WS_HELPER_ESP_H
 #define WS_HELPER_ESP_H
+#include "esp_heap_caps.h"
 #include "esp_task_wdt.h"
 #include <Esp.h>
-#include "esp_heap_caps.h"
 
 /*!
     @brief    Converts reset reason type to a C string.. This uses the mechanism
