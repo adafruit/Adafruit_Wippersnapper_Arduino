@@ -192,59 +192,69 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
 bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
   WS_DEBUG_PRINTLN("[checkin] Decoding ComponentAdd message...");
-  WS_DEBUG_PRINT("[checkin] Stream bytes_left: ");
-  WS_DEBUG_PRINTLN(stream->bytes_left);
 
-  // Use static to avoid stack overflow - this struct is ~2.4KB
-  static ws_checkin_ComponentAdd component;
-  memset(&component, 0, sizeof(component));
-  WS_DEBUG_PRINTLN("[checkin] Component struct initialized");
-
-  if (!pb_decode(stream, ws_checkin_ComponentAdd_fields, &component)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode ComponentAdd message!");
+  // Attempt to alloc. on the heap to avoid stack overflow (ComponentAdd is a ~2.4K struct)
+  ws_checkin_ComponentAdd *component = new ws_checkin_ComponentAdd();
+  if (component == nullptr) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to allocate ComponentAdd!");
     return false;
   }
-  WS_DEBUG_PRINTLN("[checkin] Decode successful");
 
-  WS_DEBUG_PRINT("[checkin] which_payload: ");
-  WS_DEBUG_PRINTLN(component.which_payload);
+  if (!pb_decode(stream, ws_checkin_ComponentAdd_fields, component)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode ComponentAdd message!");
+    delete component;
+    return false;
+  }
 
+  bool result = true;
   WS_DEBUG_PRINT("[checkin] Adding component: ");
-  switch (component.which_payload) {
+  switch (component->which_payload) {
   case ws_checkin_ComponentAdd_digitalio_tag:
     WS_DEBUG_PRINTLN("DigitalIO");
-    return Ws.digital_io_controller->Handle_DigitalIO_Add(
-        &component.payload.digitalio);
+    result = Ws.digital_io_controller->Handle_DigitalIO_Add(
+        &component->payload.digitalio);
+    break;
   case ws_checkin_ComponentAdd_analogio_tag:
     WS_DEBUG_PRINTLN("AnalogIO");
-    return Ws.analogio_controller->Handle_AnalogIOAdd(
-        &component.payload.analogio);
+    result = Ws.analogio_controller->Handle_AnalogIOAdd(
+        &component->payload.analogio);
+    break;
   case ws_checkin_ComponentAdd_servo_tag:
     WS_DEBUG_PRINTLN("Servo");
-    return Ws._servo_controller->Handle_Servo_Add(&component.payload.servo);
+    result = Ws._servo_controller->Handle_Servo_Add(&component->payload.servo);
+    break;
   case ws_checkin_ComponentAdd_pwm_tag:
     WS_DEBUG_PRINTLN("PWM");
-    return Ws._pwm_controller->Handle_PWM_Add(&component.payload.pwm);
+    result = Ws._pwm_controller->Handle_PWM_Add(&component->payload.pwm);
+    break;
   case ws_checkin_ComponentAdd_pixels_tag:
     WS_DEBUG_PRINTLN("Pixels");
-    return Ws._pixels_controller->Handle_Pixels_Add(&component.payload.pixels);
+    result =
+        Ws._pixels_controller->Handle_Pixels_Add(&component->payload.pixels);
+    break;
   case ws_checkin_ComponentAdd_ds18x20_tag:
     WS_DEBUG_PRINTLN("DS18x20");
-    return Ws._ds18x20_controller->Handle_Ds18x20Add(
-        &component.payload.ds18x20);
+    result =
+        Ws._ds18x20_controller->Handle_Ds18x20Add(&component->payload.ds18x20);
+    break;
   case ws_checkin_ComponentAdd_uart_tag:
     WS_DEBUG_PRINTLN("UART");
-    return Ws._uart_controller->Handle_UartAdd(&component.payload.uart);
+    result = Ws._uart_controller->Handle_UartAdd(&component->payload.uart);
+    break;
   case ws_checkin_ComponentAdd_i2c_tag:
     WS_DEBUG_PRINTLN("I2C");
-    return Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(
-        &component.payload.i2c);
+    result = Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(
+        &component->payload.i2c);
+    break;
   default:
     WS_DEBUG_PRINTLN("UNKNOWN COMPONENT TYPE!");
+    result = false;
     break;
   }
 
-  return true;
+  // Clean up heap allocation for this message
+  delete component;
+  return result;
 }
 
 /*!
