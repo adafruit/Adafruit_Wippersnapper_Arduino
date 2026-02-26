@@ -123,7 +123,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "2.0.0-beta.1" ///< WipperSnapper app. version (semver-formatted)
+  "2.0.0-alpha.1" ///< WipperSnapper app. version (semver-formatted)
 
 // Timeouts and intervals
 #define WS_KEEPALIVE_INTERVAL_MS                                               \

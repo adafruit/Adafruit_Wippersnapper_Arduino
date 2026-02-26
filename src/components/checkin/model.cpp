@@ -37,12 +37,10 @@ CheckinModel::~CheckinModel() { _got_response = false; }
 */
 bool CheckinModel::Checkin(const char *hardware_uid,
                            const char *firmware_version) {
-  WS_DEBUG_PRINTLN("[checkin] Zero out d2b wrapper...");
   // Zero-out the D2B wrapper message
   memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
 
   // Create the CheckinRequest message
-  WS_DEBUG_PRINTLN("[checkin] Creating CheckinRequest message...");
   _CheckinD2B.which_payload = ws_checkin_D2B_request_tag;
   strncpy(_CheckinD2B.payload.request.hardware_uid, hardware_uid,
           sizeof(_CheckinD2B.payload.request.hardware_uid) - 1);
@@ -50,7 +48,6 @@ bool CheckinModel::Checkin(const char *hardware_uid,
           sizeof(_CheckinD2B.payload.request.firmware_version) - 1);
 
   // Encode the D2B wrapper message
-  WS_DEBUG_PRINTLN("[checkin] Encoding CheckinRequest message size...");
   size_t CheckinD2BSz;
   if (!pb_get_encoded_size(&CheckinD2BSz, ws_checkin_D2B_fields,
                            &_CheckinD2B)) {
@@ -59,7 +56,6 @@ bool CheckinModel::Checkin(const char *hardware_uid,
     return false;
   }
 
-  WS_DEBUG_PRINTLN("[checkin] Encoding CheckinRequest message...");
   uint8_t buf[CheckinD2BSz];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
   if (!pb_encode(&msg_stream, ws_checkin_D2B_fields, &_CheckinD2B)) {
@@ -68,12 +64,13 @@ bool CheckinModel::Checkin(const char *hardware_uid,
   }
 
   // Publish out
-  WS_DEBUG_PRINTLN("[checkin] Publishing CheckinRequest to broker...");
+  WS_DEBUG_PRINT("[checkin] Publishing CheckinRequest");
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to publish CheckinRequest message!");
     return false;
   }
+  WS_DEBUG_PRINTLN("...Published!");
   return true;
 }
 
@@ -85,18 +82,15 @@ bool CheckinModel::Checkin(const char *hardware_uid,
 */
 bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   // Zero-out the B2D wrapper message
-  WS_DEBUG_PRINTLN("[checkin] Zero out CheckinB2D wrapper...");
   memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
 
   // Set up the pre-decode callback (cb_payload) which will be called BEFORE
   // the Response submessage is decoded. This allows us to set up the
   // component_adds callback before nanopb initializes the Response struct.
-  WS_DEBUG_PRINTLN("[checkin] Setting up pre-decode callback...");
   _CheckinB2D.cb_payload.funcs.decode = &cbSetupResponse;
   _CheckinB2D.cb_payload.arg = this;
 
   // Decode the B2D wrapper message
-  WS_DEBUG_PRINTLN("[checkin] Decoding CheckinB2D message from broker...");
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to decode CheckinB2D message from broker!");
@@ -104,7 +98,6 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   }
 
   // Validate the response message type
-  WS_DEBUG_PRINTLN("[checkin] Validating CheckinB2D message type...");
   if (_CheckinB2D.which_payload != ws_checkin_B2D_response_tag) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: CheckinB2D message from broker is not a Response!");
@@ -112,20 +105,11 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   }
 
   // Validate the response content
-  WS_DEBUG_PRINTLN("[checkin] Validating CheckinResponse content...");
   if (_CheckinB2D.payload.response.response !=
       ws_checkin_Response_Response_R_OK) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Invalid checkin_Response!");
     return false;
   }
-
-  WS_DEBUG_PRINTLN("[checkin] CheckinResponse content:");
-  WS_DEBUG_PRINTLN("Total GPIO pins: " +
-                   String(_CheckinB2D.payload.response.total_gpio_pins));
-  WS_DEBUG_PRINTLN("Total Analog pins: " +
-                   String(_CheckinB2D.payload.response.total_analog_pins));
-  WS_DEBUG_PRINTLN("Reference voltage: " +
-                   String(_CheckinB2D.payload.response.reference_voltage));
 
   // Set flag to indicate response received
   _got_response = true;
@@ -136,15 +120,12 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
     @brief  Configures controllers limits based on board definition
 */
 void CheckinModel::ConfigureControllers() {
-  WS_DEBUG_PRINTLN(
-      "[checkin] Configuring controllers based on board definition...");
   Ws.digital_io_controller->SetMaxDigitalPins(
       _CheckinB2D.payload.response.total_gpio_pins);
   Ws.analogio_controller->SetRefVoltage(
       _CheckinB2D.payload.response.reference_voltage);
   Ws.analogio_controller->SetTotalAnalogPins(
       _CheckinB2D.payload.response.total_analog_pins);
-  WS_DEBUG_PRINTLN("[checkin] Controllers configured successfully!");
 }
 
 /*!
@@ -162,9 +143,6 @@ void CheckinModel::ConfigureControllers() {
 */
 bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
-  WS_DEBUG_PRINTLN(
-      "[checkin] cbSetupResponse: Setting up component_adds callback");
-
   // Get the Response struct that nanopb will decode into
   ws_checkin_Response *response = (ws_checkin_Response *)field->pData;
 
@@ -191,8 +169,6 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
 */
 bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
-  WS_DEBUG_PRINTLN("[checkin] Decoding ComponentAdd message...");
-
   // Attempt to alloc. on the heap to avoid stack overflow (ComponentAdd is a
   // ~2.4K struct)
   ws_checkin_ComponentAdd *component = new ws_checkin_ComponentAdd();
@@ -209,42 +185,33 @@ bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
   }
 
   bool result = true;
-  WS_DEBUG_PRINT("[checkin] Adding component: ");
   switch (component->which_payload) {
   case ws_checkin_ComponentAdd_digitalio_tag:
-    WS_DEBUG_PRINTLN("DigitalIO");
     result = Ws.digital_io_controller->Handle_DigitalIO_Add(
         &component->payload.digitalio);
     break;
   case ws_checkin_ComponentAdd_analogio_tag:
-    WS_DEBUG_PRINTLN("AnalogIO");
     result = Ws.analogio_controller->Handle_AnalogIOAdd(
         &component->payload.analogio);
     break;
   case ws_checkin_ComponentAdd_servo_tag:
-    WS_DEBUG_PRINTLN("Servo");
     result = Ws._servo_controller->Handle_Servo_Add(&component->payload.servo);
     break;
   case ws_checkin_ComponentAdd_pwm_tag:
-    WS_DEBUG_PRINTLN("PWM");
     result = Ws._pwm_controller->Handle_PWM_Add(&component->payload.pwm);
     break;
   case ws_checkin_ComponentAdd_pixels_tag:
-    WS_DEBUG_PRINTLN("Pixels");
     result =
         Ws._pixels_controller->Handle_Pixels_Add(&component->payload.pixels);
     break;
   case ws_checkin_ComponentAdd_ds18x20_tag:
-    WS_DEBUG_PRINTLN("DS18x20");
     result =
         Ws._ds18x20_controller->Handle_Ds18x20Add(&component->payload.ds18x20);
     break;
   case ws_checkin_ComponentAdd_uart_tag:
-    WS_DEBUG_PRINTLN("UART");
     result = Ws._uart_controller->Handle_UartAdd(&component->payload.uart);
     break;
   case ws_checkin_ComponentAdd_i2c_tag:
-    WS_DEBUG_PRINTLN("I2C");
     result = Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(
         &component->payload.i2c);
     break;
@@ -271,18 +238,14 @@ bool CheckinModel::GotResponse() { return _got_response; }
     @returns True if the message was published successfully, False otherwise.
 */
 bool CheckinModel::Complete() {
-  WS_DEBUG_PRINTLN("[checkin] Publishing Complete message to broker...");
-
   // Create a fresh D2B wrapper message
   ws_checkin_D2B completeMsg = ws_checkin_D2B_init_default;
 
   // Create and fill the ws_checkin_Complete message
-  WS_DEBUG_PRINTLN("[checkin] Creating Complete message...");
   completeMsg.which_payload = ws_checkin_D2B_complete_tag;
   completeMsg.payload.complete.dummy_field = '\0';
 
   // Encode the D2B wrapper message
-  WS_DEBUG_PRINTLN("[checkin] Encoding Complete message size...");
   size_t CheckinD2BSz;
   if (!pb_get_encoded_size(&CheckinD2BSz, ws_checkin_D2B_fields,
                            &completeMsg)) {
@@ -291,7 +254,6 @@ bool CheckinModel::Complete() {
     return false;
   }
 
-  WS_DEBUG_PRINTLN("[checkin] Encoding Complete message...");
   uint8_t buf[CheckinD2BSz];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
   if (!pb_encode(&msg_stream, ws_checkin_D2B_fields, &completeMsg)) {
@@ -300,12 +262,9 @@ bool CheckinModel::Complete() {
   }
 
   // Publish the message
-  WS_DEBUG_PRINTLN("[checkin] Publishing Complete message to broker...");
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &completeMsg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to publish Complete message!");
     return false;
   }
-
-  WS_DEBUG_PRINTLN("[checkin] Published Complete message to broker");
   return true;
 }

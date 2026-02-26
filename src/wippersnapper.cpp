@@ -349,8 +349,6 @@ void cbBrokerToDevice(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");
     return;
   }
-
-  WS_DEBUG_PRINTLN("=> B2D message decoded successfully!");
 }
 
 /*!
@@ -397,7 +395,6 @@ bool wippersnapper::generateDeviceUID() {
   size_t lenDeviceUID = lenBoardId + lenUID + 1;
 
   // Attempt to allocate memory for the _device_uid
-  WS_DEBUG_PRINTLN("Allocating memory for device UID");
 #ifdef USE_PSRAM
   _device_uidV2 = (char *)ps_malloc(sizeof(char) * lenDeviceUID);
 #else
@@ -412,14 +409,13 @@ bool wippersnapper::generateDeviceUID() {
 
   // Create the device identifier
   snprintf(_device_uidV2, lenDeviceUID, "%s%s", Ws._boardIdV2, Ws.sUIDV2);
-  WS_DEBUG_PRINT("Device UID: ");
-  WS_DEBUG_PRINTLN(_device_uidV2);
 
   return true;
 }
 
 /*!
-    @brief    Generates MQTT client ID by prepending "io-wipper-" to existing device UID.
+    @brief    Generates MQTT client ID by prepending "io-wipper-" to existing
+   device UID.
     @returns  Pointer to _mqtt_client_id, or NULL on failure.
 */
 char *wippersnapper::generateMQTTClientID() {
@@ -495,12 +491,6 @@ bool wippersnapper::generateWSTopics() {
   // Build the broker-to-device topic
   snprintf(Ws._topicD2b, lenSignalTopic, "%s/ws-d2b/%s", Ws._configV2.aio_user,
            _device_uidV2);
-
-  // Print out topics
-    WS_DEBUG_PRINT("Broker to Device Topic: ");
-    WS_DEBUG_PRINTLN(Ws._topicB2d);
-    WS_DEBUG_PRINT("Device to Broker Topic: ");
-    WS_DEBUG_PRINTLN(Ws._topicD2b);
   return true;
 }
 
@@ -725,57 +715,46 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   // Fill generic signal payload with the payload from the args.
   switch (which_payload) {
   case ws_signal_DeviceToBroker_error_tag:
-    WS_DEBUG_PRINTLN("Signal type: Error");
     msg->which_payload = ws_signal_DeviceToBroker_error_tag;
     msg->payload.error = *(ws_error_ErrorD2B *)payload;
     break;
   case ws_signal_DeviceToBroker_checkin_tag:
-    WS_DEBUG_PRINTLN("Signal type: Checkin");
     msg->which_payload = ws_signal_DeviceToBroker_checkin_tag;
     msg->payload.checkin = *(ws_checkin_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_digitalio_tag:
-    WS_DEBUG_PRINTLN("Signal type: DigitalIO");
     msg->which_payload = ws_signal_DeviceToBroker_digitalio_tag;
     msg->payload.digitalio = *(ws_digitalio_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_analogio_tag:
-    WS_DEBUG_PRINTLN("Signal type: AnalogIO");
     msg->which_payload = ws_signal_DeviceToBroker_analogio_tag;
     msg->payload.analogio = *(ws_analogio_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_servo_tag:
-    WS_DEBUG_PRINTLN("Signal type: Servo");
     msg->which_payload = ws_signal_DeviceToBroker_servo_tag;
     msg->payload.servo = *(ws_servo_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_pwm_tag:
-    WS_DEBUG_PRINTLN("Signal type: PWM");
     msg->which_payload = ws_signal_DeviceToBroker_pwm_tag;
     msg->payload.pwm = *(ws_pwm_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_pixels_tag:
-    WS_DEBUG_PRINTLN("Signal type: Pixels");
     msg->which_payload = ws_signal_DeviceToBroker_pixels_tag;
     msg->payload.pixels = *(ws_pixels_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_ds18x20_tag:
-    WS_DEBUG_PRINTLN("Signal type: DS18x20");
     msg->which_payload = ws_signal_DeviceToBroker_ds18x20_tag;
     msg->payload.ds18x20 = *(ws_ds18x20_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_uart_tag:
-    WS_DEBUG_PRINTLN("Signal type: UART");
     msg->which_payload = ws_signal_DeviceToBroker_uart_tag;
     msg->payload.uart = *(ws_uart_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_i2c_tag:
-    WS_DEBUG_PRINTLN("Signal type: I2C");
     msg->which_payload = ws_signal_DeviceToBroker_i2c_tag;
     msg->payload.i2c = *(ws_i2c_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_gps_tag:
-    WS_DEBUG_PRINTLN("Signal type: GPS");
     msg->which_payload = ws_signal_DeviceToBroker_gps_tag;
     msg->payload.gps = *(ws_gps_D2B *)payload;
     break;
@@ -797,19 +776,13 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
 
   // Size the message buffer to fit the encoded d2b message
   uint8_t msgBuf[szMessageBuf];
-  // Encode the signal message
-  WS_DEBUG_PRINT("Encoding d2b message...");
+  // Encode the signal message into the buffer
   pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, szMessageBuf);
   if (!ws_pb_encode(&stream, ws_signal_DeviceToBroker_fields, msg)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode d2b message, bailing out!");
     free(msg);
     return false;
   }
-  WS_DEBUG_PRINTLN("Encoded!");
-
-  // Check that we are still connected
-  NetworkFSM();
-  Ws._wdt->feed();
 
   // Attempt to publish the signal message to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
@@ -818,12 +791,6 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     free(msg);
     return false;
   }
-
-  // Small delay to allow MQTT client to process PUBACK and update internal state
-  WS_DELAY_WITH_WDT(50);
-
-  // Reset ping timer to prevent immediate ping after publish
-  _prv_pingV2 = millis();
 
   WS_DEBUG_PRINTLN("Published!");
   // Free the allocated message's memory
