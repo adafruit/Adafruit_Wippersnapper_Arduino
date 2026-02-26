@@ -297,13 +297,10 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   }
 
   // Pass to class' router based on tag type
-  WS_DEBUG_PRINT("Handling BrokerToDevice message with tag: ");
   switch (field->tag) {
   case ws_signal_BrokerToDevice_error_tag:
-    WS_DEBUG_PRINTLN("error");
     return Ws.error_controller->Router(stream);
   case ws_signal_BrokerToDevice_checkin_tag:
-    WS_DEBUG_PRINTLN("checkin");
     return handleCheckinResponse(stream);
   case ws_signal_BrokerToDevice_digitalio_tag:
     return Ws.digital_io_controller->Router(stream);
@@ -323,7 +320,6 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     return Ws._uart_controller->Router(stream);
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   case ws_signal_BrokerToDevice_sleep_tag:
-    WS_DEBUG_PRINTLN("sleep");
     return Ws._sleep_controller->Router(stream);
 #endif
   default:
@@ -423,10 +419,8 @@ bool wippersnapper::generateDeviceUID() {
 }
 
 /*!
-    @brief    Generates MQTT client ID by prepending "io-wipper" to device UID.
-              Stores result in _mqtt_client_id member variable.
+    @brief    Generates MQTT client ID by prepending "io-wipper-" to existing device UID.
     @returns  Pointer to _mqtt_client_id, or NULL on failure.
-              The string persists for the lifetime of the wippersnapper object.
 */
 char *wippersnapper::generateMQTTClientID() {
   if (_device_uidV2 == NULL) {
@@ -434,27 +428,22 @@ char *wippersnapper::generateMQTTClientID() {
     return NULL;
   }
 
-  // Free any existing client ID
+  // Free existing client ID
   if (_mqtt_client_id != NULL) {
     free(_mqtt_client_id);
     _mqtt_client_id = NULL;
   }
 
-  // Calculate required length: "io-wipper" + device UID + null terminator
-  size_t clientIdLen = strlen("io-wipper") + strlen(_device_uidV2) + 1;
-
   // Allocate memory for the client ID
+  size_t clientIdLen = strlen("io-wipper-") + strlen(_device_uidV2) + 1;
   _mqtt_client_id = (char *)malloc(clientIdLen);
   if (_mqtt_client_id == NULL) {
     WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for MQTT client ID");
     return NULL;
   }
 
-  // Build the prefixed client ID
-  snprintf(_mqtt_client_id, clientIdLen, "io-wipper%s", _device_uidV2);
-  WS_DEBUG_PRINT("Generated MQTT Client ID: ");
-  WS_DEBUG_PRINTLN(_mqtt_client_id);
-
+  // Build the client-id
+  snprintf(_mqtt_client_id, clientIdLen, "io-wipper-%s", _device_uidV2);
   return _mqtt_client_id;
 }
 
@@ -506,6 +495,12 @@ bool wippersnapper::generateWSTopics() {
   // Build the broker-to-device topic
   snprintf(Ws._topicD2b, lenSignalTopic, "%s/ws-d2b/%s", Ws._configV2.aio_user,
            _device_uidV2);
+
+  // Print out topics
+    WS_DEBUG_PRINT("Broker to Device Topic: ");
+    WS_DEBUG_PRINTLN(Ws._topicB2d);
+    WS_DEBUG_PRINT("Device to Broker Topic: ");
+    WS_DEBUG_PRINTLN(Ws._topicD2b);
   return true;
 }
 
@@ -819,10 +814,16 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   // Attempt to publish the signal message to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
   if (!Ws._mqttV2->publish(Ws._topicD2b, msgBuf, szMessageBuf, 1)) {
-    WS_DEBUG_PRINTLN("ERROR: Failed to publish d2b message to broker!");
+    WS_DEBUG_PRINTLN("ERROR: Failedf to publish d2b message to broker!");
     free(msg);
     return false;
   }
+
+  // Small delay to allow MQTT client to process PUBACK and update internal state
+  WS_DELAY_WITH_WDT(50);
+
+  // Reset ping timer to prevent immediate ping after publish
+  _prv_pingV2 = millis();
 
   WS_DEBUG_PRINTLN("Published!");
   // Free the allocated message's memory

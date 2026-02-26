@@ -52,7 +52,7 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
   ws_digitalio_B2D b2d = ws_digitalio_B2D_init_zero;
   if (!ws_pb_decode(stream, ws_digitalio_B2D_fields, &b2d)) {
     WS_DEBUG_PRINTLN(
-        "[digitalio] ERROR: Unable to decode DigitalIO B2D envelope");
+        "[dio] ERROR: Unable to decode DigitalIO B2D envelope");
     return false;
   }
 
@@ -69,7 +69,7 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
     res = Handle_DigitalIO_Remove(&b2d.payload.remove);
     break;
   default:
-    WS_DEBUG_PRINTLN("[digitalio] WARNING: Unsupported DigitalIO payload");
+    WS_DEBUG_PRINTLN("[dio] WARNING: Unsupported DigitalIO payload");
     res = false;
     break;
   }
@@ -84,7 +84,7 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
     @return True if the digital pin was successfully added, False otherwise.
 */
 bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
-  WS_DEBUG_PRINTLN("[digitalio] Handle_DigitalIO_Add MESSAGE...");
+  WS_DEBUG_PRINTLN("[dio] Handle_DigitalIO_Add MESSAGE...");
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
   uint8_t pin_name = atoi(msg->pin_name + 1);
 
@@ -99,7 +99,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   // Attempt to configure the pin
   if (!_dio_hardware->ConfigurePin(pin_name, msg->gpio_direction)) {
     WS_DEBUG_PRINTLN(
-        "[digitalio] ERROR: Pin provided an invalid protobuf direction!");
+        "[dio] ERROR: Pin provided an invalid protobuf direction!");
     return false;
   }
 
@@ -131,7 +131,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   }
 
   // Print out the pin's details
-  WS_DEBUG_PRINTLN("[digitalio] Added new pin:");
+  WS_DEBUG_PRINTLN("[dio] Added new pin:");
   WS_DEBUG_PRINT("Pin Name: ");
   WS_DEBUG_PRINTLN(new_pin.pin_name);
   WS_DEBUG_PRINT("Period: ");
@@ -157,12 +157,14 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
   // Bail out if the pin does not exist within controller
   if (GetPinIdx(pin_name) == -1) {
     WS_DEBUG_PRINTLN(
-        "[digitalio] ERROR: Unable to find output pin on the controller!");
+        "[dio] ERROR: Unable to find output pin on the controller!");
     return false;
   }
 
   // Deinitialize the pin
   _dio_hardware->deinit(pin_name);
+  WS_DEBUG_PRINT("[dio] Removed Pin:");
+  WS_DEBUG_PRINTLN(pin_name);
   return true;
 }
 
@@ -201,27 +203,27 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   // Check if the pin was found and is a valid digital output pin
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN(
-        "[digitalio] ERROR: Unable to find the requested output pin!");
+        "[dio] ERROR: Unable to find the requested output pin!");
     return false;
   }
 
   // Ensure pin_idx exists within pins_output vector
   if (pin_idx >= _pins_output.size()) {
     WS_DEBUG_PRINTLN(
-        "[digitalio] ERROR: Requested pin is not a digital output pin!");
+        "[dio] ERROR: Requested pin is not a digital output pin!");
     return false;
   }
 
   // Ensure the value type to write is boolean
   if (msg->value.which_value != ws_sensor_Event_bool_value_tag) {
     WS_DEBUG_PRINTLN(
-        "[digitalio] ERROR: controller received invalid value type!");
+        "[dio] ERROR: controller received invalid value type!");
     return false;
   }
 
-  WS_DEBUG_PRINT("[digitalio] Writing value: ");
-  WS_DEBUG_PRINTLN(msg->value.value.bool_value);
-  WS_DEBUG_PRINT("on Pin: ");
+  WS_DEBUG_PRINT("[dio] Writing: ");
+  WS_DEBUG_PRINT(msg->value.value.bool_value);
+  WS_DEBUG_PRINT("to Pin ");
   WS_DEBUG_PRINTLN(_pins_output[pin_idx].pin_name);
 
   // Is the pin already set to this value? If so, we don't need to write it
@@ -251,20 +253,6 @@ bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
 }
 
 /*!
-    @brief  Print a pin's ID and value
-    @param  pin
-            The specified pin.
-*/
-void DigitalIOController::PrintPinValue(DigitalIOPin *pin) {
-  if (Ws._sdCardV2->isModeOffline())
-    return;
-  WS_DEBUG_PRINT("[digitalio] DIO Pin D");
-  WS_DEBUG_PRINT(pin->pin_name);
-  WS_DEBUG_PRINT(" | value: ");
-  WS_DEBUG_PRINTLN(pin->prv_pin_value);
-}
-
-/*!
     @brief  Check if a pin's timer has expired
     @param  pin
             The pin to check.
@@ -282,9 +270,7 @@ bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
   // Fill in the pin's current time and value
   pin->prv_pin_time = cur_time;
   pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
-  ;
 
-  PrintPinValue(pin);
   return true;
 }
 
@@ -307,7 +293,6 @@ bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
   // Update the pin's previous value to the current value
   pin->prv_pin_value = pin->pin_value;
 
-  PrintPinValue(pin);
   return true;
 }
 
@@ -327,9 +312,10 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
 
   // If we are in ONLINE mode, publish the event to the broker
   if (!Ws._sdCardV2->isModeOffline()) {
-    WS_DEBUG_PRINT(
-        "[digitalio] Publishing DigitalIOEvent message to broker for pin: ");
-    WS_DEBUG_PRINTLN(c_pin_name);
+    WS_DEBUG_PRINT("[dio] Publish Event: ");
+    WS_DEBUG_PRINT(c_pin_name);
+    WS_DEBUG_PRINT(" | value: ");
+    WS_DEBUG_PRINTLN(pin_value);
     // Encode the DigitalIOEvent message
     if (!_dio_model->EncodeDigitalIOEvent(c_pin_name, pin_value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");
@@ -339,11 +325,11 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     // Publish the DigitalIOEvent message to the broker
     if (!Ws.PublishD2b(ws_signal_DeviceToBroker_digitalio_tag,
                        _dio_model->GetDigitalIOEventMsg())) {
-      WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to publish event message, "
+      WS_DEBUG_PRINTLN("[dio] ERROR: Unable to publish event message, "
                        "moving onto the next pin!");
       return false;
     }
-    WS_DEBUG_PRINTLN("[digitalio] Published DigitalIOEvent to broker!")
+    WS_DEBUG_PRINTLN("[dio] Published!")
   } else {
     // let's log the event to the SD card
     if (!Ws._sdCardV2->LogGPIOSensorEventToSD(pin_name, pin_value,
@@ -398,7 +384,7 @@ void DigitalIOController::update(bool force) {
 
     // Encode and publish the event
     if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value)) {
-      WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to record pin value!");
+      WS_DEBUG_PRINTLN("[dio] ERROR: Unable to record pin value!");
       pin.did_read_send = false;
       continue;
     }
