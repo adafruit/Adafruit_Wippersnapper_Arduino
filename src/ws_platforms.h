@@ -29,7 +29,7 @@ typedef esp8266_wifi ws_adapter_wifi;
 typedef esp32_wifi ws_adapter_wifi;
 // Raspberry Pi Pico W
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                  \
-    defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+    defined(ARDUINO_RASPBERRY_PI_PICO_2W) || defined(PICO_CYW43_SUPPORTED)
 #include "platforms/pico_wifi.h"
 typedef pico_wifi ws_adapter_wifi;
 // Adafruit "AirLift" (ESP32 coprocessor)

@@ -9,9 +9,13 @@
 // All text above must be included in any redistribution.
 
 #include "ws_platforms.h"
+#if defined(PICO_CYW43_SUPPORTED) || defined(ARDUINO_ARCH_ESP8266) || defined(USE_AIRLIFT) \
+    || defined(ARDUINO_ARCH_ESP32) || defined(ESP_HOSTED)
 ws_adapter_wifi wipper;
+#else
 // Uncomment the following line to use the offline adapter for Pico
-// ws_adapter_offline wipper;
+ws_adapter_offline wipper;
+#endif
 #define WS_DEBUG // Enable debug output!
 
 void setup() {
