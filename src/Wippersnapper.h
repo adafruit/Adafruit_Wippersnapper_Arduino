@@ -48,17 +48,43 @@
 
 // Define actual debug output functions when necessary.
 #ifdef WS_DEBUG
+
+#ifdef ARDUINO_ARCH_ESP8266
+// ESP8266: Use F() macro to store string literals in Flash (PROGMEM) instead
+// of RAM. This saves precious RAM on memory-constrained ESP8266 devices.
+// NOTE: WS_DEBUG_PRINT/PRINTLN only accept string literals on ESP8266.
+// Use WS_DEBUG_PRINTVAR/PRINTLNVAR for variables.
+#define WS_DEBUG_PRINT(x)                                                      \
+  { WS_PRINTER.print(F(x)); } ///< Prints string literal from Flash
+#define WS_DEBUG_PRINTLN(x)                                                    \
+  { WS_PRINTER.println(F(x)); } ///< Prints string literal line from Flash
+#else
+// Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
   { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#endif
+
+// Variable printing macros - use for non-string-literal arguments
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints variable (any type)
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints variable with newline
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints in hexadecimal
+
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} ///< Prints debug output
+  {} ///< Disabled debug output
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} ///< Prints line from debug output.
+  {} ///< Disabled debug output
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  {} ///< Disabled debug output
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  {} ///< Disabled debug output
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  {} ///< Disabled debug output
 #endif
 
 #define WS_DELAY_WITH_WDT(timeout)                                             \

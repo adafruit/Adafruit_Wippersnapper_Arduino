@@ -405,7 +405,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 
   pb_size_t arr_sz = field->array_size;
   WS_DEBUG_PRINT("Sub-messages found: ");
-  WS_DEBUG_PRINTLN(arr_sz);
+  WS_DEBUG_PRINTLNVAR(arr_sz);
 
   if (field->tag ==
       wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag) {
@@ -492,7 +492,7 @@ bool Wippersnapper::decodeSignalMsg(
 /**************************************************************************/
 void cbSignalTopic(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("cbSignalTopic: New Msg on Signal Topic");
-  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTVAR(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -877,7 +877,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 /**************************************************************************/
 void cbSignalI2CReq(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
-  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTVAR(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -936,11 +936,11 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
       attached = false;
     } else {
       WS_DEBUG_PRINT("ATTACHED servo w/minPulseWidth: ");
-      WS_DEBUG_PRINT(msgServoAttachReq.min_pulse_width);
+      WS_DEBUG_PRINTVAR(msgServoAttachReq.min_pulse_width);
       WS_DEBUG_PRINT(" uS and maxPulseWidth: ");
-      WS_DEBUG_PRINT(msgServoAttachReq.min_pulse_width);
+      WS_DEBUG_PRINTVAR(msgServoAttachReq.min_pulse_width);
       WS_DEBUG_PRINT("uS on pin: ");
-      WS_DEBUG_PRINTLN(servoPin);
+      WS_DEBUG_PRINTLNVAR(servoPin);
     }
 
     // Create and fill a servo response message
@@ -986,9 +986,9 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     char *servoPin = msgServoWriteReq.servo_pin + 1;
 
     WS_DEBUG_PRINT("Writing pulse width of ");
-    WS_DEBUG_PRINT((int)msgServoWriteReq.pulse_width);
+    WS_DEBUG_PRINTVAR((int)msgServoWriteReq.pulse_width);
     WS_DEBUG_PRINT("uS to servo on pin#: ");
-    WS_DEBUG_PRINTLN(servoPin);
+    WS_DEBUG_PRINTLNVAR(servoPin);
     WS._servoComponent->servo_write(atoi(servoPin),
                                     (int)msgServoWriteReq.pulse_width);
   } else if (field->tag ==
@@ -1008,7 +1008,7 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     // execute servo detach request
     char *servoPin = msgServoDetachReq.servo_pin + 1;
     WS_DEBUG_PRINT("Detaching servo from pin ");
-    WS_DEBUG_PRINTLN(servoPin);
+    WS_DEBUG_PRINTLNVAR(servoPin);
     WS._servoComponent->servo_detach(atoi(servoPin));
   } else {
     WS_DEBUG_PRINTLN("Unable to decode servo message type!");
@@ -1029,7 +1029,7 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
 /**************************************************************************/
 void cbServoMsg(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Servo]: ");
-  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTVAR(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -1143,9 +1143,9 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // execute PWM pin duty cycle write request
     char *pwmPin = msgPWMWriteFreqRequest.pin + 1;
     WS_DEBUG_PRINT("Writing frequency:  ");
-    WS_DEBUG_PRINT(msgPWMWriteFreqRequest.frequency);
+    WS_DEBUG_PRINTVAR(msgPWMWriteFreqRequest.frequency);
     WS_DEBUG_PRINT("Hz to pin ");
-    WS_DEBUG_PRINTLN(atoi(pwmPin));
+    WS_DEBUG_PRINTLNVAR(atoi(pwmPin));
     WS._pwmComponent->writeTone(atoi(pwmPin), msgPWMWriteFreqRequest.frequency);
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_write_duty_request_tag) {
@@ -1184,7 +1184,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 /**************************************************************************/
 void cbPWMMsg(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: PWM]: ");
-  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTVAR(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -1271,7 +1271,7 @@ bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
 /**************************************************************************/
 void cbSignalDSReq(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-DS]: ");
-  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTVAR(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -1384,7 +1384,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
 /**************************************************************************/
 void cbPixelsMsg(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Pixels]: ");
-  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTVAR(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -1509,7 +1509,7 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
 /**************************************************************************/
 void cbSignalUARTReq(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE on Signal of type UART: ");
-  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTVAR(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -1627,7 +1627,7 @@ bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field,
 */
 void cbDisplayMessage(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Display]: ");
-  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTVAR(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -1708,7 +1708,7 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 void cbErrorTopic(char *errorData, uint16_t len) {
   (void)len; // marking unused parameter to avoid compiler warning
   WS_DEBUG_PRINT("IO Ban Error: ");
-  WS_DEBUG_PRINTLN(errorData);
+  WS_DEBUG_PRINTLNVAR(errorData);
   // Disconnect client from broker
   WS_DEBUG_PRINT("Disconnecting from MQTT..");
   if (!WS._mqtt->disconnect()) {
@@ -1732,7 +1732,7 @@ void cbErrorTopic(char *errorData, uint16_t len) {
 void cbThrottleTopic(char *throttleData, uint16_t len) {
   (void)len; // marking unused parameter to avoid compiler warning
   WS_DEBUG_PRINT("IO Throttle Error: ");
-  WS_DEBUG_PRINTLN(throttleData);
+  WS_DEBUG_PRINTLNVAR(throttleData);
   char *throttleMessage;
   // Parse out # of seconds from message buffer
   throttleMessage = strtok(throttleData, ",");
@@ -1741,7 +1741,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   int throttleDuration = atoi(throttleMessage) * 1000;
 
   WS_DEBUG_PRINT("Device is throttled for ");
-  WS_DEBUG_PRINT(throttleDuration);
+  WS_DEBUG_PRINTVAR(throttleDuration);
   WS_DEBUG_PRINTLN("ms and blocking command execution.");
 
   // If throttle duration is less than the keepalive interval, delay for the
@@ -2346,7 +2346,7 @@ bool Wippersnapper::generateWSTopics() {
   _topic_signal_display_sub =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_display_brkr, 1);
   WS_DEBUG_PRINTLN("Subscribing to DISPLAY topic: ");
-  WS_DEBUG_PRINTLN(WS._topic_signal_display_brkr);
+  WS_DEBUG_PRINTLNVAR(WS._topic_signal_display_brkr);
   WS._mqtt->subscribe(_topic_signal_display_sub);
   WS_DEBUG_PRINTLN("Subscribed to DISPLAY topic!");
   _topic_signal_display_sub->setCallback(cbDisplayMessage);
@@ -2387,7 +2387,7 @@ bool Wippersnapper::generateWSTopics() {
 /**************************************************************************/
 void Wippersnapper::errorWriteHang(String error) {
   // Print error
-  WS_DEBUG_PRINTLN(error);
+  WS_DEBUG_PRINTLNVAR(error);
 #ifdef USE_TINYUSB
   _fileSystem->writeToBootOut(error.c_str());
   TinyUSBDevice.attach();
@@ -2396,7 +2396,7 @@ void Wippersnapper::errorWriteHang(String error) {
   // Signal and hang forever
   while (1) {
     WS_DEBUG_PRINTLN("ERROR: Halted execution");
-    WS_DEBUG_PRINTLN(error.c_str());
+    WS_DEBUG_PRINTLNVAR(error.c_str());
     WS.feedWDT();
     statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
@@ -2451,7 +2451,7 @@ void Wippersnapper::runNetFSM() {
         feedWDT();
         // attempt to connect
         WS_DEBUG_PRINT("Connecting to WiFi (attempt #");
-        WS_DEBUG_PRINT(5 - maxAttempts);
+        WS_DEBUG_PRINTVAR(5 - maxAttempts);
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
         feedWDT();
@@ -2477,11 +2477,11 @@ void Wippersnapper::runNetFSM() {
       maxAttempts = 5;
       while (maxAttempts > 0) {
         WS_DEBUG_PRINT("Connecting to AIO MQTT (attempt #");
-        WS_DEBUG_PRINT(5 - maxAttempts);
+        WS_DEBUG_PRINTVAR(5 - maxAttempts);
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
         WS_DEBUG_PRINT("WiFi Status: ");
-        WS_DEBUG_PRINTLN(networkStatus());
+        WS_DEBUG_PRINTLNVAR(networkStatus());
         WS_PRINTER.flush();
         feedWDT();
         statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
@@ -2493,8 +2493,8 @@ void Wippersnapper::runNetFSM() {
           break;
         }
         WS_DEBUG_PRINT("MQTT Connection Error: ");
-        WS_DEBUG_PRINTLN(mqttRC);
-        WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(mqttRC));
+        WS_DEBUG_PRINTLNVAR(mqttRC);
+        WS_DEBUG_PRINTLNVAR(WS._mqtt->connectErrorString(mqttRC));
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
         delay(3000);
@@ -2536,9 +2536,9 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor,
 
   for (int i = 0;; i++) {
     WS_DEBUG_PRINT("ERROR [WDT RESET IN ");
-    WS_DEBUG_PRINT(seconds_until_reboot - i);
+    WS_DEBUG_PRINTVAR(seconds_until_reboot - i);
     WS_DEBUG_PRINTLN("]: ");
-    WS_DEBUG_PRINTLN(error);
+    WS_DEBUG_PRINTLNVAR(error);
     // let the WDT fail out and reset!
     statusLEDSolid(ledStatusColor);
 #ifndef ARDUINO_ARCH_ESP8266
@@ -2610,7 +2610,7 @@ void Wippersnapper::pingBroker() {
     }
     _prv_ping = millis();
     WS_DEBUG_PRINT("WiFi RSSI: ");
-    WS_DEBUG_PRINTLN(getRSSI());
+    WS_DEBUG_PRINTLNVAR(getRSSI());
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
@@ -2756,21 +2756,21 @@ void printDeviceInfo() {
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLN(BOARD_ID);
   WS_DEBUG_PRINT("Adafruit.io User: ");
-  WS_DEBUG_PRINTLN(WS._config.aio_user);
+  WS_DEBUG_PRINTLNVAR(WS._config.aio_user);
   if (strncmp(WS._config.aio_url, "io.adafruit.com", 16) != 0) {
     WS_DEBUG_PRINT("Adafruit.io URL: ");
-    WS_DEBUG_PRINTLN(WS._config.aio_url);
+    WS_DEBUG_PRINTLNVAR(WS._config.aio_url);
     WS_DEBUG_PRINT("Adafruit.io Port: ");
-    WS_DEBUG_PRINTLN(WS._config.io_port);
+    WS_DEBUG_PRINTLNVAR(WS._config.io_port);
   }
   WS_DEBUG_PRINT("WiFi Network: ");
-  WS_DEBUG_PRINTLN(WS._config.network.ssid);
+  WS_DEBUG_PRINTLNVAR(WS._config.network.ssid);
 
   char sMAC[18] = {0};
   sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
           WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
   WS_DEBUG_PRINT("MAC Address: ");
-  WS_DEBUG_PRINTLN(sMAC);
+  WS_DEBUG_PRINTLNVAR(sMAC);
   WS_DEBUG_PRINTLN("-------------------------------");
 
 // (ESP32-Only) Print reason why device was reset
