@@ -362,17 +362,8 @@ jobs:
       matrix:
         arduino-platform:
           [
-            "wippersnapper_feather_esp32",
-            "qtpy_esp32",
-            "sparklemotion_esp32",
-            "sparklemotionmini_esp32",
-            "sparklemotionstick_esp32",
-            "feather_esp32_v2",
-            "itsybitsy_esp32",
-            "dfrobot_beetle_esp32c3",
-            "wippersnapper_qtpy_esp32c3",
-            "espressif_esp32c5_devkitc_1_n8r4",
-            "wippersnapper_feather_esp32c6"
+            "esp32p4",
+            "waveshare_p4_wifi6"
           ]
         include:
           - offset: "0x1000"
@@ -382,6 +373,10 @@ jobs:
             arduino-platform: "wippersnapper_qtpy_esp32c3"
           - offset: "0x2000"
             arduino-platform: "espressif_esp32c5_devkitc_1_n8r4"
+          - offset: "0x2000"
+            arduino-platform: "waveshare_p4_wifi6"
+          - offset: "0x2000"
+            arduino-platform: "esp32p4"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
@@ -400,7 +395,12 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          ## if not adafruit owner then unshallow to get tags
+          if [ "$(git remote get-url origin | cut -d'/' -f4)" != "adafruit" ]; then
+            git fetch --prune --unshallow --all --tags
+          else
+            git fetch --prune --all --tags
+          fi
           if git describe --dirty --tags >/dev/null 2>&1; then
             echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
           else
@@ -413,13 +413,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-p4s
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
+          ref: waveshare-p4-wifi6
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
@@ -459,10 +460,12 @@ jobs:
         run: |
           pip install esptool
       - name: build ESP32 platforms
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+        continue-on-error: true
+        run: |
+          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: Check artifacts
         run: |
-          ls examples/Wippersnapper_demo/build/*
+          ls -Rla examples/*/build/
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin

@@ -28,7 +28,8 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
-    defined(ARDUINO_XIAO_ESP32S3) || \
+    defined(ARDUINO_XIAO_ESP32S3) ||                                           \
+    defined(WS_DFROBOT_FIREBEETLE2_ESP32P4) ||                                 \
     defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
 
 #include "Wippersnapper_FS.h"
