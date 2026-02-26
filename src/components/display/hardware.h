@@ -19,6 +19,7 @@
 #include "drivers/dispDrvSt7789.h"
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
 #include "drivers/dispDrvThinkInkGrayscale4T5.h"
+#include "drivers/dispDrvThinkInkMonoBAAMFGN.h"
 #include <functional>
 #include <map>
 
