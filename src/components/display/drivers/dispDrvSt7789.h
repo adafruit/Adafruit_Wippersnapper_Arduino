@@ -101,6 +101,7 @@ public:
     return true;
   }
 
+#ifndef ARDUINO_ARCH_ESP8266
   /*!
       @brief  Displays the splash screen on the display.
   */
@@ -235,6 +236,8 @@ public:
       _statusbar_rssi = rssi;
     }
   }
+
+#endif // ARDUINO_ARCH_ESP8266
 
   /*!
       @brief  Writes a message to the display.
