@@ -12,6 +12,7 @@
 // Brent Rubell for Adafruit Industries, 2021-2022
 //
 // All text above must be included in any redistribution.
+#include <GDBStub.h> // Include GDB Stub for debugging esp8266
 
 #include "Wippersnapper_Networking.h"
 Wippersnapper_WiFi wipper;
@@ -20,13 +21,25 @@ Wippersnapper_WiFi wipper;
 #define WS_DEBUG
 
 void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);  // Turn off the built-in LED
+  delay(500);
+  digitalWrite(LED_BUILTIN, LOW);   // Turn on the built-in LED
   // Provisioning must occur prior to serial init.
   wipper.provision();
-
+  digitalWrite(LED_BUILTIN, LOW);   // Turn on the built-in LED
   Serial.begin(115200);
-  //while (!Serial) delay(10);
+  digitalWrite(LED_BUILTIN, HIGH);  // Turn off the built-in LED
+  delay(1000);
+  digitalWrite(LED_BUILTIN, LOW);   // Turn on the built-in LED
+  WS_DEBUG_PRINTLN("WipperSnapper Demo Starting...");
+  delay(500);
+  digitalWrite(LED_BUILTIN, HIGH);  // Turn off the built-in LED
+  // while (!Serial) delay(10);
+  gdbstub_init();
 
   wipper.connect();
+  digitalWrite(LED_BUILTIN, LOW);   // Turn on the built-in LED
 
 }
 

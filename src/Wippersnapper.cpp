@@ -113,6 +113,11 @@ void Wippersnapper::provision() {
   _fileSystem->parseSecrets();
 #elif defined(USE_LITTLEFS)
   _littleFS->parseSecrets();
+
+  // ESP8266 stability: ensure LittleFS is fully unmounted and not referenced
+  // during WiFi/MQTT connect (flash operations can interfere with WiFi).
+  delete _littleFS;
+  _littleFS = NULL;
 #else
   set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
@@ -2338,17 +2343,17 @@ bool Wippersnapper::generateWSTopics() {
              WS._config.aio_user, _device_uid, TOPIC_SIGNALS, TOPIC_DISPLAY);
   } else {
     WS_DEBUG_PRINTLN(
-        "FATAL ERROR: Failed to allocate memory for DISPLAY topic!");
+        "FATAL ERROR: Failed to allocate memory for b2d DISPLAY topic!");
     return false;
   }
 
   // Subscribe to signal's DISPLAY sub-topic and set callback
   _topic_signal_display_sub =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_display_brkr, 1);
-  WS_DEBUG_PRINTLN("Subscribing to DISPLAY topic: ");
+  WS_DEBUG_PRINTLN("Subscribing to b2d DISPLAY topic: ");
   WS_DEBUG_PRINTLN(WS._topic_signal_display_brkr);
   WS._mqtt->subscribe(_topic_signal_display_sub);
-  WS_DEBUG_PRINTLN("Subscribed to DISPLAY topic!");
+  WS_DEBUG_PRINTLN("Subscribed to b2d DISPLAY topic!");
   _topic_signal_display_sub->setCallback(cbDisplayMessage);
 
   // Calculate length of the topic for device-to-broker DISPLAY topic
@@ -2370,7 +2375,7 @@ bool Wippersnapper::generateWSTopics() {
              TOPIC_SIGNALS, TOPIC_DISPLAY);
   } else {
     WS_DEBUG_PRINTLN(
-        "FATAL ERROR: Failed to allocate memory for DISPLAY topic!");
+        "FATAL ERROR: Failed to allocate memory for d2b DISPLAY topic!");
     return false;
   }
 
@@ -2553,6 +2558,11 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor,
       WS.feedWDT(); // feed the WDT for the first X-5 seconds
     } else if (i == seconds_until_reboot) {
       WS.enableWDT(wdt_timeout_ms);
+#ifdef ARDUINO_ARCH_ESP8266
+      // On ESP8266, explicitly restart as well. In some configurations the WDT
+      // may not reliably trigger if other system timers keep feeding it.
+      ESP.restart();
+#endif
     }
   }
 }
@@ -2771,6 +2781,15 @@ void printDeviceInfo() {
           WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
   WS_DEBUG_PRINT("MAC Address: ");
   WS_DEBUG_PRINTLN(sMAC);
+
+#ifdef ARDUINO_ARCH_ESP8266
+  WS_DEBUG_PRINT("Free heap: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  WS_DEBUG_PRINT("Max free block: ");
+  WS_DEBUG_PRINTLN(ESP.getMaxFreeBlockSize());
+  WS_DEBUG_PRINT("Heap fragmentation (%): ");
+  WS_DEBUG_PRINTLN(ESP.getHeapFragmentation());
+#endif
   WS_DEBUG_PRINTLN("-------------------------------");
 
 // (ESP32-Only) Print reason why device was reset
@@ -2798,6 +2817,62 @@ void Wippersnapper::connect() {
     haltError("Unable to generate Device UID");
   }
 
+#ifdef ARDUINO_ARCH_ESP8266
+  // ESP8266 has very limited heap and WiFi scans/connect need a large
+  // contiguous block. Connect WiFi first before allocating MQTT topics.
+  WS_DEBUG_PRINTLN("Running WiFi connect (ESP8266 pre-MQTT)...");
+  WS_DEBUG_PRINT("Free heap before WiFi connect: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  WS_DEBUG_PRINT("Max free block before WiFi connect: ");
+  WS_DEBUG_PRINTLN(ESP.getMaxFreeBlockSize());
+  WS_DEBUG_PRINT("Heap fragmentation before WiFi connect (%): ");
+  WS_DEBUG_PRINTLN(ESP.getHeapFragmentation());
+
+#if defined(USE_LITTLEFS)
+  // Extra safety: ensure LittleFS is not mounted during WiFi/MQTT connect.
+  LittleFS.end();
+#endif
+
+  if (networkStatus() != WS_NET_CONNECTED) {
+    WS_DEBUG_PRINTLN("Establishing network connection...");
+    WS_PRINTER.flush();
+    WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
+    if (!check_valid_ssid()) {
+      haltError("ERROR: Unable to find WiFi network, rebooting soon...",
+                WS_LED_STATUS_WIFI_CONNECTING);
+    }
+
+    int maxAttempts = 5;
+    while (maxAttempts > 0) {
+      statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
+      feedWDT();
+      WS_DEBUG_PRINT("Connecting to WiFi (attempt #");
+      WS_DEBUG_PRINT(5 - maxAttempts);
+      WS_DEBUG_PRINTLN(")");
+      WS_PRINTER.flush();
+      feedWDT();
+      _connect();
+      feedWDT();
+      if (networkStatus() == WS_NET_CONNECTED)
+        break;
+      maxAttempts--;
+    }
+
+    if (networkStatus() != WS_NET_CONNECTED) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
+      haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
+                WS_LED_STATUS_WIFI_CONNECTING);
+    }
+  }
+
+  WS_DEBUG_PRINT("Free heap after WiFi connect: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  WS_DEBUG_PRINT("Max free block after WiFi connect: ");
+  WS_DEBUG_PRINTLN(ESP.getMaxFreeBlockSize());
+  WS_DEBUG_PRINT("Heap fragmentation after WiFi connect (%): ");
+  WS_DEBUG_PRINTLN(ESP.getHeapFragmentation());
+#endif
+
   // Initialize MQTT client with device identifier
   setupMQTTClient(_device_uid);
 
@@ -2810,9 +2885,17 @@ void Wippersnapper::connect() {
     haltError("Unable to allocate space for MQTT error topics");
   }
 
-  // Connect to Network
+#ifdef ARDUINO_ARCH_ESP8266
+  WS_DEBUG_PRINT("Heap after topic allocation: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  WS_DEBUG_PRINT("Max free block after topic allocation: ");
+  WS_DEBUG_PRINTLN(ESP.getMaxFreeBlockSize());
+  WS_DEBUG_PRINT("Heap fragmentation after topic allocation (%): ");
+  WS_DEBUG_PRINTLN(ESP.getHeapFragmentation());
+#endif
+
+  // Connect to Network + MQTT
   WS_DEBUG_PRINTLN("Running Network FSM...");
-  // Run the network fsm
   runNetFSM();
 
   // Enable WDT after wifi connection as wifiMulti doesnt feed WDT
