@@ -104,10 +104,10 @@ bool AnalogIOModel::EncodeAnalogIOEvent(char *pin_name, float pin_value,
   // Fill the AnalogIOEvent message's fields
   strncpy(_msg_AnalogioEvent.pin_name, pin_name,
           sizeof(_msg_AnalogioEvent.pin_name));
-  _msg_AnalogioEvent.has_event = true;
-  _msg_AnalogioEvent.event.type = read_type;
-  _msg_AnalogioEvent.event.which_value = ws_sensor_Event_float_value_tag;
-  _msg_AnalogioEvent.event.value.float_value = pin_value;
+  _msg_AnalogioEvent.has_value = true;
+  _msg_AnalogioEvent.value.type = read_type;
+  _msg_AnalogioEvent.value.which_value = ws_sensor_Event_float_value_tag;
+  _msg_AnalogioEvent.value.value.float_value = pin_value;
 
   // Obtain size of an encoded AnalogIOEvent message
   size_t sz_aio_event_msg;

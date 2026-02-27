@@ -74,7 +74,7 @@ wippersnapper::~wippersnapper() {
   disconnect();
   delete this->_wdt;
   delete this->sensor_model;
-  // delete this->error_controller;
+  // delete this->error_controller; // TODO: Why is this commented out?
   delete this->digital_io_controller;
   delete this->analogio_controller;
   delete this->_ds18x20_controller;
