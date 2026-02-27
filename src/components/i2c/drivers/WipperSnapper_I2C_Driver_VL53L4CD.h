@@ -73,7 +73,7 @@ public:
         _VL53L4CD->VL53L4CD_GetSignalThreshold(&signalThreshold) ==
         VL53L4CD_ERROR_NONE) {
       WS_DEBUG_PRINT("VL53L4CD old signal threshold: ");
-      WS_DEBUG_PRINTLN(signalThreshold);
+      WS_DEBUG_PRINTLNVAR(signalThreshold);
       WS_DEBUG_PRINTLN("Setting VL53L4CD signal threshold to 50");
       if (_VL53L4CD->VL53L4CD_SetSignalThreshold(50) != VL53L4CD_ERROR_NONE) {
         WS_DEBUG_PRINTLN("Failed to set new VL53L4CD signal threshold!");
@@ -85,7 +85,7 @@ public:
     if (uint16_t sigmaThreshold; _VL53L4CD->VL53L4CD_GetSigmaThreshold(
                                      &sigmaThreshold) == VL53L4CD_ERROR_NONE) {
       WS_DEBUG_PRINT("VL53L4CD old sigma threshold: ");
-      WS_DEBUG_PRINTLN(sigmaThreshold);
+      WS_DEBUG_PRINTLNVAR(sigmaThreshold);
       WS_DEBUG_PRINTLN("Setting VL53L4CD sigma threshold to 100");
       if (_VL53L4CD->VL53L4CD_SetSigmaThreshold(100) != VL53L4CD_ERROR_NONE) {
         WS_DEBUG_PRINTLN("Failed to set VL53L4CD sigma threshold!");
@@ -126,7 +126,7 @@ public:
       delay(300);
       WS_DEBUG_PRINT(" .");
     }
-    WS_DEBUG_PRINTLN();
+    WS_DEBUG_PRINTLNVAR();
     if ((status == VL53L4CD_ERROR_NONE) && (NewDataReady != 0)) {
       // (Mandatory) Clear HW interrupt to restart measurements
       _VL53L4CD->VL53L4CD_ClearInterrupt();
@@ -135,7 +135,7 @@ public:
       if (_VL53L4CD->VL53L4CD_GetResult(&results) == VL53L4CD_ERROR_NONE) {
         if (results.range_status != 0) {
           WS_DEBUG_PRINT("VL53L4CD range status: ");
-          WS_DEBUG_PRINTLN(results.range_status);
+          WS_DEBUG_PRINTLNVAR(results.range_status);
           return false;
         }
         proximityEvent->data[0] = (float)results.distance_mm;

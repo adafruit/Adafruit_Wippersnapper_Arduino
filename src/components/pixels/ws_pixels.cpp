@@ -269,9 +269,9 @@ bool ws_pixels::addStrand(
     }
 
     WS_DEBUG_PRINT("Created NeoPixel strand of length ");
-    WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
+    WS_DEBUG_PRINTVAR(pixelsCreateReqMsg->pixels_num);
     WS_DEBUG_PRINT(" on GPIO #");
-    WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_neopixel);
+    WS_DEBUG_PRINTLNVAR(pixelsCreateReqMsg->pixels_pin_neopixel);
     publishAddStrandResponse(true, pixelsCreateReqMsg->pixels_pin_neopixel);
   } else if (pixelsCreateReqMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
@@ -303,9 +303,9 @@ bool ws_pixels::addStrand(
     }
 
     WS_DEBUG_PRINT("Created DotStar strand of length ");
-    WS_DEBUG_PRINT(strands[strandIdx].numPixels);
+    WS_DEBUG_PRINTVAR(strands[strandIdx].numPixels);
     WS_DEBUG_PRINT(" on Data GPIO #");
-    WS_DEBUG_PRINTLN(strands[strandIdx].pinDotStarData);
+    WS_DEBUG_PRINTLNVAR(strands[strandIdx].pinDotStarData);
     publishAddStrandResponse(true, pixelsCreateReqMsg->pixels_pin_dotstar_data);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Invalid strand type provided!");
@@ -363,7 +363,7 @@ void ws_pixels::deleteStrand(
   deallocateStrand(strandIdx);
 
   WS_DEBUG_PRINT("Deleted strand on data pin ");
-  WS_DEBUG_PRINTLN(pixelsDeleteMsg->pixels_pin_data);
+  WS_DEBUG_PRINTLNVAR(pixelsDeleteMsg->pixels_pin_data);
 }
 
 /**************************************************************************/
@@ -414,7 +414,7 @@ void ws_pixels::fillStrand(
       getGammaCorrectedColor(pixelsWriteMsg->pixels_color, strands[strandIdx]);
 
   WS_DEBUG_PRINT("Filling color: ");
-  WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
+  WS_DEBUG_PRINTLNVAR(pixelsWriteMsg->pixels_color);
 
   if (pixelsWriteMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {

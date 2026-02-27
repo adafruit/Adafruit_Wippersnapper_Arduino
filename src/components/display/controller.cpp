@@ -41,7 +41,7 @@ bool DisplayController::Handle_Display_AddOrReplace(
     wippersnapper_display_v1_DisplayAddOrReplace *msgAdd) {
   DisplayHardware *display = new DisplayHardware(msgAdd->name);
   WS_DEBUG_PRINT("[display] Adding or replacing display: ");
-  WS_DEBUG_PRINTLN(msgAdd->name);
+  WS_DEBUG_PRINTLNVAR(msgAdd->name);
 
   // Does this display hw instance already exist?
   DisplayHardware *existingDisplay = findDisplay(msgAdd->name);
@@ -144,7 +144,7 @@ bool DisplayController::Handle_Display_Write(
 
   // Write the message to the display
   WS_DEBUG_PRINT("[display] Writing message to display: ");
-  WS_DEBUG_PRINTLN(msgWrite->message);
+  WS_DEBUG_PRINTLNVAR(msgWrite->message);
   WS.runNetFSM();
   display->writeMessage(msgWrite->message);
   WS.runNetFSM();

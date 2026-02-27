@@ -113,9 +113,9 @@ public:
     uint16_t angle = _as5600->getAngle();
 
     WS_DEBUG_PRINT("AS5600 Raw: ");
-    WS_DEBUG_PRINT(rawAngle);
+    WS_DEBUG_PRINTVAR(rawAngle);
     WS_DEBUG_PRINT(" | Scaled: ");
-    WS_DEBUG_PRINT(angle);
+    WS_DEBUG_PRINTVAR(angle);
 
     // Check status conditions
     if (_as5600->isAGCminGainOverflow()) {

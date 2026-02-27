@@ -108,6 +108,7 @@ public:
     if (!_display)
       return;
 
+    #ifndef ARDUINO_ARCH_ESP8266
     // Display the appropriate splash screen based on resolution
     if (_width == 240 && _height == 240) {
       _display->drawBitmap(0, 0, tft_bmp_logo_240240, 240, 240, ST77XX_WHITE);
@@ -117,6 +118,7 @@ public:
       // Unsupported resolution detected, skip splash screen
       return;
     }
+    #endif
 
     delay(500);
   }
@@ -143,6 +145,7 @@ public:
     _display->setCursor(5, 6);
     _display->print(io_username);
 
+    #ifndef ARDUINO_ARCH_ESP8266
     // Calculate icon positions (rightmost side of status bar), center
     // vertically
     _statusbar_icons_y =
@@ -166,6 +169,7 @@ public:
                          epd_bmp_bat_full, ST7789_STATUSBAR_ICON_SZ,
                          ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
 
+    #endif
     // Reset text color and size for main text area
     _display->setTextColor(ST77XX_WHITE);
     _display->setTextSize(_text_sz);
@@ -194,6 +198,7 @@ public:
     if (!update_rssi && !update_mqtt)
       return;
 
+    #ifndef ARDUINO_ARCH_ESP8266
     if (update_mqtt) {
       // Clear and draw the new cloud icon, based on MQTT connection status
       _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y,
@@ -234,6 +239,7 @@ public:
                            ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
       _statusbar_rssi = rssi;
     }
+    #endif
   }
 
   /*!

@@ -26,6 +26,8 @@ void setup() {
   Serial.begin(115200);
   //while (!Serial) delay(10);
 
+  WS_DEBUG_HEAP("boot");
+
   wipper.connect();
 
 }

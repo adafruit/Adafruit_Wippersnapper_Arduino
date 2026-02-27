@@ -15,8 +15,10 @@
 #ifndef WS_DISP_DRV_BASE_H
 #define WS_DISP_DRV_BASE_H
 
+#ifndef ARDUINO_ARCH_ESP8266
 #include "../assets/icons.h"
 #include "../assets/splash.h"
+#endif
 #include "Adafruit_ThinkInk.h"
 #include "Wippersnapper.h"
 

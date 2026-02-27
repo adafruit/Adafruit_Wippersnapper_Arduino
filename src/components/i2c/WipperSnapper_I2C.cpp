@@ -32,13 +32,13 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     wippersnapper_i2c_v1_I2CBusInitRequest *msgInitRequest) {
   WS_DEBUG_PRINTLN("EXEC: New I2C Port ");
   WS_DEBUG_PRINT("\tPort #: ");
-  WS_DEBUG_PRINTLN(msgInitRequest->i2c_port_number);
+  WS_DEBUG_PRINTLNVAR(msgInitRequest->i2c_port_number);
   WS_DEBUG_PRINT("\tSDA Pin: ");
-  WS_DEBUG_PRINTLN(msgInitRequest->i2c_pin_sda);
+  WS_DEBUG_PRINTLNVAR(msgInitRequest->i2c_pin_sda);
   WS_DEBUG_PRINT("\tSCL Pin: ");
-  WS_DEBUG_PRINTLN(msgInitRequest->i2c_pin_scl);
+  WS_DEBUG_PRINTLNVAR(msgInitRequest->i2c_pin_scl);
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
-  WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
+  WS_DEBUG_PRINTLNVAR(msgInitRequest->i2c_frequency);
 
 #if defined(PIN_I2C_POWER)
   // turn on the I2C power by setting pin to opposite of 'rest state'
@@ -158,7 +158,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
   WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
   for (uint8_t address = 1; address < 127; ++address) {
     WS_DEBUG_PRINT("[i2c] Scanning Address: 0x");
-    WS_DEBUG_PRINTLN(address, HEX);
+    WS_DEBUG_PRINTHEX(address); WS_DEBUG_PRINTLN("");
     _i2c->beginTransmission(address);
     uint8_t endTransmissionRC = _i2c->endTransmission();
 
@@ -203,7 +203,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
 #endif
 
   WS_DEBUG_PRINT("[i2c] Scan Complete! Found: ")
-  WS_DEBUG_PRINT(scanResp.addresses_found_count);
+  WS_DEBUG_PRINTVAR(scanResp.addresses_found_count);
   WS_DEBUG_PRINTLN(" Devices on bus.");
 
   scanResp.bus_response = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
@@ -221,7 +221,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
 bool WipperSnapper_Component_I2C::initI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
   WS_DEBUG_PRINT("Attempting to initialize I2C device: ");
-  WS_DEBUG_PRINTLN(msgDeviceInitReq->i2c_device_name);
+  WS_DEBUG_PRINTLNVAR(msgDeviceInitReq->i2c_device_name);
 
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_device_address;
   if ((strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) ||
@@ -1705,10 +1705,10 @@ void WipperSnapper_Component_I2C::sensorEventRead(
       WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
       WS_DEBUG_PRINTLN("");
       WS_DEBUG_PRINT("\t");
-      WS_DEBUG_PRINT(sensorName);
+      WS_DEBUG_PRINTVAR(sensorName);
       WS_DEBUG_PRINT(": ");
-      WS_DEBUG_PRINT(value);
-      WS_DEBUG_PRINTLN(unit);
+      WS_DEBUG_PRINTVAR(value);
+      WS_DEBUG_PRINTLNVAR(unit);
 
       // pack event data into msg
       fillEventMessage(msgi2cResponse, value, sensorType);
@@ -1716,7 +1716,7 @@ void WipperSnapper_Component_I2C::sensorEventRead(
       ((*iter)->*setPeriodPrvFunc)(curTime);
     } else {
       WS_DEBUG_PRINT("ERROR: Failed to get ");
-      WS_DEBUG_PRINT(sensorName);
+      WS_DEBUG_PRINTVAR(sensorName);
       WS_DEBUG_PRINTLN(" reading!");
       sensorsReturningFalse = true;
       if (retries == 1) {
