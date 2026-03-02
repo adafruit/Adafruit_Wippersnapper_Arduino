@@ -84,7 +84,6 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode,
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
   // Set the common fields
-  _msg_sleep_enter.lock = false; // TODO: Fix this after checkin has migrated, should be passed from checkin
   _run_duration = run_duration;
 
   // Convert strings to enums for mode/wake
@@ -119,7 +118,6 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
   // Set the common fields
-  _msg_sleep_enter.lock = false; // TODO: Fix this after checkin has migrated, should be passed from checkin
   _run_duration = run_duration;
 
   // Convert strings to enum for mode

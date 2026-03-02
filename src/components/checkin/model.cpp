@@ -129,7 +129,7 @@ void CheckinModel::ConfigureControllers() {
 }
 
 /*!
-    @brief    Pre-decode callback for setting up component_adds callback.
+    @brief    Pre-decode callback for setting up component_adds callbacks.
               Called by nanopb via MSG_W_CB before the Response submessage
               is decoded. This allows us to set up nested callbacks before
               nanopb initializes the struct.
@@ -145,11 +145,32 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
   // Get the Response struct that nanopb will decode into
   ws_checkin_Response *response = (ws_checkin_Response *)field->pData;
-
-  // Set up the component_adds callback before nanopb decodes the Response
   CheckinModel *model = (CheckinModel *)*arg;
-  response->component_adds.funcs.decode = &cbComponentAdds;
-  response->component_adds.arg = model;
+
+  // Set up callbacks for ALL component types
+  response->component_adds.digitalio_adds.funcs.decode = &cbDigitalIOAdds;
+  response->component_adds.digitalio_adds.arg = model;
+
+  response->component_adds.analogio_adds.funcs.decode = &cbAnalogIOAdds;
+  response->component_adds.analogio_adds.arg = model;
+
+  response->component_adds.servo_adds.funcs.decode = &cbServoAdds;
+  response->component_adds.servo_adds.arg = model;
+
+  response->component_adds.pwm_adds.funcs.decode = &cbPWMAdds;
+  response->component_adds.pwm_adds.arg = model;
+
+  response->component_adds.pixels_adds.funcs.decode = &cbPixelsAdds;
+  response->component_adds.pixels_adds.arg = model;
+
+  response->component_adds.ds18x20_adds.funcs.decode = &cbDs18x20Adds;
+  response->component_adds.ds18x20_adds.arg = model;
+
+  response->component_adds.uart_adds.funcs.decode = &cbUartAdds;
+  response->component_adds.uart_adds.arg = model;
+
+  response->component_adds.i2c_adds.funcs.decode = &cbI2cAdds;
+  response->component_adds.i2c_adds.arg = model;
 
   // Return true WITHOUT consuming the stream - nanopb will continue
   // to decode the Response submessage with our callback now set up
@@ -157,73 +178,158 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
 }
 
 /*!
-    @brief    Callback for decoding ComponentAdd messages during Checkin
-              Response processing.
-    @param    stream
-              Incoming data stream from buffer.
-    @param    field
-              Protobuf message's tag type.
-    @param    arg
-              Optional arguments from decoder calling function.
+    @brief    Callback for decoding DigitalIO Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
     @returns  True if decoded and executed successfully, False otherwise.
 */
-bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
+bool CheckinModel::cbDigitalIOAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
-  // Attempt to alloc. on the heap to avoid stack overflow (ComponentAdd is a
-  // ~2.4K struct)
-  ws_checkin_ComponentAdd *component = new ws_checkin_ComponentAdd();
-  if (component == nullptr) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to allocate ComponentAdd!");
+  ws_digitalio_Add add_msg = ws_digitalio_Add_init_zero;
+  if (!pb_decode(stream, ws_digitalio_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digitalio add");
     return false;
   }
+  return Ws.digital_io_controller->Handle_DigitalIO_Add(&add_msg);
+}
 
-  if (!pb_decode(stream, ws_checkin_ComponentAdd_fields, component)) {
-    WS_DEBUG_PRINTLN(
-        "[checkin] SYNC ERROR: Unable to decode ComponentAdd message!");
-    delete component;
+/*!
+    @brief    Callback for decoding AnalogIO Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbAnalogIOAdds(pb_istream_t *stream, const pb_field_t *field,
+                                  void **arg) {
+  ws_analogio_Add add_msg = ws_analogio_Add_init_zero;
+  if (!pb_decode(stream, ws_analogio_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analogio add");
     return false;
   }
+  return Ws.analogio_controller->Handle_AnalogIOAdd(&add_msg);
+}
 
-  bool result = true;
-  switch (component->which_payload) {
-  case ws_checkin_ComponentAdd_digitalio_tag:
-    result = Ws.digital_io_controller->Handle_DigitalIO_Add(
-        &component->payload.digitalio);
-    break;
-  case ws_checkin_ComponentAdd_analogio_tag:
-    result = Ws.analogio_controller->Handle_AnalogIOAdd(
-        &component->payload.analogio);
-    break;
-  case ws_checkin_ComponentAdd_servo_tag:
-    result = Ws._servo_controller->Handle_Servo_Add(&component->payload.servo);
-    break;
-  case ws_checkin_ComponentAdd_pwm_tag:
-    result = Ws._pwm_controller->Handle_PWM_Add(&component->payload.pwm);
-    break;
-  case ws_checkin_ComponentAdd_pixels_tag:
-    result =
-        Ws._pixels_controller->Handle_Pixels_Add(&component->payload.pixels);
-    break;
-  case ws_checkin_ComponentAdd_ds18x20_tag:
-    result =
-        Ws._ds18x20_controller->Handle_Ds18x20Add(&component->payload.ds18x20);
-    break;
-  case ws_checkin_ComponentAdd_uart_tag:
-    result = Ws._uart_controller->Handle_UartAdd(&component->payload.uart);
-    break;
-  case ws_checkin_ComponentAdd_i2c_tag:
-    result = Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(
-        &component->payload.i2c);
-    break;
-  default:
-    WS_DEBUG_PRINTLN("UNKNOWN COMPONENT TYPE!");
-    result = false;
-    break;
+/*!
+    @brief    Callback for decoding Servo Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
+                               void **arg) {
+  ws_servo_Add add_msg = ws_servo_Add_init_zero;
+  if (!pb_decode(stream, ws_servo_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode servo add");
+    return false;
   }
+  return Ws._servo_controller->Handle_Servo_Add(&add_msg);
+}
 
-  // Clean up heap allocation for this message
-  delete component;
-  return result;
+/*!
+    @brief    Callback for decoding PWM Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
+                             void **arg) {
+  ws_pwm_Add add_msg = ws_pwm_Add_init_zero;
+  if (!pb_decode(stream, ws_pwm_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pwm add");
+    return false;
+  }
+  return Ws._pwm_controller->Handle_PWM_Add(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding Pixels Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
+                                void **arg) {
+  ws_pixels_Add add_msg = ws_pixels_Add_init_zero;
+  if (!pb_decode(stream, ws_pixels_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pixels add");
+    return false;
+  }
+  return Ws._pixels_controller->Handle_Pixels_Add(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding DS18x20 Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
+                                 void **arg) {
+  ws_ds18x20_Add add_msg = ws_ds18x20_Add_init_zero;
+  if (!pb_decode(stream, ws_ds18x20_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode ds18x20 add");
+    return false;
+  }
+  return Ws._ds18x20_controller->Handle_Ds18x20Add(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding UART Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg) {
+  ws_uart_Add add_msg = ws_uart_Add_init_zero;
+  if (!pb_decode(stream, ws_uart_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode uart add");
+    return false;
+  }
+  return Ws._uart_controller->Handle_UartAdd(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding I2C DeviceAddOrReplace messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
+                             void **arg) {
+  ws_i2c_DeviceAddOrReplace add_msg = ws_i2c_DeviceAddOrReplace_init_zero;
+  if (!pb_decode(stream, ws_i2c_DeviceAddOrReplace_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode i2c add");
+    return false;
+  }
+  return Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(&add_msg);
+}
+
+/*!
+    @brief  Returns whether sleep is enabled in the checkin response.
+    @returns True if sleep is enabled, False otherwise.
+*/
+bool CheckinModel::IsSleepEnabled() {
+  return _CheckinB2D.payload.response.sleep_enabled;
+}
+
+/*!
+    @brief  Returns the sleep configuration from the checkin response.
+    @returns Pointer to sleep config if present, nullptr otherwise.
+*/
+ws_sleep_SleepConfig *CheckinModel::GetSleepConfig() {
+  if (_CheckinB2D.payload.response.has_sleep_config) {
+    return &_CheckinB2D.payload.response.sleep_config;
+  }
+  return nullptr;
 }
 
 /*!
