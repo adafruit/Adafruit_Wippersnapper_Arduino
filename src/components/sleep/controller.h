@@ -35,7 +35,7 @@ public:
   ~SleepController();
   // Routing
   bool Router(pb_istream_t *stream);
-  bool Handle_Sleep_Enter(ws_sleep_Enter *msg);
+  bool Handle_Sleep_Enter(ws_sleep_SleepConfig *msg);
   // PB API Accessors
   SleepModel *GetModel();
   // Sleep API
@@ -43,7 +43,6 @@ public:
   void StartSleep();
   bool IsSleepMode();
   bool DidWakeFromSleep();
-  ws_sleep_EspWakeCause GetEspWakeCause();
   const char *GetWakeupReasonName();
   ws_sleep_SleepMode GetPrvSleepMode();
   int GetSleepDurationSecs();
@@ -61,8 +60,8 @@ public:
 
 private:
   // Sleep configuration
-  bool ConfigureSleep(const ws_sleep_Enter *msg);
-  bool ConfigureLightSleep(const ws_sleep_Enter *msg);
+  bool ConfigureSleep(const ws_sleep_SleepConfig *msg);
+  bool ConfigureLightSleep(const ws_sleep_SleepConfig *msg);
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
   bool _wake_enable_pin_state;    ///< Value of BOOT button during class

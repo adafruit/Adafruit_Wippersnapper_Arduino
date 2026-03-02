@@ -86,7 +86,7 @@ bool SleepController::Router(pb_istream_t *stream) {
             The Sleep Enter message.
     @return True if the sleep mode was successfully entered, False otherwise.
 */
-bool SleepController::Handle_Sleep_Enter(ws_sleep_Enter *msg) {
+bool SleepController::Handle_Sleep_Enter(ws_sleep_SleepConfig *msg) {
   WS_DEBUG_PRINTLN("[sleep] Handle_Sleep_Enter()");
 
   // Parse and handle lock state
@@ -183,10 +183,10 @@ void SleepController::WakeFromLightSleep() {
             Pointer to the Sleep Enter message containing config union.
     @return True if deep sleep was successfully configured, False otherwise.
 */
-bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
+bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
   bool rc = false;
   switch (msg->which_config) {
-  case ws_sleep_Enter_timer_tag:
+  case ws_sleep_SleepConfig_timer_tag:
 // Configure timer-based wakeup source
 #ifdef ARDUINO_ARCH_ESP32
     rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration *
@@ -203,7 +203,7 @@ bool SleepController::ConfigureSleep(const ws_sleep_Enter *msg) {
     WS_DEBUG_PRINT(msg->config.timer.duration);
     WS_DEBUG_PRINTLN(" seconds");
     break;
-  case ws_sleep_Enter_ext0_tag:
+  case ws_sleep_SleepConfig_ext0_tag:
 #ifdef ARDUINO_ARCH_ESP32
     rc = _sleep_hardware->RegisterExt0Wakeup(
         msg->config.ext0.name, msg->config.ext0.level, msg->config.ext0.pull);
@@ -301,18 +301,6 @@ unsigned long SleepController::getRunDurationMs() {
 }
 
 /*!
-    @brief  Gets the ESP wake cause enum from hardware.
-    @return The ESP wake cause enum.
-*/
-ws_sleep_EspWakeCause SleepController::GetEspWakeCause() {
-#ifdef ARDUINO_ARCH_ESP32
-  return _sleep_hardware->GetEspWakeCauseEnum();
-#else
-  return ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
-#endif
-}
-
-/*!
     @brief  Gets the wakeup reason as a human-readable string.
     @return C string describing the wakeup reason.
 */
@@ -326,10 +314,10 @@ const char *SleepController::GetWakeupReasonName() {
 */
 bool SleepController::DidWakeFromSleep() {
 #ifdef ARDUINO_ARCH_ESP32
-  // If SLEEP wake cause is not unspecified, device woke from sleep mode,
+  // If sleep source is not undefined, device woke from sleep mode,
   // so we assume we're locked unless overridden by boot button or Enter message
-  ws_sleep_EspWakeCause wake_cause = _sleep_hardware->GetEspWakeCauseEnum();
-  _lock = wake_cause != ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
+  esp_sleep_source_t wake_source = _sleep_hardware->GetEspSleepSource();
+  _lock = wake_source != ESP_SLEEP_WAKEUP_UNDEFINED;
 #else
   // RP2350 doesn't track wake cause but does internally track if we slept or
   // not
@@ -439,25 +427,24 @@ void SleepController::HandleNetFSMFailure() {
                                                                     // only!
   // Create a sleep enter message to enter sleep depending on the mode we came
   // out of
-  ws_sleep_Enter sleep_enter_msg = ws_sleep_Enter_init_zero;
-  sleep_enter_msg.lock = true;
+  ws_sleep_SleepConfig msg_sleep_cfg = ws_sleep_SleepConfig_init_zero;
   // Set sleep mode to the last known sleep
-  sleep_enter_msg.mode = _sleep_hardware->GetSleepMode();
+  msg_sleep_cfg.mode = _sleep_hardware->GetSleepMode();
 #ifdef ARDUINO_ARCH_ESP32
-  sleep_enter_msg.which_config =
+  msg_sleep_cfg.which_config =
       _sleep_hardware->GetEspSleepSource() == ESP_SLEEP_WAKEUP_TIMER
-          ? ws_sleep_Enter_timer_tag
-          : ws_sleep_Enter_ext0_tag;
+          ? ws_sleep_SleepConfig_timer_tag
+          : ws_sleep_SleepConfig_ext0_tag;
 #else
-  sleep_enter_msg.which_config = Ws._wdt->isSleepConfigTimer()
-                                     ? ws_sleep_Enter_timer_tag
-                                     : ws_sleep_Enter_ext0_tag;
+  msg_sleep_cfg.which_config = Ws._wdt->isSleepConfigTimer()
+                                     ? ws_sleep_SleepConfig_timer_tag
+                                     : ws_sleep_SleepConfig_ext0_tag;
 #endif
   // Get the previous sleep duration from RTC mem
-  sleep_enter_msg.config.timer.duration =
+  msg_sleep_cfg.config.timer.duration =
       _sleep_hardware->GetSleepDurationSecs();
   // Configure sleep mode
-  Handle_Sleep_Enter(&sleep_enter_msg);
+  Handle_Sleep_Enter(&msg_sleep_cfg);
   // Enter sleep mode
   StartSleep();
 }

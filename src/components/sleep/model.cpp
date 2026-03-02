@@ -20,7 +20,6 @@
 */
 SleepModel::SleepModel() {
   memset(&_msg_sleep_goodnight, 0, sizeof(_msg_sleep_goodnight));
-  memset(&_msg_sleep_wake, 0, sizeof(_msg_sleep_wake));
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 }
 
@@ -29,7 +28,6 @@ SleepModel::SleepModel() {
 */
 SleepModel::~SleepModel() {
   memset(&_msg_sleep_goodnight, 0, sizeof(_msg_sleep_goodnight));
-  memset(&_msg_sleep_wake, 0, sizeof(_msg_sleep_wake));
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 }
 
@@ -37,21 +35,15 @@ SleepModel::~SleepModel() {
     @brief  Gets a Sleep Enter message object.
     @return Sleep Enter message object.
 */
-ws_sleep_Enter *SleepModel::GetSleepEnterMsg() { return &_msg_sleep_enter; }
+ws_sleep_SleepConfig *SleepModel::GetSleepConfig() { return &_msg_sleep_enter; }
 
 /*!
     @brief  Gets a Sleep Goodnight message object.
     @return Sleep Goodnight message object.
 */
-ws_sleep_Goodnight *SleepModel::GetSleepGoodnightMsg() {
+ws_sleep_Goodnight *SleepModel::GetSleepGoodnight() {
   return &_msg_sleep_goodnight;
 }
-
-/*!
-    @brief  Gets a Sleep Wake message object.
-    @return Sleep Wake message object.
-*/
-ws_sleep_Wake *SleepModel::GetSleepWakeMsg() { return &_msg_sleep_wake; }
 
 /*!
     @brief  Gets the run duration before sleep, in seconds.
@@ -66,12 +58,12 @@ uint32_t SleepModel::getRunDurationMs() { return _run_duration; }
             The nanopb input stream.
     @return True if the Sleep Enter message was successfully decoded.
 */
-bool SleepModel::DecodeSleepEnter(pb_istream_t *stream) {
+bool SleepModel::DecodeSleepConfig(pb_istream_t *stream) {
   // Zero-out the Sleep Enter message struct to ensure a clean decode
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
   // Decode the stream into a Sleep Enter message
-  return pb_decode(stream, ws_sleep_Enter_fields, &_msg_sleep_enter);
+  return pb_decode(stream, ws_sleep_SleepConfig_fields, &_msg_sleep_enter);
 }
 
 /*!
@@ -101,7 +93,7 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode,
   _msg_sleep_enter.mode = mode_enum;
 
   // Configure timer-specific fields
-  _msg_sleep_enter.which_config = ws_sleep_Enter_timer_tag;
+  _msg_sleep_enter.which_config = ws_sleep_SleepConfig_timer_tag;
   _msg_sleep_enter.config.timer.duration = timer_duration;
 }
 
@@ -136,7 +128,7 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
   _msg_sleep_enter.mode = mode_enum;
 
   // Configure pin-specific fields
-  _msg_sleep_enter.which_config = ws_sleep_Enter_ext0_tag;
+  _msg_sleep_enter.which_config = ws_sleep_SleepConfig_ext0_tag;
   strncpy(_msg_sleep_enter.config.ext0.name, pin_name,
           sizeof(_msg_sleep_enter.config.ext0.name) - 1);
   _msg_sleep_enter.config.ext0
@@ -217,37 +209,6 @@ bool SleepModel::EncodeSleepGoodnight(const char *msg) {
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
   return pb_encode(&msg_stream, ws_sleep_Goodnight_fields,
                    &_msg_sleep_goodnight);
-}
-
-/*!
-    @brief  Encodes a Sleep Wake message into the _msg_sleep_wake object.
-    @param  cause
-            Wake cause for ESP32x MCUs.
-    @param  sleep_duration
-            Calculated duration of the sleep period, in seconds.
-    @return True if the Sleep Wake message was successfully encoded.
-            False if encoding resulted in a failure.
-*/
-bool SleepModel::EncodeSleepWake(ws_sleep_EspWakeCause cause,
-                                 uint32_t sleep_duration) {
-  // Initialize the Wake message
-  memset(&_msg_sleep_wake, 0, sizeof(_msg_sleep_wake));
-
-  // Fill the Wake message
-  _msg_sleep_wake.which_WakeCause = ws_sleep_Wake_esp_tag;
-  _msg_sleep_wake.WakeCause.esp = cause;
-  _msg_sleep_wake.sleep_duration = sleep_duration;
-
-  // Compute encoded size
-  size_t sz_wake_msg;
-  if (!pb_get_encoded_size(&sz_wake_msg, ws_sleep_Wake_fields,
-                           &_msg_sleep_wake))
-    return false;
-
-  // Create an output stream and encode
-  uint8_t buf[sz_wake_msg];
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_sleep_Wake_fields, &_msg_sleep_wake);
 }
 
 #endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350

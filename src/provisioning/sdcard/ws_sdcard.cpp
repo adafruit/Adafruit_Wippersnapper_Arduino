@@ -808,7 +808,7 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
 
   // Pass the message directly to the sleep controller
   return Ws._sleep_controller->Handle_Sleep_Enter(
-      Ws._sleep_controller->GetModel()->GetSleepEnterMsg());
+      Ws._sleep_controller->GetModel()->GetSleepConfig());
 }
 
 /*!
@@ -833,7 +833,7 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
 
   // Pass the message directly to the sleep controller
   return Ws._sleep_controller->Handle_Sleep_Enter(
-      Ws._sleep_controller->GetModel()->GetSleepEnterMsg());
+      Ws._sleep_controller->GetModel()->GetSleepConfig());
 }
 #endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
 
