@@ -70,7 +70,8 @@ bool SleepController::Router(pb_istream_t *stream) {
   bool res = false;
   switch (b2d.which_payload) {
   case ws_sleep_B2D_sleep_config_tag:
-    res = Handle_Sleep_Enter(&b2d.payload.sleep_config);
+    // Lock is always true when receiving a standalone sleep config command
+    res = handleSleepConfig(&b2d.payload.sleep_config, true);
     break;
   default:
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported Sleep payload");
@@ -84,13 +85,16 @@ bool SleepController::Router(pb_istream_t *stream) {
     @brief  Handles a Sleep Enter message from the broker.
     @param  msg
             The Sleep Enter message.
+    @param  lock
+            Whether to lock the device into sleep mode. When true, the device
+            will enter sleep. When false, the device resumes regular operation.
     @return True if the sleep mode was successfully entered, False otherwise.
 */
-bool SleepController::Handle_Sleep_Enter(ws_sleep_SleepConfig *msg) {
-  WS_DEBUG_PRINTLN("[sleep] Handle_Sleep_Enter()");
+bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg, bool lock) {
+  WS_DEBUG_PRINTLN("[sleep] handleSleepConfig()");
 
   // Parse and handle lock state
-  _lock = false; // TODO: Fix this after checkin has migrated, should be passed from checkin
+  _lock = lock;
   WS_DEBUG_PRINT("[sleep] Sleep lock state: ");
   WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
 
@@ -443,8 +447,8 @@ void SleepController::HandleNetFSMFailure() {
   // Get the previous sleep duration from RTC mem
   msg_sleep_cfg.config.timer.duration =
       _sleep_hardware->GetSleepDurationSecs();
-  // Configure sleep mode
-  Handle_Sleep_Enter(&msg_sleep_cfg);
+  // Configure sleep mode (lock=true to re-enter sleep after FSM failure)
+  handleSleepConfig(&msg_sleep_cfg, true);
   // Enter sleep mode
   StartSleep();
 }

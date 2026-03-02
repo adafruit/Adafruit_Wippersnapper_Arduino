@@ -807,8 +807,9 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                                          sleep_config["wakeEnablePinPull"] | 0);
 
   // Pass the message directly to the sleep controller
-  return Ws._sleep_controller->Handle_Sleep_Enter(
-      Ws._sleep_controller->GetModel()->GetSleepConfig());
+  // Lock is always true for offline mode
+  return Ws._sleep_controller->handleSleepConfig(
+      Ws._sleep_controller->GetModel()->GetSleepConfig(), true);
 }
 
 /*!
@@ -832,8 +833,9 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
       pin_config["level"], pin_config["pull"]);
 
   // Pass the message directly to the sleep controller
-  return Ws._sleep_controller->Handle_Sleep_Enter(
-      Ws._sleep_controller->GetModel()->GetSleepConfig());
+  // Lock is always true for offline mode
+  return Ws._sleep_controller->handleSleepConfig(
+      Ws._sleep_controller->GetModel()->GetSleepConfig(), true);
 }
 #endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
 

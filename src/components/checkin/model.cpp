@@ -333,6 +333,22 @@ ws_sleep_SleepConfig *CheckinModel::GetSleepConfig() {
 }
 
 /*!
+    @brief  Configures sleep controller based on checkin response.
+*/
+void CheckinModel::configureSleep() {
+  #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // Process sleep configuration if present
+  if (IsSleepEnabled()) {
+    ws_sleep_SleepConfig *sleep_cfg = GetSleepConfig();
+    if (sleep_cfg != nullptr) {
+      WS_DEBUG_PRINTLN("[app] Processing sleep configuration from checkin");
+      Ws._sleep_controller->handleSleepConfig(sleep_cfg, true);
+    }
+  }
+  #endif
+}
+
+/*!
     @brief  Returns whether a checkin response has been received.
     @returns True if response received, False otherwise.
 */

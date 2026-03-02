@@ -35,7 +35,7 @@ public:
   ~SleepController();
   // Routing
   bool Router(pb_istream_t *stream);
-  bool Handle_Sleep_Enter(ws_sleep_SleepConfig *msg);
+  bool handleSleepConfig(ws_sleep_SleepConfig *msg, bool lock);
   // PB API Accessors
   SleepModel *GetModel();
   // Sleep API

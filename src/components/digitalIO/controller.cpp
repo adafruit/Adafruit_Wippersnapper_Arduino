@@ -223,7 +223,7 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
 
   WS_DEBUG_PRINT("[dio] Writing: ");
   WS_DEBUG_PRINT(msg->value.value.bool_value);
-  WS_DEBUG_PRINT("to Pin ");
+  WS_DEBUG_PRINT(" to Pin ");
   WS_DEBUG_PRINTLN(_pins_output[pin_idx].pin_name);
 
   // Is the pin already set to this value? If so, we don't need to write it

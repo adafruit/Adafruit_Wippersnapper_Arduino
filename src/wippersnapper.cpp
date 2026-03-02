@@ -263,14 +263,17 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   }
   Ws.NetworkFSM();
 
+  // Configure sleep settings if enabled
+  WS_DEBUG_PRINTLN("[app] Configuring sleep...");
+  Ws.CheckInModel->configureSleep();
+
   // Configure controller settings using Response
-  WS_DEBUG_PRINTLN("[app] Configuring controllers");
+  WS_DEBUG_PRINTLN("[app] Configuring controllers...");
   Ws.CheckInModel->ConfigureControllers();
   Ws.NetworkFSM();
 
   // Publish the complete response message to indicate the checkin
   // routine is done and the device is ready for use
-  WS_DEBUG_PRINTLN("[app] Publishing complete response message");
   return Ws.CheckInModel->Complete();
 }
 
@@ -972,6 +975,11 @@ void wippersnapper::connect() {
     haltErrorV2("Unable to allocate space for MQTT topics");
   }
   WS_DEBUG_PRINTLN("Generated device's MQTT topics successfully!");
+  // Print out topics (TODO: Remove in Beta)
+  WS_DEBUG_PRINT("Broker to Device Topic: ");
+  WS_DEBUG_PRINTLN(Ws._topicB2d);
+  WS_DEBUG_PRINT("Device to Broker Topic: ");
+  WS_DEBUG_PRINTLN(Ws._topicD2b);
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");
