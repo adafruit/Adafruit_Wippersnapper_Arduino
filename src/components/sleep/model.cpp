@@ -84,7 +84,7 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode,
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
   // Set the common fields
-  _msg_sleep_enter.lock = lock;
+  _msg_sleep_enter.lock = false; // TODO: Fix this after checkin has migrated, should be passed from checkin
   _run_duration = run_duration;
 
   // Convert strings to enums for mode/wake
@@ -119,7 +119,7 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
   // Set the common fields
-  _msg_sleep_enter.lock = lock;
+  _msg_sleep_enter.lock = false; // TODO: Fix this after checkin has migrated, should be passed from checkin
   _run_duration = run_duration;
 
   // Convert strings to enum for mode
@@ -129,10 +129,8 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
 
   // Configure pin-specific fields
   _msg_sleep_enter.which_config = ws_sleep_SleepConfig_ext0_tag;
-  strncpy(_msg_sleep_enter.config.ext0.name, pin_name,
-          sizeof(_msg_sleep_enter.config.ext0.name) - 1);
-  _msg_sleep_enter.config.ext0
-      .name[sizeof(_msg_sleep_enter.config.ext0.name) - 1] = '\0';
+  strncpy(_msg_sleep_enter.config.ext0.pin_name, pin_name, sizeof(_msg_sleep_enter.config.ext0.pin_name) - 1);
+  _msg_sleep_enter.config.ext0.pin_name[sizeof(_msg_sleep_enter.config.ext0.pin_name) - 1] = '\0';
   _msg_sleep_enter.config.ext0.level = pin_level;
   _msg_sleep_enter.config.ext0.pull = pin_pull;
 }
