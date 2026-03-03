@@ -160,47 +160,19 @@ void SleepModel::ConvertSleepMode(const char *mode_str,
 }
 
 /*!
-    @brief Encodes a C-string for the Goodnight.message callback field
-    @param stream
-           The nanopb output stream.
-    @param field
-           The nanopb field descriptor.
-    @param arg
-           Pointer to the C-string to encode.
-*/
-static bool _encode_goodnight_message(pb_ostream_t *stream,
-                                      const pb_field_t *field,
-                                      void *const *arg) {
-  const char *msg = (const char *)(*arg);
-  if (!pb_encode_tag_for_field(stream, field))
-    return false;
-  return pb_encode_string(stream, (const uint8_t *)msg, (size_t)strlen(msg));
-}
-
-/*!
     @brief  Encodes a Sleep Goodnight message into the _msg_sleep_goodnight
-            object.
-    @param  msg
-            A short, human-readable message indicating the device is
-            going to sleep.
+            object. The Goodnight message is now empty (no fields).
     @return True if the Sleep Goodnight message was successfully encoded.
             False if encoding resulted in a failure.
 */
-bool SleepModel::EncodeSleepGoodnight(const char *msg) {
-  // Initialize the Goodnight message
+bool SleepModel::EncodeSleepGoodnight() {
   memset(&_msg_sleep_goodnight, 0, sizeof(_msg_sleep_goodnight));
 
-  // Set up callback encoder for the string field
-  _msg_sleep_goodnight.message.arg = (void *)msg;
-  _msg_sleep_goodnight.message.funcs.encode = _encode_goodnight_message;
-
-  // Compute encoded size
   size_t sz_goodnight_msg;
   if (!pb_get_encoded_size(&sz_goodnight_msg, ws_sleep_Goodnight_fields,
                            &_msg_sleep_goodnight))
     return false;
 
-  // Create an output stream and encode
   uint8_t buf[sz_goodnight_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
   return pb_encode(&msg_stream, ws_sleep_Goodnight_fields,
