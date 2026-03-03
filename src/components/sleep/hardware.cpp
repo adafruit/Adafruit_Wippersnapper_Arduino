@@ -397,33 +397,6 @@ void SleepHardware::DisableExternalComponents() {
 #endif
 }
 
-#ifdef ARDUINO_ARCH_ESP32
-/*!
-    @brief  Disconnects WiFi before entering light sleep.
-            Uses WiFi.disconnect() instead of esp_wifi_stop() to keep
-            the WiFi driver initialized for quick reconnection after wake.
-    @return True if WiFi was successfully disconnected, False otherwise.
-*/
-bool SleepHardware::StopWiFi() {
-  //Ws.disconnect(false); // Keep WiFi driver initialized for quick reconnect
-  WS_DEBUG_PRINTLN("[sleep] WiFi disconnected for sleep");
-  return true;
-}
-
-/*!
-    @brief  Restore WiFi stack persistent settings to default value after waking
-   from light sleep.
-    @return True if WiFi was successfully started, False otherwise.
-*/
-bool SleepHardware::RestoreWiFi() {
-  esp_err_t rc = esp_wifi_restore();
-  if (rc != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to restore WiFi");
-    return false;
-  }
-  return true;
-}
-#endif // ARDUINO_ARCH_ESP32
 
 /*!
     @brief  Retrieves the current sleep cycle count.

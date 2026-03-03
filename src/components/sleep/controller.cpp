@@ -90,7 +90,8 @@ bool SleepController::Router(pb_istream_t *stream) {
             sleep. When false, the device resumes regular operation.
     @return True if the sleep mode was successfully entered, False otherwise.
 */
-bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg, bool enable) {
+bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg,
+                                        bool enable) {
   WS_DEBUG_PRINTLN("[sleep] handleSleepConfig()");
 
   // Parse and handle sleep state
@@ -99,7 +100,8 @@ bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg, bool enable) 
   // If wake enable pin is "active", override sleep enable
   _wake_enable_pin_state = CheckWakeEnablePin();
   if (_wake_enable_pin_state && _sleep_enabled) {
-    WS_DEBUG_PRINTLN("[sleep] Wake enable pin is active, overriding sleep enable.");
+    WS_DEBUG_PRINTLN(
+        "[sleep] Wake enable pin is active, overriding sleep enable.");
     _sleep_enabled = false;
     return true;
   }
@@ -134,39 +136,21 @@ bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg, bool enable) 
             wakeup cause and re-registers the RTC timer if applicable.
 */
 void SleepController::WakeFromLightSleep() {
-  // DEBUG: D13 ON = entered WakeFromLightSleep
-  pinMode(13, OUTPUT);
-  digitalWrite(13, HIGH);
   Serial.begin(115200);
-  delay(1500);
-  // If already enumerated, additional class driver begin() e.g msc, hid, midi won't take effect until re-enumeration
+  // If already enumerated, additional class driver begin() e.g msc, hid, midi
+  // won't take effect until re-enumeration
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
     delay(10);
     TinyUSBDevice.attach();
   }
 
-  // DEBUG: Blink D13 = passed wake check
-  digitalWrite(13, LOW);
-  delay(100);
-  digitalWrite(13, HIGH);
-  delay(100);
-  digitalWrite(13, LOW);
-
-  WS_DEBUG_PRINTLN("[sleep] Handling wake from light sleep...");
   // Refresh the cached sleep wakeup cause from hardware
   _sleep_hardware->GetSleepWakeupCause();
   // Verify that we woke up from light sleep
   if (!DidWakeFromSleep() || (GetPrvSleepMode() != ws_sleep_SleepMode_S_LIGHT))
     return;
   WS_DEBUG_PRINTLN("[sleep] Woke up from light sleep!");
-
-  // DEBUG: Blink D13 = passed wake check
-  digitalWrite(13, LOW);
-  delay(100);
-  digitalWrite(13, HIGH);
-  delay(100);
-  digitalWrite(13, LOW);
 
   // Recalculate sleep duration
   _sleep_hardware->CalculateSleepDuration();
@@ -175,7 +159,7 @@ void SleepController::WakeFromLightSleep() {
   WS_DEBUG_PRINTLN(" seconds");
 
   // Print sleep cycles
-  WS_DEBUG_PRINT("Total sleep cycles: ");
+  WS_DEBUG_PRINT("Total light sleep cycles: ");
   WS_DEBUG_PRINTLN(_sleep_hardware->GetSleepCycleCount());
 
   // Re-enable external components that were disabled before sleep
@@ -183,17 +167,6 @@ void SleepController::WakeFromLightSleep() {
     _sleep_hardware->ReenableExternalComponents();
     WS_DEBUG_PRINTLN("[sleep] Re-enabled external components");
   }
-
-  // DEBUG: Blink D13 twice = about to handle WiFi/SD
-  digitalWrite(13, LOW);
-  delay(100);
-  digitalWrite(13, HIGH);
-  delay(100);
-  digitalWrite(13, LOW);
-  delay(100);
-  digitalWrite(13, HIGH);
-  delay(100);
-  digitalWrite(13, LOW);
 
   // Re-initialize SD card if it was previously initialized
   if (Ws._sdCardV2->isModeOffline()) {
@@ -203,8 +176,6 @@ void SleepController::WakeFromLightSleep() {
     }
     WS_DEBUG_PRINTLN("[sleep] SD card re-initialized successfully");
   }
-  // Note: NetworkFSM is called from loopSleep() after this returns,
-  // using 'this' pointer to ensure proper virtual dispatch
 
 #ifdef USE_STATUS_LED
   // Visual indication for configuring sleep in RP2350
@@ -241,8 +212,9 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
     break;
   case ws_sleep_SleepConfig_ext0_tag:
 #ifdef ARDUINO_ARCH_ESP32
-    rc = _sleep_hardware->RegisterExt0Wakeup(
-        msg->config.ext0.pin_name, msg->config.ext0.level, msg->config.ext0.pull);
+    rc = _sleep_hardware->RegisterExt0Wakeup(msg->config.ext0.pin_name,
+                                             msg->config.ext0.level,
+                                             msg->config.ext0.pull);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set ext0 wakeup");
     }
@@ -375,9 +347,7 @@ ws_sleep_SleepMode SleepController::GetPrvSleepMode() {
     @brief  Returns if sleep mode is active for the current boot cycle.
     @return True if sleep mode is active, False otherwise.
 */
-bool SleepController::isSleepEnabled() {
-  return _sleep_enabled;
-}
+bool SleepController::isSleepEnabled() { return _sleep_enabled; }
 
 /*!
     @brief  Enters the configured sleep mode.
@@ -424,15 +394,6 @@ void SleepController::StartSleep() {
     WS_DEBUG_PRINTLN("[sleep] Entering light sleep");
 // Attempt to start light sleep
 #ifdef ARDUINO_ARCH_ESP32
-    // Disconnect MQTT and stop WiFi before light sleep, if in IO Mode
-    if (Ws._mqttV2 != nullptr) {
-      WS_DEBUG_PRINTLN("[sleep] Disconnecting MQTT client before sleep");
-      Ws._mqttV2->disconnect();
-      WS_DEBUG_PRINTLN("[sleep] Stopping WiFi before sleep");
-      if (!_sleep_hardware->StopWiFi()) {
-        WS_DEBUG_PRINTLN("[sleep] WARNING: Failed to stop WiFi before sleep");
-      }
-    }
     // Flush serial output before entering light sleep
     WS_DEBUG_PRINTLN("[sleep] Starting light sleep NOW...");
     Serial.flush();
@@ -485,13 +446,13 @@ void SleepController::HandleNetFSMFailure() {
           : ws_sleep_SleepConfig_ext0_tag;
 #else
   msg_sleep_cfg.which_config = Ws._wdt->isSleepConfigTimer()
-                                     ? ws_sleep_SleepConfig_timer_tag
-                                     : ws_sleep_SleepConfig_ext0_tag;
+                                   ? ws_sleep_SleepConfig_timer_tag
+                                   : ws_sleep_SleepConfig_ext0_tag;
 #endif
   // Get the previous sleep duration from RTC mem
-  msg_sleep_cfg.config.timer.duration =
-      _sleep_hardware->GetSleepDurationSecs();
-  // Configure sleep mode (sleep_enabled=true to re-enter sleep after FSM failure)
+  msg_sleep_cfg.config.timer.duration = _sleep_hardware->GetSleepDurationSecs();
+  // Configure sleep mode (sleep_enabled=true to re-enter sleep after FSM
+  // failure)
   handleSleepConfig(&msg_sleep_cfg, true);
   // Enter sleep mode
   StartSleep();

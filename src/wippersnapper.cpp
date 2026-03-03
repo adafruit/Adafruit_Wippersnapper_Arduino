@@ -1153,14 +1153,19 @@ void wippersnapper::loopSleep() {
     ResetAllControllerFlags();
     loop_start_time = 0;
     loop_timer_started = false;
-    // Enter sleep
-    // disconnect from WiFi 
+    // Disconnect from MQTT broker before sleep to prevent issues with
+    // connection state on wake
+    Ws._mqttV2->disconnect();
+    // Forcibly disconnect from WiFi network and turn off WiFi radio before
+    // sleep to save power and prevent issues with connection state on wake
     disconnect(true);
+    // Enter sleep
     WS_DEBUG_PRINTLN("[app] All components updated, entering sleep...");
     Ws._sleep_controller->StartSleep();
+
     // For light sleep, we woke up here
     Ws._sleep_controller->WakeFromLightSleep();
-    // Reconnect WiFi/MQTT after light sleep wake (uses 'this' for proper virtual dispatch)
+    // Reconnect WiFi/MQTT after light sleep wake
     if (!Ws._sdCardV2->isModeOffline()) {
       WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
       NetworkFSM(true);
@@ -1182,7 +1187,8 @@ void wippersnapper::loopSleep() {
     Ws._sleep_controller->StartSleep();
     // For light sleep, we woke up here
     Ws._sleep_controller->WakeFromLightSleep();
-    // Reconnect WiFi/MQTT after light sleep wake (uses 'this' for proper virtual dispatch)
+    // Reconnect WiFi/MQTT after light sleep wake (uses 'this' for proper
+    // virtual dispatch)
     if (!Ws._sdCardV2->isModeOffline()) {
       WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
       NetworkFSM(true);
