@@ -23,7 +23,7 @@ SleepController::SleepController() {
   _sleep_model = new SleepModel();
   _wake_enable_pin = 255;    // No pin assigned
   _wake_enable_pin_pull = 0; // Default: no pull
-  _lock = false;             // Class-level lock
+  _sleep_enabled = false;    // Initially we are not in sleep mode
 
 // Mark so we can disable all external peripherals that draw power during sleep
 // (i.e: tft, i2c, neopixel, etc)
@@ -85,31 +85,27 @@ bool SleepController::Router(pb_istream_t *stream) {
     @brief  Handles a Sleep Enter message from the broker.
     @param  msg
             The Sleep Enter message.
-    @param  lock
-            Whether to lock the device into sleep mode. When true, the device
-            will enter sleep. When false, the device resumes regular operation.
+    @param  enable
+            Whether to enable sleep mode. When true, the device will enter
+            sleep. When false, the device resumes regular operation.
     @return True if the sleep mode was successfully entered, False otherwise.
 */
-bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg, bool lock) {
+bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg, bool enable) {
   WS_DEBUG_PRINTLN("[sleep] handleSleepConfig()");
 
-  // Parse and handle lock state
-  _lock = lock;
-  WS_DEBUG_PRINT("[sleep] Sleep lock state: ");
-  WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
+  // Parse and handle sleep state
+  _sleep_enabled = enable;
 
-  // If wake enable pin is "active", override any existing lock
+  // If wake enable pin is "active", override sleep enable
   _wake_enable_pin_state = CheckWakeEnablePin();
-  if (_wake_enable_pin_state && _lock) {
-    WS_DEBUG_PRINTLN(
-        "[sleep] Wake enable pin is active, overriding sleep lock.");
-    _lock = false;
+  if (_wake_enable_pin_state && _sleep_enabled) {
+    WS_DEBUG_PRINTLN("[sleep] Wake enable pin is active, overriding sleep enable.");
+    _sleep_enabled = false;
     return true;
   }
 
-  if (!_lock) {
-    WS_DEBUG_PRINTLN(
-        "[sleep] Unlocked device from sleep, resuming regular operation.");
+  if (!_sleep_enabled) {
+    WS_DEBUG_PRINTLN("[sleep] Sleep disabled, resuming regular operation.");
     return true;
   }
 
@@ -127,8 +123,8 @@ bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg, bool lock) {
   }
 
   WS_DEBUG_PRINTLN("[sleep] Sleep configuration complete.");
-  WS_DEBUG_PRINT("Lock Status: ");
-  WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
+  WS_DEBUG_PRINT("Sleep Enabled: ");
+  WS_DEBUG_PRINTLN(_sleep_enabled ? "YES" : "NO");
 
   return res;
 }
@@ -313,21 +309,22 @@ const char *SleepController::GetWakeupReasonName() {
 }
 
 /*!
-    @brief  Returns whether the device woke from a sleep mode.
+    @brief  Returns whether the device woke from sleep mode.
     @return True if the device woke from sleep, False otherwise.
 */
 bool SleepController::DidWakeFromSleep() {
+  bool woke_from_sleep = false;
 #ifdef ARDUINO_ARCH_ESP32
   // If sleep source is not undefined, device woke from sleep mode,
   // so we assume we're locked unless overridden by boot button or Enter message
   esp_sleep_source_t wake_source = _sleep_hardware->GetEspSleepSource();
-  _lock = wake_source != ESP_SLEEP_WAKEUP_UNDEFINED;
+  woke_from_sleep = wake_source != ESP_SLEEP_WAKEUP_UNDEFINED;
 #else
   // RP2350 doesn't track wake cause but does internally track if we slept or
   // not
-  _lock = Ws._wdt->didWakeFromSleep();
+  woke_from_sleep = Ws._wdt->didWakeFromSleep();
 #endif
-  return _lock;
+  return woke_from_sleep;
 }
 
 /*!
@@ -339,12 +336,11 @@ ws_sleep_SleepMode SleepController::GetPrvSleepMode() {
 }
 
 /*!
-    @brief  Returns whether the device is in a sleep loop (locked).
-    @return True if the device is locked for sleep, False otherwise.
+    @brief  Returns if sleep mode is active for the current boot cycle.
+    @return True if sleep mode is active, False otherwise.
 */
-bool SleepController::IsSleepMode() {
-  WS_DEBUG_PRINTLN(_lock ? "LOCKED" : "UNLOCKED");
-  return _lock;
+bool SleepController::isSleepEnabled() {
+  return _sleep_enabled;
 }
 
 /*!
@@ -447,7 +443,7 @@ void SleepController::HandleNetFSMFailure() {
   // Get the previous sleep duration from RTC mem
   msg_sleep_cfg.config.timer.duration =
       _sleep_hardware->GetSleepDurationSecs();
-  // Configure sleep mode (lock=true to re-enter sleep after FSM failure)
+  // Configure sleep mode (sleep_enabled=true to re-enter sleep after FSM failure)
   handleSleepConfig(&msg_sleep_cfg, true);
   // Enter sleep mode
   StartSleep();

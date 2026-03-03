@@ -537,7 +537,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Handle sleep mode network failures
   bool handle_sleep_mode_error =
-      initial_connect && _sleep_controller->IsSleepMode();
+      initial_connect && _sleep_controller->isSleepEnabled();
 #endif
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
@@ -911,7 +911,7 @@ void PrintDeviceInfo() {
     @brief    Connects to Adafruit IO+ wippersnapper broker.
 */
 void wippersnapper::connect() {
-  // delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
+  delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   PrintDeviceInfo();
@@ -985,7 +985,7 @@ void wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Running Network FSM...");
 // Connect to wireless network and Adafruit IO's MQTT broker
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
-  bool sleepMode = _sleep_controller && _sleep_controller->IsSleepMode();
+  bool sleepMode = _sleep_controller && _sleep_controller->isSleepEnabled();
   NetworkFSM(sleepMode);
 #else
   NetworkFSM();
@@ -1032,7 +1032,7 @@ void wippersnapper::connect() {
 */
 void wippersnapper::run() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
-  if (!Ws._sleep_controller->IsSleepMode()) {
+  if (!Ws._sleep_controller->isSleepEnabled()) {
     while (true) {
       loop();
     }

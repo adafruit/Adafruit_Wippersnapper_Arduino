@@ -35,13 +35,13 @@ public:
   ~SleepController();
   // Routing
   bool Router(pb_istream_t *stream);
-  bool handleSleepConfig(ws_sleep_SleepConfig *msg, bool lock);
+  bool handleSleepConfig(ws_sleep_SleepConfig *msg, bool enable);
   // PB API Accessors
   SleepModel *GetModel();
   // Sleep API
   void WakeFromLightSleep();
   void StartSleep();
-  bool IsSleepMode();
+  bool isSleepEnabled();
   bool DidWakeFromSleep();
   const char *GetWakeupReasonName();
   ws_sleep_SleepMode GetPrvSleepMode();
@@ -66,7 +66,7 @@ private:
   SleepHardware *_sleep_hardware; ///< Sleep hardware
   bool _wake_enable_pin_state;    ///< Value of BOOT button during class
                                   ///< construction
-  bool _lock;                     ///< Whether the sleep configuration is locked
+  bool _sleep_enabled;            ///< Whether the app should enter sleep mode
   bool _has_ext_pwr_components;   ///< Whether externally powered components are
                                   ///< present (i.e: tft, i2c, neopixel, etc)
   uint8_t _wake_enable_pin;       ///< Pin to check for wake enable

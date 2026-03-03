@@ -118,20 +118,17 @@ Wippersnapper_FS::Wippersnapper_FS() {
     FRESULT rc = format_fs_fat12();
 
     if (rc != FR_OK) {
-      setStatusLEDColor(RED);
       fsHalt("FATAL ERROR: Failed to format the filesystem!");
     }
 
     // Now that we have a formatted filesystem, we need to inititalize it
     if (!wipperFatFs_v2.begin(&flash_v2)) {
-      setStatusLEDColor(RED);
       fsHalt("FATAL ERROR: Failed to mount newly created filesystem!");
     }
   }
 
   // Write contents to the formatted filesystem
   if (!writeFSContents()) {
-    setStatusLEDColor(RED);
     fsHalt("FATAL ERROR: Could not write filesystem contents!");
   }
 
