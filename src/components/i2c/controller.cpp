@@ -832,26 +832,18 @@ bool I2cController::Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg) {
     ConfigureMuxChannel(mux_channel, driver->HasAltI2CBus());
   }
 
-  // Determine which driver cb function to use
-  if (msg->which_output_msg ==
-      ws_i2c_DeviceOutputWrite_write_led_backpack_tag) {
-    WS_DEBUG_PRINTLN("[i2c] Writing to LED backpack...");
-    driver->WriteMessage(msg->output_msg.write_led_backpack.message);
-  } else if (msg->which_output_msg ==
-             ws_i2c_DeviceOutputWrite_write_char_lcd_tag) {
-    WS_DEBUG_PRINTLN("[i2c] Writing to char LCD...");
-    if (!driver->WriteMessageCharLCD(&msg->output_msg.write_char_lcd)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to write to char LCD!");
-      return false;
-    }
-  } else if (msg->which_output_msg == ws_i2c_DeviceOutputWrite_write_oled_tag) {
-    WS_DEBUG_PRINTLN("[i2c] Writing to SSD1306 OLED...");
-    // Note: In the future, we can expand this to support other OLEDs by
-    // creating and checking a tag within the write oled msg (e.g. SSD1327,
-    // etc.)
-    driver->WriteMessageSSD1306(msg->output_msg.write_oled.message);
+  // Use unified display Write message
+  if (!msg->has_write_display) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: No display write message!");
+    return false;
+  }
+
+  ws_display_Write *write_msg = &msg->write_display;
+  if (write_msg->which_content == ws_display_Write_message_tag) {
+    WS_DEBUG_PRINTLN("[i2c] Writing text to output device...");
+    driver->WriteMessage(write_msg->content.message);
   } else {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine I2C Output Write type!");
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unsupported display write content type!");
     return false;
   }
 
@@ -1027,18 +1019,18 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     WS_DEBUG_PRINTLN("[i2c] Configuring output driver...");
     // Configure Output-driver settings
     pb_size_t config = msg->output_add.which_config;
-    if (config == ws_i2c_output_Add_led_backpack_config_tag) {
+    if (config == ws_display_Add_config_led_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring LED backpack...");
-      ws_i2c_output_LedBackpackConfig cfg =
-          msg->output_add.config.led_backpack_config;
+      ws_display_LedBackpackConfig cfg =
+          msg->output_add.config.config_led;
       WS_DEBUG_PRINT("[i2c] Got cfg, calling ConfigureI2CBackpack...");
       drv_out->ConfigureI2CBackpack(cfg.brightness, cfg.alignment);
       WS_DEBUG_PRINTLN("OK!");
-    } else if (config == ws_i2c_output_Add_char_lcd_config_tag) {
+    } else if (config == ws_display_Add_config_char_lcd_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring char LCD...");
-    } else if (config == ws_i2c_output_Add_oled_config_tag) {
+    } else if (config == ws_display_Add_config_oled_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring OLED...");
-      ws_i2c_output_OledConfig cfg = msg->output_add.config.oled_config;
+      ws_display_OledConfig cfg = msg->output_add.config.config_oled;
       WS_DEBUG_PRINT("[i2c] Got cfg, calling ConfigureOLED...");
       drv_out->ConfigureSSD1306(cfg.width, cfg.height, cfg.font_size);
       WS_DEBUG_PRINTLN("OK!");

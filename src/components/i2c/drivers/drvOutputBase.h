@@ -17,7 +17,7 @@
 #define DRV_OUTPUT_BASE_H
 #include "drvBase.h"
 #include <protos/i2c.pb.h>
-#include <protos/i2c_output.pb.h>
+#include <protos/display.pb.h>
 
 /*!
     @brief  Base class for I2C Output Drivers.
@@ -112,14 +112,15 @@ public:
   }
 
   /*!
-      @brief    Writes a message to the LCD.
-      @param    write_char_lcd
-                Pointer to a ws_i2c_output_CharLCDWrite message.
+      @brief    Writes a message to the LCD using a display Write message.
+      @param    write_msg
+                Pointer to a ws_display_Write message.
       @returns  True if the message was written successfully, False otherwise.
   */
-  bool WriteMessageCharLCD(ws_i2c_output_CharLCDWrite *write_char_lcd) {
-    EnableBackLightCharLCD(write_char_lcd->enable_backlight);
-    WriteMessage(write_char_lcd->message);
+  bool WriteMessageCharLCD(ws_display_Write *write_msg) {
+    if (write_msg->which_content == ws_display_Write_message_tag) {
+      WriteMessage(write_msg->content.message);
+    }
     return true;
   }
 
