@@ -328,8 +328,10 @@ protected:
 
   /*!
       @brief  Disconnects from the wireless network.
+      @param  wifi_off  Unused on this platform.
   */
-  void _disconnect() {
+  void _disconnect(bool wifi_off = true) {
+    (void)wifi_off;
     Ws._wdt->feed();
     WiFi.disconnect();
     delay(5000);

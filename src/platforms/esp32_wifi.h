@@ -359,9 +359,11 @@ protected:
 
   /*!
       @brief  Disconnects from the wireless network.
+      @param  wifi_off  If true, turns off WiFi radio. If false, keeps WiFi
+                        driver initialized for quick reconnection.
   */
-  void _disconnect() {
-    WiFi.disconnect();
+  void _disconnect(bool wifi_off = true) {
+    WiFi.disconnect(wifi_off);
     delay(500);
   }
 };

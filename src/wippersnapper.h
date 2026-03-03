@@ -181,9 +181,9 @@ public:
   virtual void set_ssid_pass();
   virtual bool check_valid_ssid();
   virtual void _connect();
-  virtual void _disconnect();
+  virtual void _disconnect(bool wifi_off = true);
   void connect();
-  void disconnect();
+  void disconnect(bool wifi_off = true);
   virtual void getMacAddr();
   virtual int32_t getRSSI();
   virtual void setupMQTTClient(const char *clientID);

@@ -91,8 +91,10 @@ wippersnapper::~wippersnapper() {
 
 /*!
     @brief    Disconnects from Adafruit IO+ wippersnapper.
+    @param    wifi_off  If true, turns off WiFi radio. If false, keeps WiFi
+                        driver initialized for quick reconnection.
 */
-void wippersnapper::disconnect() { _disconnect(); }
+void wippersnapper::disconnect(bool wifi_off) { _disconnect(wifi_off); }
 
 // Concrete class definition for abstract classes
 
@@ -107,8 +109,9 @@ void wippersnapper::_connect() {
 /*!
     @brief    Disconnect Wippersnapper MQTT session and network.
 */
-void wippersnapper::_disconnect() {
-  WS_DEBUG_PRINTLN("WIppersnapper_V2::_disconnect");
+void wippersnapper::_disconnect(bool wifi_off) {
+  (void)wifi_off; // Avoid unused parameter warning for some network interfaces
+  WS_DEBUG_PRINTLN("wippersnapper::_disconnect()");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -542,19 +545,23 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
+      WS_DEBUG_PRINTLN("Checking MQTT connection...");
       if (Ws._mqttV2->connected()) {
-        // WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
+        WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
+      WS_DEBUG_PRINTLN("Not connected to Adafruit IO MQTT!");
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_CHECK_NETWORK:
+      WS_DEBUG_PRINTLN("Checking network connection...");
       if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
+      WS_DEBUG_PRINTLN("Not connected to WiFi!");
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:

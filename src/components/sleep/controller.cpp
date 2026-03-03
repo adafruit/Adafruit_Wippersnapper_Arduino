@@ -134,12 +134,38 @@ bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg, bool enable) 
             wakeup cause and re-registers the RTC timer if applicable.
 */
 void SleepController::WakeFromLightSleep() {
+  // DEBUG: D13 ON = entered WakeFromLightSleep
+  pinMode(13, OUTPUT);
+  digitalWrite(13, HIGH);
+  Serial.begin(115200);
+  // If already enumerated, additional class driver begin() e.g msc, hid, midi won't take effect until re-enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
+
+  // DEBUG: Blink D13 = passed wake check
+  digitalWrite(13, LOW);
+  delay(100);
+  digitalWrite(13, HIGH);
+  delay(100);
+  digitalWrite(13, LOW);
+
+  WS_DEBUG_PRINTLN("[sleep] Handling wake from light sleep...");
   // Refresh the cached sleep wakeup cause from hardware
   _sleep_hardware->GetSleepWakeupCause();
   // Verify that we woke up from light sleep
   if (!DidWakeFromSleep() || (GetPrvSleepMode() != ws_sleep_SleepMode_S_LIGHT))
     return;
   WS_DEBUG_PRINTLN("[sleep] Woke up from light sleep!");
+
+  // DEBUG: Blink D13 = passed wake check
+  digitalWrite(13, LOW);
+  delay(100);
+  digitalWrite(13, HIGH);
+  delay(100);
+  digitalWrite(13, LOW);
 
   // Recalculate sleep duration
   _sleep_hardware->CalculateSleepDuration();
@@ -157,6 +183,17 @@ void SleepController::WakeFromLightSleep() {
     WS_DEBUG_PRINTLN("[sleep] Re-enabled external components");
   }
 
+  // DEBUG: Blink D13 twice = about to handle WiFi/SD
+  digitalWrite(13, LOW);
+  delay(100);
+  digitalWrite(13, HIGH);
+  delay(100);
+  digitalWrite(13, LOW);
+  delay(100);
+  digitalWrite(13, HIGH);
+  delay(100);
+  digitalWrite(13, LOW);
+
   // Re-initialize SD card if it was previously initialized
   if (Ws._sdCardV2->isModeOffline()) {
     if (!Ws._sdCardV2->begin()) {
@@ -165,9 +202,30 @@ void SleepController::WakeFromLightSleep() {
     }
     WS_DEBUG_PRINTLN("[sleep] SD card re-initialized successfully");
   } else {
-    WS_DEBUG_PRINTLN("[sleep] Enabling WiFi after light sleep wakeup");
+    WS_DEBUG_PRINTLN("[sleep] Restoring WiFi after light sleep wakeup");
+
+    // DEBUG: Blink D13 three times = about to call NetworkFSM
+    digitalWrite(13, LOW);
+    delay(100);
+    digitalWrite(13, HIGH);
+    delay(100);
+    digitalWrite(13, LOW);
+    delay(100);
+    digitalWrite(13, HIGH);
+    delay(100);
+    digitalWrite(13, LOW);
+    delay(100);
+    digitalWrite(13, HIGH);
+    delay(100);
+    digitalWrite(13, LOW);
+
+
+    WS_DEBUG_PRINTLN("[sleep] Running NetworkFSM to reconnect...");
     // Run NetFSM to reconnect WiFi and MQTT
     Ws.NetworkFSM(true);
+
+    // DEBUG: D13 OFF = NetworkFSM completed
+    digitalWrite(13, LOW);
   }
 
 #ifdef USE_STATUS_LED
@@ -347,6 +405,10 @@ bool SleepController::isSleepEnabled() {
     @brief  Enters the configured sleep mode.
 */
 void SleepController::StartSleep() {
+  // DEBUG: D13 OFF before sleep
+  pinMode(13, OUTPUT);
+  digitalWrite(13, LOW);
+
   // Set current time before entering sleep
   _sleep_hardware->SetSleepEnterTime();
 
@@ -388,12 +450,20 @@ void SleepController::StartSleep() {
     if (Ws._mqttV2 != nullptr) {
       WS_DEBUG_PRINTLN("[sleep] Disconnecting MQTT client before sleep");
       Ws._mqttV2->disconnect();
+      WS_DEBUG_PRINTLN("[sleep] Stopping WiFi before sleep");
       if (!_sleep_hardware->StopWiFi()) {
         WS_DEBUG_PRINTLN("[sleep] WARNING: Failed to stop WiFi before sleep");
       }
     }
+    // Flush serial output before entering light sleep
+    WS_DEBUG_PRINTLN("[sleep] Starting light sleep NOW...");
+    Serial.flush();
+    Serial.end();
     // Start light sleep
     esp_err_t err = esp_light_sleep_start();
+    // === WOKE UP FROM LIGHT SLEEP ===
+    WS_DEBUG_PRINTLN("[sleep] *** WOKE FROM LIGHT SLEEP ***");
+    WS_PRINTER.flush();
     if (err != ESP_OK) {
       WS_DEBUG_PRINT("[sleep] WARNING: Failed light sleep start: ");
       WS_DEBUG_PRINTLN(esp_err_to_name(err));

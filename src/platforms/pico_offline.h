@@ -139,8 +139,10 @@ protected:
 
   /*!
       @brief  Disconnects from the wireless network.
+      @param  wifi_off  Unused on this platform.
   */
-  void _disconnect() {
+  void _disconnect(bool wifi_off = true) {
+    (void)wifi_off;
     WS_DEBUG_PRINTLN("[pico_offline] Error: _disconnect() is not supported "
                      "in this implementation!");
   }

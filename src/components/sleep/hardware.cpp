@@ -399,16 +399,14 @@ void SleepHardware::DisableExternalComponents() {
 
 #ifdef ARDUINO_ARCH_ESP32
 /*!
-    @brief  Attempts to stop the WiFi radio to save power before entering light
-   sleep.
-    @return True if WiFi was successfully stopped, False otherwise.
+    @brief  Disconnects WiFi before entering light sleep.
+            Uses WiFi.disconnect() instead of esp_wifi_stop() to keep
+            the WiFi driver initialized for quick reconnection after wake.
+    @return True if WiFi was successfully disconnected, False otherwise.
 */
 bool SleepHardware::StopWiFi() {
-  esp_err_t rc = esp_wifi_stop();
-  if (rc != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to stop WiFi");
-    return false;
-  }
+  Ws.disconnect(false); // Keep WiFi driver initialized for quick reconnect
+  WS_DEBUG_PRINTLN("[sleep] WiFi disconnected for sleep");
   return true;
 }
 
