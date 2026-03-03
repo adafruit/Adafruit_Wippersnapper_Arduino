@@ -1,5 +1,5 @@
 /*!
- * @file drvOutQuadAlphaNum.h
+ * @file src/components/display/drivers/drvOutQuadAlphaNum.h
  *
  * Device driver for Quad Alphanumeric Displays w/I2C Backpack
  *
@@ -19,14 +19,6 @@
 #include "drvOutputBase.h"
 #include <Adafruit_LEDBackpack.h>
 #include <Arduino.h>
-
-#define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0 ///< Unspecified alignment
-#define LED_BACKPACK_ALIGNMENT_LEFT 1        ///< Left alignment
-#define LED_BACKPACK_ALIGNMENT_RIGHT 2       ///< Right alignment
-#define LED_BACKPACK_ALIGNMENT_DEFAULT                                         \
-  LED_BACKPACK_ALIGNMENT_LEFT ///< Default alignment
-#define LED_MAX_CHARS                                                          \
-  4 ///< Maximum number of characters to display on the alphanumeric display
 
 /*!
     @brief  Class that provides a driver interface for Quad Alphanumeric

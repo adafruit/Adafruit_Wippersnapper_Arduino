@@ -40,12 +40,12 @@ wippersnapper Ws;
 */
 wippersnapper::wippersnapper()
     : _mqttV2(nullptr), sensor_model(nullptr), error_controller(nullptr),
-      digital_io_controller(nullptr), analogio_controller(nullptr),
-      _ds18x20_controller(nullptr), _gps_controller(nullptr),
-      _i2c_controller(nullptr), _uart_controller(nullptr),
-      _pixels_controller(nullptr), _pwm_controller(nullptr),
-      _servo_controller(nullptr), _wdt(nullptr), _device_uidV2(nullptr),
-      _mqtt_client_id(nullptr) {
+      digital_io_controller(nullptr), _display_controller(nullptr),
+      analogio_controller(nullptr), _ds18x20_controller(nullptr),
+      _gps_controller(nullptr), _i2c_controller(nullptr),
+      _uart_controller(nullptr), _pixels_controller(nullptr),
+      _pwm_controller(nullptr), _servo_controller(nullptr), _wdt(nullptr),
+      _device_uidV2(nullptr), _mqtt_client_id(nullptr) {
   // Initialize WDT wrapper
   _wdt = new ws_wdt();
 
@@ -55,6 +55,7 @@ wippersnapper::wippersnapper()
   // Initialize controller classes
   digital_io_controller = new DigitalIOController();
   analogio_controller = new AnalogIOController();
+  _display_controller = new DisplayController();
   _ds18x20_controller = new DS18X20Controller();
   _gps_controller = new GPSController();
   _i2c_controller = new I2cController();
@@ -76,6 +77,7 @@ wippersnapper::~wippersnapper() {
   delete this->sensor_model;
   // delete this->error_controller; // TODO: Why is this commented out?
   delete this->digital_io_controller;
+  delete this->_display_controller;
   delete this->analogio_controller;
   delete this->_ds18x20_controller;
   delete this->_gps_controller;
@@ -324,6 +326,8 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     return Ws._i2c_controller->Router(stream);
   case ws_signal_BrokerToDevice_uart_tag:
     return Ws._uart_controller->Router(stream);
+  case ws_signal_BrokerToDevice_display_tag:
+    return Ws._display_controller->Router(stream);
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   case ws_signal_BrokerToDevice_sleep_tag:
     return Ws._sleep_controller->Router(stream);
@@ -768,6 +772,10 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     msg->which_payload = ws_signal_DeviceToBroker_gps_tag;
     msg->payload.gps = *(ws_gps_D2B *)payload;
     break;
+  case ws_signal_DeviceToBroker_display_tag:
+    msg->which_payload = ws_signal_DeviceToBroker_display_tag;
+    msg->payload.display = *(ws_display_D2B *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     free(msg);
@@ -1086,6 +1094,9 @@ void wippersnapper::loop() {
 
   // Process GPS controller events
   Ws._gps_controller->update();
+
+  // Update display status bars
+  Ws._display_controller->update(getRSSI(), Ws._mqttV2->connected());
 }
 
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)

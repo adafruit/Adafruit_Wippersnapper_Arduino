@@ -1,7 +1,7 @@
 /*!
  * @file src/components/i2c/model.cpp
  *
- * Model for the i2c.proto and i2c_output.proto messages.
+ * Model for the i2c.proto and display.proto messages.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -245,10 +245,11 @@ ws_i2c_DeviceAddOrReplace *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
 }
 
 /*!
-    @brief    Returns a pointer to the I2cOutputAdd message.
-    @returns  Pointer to the I2cOutputAdd message.
+    @brief    Returns a pointer to the display Add message (for I2C output
+   devices).
+    @returns  Pointer to the ws_display_Add message.
 */
-ws_i2c_output_Add *I2cModel::GetI2cOutputAddMsg() {
+ws_display_Add *I2cModel::GetDisplayAddMsg() {
   return &_msg_i2c_device_add_replace.output_add;
 }
 
@@ -401,56 +402,32 @@ ws_i2c_DeviceOutputWrite *I2cModel::GetI2cDeviceOutputWriteMsg() {
     @brief  I2cOutputModel constructor
 */
 I2cOutputModel::I2cOutputModel() {
-  memset(&_msg_led_backpack_write, 0, sizeof(_msg_led_backpack_write));
-  memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
+  memset(&_msg_display_write, 0, sizeof(_msg_display_write));
 }
 
 /*!
     @brief  I2cOutputModel destructor
 */
 I2cOutputModel::~I2cOutputModel() {
-  memset(&_msg_led_backpack_write, 0, sizeof(_msg_led_backpack_write));
-  memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
+  memset(&_msg_display_write, 0, sizeof(_msg_display_write));
 }
 
 /*!
-    @brief    Decodes a LedBackpackWrite message from an input stream.
+    @brief    Decodes a display Write message from an input stream.
     @param    stream
               A pointer to the pb_istream_t stream.
-    @returns  True if the LedBackpackWrite message was decoded successfully,
+    @returns  True if the Write message was decoded successfully,
               False otherwise.
 */
-bool I2cOutputModel::DecodeLedBackpackWrite(pb_istream_t *stream) {
-  memset(&_msg_led_backpack_write, 0, sizeof(_msg_led_backpack_write));
-  return pb_decode(stream, ws_i2c_output_LedBackpackWrite_fields,
-                   &_msg_led_backpack_write);
+bool I2cOutputModel::DecodeDisplayWrite(pb_istream_t *stream) {
+  memset(&_msg_display_write, 0, sizeof(_msg_display_write));
+  return pb_decode(stream, ws_display_Write_fields, &_msg_display_write);
 }
 
 /*!
-    @brief    Decodes a CharLCDWrite message from an input stream.
-    @param    stream
-              A pointer to the pb_istream_t stream.
-    @returns  True if the CharLCDWrite message was decoded successfully,
-              False otherwise.
+    @brief    Returns a pointer to the display Write message.
+    @returns  Pointer to the ws_display_Write message.
 */
-bool I2cOutputModel::DecodeCharLCDWrite(pb_istream_t *stream) {
-  memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
-  return pb_decode(stream, ws_i2c_output_CharLCDWrite_fields,
-                   &_msg_char_lcd_write);
-}
-
-/*!
-    @brief    Returns a pointer to the LedBackpackWrite message.
-    @returns  Pointer to the LedBackpackWrite message.
-*/
-ws_i2c_output_LedBackpackWrite *I2cOutputModel::GetLedBackpackWriteMsg() {
-  return &_msg_led_backpack_write;
-}
-
-/*!
-    @brief    Returns a pointer to the CharLCDWrite message.
-    @returns  Pointer to the CharLCDWrite message.
-*/
-ws_i2c_output_CharLCDWrite *I2cOutputModel::GetCharLCDWriteMsg() {
-  return &_msg_char_lcd_write;
+ws_display_Write *I2cOutputModel::GetDisplayWriteMsg() {
+  return &_msg_display_write;
 }

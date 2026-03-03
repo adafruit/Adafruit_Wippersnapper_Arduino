@@ -36,8 +36,10 @@
 #define WS_DEBUG_PRINT(x)                                                      \
   { WS_PRINTER.print(F(x)); } /**< Print debug message to serial (Flash) */
 #define WS_DEBUG_PRINTLN(x)                                                    \
-  { WS_PRINTER.println(F(x)); } /**< Print debug message with newline (Flash)  \
-                                 */
+  {                                                                            \
+    WS_PRINTER.println(F(x));                                                  \
+  } /**< Print debug message with newline (Flash)                              \
+     */
 #else
 // Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
@@ -45,7 +47,8 @@
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {                                                                            \
     WS_PRINTER.println(__VA_ARGS__);                                           \
-  } /**< Print debug message with newline */
+  } /**< Print debug message with newline                                      \
+     */
 #endif
 
 // Variable printing macros - use for non-string-literal arguments
@@ -120,6 +123,7 @@
 #include "components/analogIO/controller.h"
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
+#include "components/display/controller.h"
 #include "components/ds18x20/controller.h"
 #include "components/error/controller.h"
 #include "components/gps/controller.h"
@@ -163,6 +167,7 @@ class CheckinModel;
 class ErrorController;
 class SensorModel;
 class DigitalIOController;
+class DisplayController;
 class AnalogIOController;
 class DS18X20Controller;
 class GPSController;
@@ -255,6 +260,8 @@ public:
       nullptr; ///< Instance of DigitalIO controller class
   AnalogIOController *analogio_controller =
       nullptr; ///< Instance of AnalogIO controller
+  DisplayController *_display_controller =
+      nullptr; ///< Instance of Display controller
   DS18X20Controller *_ds18x20_controller =
       nullptr;                              ///< Instance of DS18X20 controller
   GPSController *_gps_controller = nullptr; ///< Instance of GPS controller
