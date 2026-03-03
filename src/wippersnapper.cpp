@@ -1158,6 +1158,11 @@ void wippersnapper::loopSleep() {
     Ws._sleep_controller->StartSleep();
     // For light sleep, we woke up here
     Ws._sleep_controller->WakeFromLightSleep();
+    // Reconnect WiFi/MQTT after light sleep wake (uses 'this' for proper virtual dispatch)
+    if (!Ws._sdCardV2->isModeOffline()) {
+      WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
+      NetworkFSM(true);
+    }
     // For light sleep, this allows the next loopSleep() cycle to begin
     return;
   }
@@ -1175,6 +1180,11 @@ void wippersnapper::loopSleep() {
     Ws._sleep_controller->StartSleep();
     // For light sleep, we woke up here
     Ws._sleep_controller->WakeFromLightSleep();
+    // Reconnect WiFi/MQTT after light sleep wake (uses 'this' for proper virtual dispatch)
+    if (!Ws._sdCardV2->isModeOffline()) {
+      WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
+      NetworkFSM(true);
+    }
     // For light sleep, this allows the next loopSleep() cycle to begin
     return;
   }

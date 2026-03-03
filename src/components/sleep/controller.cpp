@@ -138,6 +138,7 @@ void SleepController::WakeFromLightSleep() {
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
   Serial.begin(115200);
+  delay(1500);
   // If already enumerated, additional class driver begin() e.g msc, hid, midi won't take effect until re-enumeration
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
@@ -201,32 +202,9 @@ void SleepController::WakeFromLightSleep() {
           "[sleep] ERROR: Failed to re-initialize SD card after wake");
     }
     WS_DEBUG_PRINTLN("[sleep] SD card re-initialized successfully");
-  } else {
-    WS_DEBUG_PRINTLN("[sleep] Restoring WiFi after light sleep wakeup");
-
-    // DEBUG: Blink D13 three times = about to call NetworkFSM
-    digitalWrite(13, LOW);
-    delay(100);
-    digitalWrite(13, HIGH);
-    delay(100);
-    digitalWrite(13, LOW);
-    delay(100);
-    digitalWrite(13, HIGH);
-    delay(100);
-    digitalWrite(13, LOW);
-    delay(100);
-    digitalWrite(13, HIGH);
-    delay(100);
-    digitalWrite(13, LOW);
-
-
-    WS_DEBUG_PRINTLN("[sleep] Running NetworkFSM to reconnect...");
-    // Run NetFSM to reconnect WiFi and MQTT
-    Ws.NetworkFSM(true);
-
-    // DEBUG: D13 OFF = NetworkFSM completed
-    digitalWrite(13, LOW);
   }
+  // Note: NetworkFSM is called from loopSleep() after this returns,
+  // using 'this' pointer to ensure proper virtual dispatch
 
 #ifdef USE_STATUS_LED
   // Visual indication for configuring sleep in RP2350

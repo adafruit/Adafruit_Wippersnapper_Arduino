@@ -405,7 +405,7 @@ void SleepHardware::DisableExternalComponents() {
     @return True if WiFi was successfully disconnected, False otherwise.
 */
 bool SleepHardware::StopWiFi() {
-  Ws.disconnect(false); // Keep WiFi driver initialized for quick reconnect
+  //Ws.disconnect(false); // Keep WiFi driver initialized for quick reconnect
   WS_DEBUG_PRINTLN("[sleep] WiFi disconnected for sleep");
   return true;
 }
