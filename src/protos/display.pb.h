@@ -185,10 +185,9 @@ typedef struct _ws_display_Remove {
     char name[64]; /* * Identifier for the display. */
 } ws_display_Remove;
 
-typedef PB_BYTES_ARRAY_T(102400) ws_display_BinaryImageType_data_t;
 typedef struct _ws_display_BinaryImageType {
-    char content_type[64]; /* * MIME type of the image (e.g., "image/png"). */
-    ws_display_BinaryImageType_data_t data; /* * Raw image bytes. */
+    pb_callback_t content_type; /* * MIME type of the image (e.g., "image/png"). */
+    pb_callback_t data; /* * Raw image bytes. */
 } ws_display_BinaryImageType;
 
 /* *
@@ -198,9 +197,9 @@ typedef struct _ws_display_Write {
     pb_size_t which_content;
     union {
         char message[1024]; /* * Monospace text message */
-        char url[10240]; /* * URL to fetch the image from. */
-        char base64image[102400]; /* * Base64-encoded w/content-type prefix. */
-        ws_display_BinaryImageType binary_image; /* * Binary image data with content type. */
+        pb_callback_t url; /* * URL to fetch the image from. */
+        pb_callback_t base64image; /* * Base64-encoded w/content-type prefix. */
+        pb_callback_t binary_image; /* * Binary image data with content type. */
     } content;
     /* Display-specific write options (optional, with defaults) */
     bool clear_first; /* * Clear display before writing. Default: true */
@@ -354,7 +353,7 @@ extern "C" {
 #define ws_display_DsiConfig_init_default        {0, 0, 0, 0}
 #define ws_display_Add_init_default              {_ws_display_DisplayType_MIN, "", "", "", 0, {ws_display_EpdSpiConfig_init_default}, 0, {ws_display_EPDConfig_init_default}, false, ws_display_Write_init_default}
 #define ws_display_Remove_init_default           {""}
-#define ws_display_BinaryImageType_init_default  {"", {0, {0}}}
+#define ws_display_BinaryImageType_init_default  {{{NULL}, NULL}, {{NULL}, NULL}}
 #define ws_display_Write_init_default            {"", 0, {""}, 0, 0, 0}
 #define ws_display_AddedOrReplaced_init_default  {"", 0}
 #define ws_display_Removed_init_default          {"", 0}
@@ -376,7 +375,7 @@ extern "C" {
 #define ws_display_DsiConfig_init_zero           {0, 0, 0, 0}
 #define ws_display_Add_init_zero                 {_ws_display_DisplayType_MIN, "", "", "", 0, {ws_display_EpdSpiConfig_init_zero}, 0, {ws_display_EPDConfig_init_zero}, false, ws_display_Write_init_zero}
 #define ws_display_Remove_init_zero              {""}
-#define ws_display_BinaryImageType_init_zero     {"", {0, {0}}}
+#define ws_display_BinaryImageType_init_zero     {{{NULL}, NULL}, {{NULL}, NULL}}
 #define ws_display_Write_init_zero               {"", 0, {""}, 0, 0, 0}
 #define ws_display_AddedOrReplaced_init_zero     {"", 0}
 #define ws_display_Removed_init_zero             {"", 0}
@@ -681,21 +680,21 @@ X(a, STATIC,   SINGULAR, STRING,   name,              1)
 #define ws_display_Remove_DEFAULT NULL
 
 #define ws_display_BinaryImageType_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, STRING,   content_type,      1) \
-X(a, STATIC,   SINGULAR, BYTES,    data,              2)
-#define ws_display_BinaryImageType_CALLBACK NULL
+X(a, CALLBACK, SINGULAR, STRING,   content_type,      1) \
+X(a, CALLBACK, SINGULAR, BYTES,    data,              2)
+#define ws_display_BinaryImageType_CALLBACK pb_default_field_callback
 #define ws_display_BinaryImageType_DEFAULT NULL
 
 #define ws_display_Write_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   name,              1) \
 X(a, STATIC,   ONEOF,    STRING,   (content,message,content.message),   2) \
-X(a, STATIC,   ONEOF,    STRING,   (content,url,content.url),   3) \
-X(a, STATIC,   ONEOF,    STRING,   (content,base64image,content.base64image),   4) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (content,binary_image,content.binary_image),   5) \
+X(a, CALLBACK, ONEOF,    STRING,   (content,url,content.url),   3) \
+X(a, CALLBACK, ONEOF,    STRING,   (content,base64image,content.base64image),   4) \
+X(a, CALLBACK, ONEOF,    MESSAGE,  (content,binary_image,content.binary_image),   5) \
 X(a, STATIC,   SINGULAR, BOOL,     clear_first,       6) \
 X(a, STATIC,   SINGULAR, INT32,    cursor_x,          7) \
 X(a, STATIC,   SINGULAR, INT32,    cursor_y,          8)
-#define ws_display_Write_CALLBACK NULL
+#define ws_display_Write_CALLBACK pb_default_field_callback
 #define ws_display_Write_DEFAULT NULL
 #define ws_display_Write_content_binary_image_MSGTYPE ws_display_BinaryImageType
 
@@ -759,11 +758,12 @@ extern const pb_msgdesc_t ws_display_Removed_msg;
 #define ws_display_Removed_fields &ws_display_Removed_msg
 
 /* Maximum encoded size of messages (where known) */
-#define WS_DISPLAY_DISPLAY_PB_H_MAX_SIZE         ws_display_B2D_size
-#define ws_display_Add_size                      102826
+/* ws_display_B2D_size depends on runtime parameters */
+/* ws_display_Add_size depends on runtime parameters */
+/* ws_display_BinaryImageType_size depends on runtime parameters */
+/* ws_display_Write_size depends on runtime parameters */
+#define WS_DISPLAY_DISPLAY_PB_H_MAX_SIZE         ws_display_I8080PinConfig_size
 #define ws_display_AddedOrReplaced_size          67
-#define ws_display_B2D_size                      102830
-#define ws_display_BinaryImageType_size          102469
 #define ws_display_CharLcdConfig_size            12
 #define ws_display_D2B_size                      69
 #define ws_display_DsiConfig_size                44
@@ -781,7 +781,6 @@ extern const pb_msgdesc_t ws_display_Removed_msg;
 #define ws_display_TftSpiConfig_size             53
 #define ws_display_TtlRgb666Config_size          44
 #define ws_display_TtlRgb666PinConfig_size       63
-#define ws_display_Write_size                    102562
 
 #ifdef __cplusplus
 } /* extern "C" */

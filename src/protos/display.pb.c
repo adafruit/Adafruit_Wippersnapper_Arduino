@@ -6,14 +6,7 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-
-/* The following messages exceed 64kB in size: ws_display_B2D, ws_display_Add, ws_display_BinaryImageType, ws_display_Write */
-
-/* The PB_FIELD_32BIT compilation option must be defined to support messages that exceed 64 kB in size. */
-#ifndef PB_FIELD_32BIT
-#error Enable PB_FIELD_32BIT to support messages exceeding 64kB in size: ws_display_B2D, ws_display_Add, ws_display_BinaryImageType, ws_display_Write
-#endif
-PB_BIND(ws_display_B2D, ws_display_B2D, 4)
+PB_BIND(ws_display_B2D, ws_display_B2D, 2)
 
 
 PB_BIND(ws_display_D2B, ws_display_D2B, AUTO)
@@ -61,16 +54,16 @@ PB_BIND(ws_display_DsiPinConfig, ws_display_DsiPinConfig, AUTO)
 PB_BIND(ws_display_DsiConfig, ws_display_DsiConfig, AUTO)
 
 
-PB_BIND(ws_display_Add, ws_display_Add, 4)
+PB_BIND(ws_display_Add, ws_display_Add, 2)
 
 
 PB_BIND(ws_display_Remove, ws_display_Remove, AUTO)
 
 
-PB_BIND(ws_display_BinaryImageType, ws_display_BinaryImageType, 4)
+PB_BIND(ws_display_BinaryImageType, ws_display_BinaryImageType, AUTO)
 
 
-PB_BIND(ws_display_Write, ws_display_Write, 4)
+PB_BIND(ws_display_Write, ws_display_Write, 2)
 
 
 PB_BIND(ws_display_AddedOrReplaced, ws_display_AddedOrReplaced, AUTO)

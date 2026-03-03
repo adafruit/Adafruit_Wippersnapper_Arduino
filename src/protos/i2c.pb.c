@@ -6,14 +6,7 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-
-/* The following messages exceed 64kB in size: ws_i2c_B2D, ws_i2c_DeviceAddOrReplace, ws_i2c_DeviceOutputWrite */
-
-/* The PB_FIELD_32BIT compilation option must be defined to support messages that exceed 64 kB in size. */
-#ifndef PB_FIELD_32BIT
-#error Enable PB_FIELD_32BIT to support messages exceeding 64kB in size: ws_i2c_B2D, ws_i2c_DeviceAddOrReplace, ws_i2c_DeviceOutputWrite
-#endif
-PB_BIND(ws_i2c_B2D, ws_i2c_B2D, 4)
+PB_BIND(ws_i2c_B2D, ws_i2c_B2D, 2)
 
 
 PB_BIND(ws_i2c_D2B, ws_i2c_D2B, 4)
@@ -31,7 +24,7 @@ PB_BIND(ws_i2c_BusScan, ws_i2c_BusScan, AUTO)
 PB_BIND(ws_i2c_BusScanned, ws_i2c_BusScanned, 4)
 
 
-PB_BIND(ws_i2c_DeviceAddOrReplace, ws_i2c_DeviceAddOrReplace, 4)
+PB_BIND(ws_i2c_DeviceAddOrReplace, ws_i2c_DeviceAddOrReplace, 2)
 
 
 PB_BIND(ws_i2c_DeviceAddedOrReplaced, ws_i2c_DeviceAddedOrReplaced, AUTO)
@@ -46,7 +39,7 @@ PB_BIND(ws_i2c_DeviceRemoved, ws_i2c_DeviceRemoved, AUTO)
 PB_BIND(ws_i2c_DeviceEvent, ws_i2c_DeviceEvent, 2)
 
 
-PB_BIND(ws_i2c_DeviceOutputWrite, ws_i2c_DeviceOutputWrite, 4)
+PB_BIND(ws_i2c_DeviceOutputWrite, ws_i2c_DeviceOutputWrite, 2)
 
 
 

@@ -401,23 +401,32 @@ extern const pb_msgdesc_t ws_i2c_DeviceOutputWrite_msg;
 #define ws_i2c_DeviceOutputWrite_fields &ws_i2c_DeviceOutputWrite_msg
 
 /* Maximum encoded size of messages (where known) */
+#if defined(ws_display_Add_size) && defined(ws_display_Write_size)
+union ws_i2c_B2D_payload_size_union {char f2[(1911 + ws_display_Add_size)]; char f4[(64 + ws_display_Write_size)]; char f0[56];};
+#endif
 #if defined(ws_sensor_Event_size)
 union ws_i2c_D2B_payload_size_union {char f4[(148 + 15*ws_sensor_Event_size)]; char f0[6245];};
 #endif
-#define WS_I2C_I2C_PB_H_MAX_SIZE                 ws_i2c_B2D_size
-#define ws_i2c_B2D_size                          104733
-#define ws_i2c_BusDescriptor_size                32
-#define ws_i2c_BusScan_size                      42
-#define ws_i2c_BusScanned_size                   6242
-#define ws_i2c_DeviceAddOrReplace_size           104729
-#define ws_i2c_DeviceAddedOrReplaced_size        56
-#define ws_i2c_DeviceDescriptor_size             50
-#define ws_i2c_DeviceOutputWrite_size            102618
-#define ws_i2c_DeviceRemove_size                 54
-#define ws_i2c_DeviceRemoved_size                54
+#if defined(ws_display_Add_size) && defined(ws_display_Write_size)
+#define ws_i2c_B2D_size                          (0 + sizeof(union ws_i2c_B2D_payload_size_union))
+#endif
 #if defined(ws_sensor_Event_size)
 #define ws_i2c_D2B_size                          (0 + sizeof(union ws_i2c_D2B_payload_size_union))
 #define ws_i2c_DeviceEvent_size                  (142 + 15*ws_sensor_Event_size)
+#endif
+#define WS_I2C_I2C_PB_H_MAX_SIZE                 ws_i2c_BusScanned_size
+#define ws_i2c_BusDescriptor_size                32
+#define ws_i2c_BusScan_size                      42
+#define ws_i2c_BusScanned_size                   6242
+#define ws_i2c_DeviceAddedOrReplaced_size        56
+#define ws_i2c_DeviceDescriptor_size             50
+#define ws_i2c_DeviceRemove_size                 54
+#define ws_i2c_DeviceRemoved_size                54
+#if defined(ws_display_Add_size)
+#define ws_i2c_DeviceAddOrReplace_size           (1905 + ws_display_Add_size)
+#endif
+#if defined(ws_display_Write_size)
+#define ws_i2c_DeviceOutputWrite_size            (58 + ws_display_Write_size)
 #endif
 
 #ifdef __cplusplus

@@ -6,14 +6,7 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-
-/* The following messages exceed 64kB in size: ws_signal_BrokerToDevice */
-
-/* The PB_FIELD_32BIT compilation option must be defined to support messages that exceed 64 kB in size. */
-#ifndef PB_FIELD_32BIT
-#error Enable PB_FIELD_32BIT to support messages exceeding 64kB in size: ws_signal_BrokerToDevice
-#endif
-PB_BIND(ws_signal_BrokerToDevice, ws_signal_BrokerToDevice, 4)
+PB_BIND(ws_signal_BrokerToDevice, ws_signal_BrokerToDevice, 2)
 
 
 PB_BIND(ws_signal_DeviceToBroker, ws_signal_DeviceToBroker, 4)
