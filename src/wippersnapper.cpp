@@ -551,7 +551,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
-      WS_DEBUG_PRINTLN("Not connected to Adafruit IO MQTT!");
+      WS_DEBUG_PRINTLN("Not connected to Adafruit IO!");
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_CHECK_NETWORK:
@@ -1154,6 +1154,8 @@ void wippersnapper::loopSleep() {
     loop_start_time = 0;
     loop_timer_started = false;
     // Enter sleep
+    // disconnect from WiFi 
+    disconnect(true);
     WS_DEBUG_PRINTLN("[app] All components updated, entering sleep...");
     Ws._sleep_controller->StartSleep();
     // For light sleep, we woke up here
