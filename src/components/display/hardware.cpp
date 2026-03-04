@@ -162,6 +162,22 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   return true;
 }
 
+void DisplayHardware::showSplash() {
+  if (_drvDisp)
+    _drvDisp->showSplash();
+}
+
+void DisplayHardware::drawStatusBar(const char *io_username) {
+  if (_drvDisp)
+    _drvDisp->drawStatusBar(io_username);
+}
+
+void DisplayHardware::updateStatusBar(int8_t rssi, uint8_t bat,
+                                      bool mqtt_connected) {
+  if (_drvDisp)
+    _drvDisp->updateStatusBar(rssi, bat, mqtt_connected);
+}
+
 /*!
     @brief  Writes content to the display.
     @param  msg  Pointer to the ws_display_Write message.

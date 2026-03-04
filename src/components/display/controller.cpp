@@ -14,7 +14,10 @@
  */
 #include "controller.h"
 
-DisplayController::DisplayController() { _num_displays = 0; }
+DisplayController::DisplayController() {
+  _num_displays = 0;
+  _last_bar_update = 0;
+}
 
 DisplayController::~DisplayController() {
   for (int i = 0; i < _num_displays; i++) {
@@ -92,6 +95,10 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
     return false;
   }
 
+  // Show splash screen and status bar
+  hw->showSplash();
+  hw->drawStatusBar(Ws._configV2.aio_user);
+
   _displays[_num_displays] = hw;
   _num_displays++;
 
@@ -167,6 +174,28 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
   }
 
   return _displays[idx]->write(msg);
+}
+
+/*!
+    @brief  Updates the status bar on all displays every 60 seconds.
+    @param  rssi  The current WiFi RSSI.
+    @param  is_connected  Whether MQTT is currently connected.
+*/
+void DisplayController::update(int32_t rssi, bool is_connected) {
+  if (_num_displays == 0)
+    return;
+
+  unsigned long now = millis();
+  if (now - _last_bar_update < 60000)
+    return;
+  _last_bar_update = now;
+
+  for (uint8_t i = 0; i < _num_displays; i++) {
+    if (_displays[i]) {
+      WS_DEBUG_PRINTLN("[display] Updating status bar...");
+      _displays[i]->updateStatusBar(rssi, 100, is_connected);
+    }
+  }
 }
 
 /*!

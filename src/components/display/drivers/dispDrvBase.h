@@ -15,6 +15,8 @@
 #ifndef WS_DISP_DRV_BASE_H
 #define WS_DISP_DRV_BASE_H
 
+#include "../assets/icons.h"
+#include "../assets/splash.h"
 #include "Wippersnapper.h"
 
 /*!
@@ -46,6 +48,10 @@ public:
   // TODO: Move backlight pin into proto Add message instead of board defines
   void setBacklightPin(int16_t pin) { _pin_bl = pin; }
 
+  virtual void showSplash() {}
+  virtual void drawStatusBar(const char *io_username) {}
+  virtual void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_status) {}
+
 protected:
   int16_t _pin_cs;      ///< Chip Select pin
   int16_t _pin_dc;      ///< Data/Command pin
@@ -58,6 +64,14 @@ protected:
   int16_t _width;       ///< Display width
   int16_t _height;      ///< Display height
   uint8_t _rotation;    ///< Display rotation (0-3)
+  // Status bar properties
+  int _statusbar_icons_y;        ///< Y position of status bar icons
+  int _statusbar_icon_battery_x; ///< X position of battery icon
+  int _statusbar_icon_wifi_x;    ///< X position of WiFi icon
+  int _statusbar_icon_cloud_x;   ///< X position of cloud icon
+  int8_t _statusbar_rssi;        ///< Last RSSI value
+  uint8_t _statusbar_bat;        ///< Last battery level percentage
+  bool _statusbar_mqtt_connected; ///< Last MQTT connection status
 };
 
 #endif // WS_DISP_DRV_BASE_H
