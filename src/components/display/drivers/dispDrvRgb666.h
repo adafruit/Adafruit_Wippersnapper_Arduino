@@ -44,7 +44,7 @@ public:
 
   ~dispDrvRgb666() {
     if (_display) {
-      _display->fillScreen(BLACK);
+      _display->fillScreen(RGB565_BLACK);
       delete _display;
       _display = nullptr;
     }
@@ -102,8 +102,8 @@ public:
       return false;
     }
 
-    _display->fillScreen(BLACK);
-    _display->setTextColor(WHITE);
+    _display->fillScreen(RGB565_BLACK);
+    _display->setTextColor(RGB565_WHITE);
     _display->setTextWrap(false);
     _display->setTextSize(_text_sz);
 
@@ -129,11 +129,11 @@ public:
 
     // Draw white status bar at top
     _display->fillRect(0, 0, _display->width(), RGB666_STATUSBAR_HEIGHT,
-                       WHITE);
+                       RGB565_WHITE);
 
     // Draw username on left side
     _display->setTextSize(1);
-    _display->setTextColor(BLACK);
+    _display->setTextColor(RGB565_BLACK);
     _display->setCursor(5, 6);
     _display->print(io_username);
 
@@ -161,7 +161,7 @@ public:
                          RGB666_STATUSBAR_ICON_SZ, BLACK);
 
     // Reset text color and size for main text area
-    _display->setTextColor(WHITE);
+    _display->setTextColor(RGB565_WHITE);
     _display->setTextSize(_text_sz);
   }
 
@@ -178,15 +178,15 @@ public:
     if (update_mqtt) {
       _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y,
                          RGB666_STATUSBAR_ICON_SZ, RGB666_STATUSBAR_ICON_SZ,
-                         WHITE);
+                         RGB565_WHITE);
       if (mqtt_status) {
         _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
                              epd_bmp_cloud_online, RGB666_STATUSBAR_ICON_SZ,
-                             RGB666_STATUSBAR_ICON_SZ, BLACK);
+                             RGB666_STATUSBAR_ICON_SZ, RGB565_BLACK);
       } else {
         _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
                              epd_bmp_cloud_offline, RGB666_STATUSBAR_ICON_SZ,
-                             RGB666_STATUSBAR_ICON_SZ, BLACK);
+                             RGB666_STATUSBAR_ICON_SZ, RGB565_BLACK);
       }
       _statusbar_mqtt_connected = mqtt_status;
     }
@@ -202,10 +202,10 @@ public:
       }
       _display->fillRect(_statusbar_icon_wifi_x, _statusbar_icons_y,
                          RGB666_STATUSBAR_ICON_SZ, RGB666_STATUSBAR_ICON_SZ,
-                         WHITE);
+                         RGB565_WHITE);
       _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
                            wifi_icon, RGB666_STATUSBAR_ICON_SZ,
-                           RGB666_STATUSBAR_ICON_SZ, BLACK);
+                           RGB666_STATUSBAR_ICON_SZ, RGB565_BLACK);
       _statusbar_rssi = rssi;
     }
   }
@@ -217,7 +217,7 @@ public:
 
     if (clear_first) {
       _display->fillRect(0, RGB666_STATUSBAR_HEIGHT, _display->width(),
-                         _display->height() - RGB666_STATUSBAR_HEIGHT, BLACK);
+                         _display->height() - RGB666_STATUSBAR_HEIGHT, RGB565_BLACK);
     }
 
     int16_t y_idx =
