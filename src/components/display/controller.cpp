@@ -130,8 +130,8 @@ static void resolveRgb666Defaults(ws_display_Add *msg) {
     const char *driver;
     const char *panel;
   } mappings[] = {
-      {"qualia-round-480x480", "ST7701S", "TL021WVC02"},
-      {"qualia-bar-320x820", "ST7701S", "TL032FWV01"},
+      {"qualia-round-21-480x480", "ST7701S", "TL021WVC02"},
+      {"qualia-bar-32-320x820", "ST7701S", "TL032FWV01"},
   };
 
   for (auto &m : mappings) {

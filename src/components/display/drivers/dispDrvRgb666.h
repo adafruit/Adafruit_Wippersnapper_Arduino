@@ -74,14 +74,17 @@ public:
     if (!_rgbpanel)
       return false;
 
-    // Select init operations based on panel string
+    // Select init operations based on panel string.
+    // Accepts both panel part numbers and Adafruit PIDs.
     const uint8_t *init_ops = nullptr;
     size_t init_ops_len = 0;
 
-    if (strcmp(_panel, "TL021WVC02") == 0) {
+    if (strcmp(_panel, "TL021WVC02") == 0 ||
+        strcmp(_panel, "adafruit-5792") == 0) {
       init_ops = TL021WVC02_init_operations;
       init_ops_len = sizeof(TL021WVC02_init_operations);
-    } else if (strcmp(_panel, "TL032FWV01") == 0) {
+    } else if (strcmp(_panel, "TL032FWV01") == 0 ||
+               strcmp(_panel, "adafruit-5797") == 0) {
       init_ops = tl032fwv01_init_operations;
       init_ops_len = sizeof(tl032fwv01_init_operations);
     } else {
