@@ -1096,7 +1096,7 @@ void wippersnapper::loop() {
   Ws._gps_controller->update();
 
   // Update display status bars
-  Ws._display_controller->update(Ws.getRSSI(),
+  Ws._display_controller->update(getRSSI(),
                                  Ws._mqttV2->connected());
 }
 
