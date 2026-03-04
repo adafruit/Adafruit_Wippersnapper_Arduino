@@ -95,7 +95,7 @@ public:
       @param    message
                   The message to be displayed.
   */
-  void WriteMessageSSD1306(const char *message) {
+  void WriteMessage(const char *message) override {
     if (_display == nullptr)
       return;
 

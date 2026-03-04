@@ -385,6 +385,11 @@ static const std::map<std::string, FnCreateI2cOutputDrv> I2cFactoryOutput = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvOutputBase * {
        return new drvOutSsd1306(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sh1107",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvOutputBase * {
+       return new drvOutSh1107(i2c, addr, mux_channel, driver_name);
      }}}; ///< I2C output driver factory
 
 /*!
@@ -1028,6 +1033,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
       WS_DEBUG_PRINTLN("OK!");
     } else if (config == ws_display_Add_config_char_lcd_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring char LCD...");
+      ws_display_CharLcdConfig cfg =
+          msg->output_add.config.config_char_lcd;
+      drv_out->ConfigureCharLcd(cfg.rows, cfg.columns, true);
+      WS_DEBUG_PRINTLN("OK!");
     } else if (config == ws_display_Add_config_oled_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring OLED...");
       ws_display_OledConfig cfg = msg->output_add.config.config_oled;

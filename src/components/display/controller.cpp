@@ -57,9 +57,67 @@ bool DisplayController::Router(pb_istream_t *stream) {
     @param  msg  The Display Add message.
     @return True if successful, False otherwise.
 */
+/*!
+    @brief  Resolves component-name based driver/mode defaults for EPD displays.
+            Called before passing the Add message to hardware so that the
+            controller owns the "what driver" decision and hardware just inits.
+    @param  msg  The Display Add message (may be modified in place).
+*/
+static void resolveEpdDefaults(ws_display_Add *msg) {
+  if (msg->which_interface_type != ws_display_Add_spi_epd_tag)
+    return;
+  if (msg->which_config != ws_display_Add_config_epd_tag)
+    return;
+
+  ws_display_EPDConfig *config = &msg->config.config_epd;
+  const char *name = msg->name;
+
+  // MagTag auto-detection is handled at hardware level (needs SPI probing),
+  // but we can still set mode default
+  if (strncmp(name, "eink-magtag", 11) == 0) {
+    if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED)
+      config->mode = ws_display_EPDMode_EPD_MODE_GRAYSCALE4;
+    return;
+  }
+
+  // Map specific component names to driver + default mode
+  struct {
+    const char *component;
+    const char *driver;
+    ws_display_EPDMode mode;
+  } mappings[] = {
+      {"eink-29-flexible-monochrome-296x128", "UC8151",
+       ws_display_EPDMode_EPD_MODE_MONO},
+      {"eink-37-monochrome-416x240", "UC8253",
+       ws_display_EPDMode_EPD_MODE_MONO},
+      {"eink-42-grayscale-300x400", "SSD1683",
+       ws_display_EPDMode_EPD_MODE_GRAYSCALE4},
+      {"eink-583-monochrome-648x480", "UC8179",
+       ws_display_EPDMode_EPD_MODE_MONO},
+  };
+
+  for (auto &m : mappings) {
+    if (strncmp(name, m.component, strlen(m.component)) == 0) {
+      strncpy(msg->driver, m.driver, sizeof(msg->driver) - 1);
+      msg->driver[sizeof(msg->driver) - 1] = '\0';
+      if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED)
+        config->mode = m.mode;
+      WS_DEBUG_PRINT("[display] Resolved component '");
+      WS_DEBUG_PRINT(name);
+      WS_DEBUG_PRINT("' -> driver '");
+      WS_DEBUG_PRINT(msg->driver);
+      WS_DEBUG_PRINTLN("'");
+      return;
+    }
+  }
+}
+
 bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   WS_DEBUG_PRINT("[display] Adding display: ");
   WS_DEBUG_PRINTLN(msg->name);
+
+  // Resolve component-name defaults before passing to hardware
+  resolveEpdDefaults(msg);
 
   // If display with same name exists, remove it first
   int8_t existingIdx = findDisplayByName(msg->name);

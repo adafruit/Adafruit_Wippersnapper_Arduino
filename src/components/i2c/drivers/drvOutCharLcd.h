@@ -76,7 +76,8 @@ public:
       @param   enable_backlight
               True if the backlight is enabled, False otherwise.
   */
-  void ConfigureCharLcd(uint8_t rows, uint8_t cols, bool enable_backlight) {
+  void ConfigureCharLcd(uint32_t rows, uint32_t cols,
+                        bool enable_backlight) override {
     _rows = rows;
     _cols = cols;
     _enable_backlight = enable_backlight;

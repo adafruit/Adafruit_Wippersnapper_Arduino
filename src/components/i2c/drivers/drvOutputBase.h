@@ -19,6 +19,15 @@
 #include <protos/i2c.pb.h>
 #include <protos/display.pb.h>
 
+// Shared LED backpack defines (used by drvOut7Seg and drvOutQuadAlphaNum)
+#ifndef LED_BACKPACK_ALIGNMENT_UNSPECIFIED
+#define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0
+#define LED_BACKPACK_ALIGNMENT_LEFT 1
+#define LED_BACKPACK_ALIGNMENT_RIGHT 2
+#define LED_BACKPACK_ALIGNMENT_DEFAULT LED_BACKPACK_ALIGNMENT_LEFT
+#define LED_MAX_CHARS 4
+#endif
+
 /*!
     @brief  Base class for I2C Output Drivers.
 */
