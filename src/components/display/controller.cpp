@@ -112,12 +112,53 @@ static void resolveEpdDefaults(ws_display_Add *msg) {
   }
 }
 
+/*!
+    @brief  Resolves component-name based driver/panel defaults for RGB666
+            dotclock displays (Qualia).
+    @param  msg  The Display Add message (may be modified in place).
+*/
+static void resolveRgb666Defaults(ws_display_Add *msg) {
+  if (msg->which_interface_type != ws_display_Add_ttl_rgb666_tag)
+    return;
+  if (msg->which_config != ws_display_Add_config_ttl_rgb666_tag)
+    return;
+
+  const char *name = msg->name;
+
+  struct {
+    const char *component;
+    const char *driver;
+    const char *panel;
+  } mappings[] = {
+      {"qualia-round-480x480", "ST7701S", "TL021WVC02"},
+      {"qualia-bar-320x820", "ST7701S", "TL032FWV01"},
+  };
+
+  for (auto &m : mappings) {
+    if (strncmp(name, m.component, strlen(m.component)) == 0) {
+      strncpy(msg->driver, m.driver, sizeof(msg->driver) - 1);
+      msg->driver[sizeof(msg->driver) - 1] = '\0';
+      strncpy(msg->panel, m.panel, sizeof(msg->panel) - 1);
+      msg->panel[sizeof(msg->panel) - 1] = '\0';
+      WS_DEBUG_PRINT("[display] Resolved component '");
+      WS_DEBUG_PRINT(name);
+      WS_DEBUG_PRINT("' -> driver '");
+      WS_DEBUG_PRINT(msg->driver);
+      WS_DEBUG_PRINT("', panel '");
+      WS_DEBUG_PRINT(msg->panel);
+      WS_DEBUG_PRINTLN("'");
+      return;
+    }
+  }
+}
+
 bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   WS_DEBUG_PRINT("[display] Adding display: ");
   WS_DEBUG_PRINTLN(msg->name);
 
   // Resolve component-name defaults before passing to hardware
   resolveEpdDefaults(msg);
+  resolveRgb666Defaults(msg);
 
   // If display with same name exists, remove it first
   int8_t existingIdx = findDisplayByName(msg->name);

@@ -35,6 +35,11 @@
 class dispDrvBase {
 public:
   /*!
+      @brief  Constructor for displays with hardwired pins (e.g., Qualia RGB666).
+  */
+  dispDrvBase() {}
+
+  /*!
       @brief  Constructor for SPI EPD (E-Ink) displays.
   */
   dispDrvBase(int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs = -1,

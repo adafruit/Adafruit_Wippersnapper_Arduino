@@ -52,6 +52,8 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
     return beginSpiTft(addMsg);
   case ws_display_Add_spi_epd_tag:
     return beginSpiEpd(addMsg);
+  case ws_display_Add_ttl_rgb666_tag:
+    return beginTtlRgb666(addMsg);
   default:
     WS_DEBUG_PRINTLN(
         "[display] ERROR: Unsupported display interface type!");
@@ -309,6 +311,52 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 
   WS_DEBUG_PRINTLN("[display] SPI EPD initialized successfully!");
   return true;
+}
+
+// ---------------------------------------------------------------------------
+// TTL RGB666 initialization (Qualia ESP32-S3)
+// ---------------------------------------------------------------------------
+bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
+#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+  if (msg->which_config != ws_display_Add_config_ttl_rgb666_tag) {
+    WS_DEBUG_PRINTLN(
+        "[display] ERROR: Expected TTL RGB666 config for RGB666!");
+    return false;
+  }
+  ws_display_TtlRgb666Config *config = &msg->config.config_ttl_rgb666;
+
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
+
+  WS_DEBUG_PRINT("[display] RGB666 panel: ");
+  WS_DEBUG_PRINTLN(msg->panel);
+
+  dispDrvRgb666 *drv = new dispDrvRgb666(msg->panel);
+  if (!drv)
+    return false;
+
+  drv->setWidth(config->width);
+  drv->setHeight(config->height);
+  drv->setRotation(config->rotation);
+  if (config->text_size > 0)
+    drv->setTextSize(config->text_size);
+
+  if (!drv->begin()) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin RGB666 driver!");
+    delete drv;
+    return false;
+  }
+
+  _drvDisp = drv;
+  WS_DEBUG_PRINTLN("[display] TTL RGB666 initialized successfully!");
+  return true;
+#else
+  WS_DEBUG_PRINTLN(
+      "[display] ERROR: TTL RGB666 not supported on this board!");
+  return false;
+#endif
 }
 
 void DisplayHardware::showSplash() {
