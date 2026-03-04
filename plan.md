@@ -266,3 +266,129 @@ I2C output drivers live at `src/components/i2c/drivers/drvOut*.h`, extending `dr
 (which extends `drvBase`). They are managed by the I2C controller (`src/components/i2c/controller.cpp`)
 via the `I2cFactoryOutput` map. They already use `ws_display_Write` / `ws_display_Add` proto types
 from `display.pb.h` — NOT from a separate `i2c_output.pb.h`.
+
+
+## Latest plan 20:23 2026-03-04
+ Plan to implement                                                                                                                                                                │
+│                                                                                                                                                                                  │
+│ Plan: Add Qualia Board + RGB666 Dotclock Display Drivers                                                                                                                         │
+│                                                                                                                                                                                  │
+│ Context                                                                                                                                                                          │
+│                                                                                                                                                                                  │
+│ The displays-v2 branch needs support for the Adafruit Qualia ESP32-S3 board (PID 5800)                                                                                           │
+│ and two RGB666 dotclock displays: the 2.1" round (PID 5792, 480x480) and the 3.2" bar                                                                                            │
+│ (PID 5797, 320x820). Both use ST7701S with SPI init + RGB dotclock pixel data. The proto                                                                                         │
+│ already defines ws_display_Add_ttl_rgb666_tag and TtlRgb666Config.                                                                                                               │
+│                                                                                                                                                                                  │
+│ Uses Arduino_GFX_Library (moononournation) as a Qualia-only dependency — this is what                                                                                            │
+│ Adafruit's own examples use. The lib is guarded behind #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666.                                                                                 │
+│                                                                                                                                                                                  │
+│ 1. Add Qualia to ws_boards.h (line ~242, before #else)                                                                                                                           │
+│                                                                                                                                                                                  │
+│ #elif defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666)                                                                                                                                 │
+│ #define BOARD_ID "qualia-s3-rgb666"                                                                                                                                              │
+│ #define USE_TINYUSB                                                                                                                                                              │
+│ #define USE_PSRAM                                                                                                                                                                │
+│ #define BOOT_BUTTON 0                                                                                                                                                            │
+│                                                                                                                                                                                  │
+│ No status LED/NeoPixel — board has none. Status bar on display serves as indicator.                                                                                              │
+│                                                                                                                                                                                  │
+│ 2. Add PlatformIO env to platformio.ini                                                                                                                                          │
+│                                                                                                                                                                                  │
+│ [env:adafruit_qualia_s3_rgb666]                                                                                                                                                  │
+│ extends = common:esp32                                                                                                                                                           │
+│ board = adafruit_qualia_s3_rgb666                                                                                                                                                │
+│ build_flags = -DARDUINO_ADAFRUIT_QUALIA_S3_RGB666 -DBOARD_HAS_PSRAM                                                                                                              │
+│ board_build.partitions = tinyuf2-partitions-16MB.csv                                                                                                                             │
+│ extra_scripts = pre:rename_usb_config.py                                                                                                                                         │
+│ lib_deps =                                                                                                                                                                       │
+│     ${env.lib_deps}                                                                                                                                                              │
+│     moononournation/GFX Library for Arduino                                                                                                                                      │
+│                                                                                                                                                                                  │
+│ 3. Create dispDrvRgb666.h                                                                                                                                                        │
+│                                                                                                                                                                                  │
+│ File: src/components/display/drivers/dispDrvRgb666.h                                                                                                                             │
+│                                                                                                                                                                                  │
+│ Entire file guarded with #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666.                                                                                                               │
+│                                                                                                                                                                                  │
+│ Uses Arduino_GFX classes:                                                                                                                                                        │
+│ - Arduino_XCA9554SWSPI — PCA9554A IO expander (backlight, reset, SPI for display init)                                                                                           │
+│ - Arduino_ESP32RGBPanel — ESP32-S3 RGB dotclock bus                                                                                                                              │
+│ - Arduino_RGB_Display — Display with init sequence                                                                                                                               │
+│                                                                                                                                                                                  │
+│ Panel selection via panel string from Add message:                                                                                                                               │
+│                                                                                                                                                                                  │
+│ ┌──────────────┬──────┬────────────┬────────────────────────────┐                                                                                                                │
+│ │ Panel string │ PID  │ Resolution │       Init ops array       │                                                                                                                │
+│ ├──────────────┼──────┼────────────┼────────────────────────────┤                                                                                                                │
+│ │ "TL021WVC02" │ 5792 │ 480x480    │ TL021WVC02_init_operations │                                                                                                                │
+│ ├──────────────┼──────┼────────────┼────────────────────────────┤                                                                                                                │
+│ │ "TL032FWV01" │ 5797 │ 320x820    │ tl032fwv01_init_operations │                                                                                                                │
+│ └──────────────┴──────┴────────────┴────────────────────────────┘                                                                                                                │
+│                                                                                                                                                                                  │
+│ Constructor pattern (from Qualia_S3_Product_Demo.ino):                                                                                                                           │
+│ Arduino_XCA9554SWSPI *expander = new Arduino_XCA9554SWSPI(                                                                                                                       │
+│     PCA_TFT_RESET, PCA_TFT_CS, PCA_TFT_SCK, PCA_TFT_MOSI, &Wire, 0x3F);                                                                                                          │
+│ Arduino_ESP32RGBPanel *rgbpanel = new Arduino_ESP32RGBPanel(                                                                                                                     │
+│     TFT_DE, TFT_VSYNC, TFT_HSYNC, TFT_PCLK,                                                                                                                                      │
+│     TFT_R1, TFT_R2, TFT_R3, TFT_R4, TFT_R5,                                                                                                                                      │
+│     TFT_G0, TFT_G1, TFT_G2, TFT_G3, TFT_G4, TFT_G5,                                                                                                                              │
+│     TFT_B1, TFT_B2, TFT_B3, TFT_B4, TFT_B5,                                                                                                                                      │
+│     1, 46, 2, 44,  1, 50, 16, 16);                                                                                                                                               │
+│ Arduino_RGB_Display *gfx = new Arduino_RGB_Display(                                                                                                                              │
+│     480, 480, rgbpanel, 0, true,                                                                                                                                                 │
+│     expander, GFX_NOT_DEFINED, TL021WVC02_init_operations,                                                                                                                       │
+│     sizeof(TL021WVC02_init_operations));                                                                                                                                         │
+│                                                                                                                                                                                  │
+│ All TFT_* and PCA_* pin defines from Qualia board variant pins_arduino.h.                                                                                                        │
+│ Init operation arrays provided by Arduino_GFX_Library.                                                                                                                           │
+│                                                                                                                                                                                  │
+│ Class: dispDrvRgb666 : public dispDrvBase                                                                                                                                        │
+│ - Uses the no-pin base constructor (pins are board-hardwired)                                                                                                                    │
+│ - begin() — creates expander, rgbpanel, display; enables backlight                                                                                                               │
+│ - writeMessage() — V2 signature with clear_first/cursor_x/cursor_y                                                                                                               │
+│ - showSplash() — no-op (no splash bitmap for these panels yet)                                                                                                                   │
+│ - drawStatusBar() / updateStatusBar() — same pattern as TFT, using                                                                                                               │
+│ Arduino_GFX's Adafruit_GFX-compatible API (fillRect, drawBitmap, etc.)                                                                                                           │
+│                                                                                                                                                                                  │
+│ 4. Update dispDrvBase.h                                                                                                                                                          │
+│                                                                                                                                                                                  │
+│ Add no-pin constructor for board-integrated displays:                                                                                                                            │
+│ dispDrvBase() {} // For displays with hardwired pins (e.g., Qualia RGB666)                                                                                                       │
+│                                                                                                                                                                                  │
+│ 5. Update hardware.h                                                                                                                                                             │
+│                                                                                                                                                                                  │
+│ - Add #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666 guarded include of dispDrvRgb666.h                                                                                                │
+│ - Add bool beginTtlRgb666(ws_display_Add *msg); declaration                                                                                                                      │
+│                                                                                                                                                                                  │
+│ 6. Update hardware.cpp                                                                                                                                                           │
+│                                                                                                                                                                                  │
+│ - Add case ws_display_Add_ttl_rgb666_tag: return beginTtlRgb666(msg); to begin() switch                                                                                          │
+│ - Implement beginTtlRgb666():                                                                                                                                                    │
+│   - Parse TtlRgb666Config for width/height/rotation/text_size                                                                                                                    │
+│   - Select panel init ops from msg->panel string                                                                                                                                 │
+│   - Create dispDrvRgb666 instance with panel selection                                                                                                                           │
+│   - Call begin(), set dimensions, return                                                                                                                                         │
+│                                                                                                                                                                                  │
+│ 7. Update controller.cpp                                                                                                                                                         │
+│                                                                                                                                                                                  │
+│ Add component-name resolution for Qualia displays in resolveEpdDefaults()                                                                                                        │
+│ (rename to resolveDisplayDefaults() or add separate function):                                                                                                                   │
+│ "qualia-round-480x480" → driver="ST7701S", panel="TL021WVC02"                                                                                                                    │
+│ "qualia-bar-320x820"   → driver="ST7701S", panel="TL032FWV01"                                                                                                                    │
+│                                                                                                                                                                                  │
+│ Files to modify                                                                                                                                                                  │
+│                                                                                                                                                                                  │
+│ 1. src/ws_boards.h — add Qualia board define                                                                                                                                     │
+│ 2. platformio.ini — add Qualia env + Arduino_GFX lib dep                                                                                                                         │
+│ 3. src/components/display/drivers/dispDrvBase.h — add no-pin constructor                                                                                                         │
+│ 4. src/components/display/drivers/dispDrvRgb666.h — NEW RGB666 driver                                                                                                            │
+│ 5. src/components/display/hardware.h — add include + beginTtlRgb666                                                                                                              │
+│ 6. src/components/display/hardware.cpp — implement beginTtlRgb666 + wire switch                                                                                                  │
+│ 7. src/components/display/controller.cpp — add Qualia component-name resolution                                                                                                  │
+│                                                                                                                                                                                  │
+│ Verification                                                                                                                                                                     │
+│                                                                                                                                                                                  │
+│ 1. Build adafruit_qualia_s3_rgb666 — should compile with Arduino_GFX dep                                                                                                         │
+│ 2. Build adafruit_feather_esp32s3_reversetft — TFT regression (no Arduino_GFX pulled)                                                                                            │
+│ 3. RGB666 driver is #ifdef guarded — other board targets unaffected  
