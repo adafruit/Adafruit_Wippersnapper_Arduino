@@ -17,6 +17,12 @@
 #include "Wippersnapper.h"
 #include "drivers/dispDrvBase.h"
 #include "drivers/dispDrvSt7789.h"
+#include "drivers/dispDrvI2cAdapter.h"
+#include "../i2c/drivers/drvOut7Seg.h"
+#include "../i2c/drivers/drvOutCharLcd.h"
+#include "../i2c/drivers/drvOutQuadAlphaNum.h"
+#include "../i2c/drivers/drvOutSh1107.h"
+#include "../i2c/drivers/drvOutSsd1306.h"
 #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
 #include "drivers/dispDrvRgb666.h"
 #endif
@@ -53,6 +59,7 @@ private:
   bool beginSpiTft(ws_display_Add *msg);
   bool beginSpiEpd(ws_display_Add *msg);
   bool beginTtlRgb666(ws_display_Add *msg);
+  bool beginI2cDisplay(ws_display_Add *msg);
   int16_t parsePin(const char *pinStr);
 
   // EPD auto-detection helpers

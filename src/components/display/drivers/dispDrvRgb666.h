@@ -63,35 +63,46 @@ public:
     if (!_expander)
       return false;
 
-    _rgbpanel = new Arduino_ESP32RGBPanel(
-        TFT_DE, TFT_VSYNC, TFT_HSYNC, TFT_PCLK, TFT_R1, TFT_R2, TFT_R3,
-        TFT_R4, TFT_R5, TFT_G0, TFT_G1, TFT_G2, TFT_G3, TFT_G4, TFT_G5,
-        TFT_B1, TFT_B2, TFT_B3, TFT_B4, TFT_B5,
-        1 /* hsync_polarity */, 46 /* hsync_front_porch */,
-        2 /* hsync_pulse_width */, 44 /* hsync_back_porch */,
-        1 /* vsync_polarity */, 50 /* vsync_front_porch */,
-        16 /* vsync_pulse_width */, 16 /* vsync_back_porch */);
-    if (!_rgbpanel)
-      return false;
-
-    // Select init operations based on panel string.
+    // Select init operations and dotclock timings per panel.
+    // Timings from CircuitPython dotclockframebuffer configs.
     // Accepts both panel part numbers and Adafruit PIDs.
     const uint8_t *init_ops = nullptr;
     size_t init_ops_len = 0;
+    uint16_t h_fp, h_pw, h_bp, v_fp, v_pw, v_bp;
+    uint16_t pclk_active_neg = 0;
+    int32_t prefer_speed = 16000000;
 
     if (strcmp(_panel, "TL021WVC02") == 0 ||
         strcmp(_panel, "adafruit-5792") == 0) {
+      // 2.1" round 480x480
       init_ops = TL021WVC02_init_operations;
       init_ops_len = sizeof(TL021WVC02_init_operations);
+      h_fp = 40;  h_pw = 20; h_bp = 40;
+      v_fp = 40;  v_pw = 10; v_bp = 40;
+      pclk_active_neg = 0; // pclk_active_high = True
     } else if (strcmp(_panel, "TL032FWV01") == 0 ||
                strcmp(_panel, "adafruit-5797") == 0) {
+      // 3.2" bar 320x820
       init_ops = tl032fwv01_init_operations;
       init_ops_len = sizeof(tl032fwv01_init_operations);
+      h_fp = 150; h_pw = 3;  h_bp = 251;
+      v_fp = 100; v_pw = 6;  v_bp = 90;
+      pclk_active_neg = 1; // pclk_active_high = False
     } else {
       WS_DEBUG_PRINT("[display] ERROR: Unknown RGB666 panel: ");
       WS_DEBUG_PRINTLN(_panel);
       return false;
     }
+
+    _rgbpanel = new Arduino_ESP32RGBPanel(
+        TFT_DE, TFT_VSYNC, TFT_HSYNC, TFT_PCLK, TFT_R1, TFT_R2, TFT_R3,
+        TFT_R4, TFT_R5, TFT_G0, TFT_G1, TFT_G2, TFT_G3, TFT_G4, TFT_G5,
+        TFT_B1, TFT_B2, TFT_B3, TFT_B4, TFT_B5,
+        1 /* hsync_polarity */, h_fp, h_pw, h_bp,
+        1 /* vsync_polarity */, v_fp, v_pw, v_bp,
+        pclk_active_neg, prefer_speed);
+    if (!_rgbpanel)
+      return false;
 
     _display = new Arduino_RGB_Display(_width, _height, _rgbpanel,
                                        _rotation, true /* auto_flush */,

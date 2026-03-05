@@ -258,7 +258,7 @@ public:
   AnalogIOController *analogio_controller =
       nullptr; ///< Instance of AnalogIO controller
   DisplayController *_display_controller =
-      nullptr;                              ///< Instance of Display controller
+      nullptr; ///< Instance of Display controller
   DS18X20Controller *_ds18x20_controller =
       nullptr;                              ///< Instance of DS18X20 controller
   GPSController *_gps_controller = nullptr; ///< Instance of GPS controller

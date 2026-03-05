@@ -54,6 +54,9 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
     return beginSpiEpd(addMsg);
   case ws_display_Add_ttl_rgb666_tag:
     return beginTtlRgb666(addMsg);
+  // DSI + i8080 todo
+  case ws_display_Add_i2c_tag:
+    return beginI2cDisplay(addMsg);
   default:
     WS_DEBUG_PRINTLN(
         "[display] ERROR: Unsupported display interface type!");
@@ -357,6 +360,94 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
       "[display] ERROR: TTL RGB666 not supported on this board!");
   return false;
 #endif
+}
+
+// ---------------------------------------------------------------------------
+// I2C display initialization (OLED, CharLCD, LED backpack, etc.)
+// ---------------------------------------------------------------------------
+bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
+  if (msg->which_interface_type != ws_display_Add_i2c_tag) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Expected I2C interface for I2C display!");
+    return false;
+  }
+  ws_display_I2cDisplayConfig *i2c_cfg = &msg->interface_type.i2c;
+  uint16_t addr = (uint16_t)i2c_cfg->device_address;
+
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
+
+  WS_DEBUG_PRINT("[display] I2C driver: ");
+  WS_DEBUG_PRINT(msg->driver);
+  WS_DEBUG_PRINT(" addr: 0x");
+  WS_DEBUG_PRINTLN(addr, HEX);
+
+  // Get the initialized I2C bus from the I2C controller
+  if (!Ws._i2c_controller->IsBusStatusOK()) {
+    WS_DEBUG_PRINTLN("[display] ERROR: I2C bus not initialized!");
+    return false;
+  }
+  TwoWire *i2c = Ws._i2c_controller->GetI2cBus();
+
+  // Create the appropriate I2C output driver based on driver string
+  drvOutputBase *drv = nullptr;
+  if (strcasecmp(msg->driver, "SSD1306") == 0) {
+    drv = new drvOutSsd1306(i2c, addr, 0, msg->driver);
+  } else if (strcasecmp(msg->driver, "SH1107") == 0) {
+    drv = new drvOutSh1107(i2c, addr, 0, msg->driver);
+  } else if (strcasecmp(msg->driver, "charlcd") == 0) {
+    drv = new drvOutCharLcd(i2c, addr, 0, msg->driver);
+  } else if (strcasecmp(msg->driver, "7seg") == 0) {
+    drv = new drvOut7Seg(i2c, addr, 0, msg->driver);
+  } else if (strcasecmp(msg->driver, "quadalphanum") == 0) {
+    drv = new drvOutQuadAlphaNum(i2c, addr, 0, msg->driver);
+  } else {
+    WS_DEBUG_PRINT("[display] ERROR: Unsupported I2C display driver: ");
+    WS_DEBUG_PRINTLN(msg->driver);
+    return false;
+  }
+
+  // Configure based on config type
+  pb_size_t config = msg->which_config;
+  WS_DEBUG_PRINT("[display] I2C config tag: ");
+  WS_DEBUG_PRINTLN(config);
+  if (config == ws_display_Add_config_oled_tag) {
+    ws_display_OledConfig *cfg = &msg->config.config_oled;
+    WS_DEBUG_PRINT("[display] OLED config: ");
+    WS_DEBUG_PRINT(cfg->width);
+    WS_DEBUG_PRINT("x");
+    WS_DEBUG_PRINTLN(cfg->height);
+    drv->ConfigureSSD1306(cfg->width, cfg->height,
+                          cfg->font_size > 0 ? cfg->font_size : 1);
+  } else if (config == ws_display_Add_config_char_lcd_tag) {
+    ws_display_CharLcdConfig *cfg = &msg->config.config_char_lcd;
+    drv->ConfigureCharLcd(cfg->rows, cfg->columns, true);
+  } else if (config == ws_display_Add_config_led_tag) {
+    ws_display_LedBackpackConfig *cfg = &msg->config.config_led;
+    drv->ConfigureI2CBackpack(cfg->brightness, cfg->alignment);
+  } else {
+    // No matching config — for OLEDs, apply safe defaults to prevent
+    // crash from uninitialized width/height in drvOutSsd1306::begin()
+    WS_DEBUG_PRINTLN("[display] WARNING: No config for I2C display, "
+                     "applying defaults");
+    if (strcasecmp(msg->driver, "SSD1306") == 0) {
+      drv->ConfigureSSD1306(128, 32, 1);
+    } else if (strcasecmp(msg->driver, "SH1107") == 0) {
+      drv->ConfigureSSD1306(128, 64, 1);
+    }
+  }
+
+  WS_DEBUG_PRINTLN("[display] Calling I2C driver begin()...");
+  if (!drv->begin()) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin I2C display driver!");
+    delete drv;
+    return false;
+  }
+
+  _drvDisp = new dispDrvI2cAdapter(drv);
+  WS_DEBUG_PRINTLN("[display] I2C display initialized successfully!");
+  return true;
 }
 
 void DisplayHardware::showSplash() {
