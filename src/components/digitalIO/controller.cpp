@@ -51,8 +51,7 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
   // Attempt to decode the DigitalIO B2D envelope
   ws_digitalio_B2D b2d = ws_digitalio_B2D_init_zero;
   if (!ws_pb_decode(stream, ws_digitalio_B2D_fields, &b2d)) {
-    WS_DEBUG_PRINTLN(
-        "[dio] ERROR: Unable to decode DigitalIO B2D envelope");
+    WS_DEBUG_PRINTLN("[dio] ERROR: Unable to decode DigitalIO B2D envelope");
     return false;
   }
 
@@ -151,19 +150,34 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     @return True if the digital pin was successfully removed, False otherwise.
 */
 bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
-  // Get the pin's name
-  int pin_name = atoi(msg->pin_name + 1);
+  bool did_remove = false;
+  uint8_t pin_name = atoi(msg->pin_name + 1);
 
-  // Bail out if the pin does not exist within controller
-  if (GetPinIdx(pin_name) == -1) {
-    WS_DEBUG_PRINTLN(
-        "[dio] ERROR: Unable to find output pin on the controller!");
+  for (size_t i = 0; i < _pins_output.size(); i++) {
+    if (_pins_output[i].pin_name == pin_name) {
+      _dio_hardware->deinit(pin_name);
+      _pins_output.erase(_pins_output.begin() + i);
+      did_remove = true;
+      break;
+    }
+  }
+
+  if (!did_remove) {
+    for (size_t i = 0; i < _pins_input.size(); i++) {
+      if (_pins_input[i].pin_name == pin_name) {
+        _dio_hardware->deinit(pin_name);
+        _pins_input.erase(_pins_input.begin() + i);
+        did_remove = true;
+        break;
+      }
+    }
+  }
+  if (!did_remove) {
+    WS_DEBUG_PRINTLN("[dio] ERROR: Unable to find requested pin!");
     return false;
   }
 
-  // Deinitialize the pin
-  _dio_hardware->deinit(pin_name);
-  WS_DEBUG_PRINT("[dio] Removed Pin:");
+  WS_DEBUG_PRINT("[dio] Pin removed: ");
   WS_DEBUG_PRINTLN(pin_name);
   return true;
 }
@@ -202,22 +216,19 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   int pin_idx = GetPinIdx(atoi(msg->pin_name + 1));
   // Check if the pin was found and is a valid digital output pin
   if (pin_idx == -1) {
-    WS_DEBUG_PRINTLN(
-        "[dio] ERROR: Unable to find the requested output pin!");
+    WS_DEBUG_PRINTLN("[dio] ERROR: Unable to find the requested output pin!");
     return false;
   }
 
   // Ensure pin_idx exists within pins_output vector
   if (pin_idx >= _pins_output.size()) {
-    WS_DEBUG_PRINTLN(
-        "[dio] ERROR: Requested pin is not a digital output pin!");
+    WS_DEBUG_PRINTLN("[dio] ERROR: Requested pin is not a digital output pin!");
     return false;
   }
 
   // Ensure the value type to write is boolean
   if (msg->value.which_value != ws_sensor_Event_bool_value_tag) {
-    WS_DEBUG_PRINTLN(
-        "[dio] ERROR: controller received invalid value type!");
+    WS_DEBUG_PRINTLN("[dio] ERROR: controller received invalid value type!");
     return false;
   }
 
@@ -324,7 +335,7 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
 
     // Publish the DigitalIOEvent message to the broker
     if (!Ws.PublishD2b(ws_signal_DeviceToBroker_digitalio_tag,
-                       _dio_model->GetDigitalIOEventMsg())) {
+                       _dio_model->GetDigitalIOD2B())) {
       WS_DEBUG_PRINTLN("[dio] ERROR: Unable to publish event message, "
                        "moving onto the next pin!");
       return false;

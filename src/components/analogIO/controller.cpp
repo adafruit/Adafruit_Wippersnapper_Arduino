@@ -194,14 +194,14 @@ bool AnalogIOController::EncodePublishPinEvent(uint8_t pin, float value,
   }
 
   // Publish the AnalogIO message to the broker
-  WS_DEBUG_PRINTLN("Publishing AnalogIOEvent message to broker...");
+  WS_DEBUG_PRINT("Publishing AnalogIOEvent...");
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_analogio_tag,
-                     _analogio_model->GetAnalogIOEvent())) {
+                     _analogio_model->GetAnalogIOD2B())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analogio voltage event message, "
                      "moving onto the next pin!");
     return false;
   }
-  WS_DEBUG_PRINTLN("Published AnalogIOEvent message to broker!")
+  WS_DEBUG_PRINTLN("Published!");
 
   return true;
 }
@@ -233,12 +233,12 @@ bool AnalogIOController::EncodePublishPin(uint8_t pin, float value,
 */
 void AnalogIOController::update(bool force) {
   // Bail-out if the vector is empty
-  if (_analogio_pins.empty()) {
+  if (_analogio_pins.empty())
     return;
-  }
 
   // Process analog input pins
   size_t num_pins = _analogio_pins.size();
+
   for (size_t i = 0; i < num_pins; i++) {
     // Create a pin object for this iteration
     analogioPin &pin = _analogio_pins[i];

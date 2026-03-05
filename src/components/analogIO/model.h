@@ -36,10 +36,12 @@ public:
   bool EncodeAnalogIOEventVoltage(char *pin_name, float pin_value);
   bool EncodeAnalogIOEventRaw(char *pin_name, float pin_value);
   ws_analogio_Event *GetAnalogIOEvent();
+  ws_analogio_D2B *GetAnalogIOD2B();
 
 private:
   ws_analogio_Add _msg_AnalogioAdd;       ///< AnalogIOAdd message
   ws_analogio_Remove _msg_AnalogioRemove; ///< AnalogIORemove message
   ws_analogio_Event _msg_AnalogioEvent;   ///< AnalogIOEvent message
+  ws_analogio_D2B _msg_AnalogioD2B;       ///< AnalogIO DeviceToBroker wrapper
 };
 #endif // WS_DIGITALIO_MODEL_H

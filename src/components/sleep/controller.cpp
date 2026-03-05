@@ -232,9 +232,10 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
 #endif
     WS_DEBUG_PRINT("[sleep] EXT0 wakeup set on pin ");
     WS_DEBUG_PRINT(msg->config.ext0.pin_name);
-    WS_DEBUG_PRINT(" with level ");
+    WS_DEBUG_PRINT(" | Level ");
     WS_DEBUG_PRINT(msg->config.ext0.level ? "HIGH" : "LOW");
-    WS_DEBUG_PRINTLN("");
+    WS_DEBUG_PRINT(" | Pull: ");
+    WS_DEBUG_PRINTLN(msg->config.ext0.pull ? "ENABLED" : "DISABLED");
     break;
   default:
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown sleep config type");

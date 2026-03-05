@@ -545,27 +545,27 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
-      WS_DEBUG_PRINTLN("Checking MQTT connection...");
+      // WS_DEBUG_PRINTLN("Checking MQTT connection...");
       if (Ws._mqttV2->connected()) {
-        WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
+        // WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
-      WS_DEBUG_PRINTLN("Not connected to Adafruit IO!");
+      // WS_DEBUG_PRINTLN("Not connected to Adafruit IO!");
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_CHECK_NETWORK:
-      WS_DEBUG_PRINTLN("Checking network connection...");
+      // WS_DEBUG_PRINTLN("Checking network connection...");
       if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
-      WS_DEBUG_PRINTLN("Not connected to WiFi!");
+      // WS_DEBUG_PRINTLN("Not connected to WiFi!");
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
-      WS_DEBUG_PRINTLN("Establishing network connection...");
+      // WS_DEBUG_PRINTLN("Establishing network connection...");
       WS_PRINTER.flush();
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
