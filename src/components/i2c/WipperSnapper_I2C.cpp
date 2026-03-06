@@ -158,7 +158,8 @@ WipperSnapper_Component_I2C::scanAddresses() {
   WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
   for (uint8_t address = 1; address < 127; ++address) {
     WS_DEBUG_PRINT("[i2c] Scanning Address: 0x");
-    WS_DEBUG_PRINTHEX(address); WS_DEBUG_PRINTLN("");
+    WS_DEBUG_PRINTHEX(address);
+    WS_DEBUG_PRINTLN("");
     _i2c->beginTransmission(address);
     uint8_t endTransmissionRC = _i2c->endTransmission();
 
