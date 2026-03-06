@@ -95,8 +95,6 @@ Wippersnapper::~Wippersnapper() {
 */
 /**************************************************************************/
 void Wippersnapper::provision() {
-  // Note: Serial not initialized yet, cannot use WS_DEBUG_HEAP here
-
   // Obtain device's MAC address
   getMacAddr();
 
@@ -118,11 +116,12 @@ void Wippersnapper::provision() {
 #else
   set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
+
   // Set the status pixel's brightness
   setStatusLEDBrightness(WS._config.status_pixel_brightness);
+
   // Set device's wireless credentials
   set_ssid_pass();
-  // Note: Serial not initialized yet, cannot use WS_DEBUG_HEAP here
 }
 
 /**************************************************************************/
@@ -2791,7 +2790,6 @@ void printDeviceInfo() {
 */
 /**************************************************************************/
 void Wippersnapper::connect() {
-  WS_DEBUG_HEAP("connect-start");
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
 
   // Dump device info to the serial monitor
@@ -2845,7 +2843,6 @@ void Wippersnapper::connect() {
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
-  WS_DEBUG_HEAP("connect-end");
 }
 
 /**************************************************************************/
@@ -2893,8 +2890,6 @@ void Wippersnapper::publishPinConfigComplete() {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-  WS_DEBUG_HEAP("loop");
-
   // Check networking
   runNetFSM();
   WS.feedWDT();

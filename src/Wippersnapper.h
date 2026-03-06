@@ -74,29 +74,6 @@
 #define WS_DEBUG_PRINTHEX(...)                                                 \
   { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints in hexadecimal
 
-// ESP8266 heap monitoring macro
-#ifdef ARDUINO_ARCH_ESP8266
-#define WS_HEAP_TOTAL 81920 ///< ESP8266 total heap size in bytes
-#define WS_DEBUG_HEAP(label)                                                   \
-  {                                                                            \
-    uint32_t freeHeap = ESP.getFreeHeap();                                     \
-    uint8_t freePct = (freeHeap * 100) / WS_HEAP_TOTAL;                        \
-    WS_DEBUG_PRINT("[HEAP] ");                                                 \
-    WS_DEBUG_PRINT(label);                                                     \
-    WS_DEBUG_PRINT(": ");                                                      \
-    WS_DEBUG_PRINTVAR(freeHeap);                                               \
-    WS_DEBUG_PRINT("B (");                                                     \
-    WS_DEBUG_PRINTVAR(freePct);                                                \
-    WS_DEBUG_PRINT("%) frag=");                                                \
-    WS_DEBUG_PRINTVAR(ESP.getHeapFragmentation());                             \
-    WS_DEBUG_PRINT("% maxblk=");                                               \
-    WS_DEBUG_PRINTLNVAR(ESP.getMaxFreeBlockSize());                            \
-  }
-#else
-#define WS_DEBUG_HEAP(label)                                                   \
-  {} ///< No-op for non-ESP8266 platforms
-#endif
-
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
   {} ///< Disabled debug output
