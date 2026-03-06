@@ -105,7 +105,6 @@ public:
     _display->setCursor(5, 6);
     _display->print(io_username);
 
-    #ifndef ARDUINO_ARCH_ESP8266
     // Calculate status bar icon positions and center vertically
     _statusbar_icons_y =
         STATUS_BAR_BORDER +
@@ -126,7 +125,6 @@ public:
     _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
                          epd_bmp_bat_full, STATUS_BAR_ICON_SZ,
                          STATUS_BAR_ICON_SZ, EPD_BLACK);
-    #endif
     _display->display();
   }
 
@@ -153,7 +151,6 @@ public:
     if (!update_rssi && !update_mqtt)
       return;
 
-    #ifndef ARDUINO_ARCH_ESP8266
     if (update_mqtt) {
       // updating the RSSI occurs too frequently to be practical
       _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y,
@@ -192,7 +189,6 @@ public:
                            EPD_BLACK);
       _statusbar_rssi = rssi;
     }
-    #endif
     _display->display();
   }
 
