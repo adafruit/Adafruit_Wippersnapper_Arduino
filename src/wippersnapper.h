@@ -26,29 +26,47 @@
 /*!
     @brief  Debug print macros for WipperSnapper debugging output
     @details These macros provide debug output functionality when WS_DEBUG is
-   defined
+   defined. On ESP8266, string literals are wrapped with F() to store them in
+   Flash (PROGMEM) instead of RAM to save memory.
 */
 #ifdef WS_DEBUG
+
+#ifdef ARDUINO_ARCH_ESP8266
+// ESP8266: Use F() macro to store string literals in Flash (PROGMEM)
+#define WS_DEBUG_PRINT(x)                                                      \
+  { WS_PRINTER.print(F(x)); } /**< Print debug message to serial (Flash) */
+#define WS_DEBUG_PRINTLN(x)                                                    \
+  { WS_PRINTER.println(F(x)); } /**< Print debug message with newline (Flash)  \
+                                 */
+#else
+// Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
-  {                                                                            \
-    WS_PRINTER.print(__VA_ARGS__);                                             \
-  } /**< Print debug message to serial */
+  { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {                                                                            \
     WS_PRINTER.println(__VA_ARGS__);                                           \
-  } /**< Print debug message with newline                                      \
-     */
+  } /**< Print debug message with newline */
+#endif
+
+// Variable printing macros - use for non-string-literal arguments
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__); } /**< Print variable to serial */
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  { WS_PRINTER.println(__VA_ARGS__); } /**< Print variable with newline */
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  {                                                                            \
-    WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
-  } /**< Print debug message in hexadecimal */
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } /**< Print in hexadecimal */
+
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {                                                                            \
-  } /**< Debug print */
+  {} /**< Debug print disabled */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {                                                                            \
-  } /**< Debug println */
+  {} /**< Debug println disabled */
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  {} /**< Debug print variable disabled */
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  {} /**< Debug println variable disabled */
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  {} /**< Debug print hex disabled */
 #endif
 
 /*!

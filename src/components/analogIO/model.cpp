@@ -133,9 +133,9 @@ bool AnalogIOModel::EncodeAnalogIOEvent(char *pin_name, float pin_value,
 */
 bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, float pin_value) {
   WS_DEBUG_PRINT("[analogio] Pin: ");
-  WS_DEBUG_PRINT(pin_name);
+  WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Raw Value: ");
-  WS_DEBUG_PRINTLN(pin_value);
+  WS_DEBUG_PRINTLNVAR(pin_value);
   return EncodeAnalogIOEvent(pin_name, pin_value, ws_sensor_Type_T_RAW);
 }
 
@@ -150,8 +150,8 @@ bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, float pin_value) {
 bool AnalogIOModel::EncodeAnalogIOEventVoltage(char *pin_name,
                                                float pin_value) {
   WS_DEBUG_PRINT("[analogio] Pin: ");
-  WS_DEBUG_PRINT(pin_name);
+  WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Voltage: ");
-  WS_DEBUG_PRINTLN(pin_value);
+  WS_DEBUG_PRINTLNVAR(pin_value);
   return EncodeAnalogIOEvent(pin_name, pin_value, ws_sensor_Type_T_VOLTAGE);
 }

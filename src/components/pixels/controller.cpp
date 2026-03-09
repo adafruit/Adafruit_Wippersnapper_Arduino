@@ -88,7 +88,7 @@ bool PixelsController::Handle_Pixels_Add(ws_pixels_Add *msg) {
   } else {
     _num_strands++;
     WS_DEBUG_PRINT("[pixels]: Added strand #");
-    WS_DEBUG_PRINTLN(_num_strands);
+    WS_DEBUG_PRINTLNVAR(_num_strands);
   }
 
   // Publish PixelsAdded message to the broker

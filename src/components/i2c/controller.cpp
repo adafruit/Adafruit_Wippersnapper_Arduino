@@ -718,8 +718,8 @@ bool I2cController::Handle_I2cBusScan(ws_i2c_BusScan *msg) {
   if (msg->scan_default_bus) {
     // Was the default bus initialized correctly and ready to scan?
     WS_DEBUG_PRINT("Bus State: ");
-    WS_DEBUG_PRINTLN(_i2c_bus_default->GetBusStatus());
-    WS_DEBUG_PRINTLN(IsBusStatusOK());
+    WS_DEBUG_PRINTLNVAR(_i2c_bus_default->GetBusStatus());
+    WS_DEBUG_PRINTLNVAR(IsBusStatusOK());
     if (IsBusStatusOK()) {
       if (!_i2c_bus_default->ScanBus(scan_results)) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan default I2C bus!");
@@ -774,20 +774,21 @@ bool I2cController::Handle_I2cBusScan(ws_i2c_BusScan *msg) {
 
   // Printout content of scan_results
   WS_DEBUG_PRINT("[i2c] Scan found ");
-  WS_DEBUG_PRINT(scan_results->bus_found_devices_count);
+  WS_DEBUG_PRINTVAR(scan_results->bus_found_devices_count);
   WS_DEBUG_PRINTLN(" devices.");
   for (int i = 0; i < scan_results->bus_found_devices_count; i++) {
-    WS_DEBUG_PRINTLN(i);
+    WS_DEBUG_PRINTLNVAR(i);
     WS_DEBUG_PRINT("Address: ");
-    WS_DEBUG_PRINTLN(scan_results->bus_found_devices[i].device_address, HEX);
+    WS_DEBUG_PRINTHEX(scan_results->bus_found_devices[i].device_address);
+    WS_DEBUG_PRINTLN("");
     WS_DEBUG_PRINT("SCL: ");
-    WS_DEBUG_PRINTLN(scan_results->bus_found_devices[i].bus_scl);
+    WS_DEBUG_PRINTLNVAR(scan_results->bus_found_devices[i].bus_scl);
     WS_DEBUG_PRINT("SDA: ");
-    WS_DEBUG_PRINTLN(scan_results->bus_found_devices[i].bus_sda);
+    WS_DEBUG_PRINTLNVAR(scan_results->bus_found_devices[i].bus_sda);
     WS_DEBUG_PRINT("MUX Address: ");
-    WS_DEBUG_PRINTLN(scan_results->bus_found_devices[i].mux_address);
+    WS_DEBUG_PRINTLNVAR(scan_results->bus_found_devices[i].mux_address);
     WS_DEBUG_PRINT("MUX Channel: ");
-    WS_DEBUG_PRINTLN(scan_results->bus_found_devices[i].mux_channel);
+    WS_DEBUG_PRINTLNVAR(scan_results->bus_found_devices[i].mux_channel);
   }
 
   // TODO: Encode and publish out to IO!
@@ -820,13 +821,13 @@ bool I2cController::Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg) {
 
   if (driver == nullptr) {
     WS_DEBUG_PRINT("[i2c] ERROR: Unable to find driver for device at addr 0x");
-    WS_DEBUG_PRINTLN(descriptor.device_address, HEX);
+    WS_DEBUG_PRINTHEX(descriptor.device_address);
     return false;
   }
 
   // Optionally configure the I2C MUX
   uint32_t mux_channel = driver->GetMuxChannel();
-  WS_DEBUG_PRINTLN(mux_channel);
+  WS_DEBUG_PRINTLNVAR(mux_channel);
   if (driver->HasMux()) {
     ConfigureMuxChannel(mux_channel, driver->HasAltI2CBus());
   }
@@ -929,7 +930,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   if (device_descriptor.mux_address != 0x00) {
     if (_i2c_bus_alt->HasMux() || _i2c_bus_default->HasMux()) {
       WS_DEBUG_PRINT("[i2c] Configuring MUX channel: ");
-      WS_DEBUG_PRINTLN(device_descriptor.mux_channel);
+      WS_DEBUG_PRINTLNVAR(device_descriptor.mux_channel);
       ConfigureMuxChannel(device_descriptor.mux_channel, use_alt_bus);
       did_set_mux_ch = true;
     } else {
@@ -1073,7 +1074,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   }
 
   WS_DEBUG_PRINTLN("[i2c] Driver initialized and added to controller: ");
-  WS_DEBUG_PRINTLN(device_name);
+  WS_DEBUG_PRINTLNVAR(device_name);
 
   // If we're using a MUX, clear the channel for any subsequent bus
   // operations that may not involve the MUX
@@ -1142,7 +1143,7 @@ void I2cController::update(bool force) {
 
     // Optionally configure the I2C MUX
     uint32_t mux_channel = drv->GetMuxChannel();
-    WS_DEBUG_PRINTLN(mux_channel);
+    WS_DEBUG_PRINTLNVAR(mux_channel);
     if (drv->HasMux())
       ConfigureMuxChannel(mux_channel, drv->HasAltI2CBus());
 

@@ -142,7 +142,7 @@ bool I2cModel::DecodeI2cDeviceRemove(pb_istream_t *stream) {
   is_success =
       pb_decode(stream, ws_i2c_DeviceRemove_fields, &_msg_i2c_device_remove);
   WS_DEBUG_PRINT("is_success: ");
-  WS_DEBUG_PRINTLN(is_success);
+  WS_DEBUG_PRINTLNVAR(is_success);
   return is_success;
 }
 

@@ -154,7 +154,7 @@ void SleepModel::ConvertSleepMode(const char *mode_str,
       mode = ws_sleep_SleepMode_S_DEEP;
     } else {
       WS_DEBUG_PRINT("[SD] Error: Invalid sleep mode: ");
-      WS_DEBUG_PRINTLN(mode_str);
+      WS_DEBUG_PRINTLNVAR(mode_str);
     }
   }
 }

@@ -228,8 +228,9 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
             strcmp((*driver_it)->GetName(),
                    (const char *)msg->descriptor.device_id.arg) == 0) {
           // Driver found, remove it
-          WS_DEBUG_PRINT("[uart] Removing UART driver: " +
-                         String((*driver_it)->GetName()) + "...");
+          WS_DEBUG_PRINT("[uart] Removing UART driver: ");
+          WS_DEBUG_PRINTVAR((*driver_it)->GetName());
+          WS_DEBUG_PRINT("...");
           delete *driver_it;
           _uart_drivers.erase(driver_it);
           WS_DEBUG_PRINTLN("Removed!");
@@ -275,8 +276,8 @@ void UARTController::update(bool force) {
 
     size_t num_sensors = drv->GetNumSensors();
     if (num_sensors == 0) {
-      WS_DEBUG_PRINTLN("[uart] No sensors available for driver: " +
-                       String(drv->GetName()));
+      WS_DEBUG_PRINT("[uart] No sensors available for driver: ");
+      WS_DEBUG_PRINTLNVAR(drv->GetName());
       continue; // No sensors to poll, skip this driver
     }
 

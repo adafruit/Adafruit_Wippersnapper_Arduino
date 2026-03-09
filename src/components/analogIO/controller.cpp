@@ -111,11 +111,11 @@ bool AnalogIOController::Handle_AnalogIOAdd(ws_analogio_Add *msg) {
   // Print out the pin's details
   WS_DEBUG_PRINTLN("[analogio] Added new pin:");
   WS_DEBUG_PRINT("Pin Name: ");
-  WS_DEBUG_PRINTLN(new_pin.name);
+  WS_DEBUG_PRINTLNVAR(new_pin.name);
   WS_DEBUG_PRINT("Period: ");
-  WS_DEBUG_PRINTLN(new_pin.period);
+  WS_DEBUG_PRINTLNVAR(new_pin.period);
   WS_DEBUG_PRINT("Read Mode: ");
-  WS_DEBUG_PRINTLN(new_pin.read_mode);
+  WS_DEBUG_PRINTLNVAR(new_pin.read_mode);
 
   return true;
 }
@@ -147,7 +147,7 @@ bool AnalogIOController::Handle_AnalogIORemove(ws_analogio_Remove *msg) {
   }
 
   WS_DEBUG_PRINT("[analogio] Removed pin: ");
-  WS_DEBUG_PRINTLN(msg->pin_name);
+  WS_DEBUG_PRINTLNVAR(msg->pin_name);
   return true;
 }
 

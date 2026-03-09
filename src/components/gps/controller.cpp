@@ -145,7 +145,7 @@ void GPSController::update(bool force) {
     while (drv->NmeaBufPop(nmea_sentence) != -1) {
       // Let the driver parse the NMEA sentence
       WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
-      WS_DEBUG_PRINTLN(nmea_sentence);
+      WS_DEBUG_PRINTLNVAR(nmea_sentence);
       if (!drv->ParseNMEASentence(nmea_sentence)) {
         continue; // Skip this sentence if parsing failed
       } else {

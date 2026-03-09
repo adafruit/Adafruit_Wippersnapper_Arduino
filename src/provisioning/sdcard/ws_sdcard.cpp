@@ -252,7 +252,7 @@ bool ws_sdcard::InitSoftRTC() {
       Ws._sleep_controller->DidWakeFromSleep()) {
     _soft_rtc_counter = Ws._sleep_controller->GetSoftRtcCounter();
     WS_DEBUG_PRINT("[SD] Restored soft RTC counter from sleep: ");
-    WS_DEBUG_PRINTLN(_soft_rtc_counter);
+    WS_DEBUG_PRINTLNVAR(_soft_rtc_counter);
   } else {
     _soft_rtc_counter = 0;
   }
@@ -412,14 +412,14 @@ ws_sensor_Type ws_sdcard::ParseSensorType(const char *sensor_type) {
     return ws_sensor_Type_T_BOOLEAN;
   } else {
     WS_DEBUG_PRINT("[SD] ERROR: Found unspecified SensorType - ");
-    WS_DEBUG_PRINTLN(sensor_type);
+    WS_DEBUG_PRINTLNVAR(sensor_type);
     return ws_sensor_Type_T_UNSPECIFIED;
   }
 }
 
 bool ws_sdcard::ValidateJSONKey(const char *key, const char *error_msg) {
   if (strcmp(key, UNKNOWN_VALUE) == 0) {
-    WS_DEBUG_PRINTLN(error_msg);
+    WS_DEBUG_PRINTLNVAR(error_msg);
     return false;
   }
   return true;
@@ -473,8 +473,8 @@ bool ws_sdcard::ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
   } else if (strcmp(sample_mode, "EVENT") == 0) {
     msg_DigitalIOAdd.sample_mode = ws_digitalio_SampleMode_SM_EVENT;
   } else {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown sample mode found: " +
-                     String(sample_mode));
+    WS_DEBUG_PRINT("[SD] Parsing Error: Unknown sample mode found: ");
+    WS_DEBUG_PRINTLNVAR(sample_mode);
   }
 
   // Determine the pin direction and pull
@@ -493,8 +493,8 @@ bool ws_sdcard::ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
         "[SD] Error - Can not set OUTPUT direction in offline mode!");
     return false;
   } else {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown direction found: " +
-                     String(direction));
+    WS_DEBUG_PRINT("[SD] Parsing Error: Unknown direction found: ");
+    WS_DEBUG_PRINTLNVAR(direction);
     return false;
   }
   return true;
@@ -533,8 +533,8 @@ bool ws_sdcard::ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd,
     return false;
   msg_AnalogIOAdd.read_mode = ParseSensorType(mode);
   if (msg_AnalogIOAdd.read_mode == ws_sensor_Type_T_UNSPECIFIED) {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown read mode found: " +
-                     String(mode));
+    WS_DEBUG_PRINT("[SD] Parsing Error: Unknown read mode found: ");
+    WS_DEBUG_PRINTLNVAR(mode);
     return false;
   }
   return true;
@@ -699,16 +699,16 @@ bool ws_sdcard::CreateNewLogFile() {
     const char *prev_filename = Ws._sleep_controller->GetLogFilename();
     if (prev_filename != nullptr && prev_filename[0] != '\0') {
       WS_DEBUG_PRINT("[SD] Found stored filename: ");
-      WS_DEBUG_PRINTLN(prev_filename);
+      WS_DEBUG_PRINTLNVAR(prev_filename);
       // Try to open the existing file to get its size
       File32 file;
       if (file.open(prev_filename, O_RDWR)) {
         _sz_cur_log_file = file.size();
         file.close();
         WS_DEBUG_PRINT("[SD] Previous log file size: ");
-        WS_DEBUG_PRINT(_sz_cur_log_file);
+        WS_DEBUG_PRINTVAR(_sz_cur_log_file);
         WS_DEBUG_PRINT(" / ");
-        WS_DEBUG_PRINTLN(_max_sz_log_file);
+        WS_DEBUG_PRINTLNVAR(_max_sz_log_file);
 
         // Check if file is still under size limit
         if (_sz_cur_log_file < _max_sz_log_file) {
@@ -717,7 +717,7 @@ bool ws_sdcard::CreateNewLogFile() {
           log_filename_buffer[sizeof(log_filename_buffer) - 1] = '\0';
           _log_filename = log_filename_buffer;
           WS_DEBUG_PRINT("[SD] SUCCESS: Restored previous log file: ");
-          WS_DEBUG_PRINTLN(_log_filename);
+          WS_DEBUG_PRINTLNVAR(_log_filename);
           return true;
         } else {
           WS_DEBUG_PRINTLN(
@@ -753,7 +753,7 @@ bool ws_sdcard::CreateNewLogFile() {
     return false;
   file.close();
   WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
-  WS_DEBUG_PRINTLN(_log_filename);
+  WS_DEBUG_PRINTLNVAR(_log_filename);
   _sd_cur_log_files++;
 
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
@@ -857,7 +857,7 @@ bool ws_sdcard::parseConfigFile() {
   // Use test data rather than data from the filesystem
   if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
-    WS_DEBUG_PRINTLN(_serialInput);
+    WS_DEBUG_PRINTLNVAR(_serialInput);
     error = deserializeJson(doc, _serialInput.c_str(), MAX_LEN_CFG_JSON);
   } else {
     WS_DEBUG_PRINTLN("[SD] Parsing Test Data...");
@@ -868,7 +868,8 @@ bool ws_sdcard::parseConfigFile() {
   // config file
   if (error) {
     WS_DEBUG_PRINT("[SD] Runtime Error: Unable to deserialize config.json");
-    WS_DEBUG_PRINTLN("\nError Code: " + String(error.c_str()));
+    WS_DEBUG_PRINT("\nError Code: ");
+    WS_DEBUG_PRINTLNVAR(error.c_str());
     return false;
   }
   WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
@@ -954,7 +955,7 @@ bool ws_sdcard::parseConfigFile() {
               component["direction"] | UNKNOWN_VALUE, component["pull"])) {
         WS_DEBUG_PRINT(
             "[SD] Runtime Error: Unable to parse DigitalIO Component, Pin: ");
-        WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
+        WS_DEBUG_PRINTLNVAR(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
       // Configure the message envelope
@@ -970,7 +971,7 @@ bool ws_sdcard::parseConfigFile() {
                             component["analogReadMode"] | UNKNOWN_VALUE)) {
         WS_DEBUG_PRINTLN(
             "[SD] Runtime Error: Unable to parse AnalogIO Component, Pin: ");
-        WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
+        WS_DEBUG_PRINTLNVAR(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
 
@@ -988,7 +989,7 @@ bool ws_sdcard::parseConfigFile() {
                            component["sensorType2"] | UNKNOWN_VALUE)) {
         WS_DEBUG_PRINTLN(
             "[SD] Runtime Error: Unable to parse DS18X20 Component, Pin: ");
-        WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
+        WS_DEBUG_PRINTLNVAR(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_ds18x20_tag;
@@ -1008,8 +1009,8 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.payload.i2c.payload.device_add_replace =
           msg_i2c_add_replace;
     } else {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown Component API Type: " +
-                       String(component_api_type));
+      WS_DEBUG_PRINT("[SD] Runtime Error: Unknown Component API Type: ");
+      WS_DEBUG_PRINTLNVAR(component_api_type);
       return false;
     }
 
@@ -1203,7 +1204,7 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
 #ifndef OFFLINE_MODE_DEBUG
   File32 file;
   WS_DEBUG_PRINT("_log_filename: ");
-  WS_DEBUG_PRINTLN(_log_filename);
+  WS_DEBUG_PRINTLNVAR(_log_filename);
   file = _sd.open(_log_filename, O_RDWR | O_CREAT | O_AT_END);
   if (!file) {
     WS_DEBUG_PRINTLN(

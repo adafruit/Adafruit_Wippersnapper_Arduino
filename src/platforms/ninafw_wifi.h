@@ -118,7 +118,7 @@ public:
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
         WS_DEBUG_PRINT("SSID found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+        WS_DEBUG_PRINTLNVAR(WiFi.RSSI(i));
         return true;
       }
     }
@@ -127,9 +127,9 @@ public:
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
     for (int i = 0; i < n; ++i) {
-      WS_DEBUG_PRINT(WiFi.SSID(i));
+      WS_DEBUG_PRINTVAR(WiFi.SSID(i));
       WS_DEBUG_PRINT(" ");
-      WS_DEBUG_PRINT(WiFi.RSSI(i));
+      WS_DEBUG_PRINTVAR(WiFi.RSSI(i));
       WS_DEBUG_PRINTLN("dB");
     }
 

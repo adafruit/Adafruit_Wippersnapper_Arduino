@@ -98,13 +98,13 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
   bool is_initialized = new_dsx_driver->GetSensor();
 
   WS_DEBUG_PRINT("DS18x20 Sensor Initialization Status: ");
-  WS_DEBUG_PRINTLN(is_initialized ? "SUCCESS" : "FAILURE");
+  WS_DEBUG_PRINTLNVAR(is_initialized ? "SUCCESS" : "FAILURE");
   WS_DEBUG_PRINT("OneWire Pin: ");
-  WS_DEBUG_PRINTLN(pin_name);
+  WS_DEBUG_PRINTLNVAR(pin_name);
   WS_DEBUG_PRINT("Sensor # on Bus: ");
-  WS_DEBUG_PRINTLN(_num_drivers);
+  WS_DEBUG_PRINTLNVAR(_num_drivers);
   WS_DEBUG_PRINT("Sensor Type Count: ");
-  WS_DEBUG_PRINTLN(msg->sensor_types_count);
+  WS_DEBUG_PRINTLNVAR(msg->sensor_types_count);
 
   if (is_initialized) {
     WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
@@ -145,14 +145,14 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
     // Print out the details
     WS_DEBUG_PRINTLN("[ds18x] New Sensor Added!");
     WS_DEBUG_PRINT("\tPin: ");
-    WS_DEBUG_PRINTLN(pin_name);
+    WS_DEBUG_PRINTLNVAR(pin_name);
     WS_DEBUG_PRINT("\tResolution: ");
-    WS_DEBUG_PRINTLN(msg->sensor_resolution);
+    WS_DEBUG_PRINTLNVAR(msg->sensor_resolution);
     WS_DEBUG_PRINT("\tPeriod: ");
-    WS_DEBUG_PRINTLN(msg->period);
+    WS_DEBUG_PRINTLNVAR(msg->period);
     WS_DEBUG_PRINT("\tSI Units: ");
     for (int i = 0; i < msg->sensor_types_count; i++) {
-      WS_DEBUG_PRINT(msg->sensor_types[i]);
+      WS_DEBUG_PRINTVAR(msg->sensor_types[i]);
       WS_DEBUG_PRINT(", ");
     }
     WS_DEBUG_PRINTLN("");
@@ -256,7 +256,7 @@ void DS18X20Controller::update(bool force) {
 #ifdef DEBUG_PROFILE
     unsigned long temp_c_end_time = millis();
     WS_DEBUG_PRINT("Read temperature Celsius time: ");
-    WS_DEBUG_PRINTLN(temp_c_end_time - temp_c_start_time);
+    WS_DEBUG_PRINTLNVAR(temp_c_end_time - temp_c_start_time);
 #endif
 
     // We got a temperature value from the hardware, let's create a new
@@ -312,7 +312,7 @@ void DS18X20Controller::update(bool force) {
 #ifdef DEBUG_PROFILE
     unsigned long sensor_end_time = millis();
     WS_DEBUG_PRINT("Total sensor processing time: ");
-    WS_DEBUG_PRINTLN(sensor_end_time - sensor_start_time);
+    WS_DEBUG_PRINTLNVAR(sensor_end_time - sensor_start_time);
 #endif
   }
 
@@ -320,7 +320,7 @@ void DS18X20Controller::update(bool force) {
   unsigned long total_end_time = millis();
   if (total_end_time - total_start_time != 0) {
     WS_DEBUG_PRINT("Total update() execution time: ");
-    WS_DEBUG_PRINTLN(total_end_time - total_start_time);
+    WS_DEBUG_PRINTLNVAR(total_end_time - total_start_time);
   }
 #endif
 }

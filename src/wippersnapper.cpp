@@ -508,7 +508,7 @@ bool wippersnapper::generateWSTopics() {
 */
 void wippersnapper::errorWriteHangV2(const char *error) {
   // Print error
-  WS_DEBUG_PRINTLN(error);
+  WS_DEBUG_PRINTLNVAR(error);
 #ifdef USE_TINYUSB
   _fileSystemV2->writeToBootOut(error);
   TinyUSBDevice.attach();
@@ -517,7 +517,7 @@ void wippersnapper::errorWriteHangV2(const char *error) {
   // Signal and hang forever
   while (1) {
     WS_DEBUG_PRINTLN("ERROR: Halted execution");
-    WS_DEBUG_PRINTLN(error);
+    WS_DEBUG_PRINTLNVAR(error);
     Ws._wdt->feed();
     statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
@@ -587,7 +587,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
         _wdt->feed();
         // attempt to connect
         WS_DEBUG_PRINT("Connecting to WiFi (attempt #");
-        WS_DEBUG_PRINT(5 - maxAttempts);
+        WS_DEBUG_PRINTVAR(5 - maxAttempts);
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
         _wdt->feed();
@@ -618,11 +618,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       maxAttempts = 5;
       while (maxAttempts > 0) {
         WS_DEBUG_PRINT("Connecting to AIO MQTT (attempt #");
-        WS_DEBUG_PRINT(5 - maxAttempts);
+        WS_DEBUG_PRINTVAR(5 - maxAttempts);
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
         WS_DEBUG_PRINT("WiFi Status: ");
-        WS_DEBUG_PRINTLN(networkStatus());
+        WS_DEBUG_PRINTLNVAR(networkStatus());
         WS_PRINTER.flush();
         _wdt->feed();
         statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
@@ -634,8 +634,8 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
           break;
         }
         WS_DEBUG_PRINT("MQTT Connection Error: ");
-        WS_DEBUG_PRINTLN(mqttRC);
-        WS_DEBUG_PRINTLN(Ws._mqttV2->connectErrorString(mqttRC));
+        WS_DEBUG_PRINTLNVAR(mqttRC);
+        WS_DEBUG_PRINTLNVAR(Ws._mqttV2->connectErrorString(mqttRC));
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
         delay(3000);
@@ -678,7 +678,7 @@ void wippersnapper::haltErrorV2(const char *error,
   } else {
     WS_DEBUG_PRINT("[HANG]: ");
   }
-  WS_DEBUG_PRINTLN(error);
+  WS_DEBUG_PRINTLNVAR(error);
   statusLEDSolid(ledStatusColor);
   for (;;) {
     if (!reboot) {
@@ -827,7 +827,7 @@ void wippersnapper::pingBrokerV2() {
     }
     _prv_pingV2 = millis();
     WS_DEBUG_PRINT("WiFi RSSI: ");
-    WS_DEBUG_PRINTLN(getRSSI());
+    WS_DEBUG_PRINTLNVAR(getRSSI());
   }
   // Blink the status LED to indicate that the device is still alive
   BlinkKATStatus();
@@ -878,38 +878,38 @@ void wippersnapper::ProcessPackets() {
 void PrintDeviceInfo() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINT("Firmware Version: ");
-  WS_DEBUG_PRINTLN(WS_VERSION);
+  WS_DEBUG_PRINTLNVAR(WS_VERSION);
   WS_DEBUG_PRINTLN("API: Version 2");
   WS_DEBUG_PRINT("Board ID: ");
-  WS_DEBUG_PRINTLN(BOARD_ID);
+  WS_DEBUG_PRINTLNVAR(BOARD_ID);
   WS_DEBUG_PRINT("Adafruit.io User: ");
-  WS_DEBUG_PRINTLN(Ws._configV2.aio_user);
+  WS_DEBUG_PRINTLNVAR(Ws._configV2.aio_user);
   WS_DEBUG_PRINT("WiFi Network: ");
-  WS_DEBUG_PRINTLN(Ws._configV2.network.ssid);
+  WS_DEBUG_PRINTLNVAR(Ws._configV2.network.ssid);
 
   char sMAC[18] = {0};
   sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", Ws._macAddrV2[0],
           Ws._macAddrV2[1], Ws._macAddrV2[2], Ws._macAddrV2[3],
           Ws._macAddrV2[4], Ws._macAddrV2[5]);
   WS_DEBUG_PRINT("MAC Address: ");
-  WS_DEBUG_PRINTLN(sMAC);
+  WS_DEBUG_PRINTLNVAR(sMAC);
   WS_DEBUG_PRINTLN("-------------------------------");
 
 // (ESP32-Only) - Print reset reason
 #ifdef ARDUINO_ARCH_ESP32
   esp_reset_reason_t r = esp_reset_reason();
   WS_DEBUG_PRINT("ESP Reset Reason: ");
-  WS_DEBUG_PRINTLN(resetReasonName(r));
+  WS_DEBUG_PRINTLNVAR(resetReasonName(r));
 #endif
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // If reset was caused by sleep wakeup, print the wakeup reason
   if (Ws._sleep_controller->DidWakeFromSleep()) {
     WS_DEBUG_PRINT("Sleep Wakeup Reason: ");
-    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetWakeupReasonName());
+    WS_DEBUG_PRINTLNVAR(Ws._sleep_controller->GetWakeupReasonName());
     WS_DEBUG_PRINT("Prv. Sleep Mode: ");
-    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetPrvSleepMode());
+    WS_DEBUG_PRINTLNVAR(Ws._sleep_controller->GetPrvSleepMode());
     WS_DEBUG_PRINT("Total Sleep Duration (sec): ");
-    WS_DEBUG_PRINTLN(Ws._sleep_controller->GetSleepDurationSecs());
+    WS_DEBUG_PRINTLNVAR(Ws._sleep_controller->GetSleepDurationSecs());
   }
 #endif
 }
@@ -984,9 +984,9 @@ void wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Generated device's MQTT topics successfully!");
   // Print out topics (TODO: Remove in Beta)
   WS_DEBUG_PRINT("Broker to Device Topic: ");
-  WS_DEBUG_PRINTLN(Ws._topicB2d);
+  WS_DEBUG_PRINTLNVAR(Ws._topicB2d);
   WS_DEBUG_PRINT("Device to Broker Topic: ");
-  WS_DEBUG_PRINTLN(Ws._topicD2b);
+  WS_DEBUG_PRINTLNVAR(Ws._topicD2b);
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");

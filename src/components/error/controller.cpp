@@ -83,8 +83,8 @@ bool ErrorController::HandleBan(const ws_error_ErrorIOBan &ban) {
 */
 bool ErrorController::HandleThrottle(const ws_error_ErrorIOThrottle &throttle) {
   WS_DEBUG_PRINT("[ERROR] Device throttled for: ");
-  WS_DEBUG_PRINT(throttle.timeout);
-  WS_DEBUG_PRINTLN("seconds");
+  WS_DEBUG_PRINTVAR(throttle.timeout);
+  WS_DEBUG_PRINTLN(" seconds");
   WS_DEBUG_PRINTLN("[ERROR] Delaying command execution...");
 
   // Delay based on throttle timeout

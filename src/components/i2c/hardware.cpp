@@ -183,7 +183,8 @@ bool I2cHardware::ScanBus(ws_i2c_BusScanned *scan_results) {
   WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
   for (uint8_t address = 1; address < 127; ++address) {
     WS_DEBUG_PRINT("[i2c] Scanning Address: 0x");
-    WS_DEBUG_PRINTLN(address, HEX);
+    WS_DEBUG_PRINTHEX(address);
+    WS_DEBUG_PRINTLN("");
     _bus->beginTransmission(address);
     uint8_t endTransmissionRC = _bus->endTransmission();
 
@@ -333,7 +334,7 @@ bool I2cHardware::ScanMux(ws_i2c_BusScanned *scan_results) {
   for (uint8_t ch = 0; ch < _mux_max_channels; ch++) {
     SelectMuxChannel(ch);
     WS_DEBUG_PRINT("[i2c] Scanning MUX Channel # ");
-    WS_DEBUG_PRINTLN(ch);
+    WS_DEBUG_PRINTLNVAR(ch);
     if (!ScanBus(scan_results)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan MUX channel!");
       return false;

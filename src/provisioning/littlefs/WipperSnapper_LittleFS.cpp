@@ -78,7 +78,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
       JsonArray altnetworks = doc["network_type_wifi"]["alternative_networks"];
       int8_t altNetworkCount = (int8_t)altnetworks.size();
       WS_DEBUG_PRINT("Network count: ");
-      WS_DEBUG_PRINTLN(altNetworkCount);
+      WS_DEBUG_PRINTLNVAR(altNetworkCount);
       if (altNetworkCount == 0) {
         fsHalt("ERROR: No alternative network entries found under "
                "network_type_wifi.alternative_networks in secrets.json!");
@@ -88,14 +88,14 @@ void WipperSnapper_LittleFS::parseSecrets() {
         if (i >= 3) {
           WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
                          "only the first 3 will be used. Not using ");
-          WS_DEBUG_PRINTLN(altnetworks[i]["network_ssid"].as<const char *>());
+          WS_DEBUG_PRINTLNVAR(altnetworks[i]["network_ssid"].as<const char *>());
           break;
         }
         convertFromJson(altnetworks[i], Ws._multiNetworksV2[i]);
         WS_DEBUG_PRINT("Added SSID: ");
-        WS_DEBUG_PRINTLN(Ws._multiNetworksV2[i].ssid);
+        WS_DEBUG_PRINTLNVAR(Ws._multiNetworksV2[i].ssid);
         WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLN(Ws._multiNetworksV2[i].pass);
+        WS_DEBUG_PRINTLNVAR(Ws._multiNetworksV2[i].pass);
       }
       Ws._isWiFiMultiV2 = true;
     } else {
@@ -140,7 +140,7 @@ void WipperSnapper_LittleFS::fsHalt(String msg, ws_led_status_t status_state) {
   statusLEDSolid(status_state);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
-    WS_DEBUG_PRINTLN(msg.c_str());
+    WS_DEBUG_PRINTLNVAR(msg.c_str());
     delay(1000);
     yield();
   }

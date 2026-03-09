@@ -132,13 +132,13 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   // Print out the pin's details
   WS_DEBUG_PRINTLN("[dio] Added new pin:");
   WS_DEBUG_PRINT("Pin Name: ");
-  WS_DEBUG_PRINTLN(new_pin.pin_name);
+  WS_DEBUG_PRINTLNVAR(new_pin.pin_name);
   WS_DEBUG_PRINT("Period: ");
-  WS_DEBUG_PRINTLN(new_pin.pin_period);
+  WS_DEBUG_PRINTLNVAR(new_pin.pin_period);
   WS_DEBUG_PRINT("Sample Mode: ");
-  WS_DEBUG_PRINTLN(new_pin.sample_mode);
+  WS_DEBUG_PRINTLNVAR(new_pin.sample_mode);
   WS_DEBUG_PRINT("Direction: ");
-  WS_DEBUG_PRINTLN(new_pin.pin_direction);
+  WS_DEBUG_PRINTLNVAR(new_pin.pin_direction);
 
   return true;
 }
@@ -178,7 +178,7 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
   }
 
   WS_DEBUG_PRINT("[dio] Pin removed: ");
-  WS_DEBUG_PRINTLN(pin_name);
+  WS_DEBUG_PRINTLNVAR(pin_name);
   return true;
 }
 
@@ -233,9 +233,9 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   }
 
   WS_DEBUG_PRINT("[dio] Writing: ");
-  WS_DEBUG_PRINT(msg->value.value.bool_value);
+  WS_DEBUG_PRINTVAR(msg->value.value.bool_value);
   WS_DEBUG_PRINT(" to Pin ");
-  WS_DEBUG_PRINTLN(_pins_output[pin_idx].pin_name);
+  WS_DEBUG_PRINTLNVAR(_pins_output[pin_idx].pin_name);
 
   // Is the pin already set to this value? If so, we don't need to write it
   // again
@@ -324,9 +324,9 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
   // If we are in ONLINE mode, publish the event to the broker
   if (!Ws._sdCardV2->isModeOffline()) {
     WS_DEBUG_PRINT("[dio] Publish Event: ");
-    WS_DEBUG_PRINT(c_pin_name);
+    WS_DEBUG_PRINTVAR(c_pin_name);
     WS_DEBUG_PRINT(" | value: ");
-    WS_DEBUG_PRINTLN(pin_value);
+    WS_DEBUG_PRINTLNVAR(pin_value);
     // Encode the DigitalIOEvent message
     if (!_dio_model->EncodeDigitalIOEvent(c_pin_name, pin_value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");

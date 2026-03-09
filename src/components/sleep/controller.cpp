@@ -126,7 +126,7 @@ bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg,
 
   WS_DEBUG_PRINTLN("[sleep] Sleep configuration complete.");
   WS_DEBUG_PRINT("Sleep Enabled: ");
-  WS_DEBUG_PRINTLN(_sleep_enabled ? "YES" : "NO");
+  WS_DEBUG_PRINTLNVAR(_sleep_enabled ? "YES" : "NO");
 
   return res;
 }
@@ -155,12 +155,12 @@ void SleepController::WakeFromLightSleep() {
   // Recalculate sleep duration
   _sleep_hardware->CalculateSleepDuration();
   WS_DEBUG_PRINT("Slept for ");
-  WS_DEBUG_PRINT(GetSleepDurationSecs());
+  WS_DEBUG_PRINTVAR(GetSleepDurationSecs());
   WS_DEBUG_PRINTLN(" seconds");
 
   // Print sleep cycles
   WS_DEBUG_PRINT("Total light sleep cycles: ");
-  WS_DEBUG_PRINTLN(_sleep_hardware->GetSleepCycleCount());
+  WS_DEBUG_PRINTLNVAR(_sleep_hardware->GetSleepCycleCount());
 
   // Re-enable external components that were disabled before sleep
   if (_has_ext_pwr_components) {
@@ -207,7 +207,7 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
 #endif
 
     WS_DEBUG_PRINT("[sleep] Timer wakeup set to ");
-    WS_DEBUG_PRINT(msg->config.timer.duration);
+    WS_DEBUG_PRINTVAR(msg->config.timer.duration);
     WS_DEBUG_PRINTLN(" seconds");
     break;
   case ws_sleep_SleepConfig_ext0_tag:
@@ -231,11 +231,11 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
   }
 #endif
     WS_DEBUG_PRINT("[sleep] EXT0 wakeup set on pin ");
-    WS_DEBUG_PRINT(msg->config.ext0.pin_name);
+    WS_DEBUG_PRINTVAR(msg->config.ext0.pin_name);
     WS_DEBUG_PRINT(" | Level ");
-    WS_DEBUG_PRINT(msg->config.ext0.level ? "HIGH" : "LOW");
+    WS_DEBUG_PRINTVAR(msg->config.ext0.level ? "HIGH" : "LOW");
     WS_DEBUG_PRINT(" | Pull: ");
-    WS_DEBUG_PRINTLN(msg->config.ext0.pull ? "ENABLED" : "DISABLED");
+    WS_DEBUG_PRINTLNVAR(msg->config.ext0.pull ? "ENABLED" : "DISABLED");
     break;
   default:
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown sleep config type");
@@ -366,7 +366,7 @@ void SleepController::StartSleep() {
     uint32_t counter = Ws._sdCardV2->GetSoftRTCTime();
     SetSoftRtcCounter(counter);
     WS_DEBUG_PRINT("[sleep] Stored soft RTC counter: ");
-    WS_DEBUG_PRINTLN(counter);
+    WS_DEBUG_PRINTLNVAR(counter);
   }
 
   // Disable any external components that draw power during sleep
@@ -406,7 +406,7 @@ void SleepController::StartSleep() {
     WS_PRINTER.flush();
     if (err != ESP_OK) {
       WS_DEBUG_PRINT("[sleep] WARNING: Failed light sleep start: ");
-      WS_DEBUG_PRINTLN(esp_err_to_name(err));
+      WS_DEBUG_PRINTLNVAR(esp_err_to_name(err));
     }
 #else
 // Start light sleep using sleepydog for RP2350

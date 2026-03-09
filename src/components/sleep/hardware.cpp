@@ -446,7 +446,7 @@ void SleepHardware::StoreLogFilename(const char *filename) {
     return;
 
   WS_DEBUG_PRINT("[sleep] Storing log filename for persistence: ");
-  WS_DEBUG_PRINTLN(filename);
+  WS_DEBUG_PRINTLNVAR(filename);
 
 #if defined(ARDUINO_ARCH_ESP32) && !SOC_RTC_FAST_MEM_SUPPORTED
   NvsWriteStr("log_filename", filename);
@@ -473,7 +473,7 @@ const char *SleepHardware::GetLogFilename() {
     return nullptr;
   }
   WS_DEBUG_PRINT("[sleep] Retrieved log filename from NVS: ");
-  WS_DEBUG_PRINTLN(nvs_log_filename);
+  WS_DEBUG_PRINTLNVAR(nvs_log_filename);
   return nvs_log_filename;
 #else
   if (log_filename_rtc[0] == '\0') {
@@ -481,7 +481,7 @@ const char *SleepHardware::GetLogFilename() {
     return nullptr;
   }
   WS_DEBUG_PRINT("[sleep] Retrieved log filename from RTC memory: ");
-  WS_DEBUG_PRINTLN(log_filename_rtc);
+  WS_DEBUG_PRINTLNVAR(log_filename_rtc);
   return log_filename_rtc;
 #endif
 }
