@@ -139,11 +139,12 @@ void SleepController::WakeFromLightSleep() {
   Serial.begin(115200);
   // If already enumerated, additional class driver begin() e.g msc, hid, midi
   // won't take effect until re-enumeration
-  if (TinyUSBDevice.mounted()) {
+  // TODO: This doesn't compile on ESP32-C3, do we need it?
+/*   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
     delay(10);
     TinyUSBDevice.attach();
-  }
+  } */
 
   // Refresh the cached sleep wakeup cause from hardware
   _sleep_hardware->GetSleepWakeupCause();
