@@ -122,19 +122,21 @@ public:
       _lcd->setCursor(0, cur_row);
       for (int cur_col = 0; cur_col < _cols && cur_idx < message_length;
            cur_col++) {
-        char c = message[cur_idx];
-        if (c == '\\' && cur_idx + 1 < message_length &&
-            message[cur_idx + 1] == 'n') {
-          cur_idx += 2; // Skip the '\n' character in the buffer
-          break;        // and move to the next row
-        } else if (c == 194 && cur_idx + 1 < message_length &&
-                   message[cur_idx + 1] == 176) {
-          cur_idx += 2;      // Skip the degree symbol sequence in the buffer
-          _lcd->write(0xDF); // and write the degree symbol
-        } else {
-          _lcd->write(c);
+        char parsed_char = 0;
+        bool is_newline = false;
+        if (ParseWriteToken(message, message_length, cur_idx, parsed_char,
+                            is_newline, char(0xDF))) {
+          if (is_newline) {
+            cur_idx++;
+            break;
+          }
+          _lcd->write(parsed_char);
           cur_idx++;
+          continue;
         }
+
+        _lcd->write(message[cur_idx]);
+        cur_idx++;
       }
     }
   }

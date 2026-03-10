@@ -142,29 +142,18 @@ public:
     for (size_t i = 0; i < msg_size; i++) {
       if (y_idx + line_height > _height)
         break;
-      if (message[i] == '\\' && i + 1 < msg_size) {
-        if (message[i + 1] == 'r' && i + 3 < msg_size &&
-            message[i + 2] == '\\' && message[i + 3] == 'n') {
+      char parsed_char = 0;
+      bool is_newline = false;
+      if (parseWriteToken(message, msg_size, i, parsed_char, is_newline,
+                          char(247))) {
+        if (is_newline) {
           y_idx += line_height;
           if (y_idx + line_height > _height)
             break;
           _display->setCursor(0, y_idx);
-          i += 3;
-          continue;
+        } else {
+          _display->write(parsed_char);
         }
-        if (message[i + 1] == 'n') {
-          y_idx += line_height;
-          if (y_idx + line_height > _height)
-            break;
-          _display->setCursor(0, y_idx);
-          i++;
-          continue;
-        }
-      }
-      if ((uint8_t)message[i] == 0xC2 && i + 1 < msg_size &&
-          (uint8_t)message[i + 1] == 0xB0) {
-        _display->write(char(247));
-        i++;
         continue;
       }
       _display->print(message[i]);

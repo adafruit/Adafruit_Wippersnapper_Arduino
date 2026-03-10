@@ -165,5 +165,64 @@ public:
   virtual void WriteMessageSSD1306(const char *message) {
     // noop
   }
+
+protected:
+  /*! 
+      @brief  Parses a display-write token at the given index.
+      @param  message       Input message buffer.
+      @param  msg_size      Message length.
+      @param  idx           Current index (updated when a multi-byte token is consumed).
+      @param  out_char      Parsed output character when token is a glyph.
+      @param  is_newline    Set true when token is a newline marker.
+      @param  degree_char   Driver-specific glyph for the degree symbol.
+      @return True when a token was recognized and consumed.
+  */
+  bool ParseWriteToken(const char *message, size_t msg_size, size_t &idx,
+                       char &out_char, bool &is_newline,
+                       char degree_char = char(247)) const {
+    out_char = 0;
+    is_newline = false;
+
+    if (!message || idx >= msg_size)
+      return false;
+
+    // Handle escaped CRLF and LF sequences ("\\r\\n", "\\n").
+    if (message[idx] == '\\' && idx + 1 < msg_size) {
+      if (message[idx + 1] == 'r' && idx + 3 < msg_size &&
+          message[idx + 2] == '\\' && message[idx + 3] == 'n') {
+        idx += 3;
+        is_newline = true;
+        return true;
+      }
+      if (message[idx + 1] == 'n') {
+        idx += 1;
+        is_newline = true;
+        return true;
+      }
+    }
+
+    // Handle literal CRLF, CR, and LF.
+    if (message[idx] == '\r') {
+      if (idx + 1 < msg_size && message[idx + 1] == '\n') {
+        idx += 1;
+      }
+      is_newline = true;
+      return true;
+    }
+    if (message[idx] == '\n') {
+      is_newline = true;
+      return true;
+    }
+
+    // Handle UTF-8 degree symbol (0xC2 0xB0).
+    if ((uint8_t)message[idx] == 0xC2 && idx + 1 < msg_size &&
+        (uint8_t)message[idx + 1] == 0xB0) {
+      idx += 1;
+      out_char = degree_char;
+      return true;
+    }
+
+    return false;
+  }
 };
 #endif // DRV_OUTPUT_BASE_H

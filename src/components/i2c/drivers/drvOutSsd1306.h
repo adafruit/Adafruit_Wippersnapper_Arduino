@@ -111,19 +111,24 @@ public:
     // Calculate the line height based on the text size (NOTE: base height is
     // 8px)
     int16_t line_height = 8 * _text_sz;
-    uint16_t c_idx = 0;
     size_t msg_size = strlen(message);
-    for (size_t i = 0; i < msg_size && c_idx < msg_size; i++) {
-      if (message[i] == '\\' && i + 1 < msg_size && message[i + 1] == 'n') {
-        // detected a newline char sequence (\n)
-        i++;
-        // Skip to the next possible line
-        y_idx += line_height;
-        _display->setCursor(0, y_idx);
-      } else {
-        _display->print(message[i]);
-        _display->display();
+    for (size_t i = 0; i < msg_size; i++) {
+      char parsed_char = 0;
+      bool is_newline = false;
+      if (ParseWriteToken(message, msg_size, i, parsed_char, is_newline,
+                          char(247))) {
+        if (is_newline) {
+          y_idx += line_height;
+          _display->setCursor(0, y_idx);
+        } else {
+          _display->write(parsed_char);
+          _display->display();
+        }
+        continue;
       }
+
+      _display->print(message[i]);
+      _display->display();
     }
   }
 
