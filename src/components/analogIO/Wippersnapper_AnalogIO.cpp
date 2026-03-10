@@ -162,7 +162,7 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
     }
   }
   WS_DEBUG_PRINT("Configured Analog Input pin with polling time (ms):");
-  WS_DEBUG_PRINTLN(periodMs);
+  WS_DEBUG_PRINTLNVAR(periodMs);
 }
 
 /***********************************************************************************/
@@ -194,7 +194,7 @@ void Wippersnapper_AnalogIO::disableAnalogInPin(int pin) {
 void Wippersnapper_AnalogIO::deinitAnalogPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin) {
   WS_DEBUG_PRINT("Deinitializing analog pin A");
-  WS_DEBUG_PRINTLN(pin);
+  WS_DEBUG_PRINTLNVAR(pin);
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
     WS_DEBUG_PRINTLN("Deinitialized analog input pin obj.");
@@ -391,7 +391,7 @@ void Wippersnapper_AnalogIO::update() {
       if (_analog_input_pins[i].period != 0L &&
           timerExpired(millis(), _analog_input_pins[i])) {
         WS_DEBUG_PRINT("Executing periodic event on A");
-        WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
+        WS_DEBUG_PRINTLNVAR(_analog_input_pins[i].pinName);
 
         // Read from analog pin
         if (_analog_input_pins[i].readMode ==

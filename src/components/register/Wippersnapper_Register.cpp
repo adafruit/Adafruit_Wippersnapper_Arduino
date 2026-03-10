@@ -79,7 +79,7 @@ void Wippersnapper::pollRegistrationResp() {
   // Blocking loop, WDT reset upon failure.
   while (WS._boardStatus != WS_BOARD_DEF_OK) {
     WS_DEBUG_PRINT("Polling for registration message response...");
-    WS_DEBUG_PRINTLN(WS._boardStatus);
+    WS_DEBUG_PRINTLNVAR(WS._boardStatus);
     statusLEDBlink(WS_LED_STATUS_WAITING_FOR_REG_MSG);
     WS._mqtt->processPackets(20); // long-poll
   }
@@ -118,11 +118,11 @@ void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
       wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK) {
     WS_DEBUG_PRINTLN("Hardware Response Msg:")
     WS_DEBUG_PRINT("\tGPIO Pins: ");
-    WS_DEBUG_PRINTLN(message.total_gpio_pins);
+    WS_DEBUG_PRINTLNVAR(message.total_gpio_pins);
     WS_DEBUG_PRINT("\tAnalog Pins: ");
-    WS_DEBUG_PRINTLN(message.total_analog_pins);
+    WS_DEBUG_PRINTLNVAR(message.total_analog_pins);
     WS_DEBUG_PRINT("\tReference voltage: ");
-    WS_DEBUG_PRINT(message.reference_voltage);
+    WS_DEBUG_PRINTVAR(message.reference_voltage);
     WS_DEBUG_PRINTLN("v");
     // Initialize Digital IO class
     WS._digitalGPIO = new Wippersnapper_DigitalGPIO(message.total_gpio_pins);

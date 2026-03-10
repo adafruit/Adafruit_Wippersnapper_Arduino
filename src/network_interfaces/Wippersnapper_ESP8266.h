@@ -149,7 +149,7 @@ public:
           }
         }
       }
-      WS_DEBUG_PRINT(WiFi.SSID(i));
+      WS_DEBUG_PRINTVAR(WiFi.SSID(i));
       WS_DEBUG_PRINT(" (");
       uint8_t BSSID[WL_MAC_ADDR_LENGTH];
       memcpy(BSSID, WiFi.BSSID(i), WL_MAC_ADDR_LENGTH);
@@ -159,9 +159,9 @@ public:
         WS_DEBUG_PRINTHEX(BSSID[m]);
       }
       WS_DEBUG_PRINT(") ");
-      WS_DEBUG_PRINT(WiFi.RSSI(i));
+      WS_DEBUG_PRINTVAR(WiFi.RSSI(i));
       WS_DEBUG_PRINT("dB (ch");
-      WS_DEBUG_PRINT(WiFi.channel(i))
+      WS_DEBUG_PRINTVAR(WiFi.channel(i))
       WS_DEBUG_PRINTLN(")");
     }
 

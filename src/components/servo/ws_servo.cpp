@@ -37,12 +37,12 @@ ws_servo::~ws_servo() {
 /**************************************************************************/
 servoComponent *ws_servo::getServoComponent(uint8_t pin) {
   for (size_t i = 0; i < sizeof(_servos) / sizeof(_servos[0]); i++) {
-    WS_DEBUG_PRINTLN(_servos[i].pin);
+    WS_DEBUG_PRINTLNVAR(_servos[i].pin);
     if (_servos[i].pin == pin)
       return &_servos[i];
   }
   WS_DEBUG_PRINT("ERROR: Can not find servo on pin #");
-  WS_DEBUG_PRINTLN(pin);
+  WS_DEBUG_PRINTLNVAR(pin);
   return nullptr;
 }
 

@@ -139,7 +139,7 @@ public:
     if (status != VL53L4CX_ERROR_NONE) {
       WS_DEBUG_PRINT(
           "VL53L4CX Error clearing interrupt and starting measurement: ");
-      WS_DEBUG_PRINTLN(status);
+      WS_DEBUG_PRINTLNVAR(status);
       return false;
     }
 
@@ -151,7 +151,7 @@ public:
     if ((status != VL53L4CX_ERROR_NONE) || (NewDataReady == 0)) {
       // error or no data ready
       WS_DEBUG_PRINT("VL53L4CX Error checking for data ready: ");
-      WS_DEBUG_PRINTLN(status);
+      WS_DEBUG_PRINTLNVAR(status);
       return false;
     }
 
@@ -159,14 +159,14 @@ public:
     status = _VL53L4CX->VL53L4CX_GetMultiRangingData(pMultiRangingData);
     if (status != VL53L4CX_ERROR_NONE) {
       WS_DEBUG_PRINT("VL53L4CX Error getting multi ranging data: ");
-      WS_DEBUG_PRINTLN(status);
+      WS_DEBUG_PRINTLNVAR(status);
       return false;
     }
 
     // whichObject: 0-based index, return NaN(Object not found) if too few found
     if (pMultiRangingData->NumberOfObjectsFound - 1 < whichObject) {
       WS_DEBUG_PRINT("Object not found at index #");
-      WS_DEBUG_PRINT(whichObject + 1); // human readable 1-based index
+      WS_DEBUG_PRINTVAR(whichObject + 1); // human readable 1-based index
       WS_DEBUG_PRINTLN(", returning NaN");
       proximityEvent->data[0] = NAN;
       return true;
