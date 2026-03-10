@@ -14,7 +14,7 @@
  */
 #ifndef WS_DISPLAY_HARDWARE_H
 #define WS_DISPLAY_HARDWARE_H
-#include "Wippersnapper.h"
+#include "wippersnapper.h"
 #include "drivers/dispDrvBase.h"
 #include "drivers/dispDrvSt7789.h"
 #include "drivers/dispDrvI2cAdapter.h"
