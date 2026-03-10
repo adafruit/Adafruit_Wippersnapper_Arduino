@@ -18,7 +18,7 @@
 #include "../assets/icons.h"
 #include "../assets/splash.h"
 #include "Adafruit_ThinkInk.h"
-#include "Wippersnapper.h"
+#include "wippersnapper.h"
 
 // Shared status bar constants for EPD drivers
 #define STATUS_BAR_HEIGHT 20  ///< Height of the status bar in pixels

@@ -22,7 +22,7 @@
 #include <SPI.h>
 #include <WiFiNINA.h>
 
-#include "Wippersnapper.h"
+#include "wippersnapper.h"
 
 #define SPIWIFI                                                                \
   SPI /*!< Instance of SPI interface used by an external uBlox module. */
