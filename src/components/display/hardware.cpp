@@ -41,11 +41,11 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
   _type = addMsg->type;
 
   WS_DEBUG_PRINT("[display] Type: ");
-  WS_DEBUG_PRINTLN(_type);
+  WS_DEBUG_PRINTLNVAR(_type);
   WS_DEBUG_PRINT("[display] Driver: ");
-  WS_DEBUG_PRINTLN(addMsg->driver);
+  WS_DEBUG_PRINTLNVAR(addMsg->driver);
   WS_DEBUG_PRINT("[display] Panel: ");
-  WS_DEBUG_PRINTLN(addMsg->panel);
+  WS_DEBUG_PRINTLNVAR(addMsg->panel);
 
   switch (addMsg->which_interface_type) {
   case ws_display_Add_spi_tft_tag:
@@ -75,17 +75,17 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   int16_t miso = parsePin(spi->pin_miso);
 
   WS_DEBUG_PRINT("[display] SPI TFT pins - CS:");
-  WS_DEBUG_PRINT(cs);
+  WS_DEBUG_PRINTVAR(cs);
   WS_DEBUG_PRINT(" DC:");
-  WS_DEBUG_PRINT(dc);
+  WS_DEBUG_PRINTVAR(dc);
   WS_DEBUG_PRINT(" MOSI:");
-  WS_DEBUG_PRINT(mosi);
+  WS_DEBUG_PRINTVAR(mosi);
   WS_DEBUG_PRINT(" SCK:");
-  WS_DEBUG_PRINT(sck);
+  WS_DEBUG_PRINTVAR(sck);
   WS_DEBUG_PRINT(" RST:");
-  WS_DEBUG_PRINT(rst);
+  WS_DEBUG_PRINTVAR(rst);
   WS_DEBUG_PRINT(" MISO:");
-  WS_DEBUG_PRINTLN(miso);
+  WS_DEBUG_PRINTLNVAR(miso);
 
   if (spi->bus != 0) {
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
@@ -107,7 +107,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
     _drvDisp = new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported TFT driver: ");
-    WS_DEBUG_PRINTLN(msg->driver);
+    WS_DEBUG_PRINTLNVAR(msg->driver);
     return false;
   }
 
@@ -229,15 +229,15 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     busy = parsePin(spi->pin_busy);
 
   WS_DEBUG_PRINT("[display] SPI EPD pins - DC:");
-  WS_DEBUG_PRINT(dc);
+  WS_DEBUG_PRINTVAR(dc);
   WS_DEBUG_PRINT(" RST:");
-  WS_DEBUG_PRINT(rst);
+  WS_DEBUG_PRINTVAR(rst);
   WS_DEBUG_PRINT(" CS:");
-  WS_DEBUG_PRINT(cs);
+  WS_DEBUG_PRINTVAR(cs);
   WS_DEBUG_PRINT(" SRAM_CS:");
-  WS_DEBUG_PRINT(sram_cs);
+  WS_DEBUG_PRINTVAR(sram_cs);
   WS_DEBUG_PRINT(" BUSY:");
-  WS_DEBUG_PRINTLN(busy);
+  WS_DEBUG_PRINTLNVAR(busy);
 
   if (spi->bus != 0) {
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
@@ -264,7 +264,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
       driver = "ILI0373";
     }
     WS_DEBUG_PRINT("[display] MagTag auto-detected driver: ");
-    WS_DEBUG_PRINTLN(driver);
+    WS_DEBUG_PRINTLNVAR(driver);
   }
 
   // Create driver based on driver string (component-name resolution
@@ -284,7 +284,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     _drvDisp = new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported EPD driver: ");
-    WS_DEBUG_PRINTLN(driver);
+    WS_DEBUG_PRINTLNVAR(driver);
     return false;
   }
 
@@ -334,7 +334,7 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   }
 
   WS_DEBUG_PRINT("[display] RGB666 panel: ");
-  WS_DEBUG_PRINTLN(msg->panel);
+  WS_DEBUG_PRINTLNVAR(msg->panel);
 
   dispDrvRgb666 *drv = new dispDrvRgb666(msg->panel);
   if (!drv)
@@ -379,9 +379,9 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   }
 
   WS_DEBUG_PRINT("[display] I2C driver: ");
-  WS_DEBUG_PRINT(msg->driver);
+  WS_DEBUG_PRINTVAR(msg->driver);
   WS_DEBUG_PRINT(" addr: 0x");
-  WS_DEBUG_PRINTLN(addr, HEX);
+  WS_DEBUG_PRINTLNVAR(addr, HEX);
 
   // Get the initialized I2C bus from the I2C controller
   if (!Ws._i2c_controller->IsBusStatusOK()) {
@@ -404,20 +404,20 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     drv = new drvOutQuadAlphaNum(i2c, addr, 0, msg->driver);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported I2C display driver: ");
-    WS_DEBUG_PRINTLN(msg->driver);
+    WS_DEBUG_PRINTLNVAR(msg->driver);
     return false;
   }
 
   // Configure based on config type
   pb_size_t config = msg->which_config;
   WS_DEBUG_PRINT("[display] I2C config tag: ");
-  WS_DEBUG_PRINTLN(config);
+  WS_DEBUG_PRINTLNVAR(config);
   if (config == ws_display_Add_config_oled_tag) {
     ws_display_OledConfig *cfg = &msg->config.config_oled;
     WS_DEBUG_PRINT("[display] OLED config: ");
-    WS_DEBUG_PRINT(cfg->width);
+    WS_DEBUG_PRINTVAR(cfg->width);
     WS_DEBUG_PRINT("x");
-    WS_DEBUG_PRINTLN(cfg->height);
+    WS_DEBUG_PRINTLNVAR(cfg->height);
     drv->ConfigureSSD1306(cfg->width, cfg->height,
                           cfg->font_size > 0 ? cfg->font_size : 1);
   } else if (config == ws_display_Add_config_char_lcd_tag) {
@@ -475,7 +475,7 @@ bool DisplayHardware::write(ws_display_Write *msg) {
   switch (msg->which_content) {
   case ws_display_Write_message_tag:
     WS_DEBUG_PRINT("[display] Writing message: ");
-    WS_DEBUG_PRINTLN(msg->content.message);
+    WS_DEBUG_PRINTLNVAR(msg->content.message);
     _drvDisp->writeMessage(msg->content.message, msg->clear_first,
                            msg->cursor_x, msg->cursor_y);
     return true;

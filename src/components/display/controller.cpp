@@ -103,9 +103,9 @@ static void resolveEpdDefaults(ws_display_Add *msg) {
       if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED)
         config->mode = m.mode;
       WS_DEBUG_PRINT("[display] Resolved component '");
-      WS_DEBUG_PRINT(name);
+      WS_DEBUG_PRINTVAR(name);
       WS_DEBUG_PRINT("' -> driver '");
-      WS_DEBUG_PRINT(msg->driver);
+      WS_DEBUG_PRINTVAR(msg->driver);
       WS_DEBUG_PRINTLN("'");
       return;
     }
@@ -141,11 +141,11 @@ static void resolveRgb666Defaults(ws_display_Add *msg) {
       strncpy(msg->panel, m.panel, sizeof(msg->panel) - 1);
       msg->panel[sizeof(msg->panel) - 1] = '\0';
       WS_DEBUG_PRINT("[display] Resolved component '");
-      WS_DEBUG_PRINT(name);
+      WS_DEBUG_PRINTVAR(name);
       WS_DEBUG_PRINT("' -> driver '");
-      WS_DEBUG_PRINT(msg->driver);
+      WS_DEBUG_PRINTVAR(msg->driver);
       WS_DEBUG_PRINT("', panel '");
-      WS_DEBUG_PRINT(msg->panel);
+      WS_DEBUG_PRINTVAR(msg->panel);
       WS_DEBUG_PRINTLN("'");
       return;
     }
@@ -154,7 +154,7 @@ static void resolveRgb666Defaults(ws_display_Add *msg) {
 
 bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   WS_DEBUG_PRINT("[display] Adding display: ");
-  WS_DEBUG_PRINTLN(msg->name);
+  WS_DEBUG_PRINTLNVAR(msg->name);
 
   // Resolve component-name defaults before passing to hardware
   resolveEpdDefaults(msg);
@@ -218,7 +218,7 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   }
 
   WS_DEBUG_PRINT("[display] Display added successfully: ");
-  WS_DEBUG_PRINTLN(msg->name);
+  WS_DEBUG_PRINTLNVAR(msg->name);
   return true;
 }
 
@@ -229,7 +229,7 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
 */
 bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
   WS_DEBUG_PRINT("[display] Removing display: ");
-  WS_DEBUG_PRINTLN(msg->name);
+  WS_DEBUG_PRINTLNVAR(msg->name);
 
   int8_t idx = findDisplayByName(msg->name);
   bool did_remove = false;
@@ -264,7 +264,7 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
 */
 bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
   WS_DEBUG_PRINT("[display] Writing to display: ");
-  WS_DEBUG_PRINTLN(msg->name);
+  WS_DEBUG_PRINTLNVAR(msg->name);
 
   int8_t idx = findDisplayByName(msg->name);
   if (idx < 0) {

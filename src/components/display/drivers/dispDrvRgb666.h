@@ -90,7 +90,7 @@ public:
       pclk_active_neg = 1; // pclk_active_high = False
     } else {
       WS_DEBUG_PRINT("[display] ERROR: Unknown RGB666 panel: ");
-      WS_DEBUG_PRINTLN(_panel);
+      WS_DEBUG_PRINTLNVAR(_panel);
       return false;
     }
 
@@ -126,7 +126,7 @@ public:
     _expander->digitalWrite(PCA_TFT_BACKLIGHT, HIGH);
 
     WS_DEBUG_PRINT("[display] RGB666 panel '");
-    WS_DEBUG_PRINT(_panel);
+    WS_DEBUG_PRINTVAR(_panel);
     WS_DEBUG_PRINTLN("' initialized");
     return true;
   }
