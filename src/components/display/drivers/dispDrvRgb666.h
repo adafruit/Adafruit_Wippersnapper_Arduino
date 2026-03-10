@@ -77,8 +77,8 @@ public:
       // 2.1" round 480x480
       init_ops = TL021WVC02_init_operations;
       init_ops_len = sizeof(TL021WVC02_init_operations);
-      h_fp = 40;  h_pw = 20; h_bp = 40;
-      v_fp = 40;  v_pw = 10; v_bp = 40;
+      h_fp = 46;  h_pw = 2;  h_bp = 44;
+      v_fp = 50;  v_pw = 16; v_bp = 16;
       pclk_active_neg = 0; // pclk_active_high = True
     } else if (strcmp(_panel, "TL032FWV01") == 0 ||
                strcmp(_panel, "adafruit-5797") == 0) {

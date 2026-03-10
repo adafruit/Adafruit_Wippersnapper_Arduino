@@ -340,8 +340,30 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   if (!drv)
     return false;
 
-  drv->setWidth(config->width);
-  drv->setHeight(config->height);
+  int16_t width = config->width;
+  int16_t height = config->height;
+
+  // Some controller payloads may omit RGB666 dimensions.
+  // Apply panel-based safe defaults to avoid 0x0 display init.
+  if (width <= 0 || height <= 0) {
+    if (strcmp(msg->panel, "TL021WVC02") == 0 ||
+        strcmp(msg->panel, "adafruit-5792") == 0) {
+      width = 480;
+      height = 480;
+    } else if (strcmp(msg->panel, "TL032FWV01") == 0 ||
+               strcmp(msg->panel, "adafruit-5797") == 0) {
+      width = 320;
+      height = 820;
+    }
+
+    WS_DEBUG_PRINT("[display] RGB666 using fallback dimensions: ");
+    WS_DEBUG_PRINTVAR(width);
+    WS_DEBUG_PRINT("x");
+    WS_DEBUG_PRINTLNVAR(height);
+  }
+
+  drv->setWidth(width);
+  drv->setHeight(height);
   drv->setRotation(config->rotation);
   if (config->text_size > 0)
     drv->setTextSize(config->text_size);
