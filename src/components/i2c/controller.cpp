@@ -1037,11 +1037,11 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
           msg->output_add.config.config_char_lcd;
       drv_out->ConfigureCharLcd(cfg.rows, cfg.columns, true);
       WS_DEBUG_PRINTLN("OK!");
-    } else if (config == ws_display_Add_config_oled_tag) {
+    } else if (config == ws_display_Add_config_display_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring OLED...");
-      ws_display_OledConfig cfg = msg->output_add.config.config_oled;
+      ws_display_DisplayProperties cfg = msg->output_add.config.config_display;
       WS_DEBUG_PRINT("[i2c] Got cfg, calling ConfigureOLED...");
-      drv_out->ConfigureSSD1306(cfg.width, cfg.height, cfg.font_size);
+      drv_out->ConfigureSSD1306(cfg.width, cfg.height, cfg.text_size > 0 ? cfg.text_size : 1);
       WS_DEBUG_PRINTLN("OK!");
     } else {
       WS_DEBUG_PRINTLN(

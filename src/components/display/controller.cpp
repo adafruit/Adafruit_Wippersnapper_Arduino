@@ -120,7 +120,7 @@ static void resolveEpdDefaults(ws_display_Add *msg) {
 static void resolveRgb666Defaults(ws_display_Add *msg) {
   if (msg->which_interface_type != ws_display_Add_ttl_rgb666_tag)
     return;
-  if (msg->which_config != ws_display_Add_config_ttl_rgb666_tag)
+  if (msg->which_config != ws_display_Add_config_display_tag)
     return;
 
   const char *name = msg->name;

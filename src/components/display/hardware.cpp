@@ -16,7 +16,7 @@
 
 DisplayHardware::DisplayHardware() {
   memset(_name, 0, sizeof(_name));
-  _type = ws_display_DisplayType_DISPLAY_TYPE_UNSPECIFIED;
+  _type = ws_display_DisplayClass_DISPLAY_CLASS_UNSPECIFIED;
 }
 
 DisplayHardware::~DisplayHardware() {
@@ -66,13 +66,14 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
 
 bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   ws_display_TftSpiConfig *spi = &msg->interface_type.spi_tft;
+  ws_display_SpiPinConfig *pins = &spi->spi_pins;
 
-  int16_t cs = parsePin(spi->pin_cs);
-  int16_t dc = parsePin(spi->pin_dc);
-  int16_t mosi = parsePin(spi->pin_mosi);
-  int16_t sck = parsePin(spi->pin_sck);
-  int16_t rst = parsePin(spi->pin_rst);
-  int16_t miso = parsePin(spi->pin_miso);
+  int16_t cs = parsePin(pins->pin_cs);
+  int16_t dc = parsePin(pins->pin_dc);
+  int16_t mosi = parsePin(pins->pin_mosi);
+  int16_t sck = parsePin(pins->pin_sck);
+  int16_t rst = parsePin(pins->pin_rst);
+  int16_t miso = parsePin(pins->pin_miso);
 
   WS_DEBUG_PRINT("[display] SPI TFT pins - CS:");
   WS_DEBUG_PRINTVAR(cs);
@@ -87,16 +88,16 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   WS_DEBUG_PRINT(" MISO:");
   WS_DEBUG_PRINTLNVAR(miso);
 
-  if (spi->bus != 0) {
+  if (pins->bus != 0) {
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
 
-  if (msg->which_config != ws_display_Add_config_tft_tag) {
-    WS_DEBUG_PRINTLN("[display] ERROR: Expected TFT config for SPI TFT!");
+  if (msg->which_config != ws_display_Add_config_display_tag) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Expected display config for SPI TFT!");
     return false;
   }
-  ws_display_TftConfig *config = &msg->config.config_tft;
+  ws_display_DisplayProperties *config = &msg->config.config_display;
 
   if (_drvDisp) {
     delete _drvDisp;
@@ -218,10 +219,11 @@ bool DisplayHardware::detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst) {
 // ---------------------------------------------------------------------------
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   ws_display_EpdSpiConfig *spi = &msg->interface_type.spi_epd;
+  ws_display_SpiPinConfig *pins = &spi->spi_pins;
 
-  int16_t dc = parsePin(spi->pin_dc);
-  int16_t rst = parsePin(spi->pin_rst);
-  int16_t cs = parsePin(spi->pin_cs);
+  int16_t dc = parsePin(pins->pin_dc);
+  int16_t rst = parsePin(pins->pin_rst);
+  int16_t cs = parsePin(pins->pin_cs);
   int16_t sram_cs = -1, busy = -1;
   if (strlen(spi->pin_sram_cs) >= 2)
     sram_cs = parsePin(spi->pin_sram_cs);
@@ -239,7 +241,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   WS_DEBUG_PRINT(" BUSY:");
   WS_DEBUG_PRINTLNVAR(busy);
 
-  if (spi->bus != 0) {
+  if (pins->bus != 0) {
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
@@ -300,10 +302,10 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (config->mode == ws_display_EPDMode_EPD_MODE_GRAYSCALE4)
     epd_mode = THINKINK_GRAYSCALE4;
 
-  _drvDisp->setWidth(config->width);
-  _drvDisp->setHeight(config->height);
-  if (config->text_size > 0)
-    _drvDisp->setTextSize(config->text_size);
+  _drvDisp->setWidth(config->properties.width);
+  _drvDisp->setHeight(config->properties.height);
+  if (config->properties.text_size > 0)
+    _drvDisp->setTextSize(config->properties.text_size);
 
   if (!_drvDisp->begin(epd_mode)) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin EPD driver!");
@@ -321,12 +323,12 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 // ---------------------------------------------------------------------------
 bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
 #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
-  if (msg->which_config != ws_display_Add_config_ttl_rgb666_tag) {
+  if (msg->which_config != ws_display_Add_config_display_tag) {
     WS_DEBUG_PRINTLN(
-        "[display] ERROR: Expected TTL RGB666 config for RGB666!");
+        "[display] ERROR: Expected display config for RGB666!");
     return false;
   }
-  ws_display_TtlRgb666Config *config = &msg->config.config_ttl_rgb666;
+  ws_display_DisplayProperties *config = &msg->config.config_display;
 
   if (_drvDisp) {
     delete _drvDisp;
@@ -392,7 +394,7 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     WS_DEBUG_PRINTLN("[display] ERROR: Expected I2C interface for I2C display!");
     return false;
   }
-  ws_display_I2cDisplayConfig *i2c_cfg = &msg->interface_type.i2c;
+  ws_i2c_DeviceDescriptor *i2c_cfg = &msg->interface_type.i2c;
   uint16_t addr = (uint16_t)i2c_cfg->device_address;
 
   if (_drvDisp) {
@@ -434,14 +436,14 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   pb_size_t config = msg->which_config;
   WS_DEBUG_PRINT("[display] I2C config tag: ");
   WS_DEBUG_PRINTLNVAR(config);
-  if (config == ws_display_Add_config_oled_tag) {
-    ws_display_OledConfig *cfg = &msg->config.config_oled;
+  if (config == ws_display_Add_config_display_tag) {
+    ws_display_DisplayProperties *cfg = &msg->config.config_display;
     WS_DEBUG_PRINT("[display] OLED config: ");
     WS_DEBUG_PRINTVAR(cfg->width);
     WS_DEBUG_PRINT("x");
     WS_DEBUG_PRINTLNVAR(cfg->height);
     drv->ConfigureSSD1306(cfg->width, cfg->height,
-                          cfg->font_size > 0 ? cfg->font_size : 1);
+                          cfg->text_size > 0 ? cfg->text_size : 1);
   } else if (config == ws_display_Add_config_char_lcd_tag) {
     ws_display_CharLcdConfig *cfg = &msg->config.config_char_lcd;
     drv->ConfigureCharLcd(cfg->rows, cfg->columns, true);
