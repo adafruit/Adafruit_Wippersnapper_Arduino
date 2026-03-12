@@ -139,7 +139,7 @@ public:
     if (!_display)
       return;
 
-    _display->fillScreen(BLACK);
+    _display->fillScreen(RGB565_BLACK);
 
     // Draw white status bar at top
     _display->fillRect(0, 0, _display->width(), RGB666_STATUSBAR_HEIGHT,
@@ -166,13 +166,13 @@ public:
     // Draw icons
     _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
                          epd_bmp_cloud_online, RGB666_STATUSBAR_ICON_SZ,
-                         RGB666_STATUSBAR_ICON_SZ, BLACK);
+                         RGB666_STATUSBAR_ICON_SZ, RGB565_BLACK);
     _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
                          epd_bmp_wifi_full, RGB666_STATUSBAR_ICON_SZ,
-                         RGB666_STATUSBAR_ICON_SZ, BLACK);
+                         RGB666_STATUSBAR_ICON_SZ, RGB565_BLACK);
     _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
                          epd_bmp_bat_full, RGB666_STATUSBAR_ICON_SZ,
-                         RGB666_STATUSBAR_ICON_SZ, BLACK);
+                         RGB666_STATUSBAR_ICON_SZ, RGB565_BLACK);
 
     // Reset text color and size for main text area
     _display->setTextColor(RGB565_WHITE);

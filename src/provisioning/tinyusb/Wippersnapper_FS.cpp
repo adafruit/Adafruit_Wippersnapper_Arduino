@@ -107,7 +107,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // Attempt to initialize the flash chip
   if (!flash_v2.begin()) {
-    setStatusLEDColor(RED);
+    setStatusLEDColor(WS_COLOR_RGB32_RED);
     fsHalt("Failed to initialize the flash chip!");
   }
 
