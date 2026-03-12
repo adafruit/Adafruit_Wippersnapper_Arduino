@@ -81,6 +81,5 @@ private:
   int32_t _totalAnalogInputPins;      /*!< Total number of analog input pins */
   analogInputPin *_analog_input_pins; /*!< Array of analog pin objects */
 };
-extern Wippersnapper WS; /*!< Wippersnapper variable. */
 
 #endif // WIPPERSNAPPER_DIGITALGPIO_H
