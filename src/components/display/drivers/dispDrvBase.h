@@ -146,6 +146,15 @@ public:
   }
 
   /*!
+  @brief  Draws the battery icon based on the current battery level.
+  @param  bat
+          The current battery level as a percentage (0-100).
+  */
+  virtual void drawBatteryIcon(uint8_t bat) {
+    // No-op for base class
+  }
+
+  /*!
     @brief  Updates the status bar with current information (battery level,
     connectivity status, etc).
     @param  rssi
@@ -175,13 +184,12 @@ protected:
   int16_t _width;       ///< Width of the display
   uint8_t _rotation;    ///< Rotation of the display
   // statusbar properties
-  int _statusbar_icons_y;        ///< Y position of status bar icons
-  int _statusbar_icon_battery_x; ///< X position of battery icon
-  int _statusbar_icon_wifi_x;    ///< X position of WiFi icon
-  int _statusbar_icon_cloud_x;   ///< X position of cloud icon
-  int8_t _statusbar_rssi;        ///< RSSI value for status bar
-  uint8_t
-      _statusbar_bat; ///< Battery level, as a percentage, for the status bar
+  int _statusbar_icons_y;         ///< Y position of status bar icons
+  int _statusbar_icon_battery_x;  ///< X position of battery icon
+  int _statusbar_icon_wifi_x;     ///< X position of WiFi icon
+  int _statusbar_icon_cloud_x;    ///< X position of cloud icon
+  int8_t _statusbar_rssi;         ///< RSSI value for status bar
+  uint8_t _statusbar_bat = 100;   ///< Battery level %for the status bar
   bool _statusbar_mqtt_connected; ///< MQTT connection status for the status bar
 };
 
