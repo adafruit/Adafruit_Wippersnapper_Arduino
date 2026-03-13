@@ -26,12 +26,17 @@
 class dispDrvBaseI2c : public dispDrvBase {
 public:
   /*!
-      @brief  Constructor — takes ownership of the I2C output driver.
+      @brief  Constructor that takes ownership of the I2C output driver.
       @param  drv  Pointer to an I2C output driver (will be deleted on
-     destruction).
+                    destruction).
   */
   dispDrvBaseI2c(drvOutputBase *drv) : dispDrvBase(), _drv(drv) {}
 
+  /*!
+      @brief  Destructor.
+
+      Deletes the owned I2C output driver, if one was provided.
+  */
   ~dispDrvBaseI2c() {
     if (_drv) {
       delete _drv;
@@ -39,12 +44,26 @@ public:
     }
   }
 
+  /*!
+      @brief  Initializes the wrapped I2C output driver.
+      @return True if the wrapped driver exists and initializes successfully.
+  */
   bool begin() override {
     if (!_drv)
       return false;
     return _drv->begin();
   }
 
+  /*!
+      @brief  Writes a message using the wrapped I2C output driver.
+      @param  message      Null-terminated message to send.
+      @param  clear_first  Unused for I2C output adapters.
+      @param  cursor_x     Unused horizontal cursor position.
+      @param  cursor_y     Unused vertical cursor position.
+
+      I2C output drivers currently expose only a simple message write API,
+      so cursor placement and clear behavior are ignored.
+  */
   void writeMessage(const char *message, bool clear_first = true,
                     int32_t cursor_x = 0, int32_t cursor_y = 0) override {
     // I2C output drivers only support simple WriteMessage for now
@@ -52,6 +71,7 @@ public:
   }
 
 private:
+  /*! @brief  Owned I2C output driver instance. */
   drvOutputBase *_drv;
 };
 

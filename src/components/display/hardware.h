@@ -17,7 +17,7 @@
 #include "wippersnapper.h"
 #include "drivers/dispDrvBase.h"
 #include "drivers/dispDrvSt7789.h"
-#include "drivers/dispDrvI2cAdapter.h"
+#include "drivers/dispDrvBaseI2c.h"
 #include "../i2c/drivers/drvOut7Seg.h"
 #include "../i2c/drivers/drvOutCharLcd.h"
 #include "../i2c/drivers/drvOutQuadAlphaNum.h"
