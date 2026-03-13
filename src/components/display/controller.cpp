@@ -157,22 +157,14 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   WS_DEBUG_PRINTLNVAR(msg->name);
 
   // Resolve component-name defaults before passing to hardware
-  resolveEpdDefaults(msg);
-  resolveRgb666Defaults(msg);
-
-  // If display with same name exists, remove it first
-  int8_t existingIdx = findDisplayByName(msg->name);
-  if (existingIdx >= 0) {
-    WS_DEBUG_PRINTLN("[display] Replacing existing display");
-    delete _displays[existingIdx];
-    _displays[existingIdx] = nullptr;
-    // Shift remaining displays down
-    for (int i = existingIdx; i < _num_displays - 1; i++) {
-      _displays[i] = _displays[i + 1];
-    }
-    _displays[_num_displays - 1] = nullptr;
-    _num_displays--;
+  if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_EPD) {
+    resolveEpdDefaults(msg);
+  } else if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_TFT 
+             && msg->which_interface_type == ws_display_Add_ttl_rgb666_tag) {
+    resolveRgb666Defaults(msg);
   }
+
+  removeExistingDisplayByName(msg->name);
 
   if (_num_displays >= MAX_DISPLAYS) {
     WS_DEBUG_PRINTLN("[display] ERROR: Maximum number of displays reached!");
@@ -223,6 +215,34 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
 }
 
 /*!
+    @brief  Removes an existing display with the same name as the new one being added.
+            This ensures that adding a display with a duplicate name will replace
+            the old one instead of creating a conflict.
+    @param  name  The name of the display to remove.
+    @return True if a display was removed, False if no existing display had the same name.
+*/
+bool DisplayController::removeExistingDisplayByName(char *name)
+{
+  // If display with same name exists, remove it first
+  int8_t existingIdx = findDisplayByName(name);
+  if (existingIdx >= 0)
+  {
+    WS_DEBUG_PRINTLN("[display] Replacing existing display");
+    delete _displays[existingIdx];
+    _displays[existingIdx] = nullptr;
+    // Shift remaining displays down
+    for (int i = existingIdx; i < _num_displays - 1; i++)
+    {
+      _displays[i] = _displays[i + 1];
+    }
+    _displays[_num_displays - 1] = nullptr;
+    _num_displays--;
+    return true;
+  }
+  return false;
+}
+
+/*!
     @brief  Handles a request to remove a display.
     @param  msg  The Display Remove message.
     @return True if successful, False otherwise.
@@ -231,19 +251,9 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
   WS_DEBUG_PRINT("[display] Removing display: ");
   WS_DEBUG_PRINTLNVAR(msg->name);
 
-  int8_t idx = findDisplayByName(msg->name);
-  bool did_remove = false;
+  bool did_remove = removeExistingDisplayByName(msg->name);
 
-  if (idx >= 0) {
-    delete _displays[idx];
-    // Shift remaining displays down
-    for (int i = idx; i < _num_displays - 1; i++) {
-      _displays[i] = _displays[i + 1];
-    }
-    _displays[_num_displays - 1] = nullptr;
-    _num_displays--;
-    did_remove = true;
-  } else {
+  if (!did_remove) {
     WS_DEBUG_PRINTLN("[display] WARNING: Display not found");
   }
 

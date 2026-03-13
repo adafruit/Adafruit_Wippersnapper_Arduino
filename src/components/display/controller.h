@@ -33,6 +33,7 @@ public:
   ~DisplayController();
   bool Router(pb_istream_t *stream);
   bool Handle_Display_Add(ws_display_Add *msg);
+  bool removeExistingDisplayByName(char *name);
   bool Handle_Display_Remove(ws_display_Remove *msg);
   bool Handle_Display_Write(ws_display_Write *msg);
   void update(int32_t rssi, bool is_connected);
