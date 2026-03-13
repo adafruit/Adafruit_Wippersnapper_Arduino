@@ -14,14 +14,14 @@
  */
 #ifndef WS_DISPLAY_HARDWARE_H
 #define WS_DISPLAY_HARDWARE_H
+#include "drivers/dispDrvBase.h"
+#include "drivers/dispDrvBaseI2c.h"
+#include "drivers/dispDrvSt7789.h"
 #include "drivers/drvOut7Seg.h"
 #include "drivers/drvOutCharLcd.h"
 #include "drivers/drvOutQuadAlphaNum.h"
 #include "drivers/drvOutSh1107.h"
 #include "drivers/drvOutSsd1306.h"
-#include "drivers/dispDrvBase.h"
-#include "drivers/dispDrvBaseI2c.h"
-#include "drivers/dispDrvSt7789.h"
 #include "wippersnapper.h"
 #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
 #include "drivers/dispDrvRgb666.h"
