@@ -14,11 +14,11 @@
  */
 #ifndef WS_DISPLAY_HARDWARE_H
 #define WS_DISPLAY_HARDWARE_H
-#include "../i2c/drivers/drvOut7Seg.h"
-#include "../i2c/drivers/drvOutCharLcd.h"
-#include "../i2c/drivers/drvOutQuadAlphaNum.h"
-#include "../i2c/drivers/drvOutSh1107.h"
-#include "../i2c/drivers/drvOutSsd1306.h"
+#include "drivers/drvOut7Seg.h"
+#include "drivers/drvOutCharLcd.h"
+#include "drivers/drvOutQuadAlphaNum.h"
+#include "drivers/drvOutSh1107.h"
+#include "drivers/drvOutSsd1306.h"
 #include "drivers/dispDrvBase.h"
 #include "drivers/dispDrvBaseI2c.h"
 #include "drivers/dispDrvSt7789.h"

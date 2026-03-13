@@ -1,5 +1,5 @@
 /*!
- * @file drvOutSsd1306.h
+ * @file src/components/display/drivers/drvOutSsd1306.h
  *
  * Device driver for OLED displays with a SSD1306 driver
  *

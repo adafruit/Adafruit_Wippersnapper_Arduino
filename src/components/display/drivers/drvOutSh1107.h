@@ -1,5 +1,5 @@
 /*!
- * @file drvOutSh1107.h
+ * @file src/components/display/drivers/drvOutSh1107.h
  *
  * Device driver for OLED displays with a SH1107 driver
  * (e.g., 128x64 OLED FeatherWing)

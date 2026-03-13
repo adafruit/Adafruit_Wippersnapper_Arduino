@@ -1,5 +1,5 @@
 /*!
- * @file drvOutputBase.h
+ * @file src/components/display/drivers/drvOutputBase.h
  *
  * Base implementation for I2C output device drivers.
  *
@@ -15,7 +15,7 @@
 
 #ifndef DRV_OUTPUT_BASE_H
 #define DRV_OUTPUT_BASE_H
-#include "drvBase.h"
+#include "../../i2c/drivers/drvBase.h"
 #include <protos/display.pb.h>
 #include <protos/i2c.pb.h>
 

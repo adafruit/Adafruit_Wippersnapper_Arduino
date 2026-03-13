@@ -1,5 +1,5 @@
 /*!
- * @file drvOutQuadAlphaNum.h
+ * @file src/components/display/drivers/drvOutQuadAlphaNum.h
  *
  * Device driver for Quad Alphanumeric Displays w/I2C Backpack
  *

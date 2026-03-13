@@ -1,5 +1,5 @@
 /*!
- * @file drvOutCharLcd.h
+ * @file src/components/display/drivers/drvOutCharLcd.h
  *
  * Device driver for I2C Character LCDs (HD44780)
  *

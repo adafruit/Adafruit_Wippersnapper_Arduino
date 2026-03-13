@@ -1,5 +1,5 @@
 /*!
- * @file drvOut7Seg.h
+ * @file src/components/display/drivers/drvOut7Seg.h
  *
  * Device driver designed specifically to work with the Adafruit LED 7-Segment
  * I2C backpacks:

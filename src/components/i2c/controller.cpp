@@ -14,7 +14,7 @@
  */
 #include "controller.h"
 #include "drivers/drvBase.h"
-#include "drivers/drvOutputBase.h"
+#include "../display/drivers/drvOutputBase.h"
 
 /*!
     @brief     Lambda function to create a drvBase driver instance

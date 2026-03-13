@@ -46,12 +46,12 @@
 #include "drivers/drvMprls.h"
 #include "drivers/drvMs8607.h"
 #include "drivers/drvNau7802.h"
-#include "drivers/drvOut7Seg.h"
-#include "drivers/drvOutCharLcd.h"
-#include "drivers/drvOutQuadAlphaNum.h"
-#include "drivers/drvOutSh1107.h"
-#include "drivers/drvOutSsd1306.h"
-#include "drivers/drvOutputBase.h" ///< Base i2c output driver class
+#include "../display/drivers/drvOut7Seg.h"
+#include "../display/drivers/drvOutCharLcd.h"
+#include "../display/drivers/drvOutQuadAlphaNum.h"
+#include "../display/drivers/drvOutSh1107.h"
+#include "../display/drivers/drvOutSsd1306.h"
+#include "../display/drivers/drvOutputBase.h" ///< Base i2c output driver class
 #include "drivers/drvPct2075.h"
 #include "drivers/drvPm25.h"
 #include "drivers/drvScd30.h"

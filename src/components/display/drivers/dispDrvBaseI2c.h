@@ -16,8 +16,8 @@
 #ifndef WS_DISP_DRV_I2C_ADAPTER_H
 #define WS_DISP_DRV_I2C_ADAPTER_H
 
-#include "../../i2c/drivers/drvOutputBase.h"
 #include "dispDrvBase.h"
+#include "drvOutputBase.h"
 
 /*!
     @brief  Adapter that wraps an I2C output driver (drvOutputBase)
