@@ -56,32 +56,32 @@ public:
     if (!_display)
       return;
     _display->clearBuffer();
-    _display->fillRect(0, 0, _display->width(), STATUS_BAR_HEIGHT, EPD_BLACK);
-    _display->fillRect(STATUS_BAR_BORDER, STATUS_BAR_BORDER,
-                       _display->width() - (2 * STATUS_BAR_BORDER),
-                       STATUS_BAR_HEIGHT - (2 * STATUS_BAR_BORDER), EPD_WHITE);
+    _display->fillRect(0, 0, _display->width(), EPD_STATUS_BAR_HEIGHT, EPD_BLACK);
+    _display->fillRect(EPD_STATUS_BAR_BORDER, EPD_STATUS_BAR_BORDER,
+                       _display->width() - (2 * EPD_STATUS_BAR_BORDER),
+                       EPD_STATUS_BAR_HEIGHT - (2 * EPD_STATUS_BAR_BORDER), EPD_WHITE);
     _display->setTextSize(1);
     _display->setTextColor(EPD_BLACK);
     _display->setCursor(5, 6);
     _display->print(io_username);
     _statusbar_icons_y =
-        STATUS_BAR_BORDER +
-        ((STATUS_BAR_HEIGHT - 2 * STATUS_BAR_BORDER - STATUS_BAR_ICON_SZ) / 2);
+        EPD_STATUS_BAR_BORDER +
+        ((EPD_STATUS_BAR_HEIGHT - 2 * EPD_STATUS_BAR_BORDER - EPD_STATUS_BAR_ICON_SZ) / 2);
     _statusbar_icon_battery_x =
-        _display->width() - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_MARGIN;
-    _statusbar_icon_wifi_x = _statusbar_icon_battery_x - STATUS_BAR_ICON_SZ -
-                             STATUS_BAR_ICON_SPACING;
+        _display->width() - EPD_STATUS_BAR_ICON_SZ - EPD_STATUS_BAR_ICON_MARGIN;
+    _statusbar_icon_wifi_x = _statusbar_icon_battery_x - EPD_STATUS_BAR_ICON_SZ -
+                             EPD_STATUS_BAR_ICON_SPACING;
     _statusbar_icon_cloud_x =
-        _statusbar_icon_wifi_x - STATUS_BAR_ICON_SZ - STATUS_BAR_ICON_SPACING;
+        _statusbar_icon_wifi_x - EPD_STATUS_BAR_ICON_SZ - EPD_STATUS_BAR_ICON_SPACING;
     _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                         epd_bmp_cloud_online, STATUS_BAR_ICON_SZ,
-                         STATUS_BAR_ICON_SZ, EPD_BLACK);
+                         epd_bmp_cloud_online, EPD_STATUS_BAR_ICON_SZ,
+                         EPD_STATUS_BAR_ICON_SZ, EPD_BLACK);
     _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                         epd_bmp_wifi_full, STATUS_BAR_ICON_SZ,
-                         STATUS_BAR_ICON_SZ, EPD_BLACK);
+                         epd_bmp_wifi_full, EPD_STATUS_BAR_ICON_SZ,
+                         EPD_STATUS_BAR_ICON_SZ, EPD_BLACK);
     _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
-                         epd_bmp_bat_full, STATUS_BAR_ICON_SZ,
-                         STATUS_BAR_ICON_SZ, EPD_BLACK);
+                         epd_bmp_bat_full, EPD_STATUS_BAR_ICON_SZ,
+                         EPD_STATUS_BAR_ICON_SZ, EPD_BLACK);
     _display->display();
   }
 
@@ -95,11 +95,11 @@ public:
       return;
     if (update_mqtt) {
       _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                         STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_WHITE);
+                         EPD_STATUS_BAR_ICON_SZ, EPD_STATUS_BAR_ICON_SZ, EPD_WHITE);
       _display->drawBitmap(
           _statusbar_icon_cloud_x, _statusbar_icons_y,
           mqtt_status ? epd_bmp_cloud_online : epd_bmp_cloud_offline,
-          STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_BLACK);
+          EPD_STATUS_BAR_ICON_SZ, EPD_STATUS_BAR_ICON_SZ, EPD_BLACK);
       _statusbar_mqtt_connected = mqtt_status;
     }
     if (update_rssi) {
@@ -111,9 +111,9 @@ public:
       else if (rssi >= -70)
         wifi_icon = epd_bmp_wifi_weak;
       _display->fillRect(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                         STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ, EPD_WHITE);
+                         EPD_STATUS_BAR_ICON_SZ, EPD_STATUS_BAR_ICON_SZ, EPD_WHITE);
       _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                           wifi_icon, STATUS_BAR_ICON_SZ, STATUS_BAR_ICON_SZ,
+                           wifi_icon, EPD_STATUS_BAR_ICON_SZ, EPD_STATUS_BAR_ICON_SZ,
                            EPD_BLACK);
       _statusbar_rssi = rssi;
     }
@@ -125,11 +125,11 @@ public:
     if (!_display)
       return;
     if (clear_first) {
-      _display->fillRect(0, STATUS_BAR_HEIGHT, _display->width(),
-                         _display->height() - STATUS_BAR_HEIGHT, EPD_WHITE);
+      _display->fillRect(0, EPD_STATUS_BAR_HEIGHT, _display->width(),
+                         _display->height() - EPD_STATUS_BAR_HEIGHT, EPD_WHITE);
     }
     int16_t y_idx =
-        (cursor_y > 0) ? cursor_y : (STATUS_BAR_HEIGHT + 4);
+        (cursor_y > 0) ? cursor_y : (EPD_STATUS_BAR_HEIGHT + 4);
     _display->setCursor(cursor_x, y_idx);
     int16_t line_height = 8 * _text_sz;
     size_t msg_size = strlen(message);

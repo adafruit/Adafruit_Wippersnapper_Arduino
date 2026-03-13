@@ -21,12 +21,12 @@
 #include "wippersnapper.h"
 
 /*! @brief Shared status bar constants for EPD drivers. */
-#define STATUS_BAR_HEIGHT 20  ///< Height of the status bar in pixels
-#define STATUS_BAR_BORDER 1   ///< Border around the status bar in pixels
-#define STATUS_BAR_ICON_SZ 16 ///< Size of status bar icons in pixels
-#define STATUS_BAR_ICON_SPACING                                                \
+#define EPD_STATUS_BAR_HEIGHT 20  ///< Height of the status bar in pixels
+#define EPD_STATUS_BAR_BORDER 1   ///< Border around the status bar in pixels
+#define EPD_STATUS_BAR_ICON_SZ 16 ///< Size of status bar icons in pixels
+#define EPD_STATUS_BAR_ICON_SPACING                                                \
   4 ///< Spacing between status bar icons in pixels
-#define STATUS_BAR_ICON_MARGIN                                                 \
+#define EPD_STATUS_BAR_ICON_MARGIN                                                 \
   5 ///< Margin from edge of display to status bar icons in pixels
 
 /*!
