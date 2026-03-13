@@ -57,8 +57,7 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
   case ws_display_Add_i2c_tag:
     return beginI2cDisplay(addMsg);
   default:
-    WS_DEBUG_PRINTLN(
-        "[display] ERROR: Unsupported display interface type!");
+    WS_DEBUG_PRINTLN("[display] ERROR: Unsupported display interface type!");
     return false;
   }
 }
@@ -271,8 +270,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   // Create driver based on driver string (component-name resolution
   // already done by controller)
   if (strcmp(driver, "SSD1680") == 0) {
-    _drvDisp =
-        new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
+    _drvDisp = new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "ILI0373") == 0) {
     _drvDisp = new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "SSD1683") == 0) {
@@ -325,8 +323,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
 #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
   if (msg->which_config != ws_display_Add_config_display_tag) {
-    WS_DEBUG_PRINTLN(
-        "[display] ERROR: Expected display config for RGB666!");
+    WS_DEBUG_PRINTLN("[display] ERROR: Expected display config for RGB666!");
     return false;
   }
   ws_display_DisplayProperties *config = &msg->config.config_display;
@@ -349,11 +346,10 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   // Some controller payloads may omit RGB666 dimensions.
   // Apply panel-based safe defaults to avoid 0x0 display init.
   if (width <= 0 || height <= 0) {
-    WS_DEBUG_PRINTLN(
-        "[display] WARNING: RGB666 config missing dimensions, failed to initialise display."
-    );
+    WS_DEBUG_PRINTLN("[display] WARNING: RGB666 config missing dimensions, "
+                     "failed to initialise display.");
   }
-  
+
   drv->setWidth(width);
   drv->setHeight(height);
   drv->setRotation(config->rotation);
@@ -370,8 +366,7 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   WS_DEBUG_PRINTLN("[display] TTL RGB666 initialized successfully!");
   return true;
 #else
-  WS_DEBUG_PRINTLN(
-      "[display] ERROR: TTL RGB666 not supported on this board!");
+  WS_DEBUG_PRINTLN("[display] ERROR: TTL RGB666 not supported on this board!");
   return false;
 #endif
 }
@@ -381,7 +376,8 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
 // ---------------------------------------------------------------------------
 bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   if (msg->which_interface_type != ws_display_Add_i2c_tag) {
-    WS_DEBUG_PRINTLN("[display] ERROR: Expected I2C interface for I2C display!");
+    WS_DEBUG_PRINTLN(
+        "[display] ERROR: Expected I2C interface for I2C display!");
     return false;
   }
   ws_i2c_DeviceDescriptor *i2c_cfg = &msg->interface_type.i2c;
@@ -489,7 +485,7 @@ bool DisplayHardware::write(ws_display_Write *msg) {
 
   WS_DEBUG_PRINT("[display] Writing message: ");
   WS_DEBUG_PRINTLNVAR(msg->content.message);
-  _drvDisp->writeMessage(msg->content.message, msg->clear_first,
-                         msg->cursor_x, msg->cursor_y);
+  _drvDisp->writeMessage(msg->content.message, msg->clear_first, msg->cursor_x,
+                         msg->cursor_y);
   return true;
 }

@@ -21,8 +21,8 @@
 #include "dispDrvBase.h"
 #include <Arduino_GFX_Library.h>
 
-#define RGB666_STATUSBAR_HEIGHT 20  ///< Status bar height in pixels
-#define RGB666_STATUSBAR_ICON_SZ 16 ///< Status bar icon size in pixels
+#define RGB666_STATUSBAR_HEIGHT 20      ///< Status bar height in pixels
+#define RGB666_STATUSBAR_ICON_SZ 16     ///< Status bar icon size in pixels
 #define RGB666_STATUSBAR_ICON_SPACING 4 ///< Spacing between icons
 #define RGB666_STATUSBAR_ICON_MARGIN 5  ///< Margin from edge of display
 
@@ -57,9 +57,8 @@ public:
   bool begin() override {
     Wire.setClock(400000);
 
-    _expander = new Arduino_XCA9554SWSPI(PCA_TFT_RESET, PCA_TFT_CS,
-                                         PCA_TFT_SCK, PCA_TFT_MOSI, &Wire,
-                                         0x3F);
+    _expander = new Arduino_XCA9554SWSPI(PCA_TFT_RESET, PCA_TFT_CS, PCA_TFT_SCK,
+                                         PCA_TFT_MOSI, &Wire, 0x3F);
     if (!_expander)
       return false;
 
@@ -77,16 +76,24 @@ public:
       // 2.1" round 480x480
       init_ops = TL021WVC02_init_operations;
       init_ops_len = sizeof(TL021WVC02_init_operations);
-      h_fp = 46;  h_pw = 2;  h_bp = 44;
-      v_fp = 50;  v_pw = 16; v_bp = 16;
+      h_fp = 46;
+      h_pw = 2;
+      h_bp = 44;
+      v_fp = 50;
+      v_pw = 16;
+      v_bp = 16;
       pclk_active_neg = 0; // pclk_active_high = True
     } else if (strcmp(_panel, "TL032FWV01") == 0 ||
                strcmp(_panel, "adafruit-5797") == 0) {
       // 3.2" bar 320x820
       init_ops = tl032fwv01_init_operations;
       init_ops_len = sizeof(tl032fwv01_init_operations);
-      h_fp = 150; h_pw = 3;  h_bp = 251;
-      v_fp = 100; v_pw = 6;  v_bp = 90;
+      h_fp = 150;
+      h_pw = 3;
+      h_bp = 251;
+      v_fp = 100;
+      v_pw = 6;
+      v_bp = 90;
       pclk_active_neg = 1; // pclk_active_high = False
     } else {
       WS_DEBUG_PRINT("[display] ERROR: Unknown RGB666 panel: ");
@@ -95,19 +102,17 @@ public:
     }
 
     _rgbpanel = new Arduino_ESP32RGBPanel(
-        TFT_DE, TFT_VSYNC, TFT_HSYNC, TFT_PCLK, TFT_R1, TFT_R2, TFT_R3,
-        TFT_R4, TFT_R5, TFT_G0, TFT_G1, TFT_G2, TFT_G3, TFT_G4, TFT_G5,
-        TFT_B1, TFT_B2, TFT_B3, TFT_B4, TFT_B5,
-        1 /* hsync_polarity */, h_fp, h_pw, h_bp,
-        1 /* vsync_polarity */, v_fp, v_pw, v_bp,
-        pclk_active_neg, prefer_speed);
+        TFT_DE, TFT_VSYNC, TFT_HSYNC, TFT_PCLK, TFT_R1, TFT_R2, TFT_R3, TFT_R4,
+        TFT_R5, TFT_G0, TFT_G1, TFT_G2, TFT_G3, TFT_G4, TFT_G5, TFT_B1, TFT_B2,
+        TFT_B3, TFT_B4, TFT_B5, 1 /* hsync_polarity */, h_fp, h_pw, h_bp,
+        1 /* vsync_polarity */, v_fp, v_pw, v_bp, pclk_active_neg,
+        prefer_speed);
     if (!_rgbpanel)
       return false;
 
-    _display = new Arduino_RGB_Display(_width, _height, _rgbpanel,
-                                       _rotation, true /* auto_flush */,
-                                       _expander, GFX_NOT_DEFINED /* RST */,
-                                       init_ops, init_ops_len);
+    _display = new Arduino_RGB_Display(
+        _width, _height, _rgbpanel, _rotation, true /* auto_flush */, _expander,
+        GFX_NOT_DEFINED /* RST */, init_ops, init_ops_len);
     if (!_display)
       return false;
 
@@ -227,11 +232,11 @@ public:
 
     if (clear_first) {
       _display->fillRect(0, RGB666_STATUSBAR_HEIGHT, _display->width(),
-                         _display->height() - RGB666_STATUSBAR_HEIGHT, RGB565_BLACK);
+                         _display->height() - RGB666_STATUSBAR_HEIGHT,
+                         RGB565_BLACK);
     }
 
-    int16_t y_idx =
-        (cursor_y > 0) ? cursor_y : RGB666_STATUSBAR_HEIGHT + 5;
+    int16_t y_idx = (cursor_y > 0) ? cursor_y : RGB666_STATUSBAR_HEIGHT + 5;
     int16_t line_height = 8 * _text_sz;
 
     _display->setTextSize(_text_sz);

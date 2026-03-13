@@ -1096,8 +1096,7 @@ void wippersnapper::loop() {
   Ws._gps_controller->update();
 
   // Update display status bars
-  Ws._display_controller->update(getRSSI(),
-                                 Ws._mqttV2->connected());
+  Ws._display_controller->update(getRSSI(), Ws._mqttV2->connected());
 }
 
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)

@@ -16,8 +16,8 @@
 #ifndef DRV_OUTPUT_BASE_H
 #define DRV_OUTPUT_BASE_H
 #include "drvBase.h"
-#include <protos/i2c.pb.h>
 #include <protos/display.pb.h>
+#include <protos/i2c.pb.h>
 
 // Shared LED backpack defines (used by drvOut7Seg and drvOutQuadAlphaNum)
 #ifndef LED_BACKPACK_ALIGNMENT_UNSPECIFIED
@@ -167,11 +167,12 @@ public:
   }
 
 protected:
-  /*! 
+  /*!
       @brief  Parses a display-write token at the given index.
       @param  message       Input message buffer.
       @param  msg_size      Message length.
-      @param  idx           Current index (updated when a multi-byte token is consumed).
+      @param  idx           Current index (updated when a multi-byte token is
+     consumed).
       @param  out_char      Parsed output character when token is a glyph.
       @param  is_newline    Set true when token is a newline marker.
       @param  degree_char   Driver-specific glyph for the degree symbol.

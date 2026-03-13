@@ -73,10 +73,10 @@ public:
     _height = height;
     _text_sz = text_size;
     // SH1107 requires rotation 0-3, not degrees
-    _rotation = (width == OLED_128X64_WING_WIDTH &&
-                 height == OLED_128X64_WING_HEIGHT)
-                    ? OLED_128X64_WING_ROTATION_90
-                    : 0;
+    _rotation =
+        (width == OLED_128X64_WING_WIDTH && height == OLED_128X64_WING_HEIGHT)
+            ? OLED_128X64_WING_ROTATION_90
+            : 0;
   }
 
   void WriteMessage(const char *message) override {

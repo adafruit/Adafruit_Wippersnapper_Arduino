@@ -50,11 +50,12 @@ typedef enum ws_led_status_t {
 #define WS_COLOR_RGB32_AMBER 0xFFBF00  ///< Amber (as a uint32)
 
 // colors for each status state
-#define LED_NET_CONNECT WS_COLOR_RGB32_PINK      ///< Network connection state
-#define LED_IO_CONNECT WS_COLOR_RGB32_BLUE       ///< MQTT broker connection state
-#define LED_IO_REGISTER_HW WS_COLOR_RGB32_YELLOW ///< Hardware registration state
-#define LED_CONNECTED WS_COLOR_RGB32_GREEN       ///< Successful registration state
-#define LED_ERROR WS_COLOR_RGB32_RED             ///< Error state
+#define LED_NET_CONNECT WS_COLOR_RGB32_PINK ///< Network connection state
+#define LED_IO_CONNECT WS_COLOR_RGB32_BLUE  ///< MQTT broker connection state
+#define LED_IO_REGISTER_HW                                                     \
+  WS_COLOR_RGB32_YELLOW                    ///< Hardware registration state
+#define LED_CONNECTED WS_COLOR_RGB32_GREEN ///< Successful registration state
+#define LED_ERROR WS_COLOR_RGB32_RED       ///< Error state
 
 #define STATUS_PIXEL_BRIGHTNESS_DEFAULT 0.5 ///< Default status pixel brightness
 

@@ -24,9 +24,9 @@
 #define EPD_STATUS_BAR_HEIGHT 20  ///< Height of the status bar in pixels
 #define EPD_STATUS_BAR_BORDER 1   ///< Border around the status bar in pixels
 #define EPD_STATUS_BAR_ICON_SZ 16 ///< Size of status bar icons in pixels
-#define EPD_STATUS_BAR_ICON_SPACING                                                \
+#define EPD_STATUS_BAR_ICON_SPACING                                            \
   4 ///< Spacing between status bar icons in pixels
-#define EPD_STATUS_BAR_ICON_MARGIN                                                 \
+#define EPD_STATUS_BAR_ICON_MARGIN                                             \
   5 ///< Margin from edge of display to status bar icons in pixels
 
 /*!
@@ -35,7 +35,8 @@
 class dispDrvBase {
 public:
   /*!
-      @brief  Constructor for displays with hardwired pins (e.g., Qualia RGB666).
+      @brief  Constructor for displays with hardwired pins (e.g., Qualia
+     RGB666).
   */
   dispDrvBase() {}
 
@@ -50,10 +51,10 @@ public:
   /*!
       @brief  Constructor for SPI TFT displays.
   */
-  dispDrvBase(int16_t cs, int16_t dc, int16_t mosi, int16_t sck,
-              int16_t rst, int16_t miso)
-      : _pin_cs(cs), _pin_dc(dc), _pin_mosi(mosi), _pin_sck(sck),
-        _pin_rst(rst), _pin_miso(miso) {}
+  dispDrvBase(int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
+              int16_t miso)
+      : _pin_cs(cs), _pin_dc(dc), _pin_mosi(mosi), _pin_sck(sck), _pin_rst(rst),
+        _pin_miso(miso) {}
 
   /*! @brief Virtual destructor. */
   virtual ~dispDrvBase() {}
@@ -102,7 +103,8 @@ protected:
       @brief  Parses a display-write token at the given index.
       @param  message       Input message buffer.
       @param  msg_size      Message length.
-      @param  idx           Current index (updated when a multi-byte token is consumed).
+      @param  idx           Current index (updated when a multi-byte token is
+     consumed).
       @param  out_char      Parsed output character when token is a glyph.
       @param  is_newline    Set true when token is a newline marker.
       @param  degree_char   Display-specific glyph for the degree symbol.
@@ -156,27 +158,27 @@ protected:
     return false;
   }
 
-  int16_t _pin_cs;          ///< Chip Select pin
-  int16_t _pin_dc;          ///< Data/Command pin
-  int16_t _pin_mosi = -1;   ///< MOSI pin (TFT only)
-  int16_t _pin_sck = -1;    ///< SCK pin (TFT only)
-  int16_t _pin_rst;         ///< Reset pin
-  int16_t _pin_miso = -1;   ///< MISO pin (TFT only)
+  int16_t _pin_cs;           ///< Chip Select pin
+  int16_t _pin_dc;           ///< Data/Command pin
+  int16_t _pin_mosi = -1;    ///< MOSI pin (TFT only)
+  int16_t _pin_sck = -1;     ///< SCK pin (TFT only)
+  int16_t _pin_rst;          ///< Reset pin
+  int16_t _pin_miso = -1;    ///< MISO pin (TFT only)
   int16_t _pin_sram_cs = -1; ///< SRAM Chip Select pin (EPD only)
-  int16_t _pin_busy = -1;   ///< Busy pin (EPD only)
-  int16_t _pin_bl = -1;     ///< Backlight pin (-1 = not set)
-  uint8_t _text_sz = 1;     ///< Text size multiplier
+  int16_t _pin_busy = -1;    ///< Busy pin (EPD only)
+  int16_t _pin_bl = -1;      ///< Backlight pin (-1 = not set)
+  uint8_t _text_sz = 1;      ///< Text size multiplier
   int16_t _width;            ///< Display width
   int16_t _height;           ///< Display height
   uint8_t _rotation;         ///< Display rotation (0-3)
 
   /*! @brief Cached status bar layout and state. */
-  int _statusbar_icons_y;        ///< Y position of status bar icons
-  int _statusbar_icon_battery_x; ///< X position of battery icon
-  int _statusbar_icon_wifi_x;    ///< X position of WiFi icon
-  int _statusbar_icon_cloud_x;   ///< X position of cloud icon
-  int8_t _statusbar_rssi;        ///< Last RSSI value
-  uint8_t _statusbar_bat;        ///< Last battery level percentage
+  int _statusbar_icons_y;         ///< Y position of status bar icons
+  int _statusbar_icon_battery_x;  ///< X position of battery icon
+  int _statusbar_icon_wifi_x;     ///< X position of WiFi icon
+  int _statusbar_icon_cloud_x;    ///< X position of cloud icon
+  int8_t _statusbar_rssi;         ///< Last RSSI value
+  uint8_t _statusbar_bat;         ///< Last battery level percentage
   bool _statusbar_mqtt_connected; ///< Last MQTT connection status
 };
 

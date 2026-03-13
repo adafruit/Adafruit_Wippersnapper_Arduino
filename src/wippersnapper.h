@@ -36,16 +36,17 @@
 #define WS_DEBUG_PRINT(x)                                                      \
   { WS_PRINTER.print(F(x)); } /**< Print debug message to serial (Flash) */
 #define WS_DEBUG_PRINTLN(x)                                                    \
-  { WS_PRINTER.println(F(x)); } /**< Print debug message with newline (Flash)  \
-                                 */
+  {                                                                            \
+    WS_PRINTER.println(F(x));                                                  \
+  } /**< Print debug message with newline (Flash)                              \
+     */
 #else
 // Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {                                                                            \
-    WS_PRINTER.println(__VA_ARGS__);                                           \
-  } /**< Print debug message with newline */
+  { WS_PRINTER.println(__VA_ARGS__); } /**< Print debug message with newline   \
+                                        */
 #endif
 
 // Variable printing macros - use for non-string-literal arguments

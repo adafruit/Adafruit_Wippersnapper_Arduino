@@ -18,8 +18,8 @@
 #include "dispDrvBase.h"
 #include <Adafruit_ST7789.h>
 
-#define ST7789_STATUSBAR_HEIGHT 20  ///< Status bar height in pixels
-#define ST7789_STATUSBAR_ICON_SZ 16 ///< Status bar icon size in pixels
+#define ST7789_STATUSBAR_HEIGHT 20      ///< Status bar height in pixels
+#define ST7789_STATUSBAR_ICON_SZ 16     ///< Status bar icon size in pixels
 #define ST7789_STATUSBAR_ICON_SPACING 4 ///< Spacing between icons
 #define ST7789_STATUSBAR_ICON_MARGIN 5  ///< Margin from edge of display
 
@@ -186,8 +186,7 @@ public:
                          ST77XX_BLACK);
     }
 
-    int16_t y_idx =
-        (cursor_y > 0) ? cursor_y : ST7789_STATUSBAR_HEIGHT + 5;
+    int16_t y_idx = (cursor_y > 0) ? cursor_y : ST7789_STATUSBAR_HEIGHT + 5;
     int16_t line_height = 8 * _text_sz;
 
     _display->setTextSize(_text_sz);

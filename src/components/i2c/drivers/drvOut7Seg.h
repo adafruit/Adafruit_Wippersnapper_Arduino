@@ -25,7 +25,6 @@
 #include <Adafruit_LEDBackpack.h>
 #include <Arduino.h>
 
-
 /*!
     @brief  Class that provides a driver for an Adafruit 7-Segment LED matrix
    w/I2C backpack.

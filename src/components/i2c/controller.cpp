@@ -1026,22 +1026,21 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     pb_size_t config = msg->output_add.which_config;
     if (config == ws_display_Add_config_led_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring LED backpack...");
-      ws_display_LedBackpackConfig cfg =
-          msg->output_add.config.config_led;
+      ws_display_LedBackpackConfig cfg = msg->output_add.config.config_led;
       WS_DEBUG_PRINT("[i2c] Got cfg, calling ConfigureI2CBackpack...");
       drv_out->ConfigureI2CBackpack(cfg.brightness, cfg.alignment);
       WS_DEBUG_PRINTLN("OK!");
     } else if (config == ws_display_Add_config_char_lcd_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring char LCD...");
-      ws_display_CharLcdConfig cfg =
-          msg->output_add.config.config_char_lcd;
+      ws_display_CharLcdConfig cfg = msg->output_add.config.config_char_lcd;
       drv_out->ConfigureCharLcd(cfg.rows, cfg.columns, true);
       WS_DEBUG_PRINTLN("OK!");
     } else if (config == ws_display_Add_config_display_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring OLED...");
       ws_display_DisplayProperties cfg = msg->output_add.config.config_display;
       WS_DEBUG_PRINT("[i2c] Got cfg, calling ConfigureOLED...");
-      drv_out->ConfigureSSD1306(cfg.width, cfg.height, cfg.text_size > 0 ? cfg.text_size : 1);
+      drv_out->ConfigureSSD1306(cfg.width, cfg.height,
+                                cfg.text_size > 0 ? cfg.text_size : 1);
       WS_DEBUG_PRINTLN("OK!");
     } else {
       WS_DEBUG_PRINTLN(

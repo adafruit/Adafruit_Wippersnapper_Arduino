@@ -159,8 +159,8 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   // Resolve component-name defaults before passing to hardware
   if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_EPD) {
     resolveEpdDefaults(msg);
-  } else if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_TFT 
-             && msg->which_interface_type == ws_display_Add_ttl_rgb666_tag) {
+  } else if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_TFT &&
+             msg->which_interface_type == ws_display_Add_ttl_rgb666_tag) {
     resolveRgb666Defaults(msg);
   }
 
@@ -215,24 +215,22 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
 }
 
 /*!
-    @brief  Removes an existing display with the same name as the new one being added.
-            This ensures that adding a display with a duplicate name will replace
+    @brief  Removes an existing display with the same name as the new one being
+   added. This ensures that adding a display with a duplicate name will replace
             the old one instead of creating a conflict.
     @param  name  The name of the display to remove.
-    @return True if a display was removed, False if no existing display had the same name.
+    @return True if a display was removed, False if no existing display had the
+   same name.
 */
-bool DisplayController::removeExistingDisplayByName(char *name)
-{
+bool DisplayController::removeExistingDisplayByName(char *name) {
   // If display with same name exists, remove it first
   int8_t existingIdx = findDisplayByName(name);
-  if (existingIdx >= 0)
-  {
+  if (existingIdx >= 0) {
     WS_DEBUG_PRINTLN("[display] Replacing existing display");
     delete _displays[existingIdx];
     _displays[existingIdx] = nullptr;
     // Shift remaining displays down
-    for (int i = existingIdx; i < _num_displays - 1; i++)
-    {
+    for (int i = existingIdx; i < _num_displays - 1; i++) {
       _displays[i] = _displays[i + 1];
     }
     _displays[_num_displays - 1] = nullptr;

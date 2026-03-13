@@ -19,8 +19,8 @@
 
 #define MAX_DISPLAYS 4 ///< Maximum number of displays
 
-class wippersnapper;    ///< Forward declaration
-class DisplayHardware;  ///< Forward declaration
+class wippersnapper;   ///< Forward declaration
+class DisplayHardware; ///< Forward declaration
 
 /*!
     @brief  Routes messages using the display.proto API to the
@@ -45,4 +45,4 @@ private:
   int8_t findDisplayByName(const char *name);
 };
 extern wippersnapper Ws; ///< Global V2 instance
-#endif // WS_DISPLAY_CONTROLLER_H
+#endif                   // WS_DISPLAY_CONTROLLER_H

@@ -20,7 +20,6 @@
 #include <Adafruit_LEDBackpack.h>
 #include <Arduino.h>
 
-
 /*!
     @brief  Class that provides a driver interface for Quad Alphanumeric
    Displays w/I2C Backpack
