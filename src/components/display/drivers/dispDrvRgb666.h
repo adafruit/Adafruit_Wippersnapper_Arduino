@@ -43,6 +43,7 @@ public:
   }
 
   ~dispDrvRgb666() {
+    // rgbpanel and expander are owned by display, cleaned up by its destructor
     if (_display) {
       _display->fillScreen(RGB565_BLACK);
       delete _display;
@@ -51,7 +52,6 @@ public:
     if (_expander) {
       _expander->digitalWrite(PCA_TFT_BACKLIGHT, LOW);
     }
-    // rgbpanel and expander are owned by display, cleaned up by its destructor
   }
 
   bool begin() override {
@@ -129,10 +129,6 @@ public:
     WS_DEBUG_PRINTVAR(_panel);
     WS_DEBUG_PRINTLN("' initialized");
     return true;
-  }
-
-  void showSplash() override {
-    // No splash bitmap for these panels yet
   }
 
   void drawStatusBar(const char *io_username) override {

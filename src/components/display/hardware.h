@@ -32,7 +32,6 @@
 #include "drivers/dispDrvThinkInkMonoAAAMFGN.h"
 #include "drivers/dispDrvThinkInkMonoBAAMFGN.h"
 #include "drivers/dispDrvThinkInkMonoM06.h"
-#include <string.h>
 
 /*!
     @brief  Interface for interacting with display hardware (TFT, eInk,

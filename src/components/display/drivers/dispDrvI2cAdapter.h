@@ -1,5 +1,5 @@
 /*!
- * @file src/components/display/drivers/dispDrvI2cAdapter.h
+ * @file src/components/display/drivers/dispDrvBaseI2c.h
  *
  * Adapter that wraps I2C output drivers (drvOutputBase) behind the
  * dispDrvBase interface so the display controller can manage them.
@@ -23,16 +23,16 @@
     @brief  Adapter that wraps an I2C output driver (drvOutputBase)
             behind the display driver interface (dispDrvBase).
 */
-class dispDrvI2cAdapter : public dispDrvBase {
+class dispDrvBaseI2c : public dispDrvBase {
 public:
   /*!
       @brief  Constructor — takes ownership of the I2C output driver.
       @param  drv  Pointer to an I2C output driver (will be deleted on
      destruction).
   */
-  dispDrvI2cAdapter(drvOutputBase *drv) : dispDrvBase(), _drv(drv) {}
+  dispDrvBaseI2c(drvOutputBase *drv) : dispDrvBase(), _drv(drv) {}
 
-  ~dispDrvI2cAdapter() {
+  ~dispDrvBaseI2c() {
     if (_drv) {
       delete _drv;
       _drv = nullptr;
@@ -47,9 +47,7 @@ public:
 
   void writeMessage(const char *message, bool clear_first = true,
                     int32_t cursor_x = 0, int32_t cursor_y = 0) override {
-    if (!_drv)
-      return;
-    // I2C output drivers only support simple WriteMessage
+    // I2C output drivers only support simple WriteMessage for now
     _drv->WriteMessage(message);
   }
 

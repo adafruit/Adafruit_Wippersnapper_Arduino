@@ -36,8 +36,7 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
 }
 
 bool DisplayHardware::begin(ws_display_Add *addMsg) {
-  strncpy(_name, addMsg->name, sizeof(_name) - 1);
-  _name[sizeof(_name) - 1] = '\0';
+  snprintf(_name, sizeof(_name), "%s", addMsg->name ? addMsg->name : "");
   _type = addMsg->type;
 
   WS_DEBUG_PRINT("[display] Type: ");
@@ -298,9 +297,11 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     return false;
   }
 
-  thinkinkmode_t epd_mode = THINKINK_MONO;
+  thinkinkmode_t epd_mode;
   if (config->mode == ws_display_EPDMode_EPD_MODE_GRAYSCALE4)
     epd_mode = THINKINK_GRAYSCALE4;
+  else
+    epd_mode = THINKINK_MONO;
 
   _drvDisp->setWidth(config->properties.width);
   _drvDisp->setHeight(config->properties.height);
@@ -348,22 +349,11 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   // Some controller payloads may omit RGB666 dimensions.
   // Apply panel-based safe defaults to avoid 0x0 display init.
   if (width <= 0 || height <= 0) {
-    if (strcmp(msg->panel, "TL021WVC02") == 0 ||
-        strcmp(msg->panel, "adafruit-5792") == 0) {
-      width = 480;
-      height = 480;
-    } else if (strcmp(msg->panel, "TL032FWV01") == 0 ||
-               strcmp(msg->panel, "adafruit-5797") == 0) {
-      width = 320;
-      height = 820;
-    }
-
-    WS_DEBUG_PRINT("[display] RGB666 using fallback dimensions: ");
-    WS_DEBUG_PRINTVAR(width);
-    WS_DEBUG_PRINT("x");
-    WS_DEBUG_PRINTLNVAR(height);
+    WS_DEBUG_PRINTLN(
+        "[display] WARNING: RGB666 config missing dimensions, failed to initialise display."
+    );
   }
-
+  
   drv->setWidth(width);
   drv->setHeight(height);
   drv->setRotation(config->rotation);
@@ -416,19 +406,20 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
 
   // Create the appropriate I2C output driver based on driver string
   drvOutputBase *drv = nullptr;
-  if (strcasecmp(msg->driver, "SSD1306") == 0) {
-    drv = new drvOutSsd1306(i2c, addr, 0, msg->driver);
-  } else if (strcasecmp(msg->driver, "SH1107") == 0) {
-    drv = new drvOutSh1107(i2c, addr, 0, msg->driver);
-  } else if (strcasecmp(msg->driver, "charlcd") == 0) {
-    drv = new drvOutCharLcd(i2c, addr, 0, msg->driver);
-  } else if (strcasecmp(msg->driver, "7seg") == 0) {
-    drv = new drvOut7Seg(i2c, addr, 0, msg->driver);
-  } else if (strcasecmp(msg->driver, "quadalphanum") == 0) {
-    drv = new drvOutQuadAlphaNum(i2c, addr, 0, msg->driver);
+  const char *driverName = msg->driver;
+  if (strcasecmp(driverName, "SSD1306") == 0) {
+    drv = new drvOutSsd1306(i2c, addr, 0, driverName);
+  } else if (strcasecmp(driverName, "SH1107") == 0) {
+    drv = new drvOutSh1107(i2c, addr, 0, driverName);
+  } else if (strcasecmp(driverName, "charlcd") == 0) {
+    drv = new drvOutCharLcd(i2c, addr, 0, driverName);
+  } else if (strcasecmp(driverName, "7seg") == 0) {
+    drv = new drvOut7Seg(i2c, addr, 0, driverName);
+  } else if (strcasecmp(driverName, "quadalphanum") == 0) {
+    drv = new drvOutQuadAlphaNum(i2c, addr, 0, driverName);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported I2C display driver: ");
-    WS_DEBUG_PRINTLNVAR(msg->driver);
+    WS_DEBUG_PRINTLNVAR(driverName);
     return false;
   }
 
@@ -455,9 +446,9 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     // crash from uninitialized width/height in drvOutSsd1306::begin()
     WS_DEBUG_PRINTLN("[display] WARNING: No config for I2C display, "
                      "applying defaults");
-    if (strcasecmp(msg->driver, "SSD1306") == 0) {
+    if (strcasecmp(driverName, "SSD1306") == 0) {
       drv->ConfigureSSD1306(128, 32, 1);
-    } else if (strcasecmp(msg->driver, "SH1107") == 0) {
+    } else if (strcasecmp(driverName, "SH1107") == 0) {
       drv->ConfigureSSD1306(128, 64, 1);
     }
   }
@@ -469,7 +460,7 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     return false;
   }
 
-  _drvDisp = new dispDrvI2cAdapter(drv);
+  _drvDisp = new dispDrvBaseI2c(drv);
   WS_DEBUG_PRINTLN("[display] I2C display initialized successfully!");
   return true;
 }
@@ -496,15 +487,9 @@ bool DisplayHardware::write(ws_display_Write *msg) {
     return false;
   }
 
-  switch (msg->which_content) {
-  case ws_display_Write_message_tag:
-    WS_DEBUG_PRINT("[display] Writing message: ");
-    WS_DEBUG_PRINTLNVAR(msg->content.message);
-    _drvDisp->writeMessage(msg->content.message, msg->clear_first,
-                           msg->cursor_x, msg->cursor_y);
-    return true;
-  default:
-    WS_DEBUG_PRINTLN("[display] ERROR: Unsupported write content type!");
-    return false;
-  }
+  WS_DEBUG_PRINT("[display] Writing message: ");
+  WS_DEBUG_PRINTLNVAR(msg->content.message);
+  _drvDisp->writeMessage(msg->content.message, msg->clear_first,
+                         msg->cursor_x, msg->cursor_y);
+  return true;
 }
