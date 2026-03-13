@@ -1,5 +1,5 @@
 /*!
- * @file drvOut7Seg.h
+ * @file src/components/display/drivers/drvOut7Seg.h
  *
  * Device driver designed specifically to work with the Adafruit LED 7-Segment
  * I2C backpacks:
@@ -24,14 +24,6 @@
 #include "drvOutputBase.h"
 #include <Adafruit_LEDBackpack.h>
 #include <Arduino.h>
-
-#define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0 ///< Unspecified alignment
-#define LED_BACKPACK_ALIGNMENT_LEFT 1        ///< Left alignment
-#define LED_BACKPACK_ALIGNMENT_RIGHT 2       ///< Right alignment
-#define LED_BACKPACK_ALIGNMENT_DEFAULT                                         \
-  LED_BACKPACK_ALIGNMENT_LEFT ///< Default alignment
-#define LED_MAX_CHARS                                                          \
-  4 ///< Maximum number of characters to display on the 7-segment display
 
 /*!
     @brief  Class that provides a driver for an Adafruit 7-Segment LED matrix
@@ -73,7 +65,10 @@ public:
   */
   bool begin() override {
     _matrix = new Adafruit_7segment();
-    bool did_begin = _matrix->begin(0x70, _i2c);
+    bool did_begin = _matrix->begin(_address, _i2c);
+    if (did_begin) {
+      _matrix->setBrightness(_brightness);
+    }
     return did_begin;
   }
 
@@ -84,18 +79,19 @@ public:
     @param    alignment
               The alignment of the i2c backpack's LED matrix (left/right).
 */
-  void ConfigureI2CBackpack(int32_t brightness, uint32_t alignment) {
+  void ConfigureI2CBackpack(int32_t brightness, uint32_t alignment) override {
     if (alignment == LED_BACKPACK_ALIGNMENT_RIGHT) {
       _alignment = LED_BACKPACK_ALIGNMENT_RIGHT;
     } else {
       _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT;
     }
 
-    // Note: Adafruit_LEDBackpack normalizes only > 15, but not < 0,
-    // so, here we're normalizing < 0 to 8 (median brightness)
+    // Normalize brightness: < 0 to 8 (median), Adafruit_LEDBackpack
+    // handles > 15 internally
     if (brightness < 0) {
-      brightness = 8; // Set to median brightness if out of range
+      brightness = 8;
     }
+    _brightness = brightness;
   }
 
   /*!

@@ -397,7 +397,6 @@ void SleepHardware::DisableExternalComponents() {
 #endif
 }
 
-
 /*!
     @brief  Retrieves the current sleep cycle count.
     @return The number of sleep cycles completed.
