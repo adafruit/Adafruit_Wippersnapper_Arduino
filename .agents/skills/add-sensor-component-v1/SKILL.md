@@ -1,5 +1,5 @@
 ---
-name: add_sensor_component_v1
+name: add-sensor-component-v1
 description: >
   Guides adding a new I2C sensor component to Adafruit IO WipperSnapper v1 firmware and the
   Wippersnapper_Components definition repo. Use this skill whenever the user wants to add a new
@@ -39,7 +39,7 @@ Wippersnapper_Components repo setup, image requirements, and testing in Adafruit
 
 ## Arguments
 
-This skill accepts a sensor name as its argument (e.g. `/add_sensor_component_v1 TMP119`).
+This skill accepts a sensor name as its argument (e.g. `/add-sensor-component-v1 TMP119`).
 
 ## Environment Check (optional, do not block on this)
 
@@ -76,7 +76,7 @@ PRs to both repos run CI. Key checks to pass before submitting:
 
 ---
 
-## Step 0 — Research the Sensor
+## Step 0 — Research the Sensor **MUST BE DONE BEFORE WRITING ANY CODE**
 
 Before writing any code, gather this information:
 
