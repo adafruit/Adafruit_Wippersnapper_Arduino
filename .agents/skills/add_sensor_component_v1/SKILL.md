@@ -82,6 +82,38 @@ methods in the base driver class:
 
 Temperature sensors almost always include both `ambient-temp` and `ambient-temp-fahrenheit`.
 
+**Important:** Fahrenheit conversions (`getEventAmbientTempF`, `getEventObjectTempF`) are already
+implemented in the base class — they call the Celsius method and convert. Drivers only need to
+implement the Celsius version (`getEventAmbientTemp`, `getEventObjectTemp`). Never implement
+the Fahrenheit variant in your driver.
+
+Because the base class Fahrenheit method calls the Celsius method, and the calling order is not
+guaranteed (°F may be called before °C), each `getEvent*()` method should go through a shared
+read-and-cache function with a "recently read" time guard. This way, whichever method is called
+first does the actual I2C read and caches the result; subsequent calls within the window return
+cached data without hitting the bus again.
+
+See `WipperSnapper_I2C_Driver_SCD30.h` for the canonical pattern:
+```cpp
+bool HasBeenReadInLastSecond() {
+    return _lastRead != 0 && millis() - _lastRead < 1000;
+}
+bool ReadSensorData() {
+    if (HasBeenReadInLastSecond()) return true;  // use cached values
+    // ... do actual I2C read, cache results ...
+    _lastRead = millis();
+    return true;
+}
+bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+    if (!ReadSensorData()) return false;
+    *tempEvent = _cachedTemp;
+    return true;
+}
+```
+
+This is especially important for multi-reading sensors but also applies to temperature sensors
+where both °C and °F subcomponents are enabled.
+
 ---
 
 ## Step 1 — Create the Driver Header
@@ -512,20 +544,141 @@ Two separate PRs are needed:
 
 ## Worked Example: TMP119
 
-The TMP119 is a high-accuracy temperature sensor from Texas Instruments. It's a variant of the
-TMP117 with a different chip ID (0x2117 vs 0x0117).
+The TMP119 is a high-accuracy temperature sensor from Texas Instruments, a variant of the TMP117
+with a different chip ID (0x2117 vs 0x0117).
 
-- **Library:** `Adafruit_TMP117` (contains both `Adafruit_TMP117` and `Adafruit_TMP119` classes)
-- **API:** `begin(uint8_t addr, TwoWire *wire)`, `getEvent(sensors_event_t *)`
-- **I2C addresses:** 0x48, 0x49, 0x4A, 0x4B
-- **Measures:** Temperature (ambient-temp, ambient-temp-fahrenheit)
+### Step 0 — Research
+
+- **Search:** `gh search repos "Adafruit TMP119" --owner adafruit` finds only the PCB repo, no
+  standalone Arduino library. But checking the `Adafruit_TMP117` library reveals
+  `Adafruit_TMP119.h` and `.cpp` inside it — the TMP119 class inherits from TMP117.
+- **Library:** `Adafruit_TMP117` (contains `Adafruit_TMP119` class)
+- **I2C addresses:** 0x48, 0x49, 0x4A, 0x4B (same as TMP117, datasheet Table 7-1)
+- **Measures:** Temperature only → subcomponents: `ambient-temp`, `ambient-temp-fahrenheit`
 - **Closest driver:** `WipperSnapper_I2C_Driver_TMP117.h`
-- **platformio.ini:** Already has `adafruit/Adafruit TMP117` — no change needed
 
-### Files changed:
+### Step 1 — Read the example, then the library source
 
-1. **New:** `src/components/i2c/drivers/WipperSnapper_I2C_Driver_TMP119.h`
-2. **Modified:** `src/components/i2c/WipperSnapper_I2C.h` (include + pointer)
-3. **Modified:** `src/components/i2c/WipperSnapper_I2C.cpp` (init block)
-4. **New (components repo):** `components/i2c/tmp119/definition.json`
-5. **New (components repo):** `components/i2c/tmp119/image.jpg`
+**Example** (`examples/TMP119_basic_test/TMP119_basic_test.ino`):
+```cpp
+Adafruit_TMP119 tmp11x;
+tmp11x.begin();                    // default addr 0x48, Wire
+while (!tmp11x.dataReady()) delay(10);  // polls data-ready flag
+tmp11x.getEvent(&temp);           // fills sensors_event_t
+```
+
+**Library source** (`Adafruit_TMP117.h` / `Adafruit_TMP119.cpp`):
+- `_init()` calls `reset()` which restores factory defaults:
+  - Continuous conversion mode (`TMP117_MODE_CONTINUOUS`)
+  - 8x averaging (`TMP117_AVERAGE_8X`)
+  - 1000ms conversion delay (`TMP117_DELAY_1000_MS`)
+- `getEvent()` internally calls `waitForData()` which blocks until `dataReady()` is true
+- `begin(addr, wire)` — address first, wire second
+
+**Decisions:**
+- The library's `getEvent()` handles data-ready blocking internally, so no `fastTick()`.
+- Explicitly set mode and averaging in `begin()` to pin the defaults.
+- Only implement `getEventAmbientTemp` (Celsius) — the base class handles °F conversion.
+- Since the calling order of °C and °F methods is not guaranteed, use a shared read-and-cache
+  pattern with a time guard so only the first call per cycle hits the I2C bus:
+
+```cpp
+protected:
+  Adafruit_TMP119 *_tmp119;
+  sensors_event_t _cachedTemp = {0};
+  unsigned long _lastRead = 0;
+
+  bool _readSensor() {
+    if (_lastRead != 0 && millis() - _lastRead < 1000)
+      return true; // recently read, use cached value
+    if (!_tmp119->getEvent(&_cachedTemp))
+      return false;
+    _lastRead = millis();
+    return true;
+  }
+
+public:
+  bool begin() {
+    _tmp119 = new Adafruit_TMP119();
+    if (!_tmp119->begin((uint8_t)_sensorAddress, _i2c))
+      return false;
+    // Pin defaults explicitly — library reset() sets these, but we don't
+    // want a future library change to silently alter WipperSnapper behavior
+    _tmp119->setMeasurementMode(TMP117_MODE_CONTINUOUS);
+    _tmp119->setAveragedSampleCount(TMP117_AVERAGE_8X);
+    return true;
+  }
+
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+    if (!_readSensor())
+      return false;
+    *tempEvent = _cachedTemp;
+    return true;
+  }
+  // getEventAmbientTempF is inherited — it calls getEventAmbientTemp and converts
+```
+
+### Step 2 — Register in WipperSnapper_I2C.h
+
+```cpp
+// After TMP117 include (alphabetical)
+#include "drivers/WipperSnapper_I2C_Driver_TMP119.h"
+
+// In private section, after _tmp117
+WipperSnapper_I2C_Driver_TMP119 *_tmp119 = nullptr;
+```
+
+### Step 3 — Init block in WipperSnapper_I2C.cpp
+
+```cpp
+// After the tmp117 block, before tsl2591 (alphabetical)
+} else if (strcmp("tmp119", msgDeviceInitReq->i2c_device_name) == 0) {
+    _tmp119 = new WipperSnapper_I2C_Driver_TMP119(this->_i2c, i2cAddress);
+    if (!_tmp119->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize TMP119!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _tmp119->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_tmp119);
+    WS_DEBUG_PRINTLN("TMP119 Initialized Successfully!");
+}
+```
+
+### Step 4 — Library dependency
+
+`platformio.ini` already has `adafruit/Adafruit TMP117` and `library.properties` already has
+`Adafruit TMP117` — no changes needed since TMP119 lives in that package.
+
+### Step 5 — Component definition
+
+`Wippersnapper_Components/components/i2c/tmp119/definition.json`:
+```json
+{
+  "displayName": "TMP119",
+  "vendor": "Texas Instruments",
+  "productURL": "https://www.adafruit.com/product/6201",
+  "documentationURL": "https://learn.adafruit.com/adafruit-tmp117-high-accuracy-i2c-temperature-monitor",
+  "published": false,
+  "i2cAddresses": ["0x48", "0x49", "0x4A", "0x4B"],
+  "subcomponents": ["ambient-temp", "ambient-temp-fahrenheit"]
+}
+```
+
+Simple string subcomponents are fine here — "ambient-temp" is unambiguous for a temperature-only
+sensor. No need for the object format.
+
+Image: grab from Adafruit product API, resize to 400x300, compress.
+
+### Files changed
+
+| File | Action |
+|------|--------|
+| `src/components/i2c/drivers/WipperSnapper_I2C_Driver_TMP119.h` | New — driver with explicit mode/averaging config |
+| `src/components/i2c/WipperSnapper_I2C.h` | Modified — include + private pointer |
+| `src/components/i2c/WipperSnapper_I2C.cpp` | Modified — init block in `initI2CDevice()` |
+| `platformio.ini` | No change — TMP117 library already listed |
+| `library.properties` | No change — TMP117 library already listed |
+| `Wippersnapper_Components/components/i2c/tmp119/definition.json` | New |
+| `Wippersnapper_Components/components/i2c/tmp119/image.jpg` | New |
