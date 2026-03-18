@@ -11,28 +11,22 @@ description: >
 
 # Add I2C Sensor Component to WipperSnapper v1
 
-You are guiding the user through adding a new I2C sensor to Adafruit IO WipperSnapper. This
-involves changes in **two repositories**:
-
+Changes span **two repositories**:
 1. **Adafruit_Wippersnapper_Arduino** — C++ firmware: new driver + registration
 2. **Wippersnapper_Components** — JSON definition + product image
 
-The user will supply a sensor name (e.g. "TMP119"). Your job is to research the sensor, identify
-the right Adafruit Arduino library, find the closest existing driver as a template, and then walk
-through every file change needed.
+The user supplies a sensor name (e.g. "TMP119"). Research the sensor, find the Adafruit Arduino
+library, identify the closest existing driver, and walk through every file change.
 
 ### Naming convention
 
-Two naming styles are used throughout — keep them consistent:
+- **PascalCase** for C++: class `WipperSnapper_I2C_Driver_TMP119`, file
+  `WipperSnapper_I2C_Driver_TMP119.h`, pointer `_tmp119`
+- **lowercase** for component folder and `strcmp` string: `tmp119`
 
-- **PascalCase** for C++ identifiers: class name `WipperSnapper_I2C_Driver_TMP119`, file name
-  `WipperSnapper_I2C_Driver_TMP119.h`, member pointer `_tmp119`, include guard `_TMP119_H`
-- **lowercase** for the component folder name and the `strcmp` device name string: `tmp119`
+Decide the canonical name in Step 0 and use it everywhere.
 
-Decide on the canonical name early (Step 0) and use it everywhere.
-
-> **Proto files are off-limits.** Contributors never touch `.proto` files — only Adafruit staff
-> modify those. The existing `SensorType` enum already covers all common readings.
+> **Proto files are off-limits.** Only Adafruit staff modify `.proto` files.
 
 ## Reference
 
@@ -47,6 +41,39 @@ Wippersnapper_Components repo setup, image requirements, and testing in Adafruit
 
 This skill accepts a sensor name as its argument (e.g. `/add_sensor_component_v1 TMP119`).
 
+## Environment Check
+
+Before starting, determine connectivity level — this affects whether you can use `gh` commands
+or must fall back to plain `git`:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" https://www.bbc.com       # general web access
+curl -s -o /dev/null -w "%{http_code}" https://api.github.com     # GitHub API (needed for gh)
+git ls-remote https://github.com/adafruit/Wippersnapper_Components HEAD  # git clone access
+gh auth status  # see if cli/token/login present
+
+```
+
+| Result | Capability |
+|--------|-----------|
+| All 3 succeed | Full access — use `gh` for forking, PRs, API queries |
+| BBC fails, GitHub API works | Restricted web but `gh` works — skip web fetches for product pages |
+| BBC + API fail, git works | Git-only — use `git clone`/`git push` instead of `gh`, create PRs manually via browser |
+| All fail | Offline — can only write code, user must handle git/PRs |
+
+## CI Checks
+
+PRs to both repos run CI. Key checks to pass before submitting:
+
+**Adafruit_Wippersnapper_Arduino:**
+- **clang-format** — code formatting must match `.clang-format` config. Run `clang-format -i` on all changed files.
+- **Doxygen** — all public/protected methods need Doxygen-style `/*! @brief ... */` comment blocks. CI will fail if these are missing or malformed. Follow the existing driver style exactly.
+- **Build** — firmware must compile for all target boards in `platformio.ini`.
+
+**Wippersnapper_Components:**
+- **JSON schema validation** — `definition.json` must conform to `schema.json` in the repo root.
+- **Image validation** — dimensions, file size, and format are checked.
+
 ---
 
 ## Step 0 — Research the Sensor
@@ -55,17 +82,17 @@ Before writing any code, gather this information:
 
 | What | Where to look |
 |------|---------------|
-| Sensor's Adafruit Arduino library | `gh search repos "Adafruit <SENSOR>" --owner adafruit` or check if it lives inside another library (e.g. TMP119 is in `Adafruit_TMP117`) |
+| Product page | Search the web for "adafruit <SENSOR>" to find the product page. The product page links to the learn guide and Arduino library. This is the fastest route to all other info. |
+| Adafruit Arduino library | The learn guide (linked from product page) shows which library to use. Or: `gh search repos "<SENSOR>" --owner adafruit`. If no dedicated library, check related chips (e.g. TMP119 lives inside `Adafruit_TMP117`). Try partial matches like `TMP11` if exact fails. |
 | Library API | Read the library header on GitHub — find `begin()` signature and sensor read methods (`getEvent`, `readTempC`, etc.) |
 | I2C addresses | Sensor datasheet or Adafruit product page. Check https://learn.adafruit.com/i2c-addresses/the-list |
-| What the sensor measures | Datasheet — temperature? humidity? pressure? Map each to a subcomponent type (see list below) |
+| What it measures | Datasheet — map each reading to a subcomponent type (see table below) |
 | Closest existing driver | Browse `src/components/i2c/drivers/` for a sensor in the same family or with identical reading types |
-| Adafruit product URL | `https://www.adafruit.com/product/<ID>` |
+| Documentation URL | Prefer: Adafruit learn guide (from product page) > manufacturer datasheet. Non-Adafruit products are accepted — use the manufacturer's product/datasheet URL. Note: third-party domain URLs may initially fail CI URL validation until a maintainer adds the domain to the allowlist. |
 
 ### Subcomponent type reference
 
-These are the valid values for `subcomponents` in `definition.json` and map 1:1 to `getEvent*()`
-methods in the base driver class:
+Valid `subcomponents` values in `definition.json`, mapping 1:1 to base driver `getEvent*()` methods:
 
 | Subcomponent | getEvent method | `sensors_event_t` field | SI unit |
 |---|---|---|---|
@@ -95,34 +122,14 @@ When using raw reads (not Unified Sensor `getEvent()`), assign to the correct fi
 
 Temperature sensors almost always include both `ambient-temp` and `ambient-temp-fahrenheit`.
 
-**Important:** Fahrenheit conversions (`getEventAmbientTempF`, `getEventObjectTempF`) are already
-implemented in the base class — they call the Celsius method and convert. Drivers only need to
-implement the Celsius version (`getEventAmbientTemp`, `getEventObjectTemp`). Never implement
-the Fahrenheit variant in your driver.
+**Fahrenheit:** `getEventAmbientTempF` and `getEventObjectTempF` are in the base class — they
+call the Celsius method and convert. Only implement the Celsius version. Never implement °F.
 
-Because the base class Fahrenheit method calls the Celsius method, and the calling order is not
-guaranteed (°F may be called before °C), each `getEvent*()` method should go through a shared
-read-and-cache function with a "recently read" time guard. This way, whichever method is called
-first does the actual I2C read and caches the result; subsequent calls within the window return
-cached data without hitting the bus again.
-
-See `WipperSnapper_I2C_Driver_SCD30.h` for the canonical pattern:
-```cpp
-bool HasBeenReadInLastSecond() {
-    return _lastRead != 0 && millis() - _lastRead < 1000;
-}
-bool ReadSensorData() {
-    if (HasBeenReadInLastSecond()) return true;  // use cached values
-    // ... do actual I2C read, cache results ...
-    _lastRead = millis();
-    return true;
-}
-bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData()) return false;
-    *tempEvent = _cachedTemp;
-    return true;
-}
-```
+**Read-and-cache requirement:** The calling order of `getEvent*()` methods is not guaranteed (°F
+may be called before °C). Every `getEvent*()` must go through a shared `_readSensor()` with a
+millis-based time guard so only the first call per cycle does the I2C read; subsequent calls
+return cached data. See the driver template in Step 1 and `WipperSnapper_I2C_Driver_SCD30.h` and SGP30 
+for the canonical patterns.
 
 This is especially important for multi-reading sensors but also applies to temperature sensors
 where both °C and °F subcomponents are enabled.
@@ -136,7 +143,7 @@ where both °C and °F subcomponents are enabled.
 ### First: Read the library's example sketch
 
 Before writing any driver code, find and read the library's `simpletest` or `basic_test` or some example not using interrupts (data ready flags are okay)
-on GitHub. This is your source of truth for how the sensor is meant to be used:
+on GitHub. Check all matches for suitable usage suggestions. This is your source of truth for how the sensor is meant to be used:
 
 ```bash
 gh api repos/adafruit/<Library_Repo>/contents/examples --jq '.[].name'
@@ -158,7 +165,7 @@ are often not visible in the example sketch but they affect sensor behavior. If 
 update changes any of these defaults, it would silently change WipperSnapper's behavior too.
 
 When writing the WipperSnapper driver, **explicitly set every configuration parameter that the
-library sets as a default in its `begin()` or `_init()`**. This pins the behavior so that library
+library sets as a default in its `begin()` or `_init()`** chain. This pins the behavior so that library
 updates cannot break WipperSnapper without a deliberate driver change on our side.
 
 For example, if the library's `_init()` sets continuous mode with 8x averaging as defaults:
@@ -331,15 +338,13 @@ protected:
 
 Two changes, both in **alphabetical order** among existing entries:
 
-1. Add the include near the top, with the other driver includes:
-   ```cpp
-   #include "drivers/WipperSnapper_I2C_Driver_<SENSOR>.h"
-   ```
+```cpp
+// With other driver includes:
+#include "drivers/WipperSnapper_I2C_Driver_<SENSOR>.h"
 
-2. Add a private member pointer:
-   ```cpp
-   WipperSnapper_I2C_Driver_<SENSOR> *_<sensor> = nullptr;
-   ```
+// In private section:
+WipperSnapper_I2C_Driver_<SENSOR> *_<sensor> = nullptr;
+```
 
 ---
 
@@ -366,51 +371,33 @@ Wippersnapper_Components repo.
 }
 ```
 
-`configureDriver()` is inherited from the base class — it reads the sensor periods from the init
-request message. You never need to implement it yourself.
+`configureDriver()` is inherited — reads sensor periods from the init request. Never reimplement.
 
 ---
 
-## Step 4 — Add Library Dependencies
+## Step 4 — Add Library Dependencies in library.properties and platformio.ini
 
-Two files need updating when adding a new library. If the sensor class lives inside an existing
-library that's already listed (like TMP119 inside Adafruit_TMP117), skip this step entirely.
+Skip if the sensor class lives in an already-listed library (e.g. TMP119 in Adafruit_TMP117).
 
 ### 4a. platformio.ini
 
-In the `[env]` section's `lib_deps`, add the library in **alphabetical order** among existing
-entries. The format depends on whether the library is published on the Arduino Library Manager:
-
-**Released Arduino library** (most Adafruit libraries):
+Add to `[env]` `lib_deps` in **alphabetical order** ignoring any purpose specific sections of the lib_deps:
 ```ini
-    adafruit/Adafruit <Library Name>
-```
-
-**Unreleased / third-party library** (use full GitHub URL):
-```ini
-    https://github.com/<owner>/<repo>.git
-```
-
-Examples from the current file:
-```ini
-    adafruit/Adafruit TMP117
-    https://github.com/Sensirion/arduino-i2c-scd4x.git
-    https://github.com/tyeth/omron-devhub_d6t-arduino.git
+    adafruit/Adafruit <Library Name>              # released Arduino library
+    https://github.com/<owner>/<repo>.git         # unreleased / third-party
 ```
 
 ### 4b. library.properties
 
 Add the library's **Arduino Library Manager name** to the comma-separated `depends=` line. This
-is the name as it appears in the Arduino IDE Library Manager, not the GitHub repo name. Add it in
+is the name as it appears in the Arduino IDE Library Manager + library.properties, not the GitHub repo name. Add it in
 a logical position among the existing entries.
 
 Example: to add a library called "Adafruit FooBar":
 ```
 depends=..., Adafruit FooBar, ...
 ```
-
-For non-Arduino-Library-Manager libraries (GitHub-only), they won't be in `library.properties`
-since the Arduino IDE can't auto-install them — note this in the PR description.
+GitHub-only libraries can't go in `library.properties` — note this in the PR description (and advise to fork n release ardu lib).
 
 ---
 
@@ -455,10 +442,13 @@ The `<sensor_name>` folder name is lowercase and must exactly match the string u
 
 Field notes:
 - `published` — always `false` for new contributions. Adafruit sets it to `true` after release.
+- `productURL` — Adafruit product page if available, place of sale, otherwise the manufacturer's product page.
+- `documentationURL` — Adafruit learn guide (preferred), or manufacturer docs page / wiki, or datasheet URL as
+  fallback. Third-party domain URLs may initially fail CI URL validation until a maintainer adds
+  the domain to the allowlist — note this in the PR if using a non-Adafruit/non-TI URL.
 - `i2cAddresses` — hex strings, all addresses the chip can use (check datasheet for ADDR pin
   configurations).
-- `subcomponents` — can be either simple strings or objects. Use the exact type strings from the
-  table in Step 0.
+- `subcomponents` — mixed array of simple strings or objects. Use exact type strings from the Step 0 table.
 
 ### Subcomponent formats
 
@@ -475,22 +465,20 @@ Field notes:
 ]
 ```
 
-Use the object format when:
-1. **The sensor type name is ambiguous** — e.g. "light" could mean visible, UV, or IR. Give it a
-   descriptive `displayName` so the user knows what they're looking at in the Adafruit IO UI.
-2. **The sensor reports two readings of the same physical type** — the v1 schema forbids
-   duplicate `sensorType` values in one component. Use `"raw"` as the sensorType for the second
-   reading and set `displayName` to describe what it actually is. For example, the LTR-329 reports
-   both ambient light and infrared light — both are "light", but the definition uses `"light"` for
-   ambient and `"raw"` for infrared with `displayName: "Infrared"`.
+Use objects when:
+1. **Type name is ambiguous** — "light" could mean visible, UV, or IR. `displayName` clarifies in the UI.
+2. **Two readings share the same physical type** — v1 schema forbids duplicate `sensorType`. Use
+   `"raw"` for the second with a descriptive `displayName` (e.g. LTR-329: `"light"` for ambient,
+   `"raw"` with `displayName: "Infrared"` for IR).
 
-Real examples:
+Examples:
 - **LTR-390** (UV + light): `[{"displayName": "Ambient Light", "sensorType": "light"}, {"displayName": "UV Count", "sensorType": "raw"}]`
 - **LTR-329** (visible + IR): `[{"displayName": "Ambient Light", "sensorType": "light"}, {"displayName": "Infrared", "sensorType": "raw"}]`
 - **INA219** (no ambiguity): `["voltage", "current"]`
 
-When using `"raw"` as a stand-in, the corresponding driver must implement `getEventRaw()` to
-return that second reading.
+When using `"raw"` as a stand-in, the driver must implement `getEventRaw()` for that reading.
+3. **Non-standard units** — if the sensor reports in a non-SI unit (or doesn't match Adafruit_Sensor type SI unit) then use the appropriate unitless type or raw with a descriptive `displayName` including units.
+4. **Clarity compared to the auto UI labels or between subcomponents** — compare other components using the same types for reference.
 
 ### 5d. Add product image
 
@@ -518,14 +506,15 @@ Fix any compilation errors. Common issues:
 
 ---
 
-## Step 7 — Format with clang-format
+## Step 7 — Format with clang-format, ensure passes doxygen and other CI checks
 
 ```bash
 clang-format -i src/components/i2c/drivers/WipperSnapper_I2C_Driver_<SENSOR>.h
 ```
 
-Also run on any other modified files. The repo's `.clang-format` config will be used
-automatically.
+Run on all modified files. The repo's `.clang-format` should be applied.
+
+Ensure all doxygen style is consistent with existing drivers. 
 
 ---
 
@@ -559,15 +548,19 @@ Two separate PRs are needed:
 
 ## Worked Example: TMP119
 
-The TMP119 is a high-accuracy temperature sensor from Texas Instruments, a variant of the TMP117
-with a different chip ID (0x2117 vs 0x0117).
+TMP119: TI high-accuracy temperature sensor, TMP117 variant (chip ID 0x2117 vs 0x0117).
 
 ### Step 0 — Research
 
-- **Search:** `gh search repos "Adafruit TMP119" --owner adafruit` finds only the PCB repo, no
-  standalone Arduino library. But checking the `Adafruit_TMP117` library reveals
-  `Adafruit_TMP119.h` and `.cpp` inside it — the TMP119 class inherits from TMP117.
+- **Search:** Web search "adafruit TMP119" → product page https://www.adafruit.com/product/6482
+  which links to the learn guide https://learn.adafruit.com/adafruit-tmp119-high-precision-temperature-sensor
+  which shows the Arduino library is `Adafruit_TMP117`. Alternatively,
+  `gh search repos "Adafruit TMP119" --owner adafruit` only finds the PCB repo — no dedicated
+  library. Trying `TMP11` or checking `Adafruit_TMP117` repo contents reveals
+  `Adafruit_TMP119.h/.cpp` — TMP119 inherits from TMP117.
 - **Library:** `Adafruit_TMP117` (contains `Adafruit_TMP119` class)
+- **Product URL:** `https://www.adafruit.com/product/6482`
+- **Docs URL:** `https://learn.adafruit.com/adafruit-tmp119-high-precision-temperature-sensor`
 - **I2C addresses:** 0x48, 0x49, 0x4A, 0x4B (same as TMP117, datasheet Table 7-1)
 - **Measures:** Temperature only → subcomponents: `ambient-temp`, `ambient-temp-fahrenheit`
 - **Closest driver:** `WipperSnapper_I2C_Driver_TMP117.h`
@@ -673,18 +666,15 @@ WipperSnapper_I2C_Driver_TMP119 *_tmp119 = nullptr;
 {
   "displayName": "TMP119",
   "vendor": "Texas Instruments",
-  "productURL": "https://www.adafruit.com/product/6201",
-  "documentationURL": "https://learn.adafruit.com/adafruit-tmp117-high-accuracy-i2c-temperature-monitor",
+  "productURL": "https://www.adafruit.com/product/6482",
+  "documentationURL": "https://learn.adafruit.com/adafruit-tmp119-high-precision-temperature-sensor",
   "published": false,
   "i2cAddresses": ["0x48", "0x49", "0x4A", "0x4B"],
   "subcomponents": ["ambient-temp", "ambient-temp-fahrenheit"]
 }
 ```
 
-Simple string subcomponents are fine here — "ambient-temp" is unambiguous for a temperature-only
-sensor. No need for the object format.
-
-Image: grab from Adafruit product API, resize to 400x300, compress.
+Simple strings — unambiguous for a temperature-only sensor. Image: product API, 400x300, compress.
 
 ### Files changed
 
