@@ -880,6 +880,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _lps3xhw->configureDriver(msgDeviceInitReq);
     drivers.push_back(_lps3xhw);
     WS_DEBUG_PRINTLN("LPS3XHW Sensor Initialized Successfully!");
+  } else if (strcmp("stcc4", msgDeviceInitReq->i2c_device_name) == 0) {
+    _stcc4 = new WipperSnapper_I2C_Driver_STCC4(this->_i2c, i2cAddress);
+    if (!_stcc4->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize STCC4!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _stcc4->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_stcc4);
+    WS_DEBUG_PRINTLN("STCC4 Initialized Successfully!");
   } else if (strcmp("stemma_soil", msgDeviceInitReq->i2c_device_name) == 0) {
     _ss =
         new WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor(this->_i2c, i2cAddress);
