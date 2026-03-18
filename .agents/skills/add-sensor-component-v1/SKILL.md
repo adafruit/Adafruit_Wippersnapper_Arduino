@@ -45,7 +45,8 @@ This skill accepts a sensor name as its argument (e.g. `/add-sensor-component-v1
 
 If Bash is available, quickly check connectivity to adapt your approach. **If Bash is not
 available or these commands fail, skip this section and proceed — use WebFetch/WebSearch for
-research, and do the code changes with the file tools you have. The user can handle git/PRs.**
+research, or playwright if necessary, and do the code changes with the file tools you have. 
+The user can handle git/PRs. NOTE: Do not leave files in wippersnapper_components as untracked - instead if unable to fork / PR components repo then attach image to summary and component definition**
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}" https://www.bbc.com       # general web access
@@ -86,7 +87,7 @@ Before writing any code, gather this information:
 | Learn guide | **Always read the learn guide before writing any code.** Fetch the `.md?view=all` version (e.g. `https://learn.adafruit.com/<guide-slug>/overview` goes to `https://learn.adafruit.com/<guide-slug>.md?view=all`). The Arduino section names the exact library to use. Do NOT skip this step even if you think you recognise a sub-component (e.g. a board with an SHT41 onboard may have its own dedicated library like `Adafruit_STCC4` — you won't know without reading the guide). |
 | Adafruit Arduino library | Named in the learn guide. Or: `gh search repos "<SENSOR>" --owner adafruit`. If no dedicated library, check related chips (e.g. TMP119 lives inside `Adafruit_TMP117`). Try partial matches like `TMP11` if exact fails. |
 | Library API | Read the library header on GitHub — find `begin()` signature and sensor read methods (`getEvent`, `readTempC`, etc.) |
-| I2C addresses | Sensor datasheet or Adafruit product page. Check https://learn.adafruit.com/i2c-addresses/the-list |
+| I2C addresses | Sensor datasheet or Adafruit product page or learn guide or driver. Check https://learn.adafruit.com/i2c-addresses/the-list |
 | What it measures | Datasheet — map each reading to a subcomponent type (see table below) |
 | Closest existing driver | Browse `src/components/i2c/drivers/` for a sensor in the same family or with identical reading types |
 | Documentation URL | Prefer: Adafruit learn guide (from product page) > manufacturer datasheet. Non-Adafruit products are accepted — use the manufacturer's product/datasheet URL. Note: third-party domain URLs may initially fail CI URL validation until a maintainer adds the domain to the allowlist. |
