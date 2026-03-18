@@ -153,12 +153,6 @@ bool I2cHardware::ScanBus(ws_i2c_Scanned *scan_results) {
         WS.feedWDT();
       #endif */
 
-  // Get the SDA and SCL pins from the bus
-  // TODO: Abstract this?
-  char i2c_bus_scl[15] = {0}, i2c_bus_sda[15] = {0};
-  snprintf(i2c_bus_scl, sizeof(i2c_bus_scl), "D%u", _bus_scl);
-  snprintf(i2c_bus_sda, sizeof(i2c_bus_sda), "D%u", _bus_sda);
-
   // Perform a bus scan
   WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
   for (uint8_t address = 1; address < 127; ++address) {
@@ -170,20 +164,15 @@ bool I2cHardware::ScanBus(ws_i2c_Scanned *scan_results) {
 
     if (endTransmissionRC == 0) {
       WS_DEBUG_PRINTLN("[i2c] Found Device!");
-      // TODO: Abstract this? Allow for mux flags to be set here, too
-      scan_results->bus_found_devices[scan_results->bus_found_devices_count]
+      scan_results->found_devices[scan_results->found_devices_count]
           .device_address = address;
-      scan_results->bus_found_devices[scan_results->bus_found_devices_count]
+      scan_results->found_devices[scan_results->found_devices_count]
           .mux_address = 0xFFFF; // Tell user that device is not on a mux
-      strcpy(
-          scan_results->bus_found_devices[scan_results->bus_found_devices_count]
-              .bus_sda,
-          i2c_bus_sda);
-      strcpy(
-          scan_results->bus_found_devices[scan_results->bus_found_devices_count]
-              .bus_scl,
-          i2c_bus_scl);
-      scan_results->bus_found_devices_count++;
+      scan_results->found_devices[scan_results->found_devices_count].pin_scl =
+          _scl;
+      scan_results->found_devices[scan_results->found_devices_count].pin_sda =
+          _sda;
+      scan_results->found_devices_count++;
     }
 #if defined(ARDUINO_ARCH_ESP32)
     // Check endTransmission()'s return code (Arduino-ESP32 ONLY)

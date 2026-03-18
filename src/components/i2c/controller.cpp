@@ -572,7 +572,7 @@ bool I2cController::IsBusStatusOK(bool is_alt_bus) {
     @returns  True if the I2cDeviceAddedorReplaced message was published
               successfully, False otherwise.
 */
-bool I2cController::PublishI2cDeviceAddedorReplaced(
+bool I2cController::publishDeviceAddedOrReplaced(
     const ws_i2c_DeviceDescriptor &device_descriptor,
     const ws_i2c_DeviceStatus &device_status) {
   // If we're in offline mode, don't publish out to IO
@@ -590,6 +590,28 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
                      _i2c_model->GetMsgI2cDeviceAddedOrReplaced())) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish I2cDeviceAddedorReplaced "
                      "message to IO!");
+    return false;
+  }
+  return true;
+}
+
+/*!
+    @brief    Publishes the ws_i2c_Scanned message to IO.
+    @note     Call setI2cBusScannedStatus() on the model before calling this.
+    @returns  True if published successfully, False otherwise.
+*/
+bool I2cController::publishScan() {
+  if (Ws._sdCardV2->isModeOffline())
+    return true;
+
+  if (!_i2c_model->encodeI2cScanned()) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to encode ws_i2c_Scanned message!");
+    return false;
+  }
+
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
+                     _i2c_model->GetI2cD2B())) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish ws_i2c_Scanned message!");
     return false;
   }
   return true;
@@ -615,9 +637,9 @@ bool I2cController::Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg) {
 
   bool did_remove = true;
 
-  // Check for default bus
-  if (strlen(msg->device_description.bus_scl) == 0 &&
-      strlen(msg->device_description.bus_sda) == 0) {
+  // Check for default bus (pin_scl/pin_sda == 0 means default bus)
+  if (msg->device_description.pin_scl == 0 &&
+      msg->device_description.pin_sda == 0) {
     WS_DEBUG_PRINTLN("[i2c] Removing device from default bus...");
     if (!_i2c_bus_default->HasMux()) {
       if (!RemoveDriver(msg->device_description.device_address,
@@ -644,11 +666,11 @@ bool I2cController::Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg) {
           msg->device_description.mux_address) {
         ws_i2c_Scanned scan_results;
         _i2c_bus_default->ScanMux(&scan_results);
-        for (int i = 0; i < scan_results.bus_found_devices_count; i++) {
+        for (int i = 0; i < scan_results.found_devices_count; i++) {
           // Select the channel and remove the device
           _i2c_bus_default->SelectMuxChannel(
-              scan_results.bus_found_devices[i].mux_channel);
-          RemoveDriver(scan_results.bus_found_devices[i].device_address,
+              scan_results.found_devices[i].mux_channel);
+          RemoveDriver(scan_results.found_devices[i].device_address,
                        msg->is_output_device);
         }
         _i2c_bus_default->RemoveMux();
@@ -697,6 +719,38 @@ bool I2cController::InitMux(const char *name, uint32_t address,
 }
 
 /*!
+    @brief    Finds an existing I2C bus by SCL/SDA pins, or creates a new one.
+    @param    pin_scl
+              The SCL pin number.
+    @param    pin_sda
+              The SDA pin number.
+    @returns  Pointer to the I2cHardware bus, or nullptr if initialization
+              failed.
+*/
+I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda) {
+  // Search existing buses
+  for (I2cHardware *bus : _i2c_buses) {
+    if (bus == nullptr)
+      continue;
+    if (pin_scl == (uint32_t)bus->getSCL() &&
+        pin_sda == (uint32_t)bus->getSDA()) {
+      return bus;
+    }
+  }
+
+  // Bus not found, create new one
+  WS_DEBUG_PRINTLN("[i2c] Initializing new I2C bus...");
+  I2cHardware *new_bus = new I2cHardware(pin_scl, pin_sda);
+  if (!new_bus->begin()) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
+    delete new_bus;
+    return nullptr;
+  }
+  _i2c_buses.push_back(new_bus);
+  return new_bus;
+}
+
+/*!
     @brief   Handles an I2C bus scan request.
     @param   msg
              Pointer to the I2cBusScan message.
@@ -706,61 +760,40 @@ bool I2cController::InitMux(const char *name, uint32_t address,
 bool I2cController::Handle_I2cBusScan(ws_i2c_Scan *msg) {
   _i2c_model->ClearI2cBusScanned();
   ws_i2c_Scanned *scan_results = _i2c_model->GetI2cBusScannedMsg();
-  bool scan_success = true;
 
-  // TODO: We can probably refactor this function to share it with Handle_I2cDeviceAddOrReplace since we'll need to do similar checks for bus initialization and scanning when adding a new device
-  // Check if we have already constructed this bus and can access it directly
-  bool found_bus = false;
-  I2cHardware *bus_to_scan = nullptr;
-  for (I2cHardware *bus : _i2c_buses) {
-    // Is bus null?
-    if (bus == nullptr)
-        continue;
-
-    // Do the pins match whats in the message?
-    if (msg->pin_scl == (uint32_t)bus->getSCL() && msg->pin_sda == (uint32_t)bus->getSDA()) {
-      found_bus = true;
-      bus_to_scan = bus;
-      break;
-    }
+  // Find or create the bus using shared helper
+  I2cHardware *bus_to_scan = findOrCreateBus(msg->pin_scl, msg->pin_sda);
+  if (bus_to_scan == nullptr) {
+    // We failed to find or create the bus, publish error status and back out
+    _i2c_model->setI2cBusScannedStatus(ws_i2c_BusStatus_BS_ERROR_WIRING);
+    publishScan();
+    return false;
   }
 
-  // If we didn't find the i2c bus, we need to initialize it before we can scan
-  if (!found_bus) {
-    WS_DEBUG_PRINTLN("[i2c] Initializing new I2C bus for scan...");
-    I2cHardware *new_bus = new I2cHardware(msg->pin_scl, msg->pin_sda);
-    // Attempt to initialize the bus and check if it's ready before adding to our list of buses
-    if (!new_bus->begin()) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus for scanning!");
-      // TODO: Publish ws_i2c_BusStatus, ws_i2c_BusStatus_BS_ERROR_WIRING, back to IO here and fail out
-       return false;
+  // Scan the bus (with or without MUX)
+  bool scan_success = true;
+  if (!bus_to_scan->HasMux()) {
+    WS_DEBUG_PRINTLN("[i2c] Scanning bus directly...");
+    if (!bus_to_scan->ScanBus(scan_results)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C bus!");
+      scan_success = false;
     }
-    bus_to_scan = new_bus;
-    _i2c_buses.push_back(new_bus);
-    }
-
-  // We have the bus, now, is a MUX attached?
-  if (bus_to_scan->HasMux()) {
+  } else {
     WS_DEBUG_PRINTLN("[i2c] Detected MUX on bus, scanning MUX channels...");
     if (!bus_to_scan->ScanMux(scan_results)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C MUX on bus!");
       scan_success = false;
     }
-  } else {
-    WS_DEBUG_PRINTLN("[i2c] No MUX detected on bus, scanning bus directly...");
-    if (!bus_to_scan->ScanBus(scan_results)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C bus!");
-      scan_success = false;
-    }
   }
 
+  // If the scan encountered an error, publish the error status and back out
   if (!scan_success) {
-    // TODO: Set the response's bus status to match getbusstatus and publish back out to IO here!
+    _i2c_model->setI2cBusScannedStatus(bus_to_scan->GetBusStatus());
+    publishScan();
     return false;
   }
 
-
-  // Printout content of scan_results
+  // Print out content of scan_results
   WS_DEBUG_PRINT("[i2c] Scan found ");
   WS_DEBUG_PRINTVAR(scan_results->found_devices_count);
   WS_DEBUG_PRINTLN(" devices.");
@@ -769,17 +802,22 @@ bool I2cController::Handle_I2cBusScan(ws_i2c_Scan *msg) {
     WS_DEBUG_PRINT("Address: ");
     WS_DEBUG_PRINTHEX(scan_results->found_devices[i].device_address);
     WS_DEBUG_PRINTLN("");
-    WS_DEBUG_PRINT("SCL: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].bus_scl);
-    WS_DEBUG_PRINT("SDA: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].bus_sda);
+    WS_DEBUG_PRINT("SCL Pin: ");
+    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].pin_scl);
+    WS_DEBUG_PRINT("SDA Pin: ");
+    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].pin_sda);
     WS_DEBUG_PRINT("MUX Address: ");
     WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].mux_address);
     WS_DEBUG_PRINT("MUX Channel: ");
     WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].mux_channel);
   }
 
-  // TODO: Encode Take the scan_results and publish back out to IO here!
+  // Set bus status and publish scan results
+  _i2c_model->setI2cBusScannedStatus(ws_i2c_BusStatus_BS_SUCCESS);
+  if (!publishScan()) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to publish I2C bus scan results!");
+    return false;
+  }
   return true;
 }
 
@@ -812,12 +850,13 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   // first...then proceed to adding a new device
 
   // Does the device's descriptor specify a different i2c bus?
-  if (strcmp(device_descriptor.bus_scl, "default") != 0) {
+  // (pin_scl/pin_sda != 0 means non-default bus)
+  if (device_descriptor.pin_scl != 0 && device_descriptor.pin_sda != 0) {
     WS_DEBUG_PRINTLN("[i2c] Non-default I2C bus specified!");
     if (_i2c_bus_alt == nullptr) {
       WS_DEBUG_PRINTLN("[i2c] Initializing alternative i2c bus...");
       _i2c_bus_alt =
-          new I2cHardware(device_descriptor.bus_sda, device_descriptor.bus_scl);
+          new I2cHardware(device_descriptor.pin_sda, device_descriptor.pin_scl);
     }
     use_alt_bus = true;
   }
@@ -830,7 +869,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
       Ws.haltErrorV2(" ", WS_LED_STATUS_ERROR_RUNTIME,
                      false); // doesn't return, halts
     }
-    if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status)) {
+    if (!publishDeviceAddedOrReplaced(device_descriptor, device_status)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish message to IO!");
       return false;
     }
@@ -932,13 +971,17 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     WS_DEBUG_PRINTLN("[i2c] Set driver to use MUX");
   }
   if (use_alt_bus) {
+    // Convert pin numbers to string format for driver compatibility
+    char pin_scl_str[15] = {0}, pin_sda_str[15] = {0};
+    snprintf(pin_scl_str, sizeof(pin_scl_str), "D%u",
+             msg->device_description.pin_scl);
+    snprintf(pin_sda_str, sizeof(pin_sda_str), "D%u",
+             msg->device_description.pin_sda);
     if (!is_output) {
-      drv->EnableAltI2CBus(msg->device_description.bus_scl,
-                           msg->device_description.bus_sda);
+      drv->EnableAltI2CBus(pin_scl_str, pin_sda_str);
     } else {
       WS_DEBUG_PRINTLN("[i2c] Setting alt. I2C bus for output driver...");
-      drv_out->EnableAltI2CBus(msg->device_description.bus_scl,
-                               msg->device_description.bus_sda);
+      drv_out->EnableAltI2CBus(pin_scl_str, pin_sda_str);
     }
     WS_DEBUG_PRINTLN("[i2c] Set driver to use Alt I2C bus");
   }
@@ -1017,7 +1060,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     WS_DEBUG_PRINTLN("[i2c] MQTT Publish I2cDeviceAddedorReplaced not yet "
                      "implemented!");
     // TODO!
-    /*     if (!PublishI2cDeviceAddedorReplaced(device_descriptor,
+    /*     if (!publishDeviceAddedOrReplaced(device_descriptor,
        device_status)) return false; */
   }
 

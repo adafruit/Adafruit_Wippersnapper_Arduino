@@ -95,9 +95,10 @@ public:
   bool Handle_I2cBusScan(ws_i2c_Scan *msg);
   bool Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg);
   // Publishing //
-  bool PublishI2cDeviceAddedorReplaced(
+  bool publishDeviceAddedOrReplaced(
       const ws_i2c_DeviceDescriptor &device_descriptor,
       const ws_i2c_DeviceStatus &device_status);
+  bool publishScan();
   // Helpers //
   bool IsBusStatusOK(bool is_alt_bus = false);
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
@@ -107,6 +108,7 @@ public:
   TwoWire *GetI2cBus(bool is_alt_bus = false);
 
 private:
+  I2cHardware *findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda);
   I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
   I2cOutputModel *_i2c_output_model =
       nullptr; ///< Pointer to an I2C output model object
