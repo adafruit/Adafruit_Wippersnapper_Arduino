@@ -155,8 +155,12 @@ gh api repos/adafruit/<Library_Repo>/contents/examples --jq '.[].name'
 # then read the .ino file for the simpletest/basic_test/singleshot example
 ```
 
-If `gh`/Bash is unavailable, use WebFetch on the raw GitHub URL:
-`https://raw.githubusercontent.com/adafruit/<Library_Repo>/main/examples/<example>/<example>.ino` (you may need to access the web version to view default branch andexample related folder structure).
+**Fallback routes** (try in order if `gh`/Bash is unavailable):
+
+1. **WebFetch raw GitHub:** `https://raw.githubusercontent.com/adafruit/<Library_Repo>/main/examples/<example>/<example>.ino`  (you may need to access the web version (not raw) to view default branch and example related folder structure).
+2. **WebFetch learn guide:** `https://learn.adafruit.com/<guide-slug>.md?view=all` — the Arduino
+   section usually contains example code link showing the exact API (or embedded code if non-markdown version).
+3. **Ask the user:** If tools are restricted, ask them to paste the library header and example.
 
 From the example, extract the **exact method signatures** used:
 - `begin()` — what arguments, what return type
@@ -178,6 +182,9 @@ gh api repos/adafruit/<Library_Repo>/contents/<Library_Name>.h --jq '.content' |
 ```
 
 Or via WebFetch: `https://raw.githubusercontent.com/adafruit/<Library_Repo>/main/<Library_Name>.h`
+
+If GitHub is blocked, the learn guide `.md?view=all` may contain enough API detail from code
+snippets. If not, ask the user for the header content.
 
 **Explicitly set every configuration parameter that the library defaults in `begin()`/`_init()`.**
 This pins behavior so library updates can't silently change WipperSnapper.
@@ -502,7 +509,7 @@ Requirements:
 - **Formats:** jpg, jpeg, gif, png, svg
 - **Filename:** `image.<ext>`
 
-You can usually grab the product image from the Adafruit product API (http://www.adafruit.com/api/product/[pid]) and resize it [4:3] and compress it  (using compressjpeg.com) to pass CI validation. Ideally pick the straight-on product shot with a plain background, not angled or lifestyle images. Include a small amount of dead space around the product so it doesn't get cropped in the UI (go with existing examples for reference).
+You can usually grab the product image url details from the Adafruit product API (http://www.adafruit.com/api/product/<pid>) and resize it [4:3] and compress it  (using compressjpeg.com) to pass CI validation. Ideally pick the straight-on product shot with a plain background, not angled or lifestyle images. Include a small amount of dead space around the product so it doesn't get cropped in the UI (go with existing examples for reference).
 
 ---
 
