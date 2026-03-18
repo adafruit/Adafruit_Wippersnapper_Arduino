@@ -141,33 +141,46 @@ where both °C and °F subcomponents are enabled.
 
 **File:** `src/components/i2c/drivers/WipperSnapper_I2C_Driver_<SENSOR>.h`
 
-### First: Read the library's example sketch
+### First: Read the library's example sketch — MANDATORY before writing any code
 
-Before writing any driver code, find and read the library's `simpletest` or `basic_test` or some example not using interrupts (data ready flags are okay)
+**Do NOT assume the library API based on other sensors.** Every library is different. You must
+read the actual example code to know the real API. Guessing from similar sensors (e.g. assuming
+SCD30-style `getEvent()` for an STCC4) will produce a driver that does not compile.
+
+Before writing any driver code, find and read the library's `simple test` or `basic_usage` or all examples not using interrupts (data ready flags are okay)
 on GitHub. Check all matches for suitable usage suggestions. This is your source of truth for how the sensor is meant to be used:
 
 ```bash
 gh api repos/adafruit/<Library_Repo>/contents/examples --jq '.[].name'
-# then read the relevant .ino file
+# then read the .ino file for the simpletest/basic_test/singleshot example
 ```
 
-Study the example for:
-- Which `begin()` overload is used and what arguments it takes
-- Any setup calls after `begin()` (mode, averaging, resolution, range, etc.)
-- Whether `dataReady()` is polled before reading
-- How readings are obtained (`getEvent()` vs `readTempC()` vs `read()` etc.)
-- Any delays or timing requirements
+If `gh`/Bash is unavailable, use WebFetch on the raw GitHub URL:
+`https://raw.githubusercontent.com/adafruit/<Library_Repo>/main/examples/<example>/<example>.ino` (you may need to access the web version to view default branch andexample related folder structure).
 
-### Then: Read the library's source code
+From the example, extract the **exact method signatures** used:
+- `begin()` — what arguments, what return type
+- How readings are triggered (`getEvent()`, `readMeasurement()`, `measureSingleShot()`, etc.)
+- What the return values look like (Unified Sensor `sensors_event_t`? Raw floats? uint16_t pointers?)
+- Any required setup calls (continuous mode, conditioning, etc.)
+- Any delays or polling (`dataReady()`, fixed delays between reads)
 
-Also read the library's `begin()` / `_init()` implementation to see what default configuration
-it applies — measurement mode, averaging count, resolution, conversion time, etc. These defaults
-are often not visible in the example sketch but they affect sensor behavior. If a future library
-update changes any of these defaults, it would silently change WipperSnapper's behavior too.
+### Then: Read the library header — MANDATORY
 
-When writing the WipperSnapper driver, **explicitly set every configuration parameter that the
-library sets as a default in its `begin()` or `_init()`** chain. This pins the behavior so that library
-updates cannot break WipperSnapper without a deliberate driver change on our side.
+Read the `.h` file to see **all public methods and their exact signatures**. This is essential
+because:
+- The example may only show one usage pattern; the header shows everything available
+- You need the exact types (float vs uint16_t, pointer args vs return values)
+- You need to identify default configuration set in `begin()`/`_init()`
+
+```bash
+gh api repos/adafruit/<Library_Repo>/contents/<Library_Name>.h --jq '.content' | base64 -d
+```
+
+Or via WebFetch: `https://raw.githubusercontent.com/adafruit/<Library_Repo>/main/<Library_Name>.h`
+
+**Explicitly set every configuration parameter that the library defaults in `begin()`/`_init()`.**
+This pins behavior so library updates can't silently change WipperSnapper.
 
 For example, if the library's `_init()` sets continuous mode with 8x averaging as defaults:
 ```cpp
