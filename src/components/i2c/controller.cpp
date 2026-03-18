@@ -447,7 +447,6 @@ drvOutputBase *CreateI2cOutputDrv(const char *driver_name, TwoWire *i2c,
 I2cController::I2cController() {
   _i2c_model = new I2cModel();
   _i2c_output_model = new I2cOutputModel();
-  _i2c_bus_default = new I2cHardware();
 }
 
 /*!
@@ -490,9 +489,6 @@ bool I2cController::Router(pb_istream_t *stream) {
     break;
   case ws_i2c_B2D_device_remove_tag:
     res = Handle_I2cDeviceRemove(&b2d.payload.device_remove);
-    break;
-  case ws_i2c_B2D_device_output_write_tag:
-    res = Handle_I2cDeviceOutputWrite(&b2d.payload.device_output_write);
     break;
   default:
     WS_DEBUG_PRINTLN("[i2c] WARNING: Unsupported I2C payload");
@@ -709,7 +705,7 @@ bool I2cController::InitMux(const char *name, uint32_t address,
     @returns True if the I2C bus was successfully scanned and the
              I2cBusScan message was published to IO, False otherwise.
 */
-bool I2cController::Handle_I2cBusScan(ws_i2c_BusScan *msg) {
+bool I2cController::Handle_I2cBusScan(ws_i2c_Scan *msg) {
   _i2c_model->ClearI2cBusScanned();
   ws_i2c_BusScanned *scan_results = _i2c_model->GetI2cBusScannedMsg();
 
@@ -796,67 +792,6 @@ bool I2cController::Handle_I2cBusScan(ws_i2c_BusScan *msg) {
   return true;
 }
 
-/*!
-    @brief    Handler for an I2cDeviceOutputWrite message
-    @param    msg
-              Pointer to the I2cDeviceOutputWrite message.
-    @returns  True if the callback was successfully executed by the driver,
-              False otherwise.
-*/
-bool I2cController::Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg) {
-  ws_i2c_DeviceDescriptor descriptor = msg->device_description;
-
-  // Attempt to find the driver
-  drvOutputBase *driver = nullptr;
-  for (auto *drv : _i2c_drivers_output) {
-    if (drv == nullptr)
-      continue;
-
-    if (drv->GetAddress() != descriptor.device_address)
-      continue;
-
-    driver = drv;
-    break;
-  }
-
-  if (driver == nullptr) {
-    WS_DEBUG_PRINT("[i2c] ERROR: Unable to find driver for device at addr 0x");
-    WS_DEBUG_PRINTHEX(descriptor.device_address);
-    return false;
-  }
-
-  // Optionally configure the I2C MUX
-  uint32_t mux_channel = driver->GetMuxChannel();
-  WS_DEBUG_PRINTLNVAR(mux_channel);
-  if (driver->HasMux()) {
-    ConfigureMuxChannel(mux_channel, driver->HasAltI2CBus());
-  }
-
-  // Determine which driver cb function to use
-  if (msg->which_output_msg ==
-      ws_i2c_DeviceOutputWrite_write_led_backpack_tag) {
-    WS_DEBUG_PRINTLN("[i2c] Writing to LED backpack...");
-    driver->WriteMessage(msg->output_msg.write_led_backpack.message);
-  } else if (msg->which_output_msg ==
-             ws_i2c_DeviceOutputWrite_write_char_lcd_tag) {
-    WS_DEBUG_PRINTLN("[i2c] Writing to char LCD...");
-    if (!driver->WriteMessageCharLCD(&msg->output_msg.write_char_lcd)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to write to char LCD!");
-      return false;
-    }
-  } else if (msg->which_output_msg == ws_i2c_DeviceOutputWrite_write_oled_tag) {
-    WS_DEBUG_PRINTLN("[i2c] Writing to SSD1306 OLED...");
-    // Note: In the future, we can expand this to support other OLEDs by
-    // creating and checking a tag within the write oled msg (e.g. SSD1327,
-    // etc.)
-    driver->WriteMessageSSD1306(msg->output_msg.write_oled.message);
-  } else {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine I2C Output Write type!");
-    return false;
-  }
-
-  return true;
-}
 
 /*!
     @brief    Implements handling for a I2cDeviceAddOrReplace message

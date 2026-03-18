@@ -92,9 +92,8 @@ public:
   // Routing //
   bool Router(pb_istream_t *stream);
   bool Handle_I2cDeviceAddOrReplace(ws_i2c_DeviceAddOrReplace *msg);
-  bool Handle_I2cBusScan(ws_i2c_BusScan *msg);
+  bool Handle_I2cBusScan(ws_i2c_Scan *msg);
   bool Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg);
-  bool Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg);
   // Publishing //
   bool PublishI2cDeviceAddedorReplaced(
       const ws_i2c_DeviceDescriptor &device_descriptor,
@@ -111,8 +110,7 @@ private:
   I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
   I2cOutputModel *_i2c_output_model =
       nullptr; ///< Pointer to an I2C output model object
-  I2cHardware *_i2c_bus_default = nullptr; ///< Pointer to the default I2C bus
-  I2cHardware *_i2c_bus_alt = nullptr; ///< Pointer to an alternative I2C bus
+  std::vector<I2cHardware *> _i2c_buses; ///< Vector of ptrs to I2C hardware buses
   std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C input drivers
   std::vector<drvOutputBase *>
       _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
