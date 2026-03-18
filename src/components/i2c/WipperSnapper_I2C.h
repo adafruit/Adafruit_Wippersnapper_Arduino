@@ -80,6 +80,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_SPA06_003.h"
 #include "drivers/WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor.h"
 #include "drivers/WipperSnapper_I2C_Driver_TMP117.h"
+#include "drivers/WipperSnapper_I2C_Driver_TMP119.h"
 #include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
 #include "drivers/WipperSnapper_I2C_Driver_VCNL4020.h"
 #include "drivers/WipperSnapper_I2C_Driver_VCNL4040.h"
@@ -196,6 +197,7 @@ private:
   WipperSnapper_I2C_Driver_MS8607 *_ms8607 = nullptr;
   WipperSnapper_I2C_Driver_NAU7802 *_nau7802 = nullptr;
   WipperSnapper_I2C_Driver_TMP117 *_tmp117 = nullptr;
+  WipperSnapper_I2C_Driver_TMP119 *_tmp119 = nullptr;
   WipperSnapper_I2C_Driver_TSL2591 *_tsl2591 = nullptr;
   WipperSnapper_I2C_Driver_VCNL4020 *_vcnl4020 = nullptr;
   WipperSnapper_I2C_Driver_VCNL4040 *_vcnl4040 = nullptr;
