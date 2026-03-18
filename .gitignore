@@ -61,3 +61,8 @@ tests/
 venv/
 
 Doxyfile
+
+.repos/
+repos/
+Wippersnapper_Components/
+Wippersnapper_Boards/
