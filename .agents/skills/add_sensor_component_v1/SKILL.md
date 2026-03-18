@@ -41,25 +41,25 @@ Wippersnapper_Components repo setup, image requirements, and testing in Adafruit
 
 This skill accepts a sensor name as its argument (e.g. `/add_sensor_component_v1 TMP119`).
 
-## Environment Check
+## Environment Check (optional, do not block on this)
 
-Before starting, determine connectivity level — this affects whether you can use `gh` commands
-or must fall back to plain `git`:
+If Bash is available, quickly check connectivity to adapt your approach. **If Bash is not
+available or these commands fail, skip this section and proceed — use WebFetch/WebSearch for
+research, and do the code changes with the file tools you have. The user can handle git/PRs.**
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}" https://www.bbc.com       # general web access
 curl -s -o /dev/null -w "%{http_code}" https://api.github.com     # GitHub API (needed for gh)
 git ls-remote https://github.com/adafruit/Wippersnapper_Components HEAD  # git clone access
 gh auth status  # see if cli/token/login present
-
 ```
 
 | Result | Capability |
 |--------|-----------|
-| All 3 succeed | Full access — use `gh` for forking, PRs, API queries |
+| All succeed | Full access — use `gh` for forking, PRs, API queries |
 | BBC fails, GitHub API works | Restricted web but `gh` works — skip web fetches for product pages |
-| BBC + API fail, git works | Git-only — use `git clone`/`git push` instead of `gh`, create PRs manually via browser |
-| All fail | Offline — can only write code, user must handle git/PRs |
+| BBC + API fail, git works | Git-only — use `git clone`/`git push`, create PRs manually |
+| All fail / no Bash | Offline — write code with file tools, user handles git/PRs |
 
 ## CI Checks
 
