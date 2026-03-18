@@ -498,48 +498,52 @@ bool I2cController::Router(pb_istream_t *stream) {
 }
 
 /*!
-    @brief  Removes an I2C driver from the controller and frees memory
+    @brief  Removes an I2C driver from the controller and frees memory.
+            Searches both sensor and output driver vectors.
     @param    address
                 The desired I2C device's address.
-    @param    is_output_device
-                True if the driver is an output device, False otherwise.
+    @param    mux_channel
+                The MUX channel (use 0xFFFFFFFF to match any channel).
     @returns True if the driver was removed, False otherwise.
 */
-bool I2cController::RemoveDriver(uint32_t address, bool is_output_device) {
-  if (!is_output_device) {
-    // Safely remove the i2c sensor driver from the vector and free memory
-    for (drvBase *driver : _i2c_drivers) {
-      if (driver == nullptr)
-        continue;
+bool I2cController::RemoveDriver(uint32_t address, uint32_t mux_channel) {
+  // Search sensor drivers first
+  for (drvBase *driver : _i2c_drivers) {
+    if (driver == nullptr)
+      continue;
+    if (driver->GetAddress() != address)
+      continue;
+    if (mux_channel != WS_I2C_MUX_CHANNEL_ANY &&
+        driver->GetMuxChannel() != mux_channel)
+      continue;
 
-      if (driver->GetAddress() != address)
-        continue;
-
-      auto it = std::find(_i2c_drivers.begin(), _i2c_drivers.end(), driver);
-      if (it != _i2c_drivers.end()) {
-        _i2c_drivers.erase(it);
-      }
-      delete driver;
-      return true;
+    std::vector<drvBase *>::iterator it =
+        std::find(_i2c_drivers.begin(), _i2c_drivers.end(), driver);
+    if (it != _i2c_drivers.end()) {
+      _i2c_drivers.erase(it);
     }
-  } else {
-    // This was an output driver type, safely remove the i2c output driver from
-    // the vector and free memory
-    for (drvOutputBase *driver : _i2c_drivers_output) {
-      if (driver == nullptr)
-        continue;
+    delete driver;
+    return true;
+  }
 
-      if (driver->GetAddress() != address)
-        continue;
+  // Search output drivers
+  for (drvOutputBase *driver : _i2c_drivers_output) {
+    if (driver == nullptr)
+      continue;
+    if (driver->GetAddress() != address)
+      continue;
+    if (mux_channel != WS_I2C_MUX_CHANNEL_ANY &&
+        driver->GetMuxChannel() != mux_channel)
+      continue;
 
-      auto it = std::find(_i2c_drivers_output.begin(),
-                          _i2c_drivers_output.end(), driver);
-      if (it != _i2c_drivers_output.end()) {
-        _i2c_drivers_output.erase(it);
-      }
-      delete driver;
-      return true;
+    std::vector<drvOutputBase *>::iterator it =
+        std::find(_i2c_drivers_output.begin(), _i2c_drivers_output.end(),
+                  driver);
+    if (it != _i2c_drivers_output.end()) {
+      _i2c_drivers_output.erase(it);
     }
+    delete driver;
+    return true;
   }
 
   // We didn't find the driver to remove
@@ -642,8 +646,7 @@ bool I2cController::Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg) {
       msg->device_description.pin_sda == 0) {
     WS_DEBUG_PRINTLN("[i2c] Removing device from default bus...");
     if (!_i2c_bus_default->HasMux()) {
-      if (!RemoveDriver(msg->device_description.device_address,
-                        msg->is_output_device)) {
+      if (!RemoveDriver(msg->device_description.device_address)) {
         WS_DEBUG_PRINTLN(
             "[i2c] ERROR: Failed to remove i2c device from default bus!");
         did_remove = false;
@@ -655,7 +658,7 @@ bool I2cController::Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg) {
           msg->device_description.mux_channel >= 0) {
         _i2c_bus_default->SelectMuxChannel(msg->device_description.mux_channel);
         if (!RemoveDriver(msg->device_description.device_address,
-                          msg->is_output_device)) {
+                          msg->device_description.mux_channel)) {
           WS_DEBUG_PRINTLN(
               "[i2c] ERROR: Failed to remove i2c device from default bus!");
           did_remove = false;
@@ -671,7 +674,7 @@ bool I2cController::Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg) {
           _i2c_bus_default->SelectMuxChannel(
               scan_results.found_devices[i].mux_channel);
           RemoveDriver(scan_results.found_devices[i].device_address,
-                       msg->is_output_device);
+                       scan_results.found_devices[i].mux_channel);
         }
         _i2c_bus_default->RemoveMux();
       }
@@ -840,14 +843,15 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   strcpy(device_name, msg->device_name);
   ws_i2c_DeviceDescriptor device_descriptor = msg->device_description;
 
-  // Is this an i2c output device?
-  bool is_output = msg->is_output;
 
-  // Is this a i2c GPS?
-  bool is_gps = msg->is_gps;
+  // Should we use GPS passthrough mode for this device? (only applies to GPS devices,
+  // but we check here since it's a property of the driver, not the bus)
+  bool use_gps_passthrough = msg->has_gps_config;
 
-  // TODO [Online]: Handle Replace messages by implementing the Remove handler
-  // first...then proceed to adding a new device
+  // Handle Replace: attempt to remove any existing driver at this address/mux_channel.
+  // Result ignored - if no driver exists, RemoveDriver returns false and we proceed to add.
+  RemoveDriver(device_descriptor.device_address, device_descriptor.mux_channel);
+
 
   // Does the device's descriptor specify a different i2c bus?
   // (pin_scl/pin_sda != 0 means non-default bus)
@@ -929,7 +933,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
       did_init = true;
     }
     WS_DEBUG_PRINTLN("OK!");
-  } else if (is_gps) {
+  } else if (use_gps_passthrough) {
     WS_DEBUG_PRINT("[i2c] Creating a GPS driver...");
     if (!Ws._gps_controller->AddGPS(bus, device_descriptor.device_address,
                                     &msg->gps_config)) {
@@ -1191,22 +1195,18 @@ void I2cController::ResetFlags() {
   }
 }
 
-/*!
-    @brief  Toggles the power pin on the default I2C bus.
-*/
-void I2cController::ToggleDefaultPowerPin() {
-  _i2c_bus_default->TogglePowerPin();
-}
 
 /*!
-    @brief  Returns a pointer to the I2C bus.
+    @brief  Returns a pointer to the I2C bus, used by classes that require an
+            I2C bus reference (e.g. I2C drivers outside the class)
     @param  is_alt_bus
             True to return the alternative bus, false for the default bus.
-    @returns  Pointer to the TwoWire bus.
+    @returns  Pointer to the TwoWire bus, or nullptr if the bus doesn't exist.
 */
 TwoWire *I2cController::GetI2cBus(bool is_alt_bus) {
-  if (is_alt_bus && _i2c_bus_alt != nullptr) {
-    return _i2c_bus_alt->GetBus();
+  size_t bus_idx = is_alt_bus ? 1 : 0;
+  if (bus_idx < _i2c_buses.size() && _i2c_buses[bus_idx] != nullptr) {
+    return _i2c_buses[bus_idx]->GetBus();
   }
-  return _i2c_bus_default->GetBus();
+  return nullptr;
 }

@@ -14,6 +14,9 @@
  */
 #ifndef WS_I2C_CONTROLLER_H
 #define WS_I2C_CONTROLLER_H
+
+#define WS_I2C_MUX_CHANNEL_ANY 0xFFFFFFFF ///< Match any MUX channel
+
 #include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
@@ -103,8 +106,8 @@ public:
   bool IsBusStatusOK(bool is_alt_bus = false);
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
-  bool RemoveDriver(uint32_t address, bool is_output_device);
-  void ToggleDefaultPowerPin();
+  bool RemoveDriver(uint32_t address,
+                    uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
   TwoWire *GetI2cBus(bool is_alt_bus = false);
 
 private:
