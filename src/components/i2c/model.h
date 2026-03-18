@@ -47,7 +47,7 @@ public:
   ws_i2c_DeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
   ws_i2c_DeviceEvent *GetI2cDeviceEvent();
   ws_i2c_Scan *GetI2cBusScanMsg();
-  ws_i2c_BusScanned *GetI2cBusScannedMsg();
+  ws_i2c_Scanned *GetI2cBusScannedMsg();
   ws_i2c_DeviceOutputWrite *GetI2cDeviceOutputWriteMsg();
   // I2cBusScanned Message API
   void ClearI2cBusScanned();
@@ -66,7 +66,7 @@ public:
 
 private:
   ws_i2c_Scan _msg_i2c_bus_scan;
-  ws_i2c_BusScanned _msg_i2c_bus_scanned;
+  ws_i2c_Scanned _msg_i2c_bus_scanned;
   ws_i2c_DeviceAddOrReplace _msg_i2c_device_add_replace;
   ws_i2c_DeviceAddedOrReplaced _msg_i2c_device_added_replaced;
   ws_i2c_DeviceRemove _msg_i2c_device_remove;

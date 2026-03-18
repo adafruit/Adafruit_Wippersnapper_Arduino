@@ -29,28 +29,28 @@
 */
 class I2cHardware {
 public:
-  I2cHardware();
-  I2cHardware(const char *sda, const char *scl);
+  I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance);
   ~I2cHardware();
-  void InitBus(bool is_default, const char *sda = nullptr,
-               const char *scl = nullptr);
+  // Bus API
+  bool begin();
+  bool ScanBus(ws_i2c_Scanned *scan_results);
   TwoWire *GetBus();
   ws_i2c_BusStatus GetBusStatus();
-  bool ScanBus(ws_i2c_BusScanned *scan_results);
   void TogglePowerPin();
-  // MUX
+  // MUX API
   bool AddMuxToBus(uint32_t address_register, const char *name);
   void RemoveMux();
   bool HasMux();
   void ClearMuxChannel();
   void SelectMuxChannel(uint32_t channel);
-  bool ScanMux(ws_i2c_BusScanned *scan_results);
+  bool ScanMux(ws_i2c_Scanned *scan_results);
 
 private:
+  TwoWire *_bus = nullptr;        ///< I2C bus instance
   ws_i2c_BusStatus _bus_status;   ///< I2C bus status
-  TwoWire *_bus = nullptr;        ///< I2C bus
-  uint8_t _bus_sda;               ///< SDA pin
-  uint8_t _bus_scl;               ///< SCL pin
+  uint8_t _sda;                   ///< SDA pin
+  uint8_t _scl;                   ///< SCL pin
+  uint8_t _instance;              ///< I2C bus instance number (for hardware with multiple I2C buses)
   bool _has_mux;                  ///< Is a MUX present on the bus?
   uint32_t _mux_address_register; ///< I2C address for the MUX
   int _mux_max_channels;          ///< Maximum possible number of MUX channels

@@ -644,7 +644,7 @@ bool I2cController::Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg) {
       // Case 2: Is the I2C device a MUX?
       if (msg->device_description.device_address ==
           msg->device_description.mux_address) {
-        ws_i2c_BusScanned scan_results;
+        ws_i2c_Scanned scan_results;
         _i2c_bus_default->ScanMux(&scan_results);
         for (int i = 0; i < scan_results.bus_found_devices_count; i++) {
           // Select the channel and remove the device
@@ -707,7 +707,7 @@ bool I2cController::InitMux(const char *name, uint32_t address,
 */
 bool I2cController::Handle_I2cBusScan(ws_i2c_Scan *msg) {
   _i2c_model->ClearI2cBusScanned();
-  ws_i2c_BusScanned *scan_results = _i2c_model->GetI2cBusScannedMsg();
+  ws_i2c_Scanned *scan_results = _i2c_model->GetI2cBusScannedMsg();
 
   bool scan_success = true;
   // Case 1: Scan the default I2C bus
