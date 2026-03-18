@@ -35,6 +35,8 @@ public:
   bool begin();
   bool ScanBus(ws_i2c_Scanned *scan_results);
   TwoWire *GetBus();
+  uint8_t getSDA() { return _sda; }
+  uint8_t getSCL() { return _scl; }
   ws_i2c_BusStatus GetBusStatus();
   void TogglePowerPin();
   // MUX API

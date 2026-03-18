@@ -458,10 +458,8 @@ I2cController::~I2cController() {
 
   if (_i2c_output_model)
     delete _i2c_output_model;
-
-  if (_i2c_bus_default)
-    delete _i2c_bus_default;
 }
+
 
 /*!
     @brief  Routes messages using the i2c.proto API to the
@@ -708,87 +706,80 @@ bool I2cController::InitMux(const char *name, uint32_t address,
 bool I2cController::Handle_I2cBusScan(ws_i2c_Scan *msg) {
   _i2c_model->ClearI2cBusScanned();
   ws_i2c_Scanned *scan_results = _i2c_model->GetI2cBusScannedMsg();
-
   bool scan_success = true;
-  // Case 1: Scan the default I2C bus
-  if (msg->scan_default_bus) {
-    // Was the default bus initialized correctly and ready to scan?
-    WS_DEBUG_PRINT("Bus State: ");
-    WS_DEBUG_PRINTLNVAR(_i2c_bus_default->GetBusStatus());
-    WS_DEBUG_PRINTLNVAR(IsBusStatusOK());
-    if (IsBusStatusOK()) {
-      if (!_i2c_bus_default->ScanBus(scan_results)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan default I2C bus!");
-        scan_success = false;
-      }
-    } else {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Default I2C bus state is stuck, please "
-                       "reset the board!");
+
+  // TODO: We can probably refactor this function to share it with Handle_I2cDeviceAddOrReplace since we'll need to do similar checks for bus initialization and scanning when adding a new device
+  // Check if we have already constructed this bus and can access it directly
+  bool found_bus = false;
+  I2cHardware *bus_to_scan = nullptr;
+  for (I2cHardware *bus : _i2c_buses) {
+    // Is bus null?
+    if (bus == nullptr)
+        continue;
+
+    // Do the pins match whats in the message?
+    if (msg->pin_scl == (uint32_t)bus->getSCL() && msg->pin_sda == (uint32_t)bus->getSDA()) {
+      found_bus = true;
+      bus_to_scan = bus;
+      break;
+    }
+  }
+
+  // If we didn't find the i2c bus, we need to initialize it before we can scan
+  if (!found_bus) {
+    WS_DEBUG_PRINTLN("[i2c] Initializing new I2C bus for scan...");
+    I2cHardware *new_bus = new I2cHardware(msg->pin_scl, msg->pin_sda);
+    // Attempt to initialize the bus and check if it's ready before adding to our list of buses
+    if (!new_bus->begin()) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus for scanning!");
+      // TODO: Publish ws_i2c_BusStatus, ws_i2c_BusStatus_BS_ERROR_WIRING, back to IO here and fail out
+       return false;
+    }
+    bus_to_scan = new_bus;
+    _i2c_buses.push_back(new_bus);
+    }
+
+  // We have the bus, now, is a MUX attached?
+  if (bus_to_scan->HasMux()) {
+    WS_DEBUG_PRINTLN("[i2c] Detected MUX on bus, scanning MUX channels...");
+    if (!bus_to_scan->ScanMux(scan_results)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C MUX on bus!");
+      scan_success = false;
+    }
+  } else {
+    WS_DEBUG_PRINTLN("[i2c] No MUX detected on bus, scanning bus directly...");
+    if (!bus_to_scan->ScanBus(scan_results)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C bus!");
       scan_success = false;
     }
   }
 
-  // Case 2: Optionally scan the alternative I2C bus
-  if (msg->scan_alt_bus) {
-    // Is the alt bus initialized?
-    if (_i2c_bus_alt == nullptr) {
-      _i2c_bus_alt = new I2cHardware(msg->alt_bus_descriptor.bus_scl,
-                                     msg->alt_bus_descriptor.bus_sda);
-      // Was the default bus initialized correctly and ready to scan?
-      if (IsBusStatusOK(true)) {
-        if (!_i2c_bus_alt->ScanBus(scan_results)) {
-          WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan alt. I2C bus!");
-          scan_success = false;
-        }
-      } else {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: alt. I2C bus state is stuck, please "
-                         "reset the board!");
-        scan_success = false;
-      }
-    }
+  if (!scan_success) {
+    // TODO: Set the response's bus status to match getbusstatus and publish back out to IO here!
+    return false;
   }
 
-  // Case 3: Optionally scan MUX attached to the default bus
-  if (msg->scan_default_bus_mux) {
-    if (_i2c_bus_default->HasMux()) {
-      if (!_i2c_bus_default->ScanMux(scan_results)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C MUX on default bus!");
-        scan_success = false;
-      }
-    }
-  }
-
-  // Case 4: Optionally scan MUX attached to the alt. bus
-  if (msg->scan_alt_bus) {
-    if (_i2c_bus_alt->HasMux()) {
-      if (!_i2c_bus_alt->ScanMux(scan_results)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C MUX on alt. bus!");
-        scan_success = false;
-      }
-    }
-  }
 
   // Printout content of scan_results
   WS_DEBUG_PRINT("[i2c] Scan found ");
-  WS_DEBUG_PRINTVAR(scan_results->bus_found_devices_count);
+  WS_DEBUG_PRINTVAR(scan_results->found_devices_count);
   WS_DEBUG_PRINTLN(" devices.");
-  for (int i = 0; i < scan_results->bus_found_devices_count; i++) {
+  for (int i = 0; i < scan_results->found_devices_count; i++) {
     WS_DEBUG_PRINTLNVAR(i);
     WS_DEBUG_PRINT("Address: ");
-    WS_DEBUG_PRINTHEX(scan_results->bus_found_devices[i].device_address);
+    WS_DEBUG_PRINTHEX(scan_results->found_devices[i].device_address);
     WS_DEBUG_PRINTLN("");
     WS_DEBUG_PRINT("SCL: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->bus_found_devices[i].bus_scl);
+    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].bus_scl);
     WS_DEBUG_PRINT("SDA: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->bus_found_devices[i].bus_sda);
+    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].bus_sda);
     WS_DEBUG_PRINT("MUX Address: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->bus_found_devices[i].mux_address);
+    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].mux_address);
     WS_DEBUG_PRINT("MUX Channel: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->bus_found_devices[i].mux_channel);
+    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].mux_channel);
   }
 
-  // TODO: Encode and publish out to IO!
-  // TODO: Take scan_success into account here
+  // TODO: Encode Take the scan_results and publish back out to IO here!
   return true;
 }
 
