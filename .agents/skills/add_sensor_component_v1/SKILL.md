@@ -21,6 +21,16 @@ The user will supply a sensor name (e.g. "TMP119"). Your job is to research the 
 the right Adafruit Arduino library, find the closest existing driver as a template, and then walk
 through every file change needed.
 
+### Naming convention
+
+Two naming styles are used throughout — keep them consistent:
+
+- **PascalCase** for C++ identifiers: class name `WipperSnapper_I2C_Driver_TMP119`, file name
+  `WipperSnapper_I2C_Driver_TMP119.h`, member pointer `_tmp119`, include guard `_TMP119_H`
+- **lowercase** for the component folder name and the `strcmp` device name string: `tmp119`
+
+Decide on the canonical name early (Step 0) and use it everywhere.
+
 > **Proto files are off-limits.** Contributors never touch `.proto` files — only Adafruit staff
 > modify those. The existing `SensorType` enum already covers all common readings.
 
@@ -57,28 +67,31 @@ Before writing any code, gather this information:
 These are the valid values for `subcomponents` in `definition.json` and map 1:1 to `getEvent*()`
 methods in the base driver class:
 
-| Subcomponent | getEvent method | SI unit |
-|---|---|---|
-| `ambient-temp` | `getEventAmbientTemp` | °C |
-| `ambient-temp-fahrenheit` | `getEventAmbientTempF` | °F |
-| `humidity` | `getEventRelativeHumidity` | %RH |
-| `pressure` | `getEventPressure` | hPa |
-| `altitude` | `getEventAltitude` | m |
-| `co2` | `getEventCO2` | ppm |
-| `eco2` | `getEventECO2` | ppm |
-| `tvoc` | `getEventTVOC` | ppb |
-| `gas-resistance` | `getEventGasResistance` | Ω |
-| `light` | `getEventLight` | lux |
-| `proximity` | `getEventProximity` | unitless |
-| `voltage` | `getEventVoltage` | V |
-| `current` | `getEventCurrent` | A |
-| `raw` | `getEventRaw` | unitless |
-| `pm10-std` | `getEventPM10_STD` | µg/m³ |
-| `pm25-std` | `getEventPM25_STD` | µg/m³ |
-| `pm100-std` | `getEventPM100_STD` | µg/m³ |
-| `unitless-percent` | `getEventUnitlessPercent` | % |
-| `object-temp` | `getEventObjectTemp` | °C |
-| `object-temp-fahrenheit` | `getEventObjectTempF` | °F |
+| Subcomponent | getEvent method | `sensors_event_t` field | SI unit |
+|---|---|---|---|
+| `ambient-temp` | `getEventAmbientTemp` | `.temperature` | °C |
+| `ambient-temp-fahrenheit` | `getEventAmbientTempF` | `.temperature` | °F |
+| `humidity` | `getEventRelativeHumidity` | `.relative_humidity` | %RH |
+| `pressure` | `getEventPressure` | `.pressure` | hPa |
+| `altitude` | `getEventAltitude` | `.altitude` | m |
+| `co2` | `getEventCO2` | `.CO2` | ppm |
+| `eco2` | `getEventECO2` | `.eCO2` | ppm |
+| `tvoc` | `getEventTVOC` | `.tvoc` | ppb |
+| `gas-resistance` | `getEventGasResistance` | `.gas_resistance` | Ω |
+| `light` | `getEventLight` | `.light` | lux |
+| `proximity` | `getEventProximity` | `.data[0]` | unitless |
+| `voltage` | `getEventVoltage` | `.voltage` | V |
+| `current` | `getEventCurrent` | `.current` | A |
+| `raw` | `getEventRaw` | `.data[0]` | unitless |
+| `pm10-std` | `getEventPM10_STD` | `.data[0]` | µg/m³ |
+| `pm25-std` | `getEventPM25_STD` | `.data[0]` | µg/m³ |
+| `pm100-std` | `getEventPM100_STD` | `.data[0]` | µg/m³ |
+| `unitless-percent` | `getEventUnitlessPercent` | `.data[0]` | % |
+| `object-temp` | `getEventObjectTemp` | `.temperature` | °C |
+| `object-temp-fahrenheit` | `getEventObjectTempF` | `.temperature` | °F |
+
+When using raw reads (not Unified Sensor `getEvent()`), assign to the correct field above, e.g.
+`tempEvent->temperature = _sensor->readTempC();`
 
 Temperature sensors almost always include both `ambient-temp` and `ambient-temp-fahrenheit`.
 
@@ -162,7 +175,12 @@ bool begin() {
 
 ### Then: Write the driver using this template
 
-This is a header-only class. Use the closest existing driver as a template. The pattern is:
+This is a header-only class. Use the closest existing driver as a template, but **do not blindly
+copy** — older drivers may lack the caching and explicit-defaults patterns described above.
+Always apply the patterns from this skill even if the closest driver doesn't use them.
+
+> **Note:** Some existing drivers (e.g. TMP117, MCP9808) use simpler patterns that predate
+> current best practices. Follow this template, not those older drivers.
 
 ```cpp
 /*!
@@ -192,60 +210,60 @@ This is a header-only class. Use the closest existing driver as a template. The 
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_<SENSOR> : public WipperSnapper_I2C_Driver {
 public:
-  /*******************************************************************************/
-  /*!
-      @brief    Constructor for a <SENSOR> sensor.
-      @param    i2c
-                The I2C interface.
-      @param    sensorAddress
-                7-bit device address.
-  */
-  /*******************************************************************************/
   WipperSnapper_I2C_Driver_<SENSOR>(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Destructor for a <SENSOR> sensor.
-  */
-  /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_<SENSOR>() {
-    delete _<sensor_ptr>;
-  }
+  ~WipperSnapper_I2C_Driver_<SENSOR>() { delete _<sensor_ptr>; }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Initializes the <SENSOR> sensor and begins I2C.
-      @returns  True if initialized successfully, False otherwise.
-  */
-  /*******************************************************************************/
   bool begin() {
     _<sensor_ptr> = new <Adafruit_Class>();
-    return _<sensor_ptr>->begin((uint8_t)_sensorAddress, _i2c);
+    if (!_<sensor_ptr>->begin((uint8_t)_sensorAddress, _i2c))
+      return false;
+    // Pin library defaults explicitly (found by reading library _init/begin):
+    // _<sensor_ptr>->setMeasurementMode(...);
+    // _<sensor_ptr>->setAveragedSampleCount(...);
+    return true;
   }
 
   // --- One getEvent*() per sensor reading type ---
+  // All go through _readSensor() for caching
 
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the <SENSOR>'s current temperature.
-      @param    tempEvent
-                Pointer to an Adafruit_Sensor event.
-      @returns  True if the temperature was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // Use the library's getEvent() if it fills sensors_event_t directly,
-    // otherwise set tempEvent->temperature = _<sensor_ptr>->readTempC();
-    return _<sensor_ptr>->getEvent(tempEvent);
+    if (!_readSensor())
+      return false;
+    *tempEvent = _cachedTemp;
+    return true;
   }
 
 protected:
   <Adafruit_Class> *_<sensor_ptr>; ///< Pointer to <SENSOR> sensor object
+
+  // Cached readings and time guard
+  sensors_event_t _cachedTemp = {0};
+  unsigned long _lastRead = 0;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads sensor data, with 1-second cache to avoid redundant
+                I2C reads when multiple getEvent*() calls occur per cycle
+                (e.g. °C then °F, or temp then humidity). The calling order
+                of getEvent methods is not guaranteed, so every method must
+                go through this function.
+      @returns  True if cached data is available or a fresh read succeeded.
+  */
+  /*******************************************************************************/
+  bool _readSensor() {
+    if (_lastRead != 0 && millis() - _lastRead < 1000)
+      return true; // use cached values
+    // Do actual I2C read — adapt to library API:
+    if (!_<sensor_ptr>->getEvent(&_cachedTemp))
+      return false;
+    _lastRead = millis();
+    return true;
+  }
 };
 
 #endif // WipperSnapper_I2C_Driver_<SENSOR>_H
@@ -402,16 +420,13 @@ This step uses a separate repository: `https://github.com/adafruit/Wippersnapper
 
 ### 5a. Fork and clone
 
-If the user needs to fork:
+Clone inside the firmware repo (it's in `.gitignore`):
 ```bash
-gh repo fork adafruit/Wippersnapper_Components --clone=false --remote-name origin
-gh repo clone <username>/Wippersnapper_Components -- Wippersnapper_Components
-```
-
-If they want to use a specific GitHub account (e.g. `tyeth-ai-assisted`), switch with:
-```bash
+# If using a specific GitHub account:
 gh auth switch --user <username>
-```
+
+# Fork and clone into the firmware repo root:
+gh repo fork adafruit/Wippersnapper_Components --clone=true --remote-name upstream -- Wippersnapper_Components
 
 ### 5b. Create component folder
 
