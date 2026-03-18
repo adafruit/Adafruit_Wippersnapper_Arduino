@@ -1,0 +1,116 @@
+/*!
+ * @file WipperSnapper_I2C_Driver_TMP119.h
+ *
+ * Device driver for the TMP119 high-precision temperature sensor.
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Tyeth Gundry 2026 for Adafruit Industries.
+ *
+ * MIT license, all text here must be included in any redistribution.
+ *
+ */
+#ifndef WipperSnapper_I2C_Driver_TMP119_H
+#define WipperSnapper_I2C_Driver_TMP119_H
+
+#include "WipperSnapper_I2C_Driver.h"
+#include <Adafruit_TMP119.h>
+
+/**************************************************************************/
+/*!
+    @brief  Class that provides a driver interface for a TMP119 sensor.
+*/
+/**************************************************************************/
+class WipperSnapper_I2C_Driver_TMP119 : public WipperSnapper_I2C_Driver {
+public:
+  /*******************************************************************************/
+  /*!
+      @brief    Constructor for a TMP119 sensor.
+      @param    i2c
+                The I2C interface.
+      @param    sensorAddress
+                7-bit device address.
+  */
+  /*******************************************************************************/
+  WipperSnapper_I2C_Driver_TMP119(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Destructor for a TMP119 sensor.
+  */
+  /*******************************************************************************/
+  ~WipperSnapper_I2C_Driver_TMP119() {
+    // Called when a TMP119 component is deleted.
+    delete _tmp119;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the TMP119 sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() {
+    _tmp119 = new Adafruit_TMP119();
+    if (!_tmp119->begin((uint8_t)_sensorAddress, _i2c))
+      return false;
+
+    // Explicitly configure measurement mode and averaging per library defaults
+    // to ensure WipperSnapper behavior is independent of library updates
+    _tmp119->setMeasurementMode(TMP117_MODE_CONTINUOUS);
+    _tmp119->setAveragedSampleCount(TMP117_AVERAGE_8X);
+
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the TMP119's current temperature in Celsius.
+      @param    tempEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the temperature was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+    if (!_readSensor())
+      return false;
+    *tempEvent = _cachedTemp;
+    return true;
+  }
+
+protected:
+  Adafruit_TMP119 *_tmp119; ///< Pointer to TMP119 temperature sensor object
+
+  // Cached readings and time guard
+  sensors_event_t _cachedTemp = {0};
+  unsigned long _lastRead = 0;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads sensor data, with 1-second cache to avoid redundant
+                I2C reads when multiple getEvent*() calls occur per cycle
+                (e.g. °C then °F). The calling order of getEvent methods is not
+                guaranteed, so every method must go through this function.
+      @returns  True if cached data is available or a fresh read succeeded.
+  */
+  /*******************************************************************************/
+  bool _readSensor() {
+    if (_lastRead != 0 && millis() - _lastRead < 1000)
+      return true; // use cached values
+
+    if (!_tmp119->getEvent(&_cachedTemp))
+      return false;
+
+    _lastRead = millis();
+    return true;
+  }
+};
+
+#endif // WipperSnapper_I2C_Driver_TMP119_H
