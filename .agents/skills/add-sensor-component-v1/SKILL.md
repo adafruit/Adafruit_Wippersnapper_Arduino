@@ -515,8 +515,19 @@ You can usually grab the product image url details from the Adafruit product API
 ---
 
 ## Step 6 — Build and Verify
+Check if windows powershell/cmd first by testing `echo $env:USERNAME %WINDIR%`
 
+windows powershell users:
+```powershell
+. "$env:userprofile/.platformio/penv/Scripts/activate.ps1"
+pio run -e adafruit_feather_esp32s3
+```
+
+bash/other users:
 ```bash
+# often the env needs sourcing first
+. ~/.platformio/penv/bin/activate.sh
+
 # PlatformIO build for a common target
 pio run -e adafruit_feather_esp32s3
 ```
@@ -542,7 +553,7 @@ Ensure all doxygen style is consistent with existing drivers.
 
 ## Step 8 — Create Pull Requests
 
-Two separate PRs are needed:
+Two separate PRs are needed (mention the model used for the PRs in the description):
 
 ### PR 1: Wippersnapper_Components
 - Branch from main, add the component folder with `definition.json` and `image`
@@ -568,7 +579,7 @@ Two separate PRs are needed:
 
 ---
 
-## Worked Example: TMP119
+## Worked (abridged) Example: TMP119 - Do not follow this example step-by-step, it's only an abbreviated demonstration of the above process
 
 TMP119: TI high-accuracy temperature sensor, TMP117 variant (chip ID 0x2117 vs 0x0117).
 
@@ -583,6 +594,7 @@ TMP119: TI high-accuracy temperature sensor, TMP117 variant (chip ID 0x2117 vs 0
 - **Library:** `Adafruit_TMP117` (contains `Adafruit_TMP119` class)
 - **Product URL:** `https://www.adafruit.com/product/6482`
 - **Docs URL:** `https://learn.adafruit.com/adafruit-tmp119-high-precision-temperature-sensor`
+- **Markdown learn guide:** `https://learn.adafruit.com/adafruit-tmp119-high-precision-temperature-sensor.md?view=all` (mentions `## Arduino` section with driver repo link `https://github.com/adafruit/Adafruit_TMP117` and `## Example Code` using `https://github.com/adafruit/Adafruit_TMP117/blob/master/examples/TMP119_basic_test/TMP119_basic_test.ino`.)
 - **I2C addresses:** 0x48, 0x49, 0x4A, 0x4B (same as TMP117, datasheet Table 7-1)
 - **Measures:** Temperature only → subcomponents: `ambient-temp`, `ambient-temp-fahrenheit`
 - **Closest driver:** `WipperSnapper_I2C_Driver_TMP117.h`
