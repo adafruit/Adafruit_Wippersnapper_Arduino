@@ -85,9 +85,9 @@ Before writing any code, gather this information:
 
 | What | Where to look |
 |------|---------------|
-| Product page | Search the web for "adafruit <SENSOR>" to find the product page. The product page links to the learn guide. This is the fastest route to all other info. |
-| Learn guide | **Always read the learn guide before writing any code.** Fetch the `.md?view=all` version (e.g. `https://learn.adafruit.com/<guide-slug>/overview` goes to `https://learn.adafruit.com/<guide-slug>.md?view=all`). The Arduino section names the exact library to use. Do NOT skip this step even if you think you recognise a sub-component (e.g. a board with an SHT41 onboard may have its own dedicated library like `Adafruit_STCC4` — you won't know without reading the guide). |
-| Adafruit Arduino library | Named in the learn guide. Or: `gh search repos "<SENSOR>" --owner adafruit`. If no dedicated library, check related chips (e.g. TMP119 lives inside `Adafruit_TMP117`). Try partial matches like `TMP11` if exact fails. |
+| Product page | Search the web for "adafruit <SENSOR>" to find the product page. The product page (https://www.adafruit.com/product/<PRODUCT_ID>) html data has links to the learn guide (do not use the API or guess urls). This is the fastest route to all other info. |
+| Learn guide | **Always read the learn guide before writing any code.** Fetch the text view `.md?view=all` version (e.g. `https://learn.adafruit.com/<guide-slug>/overview` goes to `https://learn.adafruit.com/<guide-slug>.md?view=all`). The Arduino section (`## Arduino`) names the exact library to use. Do NOT skip this step even if you think you recognise a sub-component (e.g. a board with an SHT41 onboard may have its own dedicated library like `Adafruit_STCC4` — you won't know without reading the guide). There is also a subsequent section for `## Example Code` beneath the arduino section showing a link to the basic example sketch/code. |
+| Adafruit Arduino library | Named in the learn guide. Or: `gh search repos "<SENSOR>" --owner adafruit`. If no dedicated library from adafruit, check related chips (e.g. TMP119 lives inside `Adafruit_TMP117`). Try partial matches like `TMP11` if exact fails. Fall back to 3rd party or ask user. |
 | Library API | Read the library header on GitHub — find `begin()` signature and sensor read methods (`getEvent`, `readTempC`, etc.) |
 | I2C addresses | Sensor datasheet or Adafruit product page or learn guide or driver. Check https://learn.adafruit.com/i2c-addresses/the-list |
 | What it measures | Datasheet — map each reading to a subcomponent type (see table below) |
@@ -587,11 +587,11 @@ TMP119: TI high-accuracy temperature sensor, TMP117 variant (chip ID 0x2117 vs 0
 
 ### Step 0 — Research
 
-- **Search:** Web search "adafruit TMP119" → product page https://www.adafruit.com/product/6482
+- **Search Process:** Web search "adafruit TMP119" → product page https://www.adafruit.com/product/6482
   which links to the learn guide https://learn.adafruit.com/adafruit-tmp119-high-precision-temperature-sensor
   which shows the Arduino library is `Adafruit_TMP117`. Alternatively,
   `gh search repos "Adafruit TMP119" --owner adafruit` only finds the PCB repo — no dedicated
-  library. Trying `TMP11` or checking `Adafruit_TMP117` repo contents reveals
+  library. Trying `TMP11` finds arduino lib, or checking `Adafruit_TMP117` repo contents reveals
   `Adafruit_TMP119.h/.cpp` — TMP119 inherits from TMP117.
 - **Library:** `Adafruit_TMP117` (contains `Adafruit_TMP119` class)
 - **Product URL:** `https://www.adafruit.com/product/6482`
