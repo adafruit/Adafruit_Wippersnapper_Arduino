@@ -787,7 +787,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   I2cHardware *hw_bus = findOrCreateBus(device_descriptor.pin_scl, device_descriptor.pin_sda);
   if (hw_bus == nullptr) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus specified by device descriptor!");
-    // TODO: Publish back out to IO here with error status from bus initialization attempt
+    publishDeviceAddedOrReplaced(device_descriptor, nullptr, ws_i2c_DeviceStatus_DS_FAIL_INIT);
     return false;
   }
 
