@@ -553,18 +553,14 @@ bool I2cController::RemoveDriver(uint32_t address, uint32_t mux_channel) {
 
 /*!
     @brief    Returns if the I2C bus has been created successfully.
-    @param    is_alt_bus
-              True if the alt. I2C bus is being queried, False otherwise.
+    @param    bus
+              Pointer to the I2C hardware bus to check.
     @returns  True if the I2C bus has already been created, False otherwise.
 */
-bool I2cController::IsBusStatusOK(bool is_alt_bus) {
-  bool is_ok = false;
-  if (is_alt_bus) {
-    is_ok = (_i2c_bus_alt->GetBusStatus() == ws_i2c_BusStatus_BS_SUCCESS);
-  } else {
-    is_ok = (_i2c_bus_default->GetBusStatus() == ws_i2c_BusStatus_BS_SUCCESS);
-  }
-  return is_ok;
+bool I2cController::IsBusStatusOK(I2cHardware *bus) {
+  if (bus == nullptr)
+    return false;
+  return (bus->GetBusStatus() == ws_i2c_BusStatus_BS_SUCCESS);
 }
 
 /*!
@@ -848,36 +844,30 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   // but we check here since it's a property of the driver, not the bus)
   bool use_gps_passthrough = msg->has_gps_config;
 
-  // Handle Replace: attempt to remove any existing driver at this address/mux_channel.
-  // Result ignored - if no driver exists, RemoveDriver returns false and we proceed to add.
+  // Attempt to remove any existing driver at this address (or mux_channel).
   RemoveDriver(device_descriptor.device_address, device_descriptor.mux_channel);
 
-
-  // Does the device's descriptor specify a different i2c bus?
-  // (pin_scl/pin_sda != 0 means non-default bus)
-  if (device_descriptor.pin_scl != 0 && device_descriptor.pin_sda != 0) {
-    WS_DEBUG_PRINTLN("[i2c] Non-default I2C bus specified!");
-    if (_i2c_bus_alt == nullptr) {
-      WS_DEBUG_PRINTLN("[i2c] Initializing alternative i2c bus...");
-      _i2c_bus_alt =
-          new I2cHardware(device_descriptor.pin_sda, device_descriptor.pin_scl);
-    }
-    use_alt_bus = true;
+  // Attempt to find or create the I2C bus specified by the device descriptor
+  I2cHardware *bus = findOrCreateBus(device_descriptor.pin_scl, device_descriptor.pin_sda);
+  if (bus == nullptr) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus specified by device descriptor!");
+    // TODO: Publish back out to IO here with error status from bus initialization attempt
+    return false;
   }
 
   // Before we do anything on the bus - was the bus initialized correctly?
-  if (!IsBusStatusOK(use_alt_bus)) {
-    WS_DEBUG_PRINTLN(
-        "[i2c] I2C bus is stuck or not operational, reset the board!");
+  if (!IsBusStatusOK(bus)) {
+    WS_DEBUG_PRINTLN("[i2c] Bus is stuck or not operational, reset the board!");
     if (Ws._sdCardV2->isModeOffline()) {
       Ws.haltErrorV2(" ", WS_LED_STATUS_ERROR_RUNTIME,
                      false); // doesn't return, halts
     }
+    // Publish back out to IO with error status from bus status check
     if (!publishDeviceAddedOrReplaced(device_descriptor, device_status)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish message to IO!");
       return false;
     }
-    return true;
+    return false;
   }
 
   // I2C MUX (Case #1) - We are creating an I2C mux via the

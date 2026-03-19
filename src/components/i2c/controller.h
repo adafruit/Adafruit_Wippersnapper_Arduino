@@ -103,7 +103,7 @@ public:
       const ws_i2c_DeviceStatus &device_status);
   bool publishScan();
   // Helpers //
-  bool IsBusStatusOK(bool is_alt_bus = false);
+  bool IsBusStatusOK(I2cHardware *bus);
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
   bool RemoveDriver(uint32_t address,
