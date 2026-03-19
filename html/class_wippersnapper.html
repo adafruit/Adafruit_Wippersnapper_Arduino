@@ -223,6 +223,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memdesc:a60b5ba446db929076121abed29dd294d"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if status LED is using the built-in LED. <br /></td></tr>
 <tr class="separator:a60b5ba446db929076121abed29dd294d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b97878e67ff8113c43164d71c132ccf"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a1b97878e67ff8113c43164d71c132ccf">status_pixel_brightness</a></td></tr>
+<tr class="memdesc:a1b97878e67ff8113c43164d71c132ccf"><td class="mdescLeft">&#160;</td><td class="mdescRight">(from 0.0 to 1.0)  <a href="#a1b97878e67ff8113c43164d71c132ccf">More...</a><br /></td></tr>
 <tr class="separator:a1b97878e67ff8113c43164d71c132ccf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab71c06b6b7776879be79d88bf689d815"><td class="memItemLeft" align="right" valign="top"><a id="ab71c06b6b7776879be79d88bf689d815"></a>
 std::vector&lt; <a class="el" href="class_wipper_snapper___component___i2_c.html">WipperSnapper_Component_I2C</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ab71c06b6b7776879be79d88bf689d815">i2cComponents</a></td></tr>
@@ -240,10 +241,10 @@ std::vector&lt; <a class="el" href="class_wipper_snapper___component___i2_c.html
 <tr class="memitem:a486962cdb0c74670b8888497695b3987"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a486962cdb0c74670b8888497695b3987">_isI2CPort1Init</a></td></tr>
 <tr class="memdesc:a486962cdb0c74670b8888497695b3987"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if I2C port 1 has been initialized, False otherwise.  <a href="#a486962cdb0c74670b8888497695b3987">More...</a><br /></td></tr>
 <tr class="separator:a486962cdb0c74670b8888497695b3987"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6da81ac8a04a83b4d6594bca2f13c02e"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a6da81ac8a04a83b4d6594bca2f13c02e">_buffer</a> [<a class="el" href="_wippersnapper_8h.html#a07b8444860c318fdff531a3d0c4f2e4a">WS_MQTT_MAX_PAYLOAD_SIZE</a>]</td></tr>
-<tr class="separator:a6da81ac8a04a83b4d6594bca2f13c02e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa2457dd50c526cbc0f207c32f70b3e3"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aaa2457dd50c526cbc0f207c32f70b3e3">_buffer_outgoing</a> [<a class="el" href="_wippersnapper_8h.html#a07b8444860c318fdff531a3d0c4f2e4a">WS_MQTT_MAX_PAYLOAD_SIZE</a>]</td></tr>
-<tr class="separator:aaa2457dd50c526cbc0f207c32f70b3e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c1be6e9bf8436075d7eeae718483d2c"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9c1be6e9bf8436075d7eeae718483d2c">_buffer</a> [512]</td></tr>
+<tr class="separator:a9c1be6e9bf8436075d7eeae718483d2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5ef5f6c45fa2fec90ffe8edd7dc7110"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ac5ef5f6c45fa2fec90ffe8edd7dc7110">_buffer_outgoing</a> [512]</td></tr>
+<tr class="separator:ac5ef5f6c45fa2fec90ffe8edd7dc7110"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2b29424014f638d87eb6ddd7c56a8d2"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#af2b29424014f638d87eb6ddd7c56a8d2">bufSize</a></td></tr>
 <tr class="separator:af2b29424014f638d87eb6ddd7c56a8d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d6352dd0a8b5045665dedeafd13c2b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_wippersnapper_8h.html#ae5fa98c35b5a16565b5b06cd75008b2d">ws_board_status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a0d6352dd0a8b5045665dedeafd13c2b2">_boardStatus</a></td></tr>
@@ -1086,7 +1087,9 @@ Protected Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      <a class="code" href="_wippersnapper___status_l_e_d_8h.html#aafd035c81983f8b3976a192e9305e44d">STATUS_PIXEL_BRIGHTNESS_DEFAULT</a></div></div><!-- fragment --><p>Global status pixel's brightness (from 0.0 to 1.0) </p>
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">       0.5</div></div><!-- fragment -->
+<p>(from 0.0 to 1.0) </p>
+<p>Global status pixel's brightness </p>
 
 </div>
 </div>
@@ -1154,14 +1157,14 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a6da81ac8a04a83b4d6594bca2f13c02e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6da81ac8a04a83b4d6594bca2f13c02e">&#9670;&nbsp;</a></span>_buffer</h2>
+<a id="a9c1be6e9bf8436075d7eeae718483d2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c1be6e9bf8436075d7eeae718483d2c">&#9670;&nbsp;</a></span>_buffer</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t Wippersnapper::_buffer[<a class="el" href="_wippersnapper_8h.html#a07b8444860c318fdff531a3d0c4f2e4a">WS_MQTT_MAX_PAYLOAD_SIZE</a>]</td>
+          <td class="memname">uint8_t Wippersnapper::_buffer[512]</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1169,14 +1172,14 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="aaa2457dd50c526cbc0f207c32f70b3e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaa2457dd50c526cbc0f207c32f70b3e3">&#9670;&nbsp;</a></span>_buffer_outgoing</h2>
+<a id="ac5ef5f6c45fa2fec90ffe8edd7dc7110"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac5ef5f6c45fa2fec90ffe8edd7dc7110">&#9670;&nbsp;</a></span>_buffer_outgoing</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t Wippersnapper::_buffer_outgoing[<a class="el" href="_wippersnapper_8h.html#a07b8444860c318fdff531a3d0c4f2e4a">WS_MQTT_MAX_PAYLOAD_SIZE</a>]</td>
+          <td class="memname">uint8_t Wippersnapper::_buffer_outgoing[512]</td>
         </tr>
       </table>
 </div><div class="memdoc">

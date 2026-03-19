@@ -7,6 +7,6 @@ var searchData=
   ['encodepinevent',['encodePinEvent',['../class_wippersnapper___analog_i_o.html#a0fe6e7a4508652a878ce2b2a4792d8cb',1,'Wippersnapper_AnalogIO::encodePinEvent()'],['../class_wippersnapper.html#a0ce26acc8d727adf813c4617cca91df0',1,'Wippersnapper::encodePinEvent()']]],
   ['encodepublishi2cdeviceeventmsg',['encodePublishI2CDeviceEventMsg',['../class_wipper_snapper___component___i2_c.html#a8c40ebfc762f7d8278486644708f2f00',1,'WipperSnapper_Component_I2C']]],
   ['encodepubregistrationreq',['encodePubRegistrationReq',['../class_wippersnapper.html#a1a3008c0a25fee8a47975c7b59004496',1,'Wippersnapper']]],
-  ['ensperformreading',['ensPerformReading',['../class_wipper_snapper___i2_c___driver___e_n_s160.html#a5c6720da403c5b3c47bbbd145d82e699',1,'WipperSnapper_I2C_Driver_ENS160']]],
+  ['ensperformreading',['ensPerformReading',['../class_wipper_snapper___i2_c___driver___e_n_s16x.html#a096cdca2273e06e8b67202211d21fa70',1,'WipperSnapper_I2C_Driver_ENS16x']]],
   ['errorwritehang',['errorWriteHang',['../class_wippersnapper.html#accf1a53e54aef5140f68f6511c3406fc',1,'Wippersnapper']]]
 ];
