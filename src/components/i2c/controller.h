@@ -102,7 +102,9 @@ public:
   ws_i2c_DeviceStatus InitMux(I2cHardware *bus, const char *name, uint32_t address);
   bool RemoveDriver(uint32_t address,
                     uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
-  TwoWire *GetI2cBus(bool is_alt_bus = false);
+  TwoWire *GetI2cBus(uint32_t pin_scl, uint32_t pin_sda);
+  size_t GetI2cBusCount();
+  TwoWire *GetI2cBusByIndex(size_t index);
 
 private:
   I2cHardware *findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda);

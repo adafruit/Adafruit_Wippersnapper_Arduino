@@ -1008,16 +1008,42 @@ void I2cController::ResetFlags() {
 
 
 /*!
-    @brief  Returns a pointer to the I2C bus, used by classes that require an
-            I2C bus reference (e.g. I2C drivers outside the class)
-    @param  is_alt_bus
-            True to return the alternative bus, false for the default bus.
+    @brief  Returns a pointer to the I2C bus by SCL/SDA pins.
+    @param  pin_scl
+            The SCL pin number.
+    @param  pin_sda
+            The SDA pin number.
     @returns  Pointer to the TwoWire bus, or nullptr if the bus doesn't exist.
 */
-TwoWire *I2cController::GetI2cBus(bool is_alt_bus) {
-  size_t bus_idx = is_alt_bus ? 1 : 0;
-  if (bus_idx < _i2c_buses.size() && _i2c_buses[bus_idx] != nullptr) {
-    return _i2c_buses[bus_idx]->GetBus();
+TwoWire *I2cController::GetI2cBus(uint32_t pin_scl, uint32_t pin_sda) {
+  for (I2cHardware *bus : _i2c_buses) {
+    if (bus == nullptr)
+      continue;
+    if (pin_scl == (uint32_t)bus->getSCL() &&
+        pin_sda == (uint32_t)bus->getSDA()) {
+      return bus->GetBus();
+    }
+  }
+  return nullptr;
+}
+
+/*!
+    @brief  Returns the number of I2C buses.
+    @returns  The number of I2C buses.
+*/
+size_t I2cController::GetI2cBusCount() {
+  return _i2c_buses.size();
+}
+
+/*!
+    @brief  Returns a pointer to the I2C bus by index.
+    @param  index
+            The index of the bus.
+    @returns  Pointer to the TwoWire bus, or nullptr if the index is invalid.
+*/
+TwoWire *I2cController::GetI2cBusByIndex(size_t index) {
+  if (index < _i2c_buses.size() && _i2c_buses[index] != nullptr) {
+    return _i2c_buses[index]->GetBus();
   }
   return nullptr;
 }
