@@ -338,10 +338,10 @@ void I2cModel::ClearI2cDeviceEvent() {
 
 /*!
     @brief    Sets the I2cDeviceEvent message's device description.
-    @param    bus_scl
-                The SCL bus pin string (e.g., "D5").
-    @param    bus_sda
-                The SDA bus pin string (e.g., "D4").
+    @param    pin_scl
+                The SCL pin number.
+    @param    pin_sda
+                The SDA pin number.
     @param    addr_device
                 The device address.
     @param    addr_mux
@@ -349,17 +349,14 @@ void I2cModel::ClearI2cDeviceEvent() {
     @param    mux_channel
                 The MUX channel.
 */
-void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
-                                                 const char *bus_sda,
+void I2cModel::SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
+                                                 uint32_t pin_sda,
                                                  uint32_t addr_device,
                                                  uint32_t addr_mux,
                                                  uint32_t mux_channel) {
   _msg_i2c_device_event.has_device_description = true;
-  // Convert pin strings (e.g., "D5") to uint32_t pin numbers
-  _msg_i2c_device_event.device_description.pin_scl =
-      (bus_scl && bus_scl[0] == 'D') ? (uint32_t)atoi(&bus_scl[1]) : 0;
-  _msg_i2c_device_event.device_description.pin_sda =
-      (bus_sda && bus_sda[0] == 'D') ? (uint32_t)atoi(&bus_sda[1]) : 0;
+  _msg_i2c_device_event.device_description.pin_scl = pin_scl;
+  _msg_i2c_device_event.device_description.pin_sda = pin_sda;
   _msg_i2c_device_event.device_description.device_address = addr_device;
   _msg_i2c_device_event.device_description.mux_address = addr_mux;
   _msg_i2c_device_event.device_description.mux_channel = mux_channel;

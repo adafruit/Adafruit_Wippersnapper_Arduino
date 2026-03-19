@@ -59,8 +59,8 @@ public:
   ws_i2c_D2B *GetI2cD2B();
   // DeviceEvent Message API
   void ClearI2cDeviceEvent();
-  void SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
-                                         const char *bus_sda,
+  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
+                                         uint32_t pin_sda,
                                          uint32_t addr_device,
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);

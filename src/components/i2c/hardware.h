@@ -29,7 +29,7 @@
 */
 class I2cHardware {
 public:
-  I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance);
+  I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance = 0);
   ~I2cHardware();
   // Bus API
   bool begin();

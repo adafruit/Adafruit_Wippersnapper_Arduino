@@ -100,12 +100,12 @@ public:
   // Publishing //
   bool publishDeviceAddedOrReplaced(
       const ws_i2c_DeviceDescriptor &device_descriptor,
+      I2cHardware *bus,
       const ws_i2c_DeviceStatus &device_status);
   bool publishScan();
   // Helpers //
   bool IsBusStatusOK(I2cHardware *bus);
-  bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
-  void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
+  bool InitMux(I2cHardware *bus, const char *name, uint32_t address);
   bool RemoveDriver(uint32_t address,
                     uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
   TwoWire *GetI2cBus(bool is_alt_bus = false);

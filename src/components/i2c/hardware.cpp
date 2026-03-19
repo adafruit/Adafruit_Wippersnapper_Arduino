@@ -17,7 +17,7 @@
 /*!
     @brief  Default I2C bus hardware class constructor
 */
-I2cHardware::I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance = 0) {
+I2cHardware::I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance) {
   _bus_status = ws_i2c_BusStatus_BS_UNSPECIFIED;
   _has_mux = false;
   _scl = (uint8_t)scl;
