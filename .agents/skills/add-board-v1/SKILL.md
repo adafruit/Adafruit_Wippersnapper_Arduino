@@ -2,15 +2,16 @@
 name: add-board-v1
 description: >
   Guides adding a new board (microcontroller / development board) to Adafruit IO WipperSnapper v1
-  firmware and the Wippersnapper_Boards companion definition repo. Use this skill whenever the user
-  wants to add a new board, port WipperSnapper to a new microcontroller, support a new development
-  board, add a new PlatformIO environment, create a board definition for WipperSnapper, or enable
-  WipperSnapper on a new piece of hardware — even if they just mention a board name and
-  "wippersnapper" in the same breath. Covers the full workflow: platformio.ini environment,
-  Wippersnapper_Boards.h board ID and status LED config, network interface selection, provisioning
-  method (TinyUSB vs LittleFS), Wippersnapper_Networking.h updates if needed, CI workflow matrix
-  additions, Wippersnapper_Boards repo definition.json, build verification, clang-format, and PR
-  creation for both repos.
+  firmware and the Wippersnapper_Boards companion definition repo, including adding support for
+  new WiFi coprocessors (with an existing main MCU or a new board). Use this skill whenever the
+  user wants to add a new board, port WipperSnapper to a new microcontroller, support a new
+  development board, add a new PlatformIO environment, create a board definition for
+  WipperSnapper, or enable WipperSnapper on a new piece of hardware — even if they just mention
+  a board name and "wippersnapper" in the same breath. Covers the full workflow: platformio.ini
+  environment, Wippersnapper_Boards.h board ID and status LED config, network interface selection,
+  provisioning method (TinyUSB vs LittleFS), Wippersnapper_Networking.h updates if needed, CI
+  workflow matrix additions, Wippersnapper_Boards repo definition.json, build verification,
+  clang-format, and PR creation for both repos.
 ---
 
 # Add a New Board to WipperSnapper v1
@@ -19,9 +20,15 @@ Changes span **two repositories**:
 1. **Adafruit_Wippersnapper_Arduino** — C++ firmware: PlatformIO env, board identification,
    network interface, provisioning, CI matrix
 2. **Wippersnapper_Boards** — board `definition.json` for CI build/flash tooling
+3. **Auto-config (magic config)** — for onboard components, including any non-user-facing pins
+   used by other onboard components (e.g. SPI pins for a WiFi coprocessor, I2C pins for an
+   onboard sensor)
 
-The user supplies a board name (e.g. "QT Py ESP32-C6"). Research the board, identify its MCU
-family, network capabilities, and walk through every file change.
+The user supplies a board name (e.g. "QT Py ESP32-C6"). Research the board thoroughly before
+writing any code: find the product page, documentation URLs (learn guide, wiki), associated
+schematics and pin diagrams, example sketches, and relevant datasheets (note: datasheets are
+often for the MCU/SoC rather than board-specific). Identify the MCU family, network
+capabilities, and walk through every file change.
 
 ### Key concepts
 
@@ -47,7 +54,12 @@ the skill will research these based on the board name.
 
 If Bash is available, quickly check connectivity to adapt your approach. **If Bash is not
 available or these commands fail, skip this section and proceed — use WebFetch/WebSearch for
-research, and do the code changes with the file tools you have. The user can handle git/PRs.**
+research, and do the code changes with the file tools you have. The user can handle git/PRs.
+NOTE: The Wippersnapper_Boards repo is git-ignored in the firmware repo. Do not leave board
+definition files as untracked files in the firmware tree. If you cannot push to the boards
+repo (e.g. running in a GitHub agent session without push access) AND cannot create a fork,
+include the full content of the board definition files (definition.json etc.) in the PR
+summary/response so the user can file them manually.**
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}" https://www.bbc.com       # general web access
@@ -96,6 +108,25 @@ a shared PlatformIO config section and an associated network interface:
 
 **Special case — Fruit Jam RP2350:** Uses `common:arduinopico` platform but the AIRLIFT
 network interface (it has an onboard ESP32-C6 co-processor accessed via SPI/NINA-FW).
+
+### Network Interface Decision Tree
+
+The wireless interface type is the key distinguisher when selecting a network driver:
+
+- **Built-in WiFi (main MCU has WiFi)** — e.g. ESP32, ESP32-S2/S3/C3/C6/C5, Pico W (CYW43).
+  Use the existing driver for that platform; no new network interface needed.
+- **USE_AIRLIFT** — external ESP32 or ESP32-C6 co-processor via SPI running Adafruit's
+  Nina-FW (AirLift firmware). Used by SAMD boards (Metro M4 AirLift, PyPortal) and some
+  RP2xxx boards (Fruit Jam with onboard ESP32-C6). Uses `Wippersnapper_AIRLIFT`.
+- **WIFI_NINA** — external ESP32 co-processor running Arduino's official Nina-FW (NOT
+  Adafruit's). Used by Arduino MKR WiFi 1010, Nano 33 IoT. Uses the WiFiNINA library.
+  **Different from AirLift** despite similar hardware.
+- **CYW43** — Infineon/Cypress CYW43439 or CYW43455 WiFi chip. Used by most RP2xxx boards
+  (Pico W, Pico 2W). Uses the built-in WiFi stack via the arduino-pico core
+  (`ws_networking_pico`).
+- **ESP_HOSTED** — ESP32 as a network co-processor to a non-ESP32 main MCU via SPI/SDIO.
+  Newer pattern used by boards like ESP32-P4 with ESP32-C5/C6/S3 as the WiFi co-processor.
+  May require a new network interface driver if not yet supported.
 
 ## Reference: Provisioning Methods
 
@@ -185,9 +216,15 @@ Each block must define:
 #define USE_PSRAM                      // only if the board has PSRAM
 ```
 
-**BOARD_ID naming convention:** lowercase kebab-case, based on the board name as shown in the
-Adafruit IO UI. Examples from existing boards:
-- `"feather-esp32s3-tft"`, `"qtpy-esp32c3"`, `"rpi-pico-w"`, `"fruitjam"`, `"magtag"`
+**BOARD_ID naming convention:**
+- Lowercase kebab-case, based on the board name as shown in the Adafruit IO UI
+- Has a maximum length enforced by the Wippersnapper_Boards repo's PR CI validation — check the
+  boards repo schema or CI workflow for the exact limit before choosing a name
+- Ideally match the Arduino FQBN or PlatformIO target name where possible
+- Should include the **board manufacturer** (not the MCU manufacturer) — e.g. `"adafruit-feather"`
+  not `"espressif-feather"`
+- Examples from existing boards:
+  `"feather-esp32s3-tft"`, `"qtpy-esp32c3"`, `"rpi-pico-w"`, `"fruitjam"`, `"magtag"`
 
 **PSRAM:** Only define `USE_PSRAM` if the board has PSRAM. For boards where PSRAM is detected
 at runtime, use the conditional pattern:
@@ -514,6 +551,14 @@ Two separate PRs are needed:
 4. Verify the board name and type show correctly in the UI
 5. Test basic I/O: add a digital GPIO component, toggle a pin
 6. Monitor serial output for initialization and connection success
+
+### Alternative: Local testing with protomq
+
+If a live Adafruit IO connection is not available, use **protomq** as a local MQTT broker /
+protocol testing tool that can simulate the WipperSnapper broker. This allows testing firmware
+behavior (connection handshake, registration, message encoding/decoding) without requiring
+cloud access. Point the board's `secrets.json` at the local protomq instance to validate the
+board's MQTT communication flow end-to-end.
 
 ---
 
