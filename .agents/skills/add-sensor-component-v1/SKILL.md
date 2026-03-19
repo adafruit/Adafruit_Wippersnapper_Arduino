@@ -34,12 +34,14 @@ The official Adafruit guide for this process:
 - Human-readable (single page): https://learn.adafruit.com/how-to-add-a-new-component-to-adafruit-io-wippersnapper?view=all
 - Machine-readable markdown: https://learn.adafruit.com/how-to-add-a-new-component-to-adafruit-io-wippersnapper.md?view=all
 
-Fetch the `.md?view=all` version if you need more detail on any step — particularly for the
+Fetch the `.md?view=all` single page version (not subpage) if you need more detail on any step — particularly for the products learn guide, along with the
 Wippersnapper_Components repo setup, image requirements, and testing in Adafruit IO.
 
 ## Arguments
 
 This skill accepts a sensor name as its argument (e.g. `/add-sensor-component-v1 TMP119`).
+
+Ideally the user will provide the datasheet, product purchase url, wiki / learn guide url, and arduino driver library name. If not, the skill will research these based on the sensor name, attempting to load the adafruit product page to then find the almost-always-present learn guide link which mentions the needed arduino library (GH repo link and example code sketch link in GH).
 
 ## Environment Check (optional, do not block on this)
 
