@@ -104,20 +104,20 @@ bool I2cHardware::begin() {
   _bus->setClock(50000);
 #elif defined(ARDUINO_ARCH_RP2040)
   // arduino-pico uses two global instances for TwoWire, select based on instance number
-  if (instance == 0) {
+  if (_instance == 0) {
     _bus = &Wire;
-  } else if (instance == 1) {
+  } else if (_instance == 1) {
     _bus = &Wire1;
   } else {
     return false;
   }
 
   // Select IO pins to use before calling begin()
-  if (!_bus->setSDA(_bus_sda)) {
+  if (!_bus->setSDA(_sda)) {
     _bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
     return false;
   }
-  if (!_bus->setSCL(_bus_scl)) {
+  if (!_bus->setSCL(_scl)) {
     _bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
     return false;
   }
@@ -125,7 +125,7 @@ bool I2cHardware::begin() {
   // Start the bus as Master at 100kHz (default)
   _bus->begin();
 #elif defined(ARDUINO_ARCH_SAMD)
-  _bus = new TwoWire(&PERIPH_WIRE, _bus_sda, _bus_scl);
+  _bus = new TwoWire(&PERIPH_WIRE, _sda, _scl);
   _bus->begin();
 #else
 #error "I2C implementation not supported by this platform!"
