@@ -643,7 +643,7 @@ ws_i2c_DeviceStatus I2cController::InitMux(I2cHardware *bus, const char *name,
     @returns  Device status indicating success or failure.
 */
 ws_i2c_DeviceStatus I2cController::InitGpsDriver(TwoWire *wire, uint16_t address,
-                                                  ws_gps_GpsConfig *config) {
+                                                  ws_gps_Config *config) {
   WS_DEBUG_PRINT("[i2c] Creating GPS driver...");
   if (!Ws._gps_controller->AddGPS(wire, address, config)) {
     WS_DEBUG_PRINTLN("FAILED!");

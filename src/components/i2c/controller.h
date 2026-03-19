@@ -108,7 +108,7 @@ public:
 
 private:
   I2cHardware *findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda);
-  ws_i2c_DeviceStatus InitGpsDriver(TwoWire *wire, uint16_t address, ws_gps_GpsConfig *config);
+  ws_i2c_DeviceStatus InitGpsDriver(TwoWire *wire, uint16_t address, ws_gps_Config *config);
   I2cModel *_i2c_model = nullptr;        ///< Pointer to an I2C model object
   std::vector<I2cHardware *> _i2c_buses; ///< Vector of ptrs to I2C hardware buses
   std::vector<drvBase *> _i2c_drivers;   ///< Vector of ptrs to I2C drivers

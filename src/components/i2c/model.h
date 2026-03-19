@@ -48,7 +48,6 @@ public:
   ws_i2c_DeviceEvent *GetI2cDeviceEvent();
   ws_i2c_Scan *GetI2cBusScanMsg();
   ws_i2c_Scanned *GetI2cBusScannedMsg();
-  ws_i2c_DeviceOutputWrite *GetI2cDeviceOutputWriteMsg();
   // I2cBusScanned Message API
   void ClearI2cBusScanned();
   bool AddDeviceToBusScan(uint32_t pin_scl, uint32_t pin_sda,
@@ -76,7 +75,6 @@ private:
   ws_i2c_DeviceRemove _msg_i2c_device_remove;
   ws_i2c_DeviceRemoved _msg_i2c_device_removed;
   ws_i2c_DeviceEvent _msg_i2c_device_event;
-  ws_i2c_DeviceOutputWrite _msg_i2c_device_output_write;
 };
 
 /*!

@@ -626,10 +626,8 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   }
 
   msg_i2c_add.has_device_description = true;
-  strcpy(msg_i2c_add.device_description.bus_scl,
-         component["i2cBusScl"] | "default");
-  strcpy(msg_i2c_add.device_description.bus_sda,
-         component["i2cBusSda"] | "default");
+  component["i2cBusScl"] = msg_i2c_add.device_description.pin_scl;
+  component["i2cBusSda"] = msg_i2c_add.device_description.pin_sda;
 
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
   msg_i2c_add.device_description.device_address = HexStrToInt(addr_device);
