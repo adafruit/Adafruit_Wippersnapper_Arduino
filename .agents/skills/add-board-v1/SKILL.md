@@ -19,10 +19,17 @@ description: >
 Changes span **two repositories**:
 1. **Adafruit_Wippersnapper_Arduino** — C++ firmware: PlatformIO env, board identification,
    network interface, provisioning, CI matrix
-2. **Wippersnapper_Boards** — board `definition.json` for CI build/flash tooling
-3. **Auto-config (magic config)** — for onboard components, including any non-user-facing pins
-   used by other onboard components (e.g. SPI pins for a WiFi coprocessor, I2C pins for an
-   onboard sensor)
+2. **Wippersnapper_Boards** — board `definition.json` (including pin/component definitions and
+   optional magic auto-config for onboard components such as non-user-facing SPI pins for a WiFi
+   coprocessor or I2C pins for an onboard sensor) used by CI build/flash tooling and the
+   Adafruit IO device installer
+
+> **The `Wippersnapper_Boards` folder is git-ignored in the firmware repo** (similar to how
+> `Wippersnapper_Components` is git-ignored for the sensor skill). Do not leave board definition
+> files as untracked files in the firmware tree — they belong in the separate boards repo. If the
+> boards repo is not pushable AND cannot be forked (e.g. running in a GitHub agent session without
+> push access), include the **full content** of the board definition files (`definition.json`
+> etc.) in the firmware PR summary/response so the user can file them manually in the boards repo.
 
 The user supplies a board name (e.g. "QT Py ESP32-C6"). Research the board thoroughly before
 writing any code: find the product page, documentation URLs (learn guide, wiki), associated
@@ -54,12 +61,7 @@ the skill will research these based on the board name.
 
 If Bash is available, quickly check connectivity to adapt your approach. **If Bash is not
 available or these commands fail, skip this section and proceed — use WebFetch/WebSearch for
-research, and do the code changes with the file tools you have. The user can handle git/PRs.
-NOTE: The Wippersnapper_Boards repo is git-ignored in the firmware repo. Do not leave board
-definition files as untracked files in the firmware tree. If you cannot push to the boards
-repo (e.g. running in a GitHub agent session without push access) AND cannot create a fork,
-include the full content of the board definition files (definition.json etc.) in the PR
-summary/response so the user can file them manually.**
+research, and do the code changes with the file tools you have. The user can handle git/PRs.**
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}" https://www.bbc.com       # general web access
@@ -441,23 +443,66 @@ The `<board-id>` folder name uses **kebab-case** and must match the `BOARD_ID` f
 
 ### 6c. Write definition.json
 
-For **ESP32-family boards** (requires esptool parameters):
+The schema is at `boards/schema.json` in the Wippersnapper_Boards repo. The **required** top-level
+fields are: `boardName`, `mcuName`, `mcuRefVoltage`, `installMethod`, `displayName`, `productURL`,
+`documentationURL`, `components`. Additional optional fields: `vendor`, `description`,
+`bootloaderBoardName`, `bootDiskName`, `installBoardName`, `published`.
+
+For **LittleFS ESP32 boards** (web installer with esptool):
 
 ```json
 {
-  "boardName": "<Board Display Name>",
-  "mcuName": "<MCU>",
-  "mcuFamily": "ESP32-xx",
+  "boardName": "<board-id>",
+  "displayName": "<Human-Friendly Board Name>",
+  "mcuName": "<mcu>",
+  "mcuRefVoltage": <voltage>,
   "vendor": "Adafruit",
   "productURL": "https://www.adafruit.com/product/<ID>",
   "documentationURL": "https://learn.adafruit.com/<guide-slug>",
-  "bootloaderBoardName": "<tinyuf2-board-name>",
+  "installBoardName": "<ci-env-name-if-different-from-boardName>",
+  "installMethod": "web",
   "esptool": {
-    "chip": "<esp32s2|esp32s3|esp32|esp32c3|esp32c6|esp32c5>",
+    "chip": "<esp32|esp32s2|esp32s3|esp32c3|esp32c6|esp32c5>",
     "flashMode": "dio",
     "flashFreq": "80m",
-    "flashSize": "4MB"
-  }
+    "flashSize": "4MB",
+    "offset": "<user-filesystem-partition-offset>",
+    "fileSystemSize": <partition-size-bytes>,
+    "blockSize": 4096,
+    "structure": {
+      "<bootloader-offset>": "wippersnapper.<installBoardName>.littlefs.VERSION.combined.bin"
+    }
+  },
+  "components": { "digitalPins": [], "analogPins": [], "i2cPorts": [] }
+}
+```
+
+For **TinyUSB ESP32-S2/S3 boards** (web-native-usb or uf2 installer):
+
+```json
+{
+  "boardName": "<board-id>",
+  "displayName": "<Human-Friendly Board Name>",
+  "mcuName": "<mcu>",
+  "mcuRefVoltage": <voltage>,
+  "vendor": "Adafruit",
+  "productURL": "https://www.adafruit.com/product/<ID>",
+  "documentationURL": "https://learn.adafruit.com/<guide-slug>",
+  "installMethod": "uf2",
+  "bootloaderBoardName": "<tinyuf2-board-name>",
+  "esptool": {
+    "chip": "<esp32s2|esp32s3>",
+    "flashMode": "dio",
+    "flashFreq": "80m",
+    "flashSize": "4MB",
+    "offset": "<user-filesystem-partition-offset>",
+    "fileSystemSize": <partition-size-bytes>,
+    "blockSize": 4096,
+    "structure": {
+      "0x0": "wippersnapper.<boardName>.fatfs.VERSION.combined.bin"
+    }
+  },
+  "components": { "digitalPins": [], "analogPins": [], "i2cPorts": [] }
 }
 ```
 
@@ -465,23 +510,62 @@ For **RP2040/RP2350 boards** (UF2, no esptool):
 
 ```json
 {
-  "boardName": "<Board Display Name>",
+  "boardName": "<board-id>",
+  "displayName": "<Human-Friendly Board Name>",
   "mcuName": "<MCU>",
-  "mcuFamily": "RP2040",
+  "mcuRefVoltage": <voltage>,
   "vendor": "Adafruit",
   "productURL": "https://www.adafruit.com/product/<ID>",
-  "documentationURL": "https://learn.adafruit.com/<guide-slug>"
+  "documentationURL": "https://learn.adafruit.com/<guide-slug>",
+  "installMethod": "uf2",
+  "bootDiskName": "RP2",
+  "components": { "digitalPins": [], "analogPins": [], "i2cPorts": [] }
 }
 ```
 
-Field notes:
-- `bootloaderBoardName` — the TinyUF2 board name used to fetch the bootloader release. Check
-  the [tinyuf2 releases](https://github.com/adafruit/tinyuf2/releases) for the exact name.
-  Only needed for TinyUSB boards that go through esptool merging.
-- `esptool.chip` — must match the chip name that `esptool.py --chip` expects.
-- `esptool.flashMode` — typically `dio` for most boards, `qio` for some.
-- `esptool.flashFreq` — typically `80m` for ESP32-S2/S3, `40m` for original ESP32.
-- `esptool.flashSize` — `4MB`, `8MB`, or `16MB` — match the board's actual flash.
+#### Top-level field notes
+
+| Field | Required | Description |
+|---|---|---|
+| `boardName` | Yes | Kebab-case board ID (max 40 chars). Must match the folder name and `BOARD_ID` in firmware. |
+| `displayName` | Yes | Human-friendly name shown in the Adafruit IO UI (max 50 chars). |
+| `mcuName` | Yes | Microcontroller name, e.g. `"esp32c6"`, `"esp32s3"`, `"rp2040"` (max 24 chars). |
+| `mcuRefVoltage` | Yes | MCU's max analog reference voltage in Volts (e.g. `3.3`, `2.6`, `1.1`). |
+| `installMethod` | Yes | One of: `"web"` (LittleFS/esptool), `"uf2"` (TinyUSB/UF2), `"web-native-usb"` (TinyUSB via WebUSB), `"library"`, `"python"`. |
+| `productURL` | Yes | Product page URL. |
+| `documentationURL` | Yes | Learn guide URL. |
+| `components` | Yes | Pin and I2C port definitions (see below). Required sub-objects: `digitalPins`, `analogPins`, `i2cPorts`. |
+| `vendor` | No | Board manufacturer name (max 24 chars). |
+| `description` | No | Board description (max 255 chars). |
+| `bootloaderBoardName` | No | TinyUF2 board name for fetching bootloader releases (max 60 chars). Required for TinyUSB ESP32-S2/S3 boards. Check [tinyuf2 releases](https://github.com/adafruit/tinyuf2/releases). |
+| `bootDiskName` | No | Disk name in bootloader mode, e.g. `"RP2"` (max 40 chars). Used for RP2040/RP2350. |
+| `installBoardName` | No | Override for `boardName` when looking up firmware assets in CI releases. Use when the CI env name differs from `boardName`. |
+| `published` | No | Boolean. When `false`, board won't appear in the firmware installer. |
+
+#### esptool field notes (required for ESP32-family boards)
+
+| Field | Required | Description |
+|---|---|---|
+| `chip` | Yes | Chip name for `esptool.py --chip` (e.g. `"esp32c6"`, `"esp32s3"`). |
+| `offset` | Yes | User filesystem partition start offset as hex string (e.g. `"0x3D0000"`). Find this in the board's partition table CSV. |
+| `fileSystemSize` | Yes | Size of the user filesystem partition in bytes (e.g. `131072` for 128KB, `983040` for 960KB). This is where `secrets.json` lives. |
+| `blockSize` | Yes | Filesystem block size in bytes — typically `4096`. |
+| `structure` | Yes | Object mapping flash offsets to firmware filenames. Key is the bootloader offset (e.g. `"0x0"` for ESP32-C3/C6, `"0x1000"` for original ESP32). |
+| `flashMode` | No | Flash mode — typically `"dio"`, sometimes `"qio"`. |
+| `flashFreq` | No | Flash frequency — typically `"80m"` for ESP32-S2/S3/C3/C6, `"40m"` for original ESP32. |
+| `flashSize` | No | Total flash size — `"4MB"`, `"8MB"`, or `"16MB"`. |
+| `baudRate` | No | Fixed baud rate for the web-serial installer (avoids auto-detection). |
+
+#### components field notes
+
+The `components` object must include `digitalPins`, `analogPins`, and `i2cPorts` arrays. See
+existing board definitions for examples. Each digital pin needs `name`, `displayName`, `dataType`;
+optionally `direction`, `hasPWM`, `hasServo`, `uartTx`/`uartRx`, `isHardwired`. Each analog pin
+needs `name`, `displayName`, `dataType`; optionally `maxResolution`, `hasPWM`, `hasServo`,
+`direction`, `isHardwired`. Each I2C port needs `i2cPortId`, `SDA`, `SCL`.
+
+> **Tip:** Copy `components` from an existing board in the same family and adjust pin names/numbers
+> to match the new board's pinout from its learn guide or schematic.
 
 ---
 
@@ -546,7 +630,9 @@ Two separate PRs are needed:
    - LittleFS boards: flash via esptool or web flasher
 2. Provide credentials:
    - TinyUSB: drop `secrets.json` on the mounted drive
-   - LittleFS: use the web provisioner at https://install.wippersnappper.io
+   - LittleFS: use the device provisioner at https://io.adafruit.com/devices/new
+   - LittleFS (serial alternative): `pio run --target uploadfs -e <board_env_name>` uploads the
+     filesystem image containing `secrets.json` directly via serial
 3. Connect to Adafruit IO — the board should appear on the device page
 4. Verify the board name and type show correctly in the UI
 5. Test basic I/O: add a digital GPIO component, toggle a pin
@@ -554,11 +640,33 @@ Two separate PRs are needed:
 
 ### Alternative: Local testing with protomq
 
-If a live Adafruit IO connection is not available, use **protomq** as a local MQTT broker /
-protocol testing tool that can simulate the WipperSnapper broker. This allows testing firmware
-behavior (connection handshake, registration, message encoding/decoding) without requiring
-cloud access. Point the board's `secrets.json` at the local protomq instance to validate the
-board's MQTT communication flow end-to-end.
+If a live Adafruit IO connection is not available, use **protomq**
+(`https://github.com/lorennorman/protomq`) as a local MQTT broker that speaks protobufs and
+can simulate the WipperSnapper broker.
+
+1. **Clone and start protomq** on the `wippersnapper-v1` tag:
+   ```bash
+   git clone https://github.com/lorennorman/protomq.git
+   cd protomq
+   git checkout wippersnapper-v1
+   npm install
+   cp .env.example.json .env.json
+   # Edit .env.json — set the local path to your WipperSnapper .proto files
+   npm run import-protos
+   npm run build-web
+   npm start
+   ```
+2. **Configure `secrets.json`** on the board to point at the local broker:
+   - Set `io_url` to your machine's local network IP (e.g. `192.168.1.100`)
+   - Set `io_port` to `1883`
+   - `io_key` and `io_username` can be left as-is or set to dummy values
+3. **Flash firmware and monitor** serial output while the board connects to local protomq
+4. **Inspect and drive WipperSnapper protocol messages:**
+   - Use the **protomq web UI** (typically `http://localhost:5173/` — check the startup output)
+     to see connected clients, subscriptions, and decoded protobuf messages in real time
+   - Or use **play-scripts** (see the protomq README) to script automated protocol interactions
+5. This lets you validate: connection handshake, board registration, component init, sensor
+   readings, and pin control — all without a live Adafruit IO account
 
 ---
 
@@ -640,20 +748,39 @@ include:
 
 ```json
 {
-  "boardName": "Adafruit QT Py ESP32-C6",
-  "mcuName": "ESP32-C6",
-  "mcuFamily": "ESP32-C6",
+  "boardName": "qtpy-esp32c6",
+  "displayName": "Adafruit QT Py ESP32-C6",
+  "mcuName": "esp32c6",
+  "mcuRefVoltage": 1.1,
   "vendor": "Adafruit",
   "productURL": "https://www.adafruit.com/product/5928",
   "documentationURL": "https://learn.adafruit.com/adafruit-qt-py-esp32-c6",
+  "installBoardName": "wippersnapper_qtpy_esp32c6",
+  "installMethod": "web",
   "esptool": {
     "chip": "esp32c6",
     "flashMode": "dio",
     "flashFreq": "80m",
-    "flashSize": "4MB"
+    "flashSize": "4MB",
+    "offset": "0x3D0000",
+    "fileSystemSize": 131072,
+    "blockSize": 4096,
+    "structure": {
+      "0x0": "wippersnapper.wippersnapper_qtpy_esp32c6.littlefs.VERSION.combined.bin"
+    }
+  },
+  "components": {
+    "digitalPins": [],
+    "analogPins": [],
+    "i2cPorts": []
   }
 }
 ```
+
+> **Note:** The `components` arrays above are left empty for brevity. In the real definition,
+> populate `digitalPins`, `analogPins`, and `i2cPorts` based on the board's pinout from its
+> learn guide. See `boards/qtpy-esp32c3/definition.json` in the Wippersnapper_Boards repo for
+> a complete QT Py example.
 
 ### Files changed
 
