@@ -134,9 +134,9 @@ public:
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
         WS_DEBUG_PRINT("SSID (");
-        WS_DEBUG_PRINT(_ssid);
+        WS_DEBUG_PRINTVAR(_ssid);
         WS_DEBUG_PRINT(") found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+        WS_DEBUG_PRINTLNVAR(WiFi.RSSI(i));
         WiFi.scanDelete(); // Free the scan result memory
         return true;
       }
@@ -145,9 +145,9 @@ public:
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
           if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) == 0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(Ws._multiNetworksV2[j].ssid);
+            WS_DEBUG_PRINTVAR(Ws._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
-            WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+            WS_DEBUG_PRINTLNVAR(WiFi.RSSI(i));
             WiFi.scanDelete(); // Free the scan result memory
             return true;
           }
@@ -159,9 +159,9 @@ public:
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
     for (int i = 0; i < n; ++i) {
-      WS_DEBUG_PRINT(WiFi.SSID(i));
+      WS_DEBUG_PRINTVAR(WiFi.SSID(i));
       WS_DEBUG_PRINT(" ");
-      WS_DEBUG_PRINT(WiFi.RSSI(i));
+      WS_DEBUG_PRINTVAR(WiFi.RSSI(i));
       WS_DEBUG_PRINTLN("dB");
     }
 
@@ -359,9 +359,11 @@ protected:
 
   /*!
       @brief  Disconnects from the wireless network.
+      @param  wifi_off  If true, turns off WiFi radio. If false, keeps WiFi
+                        driver initialized for quick reconnection.
   */
-  void _disconnect() {
-    WiFi.disconnect();
+  void _disconnect(bool wifi_off = true) {
+    WiFi.disconnect(wifi_off);
     delay(500);
   }
 };

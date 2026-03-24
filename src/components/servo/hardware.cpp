@@ -99,7 +99,7 @@ bool ServoHardware::ServoAttach() {
 
   if (rc == ERROR_SERVO_ATTACH) {
     WS_DEBUG_PRINT("[servo] Error: Failed to attach servo to pin: ");
-    WS_DEBUG_PRINTLN(_pin);
+    WS_DEBUG_PRINTLNVAR(_pin);
     return false;
   }
 
@@ -148,9 +148,9 @@ void ServoHardware::ServoWrite(int value) {
   value = ClampPulseWidth(value);
   _servo->writeMicroseconds(value);
   WS_DEBUG_PRINT("[servo] Set Pulse Width: ");
-  WS_DEBUG_PRINT(value);
+  WS_DEBUG_PRINTVAR(value);
   WS_DEBUG_PRINT(" µs on pin: ");
-  WS_DEBUG_PRINT(_pin);
+  WS_DEBUG_PRINTVAR(_pin);
 #endif
 }
 
@@ -175,9 +175,9 @@ void ServoHardware::writeMicroseconds(int value) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to write to servo pin!");
 
   WS_DEBUG_PRINT("[servo] Set Pulse Width: ");
-  WS_DEBUG_PRINT(value);
+  WS_DEBUG_PRINTVAR(value);
   WS_DEBUG_PRINT(" uS on pin: ");
-  WS_DEBUG_PRINT(_pin);
+  WS_DEBUG_PRINTVAR(_pin);
 }
 
 /*!

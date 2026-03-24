@@ -31,11 +31,30 @@ public:
   void ConfigureControllers();
   bool GotResponse();
   bool Complete();
+  void configureSleep();
 
 private:
   static bool
-  cbComponentAdds(pb_istream_t *stream, const pb_field_t *field,
-                  void **arg); //< Callback for decoding ComponentAdd messages
+  cbSetupResponse(pb_istream_t *stream, const pb_field_t *field,
+                  void **arg); //< Pre-decode callback to set up component_adds
+  static bool cbDigitalIOAdds(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg);
+  static bool cbAnalogIOAdds(pb_istream_t *stream, const pb_field_t *field,
+                             void **arg);
+  static bool cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
+                          void **arg);
+  static bool cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
+                        void **arg);
+  static bool cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
+                           void **arg);
+  static bool cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
+                            void **arg);
+  static bool cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
+                         void **arg);
+  static bool cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
+                        void **arg);
+  bool IsSleepEnabled();
+  ws_sleep_SleepConfig *GetSleepConfig();
   ws_checkin_B2D _CheckinB2D =
       ws_checkin_B2D_init_zero; ///< Broker to Device message wrapper
   ws_checkin_D2B _CheckinD2B =

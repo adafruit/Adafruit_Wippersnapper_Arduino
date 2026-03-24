@@ -1,2 +1,4 @@
 platformio
 pytest
+pytest-asyncio
+wokwi-client

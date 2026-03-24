@@ -240,31 +240,31 @@ bool GPSModel::ProcessNMEASentence(char *sentence, GPSHardware *drv) {
     // Debug prints for Sentence variabesl
     WS_DEBUG_PRINTLN("[gps] Processing RMC sentence...");
     WS_DEBUG_PRINT("[gps] Hour: ");
-    WS_DEBUG_PRINTLN(drv->GetHour());
+    WS_DEBUG_PRINTLNVAR(drv->GetHour());
     WS_DEBUG_PRINT("[gps] Minute: ");
-    WS_DEBUG_PRINTLN(drv->GetMinute());
+    WS_DEBUG_PRINTLNVAR(drv->GetMinute());
     WS_DEBUG_PRINT("[gps] Seconds: ");
-    WS_DEBUG_PRINTLN(drv->GetSeconds());
+    WS_DEBUG_PRINTLNVAR(drv->GetSeconds());
     WS_DEBUG_PRINT("[gps] Milliseconds: ");
-    WS_DEBUG_PRINTLN(drv->GetMilliseconds());
+    WS_DEBUG_PRINTLNVAR(drv->GetMilliseconds());
     WS_DEBUG_PRINT("[gps] Day: ");
-    WS_DEBUG_PRINTLN(drv->GetDay());
+    WS_DEBUG_PRINTLNVAR(drv->GetDay());
     WS_DEBUG_PRINT("[gps] Month: ");
-    WS_DEBUG_PRINTLN(drv->GetMonth());
+    WS_DEBUG_PRINTLNVAR(drv->GetMonth());
     WS_DEBUG_PRINT("[gps] Year: ");
-    WS_DEBUG_PRINTLN(drv->GetYear());
+    WS_DEBUG_PRINTLNVAR(drv->GetYear());
     WS_DEBUG_PRINT("[gps] Latitude: ");
-    WS_DEBUG_PRINTLN(drv->GetLat());
+    WS_DEBUG_PRINTLNVAR(drv->GetLat());
     WS_DEBUG_PRINT("[gps] Latitude Direction: ");
-    WS_DEBUG_PRINTLN(lat_dir);
+    WS_DEBUG_PRINTLNVAR(lat_dir);
     WS_DEBUG_PRINT("[gps] Longitude: ");
-    WS_DEBUG_PRINTLN(drv->GetLon());
+    WS_DEBUG_PRINTLNVAR(drv->GetLon());
     WS_DEBUG_PRINT("[gps] Longitude Direction: ");
-    WS_DEBUG_PRINTLN(lon_dir);
+    WS_DEBUG_PRINTLNVAR(lon_dir);
     WS_DEBUG_PRINT("[gps] Speed: ");
-    WS_DEBUG_PRINTLN(drv->GetSpeed());
+    WS_DEBUG_PRINTLNVAR(drv->GetSpeed());
     WS_DEBUG_PRINT("[gps] Angle: ");
-    WS_DEBUG_PRINTLN(drv->GetAngle());
+    WS_DEBUG_PRINTLNVAR(drv->GetAngle());
     // Process RMC sentence
     if (!AddGpsEventRMC(datetime, drv->GetFix(), drv->GetLat(), &lat_dir,
                         drv->GetLon(), &lon_dir, drv->GetSpeed(),

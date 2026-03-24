@@ -73,6 +73,12 @@ ws_digitalio_Event *DigitalIOModel::GetDigitalIOEventMsg() {
 }
 
 /*!
+    @brief  Gets a DigitalIO DeviceToBroker message struct.
+    @return Pointer to a DigitalIO D2B message struct.
+*/
+ws_digitalio_D2B *DigitalIOModel::GetDigitalIOD2B() { return &_msg_dio_d2b; }
+
+/*!
     @brief  Decodes a DigitalIOAdd message into the _msg_dio_add object
             from a nanopb stream.
     @param  stream
@@ -124,15 +130,10 @@ bool DigitalIOModel::EncodeDigitalIOEvent(char *pin_name, bool value) {
   _msg_dio_event.value.which_value = ws_sensor_Event_bool_value_tag;
   _msg_dio_event.value.value.bool_value = value;
 
-  // Encode the DigitalIOEvent message
-  size_t sz_dio_event_msg;
-  if (!pb_get_encoded_size(&sz_dio_event_msg, ws_digitalio_Event_fields,
-                           &_msg_dio_event))
-    return false;
+  // Wrap the event in the D2B envelope
+  memset(&_msg_dio_d2b, 0, sizeof(_msg_dio_d2b));
+  _msg_dio_d2b.which_payload = ws_digitalio_D2B_event_tag;
+  _msg_dio_d2b.payload.event = _msg_dio_event;
 
-  // Create an output stream
-  uint8_t buf[sz_dio_event_msg];
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  // Encode the message
-  return pb_encode(&msg_stream, ws_digitalio_Event_fields, &_msg_dio_event);
+  return true;
 }

@@ -113,7 +113,7 @@ public:
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
         WS_DEBUG_PRINT("SSID found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+        WS_DEBUG_PRINTLNVAR(WiFi.RSSI(i));
         return true;
       }
     }
@@ -122,9 +122,9 @@ public:
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
     for (int i = 0; i < n; ++i) {
-      WS_DEBUG_PRINT(WiFi.SSID(i));
+      WS_DEBUG_PRINTVAR(WiFi.SSID(i));
       WS_DEBUG_PRINT(" ");
-      WS_DEBUG_PRINT(WiFi.RSSI(i));
+      WS_DEBUG_PRINTVAR(WiFi.RSSI(i));
       WS_DEBUG_PRINTLN("dB");
     }
 
@@ -189,10 +189,10 @@ public:
       WS_DEBUG_PRINTLN("Error parsing firmware version strings");
       WS_PRINTER.flush();
       WS_DEBUG_PRINT("Required version: ");
-      WS_DEBUG_PRINTLN(requiredVersion);
+      WS_DEBUG_PRINTLNVAR(requiredVersion);
       WS_PRINTER.flush();
       WS_DEBUG_PRINT("Current version: ");
-      WS_DEBUG_PRINTLN(currentVersion);
+      WS_DEBUG_PRINTLNVAR(currentVersion);
       WS_PRINTER.flush();
       return false;
     }
@@ -287,7 +287,7 @@ protected:
 
       WS_DEBUG_PRINT("ESP32 booted, version: ");
       WS_PRINTER.flush();
-      WS_DEBUG_PRINTLN(WiFi.firmwareVersion());
+      WS_DEBUG_PRINTLNVAR(WiFi.firmwareVersion());
       WS_PRINTER.flush();
       Ws._wdt->feed();
 
@@ -298,7 +298,7 @@ protected:
       }
 
       WS_DEBUG_PRINT("Connecting to ");
-      WS_DEBUG_PRINTLN(_ssid);
+      WS_DEBUG_PRINTLNVAR(_ssid);
       WS_PRINTER.flush();
       Ws._wdt->feed();
       WiFi.begin(_ssid, _pass);
@@ -352,8 +352,10 @@ protected:
 
   /*!
       @brief  Disconnects from the wireless network.
+      @param  wifi_off  Unused on this platform.
   */
-  void _disconnect() {
+  void _disconnect(bool wifi_off = true) {
+    (void)wifi_off;
     WiFi.disconnect();
     delay(500);
   }

@@ -1,9 +1,0 @@
-name: Offline Mode - Invalid JSON
-version: 1
-author: Brent Rubell for Adafruit Industries
-
-steps:
-  - wait-serial: '[SD] Waiting for incoming JSON string...'
-  - write-serial: '{"exportVersion":"1.0.0",'
-  - write-serial: '\n'
-  - wait-serial: '[SD] Runtime Error: Unable to deserialize config.json'

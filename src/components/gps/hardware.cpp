@@ -79,7 +79,7 @@ bool GPSHardware::Handle_GPSConfig(ws_gps_Config *gps_config) {
         return false;
       }
       WS_DEBUG_PRINT("[gps] Expected response: ");
-      WS_DEBUG_PRINTLN(msg_resp);
+      WS_DEBUG_PRINTLNVAR(msg_resp);
       if (_iface_type == GPS_IFACE_UART_HW) {
         // Flush the RX/TX buffers before sending
         _hw_serial->flush();
@@ -92,14 +92,14 @@ bool GPSHardware::Handle_GPSConfig(ws_gps_Config *gps_config) {
         WS_DEBUG_PRINTLN(" done!");
       }
       WS_DEBUG_PRINT("[gps] TX, CMD: ");
-      WS_DEBUG_PRINTLN(gps_config->commands_pmtks[i]);
+      WS_DEBUG_PRINTLNVAR(gps_config->commands_pmtks[i]);
       // Send the command to the GPS module
       _ada_gps->sendCommand(gps_config->commands_pmtks[i]);
       WS_DEBUG_PRINTLN("[gps] Waiting for RX...");
       // and wait for the corresponding response from the GPS module
       if (!_ada_gps->waitForSentence(msg_resp, 255)) {
         WS_DEBUG_PRINT("[gps] ERROR: Failed to get response | cmd:");
-        WS_DEBUG_PRINTLN(gps_config->commands_pmtks[i]);
+        WS_DEBUG_PRINTLNVAR(gps_config->commands_pmtks[i]);
         return false;
       }
     }
@@ -341,15 +341,15 @@ bool GPSHardware::DetectMtkUart() {
   size_t bytes_to_read = min(available, buf_len - 1);
   // Print the two out
   WS_DEBUG_PRINT("[gps] Reading MediaTek GPS response: ");
-  WS_DEBUG_PRINT(available);
+  WS_DEBUG_PRINTVAR(available);
   WS_DEBUG_PRINT(" bytes, reading ");
-  WS_DEBUG_PRINTLN(bytes_to_read);
+  WS_DEBUG_PRINTLNVAR(bytes_to_read);
   for (size_t i = 0; i < bytes_to_read; i++) {
     buffer[i] = _hw_serial->read();
   }
   buffer[bytes_to_read] = '\0';
   WS_DEBUG_PRINT("[gps] MediaTek GPS response: ");
-  WS_DEBUG_PRINTLN(buffer);
+  WS_DEBUG_PRINTLNVAR(buffer);
   // did we get the expected PMTK705 string?
   if (strncmp(buffer, CMD_MTK_QUERY_FW_RESP, 8) != 0) {
     return false;
@@ -574,7 +574,7 @@ void GPSHardware::PollStoreSentences() {
       // Check for end of NMEA sentence
       if (c == '\n') {
         WS_DEBUG_PRINT("[gps] GOT NMEA sentence: ");
-        WS_DEBUG_PRINTLN(nmeaBuffer.c_str());
+        WS_DEBUG_PRINTLNVAR(nmeaBuffer.c_str());
         // Push the NMEA sentence to the buffer
         WS_DEBUG_PRINTLN("[gps] Pushing NMEA sentence to buffer...");
         if (NmeaBufPush(nmeaBuffer.c_str()) != 0) {

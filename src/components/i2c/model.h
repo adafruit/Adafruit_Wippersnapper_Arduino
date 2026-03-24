@@ -18,9 +18,9 @@
 #include "wippersnapper.h"
 #include <Adafruit_Sensor.h>
 #include <protos/i2c_output.pb.h>
-#define MAX_DEVICE_EVENTS                                                      \
-  15 ///< Maximum number of SensorEvents within I2cDeviceEvent
-#define MAX_I2C_SCAN_DEVICES 120 ///< Maximum number of devices found on the bus
+
+#define MAX_DEVICE_EVENTS    16 ///< Maximum number of SensorEvents within I2cDeviceEvent
+#define MAX_I2C_SCAN_DEVICES 16 ///< Maximum number of devices found on the bus
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -46,18 +46,20 @@ public:
   ws_i2c_output_Add *GetI2cOutputAddMsg();
   ws_i2c_DeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
   ws_i2c_DeviceEvent *GetI2cDeviceEvent();
-  ws_i2c_BusScan *GetI2cBusScanMsg();
-  ws_i2c_BusScanned *GetI2cBusScannedMsg();
-  ws_i2c_DeviceOutputWrite *GetI2cDeviceOutputWriteMsg();
+  ws_i2c_Scan *GetI2cBusScanMsg();
+  ws_i2c_Scanned *GetI2cBusScannedMsg();
   // I2cBusScanned Message API
   void ClearI2cBusScanned();
-  bool AddDeviceToBusScan(const char *bus_scl, const char *bus_sda,
+  bool AddDeviceToBusScan(uint32_t pin_scl, uint32_t pin_sda,
                           uint32_t addr_device, uint32_t addr_mux,
                           uint32_t mux_channel);
+  void setI2cBusScannedStatus(ws_i2c_BusStatus bus_status);
+  bool encodeI2cScanned();
+  ws_i2c_D2B *GetI2cD2B();
   // DeviceEvent Message API
   void ClearI2cDeviceEvent();
-  void SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
-                                         const char *bus_sda,
+  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
+                                         uint32_t pin_sda,
                                          uint32_t addr_device,
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
@@ -65,14 +67,14 @@ public:
                                ws_sensor_Type sensor_type);
 
 private:
-  ws_i2c_BusScan _msg_i2c_bus_scan;
-  ws_i2c_BusScanned _msg_i2c_bus_scanned;
+  ws_i2c_D2B _msg_i2c_d2b;
+  ws_i2c_Scan _msg_i2c_bus_scan;
+  ws_i2c_Scanned _msg_i2c_bus_scanned;
   ws_i2c_DeviceAddOrReplace _msg_i2c_device_add_replace;
   ws_i2c_DeviceAddedOrReplaced _msg_i2c_device_added_replaced;
   ws_i2c_DeviceRemove _msg_i2c_device_remove;
   ws_i2c_DeviceRemoved _msg_i2c_device_removed;
   ws_i2c_DeviceEvent _msg_i2c_device_event;
-  ws_i2c_DeviceOutputWrite _msg_i2c_device_output_write;
 };
 
 /*!

@@ -26,12 +26,10 @@ class SleepModel {
 public:
   SleepModel();
   ~SleepModel();
-  ws_sleep_Enter *GetSleepEnterMsg();
-  ws_sleep_Goodnight *GetSleepGoodnightMsg();
-  ws_sleep_Wake *GetSleepWakeMsg();
-  bool DecodeSleepEnter(pb_istream_t *stream);
+  ws_sleep_SleepConfig *GetSleepConfig();
+  ws_sleep_Goodnight *GetSleepGoodnight();
+  bool DecodeSleepConfig(pb_istream_t *stream);
   bool EncodeSleepGoodnight(const char *msg);
-  bool EncodeSleepWake(ws_sleep_EspWakeCause cause, uint32_t sleep_duration);
   void SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_duration,
                           uint32_t timer_duration);
   void SetSleepEnterExt0(bool lock, const char *mode, uint32_t run_duration,
@@ -41,8 +39,7 @@ public:
 private:
   void ConvertSleepMode(const char *mode_str, ws_sleep_SleepMode &mode);
   ws_sleep_Goodnight _msg_sleep_goodnight; ///< Goodnight message object
-  ws_sleep_Wake _msg_sleep_wake;           ///< Wake message object
-  ws_sleep_Enter _msg_sleep_enter;         ///< Enter message object
+  ws_sleep_SleepConfig _msg_sleep_enter;         ///< Enter message object
   uint32_t _run_duration = 60; ///< Duration to run before sleeping, in seconds
 };
 

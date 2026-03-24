@@ -6,17 +6,40 @@
 
 // Define actual debug output functions when necessary.
 #ifdef WS_DEBUG
+
+#ifdef ARDUINO_ARCH_ESP8266
+// ESP8266: Use F() macro to store string literals in Flash (PROGMEM)
+#define WS_DEBUG_PRINT(x)                                                      \
+  { WS_PRINTER.print(F(x)); } ///< Prints debug output (Flash).
+#define WS_DEBUG_PRINTLN(x)                                                    \
+  { WS_PRINTER.println(F(x)); } ///< Prints line from debug output (Flash).
+#else
+// Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
   { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#endif
+
+// Variable printing macros - use for non-string-literal arguments
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__); } ///< Print variable to serial.
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  { WS_PRINTER.println(__VA_ARGS__); } ///< Print variable with newline.
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output in hex.
+
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
   {} ///< Prints debug output
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {} ///< Prints line from debug output.
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  {} ///< Print variable disabled.
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  {} ///< Print variable with newline disabled.
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  {} ///< Prints debug output in hex disabled.
 #endif
 
 #define WS_DELAY_WITH_WDT(timeout)                                             \

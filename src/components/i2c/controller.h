@@ -14,6 +14,9 @@
  */
 #ifndef WS_I2C_CONTROLLER_H
 #define WS_I2C_CONTROLLER_H
+
+#define WS_I2C_MUX_CHANNEL_ANY 0xFFFFFFFF ///< Match any MUX channel
+
 #include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
@@ -46,11 +49,6 @@
 #include "drivers/drvMprls.h"
 #include "drivers/drvMs8607.h"
 #include "drivers/drvNau7802.h"
-#include "drivers/drvOut7Seg.h"
-#include "drivers/drvOutCharLcd.h"
-#include "drivers/drvOutQuadAlphaNum.h"
-#include "drivers/drvOutSsd1306.h"
-#include "drivers/drvOutputBase.h" ///< Base i2c output driver class
 #include "drivers/drvPct2075.h"
 #include "drivers/drvPm25.h"
 #include "drivers/drvScd30.h"
@@ -74,9 +72,8 @@
 #include "drivers/drvVncl4040.h"
 
 class wippersnapper;  ///< Forward declaration
-class I2cModel;       ///< Forward declaration
-class I2cOutputModel; ///< Forward declaration
-class I2cHardware;    ///< Forward declaration
+class I2cModel;    ///< Forward declaration
+class I2cHardware; ///< Forward declaration
 
 /*!
     @brief  Routes messages using the i2c.proto API to the
@@ -92,30 +89,29 @@ public:
   // Routing //
   bool Router(pb_istream_t *stream);
   bool Handle_I2cDeviceAddOrReplace(ws_i2c_DeviceAddOrReplace *msg);
-  bool Handle_I2cBusScan(ws_i2c_BusScan *msg);
+  bool Handle_I2cBusScan(ws_i2c_Scan *msg);
   bool Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg);
-  bool Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg);
   // Publishing //
-  bool PublishI2cDeviceAddedorReplaced(
+  bool publishDeviceAddedOrReplaced(
       const ws_i2c_DeviceDescriptor &device_descriptor,
+      I2cHardware *bus,
       const ws_i2c_DeviceStatus &device_status);
+  bool publishScan();
   // Helpers //
-  bool IsBusStatusOK(bool is_alt_bus = false);
-  bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
-  void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
-  bool RemoveDriver(uint32_t address, bool is_output_device);
-  void ToggleDefaultPowerPin();
-  TwoWire *GetI2cBus(bool is_alt_bus = false);
+  bool IsBusStatusOK(I2cHardware *bus);
+  ws_i2c_DeviceStatus InitMux(I2cHardware *bus, const char *name, uint32_t address);
+  bool RemoveDriver(uint32_t address,
+                    uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
+  TwoWire *GetI2cBus(uint32_t pin_scl, uint32_t pin_sda);
+  size_t GetI2cBusCount();
+  TwoWire *GetI2cBusByIndex(size_t index);
 
 private:
-  I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
-  I2cOutputModel *_i2c_output_model =
-      nullptr; ///< Pointer to an I2C output model object
-  I2cHardware *_i2c_bus_default = nullptr; ///< Pointer to the default I2C bus
-  I2cHardware *_i2c_bus_alt = nullptr; ///< Pointer to an alternative I2C bus
-  std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C input drivers
-  std::vector<drvOutputBase *>
-      _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
+  I2cHardware *findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda);
+  ws_i2c_DeviceStatus InitGpsDriver(TwoWire *wire, uint16_t address, ws_gps_Config *config);
+  I2cModel *_i2c_model = nullptr;        ///< Pointer to an I2C model object
+  std::vector<I2cHardware *> _i2c_buses; ///< Vector of ptrs to I2C hardware buses
+  std::vector<drvBase *> _i2c_drivers;   ///< Vector of ptrs to I2C drivers
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_I2C_CONTROLLER_H

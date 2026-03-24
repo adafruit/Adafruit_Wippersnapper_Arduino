@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -17,23 +17,12 @@
 /*!
     @brief  Default I2C bus hardware class constructor
 */
-I2cHardware::I2cHardware() {
+I2cHardware::I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance) {
   _bus_status = ws_i2c_BusStatus_BS_UNSPECIFIED;
   _has_mux = false;
-  InitBus(true); // Init default bus
-}
-
-/*!
-    @brief  I2C hardware class constructor for an alternative bus.
-    @param    sda
-                The desired SDA pin.
-    @param    scl
-                The desired SCL pin.
-*/
-I2cHardware::I2cHardware(const char *sda, const char *scl) {
-  _bus_status = ws_i2c_BusStatus_BS_UNSPECIFIED;
-  _has_mux = false;
-  InitBus(false, sda, scl); // Init alt. bus
+  _scl = (uint8_t)scl;
+  _sda = (uint8_t)sda;
+  _instance = instance;
 }
 
 /*!
@@ -71,20 +60,11 @@ void I2cHardware::TogglePowerPin() {
 }
 
 /*!
-    @brief  Initializes an I2C bus.
-    @param    is_default
-                True if the default I2C bus is being used,
-                False if an alternative I2C bus is being used.
-    @param    sda
-                The desired SDA pin.
-    @param    scl
-                The desired SCL pin.
+    @brief   Attempts to initialize the I2C bus
+    @returns True if the bus was successfully initialized, False otherwise.
+    NOTE: If False, the bus' status can be retrieved with GetBusStatus() to provide the failure reason.
 */
-void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
-  if (!is_default && (sda == nullptr || scl == nullptr)) {
-    _bus_status = ws_i2c_BusStatus_BS_UNSPECIFIED;
-    return;
-  }
+bool I2cHardware::begin() {
 // Some development boards define a pin that controls power
 // to the i2c bus. If the pin is defined, turn the power to the i2c bus on.
 #if defined(PIN_I2C_POWER) || defined(TFT_I2C_POWER) ||                        \
@@ -92,67 +72,67 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   TogglePowerPin();
 #endif
 
-  // Assign I2C bus pins
-  if (is_default) {
-#ifndef ARDUINO_ARCH_RP2040
-    _bus_sda = SDA;
-    _bus_scl = SCL;
-#else
-    // RP2040 BSP uses a different naming scheme than Espressif for I2C pins
-    _bus_sda = PIN_WIRE0_SDA;
-    _bus_scl = PIN_WIRE0_SCL;
-#endif
-  } else {
-    _bus_sda = atoi(sda);
-    _bus_scl = atoi(scl);
-  }
-
   // Enable pullups
-  pinMode(_bus_scl, INPUT_PULLUP);
-  pinMode(_bus_sda, INPUT_PULLUP);
+  pinMode(_scl, INPUT_PULLUP);
+  pinMode(_sda, INPUT_PULLUP);
   delay(150);
 
   // Is the bus stuck LOW?
-  if (digitalRead(_bus_scl) == 0 || digitalRead(_bus_sda) == 0) {
+  if (digitalRead(_scl) == 0 || digitalRead(_sda) == 0) {
     _bus_status = ws_i2c_BusStatus_BS_ERROR_PULLUPS;
-    return;
+    return false;
   }
 
   // Reset bus to a high-impedance state
-  pinMode(_bus_scl, INPUT);
-  pinMode(_bus_sda, INPUT);
+  pinMode(_scl, INPUT);
+  pinMode(_sda, INPUT);
 
 // Initialize bus
 // NOTE: Each platform has a slightly different bus initialization routine
 #ifdef ARDUINO_ARCH_ESP32
-  if (is_default) {
-    _bus = new TwoWire(0);
-  } else {
-    _bus = new TwoWire(1);
-    _bus->setPins(_bus_sda, _bus_scl);
-  }
-  if (!_bus->begin(_bus_sda, _bus_scl)) {
+  _bus = new TwoWire(_instance);
+  // _bus->setPins(_sda, _scl); TODO: This is possibly not required due to ctor
+  if (!_bus->begin(_sda, _scl)) {
     _bus_status = ws_i2c_BusStatus_BS_ERROR_HANG;
-    return;
+    return false;
   }
   _bus->setClock(50000);
 #elif defined(ARDUINO_ARCH_ESP8266)
+  // NOTE: Wire on ESP8266 has only one instance
   _bus = new TwoWire();
-  _bus->begin(_bus_sda, _bus_scl);
+  _bus->begin(_sda, _scl);
   _bus->setClock(50000);
 #elif defined(ARDUINO_ARCH_RP2040)
-  _bus = &WIRE;
-  _bus->setSDA(_bus_sda);
-  _bus->setSCL(_bus_scl);
+  // arduino-pico uses two global instances for TwoWire, select based on instance number
+  if (_instance == 0) {
+    _bus = &Wire;
+  } else if (_instance == 1) {
+    _bus = &Wire1;
+  } else {
+    return false;
+  }
+
+  // Select IO pins to use before calling begin()
+  if (!_bus->setSDA(_sda)) {
+    _bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
+    return false;
+  }
+  if (!_bus->setSCL(_scl)) {
+    _bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
+    return false;
+  }
+
+  // Start the bus as Master at 100kHz (default)
   _bus->begin();
 #elif defined(ARDUINO_ARCH_SAMD)
-  _bus = new TwoWire(&PERIPH_WIRE, _bus_sda, _bus_scl);
+  _bus = new TwoWire(&PERIPH_WIRE, _sda, _scl);
   _bus->begin();
 #else
-#error "I2C bus implementation not supported by this platform!"
+#error "I2C implementation not supported by this platform!"
 #endif
 
   _bus_status = ws_i2c_BusStatus_BS_SUCCESS;
+  return true;
 }
 
 /*!
@@ -162,7 +142,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
     @returns  True if the MUX channel was successfully cleared,
               False otherwise.
 */
-bool I2cHardware::ScanBus(ws_i2c_BusScanned *scan_results) {
+bool I2cHardware::ScanBus(ws_i2c_Scanned *scan_results) {
   if (!scan_results)
     return false;
 
@@ -173,36 +153,26 @@ bool I2cHardware::ScanBus(ws_i2c_BusScanned *scan_results) {
         WS.feedWDT();
       #endif */
 
-  // Get the SDA and SCL pins from the bus
-  // TODO: Abstract this?
-  char i2c_bus_scl[15] = {0}, i2c_bus_sda[15] = {0};
-  snprintf(i2c_bus_scl, sizeof(i2c_bus_scl), "D%u", _bus_scl);
-  snprintf(i2c_bus_sda, sizeof(i2c_bus_sda), "D%u", _bus_sda);
-
   // Perform a bus scan
   WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
   for (uint8_t address = 1; address < 127; ++address) {
     WS_DEBUG_PRINT("[i2c] Scanning Address: 0x");
-    WS_DEBUG_PRINTLN(address, HEX);
+    WS_DEBUG_PRINTHEX(address);
+    WS_DEBUG_PRINTLN("");
     _bus->beginTransmission(address);
     uint8_t endTransmissionRC = _bus->endTransmission();
 
     if (endTransmissionRC == 0) {
       WS_DEBUG_PRINTLN("[i2c] Found Device!");
-      // TODO: Abstract this? Allow for mux flags to be set here, too
-      scan_results->bus_found_devices[scan_results->bus_found_devices_count]
+      scan_results->found_devices[scan_results->found_devices_count]
           .device_address = address;
-      scan_results->bus_found_devices[scan_results->bus_found_devices_count]
+      scan_results->found_devices[scan_results->found_devices_count]
           .mux_address = 0xFFFF; // Tell user that device is not on a mux
-      strcpy(
-          scan_results->bus_found_devices[scan_results->bus_found_devices_count]
-              .bus_sda,
-          i2c_bus_sda);
-      strcpy(
-          scan_results->bus_found_devices[scan_results->bus_found_devices_count]
-              .bus_scl,
-          i2c_bus_scl);
-      scan_results->bus_found_devices_count++;
+      scan_results->found_devices[scan_results->found_devices_count].pin_scl =
+          _scl;
+      scan_results->found_devices[scan_results->found_devices_count].pin_sda =
+          _sda;
+      scan_results->found_devices_count++;
     }
 #if defined(ARDUINO_ARCH_ESP32)
     // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
@@ -324,7 +294,7 @@ bool I2cHardware::HasMux() { return _has_mux; }
                 The I2C bus scan results.
     @returns  The maximum number of channels on the MUX.
 */
-bool I2cHardware::ScanMux(ws_i2c_BusScanned *scan_results) {
+bool I2cHardware::ScanMux(ws_i2c_Scanned *scan_results) {
   if (!HasMux()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: No MUX present on the bus!");
     return false;
@@ -333,7 +303,7 @@ bool I2cHardware::ScanMux(ws_i2c_BusScanned *scan_results) {
   for (uint8_t ch = 0; ch < _mux_max_channels; ch++) {
     SelectMuxChannel(ch);
     WS_DEBUG_PRINT("[i2c] Scanning MUX Channel # ");
-    WS_DEBUG_PRINTLN(ch);
+    WS_DEBUG_PRINTLNVAR(ch);
     if (!ScanBus(scan_results)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan MUX channel!");
       return false;

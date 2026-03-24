@@ -50,9 +50,8 @@ public:
     _i2c_mux_channel = mux_channel;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
-    _has_alt_i2c_bus = false;
-    strcpy(_pin_scl, "default");
-    strcpy(_pin_sda, "default");
+    _pin_scl = 0;
+    _pin_sda = 0;
     _did_read_send = false;
   }
 
@@ -87,36 +86,28 @@ public:
   void SetMuxAddress(uint32_t mux_address) { _i2c_mux_addr = mux_address; }
 
   /*!
-      @brief    Set if the I2C driver has an alternative I2C bus.
-      @param   scl_pin
-                The SCL pin for the alternative I2C bus.
-      @param   sda_pin
-                The SDA pin for the alternative I2C bus.
+      @brief    Sets the I2C bus pins for this driver.
+      @param    pin_scl
+                The SCL pin number.
+      @param    pin_sda
+                The SDA pin number.
   */
-  void EnableAltI2CBus(char *scl_pin, char *sda_pin) {
-    strcpy(_pin_scl, scl_pin);
-    strcpy(_pin_sda, sda_pin);
-    _has_alt_i2c_bus = true;
+  void SetPins(uint32_t pin_scl, uint32_t pin_sda) {
+    _pin_scl = pin_scl;
+    _pin_sda = pin_sda;
   }
 
   /*!
-      @brief    Gets the SCL pin for the alternative I2C bus.
-      @returns  The SCL pin for the alternative I2C bus.
+      @brief    Gets the SCL pin for this driver's I2C bus.
+      @returns  The SCL pin number.
   */
-  const char *GetPinSCL() { return _pin_scl; }
+  uint32_t GetPinSCL() { return _pin_scl; }
 
   /*!
-      @brief    Gets the SDA pin for the alternative I2C bus.
-      @returns  The SDA pin for the alternative I2C bus.
+      @brief    Gets the SDA pin for this driver's I2C bus.
+      @returns  The SDA pin number.
   */
-  const char *GetPinSDA() { return _pin_sda; }
-
-  /*!
-      @brief    Checks if the I2C driver uses an alternative I2C bus.
-      @returns  True if the I2C driver uses an alternative I2C bus, False
-                otherwise.
-  */
-  bool HasAltI2CBus() { return _has_alt_i2c_bus; }
+  uint32_t GetPinSDA() { return _pin_sda; }
 
   /*!
       @brief    Gets the I2C MUX channel connected to the I2C device.
@@ -632,14 +623,13 @@ public:
   ws_sensor_Type _sensors[15]; ///< Sensors attached to the device.
 
 protected:
-  TwoWire *_i2c;             ///< Pointer to the I2C bus
-  bool _has_alt_i2c_bus;     ///< True if the device is on an alternate I2C bus
+  TwoWire *_i2c;             ///< Pointer to the TwoWire bus
   uint16_t _address;         ///< The device's I2C address.
   uint32_t _i2c_mux_addr;    ///< The I2C MUX address, if applicable.
   uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
   char _name[15];            ///< The device's name.
-  char _pin_scl[8];          ///< The device's SCL pin.
-  char _pin_sda[8];          ///< The device's SDA pin.
+  uint32_t _pin_scl;         ///< The SCL pin number for this driver's bus.
+  uint32_t _pin_sda;         ///< The SDA pin number for this driver's bus.
   ulong _sensor_period;      ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;     ///< Number of sensors on the device.

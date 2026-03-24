@@ -65,7 +65,6 @@ private:
   bool CheckEventPin(DigitalIOPin *pin);
   bool CheckTimerPin(DigitalIOPin *pin);
   bool IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time);
-  void PrintPinValue(DigitalIOPin *pin);
   int GetPinIdx(uint8_t pin_name);
   std::vector<DigitalIOPin> _pins_input;
   std::vector<DigitalIOPin> _pins_output;

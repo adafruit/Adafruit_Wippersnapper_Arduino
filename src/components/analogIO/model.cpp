@@ -88,6 +88,12 @@ ws_analogio_Event *AnalogIOModel::GetAnalogIOEvent() {
 }
 
 /*!
+    @brief  Gets an AnalogIO DeviceToBroker message struct.
+    @return Pointer to an AnalogIO D2B message struct.
+*/
+ws_analogio_D2B *AnalogIOModel::GetAnalogIOD2B() { return &_msg_AnalogioD2B; }
+
+/*!
     @brief  Encodes an AnalogIOEvent message.
     @param pin_name
            The requested pin's name.
@@ -104,21 +110,17 @@ bool AnalogIOModel::EncodeAnalogIOEvent(char *pin_name, float pin_value,
   // Fill the AnalogIOEvent message's fields
   strncpy(_msg_AnalogioEvent.pin_name, pin_name,
           sizeof(_msg_AnalogioEvent.pin_name));
-  _msg_AnalogioEvent.has_event = true;
-  _msg_AnalogioEvent.event.type = read_type;
-  _msg_AnalogioEvent.event.which_value = ws_sensor_Event_float_value_tag;
-  _msg_AnalogioEvent.event.value.float_value = pin_value;
+  _msg_AnalogioEvent.has_value = true;
+  _msg_AnalogioEvent.value.type = read_type;
+  _msg_AnalogioEvent.value.which_value = ws_sensor_Event_float_value_tag;
+  _msg_AnalogioEvent.value.value.float_value = pin_value;
 
-  // Obtain size of an encoded AnalogIOEvent message
-  size_t sz_aio_event_msg;
-  if (!pb_get_encoded_size(&sz_aio_event_msg, ws_analogio_Event_fields,
-                           &_msg_AnalogioEvent))
-    return false;
+  // Wrap the event in the D2B envelope
+  memset(&_msg_AnalogioD2B, 0, sizeof(_msg_AnalogioD2B));
+  _msg_AnalogioD2B.which_payload = ws_analogio_D2B_event_tag;
+  _msg_AnalogioD2B.payload.event = _msg_AnalogioEvent;
 
-  // Encode the AnalogIOEvent message
-  uint8_t buf[sz_aio_event_msg];
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_analogio_Event_fields, &_msg_AnalogioEvent);
+  return true;
 }
 
 /*!
@@ -130,6 +132,10 @@ bool AnalogIOModel::EncodeAnalogIOEvent(char *pin_name, float pin_value,
     @return True if successful, False otherwise.
 */
 bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, float pin_value) {
+  WS_DEBUG_PRINT("[analogio] Pin: ");
+  WS_DEBUG_PRINTVAR(pin_name);
+  WS_DEBUG_PRINT(" | Raw Value: ");
+  WS_DEBUG_PRINTLNVAR(pin_value);
   return EncodeAnalogIOEvent(pin_name, pin_value, ws_sensor_Type_T_RAW);
 }
 
@@ -143,5 +149,9 @@ bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, float pin_value) {
 */
 bool AnalogIOModel::EncodeAnalogIOEventVoltage(char *pin_name,
                                                float pin_value) {
+  WS_DEBUG_PRINT("[analogio] Pin: ");
+  WS_DEBUG_PRINTVAR(pin_name);
+  WS_DEBUG_PRINT(" | Voltage: ");
+  WS_DEBUG_PRINTLNVAR(pin_value);
   return EncodeAnalogIOEvent(pin_name, pin_value, ws_sensor_Type_T_VOLTAGE);
 }

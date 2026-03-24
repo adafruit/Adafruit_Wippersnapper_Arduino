@@ -74,7 +74,7 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   _pwm_hardware[_active_pwm_pins] = new PWMHardware();
 
   WS_DEBUG_PRINT("[pwm] Attaching pin: ");
-  WS_DEBUG_PRINT(msg->pin);
+  WS_DEBUG_PRINTVAR(msg->pin);
   did_attach = _pwm_hardware[_active_pwm_pins]->AttachPin(
       pin, (uint32_t)msg->frequency, (uint32_t)msg->resolution);
   if (!did_attach) {
@@ -113,7 +113,7 @@ bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
 
   // Detach and free the pin for other uses
   WS_DEBUG_PRINT("[pwm] Detaching pin: ");
-  WS_DEBUG_PRINT(msg->pin);
+  WS_DEBUG_PRINTVAR(msg->pin);
   if (_pwm_hardware[pin_idx] != nullptr) {
     bool detach_result = _pwm_hardware[pin_idx]->DetachPin();
     if (!detach_result) {
@@ -170,10 +170,10 @@ bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
       WS_DEBUG_PRINTLN("[pwm] Error: Failed to write duty cycle!");
       return false;
     }
-    WS_DEBUG_PRINTLN("[pwm] Wrote duty cycle: ");
-    WS_DEBUG_PRINT(msg->payload.duty_cycle);
-    WS_DEBUG_PRINTLN(" to pin: ");
-    WS_DEBUG_PRINT(msg->pin);
+    WS_DEBUG_PRINT("[pwm] Wrote duty cycle: ");
+    WS_DEBUG_PRINTVAR(msg->payload.duty_cycle);
+    WS_DEBUG_PRINT(" to pin: ");
+    WS_DEBUG_PRINTLNVAR(msg->pin);
   } else if (msg->which_payload == ws_pwm_Write_frequency_tag) {
     // Write the frequency to the pin
     if (_pwm_hardware[pin_idx]->WriteTone(msg->payload.frequency) !=
@@ -181,10 +181,10 @@ bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
       WS_DEBUG_PRINTLN("[pwm] Error: Failed to write frequency!");
       return false;
     }
-    WS_DEBUG_PRINTLN("[pwm] Wrote frequency: ");
-    WS_DEBUG_PRINT(msg->payload.frequency);
-    WS_DEBUG_PRINTLN(" to pin: ");
-    WS_DEBUG_PRINT(msg->pin);
+    WS_DEBUG_PRINT("[pwm] Wrote frequency: ");
+    WS_DEBUG_PRINTVAR(msg->payload.frequency);
+    WS_DEBUG_PRINT(" to pin: ");
+    WS_DEBUG_PRINTLNVAR(msg->pin);
   } else {
     WS_DEBUG_PRINTLN("[pwm] Error: Invalid payload type!");
     return false;

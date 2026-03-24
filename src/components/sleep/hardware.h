@@ -43,10 +43,7 @@ public:
 #ifdef ARDUINO_ARCH_ESP32
   bool RegisterRTCTimerWakeup(uint64_t duration);
   bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
-  ws_sleep_EspWakeCause GetEspWakeCauseEnum();
   esp_sleep_source_t GetEspSleepSource();
-  bool StopWiFi();
-  bool RestoreWiFi();
 #endif
   ws_sleep_SleepMode GetSleepMode();
   void SetSleepMode(ws_sleep_SleepMode mode);

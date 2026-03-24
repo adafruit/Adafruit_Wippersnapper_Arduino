@@ -74,42 +74,6 @@ void SleepHardware::GetSleepWakeupCause() {
 esp_sleep_source_t SleepHardware::GetEspSleepSource() { return _wakeup_cause; }
 
 /*!
-    @brief  Returns the ESP wake cause enum corresponding to the internal
-            wakeup cause.
-    @return The wake cause as a ws_sleep_EspWakeCause enum.
-*/
-ws_sleep_EspWakeCause SleepHardware::GetEspWakeCauseEnum() {
-  switch (_wakeup_cause) {
-  case ESP_SLEEP_WAKEUP_ALL:
-    return ws_sleep_EspWakeCause_ESP_ALL;
-  case ESP_SLEEP_WAKEUP_EXT0:
-    return ws_sleep_EspWakeCause_ESP_EXT0;
-  case ESP_SLEEP_WAKEUP_EXT1:
-    return ws_sleep_EspWakeCause_ESP_EXT1;
-  case ESP_SLEEP_WAKEUP_TIMER:
-    return ws_sleep_EspWakeCause_ESP_TIMER;
-  case ESP_SLEEP_WAKEUP_TOUCHPAD:
-    return ws_sleep_EspWakeCause_ESP_TOUCHPAD;
-  case ESP_SLEEP_WAKEUP_ULP:
-    return ws_sleep_EspWakeCause_ESP_ULP;
-  case ESP_SLEEP_WAKEUP_GPIO:
-    return ws_sleep_EspWakeCause_ESP_GPIO;
-  case ESP_SLEEP_WAKEUP_UART:
-    return ws_sleep_EspWakeCause_ESP_UART;
-  case ESP_SLEEP_WAKEUP_WIFI:
-    return ws_sleep_EspWakeCause_ESP_WIFI;
-  case ESP_SLEEP_WAKEUP_COCPU:
-    return ws_sleep_EspWakeCause_ESP_COCPU;
-  case ESP_SLEEP_WAKEUP_COCPU_TRAP_TRIG:
-    return ws_sleep_EspWakeCause_ESP_COCPU_TRAP;
-  case ESP_SLEEP_WAKEUP_BT:
-    return ws_sleep_EspWakeCause_ESP_BT;
-  default:
-    return ws_sleep_EspWakeCause_ESP_UNSPECIFIED;
-  }
-}
-
-/*!
     @brief  Returns a human-readable name for the wakeup cause.
     @return C string describing the wakeup reason.
 */
@@ -433,35 +397,6 @@ void SleepHardware::DisableExternalComponents() {
 #endif
 }
 
-#ifdef ARDUINO_ARCH_ESP32
-/*!
-    @brief  Attempts to stop the WiFi radio to save power before entering light
-   sleep.
-    @return True if WiFi was successfully stopped, False otherwise.
-*/
-bool SleepHardware::StopWiFi() {
-  esp_err_t rc = esp_wifi_stop();
-  if (rc != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to stop WiFi");
-    return false;
-  }
-  return true;
-}
-
-/*!
-    @brief  Restore WiFi stack persistent settings to default value after waking
-   from light sleep.
-    @return True if WiFi was successfully started, False otherwise.
-*/
-bool SleepHardware::RestoreWiFi() {
-  esp_err_t rc = esp_wifi_restore();
-  if (rc != ESP_OK) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to restore WiFi");
-    return false;
-  }
-  return true;
-}
-#endif // ARDUINO_ARCH_ESP32
 
 /*!
     @brief  Retrieves the current sleep cycle count.
@@ -511,7 +446,7 @@ void SleepHardware::StoreLogFilename(const char *filename) {
     return;
 
   WS_DEBUG_PRINT("[sleep] Storing log filename for persistence: ");
-  WS_DEBUG_PRINTLN(filename);
+  WS_DEBUG_PRINTLNVAR(filename);
 
 #if defined(ARDUINO_ARCH_ESP32) && !SOC_RTC_FAST_MEM_SUPPORTED
   NvsWriteStr("log_filename", filename);
@@ -538,7 +473,7 @@ const char *SleepHardware::GetLogFilename() {
     return nullptr;
   }
   WS_DEBUG_PRINT("[sleep] Retrieved log filename from NVS: ");
-  WS_DEBUG_PRINTLN(nvs_log_filename);
+  WS_DEBUG_PRINTLNVAR(nvs_log_filename);
   return nvs_log_filename;
 #else
   if (log_filename_rtc[0] == '\0') {
@@ -546,7 +481,7 @@ const char *SleepHardware::GetLogFilename() {
     return nullptr;
   }
   WS_DEBUG_PRINT("[sleep] Retrieved log filename from RTC memory: ");
-  WS_DEBUG_PRINTLN(log_filename_rtc);
+  WS_DEBUG_PRINTLNVAR(log_filename_rtc);
   return log_filename_rtc;
 #endif
 }

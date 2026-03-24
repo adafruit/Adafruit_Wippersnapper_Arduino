@@ -1,19 +1,20 @@
 /*!
  * @file ws_helper_esp.h
  *
- * This file contains helper functions for the ESPx platforms.
+ * This file contains helper functions for the ESP-x platforms.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
  */
 #ifndef WS_HELPER_ESP_H
 #define WS_HELPER_ESP_H
+#include "esp_heap_caps.h"
 #include "esp_task_wdt.h"
 #include <Esp.h>
 

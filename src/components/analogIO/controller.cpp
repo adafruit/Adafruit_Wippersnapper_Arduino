@@ -111,11 +111,11 @@ bool AnalogIOController::Handle_AnalogIOAdd(ws_analogio_Add *msg) {
   // Print out the pin's details
   WS_DEBUG_PRINTLN("[analogio] Added new pin:");
   WS_DEBUG_PRINT("Pin Name: ");
-  WS_DEBUG_PRINTLN(new_pin.name);
+  WS_DEBUG_PRINTLNVAR(new_pin.name);
   WS_DEBUG_PRINT("Period: ");
-  WS_DEBUG_PRINTLN(new_pin.period);
+  WS_DEBUG_PRINTLNVAR(new_pin.period);
   WS_DEBUG_PRINT("Read Mode: ");
-  WS_DEBUG_PRINTLN(new_pin.read_mode);
+  WS_DEBUG_PRINTLNVAR(new_pin.read_mode);
 
   return true;
 }
@@ -147,7 +147,7 @@ bool AnalogIOController::Handle_AnalogIORemove(ws_analogio_Remove *msg) {
   }
 
   WS_DEBUG_PRINT("[analogio] Removed pin: ");
-  WS_DEBUG_PRINTLN(msg->pin_name);
+  WS_DEBUG_PRINTLNVAR(msg->pin_name);
   return true;
 }
 
@@ -194,14 +194,14 @@ bool AnalogIOController::EncodePublishPinEvent(uint8_t pin, float value,
   }
 
   // Publish the AnalogIO message to the broker
-  WS_DEBUG_PRINTLN("Publishing AnalogIOEvent message to broker...");
+  WS_DEBUG_PRINT("Publishing AnalogIOEvent...");
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_analogio_tag,
-                     _analogio_model->GetAnalogIOEvent())) {
+                     _analogio_model->GetAnalogIOD2B())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analogio voltage event message, "
                      "moving onto the next pin!");
     return false;
   }
-  WS_DEBUG_PRINTLN("Published AnalogIOEvent message to broker!")
+  WS_DEBUG_PRINTLN("Published!");
 
   return true;
 }
@@ -233,18 +233,18 @@ bool AnalogIOController::EncodePublishPin(uint8_t pin, float value,
 */
 void AnalogIOController::update(bool force) {
   // Bail-out if the vector is empty
-  if (_analogio_pins.empty()) {
+  if (_analogio_pins.empty())
     return;
-  }
 
   // Process analog input pins
   size_t num_pins = _analogio_pins.size();
+
   for (size_t i = 0; i < num_pins; i++) {
     // Create a pin object for this iteration
     analogioPin &pin = _analogio_pins[i];
 
     // (force only) - Was pin previously read and sent?
-    if (pin.did_read_send)
+    if (pin.did_read_send && force)
       continue;
 
     // Go to the next pin if the period hasn't expired yet or if we're not

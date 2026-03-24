@@ -35,11 +35,13 @@ public:
   // DigitalIOEvent
   bool EncodeDigitalIOEvent(char *pin_name, bool value);
   ws_digitalio_Event *GetDigitalIOEventMsg();
+  ws_digitalio_D2B *GetDigitalIOD2B();
 
 private:
   ws_digitalio_Add _msg_dio_add;       ///< Add message object
   ws_digitalio_Remove _msg_dio_remove; ///< Remove message object
   ws_digitalio_Event _msg_dio_event;   ///< Event message object
   ws_digitalio_Write _msg_dio_write;   ///< Write message object
+  ws_digitalio_D2B _msg_dio_d2b;       ///< DigitalIO DeviceToBroker wrapper
 };
 #endif // WS_DIGITALIO_MODEL_H

@@ -70,7 +70,7 @@ public:
 
     pm10StdEvent->pm10_std = (float)data.pm10_standard;
     WS_DEBUG_PRINT("PM10STD: ");
-    WS_DEBUG_PRINTLN(pm10StdEvent->pm10_std);
+    WS_DEBUG_PRINTLNVAR(pm10StdEvent->pm10_std);
     return true;
   }
 
@@ -89,7 +89,7 @@ public:
     }
     pm25StdEvent->pm25_std = (float)data.pm25_standard;
     WS_DEBUG_PRINT("PM25STD: ");
-    WS_DEBUG_PRINTLN(pm25StdEvent->pm25_std);
+    WS_DEBUG_PRINTLNVAR(pm25StdEvent->pm25_std);
     return true;
   }
 
@@ -109,7 +109,7 @@ public:
 
     pm100StdEvent->pm100_std = (float)data.pm100_standard;
     WS_DEBUG_PRINT("PM100STD: ");
-    WS_DEBUG_PRINTLN(pm100StdEvent->pm100_std);
+    WS_DEBUG_PRINTLNVAR(pm100StdEvent->pm100_std);
     return true;
   }
 

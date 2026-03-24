@@ -54,7 +54,7 @@ bool PixelsHardware::AddNeoPixel(uint16_t num_pixels, uint16_t pin_data,
     return false;
 
   WS_DEBUG_PRINT("[pixels] Added NeoPixel strand on pin ");
-  WS_DEBUG_PRINT(pin_data);
+  WS_DEBUG_PRINTVAR(pin_data);
   return true;
 }
 
@@ -91,9 +91,9 @@ bool PixelsHardware::AddDotStar(uint16_t num_pixels, uint16_t pin_data,
   }
 
   WS_DEBUG_PRINT("[pixels] Added DotStar strand on pin ");
-  WS_DEBUG_PRINT(pin_data);
+  WS_DEBUG_PRINTVAR(pin_data);
   WS_DEBUG_PRINT(" and clock pin ");
-  WS_DEBUG_PRINT(pin_clock);
+  WS_DEBUG_PRINTVAR(pin_clock);
   return true;
 }
 
@@ -205,7 +205,7 @@ void PixelsHardware::RemoveStrand() {
     initStatusLED();
   }
   WS_DEBUG_PRINT("[pixels] Removed pixel strand from pin: ");
-  WS_DEBUG_PRINTLN(_pin_data);
+  WS_DEBUG_PRINTLNVAR(_pin_data);
 
   _pin_data = 0; // Reset the pin data
   _type = ws_pixels_Type_T_UNSPECIFIED;

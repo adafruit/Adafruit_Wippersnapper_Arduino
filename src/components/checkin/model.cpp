@@ -37,34 +37,17 @@ CheckinModel::~CheckinModel() { _got_response = false; }
 */
 bool CheckinModel::Checkin(const char *hardware_uid,
                            const char *firmware_version) {
-  WS_DEBUG_PRINTLN("[checkin] Zero out d2b wrapper...");
   // Zero-out the D2B wrapper message
   memset(&_CheckinD2B, 0, sizeof(_CheckinD2B));
 
   // Create the CheckinRequest message
-  WS_DEBUG_PRINTLN("[checkin] Creating CheckinRequest message...");
   _CheckinD2B.which_payload = ws_checkin_D2B_request_tag;
   strncpy(_CheckinD2B.payload.request.hardware_uid, hardware_uid,
           sizeof(_CheckinD2B.payload.request.hardware_uid) - 1);
   strncpy(_CheckinD2B.payload.request.firmware_version, firmware_version,
           sizeof(_CheckinD2B.payload.request.firmware_version) - 1);
 
-  // Add wake cause info to checkin for ESP32x platforms
-#ifdef ARDUINO_ARCH_ESP32
-  if (Ws._sleep_controller->DidWakeFromSleep()) {
-    // We woke from a sleep mode, add wake cause info
-    _CheckinD2B.payload.request.has_wake_cause = true;
-    _CheckinD2B.payload.request.wake_cause.which_WakeCause =
-        ws_sleep_Wake_esp_tag;
-    _CheckinD2B.payload.request.wake_cause.WakeCause.esp =
-        Ws._sleep_controller->GetEspWakeCause();
-    _CheckinD2B.payload.request.wake_cause.sleep_duration =
-        Ws._sleep_controller->GetSleepDurationSecs();
-  }
-#endif
-
   // Encode the D2B wrapper message
-  WS_DEBUG_PRINTLN("[checkin] Encoding CheckinRequest message size...");
   size_t CheckinD2BSz;
   if (!pb_get_encoded_size(&CheckinD2BSz, ws_checkin_D2B_fields,
                            &_CheckinD2B)) {
@@ -73,7 +56,6 @@ bool CheckinModel::Checkin(const char *hardware_uid,
     return false;
   }
 
-  WS_DEBUG_PRINTLN("[checkin] Encoding CheckinRequest message...");
   uint8_t buf[CheckinD2BSz];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
   if (!pb_encode(&msg_stream, ws_checkin_D2B_fields, &_CheckinD2B)) {
@@ -82,12 +64,13 @@ bool CheckinModel::Checkin(const char *hardware_uid,
   }
 
   // Publish out
-  WS_DEBUG_PRINTLN("[checkin] Publishing CheckinRequest to broker...");
+  WS_DEBUG_PRINT("[checkin] Publishing CheckinRequest");
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to publish CheckinRequest message!");
     return false;
   }
+  WS_DEBUG_PRINTLN("...Published!");
   return true;
 }
 
@@ -99,17 +82,15 @@ bool CheckinModel::Checkin(const char *hardware_uid,
 */
 bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   // Zero-out the B2D wrapper message
-  WS_DEBUG_PRINTLN("[checkin] Zero out CheckinB2D wrapper...");
   memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
 
-  // Configure the callback for the component_adds field
-  WS_DEBUG_PRINTLN("[checkin] Configuring callback for component_adds...");
-  _CheckinB2D.payload.response.component_adds.funcs.decode = &cbComponentAdds;
-  _CheckinB2D.payload.response.component_adds.arg = this;
+  // Set up the pre-decode callback (cb_payload) which will be called BEFORE
+  // the Response submessage is decoded. This allows us to set up the
+  // component_adds callback before nanopb initializes the Response struct.
+  _CheckinB2D.cb_payload.funcs.decode = &cbSetupResponse;
+  _CheckinB2D.cb_payload.arg = this;
 
-  // Decode the B2d wrapper message
-  // NOTE: This also decodes the component_adds message
-  WS_DEBUG_PRINTLN("[checkin] Decoding CheckinB2D message from broker...");
+  // Decode the B2D wrapper message
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to decode CheckinB2D message from broker!");
@@ -117,7 +98,6 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   }
 
   // Validate the response message type
-  WS_DEBUG_PRINTLN("[checkin] Validating CheckinB2D message type...");
   if (_CheckinB2D.which_payload != ws_checkin_B2D_response_tag) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: CheckinB2D message from broker is not a Response!");
@@ -125,7 +105,6 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   }
 
   // Validate the response content
-  WS_DEBUG_PRINTLN("[checkin] Validating CheckinResponse content...");
   if (_CheckinB2D.payload.response.response !=
       ws_checkin_Response_Response_R_OK) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Invalid checkin_Response!");
@@ -141,73 +120,232 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
     @brief  Configures controllers limits based on board definition
 */
 void CheckinModel::ConfigureControllers() {
-  WS_DEBUG_PRINTLN(
-      "[checkin] Configuring controllers based on board definition...");
   Ws.digital_io_controller->SetMaxDigitalPins(
       _CheckinB2D.payload.response.total_gpio_pins);
   Ws.analogio_controller->SetRefVoltage(
       _CheckinB2D.payload.response.reference_voltage);
   Ws.analogio_controller->SetTotalAnalogPins(
       _CheckinB2D.payload.response.total_analog_pins);
-  WS_DEBUG_PRINTLN("[checkin] Controllers configured successfully!");
 }
 
 /*!
-    @brief    Callback for decoding ComponentAdd messages during Checkin
-              Response processing.
+    @brief    Pre-decode callback for setting up component_adds callbacks.
+              Called by nanopb via MSG_W_CB before the Response submessage
+              is decoded. This allows us to set up nested callbacks before
+              nanopb initializes the struct.
     @param    stream
-              Incoming data stream from buffer.
+              Incoming data stream (Response submessage bytes).
     @param    field
-              Protobuf message's tag type.
+              Field descriptor for the Response field.
     @param    arg
-              Optional arguments from decoder calling function.
+              Pointer to CheckinModel instance.
+    @returns  True to continue decoding (don't consume stream).
+*/
+bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
+                                   const pb_field_t *field, void **arg) {
+  // Get the Response struct that nanopb will decode into
+  ws_checkin_Response *response = (ws_checkin_Response *)field->pData;
+  CheckinModel *model = (CheckinModel *)*arg;
+
+  // Set up callbacks for ALL component types
+  response->component_adds.digitalio_adds.funcs.decode = &cbDigitalIOAdds;
+  response->component_adds.digitalio_adds.arg = model;
+
+  response->component_adds.analogio_adds.funcs.decode = &cbAnalogIOAdds;
+  response->component_adds.analogio_adds.arg = model;
+
+  response->component_adds.servo_adds.funcs.decode = &cbServoAdds;
+  response->component_adds.servo_adds.arg = model;
+
+  response->component_adds.pwm_adds.funcs.decode = &cbPWMAdds;
+  response->component_adds.pwm_adds.arg = model;
+
+  response->component_adds.pixels_adds.funcs.decode = &cbPixelsAdds;
+  response->component_adds.pixels_adds.arg = model;
+
+  response->component_adds.ds18x20_adds.funcs.decode = &cbDs18x20Adds;
+  response->component_adds.ds18x20_adds.arg = model;
+
+  response->component_adds.uart_adds.funcs.decode = &cbUartAdds;
+  response->component_adds.uart_adds.arg = model;
+
+  response->component_adds.i2c_adds.funcs.decode = &cbI2cAdds;
+  response->component_adds.i2c_adds.arg = model;
+
+  // Return true WITHOUT consuming the stream - nanopb will continue
+  // to decode the Response submessage with our callback now set up
+  return true;
+}
+
+/*!
+    @brief    Callback for decoding DigitalIO Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
     @returns  True if decoded and executed successfully, False otherwise.
 */
-bool CheckinModel::cbComponentAdds(pb_istream_t *stream,
+bool CheckinModel::cbDigitalIOAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
-  ws_checkin_ComponentAdd component = ws_checkin_ComponentAdd_init_default;
-  WS_DEBUG_PRINTLN("[checkin] Decoding ComponentAdd message...");
-  if (!pb_decode(stream, ws_checkin_ComponentAdd_fields, &component)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode ComponentAdd message!");
+  ws_digitalio_Add add_msg = ws_digitalio_Add_init_zero;
+  if (!pb_decode(stream, ws_digitalio_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digitalio add");
+    return false;
   }
+  return Ws.digital_io_controller->Handle_DigitalIO_Add(&add_msg);
+}
 
-  // TODO: Remove debug prints after testing
-  WS_DEBUG_PRINT("[checkin] Adding component: ");
-  switch (component.which_payload) {
-  case ws_checkin_ComponentAdd_digitalio_tag:
-    WS_DEBUG_PRINTLN("DigitalIO");
-    return Ws.digital_io_controller->Handle_DigitalIO_Add(
-        &component.payload.digitalio);
-  case ws_checkin_ComponentAdd_analogio_tag:
-    WS_DEBUG_PRINTLN("AnalogIO");
-    return Ws.analogio_controller->Handle_AnalogIOAdd(
-        &component.payload.analogio);
-  case ws_checkin_ComponentAdd_servo_tag:
-    WS_DEBUG_PRINTLN("Servo");
-    return Ws._servo_controller->Handle_Servo_Add(&component.payload.servo);
-  case ws_checkin_ComponentAdd_pwm_tag:
-    WS_DEBUG_PRINTLN("PWM");
-    return Ws._pwm_controller->Handle_PWM_Add(&component.payload.pwm);
-  case ws_checkin_ComponentAdd_pixels_tag:
-    WS_DEBUG_PRINTLN("Pixels");
-    return Ws._pixels_controller->Handle_Pixels_Add(&component.payload.pixels);
-  case ws_checkin_ComponentAdd_ds18x20_tag:
-    WS_DEBUG_PRINTLN("DS18x20");
-    return Ws._ds18x20_controller->Handle_Ds18x20Add(
-        &component.payload.ds18x20);
-  case ws_checkin_ComponentAdd_uart_tag:
-    WS_DEBUG_PRINTLN("UART");
-    return Ws._uart_controller->Handle_UartAdd(&component.payload.uart);
-  case ws_checkin_ComponentAdd_i2c_tag:
-    WS_DEBUG_PRINTLN("I2C");
-    return Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(
-        &component.payload.i2c);
-  default:
-    WS_DEBUG_PRINTLN("UNKNOWN COMPONENT TYPE!");
-    break;
+/*!
+    @brief    Callback for decoding AnalogIO Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbAnalogIOAdds(pb_istream_t *stream, const pb_field_t *field,
+                                  void **arg) {
+  ws_analogio_Add add_msg = ws_analogio_Add_init_zero;
+  if (!pb_decode(stream, ws_analogio_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analogio add");
+    return false;
   }
+  return Ws.analogio_controller->Handle_AnalogIOAdd(&add_msg);
+}
 
-  return true;
+/*!
+    @brief    Callback for decoding Servo Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
+                               void **arg) {
+  ws_servo_Add add_msg = ws_servo_Add_init_zero;
+  if (!pb_decode(stream, ws_servo_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode servo add");
+    return false;
+  }
+  return Ws._servo_controller->Handle_Servo_Add(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding PWM Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
+                             void **arg) {
+  ws_pwm_Add add_msg = ws_pwm_Add_init_zero;
+  if (!pb_decode(stream, ws_pwm_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pwm add");
+    return false;
+  }
+  return Ws._pwm_controller->Handle_PWM_Add(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding Pixels Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
+                                void **arg) {
+  ws_pixels_Add add_msg = ws_pixels_Add_init_zero;
+  if (!pb_decode(stream, ws_pixels_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pixels add");
+    return false;
+  }
+  return Ws._pixels_controller->Handle_Pixels_Add(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding DS18x20 Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
+                                 void **arg) {
+  ws_ds18x20_Add add_msg = ws_ds18x20_Add_init_zero;
+  if (!pb_decode(stream, ws_ds18x20_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode ds18x20 add");
+    return false;
+  }
+  return Ws._ds18x20_controller->Handle_Ds18x20Add(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding UART Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg) {
+  ws_uart_Add add_msg = ws_uart_Add_init_zero;
+  if (!pb_decode(stream, ws_uart_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode uart add");
+    return false;
+  }
+  return Ws._uart_controller->Handle_UartAdd(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding I2C DeviceAddOrReplace messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
+                             void **arg) {
+  ws_i2c_DeviceAddOrReplace add_msg = ws_i2c_DeviceAddOrReplace_init_zero;
+  if (!pb_decode(stream, ws_i2c_DeviceAddOrReplace_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode i2c add");
+    return false;
+  }
+  return Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(&add_msg);
+}
+
+/*!
+    @brief  Returns whether sleep is enabled in the checkin response.
+    @returns True if sleep is enabled, False otherwise.
+*/
+bool CheckinModel::IsSleepEnabled() {
+  return _CheckinB2D.payload.response.sleep_enabled;
+}
+
+/*!
+    @brief  Returns the sleep configuration from the checkin response.
+    @returns Pointer to sleep config if present, nullptr otherwise.
+*/
+ws_sleep_SleepConfig *CheckinModel::GetSleepConfig() {
+  if (_CheckinB2D.payload.response.has_sleep_config) {
+    return &_CheckinB2D.payload.response.sleep_config;
+  }
+  return nullptr;
+}
+
+/*!
+    @brief  Configures sleep controller based on checkin response.
+*/
+void CheckinModel::configureSleep() {
+  #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // Process sleep configuration if present
+  if (IsSleepEnabled()) {
+    ws_sleep_SleepConfig *sleep_cfg = GetSleepConfig();
+    if (sleep_cfg != nullptr) {
+      WS_DEBUG_PRINTLN("[app] Processing sleep configuration from checkin");
+      Ws._sleep_controller->handleSleepConfig(sleep_cfg, true);
+    }
+  }
+  #endif
 }
 
 /*!
@@ -222,18 +360,14 @@ bool CheckinModel::GotResponse() { return _got_response; }
     @returns True if the message was published successfully, False otherwise.
 */
 bool CheckinModel::Complete() {
-  WS_DEBUG_PRINTLN("[checkin] Publishing Complete message to broker...");
-
   // Create a fresh D2B wrapper message
   ws_checkin_D2B completeMsg = ws_checkin_D2B_init_default;
 
   // Create and fill the ws_checkin_Complete message
-  WS_DEBUG_PRINTLN("[checkin] Creating Complete message...");
   completeMsg.which_payload = ws_checkin_D2B_complete_tag;
   completeMsg.payload.complete.dummy_field = '\0';
 
   // Encode the D2B wrapper message
-  WS_DEBUG_PRINTLN("[checkin] Encoding Complete message size...");
   size_t CheckinD2BSz;
   if (!pb_get_encoded_size(&CheckinD2BSz, ws_checkin_D2B_fields,
                            &completeMsg)) {
@@ -242,7 +376,6 @@ bool CheckinModel::Complete() {
     return false;
   }
 
-  WS_DEBUG_PRINTLN("[checkin] Encoding Complete message...");
   uint8_t buf[CheckinD2BSz];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
   if (!pb_encode(&msg_stream, ws_checkin_D2B_fields, &completeMsg)) {
@@ -251,12 +384,9 @@ bool CheckinModel::Complete() {
   }
 
   // Publish the message
-  WS_DEBUG_PRINTLN("[checkin] Publishing Complete message to broker...");
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &completeMsg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to publish Complete message!");
     return false;
   }
-
-  WS_DEBUG_PRINTLN("[checkin] Published Complete message to broker");
   return true;
 }

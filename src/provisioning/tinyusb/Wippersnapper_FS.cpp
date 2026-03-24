@@ -118,20 +118,17 @@ Wippersnapper_FS::Wippersnapper_FS() {
     FRESULT rc = format_fs_fat12();
 
     if (rc != FR_OK) {
-      setStatusLEDColor(RED);
       fsHalt("FATAL ERROR: Failed to format the filesystem!");
     }
 
     // Now that we have a formatted filesystem, we need to inititalize it
     if (!wipperFatFs_v2.begin(&flash_v2)) {
-      setStatusLEDColor(RED);
       fsHalt("FATAL ERROR: Failed to mount newly created filesystem!");
     }
   }
 
   // Write contents to the formatted filesystem
   if (!writeFSContents()) {
-    setStatusLEDColor(RED);
     fsHalt("FATAL ERROR: Could not write filesystem contents!");
   }
 
@@ -402,7 +399,7 @@ void Wippersnapper_FS::parseSecrets() {
       JsonArray altnetworks = doc["network_type_wifi"]["alternative_networks"];
       int8_t altNetworkCount = (int8_t)altnetworks.size();
       WS_DEBUG_PRINT("Network count: ");
-      WS_DEBUG_PRINTLN(altNetworkCount);
+      WS_DEBUG_PRINTLNVAR(altNetworkCount);
       if (altNetworkCount == 0) {
         fsHalt("ERROR: No alternative network entries found under "
                "network_type_wifi.alternative_networks in secrets.json!");
@@ -412,14 +409,14 @@ void Wippersnapper_FS::parseSecrets() {
         if (i >= 3) {
           WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
                          "only the first 3 will be used. Not using ");
-          WS_DEBUG_PRINTLN(altnetworks[i]["network_ssid"].as<const char *>());
+          WS_DEBUG_PRINTLNVAR(altnetworks[i]["network_ssid"].as<const char *>());
           break;
         }
         convertFromJson(altnetworks[i], Ws._multiNetworksV2[i]);
         WS_DEBUG_PRINT("Added SSID: ");
-        WS_DEBUG_PRINTLN(Ws._multiNetworksV2[i].ssid);
+        WS_DEBUG_PRINTLNVAR(Ws._multiNetworksV2[i].ssid);
         WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLN(Ws._multiNetworksV2[i].pass);
+        WS_DEBUG_PRINTLNVAR(Ws._multiNetworksV2[i].pass);
       }
       Ws._isWiFiMultiV2 = true;
     } else {
@@ -492,7 +489,7 @@ void Wippersnapper_FS::fsHalt(String msg) {
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
     WS_DEBUG_PRINT("Execution Halted: ");
-    WS_DEBUG_PRINTLN(msg.c_str());
+    WS_DEBUG_PRINTLNVAR(msg.c_str());
     delay(5000);
     yield();
   }
@@ -509,7 +506,7 @@ void Wippersnapper_FS::fsHalt(String msg, ws_led_status_t ledStatusColor) {
   statusLEDSolid(ledStatusColor);
   while (1) {
     WS_DEBUG_PRINT("Execution Halted: ");
-    WS_DEBUG_PRINTLN(msg.c_str());
+    WS_DEBUG_PRINTLNVAR(msg.c_str());
     delay(5000);
     yield();
   }

@@ -120,11 +120,11 @@ bool ServoController::Handle_Servo_Add(ws_servo_Add *msg) {
   if (did_attach) {
     _servo_hardware[_active_servo_pins]->ServoWrite((int)msg->min_pulse_width);
     WS_DEBUG_PRINT("[servo] Servo attached to pin: ");
-    WS_DEBUG_PRINTLN(msg->servo_pin);
+    WS_DEBUG_PRINTLNVAR(msg->servo_pin);
     _active_servo_pins++;
   } else {
     WS_DEBUG_PRINT("[servo] Error: Failed to attach servo to pin !");
-    WS_DEBUG_PRINT(msg->servo_pin);
+    WS_DEBUG_PRINTVAR(msg->servo_pin);
     delete _servo_hardware[_active_servo_pins];
     _servo_hardware[_active_servo_pins] = nullptr;
   }
@@ -185,7 +185,7 @@ bool ServoController::Handle_Servo_Remove(ws_servo_Remove *msg) {
   _active_servo_pins--;
 
   WS_DEBUG_PRINT("[servo] Servo removed from pin: ");
-  WS_DEBUG_PRINTLN(msg->servo_pin);
+  WS_DEBUG_PRINTLNVAR(msg->servo_pin);
   return true;
 }
 
