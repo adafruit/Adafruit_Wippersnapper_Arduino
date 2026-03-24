@@ -240,8 +240,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _ahtx0->configureDriver(msgDeviceInitReq);
     drivers.push_back(_ahtx0);
   } else if (strcmp("apds9999", msgDeviceInitReq->i2c_device_name) == 0) {
-    _apds9999 =
-        new WipperSnapper_I2C_Driver_APDS9999(this->_i2c, i2cAddress);
+    _apds9999 = new WipperSnapper_I2C_Driver_APDS9999(this->_i2c, i2cAddress);
     if (!_apds9999->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize APDS9999!");
       _busStatusResponse =
