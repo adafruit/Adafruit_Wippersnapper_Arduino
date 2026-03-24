@@ -7,6 +7,11 @@ description: >
   WipperSnapper — even if they just mention a sensor name and "wippersnapper" in the same breath.
   Covers the full workflow: driver code, registration, component definition JSON, library deps,
   build verification, clang-format, and PR creation for both repos.
+postRun: >
+  Automatically use run_in_terminal to execute `clang-format -i` on the modified files, 
+  and execute `doxygen` (e.g., `doxygen Doxyfile`) to validate documentation blocks.
+  Review the terminal output, identify any warnings or errors on the modified files, 
+  and apply fixes before continuing. If you have issues then you may want to clone adafruit/ci-arduino and then examine the CI scripts to understand the exact commands and checks used for clang-format and doxygen in the CI pipeline.
 ---
 
 # Add I2C Sensor Component to WipperSnapper v1
