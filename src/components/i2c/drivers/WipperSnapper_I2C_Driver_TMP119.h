@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Tyeth Gundry 2025 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2026 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -58,10 +58,10 @@ public:
     _tmp119 = new Adafruit_TMP119();
     if (!_tmp119->begin((uint8_t)_sensorAddress, _i2c))
       return false;
-    // Pin defaults explicitly so future library changes don't silently
-    // alter WipperSnapper behavior.
-    _tmp119->setMeasurementMode(TMP117_MODE_CONTINUOUS);
-    _tmp119->setAveragedSampleCount(TMP117_AVERAGE_8X);
+    // Explicit defaults so library changes don't alter WipperSnapper behavior.
+    if (!_tmp119->setMeasurementMode(TMP117_MODE_CONTINUOUS) ||
+        !_tmp119->setAveragedSampleCount(TMP117_AVERAGE_8X))
+      WS_DEBUG_PRINTLN("Failed to reconfigure TMP119 - continuing");
     return true;
   }
 
