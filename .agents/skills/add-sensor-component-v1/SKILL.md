@@ -9,9 +9,9 @@ description: >
   build verification, clang-format, and PR creation for both repos.
 postRun: >
   Automatically use run_in_terminal to execute `clang-format -i` on the modified files, 
-  and execute `doxygen` (e.g., `doxygen Doxyfile`) to validate documentation blocks.
+  and run  `doxygen` (e.g., `doxygen Doxyfile` or manually) to validate documentation blocks.
   Review the terminal output, identify any warnings or errors on the modified files, 
-  and apply fixes before continuing. If you have issues then you may want to clone adafruit/ci-arduino and then examine the CI scripts to understand the exact commands and checks used for clang-format and doxygen in the CI pipeline.
+  and apply fixes before continuing. You can pip install clang-format 20 like GH runners (venv).
 ---
 
 # Add I2C Sensor Component to WipperSnapper v1
