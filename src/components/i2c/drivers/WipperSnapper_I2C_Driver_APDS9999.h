@@ -1,13 +1,13 @@
 /*!
  * @file WipperSnapper_I2C_Driver_APDS9999.h
  *
- * Device driver for the APDS9999 proximity, lux light, and color sensor.
+ * Device driver for the APDS-9999 proximity, lux light, and color sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Adafruit Industries 2025.
+ * Copyright (c) Tyeth Gundry for Adafruit Industries 2026.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -20,14 +20,14 @@
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for an APDS9999 sensor.
+    @brief  Class that provides a driver interface for an APDS-9999 sensor.
 */
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_APDS9999 : public WipperSnapper_I2C_Driver {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an APDS9999 sensor.
+      @brief    Constructor for an APDS-9999 sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -42,14 +42,14 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an APDS9999 sensor.
+      @brief    Destructor for an APDS-9999 sensor.
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_APDS9999() { delete _apds9999; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the APDS9999 sensor and begins I2C.
+      @brief    Initializes the APDS-9999 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
@@ -79,7 +79,7 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the APDS9999 sensor data.
+      @brief    Reads the APDS-9999 sensor data.
       @returns  True if the sensor was read successfully, False otherwise.
   */
   /*******************************************************************************/
@@ -105,7 +105,7 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the APDS9999's current light reading in lux.
+      @brief    Gets the APDS-9999's current light reading in lux.
       @param    lightEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the light reading was obtained successfully, False
@@ -122,7 +122,7 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the APDS9999's current proximity reading.
+      @brief    Gets the APDS-9999's current proximity reading.
       @param    proximityEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the proximity was obtained successfully, False
@@ -138,7 +138,7 @@ public:
   }
 
 protected:
-  Adafruit_APDS9999 *_apds9999 = nullptr; ///< APDS9999 driver object
+  Adafruit_APDS9999 *_apds9999 = nullptr; ///< APDS-9999 driver object
   unsigned long _lastRead = 0;            ///< Last sensor read time
   sensors_event_t _cachedLight = {0};     ///< Cached light reading
   sensors_event_t _cachedProximity = {0}; ///< Cached proximity reading
