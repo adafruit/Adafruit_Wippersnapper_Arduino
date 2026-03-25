@@ -7,6 +7,11 @@ description: >
   WipperSnapper — even if they just mention a sensor name and "wippersnapper" in the same breath.
   Covers the full workflow: driver code, registration, component definition JSON, library deps,
   build verification, clang-format, and PR creation for both repos.
+postRun: >
+  Automatically use run_in_terminal to execute `clang-format -i` on the modified files, 
+  and run  `doxygen` (e.g., `doxygen Doxyfile` or manually) to validate documentation blocks.
+  Review the terminal output, identify any warnings or errors on the modified files, 
+  and apply fixes before continuing. You can pip install clang-format 20 like GH runners (venv).
 ---
 
 # Add I2C Sensor Component to WipperSnapper v1
@@ -85,8 +90,8 @@ Before writing any code, gather this information:
 
 | What | Where to look |
 |------|---------------|
-| Product page | Search the web for "adafruit <SENSOR>" to find the product page. The product page (https://www.adafruit.com/product/<PRODUCT_ID>) html data has links to the learn guide (do not use the API or guess urls). This is the fastest route to all other info. |
-| Learn guide | **Always read the learn guide before writing any code.** Fetch the text view `.md?view=all` version (e.g. `https://learn.adafruit.com/<guide-slug>/overview` goes to `https://learn.adafruit.com/<guide-slug>.md?view=all`). The Arduino section (`## Arduino`) names the exact library to use. Do NOT skip this step even if you think you recognise a sub-component (e.g. a board with an SHT41 onboard may have its own dedicated library like `Adafruit_STCC4` — you won't know without reading the guide). There is also a subsequent section for `## Example Code` beneath the arduino section showing a link to the basic example sketch/code. |
+| Product page | Search the web for "adafruit <SENSOR>" to find the product page. The product page (`https://www.adafruit.com/product/<PRODUCT_ID>`) html data has links to the learn guide (do not use the API or guess URLs). Use a tool like wget or curl: `curl -sL https://www.adafruit.com/product/5817 \| grep "learn.adafruit.com"` (Note: replace `5817` with the actual product ID found via search). |
+| Learn guide | **Always read the learn guide before writing any code.** Fetch the text view `.md?view=all` version of the guide found on the product page (e.g., `curl -sL "https://learn.adafruit.com/<guide-slug>.md?view=all"`). The Arduino section (`## Arduino`) names the exact library to use. Do NOT skip this step even if you think you recognise a sub-component. There is also a `## Example Code` section showing the basic example sketch. |
 | Adafruit Arduino library | Named in the learn guide. Or: `gh search repos "<SENSOR>" --owner adafruit`. If no dedicated library from adafruit, check related chips (e.g. TMP119 lives inside `Adafruit_TMP117`). Try partial matches like `TMP11` if exact fails. Fall back to 3rd party or ask user. |
 | Library API | Read the library header on GitHub — find `begin()` signature and sensor read methods (`getEvent`, `readTempC`, etc.) |
 | I2C addresses | Sensor datasheet or Adafruit product page or learn guide or driver. Check https://learn.adafruit.com/i2c-addresses/the-list |
@@ -204,103 +209,20 @@ bool begin() {
 }
 ```
 
-### Then: Write the driver using this template
+### Then: Write the driver
 
-This is a header-only class. Use the closest existing driver as a template, but **do not blindly
-copy** — older drivers may lack the caching and explicit-defaults patterns described above.
-Always apply the patterns from this skill even if the closest driver doesn't use them.
+This is a header-only class. Use the closest existing driver as a template. Always apply the patterns from this skill!
 
-> **Note:** Some existing drivers (e.g. TMP117, MCP9808) use simpler patterns that predate
-> current best practices. Follow this template, not those older drivers.
-
-```cpp
-/*!
- * @file WipperSnapper_I2C_Driver_<SENSOR>.h
- *
- * Device driver for the <SENSOR> <description> sensor.
- *
- * Adafruit invests time and resources providing this open source code,
- * please support Adafruit and open-source hardware by purchasing
- * products from Adafruit!
- *
- * Copyright (c) <AUTHOR> <YEAR> for Adafruit Industries.
- *
- * MIT license, all text here must be included in any redistribution.
- *
- */
-#ifndef WipperSnapper_I2C_Driver_<SENSOR>_H
-#define WipperSnapper_I2C_Driver_<SENSOR>_H
-
-#include "WipperSnapper_I2C_Driver.h"
-#include <<Adafruit_Library_Header>.h>
-
-/**************************************************************************/
-/*!
-    @brief  Class that provides a driver interface for a <SENSOR> sensor.
-*/
-/**************************************************************************/
-class WipperSnapper_I2C_Driver_<SENSOR> : public WipperSnapper_I2C_Driver {
-public:
-  WipperSnapper_I2C_Driver_<SENSOR>(TwoWire *i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
-    _i2c = i2c;
-    _sensorAddress = sensorAddress;
-  }
-
-  ~WipperSnapper_I2C_Driver_<SENSOR>() { delete _<sensor_ptr>; }
-
-  bool begin() {
-    _<sensor_ptr> = new <Adafruit_Class>();
-    if (!_<sensor_ptr>->begin((uint8_t)_sensorAddress, _i2c))
-      return false;
-    // Pin library defaults explicitly (found by reading library _init/begin):
-    // _<sensor_ptr>->setMeasurementMode(...);
-    // _<sensor_ptr>->setAveragedSampleCount(...);
-    return true;
-  }
-
-  // --- One getEvent*() per sensor reading type ---
-  // All go through _readSensor() for caching
-
-  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!_readSensor())
-      return false;
-    *tempEvent = _cachedTemp;
-    return true;
-  }
-
-protected:
-  <Adafruit_Class> *_<sensor_ptr>; ///< Pointer to <SENSOR> sensor object
-
-  // Cached readings and time guard
-  sensors_event_t _cachedTemp = {0};
-  unsigned long _lastRead = 0;
-
-  /*******************************************************************************/
-  /*!
-      @brief    Reads sensor data, with 1-second cache to avoid redundant
-                I2C reads when multiple getEvent*() calls occur per cycle
-                (e.g. °C then °F, or temp then humidity). The calling order
-                of getEvent methods is not guaranteed, so every method must
-                go through this function.
-      @returns  True if cached data is available or a fresh read succeeded.
-  */
-  /*******************************************************************************/
-  bool _readSensor() {
-    if (_lastRead != 0 && millis() - _lastRead < 1000)
-      return true; // use cached values
-    // Do actual I2C read — adapt to library API:
-    if (!_<sensor_ptr>->getEvent(&_cachedTemp))
-      return false;
-    _lastRead = millis();
-    return true;
-  }
-};
-
-#endif // WipperSnapper_I2C_Driver_<SENSOR>_H
-```
+> **Good References:** 
+> - Look at `WipperSnapper_I2C_Driver_SCD30.h` for a clean example of the new style, including read caching and setting explicit defaults in `begin()`.
+> - Check `WipperSnapper_I2C_Driver_SGP30.h` for a complete example of `fastTick()` usage, which is needed when the datasheet explicitly requires a minimum polling cadence for correct operation.
 
 ### Key decisions when writing the driver:
+
+- **Handling `dataReady()` or Data Availability:** Some sensors (like the SCD30) require you to check a flag before reading to avoid stale data or blocked I2C buses. 
+  - If the library requires polling a `dataReady()` method, implement a short, limited test in your read loop. 
+  - Never use infinite `while (!sensor.dataReady()) delay(10);` loops. Since WipperSnapper runs many components concurrently, infinite loops crash the whole system if a sensor hangs. 
+  - Instead, use a brief check (optionally with a small finite `delay` and subsequent retry, like `if(!dataReady) { delay(100); if(!dataReady) return false; }`). See `WipperSnapper_I2C_Driver_SCD30.h` for a safe implementation.
 
 - **Library API style:** Some Adafruit libraries use Unified Sensor (`getEvent(sensors_event_t*)`)
   which fills the event struct directly. Others expose raw read methods like `readTempC()`. If the
@@ -327,28 +249,7 @@ protected:
   4. Have `getEvent*()` return the cached values instead of doing a fresh I2C read.
 
   See `WipperSnapper_I2C_Driver_SGP30.h` for a complete example — the SGP30 datasheet requires
-  ~1 Hz polling to maintain its IAQ algorithm, so the driver defines:
-
-  ```cpp
-  #define SGP30_FASTTICK_INTERVAL_MS 1000
-
-  void fastTick() override {
-      if (!_sgp30) return;
-      uint32_t now = millis();
-      if (now - _lastFastMs >= SGP30_FASTTICK_INTERVAL_MS) {
-          if (_sgp30->IAQmeasure()) {
-              _eco2 = (uint16_t)_sgp30->eCO2;
-              _tvoc = (uint16_t)_sgp30->TVOC;
-          }
-          _lastFastMs = now;
-      }
-  }
-
-  bool getEventECO2(sensors_event_t *senseEvent) override {
-      senseEvent->eCO2 = _eco2;  // return cached value
-      return true;
-  }
-  ```
+  ~1 Hz polling to maintain its IAQ algorithm.
 
   Most simple sensors (temperature, pressure, humidity) do NOT need this — they can be read
   on-demand at whatever interval WipperSnapper requests. Only use `fastTick()` when the
