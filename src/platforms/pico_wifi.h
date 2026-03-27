@@ -198,7 +198,7 @@ public:
   @brief  Returns the type of network connection used by Wippersnapper
   @return Pico
   */
-  const char *connectionType() { return "Pico"; }
+  const char *connectionType() { return "PICO_CYW43"; }
 
 protected:
   const char *_ssid; ///< WiFi SSID

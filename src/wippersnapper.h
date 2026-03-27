@@ -184,6 +184,10 @@ public:
   void provision();
   void run();
 
+  // Adapter capability helpers
+  bool isWiFiAdapterInstance();
+  virtual const char *connectionType() { return "BASE"; }
+
   // Global flags for the status led
   bool
       lockStatusNeoPixelV2; ///< True if status LED is using the status neopixel
