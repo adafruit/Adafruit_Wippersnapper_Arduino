@@ -129,7 +129,7 @@ void wippersnapper::getMacAddr() {
     @return   int32_t RSSI value, 0 to 255, in dB
 */
 int32_t wippersnapper::getRSSI() {
-  WS_DEBUG_PRINTLN("Wiippersnapper_V2::getRSSI");
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::getRSSI");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return 0;
 }
@@ -152,6 +152,21 @@ ws_status_t wippersnapper::networkStatus() {
   WS_DEBUG_PRINTLN("wippersnapper::networkStatus");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return WS_IDLE;
+}
+
+/*!
+    @brief    Determines whether the current WipperSnapper instance is backed
+              by a WiFi-capable adapter implementation. Call before connect()
+    @returns  True if this instance supports networking, False otherwise.
+*/
+bool wippersnapper::isWiFiAdapterInstance() {
+  // assert not "BASE" class
+  if (strcmp(connectionType(), "BASE") == 0) {
+    WS_DEBUG_PRINTLN("Base class connectionType() should be overridden by adapter implementation!");
+  } else {
+    WS_DEBUG_PRINTLN("Connection type: " + String(connectionType()));
+  }
+  return strcmp(connectionType(), "WS-OFFLINE-PICO") != 0;
 }
 
 /*!
@@ -964,6 +979,15 @@ void wippersnapper::connect() {
     setStatusLEDColor(0x000000, Ws.status_pixel_brightnessV2 * 255.0);
     return;
   } else {
+    // If SD init failed during provisioning and we're not offline,
+    // we can only proceed if this instance supports networking.
+    if ((!Ws._sdCardV2 || !Ws._sdCardV2->isSDCardInitialized()) &&
+        !isWiFiAdapterInstance()) {
+      haltErrorV2("SD initialization failed, offline mode failure; cannot "
+                  "fallback to online mode on a non-network adapter.\nCheck SD "
+                  "wiring/CS pin and config.json.");
+    }
+
     WS_DEBUG_PRINTLN("Running in online mode...");
   }
 

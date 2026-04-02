@@ -123,9 +123,7 @@ public:
   @return Pico
   */
   const char *connectionType() {
-    WS_DEBUG_PRINTLN("[pico_offline] Error: connectionType() is not "
-                     "supported in this implementation!");
-    return "ws-offline-pico";
+    return "WS-OFFLINE-PICO";
   }
 
 protected:
