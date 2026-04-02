@@ -1748,14 +1748,14 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 
   // If throttle duration is less than the keepalive interval, delay for the
   // full keepalive interval
-  if (throttleDuration < WS_KEEPALIVE_INTERVAL_MS) {
-    delay(WS_KEEPALIVE_INTERVAL_MS);
+  if (throttleDuration < WS_DEVICE_PING_MS) {
+    delay(WS_DEVICE_PING_MS);
   } else {
     // round to nearest millis to prevent delaying for less time than req'd.
-    float throttleLoops = ceil(throttleDuration / WS_KEEPALIVE_INTERVAL_MS);
+    float throttleLoops = ceil(throttleDuration / WS_DEVICE_PING_MS);
     // block the run() loop
     while (throttleLoops > 0) {
-      delay(WS_KEEPALIVE_INTERVAL_MS);
+      delay(WS_DEVICE_PING_MS);
       WS.feedWDT();
       WS._mqtt->ping();
       throttleLoops--;
@@ -2474,7 +2474,7 @@ void Wippersnapper::runNetFSM() {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
+      WS._mqtt->setKeepAliveInterval(WS_BROKER_KEEPALIVE_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -2599,9 +2599,8 @@ ws_board_status_t Wippersnapper::getBoardStatus() { return WS._boardStatus; }
 */
 /**************************************************************************/
 void Wippersnapper::pingBroker() {
-  // ping within keepalive-10% to keep connection open
-  if (millis() > (_prv_ping + (WS_KEEPALIVE_INTERVAL_MS -
-                               (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
+  // if it's past time to send the next ping
+  if (millis() > (_prv_ping + WS_DEVICE_PING_MS)) {
     WS_DEBUG_PRINT("Sending MQTT PING: ");
     if (WS._mqtt->ping()) {
       WS_DEBUG_PRINTLN("SUCCESS!");
