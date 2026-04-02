@@ -129,7 +129,7 @@ void wippersnapper::getMacAddr() {
     @return   int32_t RSSI value, 0 to 255, in dB
 */
 int32_t wippersnapper::getRSSI() {
-  WS_DEBUG_PRINTLN("Wiippersnapper_V2::getRSSI");
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::getRSSI");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return 0;
 }
@@ -161,10 +161,12 @@ ws_status_t wippersnapper::networkStatus() {
 */
 bool wippersnapper::isWiFiAdapterInstance() {
   // assert not "BASE" class
-  if (strcmp(this->connectionType(), "BASE") == 0) {
+  if (strcmp(connectionType(), "BASE") == 0) {
     WS_DEBUG_PRINTLN("Base class connectionType() should be overridden by adapter implementation!");
+  } else {
+    WS_DEBUG_PRINTLN("Connection type: " + String(connectionType()));
   }
-  return strcmp(this->connectionType(), "WS-OFFLINE-PICO") != 0;
+  return strcmp(connectionType(), "WS-OFFLINE-PICO") != 0;
 }
 
 /*!
