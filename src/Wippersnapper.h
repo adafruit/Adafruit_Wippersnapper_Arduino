@@ -249,7 +249,7 @@ typedef enum {
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
 #define WS_BROKER_KEEPALIVE_MS                                                 \
-  11000 ///< Maximum time without a ping before broker disconnects, in milliseconds
+  11000 ///< Maximum time without a ping before broker disconnects (ms)
 #define WS_DEVICE_PING_MS                                                      \
   5000 ///< Interval at which device sends ping to broker, in milliseconds
 
