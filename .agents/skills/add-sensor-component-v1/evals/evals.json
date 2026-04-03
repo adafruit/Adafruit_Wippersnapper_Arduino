@@ -1,0 +1,23 @@
+{
+  "skill_name": "add_sensor_component_v1",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add the TMP119 temperature sensor to WipperSnapper. It uses the Adafruit TMP117 library which already has TMP119 support built in. The TMP117 driver already exists as a reference.",
+      "expected_output": "Creates WipperSnapper_I2C_Driver_TMP119.h based on TMP117 driver, registers it in WipperSnapper_I2C.h and .cpp, identifies that platformio.ini already has the TMP117 library so no change needed, and creates a definition.json for the components repo with I2C addresses 0x48-0x4B and ambient-temp + ambient-temp-fahrenheit subcomponents.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want to add an SCD30 CO2 sensor to wippersnapper but it looks like it might already exist. Can you check and if not, walk me through adding it?",
+      "expected_output": "Identifies that the SCD30 driver already exists in the drivers folder and informs the user, rather than creating a duplicate.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Add the BMP581 barometric pressure sensor to WipperSnapper. It measures temperature, pressure, and altitude.",
+      "expected_output": "Checks if driver already exists (BMP5XX covers BMP580/581/585), identifies the existing driver handles this, and advises that only a components definition may be needed if not already present.",
+      "files": []
+    }
+  ]
+}

@@ -657,6 +657,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _tmp117->configureDriver(msgDeviceInitReq);
     drivers.push_back(_tmp117);
     WS_DEBUG_PRINTLN("TMP117 Initialized Successfully!");
+  } else if (strcmp("tmp119", msgDeviceInitReq->i2c_device_name) == 0) {
+    _tmp119 = new WipperSnapper_I2C_Driver_TMP119(this->_i2c, i2cAddress);
+    if (!_tmp119->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize TMP119!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _tmp119->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_tmp119);
+    WS_DEBUG_PRINTLN("TMP119 Initialized Successfully!");
   } else if (strcmp("tsl2591", msgDeviceInitReq->i2c_device_name) == 0) {
     _tsl2591 = new WipperSnapper_I2C_Driver_TSL2591(this->_i2c, i2cAddress);
     if (!_tsl2591->begin()) {
