@@ -844,13 +844,8 @@ bool I2cController::Handle_I2cDeviceOutputWrite(ws_i2c_DeviceOutputWrite *msg) {
   }
 
   ws_display_Write *write_msg = &msg->write_display;
-  if (write_msg->which_content == ws_display_Write_message_tag) {
-    WS_DEBUG_PRINTLN("[i2c] Writing text to output device...");
-    driver->WriteMessage(write_msg->content.message);
-  } else {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unsupported display write content type!");
-    return false;
-  }
+  WS_DEBUG_PRINTLN("[i2c] Writing text to output device...");
+  driver->WriteMessage(write_msg->message);
 
   return true;
 }

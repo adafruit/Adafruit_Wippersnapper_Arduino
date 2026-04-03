@@ -42,7 +42,7 @@ public:
   DisplayHardware();
   ~DisplayHardware();
 
-  bool begin(ws_display_Add *addMsg);
+  bool begin(ws_display_Add *addMsg, const char *name);
   bool write(ws_display_Write *msg);
   const char *getName();
 

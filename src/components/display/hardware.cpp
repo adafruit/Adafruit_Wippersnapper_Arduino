@@ -35,8 +35,8 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
   return atoi(pinStr + 1);
 }
 
-bool DisplayHardware::begin(ws_display_Add *addMsg) {
-  snprintf(_name, sizeof(_name), "%s", addMsg->name ? addMsg->name : "");
+bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
+  snprintf(_name, sizeof(_name), "%s", name ? name : "");
   _type = addMsg->type;
 
   WS_DEBUG_PRINT("[display] Type: ");
@@ -64,14 +64,14 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
 
 bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   ws_display_TftSpiConfig *spi = &msg->interface_type.spi_tft;
-  ws_display_SpiPinConfig *pins = &spi->spi_pins;
+  ws_spi_DeviceConfig *dev = &spi->spi;
 
-  int16_t cs = parsePin(pins->pin_cs);
-  int16_t dc = parsePin(pins->pin_dc);
-  int16_t mosi = parsePin(pins->pin_mosi);
-  int16_t sck = parsePin(pins->pin_sck);
-  int16_t rst = parsePin(pins->pin_rst);
-  int16_t miso = parsePin(pins->pin_miso);
+  int16_t cs = parsePin(dev->pin_cs);
+  int16_t dc = parsePin(spi->pin_dc);
+  int16_t mosi = parsePin(dev->pin_mosi);
+  int16_t sck = parsePin(dev->pin_sck);
+  int16_t rst = parsePin(spi->pin_rst);
+  int16_t miso = parsePin(dev->pin_miso);
 
   WS_DEBUG_PRINT("[display] SPI TFT pins - CS:");
   WS_DEBUG_PRINTVAR(cs);
@@ -86,7 +86,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   WS_DEBUG_PRINT(" MISO:");
   WS_DEBUG_PRINTLNVAR(miso);
 
-  if (pins->bus != 0) {
+  if (dev->bus != 0) {
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
@@ -217,11 +217,11 @@ bool DisplayHardware::detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst) {
 // ---------------------------------------------------------------------------
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   ws_display_EpdSpiConfig *spi = &msg->interface_type.spi_epd;
-  ws_display_SpiPinConfig *pins = &spi->spi_pins;
+  ws_spi_DeviceConfig *dev = &spi->spi;
 
-  int16_t dc = parsePin(pins->pin_dc);
-  int16_t rst = parsePin(pins->pin_rst);
-  int16_t cs = parsePin(pins->pin_cs);
+  int16_t dc = parsePin(spi->pin_dc);
+  int16_t rst = parsePin(spi->pin_rst);
+  int16_t cs = parsePin(dev->pin_cs);
   int16_t sram_cs = -1, busy = -1;
   if (strlen(spi->pin_sram_cs) >= 2)
     sram_cs = parsePin(spi->pin_sram_cs);
@@ -239,7 +239,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   WS_DEBUG_PRINT(" BUSY:");
   WS_DEBUG_PRINTLNVAR(busy);
 
-  if (pins->bus != 0) {
+  if (dev->bus != 0) {
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
@@ -484,8 +484,7 @@ bool DisplayHardware::write(ws_display_Write *msg) {
   }
 
   WS_DEBUG_PRINT("[display] Writing message: ");
-  WS_DEBUG_PRINTLNVAR(msg->content.message);
-  _drvDisp->writeMessage(msg->content.message, msg->clear_first, msg->cursor_x,
-                         msg->cursor_y);
+  WS_DEBUG_PRINTLNVAR(msg->message);
+  _drvDisp->writeMessage(msg->message);
   return true;
 }

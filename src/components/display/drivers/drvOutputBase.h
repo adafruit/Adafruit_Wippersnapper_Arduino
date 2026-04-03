@@ -127,9 +127,7 @@ public:
       @returns  True if the message was written successfully, False otherwise.
   */
   bool WriteMessageCharLCD(ws_display_Write *write_msg) {
-    if (write_msg->which_content == ws_display_Write_message_tag) {
-      WriteMessage(write_msg->content.message);
-    }
+    WriteMessage(write_msg->message);
     return true;
   }
 
