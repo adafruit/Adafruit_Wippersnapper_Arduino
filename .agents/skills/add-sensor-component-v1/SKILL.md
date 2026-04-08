@@ -137,7 +137,10 @@ call the Celsius method and convert. Only implement the Celsius version. Never i
 **Read-and-cache requirement:** The calling order of `getEvent*()` methods is not guaranteed (°F
 may be called before °C). Every `getEvent*()` must go through a shared `_readSensor()` with a
 millis-based time guard so only the first call per cycle does the I2C read; subsequent calls
-return cached data. See the driver template in Step 1 and `WipperSnapper_I2C_Driver_SCD30.h` and SGP30 
+return cached data. **Cache `millis()` once** at the top of the function (e.g.
+`unsigned long now = millis();`) and use the cached value for both the time guard check and
+setting `_lastRead` — never call `millis()` twice.
+See the driver template in Step 1 and `WipperSnapper_I2C_Driver_SCD30.h` and SGP30 
 for the canonical patterns.
 
 This is especially important for multi-reading sensors but also applies to temperature sensors
@@ -534,11 +537,12 @@ protected:
   unsigned long _lastRead = 0;
 
   bool _readSensor() {
-    if (_lastRead != 0 && millis() - _lastRead < 1000)
+    unsigned long now = millis();
+    if (_lastRead != 0 && now - _lastRead < 1000)
       return true; // recently read, use cached value
     if (!_tmp119->getEvent(&_cachedTemp))
       return false;
-    _lastRead = millis();
+    _lastRead = now;
     return true;
   }
 
