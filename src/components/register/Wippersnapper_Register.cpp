@@ -15,8 +15,6 @@
  */
 #include "Wippersnapper.h"
 
-extern Wippersnapper WS;
-
 /****************************************************************************/
 /*!
     @brief    Encodes hardware registration request message and publishes
