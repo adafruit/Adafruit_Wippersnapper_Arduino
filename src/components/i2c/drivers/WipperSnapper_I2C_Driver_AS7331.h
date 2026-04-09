@@ -58,21 +58,23 @@ public:
     if (!_as7331->begin(_i2c, (uint8_t)_sensorAddress))
       return false;
 
+    bool setupSuccess = true;
     // Configure sensor — must power down before changing settings
-    _as7331->powerDown(true);
-
+    setupSuccess &= _as7331->powerDown(true);
+    if (!setupSuccess)
+      return false;
     // Explicitly set defaults to pin behavior against library changes
-    _as7331->setGain(AS7331_GAIN_4X);
-    _as7331->setIntegrationTime(AS7331_TIME_64MS);
-    _as7331->setMeasurementMode(AS7331_MODE_CONT);
-    _as7331->setClockFrequency(AS7331_CLOCK_1024MHZ);
-    _as7331->setBreakTime(25); // 200us
-    _as7331->setStandby(false);
+    setupSuccess &= _as7331->setGain(AS7331_GAIN_4X);
+    setupSuccess &= _as7331->setIntegrationTime(AS7331_TIME_64MS);
+    setupSuccess &= _as7331->setMeasurementMode(AS7331_MODE_CONT);
+    setupSuccess &= _as7331->setClockFrequency(AS7331_CLOCK_1024MHZ);
+    setupSuccess &= _as7331->setBreakTime(25); // 200us
+    setupSuccess &= _as7331->setStandby(false);
 
     // Start continuous measurements
-    _as7331->powerDown(false);
+    setupSuccess &= _as7331->powerDown(false);
 
-    return true;
+    return setupSuccess;
   }
 
   /*******************************************************************************/
