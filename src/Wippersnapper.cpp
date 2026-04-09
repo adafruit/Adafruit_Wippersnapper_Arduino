@@ -1735,29 +1735,34 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   (void)len; // marking unused parameter to avoid compiler warning
   WS_DEBUG_PRINT("IO Throttle Error: ");
   WS_DEBUG_PRINTLNVAR(throttleData);
-  char *throttleMessage;
-  // Parse out # of seconds from message buffer
-  throttleMessage = strtok(throttleData, ",");
-  throttleMessage = strtok(NULL, " ");
-  // Convert from seconds to to millis
-  int throttleDuration = atoi(throttleMessage) * 1000;
-
+  uint32_t throttleDuration = 60000UL; // duration of throttle in ms
+  if (throttleData != NULL) {
+    char *throttleMessage;
+    // Parse out # of seconds from message buffer
+    throttleMessage = strtok(throttleData, ",");
+    if (throttleMessage != NULL) {
+      throttleMessage = strtok(NULL, " ");
+      if (throttleMessage != NULL) {
+        // Convert from seconds to to millis
+        throttleDuration = (uint32_t)atoi(throttleMessage) * 1000UL;
+      }
+    }
+  }
   WS_DEBUG_PRINT("Device is throttled for ");
   WS_DEBUG_PRINTVAR(throttleDuration);
   WS_DEBUG_PRINTLN("ms and blocking command execution.");
 
-  const uint32_t pingDelayMs = WS_DEVICE_PING_MS;
-
   // If throttle duration is less than the keepalive interval, delay for the
   // full keepalive interval
-  if (throttleDuration < pingDelayMs) {
-    delay(pingDelayMs);
+  if (throttleDuration < WS_DEVICE_PING_MS) {
+    delay(WS_DEVICE_PING_MS);
   } else {
     // Round up so throttling never ends earlier than requested.
-    uint32_t throttleLoops = (throttleDuration + pingDelayMs - 1) / pingDelayMs;
+    uint32_t throttleLoops =
+        (throttleDuration + WS_DEVICE_PING_MS - 1) / WS_DEVICE_PING_MS;
     // block the run() loop
     while (throttleLoops > 0) {
-      delay(pingDelayMs);
+      delay(WS_DEVICE_PING_MS);
       WS.feedWDT();
       WS._mqtt->ping();
       throttleLoops--;
