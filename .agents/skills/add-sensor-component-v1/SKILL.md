@@ -18,9 +18,10 @@ postRun: >
 
 ## Hard Gates — violations of these rules produce broken drivers
 
-These two rules exist because an agent once skipped the learn guide, guessed a GitHub URL for the
-library, got 404s on the example code and .cpp file, silently ignored them, and wrote a driver
-based on an unverified header fetch. The driver used an API that may not have existed.
+These rules exist because agents have previously skipped the learn guide, guessed GitHub URLs for
+libraries, silently ignored 404s, and constructed library names from repo names instead of looking
+them up. Each of these produced drivers that either called non-existent APIs or failed to compile
+because the dependency couldn't be resolved.
 
 1. **Learn guide is a prerequisite, not a nice-to-have.** You must find and read the Adafruit
    learn guide for the product before writing any driver code. The research chain is:
@@ -31,7 +32,15 @@ based on an unverified header fetch. The driver used an API that may not have ex
    sensor part numbers — boards with a known chip onboard may have a dedicated wrapper library
    with a completely different name and API.
 
-2. **A 404 or failed fetch is a red flag, not an inconvenience to route around.** If any WebFetch,
+2. **Library names come from `library.properties`, not from the repo name.** The GitHub repo name
+   and the Arduino/PlatformIO library name are often different (e.g. repo `Adafruit_AS7331` →
+   library `Adafruit AS7331 Library`). An agent once guessed `adafruit/Adafruit AS7331` for
+   `platformio.ini` and got `UnknownPackageError: Could not find the package`. The fix is simple:
+   in Step 0c, fetch the library's `library.properties` file and read its `name=` field. Use that
+   exact string everywhere — `platformio.ini` `lib_deps` and the firmware's `library.properties`
+   `depends=` line.
+
+3. **A 404 or failed fetch is a red flag, not an inconvenience to route around.** If any WebFetch,
    curl, or gh API call for a library header, example sketch, .cpp file, or learn guide returns
    a 404, timeout, or error: **immediately report the failure to the user** with the URL that
    failed and what you were trying to find. Do not silently fall through to the next step. Do not
@@ -144,7 +153,7 @@ From the learn guide, extract:
 **If you cannot find or read the learn guide after trying all fallbacks above, STOP and ask the
 user.** Do not guess the library name from the sensor part number.
 
-### 0c. Confirm the library exists
+### 0c. Confirm the library exists and get its exact registered name
 
 Verify the library by checking at least one of:
 - `gh search repos "<Library Name>" --owner adafruit`
@@ -153,6 +162,19 @@ Verify the library by checking at least one of:
 
 **If the library cannot be found**, it may not be released yet, or it may have a different name
 than expected. Ask the user before proceeding.
+
+**Then, fetch the library's `library.properties` to get the exact registered name:**
+
+```bash
+gh api repos/adafruit/<Repo>/contents/library.properties --jq '.content' | base64 -d
+```
+
+Extract the `name=` value — this is the **canonical library name** used by both the Arduino
+Library Manager and PlatformIO registry. It often differs from the GitHub repo name (e.g. repo
+`Adafruit_AS7331` → library name `Adafruit AS7331 Library`; repo `Adafruit_TMP117` → library
+name `Adafruit TMP117`). Guessing the library name from the repo name will produce "package not
+found" build failures. Record this name and use it verbatim in Step 4 for both `platformio.ini`
+and the firmware's `library.properties`.
 
 ### 0d. Gather remaining details
 
@@ -384,23 +406,28 @@ Wippersnapper_Components repo.
 
 Skip if the sensor class lives in an already-listed library (e.g. TMP119 in Adafruit_TMP117).
 
+**Use the exact `name=` value from the library's own `library.properties` that you fetched in
+Step 0c.** Do not construct the name from the GitHub repo name — they frequently differ
+(underscores vs spaces, trailing "Library" suffix, etc.) and a wrong name causes "package not
+found" build failures.
+
 ### 4a. platformio.ini
 
-Add to `[env]` `lib_deps` in **alphabetical order** ignoring any purpose specific sections of the lib_deps:
+Add to `[env]` `lib_deps` in **alphabetical order** ignoring any purpose specific sections of the lib_deps, using the
+`adafruit/<exact library.properties name>` format:
 ```ini
-    adafruit/Adafruit <Library Name>              # released Arduino library
-    https://github.com/<owner>/<repo>.git         # unreleased / third-party
+    adafruit/Adafruit <Exact Name From library.properties>   # released Arduino library
+    https://github.com/<owner>/<repo>.git                    # unreleased / third-party
 ```
 
 ### 4b. library.properties
 
-Add the library's **Arduino Library Manager name** to the comma-separated `depends=` line. This
-is the name as it appears in the Arduino IDE Library Manager + library.properties, not the GitHub repo name. Add it in
-a logical position among the existing entries.
+Add the **exact same `name=` value** to the comma-separated `depends=` line. Add it in a logical
+position among the existing entries.
 
-Example: to add a library called "Adafruit FooBar":
+Example: if the library's `library.properties` contains `name=Adafruit FooBar Library`:
 ```
-depends=..., Adafruit FooBar, ...
+depends=..., Adafruit FooBar Library, ...
 ```
 GitHub-only libraries can't go in `library.properties` — note this in the PR description (and advise to fork n release ardu lib).
 
