@@ -16,6 +16,31 @@ postRun: >
 
 # Add I2C Sensor Component to WipperSnapper v1
 
+## Hard Gates — violations of these rules produce broken drivers
+
+These two rules exist because an agent once skipped the learn guide, guessed a GitHub URL for the
+library, got 404s on the example code and .cpp file, silently ignored them, and wrote a driver
+based on an unverified header fetch. The driver used an API that may not have existed.
+
+1. **Learn guide is a prerequisite, not a nice-to-have.** You must find and read the Adafruit
+   learn guide for the product before writing any driver code. The research chain is:
+   web search for product page → extract learn guide URL from the product page → fetch the
+   `.md?view=all` version of the learn guide → extract the Arduino library name from the
+   `## Arduino` section. If you cannot find the learn guide after reasonable effort, **STOP and
+   ask the user** for the library name and API details. Do not guess library names from chip or
+   sensor part numbers — boards with a known chip onboard may have a dedicated wrapper library
+   with a completely different name and API.
+
+2. **A 404 or failed fetch is a red flag, not an inconvenience to route around.** If any WebFetch,
+   curl, or gh API call for a library header, example sketch, .cpp file, or learn guide returns
+   a 404, timeout, or error: **immediately report the failure to the user** with the URL that
+   failed and what you were trying to find. Do not silently fall through to the next step. Do not
+   write driver code based on partial or unverified information. A 404 on an expected GitHub URL
+   often means the library doesn't exist, has a different repo name, or the file structure differs
+   from what you assumed. Any of these will produce a driver that doesn't compile.
+
+---
+
 Changes span **two repositories**:
 1. **Adafruit_Wippersnapper_Arduino** — C++ firmware: new driver + registration
 2. **Wippersnapper_Components** — JSON definition + product image
@@ -86,13 +111,53 @@ PRs to both repos run CI. Key checks to pass before submitting:
 
 ## Step 0 — Research the Sensor **MUST BE DONE BEFORE WRITING ANY CODE**
 
-Before writing any code, gather this information:
+Before writing any code, gather this information. Steps 0a–0c are **sequential gates** — each
+must succeed before moving to the next. If any gate fails, stop and ask the user.
+
+### 0a. Find the product page
+
+Search the web for "adafruit <SENSOR>" to find the product page. The product page
+(`https://www.adafruit.com/product/<PRODUCT_ID>`) html data has links to the learn guide (do not
+use the API or guess URLs). Use a tool like wget or curl:
+`curl -sL https://www.adafruit.com/product/5817 | grep "learn.adafruit.com"`
+(Replace `5817` with the actual product ID found via search.)
+
+**If this fails:** try WebSearch for "adafruit <SENSOR> site:adafruit.com". If you still can't
+find a product page, ask the user for the product URL or learn guide link.
+
+### 0b. Find and read the learn guide (GATE — cannot proceed without this)
+
+Extract the learn guide URL from the product page. Then fetch the **text view** version:
+`https://learn.adafruit.com/<guide-slug>.md?view=all`
+
+If the `.md?view=all` URL 404s, try:
+1. The HTML version: `https://learn.adafruit.com/<guide-slug>?view=all`
+2. WebSearch for `"learn.adafruit.com" "<SENSOR>"` to find the correct slug
+3. Ask the user
+
+From the learn guide, extract:
+- The **exact Arduino library name** from the `## Arduino` section
+- The **example code link** (usually a GitHub URL in the `## Example Code` section)
+- The **I2C address(es)**
+- What the sensor **measures** (map to subcomponent types)
+
+**If you cannot find or read the learn guide after trying all fallbacks above, STOP and ask the
+user.** Do not guess the library name from the sensor part number.
+
+### 0c. Confirm the library exists
+
+Verify the library by checking at least one of:
+- `gh search repos "<Library Name>" --owner adafruit`
+- WebFetch the library's GitHub page or header file
+- The library appears in the Arduino Library Manager
+
+**If the library cannot be found**, it may not be released yet, or it may have a different name
+than expected. Ask the user before proceeding.
+
+### 0d. Gather remaining details
 
 | What | Where to look |
 |------|---------------|
-| Product page | Search the web for "adafruit <SENSOR>" to find the product page. The product page (`https://www.adafruit.com/product/<PRODUCT_ID>`) html data has links to the learn guide (do not use the API or guess URLs). Use a tool like wget or curl: `curl -sL https://www.adafruit.com/product/5817 \| grep "learn.adafruit.com"` (Note: replace `5817` with the actual product ID found via search). |
-| Learn guide | **Always read the learn guide before writing any code.** Fetch the text view `.md?view=all` version of the guide found on the product page (e.g., `curl -sL "https://learn.adafruit.com/<guide-slug>.md?view=all"`). The Arduino section (`## Arduino`) names the exact library to use. Do NOT skip this step even if you think you recognise a sub-component. There is also a `## Example Code` section showing the basic example sketch. |
-| Adafruit Arduino library | Named in the learn guide. Or: `gh search repos "<SENSOR>" --owner adafruit`. If no dedicated library from adafruit, check related chips (e.g. TMP119 lives inside `Adafruit_TMP117`). Try partial matches like `TMP11` if exact fails. Fall back to 3rd party or ask user. |
 | Library API | Read the library header on GitHub — find `begin()` signature and sensor read methods (`getEvent`, `readTempC`, etc.) |
 | I2C addresses | Sensor datasheet or Adafruit product page or learn guide or driver. Check https://learn.adafruit.com/i2c-addresses/the-list |
 | What it measures | Datasheet — map each reading to a subcomponent type (see table below) |
@@ -173,6 +238,13 @@ gh api repos/adafruit/<Library_Repo>/contents/examples --jq '.[].name'
    section usually contains example code link showing the exact API (or embedded code if non-markdown version).
 3. **Ask the user:** If tools are restricted, ask them to paste the library header and example.
 
+**If any fetch returns a 404 or error:** Do not silently move to the next fallback and then
+forget that all routes failed. If every fallback also fails, you have no verified API to code
+against. **Report all failed URLs to the user** and ask them to provide the example code or
+confirm the library repo name and structure. Writing driver code without having successfully
+read either the example sketch or the learn guide's embedded code is forbidden — you will
+produce code that calls methods which may not exist.
+
 From the example, extract the **exact method signatures** used:
 - `begin()` — what arguments, what return type
 - How readings are triggered (`getEvent()`, `readMeasurement()`, `measureSingleShot()`, etc.)
@@ -194,8 +266,13 @@ gh api repos/adafruit/<Library_Repo>/contents/<Library_Name>.h --jq '.content' |
 
 Or via WebFetch: `https://raw.githubusercontent.com/adafruit/<Library_Repo>/main/<Library_Name>.h`
 
-If GitHub is blocked, the learn guide `.md?view=all` may contain enough API detail from code
-snippets. If not, ask the user for the header content.
+**If this fetch 404s**, the repo name or header filename may differ from what you assumed. Try:
+1. List the repo contents: `gh api repos/adafruit/<Library_Repo>/contents --jq '.[].name'`
+2. WebFetch the repo's main page to find the actual header filename
+3. Fall back to the learn guide `.md?view=all` which may contain enough API detail from code snippets
+
+If none of these work, **ask the user for the header content.** Do not proceed to write the
+driver without having verified the actual method signatures.
 
 **Explicitly set every configuration parameter that the library defaults in `begin()`/`_init()`.**
 This pins behavior so library updates can't silently change WipperSnapper.
