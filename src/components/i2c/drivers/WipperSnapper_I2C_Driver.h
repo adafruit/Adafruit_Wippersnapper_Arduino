@@ -23,6 +23,7 @@
 
 #define PERIOD_24HRS_AGO_MILLIS (millis() - (24 * 60 * 60 * 1000))
 ///< Used for last sensor read time, initially set 24hrs ago (max period)
+#define ONE_SECOND_IN_MILLIS 1000 ///< Used for period checks
 
 /**************************************************************************/
 /*!

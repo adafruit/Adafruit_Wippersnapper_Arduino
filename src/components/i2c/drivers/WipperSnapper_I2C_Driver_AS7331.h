@@ -18,6 +18,8 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_AS7331.h>
 
+#define AS7331_BREAKTIME_200US 25 ///< Recommended break time (val * 8µs)
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for an AS7331 UV sensor.
@@ -54,6 +56,8 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
+    if (_as7331)
+      delete _as7331;
     _as7331 = new Adafruit_AS7331();
     if (!_as7331->begin(_i2c, (uint8_t)_sensorAddress))
       return false;
@@ -68,7 +72,7 @@ public:
     setupSuccess &= _as7331->setIntegrationTime(AS7331_TIME_64MS);
     setupSuccess &= _as7331->setMeasurementMode(AS7331_MODE_CONT);
     setupSuccess &= _as7331->setClockFrequency(AS7331_CLOCK_1024MHZ);
-    setupSuccess &= _as7331->setBreakTime(25); // 200us
+    setupSuccess &= _as7331->setBreakTime(AS7331_BREAKTIME_200US);
     setupSuccess &= _as7331->setStandby(false);
 
     // Start continuous measurements
@@ -108,7 +112,7 @@ protected:
   /*******************************************************************************/
   bool _readSensor() {
     unsigned long now = millis();
-    if (_lastRead != 0 && (now - _lastRead < 1000))
+    if (_lastRead != 0 && (now - _lastRead < ONE_SECOND_IN_MILLIS))
       return true;
 
     float uva, uvb, uvc;
