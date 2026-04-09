@@ -86,7 +86,7 @@ public:
   bool ReadSensorData() {
     unsigned long now = millis();
     // Don't read sensor more than once per second
-    if (_lastRead != 0 && (now - _lastRead < 1000))
+    if (_lastRead != 0 && (now - _lastRead < ONE_SECOND_IN_MILLIS))
       return true;
 
     uint32_t r, g, b, ir;

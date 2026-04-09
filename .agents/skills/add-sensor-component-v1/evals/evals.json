@@ -18,6 +18,18 @@
       "prompt": "Add the BMP581 barometric pressure sensor to WipperSnapper. It measures temperature, pressure, and altitude.",
       "expected_output": "Checks if driver already exists (BMP5XX covers BMP580/581/585), identifies the existing driver handles this, and advises that only a components definition may be needed if not already present.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Add the AS7331 UV sensor to wippersnapper, publishing UVB as raw and debug-logging UVA/B/C on each read.",
+      "expected_output": "Finds the Adafruit product page, extracts the learn guide URL, reads the learn guide to confirm the library is 'Adafruit AS7331', fetches and reads the example sketch to learn the API (oneShot, readAllUV, etc.), then writes the driver. If any fetch 404s, reports the failure to the user instead of silently proceeding. Does NOT guess the GitHub URL or write code based on an unverified header file alone.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Let's add the STCC4 sensor to WipperSnapper. It has an SHT41 onboard.",
+      "expected_output": "Does NOT assume the library is Adafruit_SHT4X based on the SHT41 sub-component. Finds the product page, reads the learn guide, and discovers the correct library is 'Adafruit_STCC4' — a dedicated library. The learn guide is the source of truth for the library name, not chip sub-component names.",
+      "files": []
     }
   ]
 }

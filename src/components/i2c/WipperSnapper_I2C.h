@@ -24,6 +24,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
 #include "drivers/WipperSnapper_I2C_Driver_APDS9999.h"
 #include "drivers/WipperSnapper_I2C_Driver_AS5600.h"
+#include "drivers/WipperSnapper_I2C_Driver_AS7331.h"
 #include "drivers/WipperSnapper_I2C_Driver_BH1750.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME680.h"
@@ -168,6 +169,7 @@ private:
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_APDS9999 *_apds9999 = nullptr;
   WipperSnapper_I2C_Driver_AS5600 *_as5600 = nullptr;
+  WipperSnapper_I2C_Driver_AS7331 *_as7331 = nullptr;
   WipperSnapper_I2C_Driver_D6T1A *_d6t1a = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
   WipperSnapper_I2C_Driver_DS2484 *_ds2484 = nullptr;

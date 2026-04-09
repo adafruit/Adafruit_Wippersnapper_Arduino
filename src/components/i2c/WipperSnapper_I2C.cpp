@@ -260,6 +260,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _as5600->configureDriver(msgDeviceInitReq);
     drivers.push_back(_as5600);
+  } else if (strcmp("as7331", msgDeviceInitReq->i2c_device_name) == 0) {
+    _as7331 = new WipperSnapper_I2C_Driver_AS7331(this->_i2c, i2cAddress);
+    if (!_as7331->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize AS7331!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _as7331->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_as7331);
+    WS_DEBUG_PRINTLN("AS7331 Initialized Successfully!");
   } else if (strcmp("bh1750", msgDeviceInitReq->i2c_device_name) == 0) {
     _bh1750 = new WipperSnapper_I2C_Driver_BH1750(this->_i2c, i2cAddress);
     if (!_bh1750->begin()) {

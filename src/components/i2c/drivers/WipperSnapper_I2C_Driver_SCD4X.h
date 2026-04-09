@@ -74,7 +74,7 @@ public:
   */
   /*******************************************************************************/
   bool HasBeenReadInLastSecond() {
-    return _lastRead != 0 && millis() - _lastRead < 1000;
+    return _lastRead != 0 && millis() - _lastRead < ONE_SECOND_IN_MILLIS;
   }
 
   /*******************************************************************************/
