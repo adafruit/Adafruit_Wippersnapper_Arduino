@@ -1746,16 +1746,18 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINTVAR(throttleDuration);
   WS_DEBUG_PRINTLN("ms and blocking command execution.");
 
+  const uint32_t pingDelayMs = WS_DEVICE_PING_MS;
+
   // If throttle duration is less than the keepalive interval, delay for the
   // full keepalive interval
-  if (throttleDuration < WS_DEVICE_PING_MS) {
-    delay(WS_DEVICE_PING_MS);
+  if (throttleDuration < pingDelayMs) {
+    delay(pingDelayMs);
   } else {
-    // round to nearest millis to prevent delaying for less time than req'd.
-    float throttleLoops = ceil(throttleDuration / WS_DEVICE_PING_MS);
+    // Round up so throttling never ends earlier than requested.
+    uint32_t throttleLoops = (throttleDuration + pingDelayMs - 1) / pingDelayMs;
     // block the run() loop
     while (throttleLoops > 0) {
-      delay(WS_DEVICE_PING_MS);
+      delay(pingDelayMs);
       WS.feedWDT();
       WS._mqtt->ping();
       throttleLoops--;
@@ -2474,7 +2476,7 @@ void Wippersnapper::runNetFSM() {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      WS._mqtt->setKeepAliveInterval(WS_BROKER_KEEPALIVE_MS / 1000);
+      WS._mqtt->setKeepAliveInterval(_brokerKeepAliveIntervalSeconds);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -2793,6 +2795,8 @@ void Wippersnapper::connect() {
 
   // Dump device info to the serial monitor
   printDeviceInfo();
+
+  _brokerKeepAliveIntervalSeconds = WS_BROKER_KEEPALIVE_MS / 1000;
 
   // Generate device identifier
   if (!generateDeviceUID()) {
