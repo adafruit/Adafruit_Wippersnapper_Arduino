@@ -248,8 +248,10 @@ typedef enum {
 
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
-#define WS_KEEPALIVE_INTERVAL_MS                                               \
-  5000 ///< Session keepalive interval time, in milliseconds
+#define WS_BROKER_KEEPALIVE_MS                                                 \
+  11000 ///< Maximum time without a ping before broker disconnects (ms)
+#define WS_DEVICE_PING_MS                                                      \
+  5000 ///< Interval at which device sends ping to broker, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
   512 ///< MAXIMUM expected payload size, in bytes
@@ -476,6 +478,8 @@ protected:
   ws_status_t _status = WS_IDLE;   /*!< Adafruit IO connection status */
   uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                           Adafruit IO, in milliseconds. */
+  uint16_t _brokerKeepAliveIntervalSeconds =
+      0; /*!< Cached MQTT broker keepalive interval, in seconds. */
   uint32_t _prv_ping = 0;    /*!< Previous time when client pinged Adafruit IO's
                                 MQTT broker, in milliseconds. */
   uint32_t _prvKATBlink = 0; /*!< Previous time when client pinged Adafruit IO's
