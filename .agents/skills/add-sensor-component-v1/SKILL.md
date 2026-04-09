@@ -642,7 +642,7 @@ protected:
 
   bool _readSensor() {
     unsigned long now = millis();
-    if (_lastRead != 0 && now - _lastRead < 1000)
+    if (_lastRead != 0 && now - _lastRead < ONE_SECOND_IN_MILLIS)
       return true; // recently read, use cached value
     if (!_tmp119->getEvent(&_cachedTemp))
       return false;
