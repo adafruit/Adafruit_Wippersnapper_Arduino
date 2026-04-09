@@ -66,3 +66,4 @@ Doxyfile
 repos/
 Wippersnapper_Components/
 Wippersnapper_Boards/
+.claude/settings.local.json
