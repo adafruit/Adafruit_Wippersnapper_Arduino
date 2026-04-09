@@ -1751,8 +1751,8 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
     }
   }
   if (!parsingSuccessful) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Unable to parse throttle duration from message, please report this! Defaulting to 60s.");
+    WS_DEBUG_PRINTLN("ERROR: Unable to parse throttle duration from message, "
+                     "please report this! Defaulting to 60s.");
   }
   WS_DEBUG_PRINT("Device is throttled for ");
   WS_DEBUG_PRINTVAR(throttleDuration);
