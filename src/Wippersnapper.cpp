@@ -1736,6 +1736,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("IO Throttle Error: ");
   WS_DEBUG_PRINTLNVAR(throttleData);
   uint32_t throttleDuration = 60000UL; // duration of throttle in ms
+  bool parsingSuccessful = false;
   if (throttleData != NULL) {
     char *throttleMessage;
     // Parse out # of seconds from message buffer
@@ -1745,8 +1746,13 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
       if (throttleMessage != NULL) {
         // Convert from seconds to to millis
         throttleDuration = (uint32_t)atoi(throttleMessage) * 1000UL;
+        parsingSuccessful = true;
       }
     }
+  }
+  if (!parsingSuccessful) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to parse throttle duration from message, please report this! Defaulting to 60s.");
   }
   WS_DEBUG_PRINT("Device is throttled for ");
   WS_DEBUG_PRINTVAR(throttleDuration);
