@@ -71,9 +71,8 @@ public:
     if (_lastRead != 0 && now - _lastRead < ONE_SECOND_IN_MILLIS)
       return true;
 
-    uint16_t co2;
+    uint16_t co2, status;
     float temperature, humidity;
-    uint16_t status;
 
     if (!_stcc4->readMeasurement(&co2, &temperature, &humidity, &status))
       return false;
