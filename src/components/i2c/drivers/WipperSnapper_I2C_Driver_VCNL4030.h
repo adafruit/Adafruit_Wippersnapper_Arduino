@@ -54,24 +54,22 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
+    if (_vcnl4030)
+      delete _vcnl4030;
     _vcnl4030 = new Adafruit_VCNL4030();
     if (!_vcnl4030->begin(_sensorAddress, _i2c))
       return false;
 
-    // Enable ambient light and proximity sensors
-    _vcnl4030->enableALS(true);
-    _vcnl4030->enableProx(true);
+    // Enable and configure sensors, compound result catches any failure
+    bool result = _vcnl4030->enableALS(true);
+    result = _vcnl4030->enableProx(true) && result;
+    result = _vcnl4030->setProxLEDCurrent(VCNL4030_PROX_LED_200MA) && result;
+    result = _vcnl4030->setProxDuty(VCNL4030_PROX_DUTY_40) && result;
+    result = _vcnl4030->setProxIntegrationTime(VCNL4030_PROX_IT_8T) && result;
+    result = _vcnl4030->setProxResolution16Bit(true) && result;
+    result = _vcnl4030->setALSIntegrationTime(VCNL4030_ALS_IT_100MS) && result;
 
-    // Configure proximity for reliability
-    _vcnl4030->setProxLEDCurrent(VCNL4030_PROX_LED_200MA);
-    _vcnl4030->setProxDuty(VCNL4030_PROX_DUTY_40);
-    _vcnl4030->setProxIntegrationTime(VCNL4030_PROX_IT_8T);
-    _vcnl4030->setProxResolution16Bit(true);
-
-    // Configure ALS: 100ms integration time
-    _vcnl4030->setALSIntegrationTime(VCNL4030_ALS_IT_100MS);
-
-    return true;
+    return result;
   }
 
   /*******************************************************************************/
@@ -104,7 +102,7 @@ public:
   }
 
 protected:
-  Adafruit_VCNL4030 *_vcnl4030; ///< Pointer to VCNL4030 sensor object
+  Adafruit_VCNL4030 *_vcnl4030 = nullptr; ///< Pointer to VCNL4030 sensor object
 };
 
 #endif // WipperSnapper_I2C_Driver_VCNL4030_H
