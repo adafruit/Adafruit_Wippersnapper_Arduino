@@ -55,6 +55,5 @@ public:
   bool analogWrite(uint8_t pin, int value);
   uint32_t tone(uint8_t pin, uint32_t freq);
 };
-extern Wippersnapper WS;
 
 #endif // ws_ledc_H

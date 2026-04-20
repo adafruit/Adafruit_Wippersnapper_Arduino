@@ -45,6 +45,5 @@ public:
 private:
   ws_ledc *_ledcMgr = nullptr; ///< pointer to ws_ledc
 };
-extern Wippersnapper WS;
 
 #endif // WS_PWM

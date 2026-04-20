@@ -27,7 +27,9 @@
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
-extern Wippersnapper WS;
+
+class Wippersnapper_ESP32;
+extern Wippersnapper_ESP32 WS; //!< Global instance of Wippersnapper_WiFi
 
 /****************************************************************************/
 /*!
