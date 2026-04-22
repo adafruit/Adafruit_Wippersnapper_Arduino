@@ -324,6 +324,8 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     return Ws._i2c_controller->Router(stream);
   case ws_signal_BrokerToDevice_uart_tag:
     return Ws._uart_controller->Router(stream);
+  case ws_signal_BrokerToDevice_gps_tag:
+    return Ws._gps_controller->Router(stream);
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   case ws_signal_BrokerToDevice_sleep_tag:
     return Ws._sleep_controller->Router(stream);

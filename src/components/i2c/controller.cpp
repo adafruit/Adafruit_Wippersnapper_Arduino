@@ -633,27 +633,6 @@ ws_i2c_DeviceStatus I2cController::InitMux(I2cHardware *bus, const char *name,
 }
 
 /*!
-    @brief    Initializes a GPS driver via the GPS controller.
-    @param    wire
-                Pointer to the TwoWire bus.
-    @param    address
-                The GPS device's I2C address.
-    @param    config
-                Pointer to the GPS configuration.
-    @returns  Device status indicating success or failure.
-*/
-ws_i2c_DeviceStatus I2cController::InitGpsDriver(TwoWire *wire, uint16_t address,
-                                                  ws_gps_Config *config) {
-  WS_DEBUG_PRINT("[i2c] Creating GPS driver...");
-  if (!Ws._gps_controller->AddGPS(wire, address, config)) {
-    WS_DEBUG_PRINTLN("FAILED!");
-    return ws_i2c_DeviceStatus_DS_FAIL_UNSUPPORTED_SENSOR;
-  }
-  WS_DEBUG_PRINTLN("OK!");
-  return ws_i2c_DeviceStatus_DS_SUCCESS;
-}
-
-/*!
     @brief    Finds an existing I2C bus by SCL/SDA pins, or creates a new one.
     @param    pin_scl
               The SCL pin number.
@@ -773,10 +752,6 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   strcpy(device_name, msg->device_name);
   ws_i2c_DeviceDescriptor device_descriptor = msg->device_description;
 
-  // Should we use GPS passthrough mode for this device? (only applies to GPS devices,
-  // but we check here since it's a property of the driver, not the bus)
-  bool use_gps_passthrough = msg->has_gps_config;
-
   // Should we use the MUX for this device? We determine this based on if the mux_address field is set in the descriptor
   bool use_mux = (device_descriptor.mux_address != 0x00);
 
@@ -820,13 +795,6 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
     publishDeviceAddedOrReplaced(device_descriptor, hw_bus, mux_status);
     Ws.haltErrorV2("[i2c] Failed to initialize MUX driver!",
                    WS_LED_STATUS_ERROR_RUNTIME, false);
-  }
-
-  // Check if we are trying to add a new GPS driver - if so, initialize GPS driver and return
-  if (use_gps_passthrough) {
-    ws_i2c_DeviceStatus gps_status = InitGpsDriver(wire, device_descriptor.device_address, &msg->gps_config);
-    publishDeviceAddedOrReplaced(device_descriptor, hw_bus, gps_status);
-    return (gps_status == ws_i2c_DeviceStatus_DS_SUCCESS);
   }
 
   // Check if we need to configure the MUX channel for this device - if so, configure it before creating the driver

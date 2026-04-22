@@ -98,8 +98,6 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   // TODO: Have we already added this UART device?!
   drvUartBase *uart_driver = nullptr;
-  GPSController *drv_uart_gps = nullptr;
-  bool is_gps_drv = false;
   ws_uart_DeviceConfig cfg_device = msg->cfg_device;
   switch (cfg_device.device_type) {
   case ws_uart_DeviceType_DT_UNSPECIFIED:
@@ -131,16 +129,9 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     delete uart_hardware; // cleanup
     return false;
   case ws_uart_DeviceType_DT_GPS:
-    WS_DEBUG_PRINTLN("[uart] Adding GPS device..");
-    if (!Ws._gps_controller->AddGPS(uart_hardware->GetHardwareSerial(),
-                                    &cfg_device.config.gps)) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS device!");
-      delete uart_hardware; // cleanup
-      return false;
-    }
-    WS_DEBUG_PRINTLN("[uart] Added GPS driver!");
-    is_gps_drv = true; // mark as GPS driver
-    break;
+    WS_DEBUG_PRINTLN("[uart] GPS is now handled by the GPS controller directly!");
+    delete uart_hardware; // cleanup
+    return false;
   case ws_uart_DeviceType_DT_PM25AQI:
     WS_DEBUG_PRINTLN("[uart] Adding PM2.5 AQI device..");
     // Create a new PM2.5 AQI driver instance
@@ -165,19 +156,15 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   }
 
   // Attempt to initialize the UART driver
-  bool did_begin = false;
   WS_DEBUG_PRINTLN("[uart] Initializing UART driver...");
-  if (!is_gps_drv) {
-    WS_DEBUG_PRINTLN("[uart] STD UART drv...");
-    did_begin = uart_driver->begin();
-    if (did_begin) {
-      WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
-      _uart_drivers.push_back(uart_driver);
-    } else {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
-      delete uart_driver; // cleanup
-      return false;
-    }
+  bool did_begin = uart_driver->begin();
+  if (did_begin) {
+    WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
+    _uart_drivers.push_back(uart_driver);
+  } else {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
+    delete uart_driver; // cleanup
+    return false;
   }
 
   // Are we in offline mode?
