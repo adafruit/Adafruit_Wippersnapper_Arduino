@@ -1,6 +1,7 @@
 var searchData=
 [
   ['wl_5fmac_5faddr_5flength',['WL_MAC_ADDR_LENGTH',['../_wippersnapper___networking_8h.html#ac2f11055182e226f041b9a71e352569f',1,'Wippersnapper_Networking.h']]],
+  ['ws_5fbroker_5fkeepalive_5fms',['WS_BROKER_KEEPALIVE_MS',['../_wippersnapper_8h.html#ae4024dd00a271b70056bb21f4a8ef2b3',1,'Wippersnapper.h']]],
   ['ws_5fdebug',['WS_DEBUG',['../_wippersnapper_8h.html#a588e957b4cb40edf5d7ce01584a1793e',1,'Wippersnapper.h']]],
   ['ws_5fdebug_5fprint',['WS_DEBUG_PRINT',['../_wippersnapper_8h.html#a4b57776de6f8948ef3dc51df4d35e0d3',1,'Wippersnapper.h']]],
   ['ws_5fdebug_5fprinthex',['WS_DEBUG_PRINTHEX',['../_wippersnapper_8h.html#a217ae461d78158c231756891179debb6',1,'Wippersnapper.h']]],
@@ -8,7 +9,7 @@ var searchData=
   ['ws_5fdebug_5fprintlnvar',['WS_DEBUG_PRINTLNVAR',['../_wippersnapper_8h.html#ad9173b86a56f4f4937546fbfb1417e41',1,'Wippersnapper.h']]],
   ['ws_5fdebug_5fprintvar',['WS_DEBUG_PRINTVAR',['../_wippersnapper_8h.html#a592b80c08695e039e0aa052ef0c78853',1,'Wippersnapper.h']]],
   ['ws_5fdelay_5fwith_5fwdt',['WS_DELAY_WITH_WDT',['../_wippersnapper_8h.html#a826381413ef2b72cada0c51fdba364ac',1,'Wippersnapper.h']]],
-  ['ws_5fkeepalive_5finterval_5fms',['WS_KEEPALIVE_INTERVAL_MS',['../_wippersnapper_8h.html#a0915836cfab6a06783749f8d3c72324b',1,'Wippersnapper.h']]],
+  ['ws_5fdevice_5fping_5fms',['WS_DEVICE_PING_MS',['../_wippersnapper_8h.html#ad87e0409af91a39f3ab1ac2355c718ef',1,'Wippersnapper.h']]],
   ['ws_5fmax_5falt_5fwifi_5fnetworks',['WS_MAX_ALT_WIFI_NETWORKS',['../_wippersnapper_8h.html#aea2c26f43877d3af007f74eb502c97ea',1,'WS_MAX_ALT_WIFI_NETWORKS():&#160;Wippersnapper.h'],['../_wippersnapper___networking_8h.html#aea2c26f43877d3af007f74eb502c97ea',1,'WS_MAX_ALT_WIFI_NETWORKS():&#160;Wippersnapper_Networking.h']]],
   ['ws_5fmqtt_5fmax_5fpayload_5fsize',['WS_MQTT_MAX_PAYLOAD_SIZE',['../_wippersnapper_8h.html#a07b8444860c318fdff531a3d0c4f2e4a',1,'Wippersnapper.h']]],
   ['ws_5fprinter',['WS_PRINTER',['../_wippersnapper_8h.html#ae04b6b322705e95cdf2d837493a55a57',1,'Wippersnapper.h']]],
