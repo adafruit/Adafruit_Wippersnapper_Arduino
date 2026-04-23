@@ -62,7 +62,8 @@ void I2cHardware::TogglePowerPin() {
 /*!
     @brief   Attempts to initialize the I2C bus
     @returns True if the bus was successfully initialized, False otherwise.
-    NOTE: If False, the bus' status can be retrieved with GetBusStatus() to provide the failure reason.
+    NOTE: If False, the bus' status can be retrieved with GetBusStatus() to
+   provide the failure reason.
 */
 bool I2cHardware::begin() {
 // Some development boards define a pin that controls power
@@ -103,7 +104,8 @@ bool I2cHardware::begin() {
   _bus->begin(_sda, _scl);
   _bus->setClock(50000);
 #elif defined(ARDUINO_ARCH_RP2040)
-  // arduino-pico uses two global instances for TwoWire, select based on instance number
+  // arduino-pico uses two global instances for TwoWire, select based on
+  // instance number
   if (_instance == 0) {
     _bus = &Wire;
   } else if (_instance == 1) {

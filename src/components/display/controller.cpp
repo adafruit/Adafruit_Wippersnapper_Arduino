@@ -180,7 +180,7 @@ static void resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
 }
 
 bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
-                                            const char *name) {
+                                           const char *name) {
   WS_DEBUG_PRINT("[display] Adding display: ");
   WS_DEBUG_PRINTLNVAR(name);
 
@@ -299,7 +299,7 @@ bool DisplayController::Handle_Display_Remove(const char *name) {
     @return True if successful, False otherwise.
 */
 bool DisplayController::Handle_Display_Write(ws_display_Write *msg,
-                                              const char *name) {
+                                             const char *name) {
   WS_DEBUG_PRINT("[display] Writing to display: ");
   WS_DEBUG_PRINTLNVAR(name);
 

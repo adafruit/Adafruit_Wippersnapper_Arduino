@@ -274,7 +274,6 @@ ws_i2c_DeviceAddOrReplace *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
   return &_msg_i2c_device_add_replace;
 }
 
-
 /*!
     @brief    Encodes a I2cDeviceAddedOrReplaced message.
     @param    device_descriptor

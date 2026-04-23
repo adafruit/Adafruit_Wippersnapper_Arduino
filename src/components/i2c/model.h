@@ -19,7 +19,8 @@
 #include <Adafruit_Sensor.h>
 #include <protos/display.pb.h>
 
-#define MAX_DEVICE_EVENTS    16 ///< Maximum number of SensorEvents within I2cDeviceEvent
+#define MAX_DEVICE_EVENTS                                                      \
+  16 ///< Maximum number of SensorEvents within I2cDeviceEvent
 #define MAX_I2C_SCAN_DEVICES 96 ///< Maximum number of devices found on the bus
 
 /*!
@@ -58,8 +59,7 @@ public:
   ws_i2c_D2B *GetI2cD2B();
   // DeviceEvent Message API
   void ClearI2cDeviceEvent();
-  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
-                                         uint32_t pin_sda,
+  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl, uint32_t pin_sda,
                                          uint32_t addr_device,
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
