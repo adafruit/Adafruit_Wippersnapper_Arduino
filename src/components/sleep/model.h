@@ -29,7 +29,7 @@ public:
   ws_sleep_SleepConfig *GetSleepConfig();
   ws_sleep_Goodnight *GetSleepGoodnight();
   bool DecodeSleepConfig(pb_istream_t *stream);
-  bool EncodeSleepGoodnight();
+  bool EncodeSleepGoodnight(const char *msg);
   void SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_duration,
                           uint32_t timer_duration);
   void SetSleepEnterExt0(bool lock, const char *mode, uint32_t run_duration,
