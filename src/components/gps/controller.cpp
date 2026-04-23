@@ -77,7 +77,7 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(
     return false;
   }
 
-  bool added = false;
+  bool did_add = false;
 
   if (msg->has_add_uart) {
     // UART transport path
@@ -90,26 +90,24 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(
     }
     _uart_ports.push_back(uart_hw);
 
-    added = AddGPS(uart_hw->GetHardwareSerial(), &msg->config);
+    did_add = AddGPS(uart_hw->GetHardwareSerial(), &msg->config);
   } else if (msg->has_add_i2c) {
     // I2C transport path
     WS_DEBUG_PRINTLN("[gps] Configuring GPS via I2C transport...");
     ws_i2c_DeviceDescriptor desc = msg->add_i2c.device_description;
-    TwoWire *wire = Ws._i2c_controller->GetI2cBus(desc.pin_scl, desc.pin_sda);
-    if (wire == nullptr) {
-      WS_DEBUG_PRINTLN("[gps] ERROR: I2C bus not found for GPS device!");
+    TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(desc.pin_scl, desc.pin_sda);
+    if (wire == nullptr)
       return false;
-    }
-    added = AddGPS(wire, desc.device_address, &msg->config);
+    did_add = AddGPS(wire, desc.device_address, &msg->config);
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: No transport (UART or I2C) specified!");
     return false;
   }
 
-  if (!added) {
+  if (!did_add) {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to add GPS device!");
   }
-  return added;
+  return did_add;
 }
 
 /*!

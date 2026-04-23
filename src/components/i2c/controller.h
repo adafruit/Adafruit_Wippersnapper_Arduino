@@ -104,21 +104,20 @@ public:
                                const ws_i2c_DeviceStatus &device_status);
   bool publishScan();
   // Helpers //
-  bool IsBusStatusOK(I2cHardware *bus);
-  ws_i2c_DeviceStatus InitMux(I2cHardware *bus, const char *name,
-                              uint32_t address);
+  TwoWire *GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda);
+  ws_i2c_DeviceStatus InitMux(I2cHardware *bus, const char *name, uint32_t address);
   bool RemoveDriver(uint32_t address,
                     uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
-  TwoWire *GetI2cBus(uint32_t pin_scl, uint32_t pin_sda);
   size_t GetI2cBusCount();
   TwoWire *GetI2cBusByIndex(size_t index);
 
 private:
   I2cHardware *findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda);
-  I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
-  std::vector<I2cHardware *>
-      _i2c_buses;                      ///< Vector of ptrs to I2C hardware buses
-  std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C drivers
+  bool IsBusStatusOK(I2cHardware *bus);
+  TwoWire *GetI2cBus(uint32_t pin_scl, uint32_t pin_sda);
+  I2cModel *_i2c_model = nullptr;        ///< Pointer to an I2C model object
+  std::vector<I2cHardware *> _i2c_buses; ///< Vector of ptrs to I2C hardware buses
+  std::vector<drvBase *> _i2c_drivers;   ///< Vector of ptrs to I2C drivers
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_I2C_CONTROLLER_H
