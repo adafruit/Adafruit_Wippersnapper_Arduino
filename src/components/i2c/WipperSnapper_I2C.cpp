@@ -1013,6 +1013,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _max17048->configureDriver(msgDeviceInitReq);
     drivers.push_back(_max17048);
     WS_DEBUG_PRINTLN("MAX17048/MAX17049 Initialized Successfully!");
+  } else if (strcmp("max44009", msgDeviceInitReq->i2c_device_name) == 0) {
+    _max44009 = new WipperSnapper_I2C_Driver_MAX44009(this->_i2c, i2cAddress);
+    if (!_max44009->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MAX44009!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _max44009->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_max44009);
+    WS_DEBUG_PRINTLN("MAX44009 Initialized Successfully!");
   } else if (strcmp("adt7410", msgDeviceInitReq->i2c_device_name) == 0) {
     _adt7410 = new WipperSnapper_I2C_Driver_ADT7410(this->_i2c, i2cAddress);
     if (!_adt7410->begin()) {

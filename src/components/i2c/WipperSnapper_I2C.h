@@ -52,6 +52,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_LTR329_LTR303.h"
 #include "drivers/WipperSnapper_I2C_Driver_LTR390.h"
 #include "drivers/WipperSnapper_I2C_Driver_MAX17048.h"
+#include "drivers/WipperSnapper_I2C_Driver_MAX44009.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP3421.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP9808.h"
 #include "drivers/WipperSnapper_I2C_Driver_MLX90632D.h"
@@ -237,6 +238,7 @@ private:
   WipperSnapper_I2C_Driver_VL53L4CX *_vl53l4cx = nullptr;
   WipperSnapper_I2C_Driver_VL6180X *_vl6180x = nullptr;
   WipperSnapper_I2C_Driver_MAX17048 *_max17048 = nullptr;
+  WipperSnapper_I2C_Driver_MAX44009 *_max44009 = nullptr;
   WipperSnapper_I2C_Driver_ADT7410 *_adt7410 = nullptr;
   WipperSnapper_I2C_Driver_Out_QuadAlphaNum *_quadAlphaNum = nullptr;
   WipperSnapper_I2C_Driver_Out_CharLcd *_charLcd = nullptr;
