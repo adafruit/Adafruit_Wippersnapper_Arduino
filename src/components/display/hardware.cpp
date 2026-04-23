@@ -64,7 +64,7 @@ bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
 
 bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   ws_display_TftSpiConfig *spi = &msg->interface_type.spi_tft;
-  ws_spi_DeviceConfig *dev = &spi->spi;
+  ws_spi_Config *dev = &spi->spi;
 
   int16_t cs = parsePin(dev->pin_cs);
   int16_t dc = parsePin(spi->pin_dc);
@@ -217,7 +217,7 @@ bool DisplayHardware::detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst) {
 // ---------------------------------------------------------------------------
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   ws_display_EpdSpiConfig *spi = &msg->interface_type.spi_epd;
-  ws_spi_DeviceConfig *dev = &spi->spi;
+  ws_spi_Config *dev = &spi->spi;
 
   int16_t dc = parsePin(spi->pin_dc);
   int16_t rst = parsePin(spi->pin_rst);
