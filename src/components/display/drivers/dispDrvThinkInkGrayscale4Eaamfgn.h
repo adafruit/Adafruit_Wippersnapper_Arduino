@@ -24,7 +24,8 @@
 class drvDispThinkInkGrayscale4Eaamfgn : public dispDrvBase {
 public:
   /*!
-      @brief  Constructor for the ThinkInk 2.9" Grayscale 4-level EAAMFGN driver.
+      @brief  Constructor for the ThinkInk 2.9" Grayscale 4-level EAAMFGN
+     driver.
       @param  dc       Data/Command pin.
       @param  rst      Reset pin.
       @param  cs       Chip Select pin.
