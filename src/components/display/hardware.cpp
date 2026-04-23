@@ -393,12 +393,12 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   WS_DEBUG_PRINT(" addr: 0x");
   WS_DEBUG_PRINTLNVAR(addr, HEX);
 
-  // Get the initialized I2C bus from the I2C controller
-  if (!Ws._i2c_controller->IsBusStatusOK()) {
-    WS_DEBUG_PRINTLN("[display] ERROR: I2C bus not initialized!");
+  TwoWire *i2c = Ws._i2c_controller->GetI2cBus(i2c_cfg->pin_scl, i2c_cfg->pin_sda);
+  if (i2c == nullptr) {
+    WS_DEBUG_PRINTLN("[display] ERROR: I2C bus not found for Display device!");
     return false;
   }
-  TwoWire *i2c = Ws._i2c_controller->GetI2cBus();
+  
 
   // Create the appropriate I2C output driver based on driver string
   drvOutputBase *drv = nullptr;
