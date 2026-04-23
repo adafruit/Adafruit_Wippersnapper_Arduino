@@ -163,22 +163,17 @@ void SleepModel::ConvertSleepMode(const char *mode_str,
 
 /*!
     @brief  Encodes a Sleep Goodnight message into the _msg_sleep_goodnight
-            object. The Goodnight message is now empty (no fields).
+            object.
+    @param  msg
+            Unused - Goodnight is an empty message.
     @return True if the Sleep Goodnight message was successfully encoded.
             False if encoding resulted in a failure.
 */
-bool SleepModel::EncodeSleepGoodnight() {
-  memset(&_msg_sleep_goodnight, 0, sizeof(_msg_sleep_goodnight));
-
-  size_t sz_goodnight_msg;
-  if (!pb_get_encoded_size(&sz_goodnight_msg, ws_sleep_Goodnight_fields,
-                           &_msg_sleep_goodnight))
-    return false;
-
-  uint8_t buf[sz_goodnight_msg];
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_sleep_Goodnight_fields,
-                   &_msg_sleep_goodnight);
+bool SleepModel::EncodeSleepGoodnight(const char *msg) {
+  (void)msg; // Unused - Goodnight is an empty message
+  // Initialize the Goodnight message
+  _msg_sleep_goodnight = ws_sleep_Goodnight_init_zero;
+  return true;
 }
 
 #endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350

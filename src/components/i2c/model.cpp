@@ -18,6 +18,7 @@
     @brief  I2C constructor
 */
 I2cModel::I2cModel() {
+  memset(&_msg_i2c_d2b, 0, sizeof(_msg_i2c_d2b));
   memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
   memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
   memset(&_msg_i2c_device_add_replace, 0, sizeof(_msg_i2c_device_add_replace));
@@ -26,14 +27,13 @@ I2cModel::I2cModel() {
   memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
   memset(&_msg_i2c_device_removed, 0, sizeof(_msg_i2c_device_removed));
   memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
-  memset(&_msg_i2c_device_output_write, 0,
-         sizeof(_msg_i2c_device_output_write));
 }
 
 /*!
     @brief  I2C destructor
 */
 I2cModel::~I2cModel() {
+  memset(&_msg_i2c_d2b, 0, sizeof(_msg_i2c_d2b));
   memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
   memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
   memset(&_msg_i2c_device_add_replace, 0, sizeof(_msg_i2c_device_add_replace));
@@ -42,8 +42,6 @@ I2cModel::~I2cModel() {
   memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
   memset(&_msg_i2c_device_removed, 0, sizeof(_msg_i2c_device_removed));
   memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
-  memset(&_msg_i2c_device_output_write, 0,
-         sizeof(_msg_i2c_device_output_write));
 }
 
 /*!
@@ -163,20 +161,20 @@ ws_i2c_DeviceRemove *I2cModel::GetI2cDeviceRemoveMsg() {
 */
 bool I2cModel::DecodeI2cBusScan(pb_istream_t *stream) {
   memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
-  return pb_decode(stream, ws_i2c_BusScan_fields, &_msg_i2c_bus_scan);
+  return pb_decode(stream, ws_i2c_Scan_fields, &_msg_i2c_bus_scan);
 }
 
 /*!
     @brief    Returns a pointer to the I2cBusScan message.
     @returns  Pointer to a I2cBusScan message.
 */
-ws_i2c_BusScan *I2cModel::GetI2cBusScanMsg() { return &_msg_i2c_bus_scan; }
+ws_i2c_Scan *I2cModel::GetI2cBusScanMsg() { return &_msg_i2c_bus_scan; }
 
 /*!
     @brief    Returns a pointer to the I2cBusScanned message.
     @returns  Pointer to a I2cBusScanned message.
 */
-ws_i2c_BusScanned *I2cModel::GetI2cBusScannedMsg() {
+ws_i2c_Scanned *I2cModel::GetI2cBusScannedMsg() {
   return &_msg_i2c_bus_scanned;
 }
 
@@ -185,15 +183,15 @@ ws_i2c_BusScanned *I2cModel::GetI2cBusScannedMsg() {
 */
 void I2cModel::ClearI2cBusScanned() {
   memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
-  _msg_i2c_bus_scanned.bus_found_devices_count = 0; // zero-out the count
+  _msg_i2c_bus_scanned.found_devices_count = 0; // zero-out the count
 }
 
 /*!
     @brief    Adds a device to the I2cBusScanned message.
-    @param    bus_scl
-                The device's SCL pin.
-    @param    bus_sda
-                The device's SDA pin.
+    @param    pin_scl
+                The device's SCL pin number.
+    @param    pin_sda
+                The device's SDA pin number.
     @param    addr_device
                 The device's i2c address.
     @param    addr_mux
@@ -202,27 +200,59 @@ void I2cModel::ClearI2cBusScanned() {
                 Optional MUX channel
     @returns  True if the device was added to the bus scan, False otherwise.
 */
-bool I2cModel::AddDeviceToBusScan(const char *bus_scl, const char *bus_sda,
+bool I2cModel::AddDeviceToBusScan(uint32_t pin_scl, uint32_t pin_sda,
                                   uint32_t addr_device, uint32_t addr_mux,
                                   uint32_t mux_channel) {
-  pb_size_t idx_device = _msg_i2c_bus_scanned.bus_found_devices_count;
+  pb_size_t idx_device = _msg_i2c_bus_scanned.found_devices_count;
   if (idx_device >= MAX_I2C_SCAN_DEVICES)
     return false;
   // Fill I2cDeviceDescriptor
-  strcpy(_msg_i2c_bus_scanned.bus_found_devices[idx_device].bus_scl, bus_scl);
-  strcpy(_msg_i2c_bus_scanned.bus_found_devices[idx_device].bus_sda, bus_sda);
-  _msg_i2c_bus_scanned.bus_found_devices[idx_device].device_address =
-      addr_device;
+  _msg_i2c_bus_scanned.found_devices[idx_device].pin_scl = pin_scl;
+  _msg_i2c_bus_scanned.found_devices[idx_device].pin_sda = pin_sda;
+  _msg_i2c_bus_scanned.found_devices[idx_device].device_address = addr_device;
   // Optionally fill MUX info
-  if (_msg_i2c_bus_scanned.bus_found_devices[idx_device].mux_address !=
-      0xFFFF) {
-    _msg_i2c_bus_scanned.bus_found_devices[idx_device].mux_address = addr_mux;
-    _msg_i2c_bus_scanned.bus_found_devices[idx_device].mux_channel =
-        mux_channel;
+  if (_msg_i2c_bus_scanned.found_devices[idx_device].mux_address != 0xFFFF) {
+    _msg_i2c_bus_scanned.found_devices[idx_device].mux_address = addr_mux;
+    _msg_i2c_bus_scanned.found_devices[idx_device].mux_channel = mux_channel;
   }
-  _msg_i2c_bus_scanned.bus_found_devices_count++;
+  _msg_i2c_bus_scanned.found_devices_count++;
   return true;
 }
+
+/*!
+    @brief    Sets the bus status on the I2cBusScanned message.
+    @param    bus_status
+              The bus status (SUCCESS, ERROR_WIRING, etc.)
+*/
+void I2cModel::setI2cBusScannedStatus(ws_i2c_BusStatus bus_status) {
+  _msg_i2c_bus_scanned.bus_status = bus_status;
+}
+
+/*!
+    @brief    Encodes the I2cBusScanned message for publishing.
+    @note     Call setI2cBusScannedStatus() and AddDeviceToBusScan()
+              before calling this method.
+    @returns  True if encoding succeeded, False otherwise.
+*/
+bool I2cModel::encodeI2cScanned() {
+  // Wrap the complete scanned message in D2B envelope
+  memset(&_msg_i2c_d2b, 0, sizeof(_msg_i2c_d2b));
+  _msg_i2c_d2b.which_payload = ws_i2c_D2B_bus_scanned_tag;
+  _msg_i2c_d2b.payload.bus_scanned = _msg_i2c_bus_scanned;
+
+  // Verify we can get the encoded size
+  size_t sz_msg;
+  if (!pb_get_encoded_size(&sz_msg, ws_i2c_D2B_fields, &_msg_i2c_d2b))
+    return false;
+
+  return true;
+}
+
+/*!
+    @brief    Returns a pointer to the I2cD2B message.
+    @returns  Pointer to the I2cD2B message.
+*/
+ws_i2c_D2B *I2cModel::GetI2cD2B() { return &_msg_i2c_d2b; }
 
 /*!
     @brief    Decodes a I2cDeviceAddReplace message from an input stream.
@@ -244,14 +274,6 @@ ws_i2c_DeviceAddOrReplace *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
   return &_msg_i2c_device_add_replace;
 }
 
-/*!
-    @brief    Returns a pointer to the display Add message (for I2C output
-   devices).
-    @returns  Pointer to the ws_display_Add message.
-*/
-ws_display_Add *I2cModel::GetDisplayAddMsg() {
-  return &_msg_i2c_device_add_replace.output_add;
-}
 
 /*!
     @brief    Encodes a I2cDeviceAddedOrReplaced message.
@@ -305,10 +327,10 @@ void I2cModel::ClearI2cDeviceEvent() {
 
 /*!
     @brief    Sets the I2cDeviceEvent message's device description.
-    @param    bus_scl
-                The SCL bus.
-    @param    bus_sda
-                The SDA bus.
+    @param    pin_scl
+                The SCL pin number.
+    @param    pin_sda
+                The SDA pin number.
     @param    addr_device
                 The device address.
     @param    addr_mux
@@ -316,14 +338,14 @@ void I2cModel::ClearI2cDeviceEvent() {
     @param    mux_channel
                 The MUX channel.
 */
-void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
-                                                 const char *bus_sda,
+void I2cModel::SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
+                                                 uint32_t pin_sda,
                                                  uint32_t addr_device,
                                                  uint32_t addr_mux,
                                                  uint32_t mux_channel) {
   _msg_i2c_device_event.has_device_description = true;
-  strcpy(_msg_i2c_device_event.device_description.bus_scl, bus_scl);
-  strcpy(_msg_i2c_device_event.device_description.bus_sda, bus_sda);
+  _msg_i2c_device_event.device_description.pin_scl = pin_scl;
+  _msg_i2c_device_event.device_description.pin_sda = pin_sda;
   _msg_i2c_device_event.device_description.device_address = addr_device;
   _msg_i2c_device_event.device_description.mux_address = addr_mux;
   _msg_i2c_device_event.device_description.mux_channel = mux_channel;
@@ -374,60 +396,4 @@ bool I2cModel::EncodeI2cDeviceEvent() {
 */
 ws_i2c_DeviceEvent *I2cModel::GetI2cDeviceEvent() {
   return &_msg_i2c_device_event;
-}
-
-/*!
-    @brief    Decodes a I2cDeviceOutputWrite message from an input stream.
-    @param    stream
-              A pointer to the pb_istream_t stream.
-    @returns  True if the I2cDeviceOutputWrite message was decoded successfully,
-   False otherwise.
-*/
-bool I2cModel::DecodeI2cDeviceOutputWrite(pb_istream_t *stream) {
-  memset(&_msg_i2c_device_output_write, 0,
-         sizeof(_msg_i2c_device_output_write));
-  return pb_decode(stream, ws_i2c_DeviceOutputWrite_fields,
-                   &_msg_i2c_device_output_write);
-}
-
-/*!
-    @brief    Returns a pointer to the I2cDeviceOutputWrite message.
-    @returns  Pointer to the I2cDeviceOutputWrite message.
-*/
-ws_i2c_DeviceOutputWrite *I2cModel::GetI2cDeviceOutputWriteMsg() {
-  return &_msg_i2c_device_output_write;
-}
-
-/*!
-    @brief  I2cOutputModel constructor
-*/
-I2cOutputModel::I2cOutputModel() {
-  memset(&_msg_display_write, 0, sizeof(_msg_display_write));
-}
-
-/*!
-    @brief  I2cOutputModel destructor
-*/
-I2cOutputModel::~I2cOutputModel() {
-  memset(&_msg_display_write, 0, sizeof(_msg_display_write));
-}
-
-/*!
-    @brief    Decodes a display Write message from an input stream.
-    @param    stream
-              A pointer to the pb_istream_t stream.
-    @returns  True if the Write message was decoded successfully,
-              False otherwise.
-*/
-bool I2cOutputModel::DecodeDisplayWrite(pb_istream_t *stream) {
-  memset(&_msg_display_write, 0, sizeof(_msg_display_write));
-  return pb_decode(stream, ws_display_Write_fields, &_msg_display_write);
-}
-
-/*!
-    @brief    Returns a pointer to the display Write message.
-    @returns  Pointer to the ws_display_Write message.
-*/
-ws_display_Write *I2cOutputModel::GetDisplayWriteMsg() {
-  return &_msg_display_write;
 }

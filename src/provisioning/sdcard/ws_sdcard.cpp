@@ -180,17 +180,20 @@ void ws_sdcard::calculateFileLimits() {
 bool ws_sdcard::InitDS1307() {
   WS_DEBUG_PRINTLN("Begin DS1307 init");
   _rtc_ds1307 = new RTC_DS1307();
-  if (!_rtc_ds1307->begin(Ws._i2c_controller->GetI2cBus())) {
-    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS1307 RTC on WIRE");
-    if (!_rtc_ds1307->begin(Ws._i2c_controller->GetI2cBus(true))) {
-      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS1307 RTC on WIRE1");
-      delete _rtc_ds1307;
-      return false;
+
+  // Try each available I2C bus
+  for (size_t i = 0; i < Ws._i2c_controller->GetI2cBusCount(); i++) {
+    TwoWire *bus = Ws._i2c_controller->GetI2cBusByIndex(i);
+    if (bus != nullptr && _rtc_ds1307->begin(bus)) {
+      if (!_rtc_ds1307->isrunning())
+        _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
+      return true;
     }
   }
-  if (!_rtc_ds1307->isrunning())
-    _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
-  return true;
+
+  WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS1307 RTC on any bus");
+  delete _rtc_ds1307;
+  return false;
 }
 
 /*!
@@ -201,17 +204,20 @@ bool ws_sdcard::InitDS1307() {
 bool ws_sdcard::InitDS3231() {
   WS_DEBUG_PRINTLN("Begin DS3231 init");
   _rtc_ds3231 = new RTC_DS3231();
-  if (!_rtc_ds3231->begin(Ws._i2c_controller->GetI2cBus())) {
-    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on WIRE");
-    if (!_rtc_ds3231->begin(Ws._i2c_controller->GetI2cBus(true))) {
-      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on WIRE1");
-      delete _rtc_ds3231;
-      return false;
+
+  // Try each available I2C bus
+  for (size_t i = 0; i < Ws._i2c_controller->GetI2cBusCount(); i++) {
+    TwoWire *bus = Ws._i2c_controller->GetI2cBusByIndex(i);
+    if (bus != nullptr && _rtc_ds3231->begin(bus)) {
+      if (_rtc_ds3231->lostPower())
+        _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
+      return true;
     }
   }
-  if (_rtc_ds3231->lostPower())
-    _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
-  return true;
+
+  WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on any bus");
+  delete _rtc_ds3231;
+  return false;
 }
 
 /*!
@@ -222,19 +228,22 @@ bool ws_sdcard::InitDS3231() {
 bool ws_sdcard::InitPCF8523() {
   WS_DEBUG_PRINTLN("Begin PCF8523 init");
   _rtc_pcf8523 = new RTC_PCF8523();
-  if (!_rtc_pcf8523->begin(Ws._i2c_controller->GetI2cBus())) {
-    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE");
-    if (!_rtc_pcf8523->begin(Ws._i2c_controller->GetI2cBus(true))) {
-      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE1");
-      delete _rtc_pcf8523;
-      return false;
+
+  // Try each available I2C bus
+  for (size_t i = 0; i < Ws._i2c_controller->GetI2cBusCount(); i++) {
+    TwoWire *bus = Ws._i2c_controller->GetI2cBusByIndex(i);
+    if (bus != nullptr && _rtc_pcf8523->begin(bus)) {
+      if (!_rtc_pcf8523->initialized() || _rtc_pcf8523->lostPower()) {
+        _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
+      }
+      _rtc_pcf8523->start();
+      return true;
     }
   }
-  if (!_rtc_pcf8523->initialized() || _rtc_pcf8523->lostPower()) {
-    _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
-  }
-  _rtc_pcf8523->start();
-  return true;
+
+  WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on any bus");
+  delete _rtc_pcf8523;
+  return false;
 }
 
 /*!
@@ -617,10 +626,8 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   }
 
   msg_i2c_add.has_device_description = true;
-  strcpy(msg_i2c_add.device_description.bus_scl,
-         component["i2cBusScl"] | "default");
-  strcpy(msg_i2c_add.device_description.bus_sda,
-         component["i2cBusSda"] | "default");
+  component["i2cBusScl"] = msg_i2c_add.device_description.pin_scl;
+  component["i2cBusSda"] = msg_i2c_add.device_description.pin_sda;
 
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
   msg_i2c_add.device_description.device_address = HexStrToInt(addr_device);

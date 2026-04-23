@@ -46,8 +46,11 @@ public:
                       char *lat_dir, float lon, char *lon_dir, uint8_t num_sats,
                       float hdop, float alt, float geoid_height);
 
+  ws_gps_D2B *GetGPSD2B();
+
 private:
   ws_gps_Config _msg_gps_config; ///< GPS configuration message
   ws_gps_Event _msg_gps_event;   ///< GPS event message
+  ws_gps_D2B _msg_gps_d2b;      ///< GPS D2B envelope for publishing
 };
 #endif // WS_GPS_MODEL_H
