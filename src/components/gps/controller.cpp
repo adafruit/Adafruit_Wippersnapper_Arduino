@@ -95,7 +95,8 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(
     // I2C transport path
     WS_DEBUG_PRINTLN("[gps] Configuring GPS via I2C transport...");
     ws_i2c_DeviceDescriptor desc = msg->add_i2c.device_description;
-    TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(desc.pin_scl, desc.pin_sda);
+    TwoWire *wire =
+        Ws._i2c_controller->GetOrCreateI2cBus(desc.pin_scl, desc.pin_sda);
     if (wire == nullptr)
       return false;
     did_add = AddGPS(wire, desc.device_address, &msg->config);
