@@ -29,13 +29,28 @@
 */
 class I2cHardware {
 public:
+  /*!
+      @brief    Constructor for the I2cHardware class.
+      @param    sda       The pin number to use for the SDA line.
+      @param    scl       The pin number to use for the SCL line.
+      @param    instance  The I2C bus instance (for platforms with multiple
+                          hardware buses).
+  */
   I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance = 0);
   ~I2cHardware();
   // Bus API
   bool begin();
   bool ScanBus(ws_i2c_Scanned *scan_results);
   TwoWire *GetBus();
+  /*!
+      @brief  Returns the SDA pin number.
+      @return The SDA pin number.
+  */
   uint8_t getSDA() { return _sda; }
+  /*!
+      @brief  Returns the SCL pin number.
+      @return The SCL pin number.
+  */
   uint8_t getSCL() { return _scl; }
   ws_i2c_BusStatus GetBusStatus();
   void TogglePowerPin();
@@ -48,12 +63,13 @@ public:
   bool ScanMux(ws_i2c_Scanned *scan_results);
 
 private:
-  TwoWire *_bus = nullptr;        ///< I2C bus instance
-  ws_i2c_BusStatus _bus_status;   ///< I2C bus status
-  uint8_t _sda;                   ///< SDA pin
-  uint8_t _scl;                   ///< SCL pin
-  uint8_t _instance;              ///< I2C bus instance number (for hardware with multiple I2C buses)
-  bool _has_mux;                  ///< Is a MUX present on the bus?
+  TwoWire *_bus = nullptr;      ///< I2C bus instance
+  ws_i2c_BusStatus _bus_status; ///< I2C bus status
+  uint8_t _sda;                 ///< SDA pin
+  uint8_t _scl;                 ///< SCL pin
+  uint8_t _instance; ///< I2C bus instance number (for hardware with multiple
+                     ///< I2C buses)
+  bool _has_mux;     ///< Is a MUX present on the bus?
   uint32_t _mux_address_register; ///< I2C address for the MUX
   int _mux_max_channels;          ///< Maximum possible number of MUX channels
 };

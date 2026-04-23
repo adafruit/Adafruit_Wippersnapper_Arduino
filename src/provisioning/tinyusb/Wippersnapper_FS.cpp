@@ -27,10 +27,11 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
+    defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666) ||                              \
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
-    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) || \
-    defined(ARDUINO_ADAFRUIT_METRO_RP2350) || \
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
+    defined(ARDUINO_ADAFRUIT_METRO_RP2350) ||                                  \
     defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
@@ -106,7 +107,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // Attempt to initialize the flash chip
   if (!flash_v2.begin()) {
-    setStatusLEDColor(RED);
+    setStatusLEDColor(WS_COLOR_RGB32_RED);
     fsHalt("Failed to initialize the flash chip!");
   }
 
@@ -409,7 +410,8 @@ void Wippersnapper_FS::parseSecrets() {
         if (i >= 3) {
           WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
                          "only the first 3 will be used. Not using ");
-          WS_DEBUG_PRINTLNVAR(altnetworks[i]["network_ssid"].as<const char *>());
+          WS_DEBUG_PRINTLNVAR(
+              altnetworks[i]["network_ssid"].as<const char *>());
           break;
         }
         convertFromJson(altnetworks[i], Ws._multiNetworksV2[i]);

@@ -182,7 +182,7 @@ void setStatusLEDColor(uint32_t color) {
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
-/*   if (color != BLACK)
+/*   if (color != WS_COLOR_RGB32_BLACK)
     Ws._pwmComponent->writeDutyCycle(
         STATUS_LED_PIN, map(Ws.status_pixel_brightnessV2, 0.0, 1.0, 0, 1023));
   else
@@ -239,7 +239,7 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
-  if (color != BLACK) {
+  if (color != WS_COLOR_RGB32_BLACK) {
     // re-map for pixel as a LED
     int pulseWidth = map(brightness, 0, 255, 0, 1023);
     // Ws._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
@@ -300,10 +300,10 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 
 // Turn status LED off
 #if not defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
-  setStatusLEDColor(BLACK);
+  setStatusLEDColor(WS_COLOR_RGB32_BLACK);
 #else
   // The Adafruit Feather ESP8266's built-in LED is reverse wired
-  setStatusLEDColor(BLACK ^ 1);
+  setStatusLEDColor(WS_COLOR_RGB32_BLACK ^ 1);
 #endif
 }
 
@@ -317,25 +317,25 @@ uint32_t ledStatusStateToColor(ws_led_status_t statusState) {
   uint32_t ledColor;
   switch (statusState) {
   case WS_LED_STATUS_HEARTBEAT:
-    ledColor = GREEN;
+    ledColor = WS_COLOR_RGB32_GREEN;
     break;
   case WS_LED_STATUS_ERROR_RUNTIME:
-    ledColor = RED;
+    ledColor = WS_COLOR_RGB32_RED;
     break;
   case WS_LED_STATUS_WIFI_CONNECTING:
-    ledColor = AMBER;
+    ledColor = WS_COLOR_RGB32_AMBER;
     break;
   case WS_LED_STATUS_MQTT_CONNECTING:
-    ledColor = BLUE;
+    ledColor = WS_COLOR_RGB32_BLUE;
     break;
   case WS_LED_STATUS_WAITING_FOR_REG_MSG:
-    ledColor = PINK;
+    ledColor = WS_COLOR_RGB32_PINK;
     break;
   case WS_LED_STATUS_FS_WRITE:
-    ledColor = YELLOW;
+    ledColor = WS_COLOR_RGB32_YELLOW;
     break;
   default:
-    ledColor = BLACK;
+    ledColor = WS_COLOR_RGB32_BLACK;
     break;
   }
   return ledColor;
@@ -391,9 +391,9 @@ void statusLEDBlink(ws_led_status_t statusState, int blink_num) {
     delay(100);
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
     // The Adafruit Feather ESP8266's built-in LED is reverse wired
-    setStatusLEDColor(BLACK ^ 1);
+    setStatusLEDColor(WS_COLOR_RGB32_BLACK ^ 1);
 #else
-    setStatusLEDColor(BLACK);
+    setStatusLEDColor(WS_COLOR_RGB32_BLACK);
 #endif
     delay(100);
     blink_num--;

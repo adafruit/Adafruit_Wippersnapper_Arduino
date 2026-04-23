@@ -129,7 +129,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     delete uart_hardware; // cleanup
     return false;
   case ws_uart_DeviceType_DT_GPS:
-    WS_DEBUG_PRINTLN("[uart] GPS is now handled by the GPS controller directly!");
+    WS_DEBUG_PRINTLN(
+        "[uart] GPS is now handled by the GPS controller directly!");
     delete uart_hardware; // cleanup
     return false;
   case ws_uart_DeviceType_DT_PM25AQI:

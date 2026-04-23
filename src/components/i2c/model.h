@@ -2,7 +2,7 @@
  * @file src/components/i2c/model.h
  *
  * Provides high-level interfaces for messages within i2c.proto and
- * i2c_output.proto.
+ * display.proto (for I2C output devices like OLED, LED backpack, char LCD).
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -17,10 +17,11 @@
 #define WS_I2C_MODEL_H
 #include "wippersnapper.h"
 #include <Adafruit_Sensor.h>
-#include <protos/i2c_output.pb.h>
+#include <protos/display.pb.h>
 
-#define MAX_DEVICE_EVENTS    16 ///< Maximum number of SensorEvents within I2cDeviceEvent
-#define MAX_I2C_SCAN_DEVICES 16 ///< Maximum number of devices found on the bus
+#define MAX_DEVICE_EVENTS                                                      \
+  16 ///< Maximum number of SensorEvents within I2cDeviceEvent
+#define MAX_I2C_SCAN_DEVICES 96 ///< Maximum number of devices found on the bus
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -34,6 +35,11 @@ public:
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
   bool DecodeI2cBusScan(pb_istream_t *stream);
+  /*!
+      @brief  Decodes a I2C device output write message from the stream.
+      @param  stream  The nanopb input stream to decode from.
+      @return True if decoding succeeded, False otherwise.
+  */
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
   bool encodeMsgI2cDeviceAddedorReplaced(
@@ -43,7 +49,11 @@ public:
   // Getters
   ws_i2c_DeviceRemove *GetI2cDeviceRemoveMsg();
   ws_i2c_DeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
-  ws_i2c_output_Add *GetI2cOutputAddMsg();
+  /*!
+      @brief  Returns a pointer to the cached Display Add message.
+      @return Pointer to the cached ws_display_Add message.
+  */
+  ws_display_Add *GetDisplayAddMsg();
   ws_i2c_DeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
   ws_i2c_DeviceEvent *GetI2cDeviceEvent();
   ws_i2c_Scan *GetI2cBusScanMsg();
@@ -58,8 +68,7 @@ public:
   ws_i2c_D2B *GetI2cD2B();
   // DeviceEvent Message API
   void ClearI2cDeviceEvent();
-  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
-                                         uint32_t pin_sda,
+  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl, uint32_t pin_sda,
                                          uint32_t addr_device,
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
@@ -79,21 +88,27 @@ private:
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
-            messages from i2c_output.proto.
+            display write messages for I2C output devices.
 */
 class I2cOutputModel {
 public:
   I2cOutputModel();
   ~I2cOutputModel();
   // Decoders
-  bool DecodeLedBackpackWrite(pb_istream_t *stream);
-  bool DecodeCharLCDWrite(pb_istream_t *stream);
+  /*!
+      @brief  Decodes a display write message from the stream.
+      @param  stream  The nanopb input stream to decode from.
+      @return True if decoding succeeded, False otherwise.
+  */
+  bool DecodeDisplayWrite(pb_istream_t *stream);
   // Getters
-  ws_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
-  ws_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
+  /*!
+      @brief  Returns a pointer to the cached Display Write message.
+      @return Pointer to the cached ws_display_Write message.
+  */
+  ws_display_Write *GetDisplayWriteMsg();
 
 private:
-  ws_i2c_output_LedBackpackWrite _msg_led_backpack_write;
-  ws_i2c_output_CharLCDWrite _msg_char_lcd_write;
+  ws_display_Write _msg_display_write;
 };
 #endif // WS_I2C_MODEL_H

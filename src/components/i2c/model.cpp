@@ -1,7 +1,7 @@
 /*!
  * @file src/components/i2c/model.cpp
  *
- * Model for the i2c.proto and i2c_output.proto messages.
+ * Model for the i2c.proto and display.proto messages.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -273,7 +273,6 @@ bool I2cModel::DecodeI2cDeviceAddReplace(pb_istream_t *stream) {
 ws_i2c_DeviceAddOrReplace *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
   return &_msg_i2c_device_add_replace;
 }
-
 
 /*!
     @brief    Encodes a I2cDeviceAddedOrReplaced message.
