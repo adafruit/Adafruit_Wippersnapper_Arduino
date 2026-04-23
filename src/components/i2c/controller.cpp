@@ -976,7 +976,30 @@ void I2cController::ResetFlags() {
 
 
 /*!
-    @brief  Returns a pointer to the I2C bus by SCL/SDA pins.
+    @brief  Finds or creates an I2C bus by SCL/SDA pins, validates it,
+            and returns the underlying TwoWire instance.
+    @param  pin_scl
+            The SCL pin number.
+    @param  pin_sda
+            The SDA pin number.
+    @returns  Pointer to the TwoWire bus, or nullptr if the bus could not
+              be found/created or failed validation.
+*/
+TwoWire *I2cController::GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda) {
+  I2cHardware *bus = findOrCreateBus(pin_scl, pin_sda);
+  if (bus == nullptr) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus!");
+    return nullptr;
+  }
+  if (!IsBusStatusOK(bus)) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C bus is not operational!");
+    return nullptr;
+  }
+  return bus->GetBus();
+}
+
+/*!
+    @brief  Returns a pointer to the I2C bus by SCL/SDA pins
     @param  pin_scl
             The SCL pin number.
     @param  pin_sda
