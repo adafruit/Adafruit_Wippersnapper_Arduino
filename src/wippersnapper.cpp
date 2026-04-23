@@ -826,6 +826,7 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
             every STATUS_LED_KAT_BLINK_TIME milliseconds.
 */
 void wippersnapper::pingBrokerV2() {
+  Ws._wdt->feed();
   // ping within keepalive-10% to keep connection open
   if (millis() > (_prv_pingV2 + (WS_KEEPALIVE_INTERVAL_MS -
                                  (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
