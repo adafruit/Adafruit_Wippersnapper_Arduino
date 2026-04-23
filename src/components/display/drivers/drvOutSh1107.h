@@ -21,15 +21,23 @@
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
-#define OLED_128X64_WING_WIDTH 128
-#define OLED_128X64_WING_HEIGHT 64
-#define OLED_128X64_WING_ROTATION_90 1
+#define OLED_128X64_WING_WIDTH 128 ///< 128x64 OLED FeatherWing width in pixels
+#define OLED_128X64_WING_HEIGHT 64 ///< 128x64 OLED FeatherWing height in pixels
+#define OLED_128X64_WING_ROTATION_90                                           \
+  1 ///< Rotation value for 128x64 FeatherWing landscape orientation
 
 /*!
     @brief  Class that provides a driver interface for a SH1107 OLED display.
 */
 class drvOutSh1107 : public drvOutputBase {
 public:
+  /*!
+      @brief  Constructor for the SH1107 OLED display driver.
+      @param  i2c            The I2C hardware interface.
+      @param  sensorAddress  The I2C address of the display.
+      @param  mux_channel    Optional I2C MUX channel for the display.
+      @param  driver_name    The name of the driver.
+  */
   drvOutSh1107(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
                const char *driver_name)
       : drvOutputBase(i2c, sensorAddress, mux_channel, driver_name) {}
@@ -113,11 +121,11 @@ public:
   }
 
 protected:
-  Adafruit_SH1107 *_display = nullptr;
-  uint8_t _width;
-  uint8_t _height;
-  uint8_t _rotation = 0;
-  uint8_t _text_sz = 1;
+  Adafruit_SH1107 *_display = nullptr; ///< SH1107 driver instance
+  uint8_t _width;                      ///< Display width in pixels
+  uint8_t _height;                     ///< Display height in pixels
+  uint8_t _rotation = 0;               ///< Display rotation (0-3)
+  uint8_t _text_sz = 1;                ///< Text size multiplier
 };
 
 #endif // DRV_OUT_SH1107_H

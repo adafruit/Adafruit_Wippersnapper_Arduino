@@ -35,6 +35,11 @@ public:
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
   bool DecodeI2cBusScan(pb_istream_t *stream);
+  /*!
+      @brief  Decodes a I2C device output write message from the stream.
+      @param  stream  The nanopb input stream to decode from.
+      @return True if decoding succeeded, False otherwise.
+  */
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
   bool encodeMsgI2cDeviceAddedorReplaced(
@@ -44,6 +49,10 @@ public:
   // Getters
   ws_i2c_DeviceRemove *GetI2cDeviceRemoveMsg();
   ws_i2c_DeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
+  /*!
+      @brief  Returns a pointer to the cached Display Add message.
+      @return Pointer to the cached ws_display_Add message.
+  */
   ws_display_Add *GetDisplayAddMsg();
   ws_i2c_DeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
   ws_i2c_DeviceEvent *GetI2cDeviceEvent();
@@ -86,8 +95,17 @@ public:
   I2cOutputModel();
   ~I2cOutputModel();
   // Decoders
+  /*!
+      @brief  Decodes a display write message from the stream.
+      @param  stream  The nanopb input stream to decode from.
+      @return True if decoding succeeded, False otherwise.
+  */
   bool DecodeDisplayWrite(pb_istream_t *stream);
   // Getters
+  /*!
+      @brief  Returns a pointer to the cached Display Write message.
+      @return Pointer to the cached ws_display_Write message.
+  */
   ws_display_Write *GetDisplayWriteMsg();
 
 private:

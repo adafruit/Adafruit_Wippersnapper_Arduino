@@ -42,6 +42,11 @@ public:
 
   /*!
       @brief  Constructor for SPI EPD (E-Ink) displays.
+      @param  dc       Data/Command pin.
+      @param  rst      Reset pin.
+      @param  cs       Chip Select pin.
+      @param  sram_cs  Optional SRAM Chip Select pin (-1 for none).
+      @param  busy     Optional Busy pin (-1 for none).
   */
   dispDrvBase(int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs = -1,
               int16_t busy = -1)
@@ -50,6 +55,12 @@ public:
 
   /*!
       @brief  Constructor for SPI TFT displays.
+      @param  cs    Chip Select pin.
+      @param  dc    Data/Command pin.
+      @param  mosi  MOSI pin.
+      @param  sck   SCK pin.
+      @param  rst   Reset pin.
+      @param  miso  MISO pin.
   */
   dispDrvBase(int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
               int16_t miso)
@@ -59,10 +70,18 @@ public:
   /*! @brief Virtual destructor. */
   virtual ~dispDrvBase() {}
 
-  /*! @brief Attempts to initialize a TFT display. */
+  /*!
+      @brief  Attempts to initialize a TFT display.
+      @return True if successful, False otherwise.
+  */
   virtual bool begin() { return false; }
 
-  /*! @brief Attempts to initialize an EPD display with a ThinkInk mode. */
+  /*!
+      @brief  Attempts to initialize an EPD display with a ThinkInk mode.
+      @param  mode   The ThinkInk mode to initialize with.
+      @param  reset  True to perform a hardware reset during init.
+      @return True if successful, False otherwise.
+  */
   virtual bool begin(thinkinkmode_t mode, bool reset = true) { return false; }
 
   /*!
@@ -75,17 +94,30 @@ public:
   virtual void writeMessage(const char *message, bool clear_first = true,
                             int32_t cursor_x = 0, int32_t cursor_y = 0) = 0;
 
-  /*! @brief Sets the display width in pixels. */
+  /*!
+      @brief  Sets the display width in pixels.
+      @param  w  Width in pixels.
+  */
   void setWidth(int16_t w) { _width = w; }
-  /*! @brief Sets the display height in pixels. */
+  /*!
+      @brief  Sets the display height in pixels.
+      @param  h  Height in pixels.
+  */
   void setHeight(int16_t h) { _height = h; }
-  /*! @brief Sets the display rotation. */
+  /*!
+      @brief  Sets the display rotation.
+      @param  r  Rotation value (0-3).
+  */
   void setRotation(uint8_t r) { _rotation = r; }
-  /*! @brief Sets the text size multiplier. */
+  /*!
+      @brief  Sets the text size multiplier.
+      @param  s  Text size multiplier.
+  */
   virtual void setTextSize(uint8_t s) { _text_sz = s; }
 
   /*!
       @brief  Sets the backlight control pin.
+      @param  pin  Pin number for the backlight (-1 to disable).
       @note   Move backlight pin into proto Add message instead of board
               defines.
   */
@@ -93,9 +125,17 @@ public:
 
   /*! @brief Shows the display splash screen, if supported. */
   virtual void showSplash() {}
-  /*! @brief Draws the status bar, if supported. */
+  /*!
+      @brief  Draws the status bar, if supported.
+      @param  io_username  Adafruit IO username to display.
+  */
   virtual void drawStatusBar(const char *io_username) {}
-  /*! @brief Updates status bar indicators, if supported. */
+  /*!
+      @brief  Updates status bar indicators, if supported.
+      @param  rssi         Current WiFi RSSI value.
+      @param  bat          Current battery level (0-100).
+      @param  mqtt_status  True if MQTT is connected.
+  */
   virtual void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_status) {}
 
 protected:

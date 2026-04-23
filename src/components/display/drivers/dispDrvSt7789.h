@@ -28,6 +28,15 @@
 */
 class dispDrvSt7789 : public dispDrvBase {
 public:
+  /*!
+      @brief  Constructor for the ST7789 TFT driver.
+      @param  cs    Chip Select pin.
+      @param  dc    Data/Command pin.
+      @param  mosi  MOSI pin.
+      @param  sck   SCK pin.
+      @param  rst   Reset pin (-1 if not used).
+      @param  miso  MISO pin (-1 if not used).
+  */
   dispDrvSt7789(int16_t cs, int16_t dc, int16_t mosi, int16_t sck,
                 int16_t rst = -1, int16_t miso = -1)
       : dispDrvBase(cs, dc, mosi, sck, rst, miso), _display(nullptr) {}
@@ -42,6 +51,10 @@ public:
       digitalWrite(_pin_bl, LOW);
   }
 
+  /*!
+      @brief  Initializes the ST7789 TFT display.
+      @return True if initialization succeeded, False otherwise.
+  */
   bool begin() override {
     _display =
         new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_mosi, _pin_sck, _pin_rst);
@@ -84,6 +97,10 @@ public:
     delay(500);
   }
 
+  /*!
+      @brief  Draws the status bar and the Adafruit IO username.
+      @param  io_username  Adafruit IO username to display.
+  */
   void drawStatusBar(const char *io_username) override {
     if (!_display)
       return;
@@ -129,6 +146,12 @@ public:
     _display->setTextSize(_text_sz);
   }
 
+  /*!
+      @brief  Updates the status bar icons based on current state.
+      @param  rssi         Current WiFi RSSI value.
+      @param  bat          Current battery level (0-100).
+      @param  mqtt_status  True if MQTT is connected.
+  */
   void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_status) override {
     if (!_display)
       return;

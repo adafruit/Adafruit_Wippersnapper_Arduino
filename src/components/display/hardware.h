@@ -42,12 +42,39 @@ public:
   DisplayHardware();
   ~DisplayHardware();
 
+  /*!
+      @brief  Initializes the underlying display driver from a Display Add
+              message.
+      @param  addMsg  The Display Add message describing the display.
+      @param  name    The unique name for this display instance.
+      @return True if initialization succeeded, False otherwise.
+  */
   bool begin(ws_display_Add *addMsg, const char *name);
+  /*!
+      @brief  Writes a Display Write message to the display.
+      @param  msg  The Display Write message to render.
+      @return True if the write succeeded, False otherwise.
+  */
   bool write(ws_display_Write *msg);
+  /*!
+      @brief  Returns the name of this display instance.
+      @return Pointer to the display's name string.
+  */
   const char *getName();
 
+  /*! @brief Shows the driver's splash screen, if supported. */
   void showSplash();
+  /*!
+      @brief  Draws the status bar and the Adafruit IO username.
+      @param  io_username  Adafruit IO username to display.
+  */
   void drawStatusBar(const char *io_username);
+  /*!
+      @brief  Updates status bar icons based on current state.
+      @param  rssi            Current WiFi RSSI value.
+      @param  bat             Current battery level (0-100).
+      @param  mqtt_connected  True if MQTT is connected.
+  */
   void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_connected);
 
 private:

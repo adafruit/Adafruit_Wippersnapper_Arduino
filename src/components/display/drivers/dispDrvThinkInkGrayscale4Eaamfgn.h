@@ -23,6 +23,14 @@
 */
 class drvDispThinkInkGrayscale4Eaamfgn : public dispDrvBase {
 public:
+  /*!
+      @brief  Constructor for the ThinkInk 2.9" Grayscale 4-level EAAMFGN driver.
+      @param  dc       Data/Command pin.
+      @param  rst      Reset pin.
+      @param  cs       Chip Select pin.
+      @param  sram_cs  Optional SRAM Chip Select pin (-1 for none).
+      @param  busy     Optional Busy pin (-1 for none).
+  */
   drvDispThinkInkGrayscale4Eaamfgn(int16_t dc, int16_t rst, int16_t cs,
                                    int16_t sram_cs = -1, int16_t busy = -1)
       : dispDrvBase(dc, rst, cs, sram_cs, busy), _display(nullptr) {}
@@ -36,6 +44,12 @@ public:
     }
   }
 
+  /*!
+      @brief  Initializes the display with the given ThinkInk mode.
+      @param  mode   The ThinkInk mode to use.
+      @param  reset  True to perform a hardware reset during init.
+      @return True if initialization succeeded, False otherwise.
+  */
   bool begin(thinkinkmode_t mode, bool reset = true) override {
     _display = new ThinkInk_290_Grayscale4_EAAMFGN(_pin_dc, _pin_rst, _pin_cs,
                                                    _pin_sram_cs, _pin_busy);
@@ -58,6 +72,10 @@ public:
     _display->display();
   }
 
+  /*!
+      @brief  Draws the status bar and the Adafruit IO username.
+      @param  io_username  Adafruit IO username to display.
+  */
   void drawStatusBar(const char *io_username) override {
     if (!_display)
       return;
@@ -95,6 +113,12 @@ public:
     _display->display();
   }
 
+  /*!
+      @brief  Updates the status bar icons based on current state.
+      @param  rssi         Current WiFi RSSI value.
+      @param  bat          Current battery level (0-100).
+      @param  mqtt_status  True if MQTT is connected.
+  */
   void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_status) override {
     if (!_display)
       return;

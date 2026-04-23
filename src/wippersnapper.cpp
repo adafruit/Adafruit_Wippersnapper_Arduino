@@ -110,6 +110,8 @@ void wippersnapper::_connect() {
 
 /*!
     @brief    Disconnect Wippersnapper MQTT session and network.
+    @param    wifi_off  If true, turns off WiFi radio. If false, keeps WiFi
+                        driver initialized for quick reconnection.
 */
 void wippersnapper::_disconnect(bool wifi_off) {
   (void)wifi_off; // Avoid unused parameter warning for some network interfaces

@@ -21,11 +21,13 @@
 
 // Shared LED backpack defines (used by drvOut7Seg and drvOutQuadAlphaNum)
 #ifndef LED_BACKPACK_ALIGNMENT_UNSPECIFIED
-#define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0
-#define LED_BACKPACK_ALIGNMENT_LEFT 1
-#define LED_BACKPACK_ALIGNMENT_RIGHT 2
-#define LED_BACKPACK_ALIGNMENT_DEFAULT LED_BACKPACK_ALIGNMENT_LEFT
-#define LED_MAX_CHARS 4
+#define LED_BACKPACK_ALIGNMENT_UNSPECIFIED                                     \
+  0 ///< LED backpack alignment not specified
+#define LED_BACKPACK_ALIGNMENT_LEFT 1  ///< LED backpack left-aligned text
+#define LED_BACKPACK_ALIGNMENT_RIGHT 2 ///< LED backpack right-aligned text
+#define LED_BACKPACK_ALIGNMENT_DEFAULT                                         \
+  LED_BACKPACK_ALIGNMENT_LEFT       ///< Default LED backpack alignment
+#define LED_MAX_CHARS 4 ///< Maximum characters on an LED backpack display
 #endif
 
 /*!
