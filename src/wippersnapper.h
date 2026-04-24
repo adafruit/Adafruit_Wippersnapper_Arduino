@@ -122,6 +122,7 @@
 #include "components/digitalIO/controller.h"
 #include "components/ds18x20/controller.h"
 #include "components/error/controller.h"
+#include "components/expander/controller.h"
 #include "components/gps/controller.h"
 #include "components/i2c/controller.h"
 #include "components/pixels/controller.h"
@@ -161,6 +162,7 @@ class WipperSnapper_LittleFS;
 class ws_sdcard;
 class CheckinModel;
 class ErrorController;
+class ExpanderController;
 class SensorModel;
 class DigitalIOController;
 class AnalogIOController;
@@ -256,7 +258,9 @@ public:
   AnalogIOController *analogio_controller =
       nullptr; ///< Instance of AnalogIO controller
   DS18X20Controller *_ds18x20_controller =
-      nullptr;                              ///< Instance of DS18X20 controller
+      nullptr; ///< Instance of DS18X20 controller
+  ExpanderController *_expander_controller =
+      nullptr;                              ///< Instance of Expander controller
   GPSController *_gps_controller = nullptr; ///< Instance of GPS controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
   PixelsController *_pixels_controller =

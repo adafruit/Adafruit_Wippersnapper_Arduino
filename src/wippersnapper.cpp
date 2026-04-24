@@ -41,7 +41,8 @@ wippersnapper Ws;
 wippersnapper::wippersnapper()
     : _mqttV2(nullptr), sensor_model(nullptr), error_controller(nullptr),
       digital_io_controller(nullptr), analogio_controller(nullptr),
-      _ds18x20_controller(nullptr), _gps_controller(nullptr),
+      _ds18x20_controller(nullptr), _expander_controller(nullptr),
+      _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
       _pixels_controller(nullptr), _pwm_controller(nullptr),
       _servo_controller(nullptr), _wdt(nullptr), _device_uidV2(nullptr),
@@ -56,6 +57,7 @@ wippersnapper::wippersnapper()
   digital_io_controller = new DigitalIOController();
   analogio_controller = new AnalogIOController();
   _ds18x20_controller = new DS18X20Controller();
+  _expander_controller = new ExpanderController();
   _gps_controller = new GPSController();
   _i2c_controller = new I2cController();
   _uart_controller = new UARTController();
@@ -78,6 +80,7 @@ wippersnapper::~wippersnapper() {
   delete this->digital_io_controller;
   delete this->analogio_controller;
   delete this->_ds18x20_controller;
+  delete this->_expander_controller;
   delete this->_gps_controller;
   delete this->_i2c_controller;
   delete this->_uart_controller;
@@ -324,6 +327,8 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     return Ws._i2c_controller->Router(stream);
   case ws_signal_BrokerToDevice_uart_tag:
     return Ws._uart_controller->Router(stream);
+  case ws_signal_BrokerToDevice_expander_tag:
+    return Ws._expander_controller->Router(stream);
   case ws_signal_BrokerToDevice_gps_tag:
     return Ws._gps_controller->Router(stream);
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
@@ -765,6 +770,10 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   case ws_signal_DeviceToBroker_i2c_tag:
     msg->which_payload = ws_signal_DeviceToBroker_i2c_tag;
     msg->payload.i2c = *(ws_i2c_D2B *)payload;
+    break;
+  case ws_signal_DeviceToBroker_expander_tag:
+    msg->which_payload = ws_signal_DeviceToBroker_expander_tag;
+    msg->payload.expander = *(ws_expander_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_gps_tag:
     msg->which_payload = ws_signal_DeviceToBroker_gps_tag;
