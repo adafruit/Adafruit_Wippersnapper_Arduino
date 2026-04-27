@@ -615,7 +615,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      Ws._mqttV2->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
+      Ws._mqttV2->setKeepAliveInterval(_brokerKeepAliveIntervalSeconds);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -816,9 +816,8 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
             every STATUS_LED_KAT_BLINK_TIME milliseconds.
 */
 void wippersnapper::pingBrokerV2() {
-  // ping within keepalive-10% to keep connection open
-  if (millis() > (_prv_pingV2 + (WS_KEEPALIVE_INTERVAL_MS -
-                                 (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
+  // if it's past time to send the next ping
+  if (millis() > (_prv_pingV2 + WS_DEVICE_PING_MS)) {
     WS_DEBUG_PRINT("Sending MQTT PING: ");
     if (Ws._mqttV2->ping()) {
       WS_DEBUG_PRINTLN("SUCCESS!");
@@ -924,6 +923,8 @@ void wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   PrintDeviceInfo();
+
+  _brokerKeepAliveIntervalSeconds = WS_BROKER_KEEPALIVE_MS / 1000;
 
   // TODO: Does this need to be here?
   Ws.error_controller = new ErrorController();

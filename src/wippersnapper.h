@@ -144,8 +144,10 @@
   "2.0.0-alpha.1" ///< WipperSnapper app. version (semver-formatted)
 
 // Timeouts and intervals
-#define WS_KEEPALIVE_INTERVAL_MS                                               \
-  5000 ///< Session keepalive interval time, in milliseconds
+#define WS_BROKER_KEEPALIVE_MS                                                 \
+  11000 ///< Maximum time without a ping before broker disconnects (ms)
+#define WS_DEVICE_PING_MS                                                      \
+  5000 ///< Interval at which device sends ping to broker, in milliseconds
 #define WS_TIMEOUT_WDT 60000 ///< App WDT timeout, in milliseconds
 #define WS_MQTT_POLL_TIMEOUT_MS                                                \
   10 ///< MQTT polling (processPackets()) timeout, in milliseconds
@@ -288,6 +290,8 @@ public:
   char *throttleMessageV2; /*!< Pointer to throttle message data. */
   int throttleTimeV2;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
+  uint16_t _brokerKeepAliveIntervalSeconds =
+      0; /*!< Cached MQTT broker keepalive interval, in seconds. */
 
   std::vector<std::vector<uint8_t>>
       _sharedConfigBuffers; ///< Shared JSON config buffers for offline mode
