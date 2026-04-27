@@ -654,13 +654,19 @@ I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda) 
 
   // Bus not found, create new one
   WS_DEBUG_PRINTLN("[i2c] Initializing new I2C bus...");
-  I2cHardware *new_bus = new I2cHardware(pin_scl, pin_sda);
+  WS_DEBUG_PRINT("SCL Pin: ");
+  WS_DEBUG_PRINTLNVAR(pin_scl);
+  WS_DEBUG_PRINT("SDA Pin: ");
+  WS_DEBUG_PRINTLNVAR(pin_sda);
+  
+  I2cHardware *new_bus = new I2cHardware(pin_sda, pin_scl);
   if (!new_bus->begin()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
     delete new_bus;
     return nullptr;
   }
   _i2c_buses.push_back(new_bus);
+  WS_DEBUG_PRINTLN("[i2c] I2C bus initialized successfully!");
   return new_bus;
 }
 
@@ -679,6 +685,7 @@ bool I2cController::Handle_I2cBusScan(ws_i2c_Scan *msg) {
   I2cHardware *bus_to_scan = findOrCreateBus(msg->pin_scl, msg->pin_sda);
   if (bus_to_scan == nullptr) {
     // We failed to find or create the bus, publish error status and back out
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus for scanning!");
     _i2c_model->setI2cBusScannedStatus(ws_i2c_BusStatus_BS_ERROR_WIRING);
     publishScan();
     return false;
@@ -686,7 +693,7 @@ bool I2cController::Handle_I2cBusScan(ws_i2c_Scan *msg) {
 
   // Scan the bus (with or without MUX)
   bool scan_success = true;
-  if (!bus_to_scan->HasMux()) {
+  if (!bus_to_scan->HasMux()) { 
     WS_DEBUG_PRINTLN("[i2c] Scanning bus directly...");
     if (!bus_to_scan->ScanBus(scan_results)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C bus!");

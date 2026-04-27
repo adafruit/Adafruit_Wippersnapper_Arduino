@@ -46,8 +46,12 @@ void I2cHardware::TogglePowerPin() {
   pinMode(PIN_I2C_POWER, INPUT);
   delay(1);
   bool polarity = digitalRead(PIN_I2C_POWER);
+  WS_DEBUG_PRINT("[i2c] PIN_I2C_POWER rest state: ");
+  WS_DEBUG_PRINTLNVAR(polarity);
   pinMode(PIN_I2C_POWER, OUTPUT);
   digitalWrite(PIN_I2C_POWER, !polarity);
+  WS_DEBUG_PRINT("[i2c] PIN_I2C_POWER set to: ");
+  WS_DEBUG_PRINTLNVAR(!polarity);
 #elif defined(TFT_I2C_POWER)
   // ADAFRUIT_FEATHER_ESP32S2_TFT
   pinMode(TFT_I2C_POWER, OUTPUT);
@@ -91,7 +95,7 @@ bool I2cHardware::begin() {
 // NOTE: Each platform has a slightly different bus initialization routine
 #ifdef ARDUINO_ARCH_ESP32
   _bus = new TwoWire(_instance);
-  // _bus->setPins(_sda, _scl); TODO: This is possibly not required due to ctor
+  _bus->setPins(_sda, _scl); //TODO: This is possibly not required due to ctor
   if (!_bus->begin(_sda, _scl)) {
     _bus_status = ws_i2c_BusStatus_BS_ERROR_HANG;
     return false;
