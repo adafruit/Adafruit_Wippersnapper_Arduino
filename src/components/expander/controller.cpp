@@ -73,6 +73,15 @@ bool ExpanderController::AddExpander(const char *device_name, uint8_t i2c_addr,
     drv = new ExpanderMCP23X17();
   } else if (strcmp(device_name, "mcp23008") == 0) {
     drv = new ExpanderMCP23X08();
+  } else if (strcmp(device_name, "aw9523") == 0) {
+    drv = new ExpanderAW9523();
+  } else if (strcmp(device_name, "pcf8574") == 0) {
+    drv = new ExpanderPCF8574();
+  } else if (strcmp(device_name, "pcf8575") == 0) {
+    drv = new ExpanderPCF8575();
+  } else {
+    WS_DEBUG_PRINTLN("[expander] ERROR: Unsupported expander device type!");
+    return false;
   }
 
   if (drv == nullptr) {

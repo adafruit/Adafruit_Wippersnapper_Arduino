@@ -15,8 +15,11 @@
  */
 #ifndef WS_EXPANDER_CONTROLLER_H
 #define WS_EXPANDER_CONTROLLER_H
+#include "drivers/drv_aw9523.h"
 #include "drivers/drv_mcp23x08.h"
 #include "drivers/drv_mcp23x17.h"
+#include "drivers/drv_pcf8574.h"
+#include "drivers/drv_pcf8575.h"
 #include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
