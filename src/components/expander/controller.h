@@ -20,6 +20,8 @@
 #include "drivers/drv_mcp23x17.h"
 #include "drivers/drv_pcf8574.h"
 #include "drivers/drv_pcf8575.h"
+#include "drivers/drv_seesaw.h"
+#include "drivers/drv_tca8418.h"
 #include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
