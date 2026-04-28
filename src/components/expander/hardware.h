@@ -1,7 +1,9 @@
 /*!
  * @file src/components/expander/hardware.h
  *
- * Hardware abstraction for WipperSnapper's expander component.
+ * Base class hardware abstraction for WipperSnapper's I/O expander
+ * component. Mirrors the Arduino/Wiring GPIO API so that digitalIO
+ * can treat expander pins the same as native pins.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -14,14 +16,29 @@
  */
 #ifndef WS_EXPANDER_HARDWARE_H
 #define WS_EXPANDER_HARDWARE_H
+#include <Arduino.h>
+#include <Wire.h>
 
 /*!
-    @brief  Hardware abstraction for I/O expander devices.
+    @brief  Base class for I/O expander hardware drivers.
+            Provides a virtual Arduino/Wiring-style GPIO interface
+            so higher layers don't need to know the chip.
 */
 class ExpanderHardware {
 public:
-  ExpanderHardware();
-  ~ExpanderHardware();
+  virtual ~ExpanderHardware();
+
+  virtual bool begin(uint8_t i2c_addr, TwoWire *wire) = 0;
+  virtual void pinMode(uint8_t pin, uint8_t mode) = 0;
+  virtual void digitalWrite(uint8_t pin, uint8_t value) = 0;
+  virtual uint8_t digitalRead(uint8_t pin) = 0;
+
+  uint8_t getAddress() const { return _i2c_addr; }
+  uint8_t getPinCount() const { return _pin_count; }
+
+protected:
+  uint8_t _i2c_addr = 0;  ///< I2C address of the expander
+  uint8_t _pin_count = 0; ///< Number of GPIO pins on the expander
 };
 
 #endif // WS_EXPANDER_HARDWARE_H

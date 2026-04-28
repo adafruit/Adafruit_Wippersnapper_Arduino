@@ -1,7 +1,8 @@
 /*!
  * @file src/components/expander/hardware.cpp
  *
- * Hardware abstraction for WipperSnapper's expander component.
+ * Base class hardware abstraction for WipperSnapper's I/O expander
+ * component.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,7 +14,5 @@
  *
  */
 #include "hardware.h"
-
-ExpanderHardware::ExpanderHardware() {}
 
 ExpanderHardware::~ExpanderHardware() {}
