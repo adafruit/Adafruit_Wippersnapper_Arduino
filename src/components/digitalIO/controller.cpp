@@ -7,12 +7,13 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
  */
 #include "controller.h"
+#include "../expander/controller.h"
 
 /*!
     @brief  DigitalIOController constructor
@@ -84,8 +85,44 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
 */
 bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   WS_DEBUG_PRINTLN("[dio] Handle_DigitalIO_Add MESSAGE...");
-  // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
-  uint8_t pin_name = atoi(msg->pin_name + 1);
+  uint8_t pin_name = 0;
+
+  // Validate all fields of the digital pin add message before adding the pin
+  if (msg->gpio_direction == ws_digitalio_Direction_D_UNSPECIFIED) {
+    WS_DEBUG_PRINTLN("[dio] ERROR: Invalid GPIO direction specified!");
+    return false;
+  }
+  if (msg->sample_mode == ws_digitalio_SampleMode_SM_UNSPECIFIED) {
+    WS_DEBUG_PRINTLN("[dio] ERROR: Invalid sample mode specified!");
+    return false;
+  }
+  if (msg->sample_mode == ws_digitalio_SampleMode_SM_TIMER &&
+      msg->period <= 0) {
+    WS_DEBUG_PRINTLN(
+        "[dio] ERROR: Invalid period specified for timer sample mode!");
+    return false;
+  }
+
+  // Check if the pin is located on an expander and resolve the expander driver
+  // Expander Pin Format: "EXP_<EXPANDER-I2C-ADDR>_<PIN-#>"
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
+    // Attempt to parse the I2C address and configure the expander driver for
+    // this pin
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      WS_DEBUG_PRINTLN("[dio] ERROR: Expander not found for address!");
+      return false;
+    }
+    // If the pin is on an expander, we need to strip the expander prefix from
+    // the pin name for internal use
+    const char *pin_str = strchr(msg->pin_name + 4, '_');
+    pin_name = atoi(pin_str + 1);
+  } else {
+    // For non-expander pins, we just parse the pin number as usual
+    pin_name = atoi(msg->pin_name + 1);
+  }
 
   // Check if the provided pin is also the status LED pin
   if (_dio_hardware->IsStatusLEDPin(pin_name))
@@ -94,13 +131,6 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   // Deinit the pin if it's already in use
   if (GetPinIdx(pin_name) != -1)
     _dio_hardware->deinit(pin_name);
-
-  // Attempt to configure the pin
-  if (!_dio_hardware->ConfigurePin(pin_name, msg->gpio_direction)) {
-    WS_DEBUG_PRINTLN(
-        "[dio] ERROR: Pin provided an invalid protobuf direction!");
-    return false;
-  }
 
   // Get the initial value from the write message (if present)
   bool initial_value = false;
@@ -117,7 +147,11 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
                           .pin_period = (ulong)(msg->period * 1000.0f),
                           .prv_pin_time =
                               0, // Set to 0 so timer pins trigger immediately
-                          .did_read_send = false};
+                          .did_read_send = false,
+                          .expander_drv = expander_drv};
+
+  // Set the pin mode
+  _dio_hardware->SetPinMode(&new_pin);
 
   // Add the pin to the controller's list of pins
   if (msg->gpio_direction == ws_digitalio_Direction_D_INPUT ||

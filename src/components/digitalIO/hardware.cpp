@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -32,25 +32,39 @@ DigitalIOHardware::~DigitalIOHardware() {}
             The pin's direction.
     @return True if the pin was successfully configured. False otherwise.
 */
-bool DigitalIOHardware::ConfigurePin(uint8_t name,
-                                     ws_digitalio_Direction direction) {
+bool DigitalIOHardware::SetPinMode(DigitalIOPin *pin) {
+  if (pin == nullptr)
+    return false;
+
+  bool has_expander = (pin->expander_drv != nullptr);
+
   // Configure an output pin
-  if (direction == ws_digitalio_Direction_D_OUTPUT) {
+  if (pin->pin_direction == ws_digitalio_Direction_D_OUTPUT) {
     // Set pin mode to OUTPUT
-    pinMode(name, OUTPUT);
-// Initialize pin value to LOW
+    if (!has_expander) {
+      pinMode(pin->pin_name, OUTPUT);
+      digitalWrite(pin->pin_name, LOW); // initialize LOW
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
-    // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting
-    // the pin LOW will turn the LED on.
-    digitalWrite(name, !0);
-#else
-    pinMode(name, OUTPUT);
-    digitalWrite(name, LOW); // initialize LOW
+      // The Adafruit Feather ESP8266's built-in LED is reverse wired so
+      // setting the pin LOW will turn the LED on.
+      digitalWrite(pin->pin_name, !0);
 #endif
-  } else if (direction == ws_digitalio_Direction_D_INPUT) {
-    pinMode(name, INPUT);
-  } else if (direction == ws_digitalio_Direction_D_INPUT_PULL_UP) {
-    pinMode(name, INPUT_PULLUP);
+    } else {
+      pin->expander_drv->pinMode(pin->pin_name, OUTPUT);
+      pin->expander_drv->digitalWrite(pin->pin_name, LOW); // initialize LOW
+    }
+  } else if (pin->pin_direction == ws_digitalio_Direction_D_INPUT) {
+    if (!has_expander) {
+      pinMode(pin->pin_name, INPUT);
+    } else {
+      pin->expander_drv->pinMode(pin->pin_name, INPUT);
+    }
+  } else if (pin->pin_direction == ws_digitalio_Direction_D_INPUT_PULL_UP) {
+    if (!has_expander) {
+      pinMode(pin->pin_name, INPUT_PULLUP);
+    } else {
+      pin->expander_drv->pinMode(pin->pin_name, INPUT_PULLUP);
+    }
   } else {
     return false; // Invalid pin configuration
   }
@@ -75,34 +89,54 @@ void DigitalIOHardware::deinit(uint8_t pin_name) {
 
 /*!
     @brief  Sets a digital pin's value.
-    @param  pin_name
-            The pin's name.
+    @param  pin
+            The digital pin.
     @param  pin_value
             The pin's value.
 */
-void DigitalIOHardware::SetValue(uint8_t pin_name, bool pin_value) {
-  digitalWrite(pin_name, pin_value ? HIGH : LOW);
+void DigitalIOHardware::SetValue(DigitalIOPin *pin, bool pin_value) {
+  if (pin == nullptr)
+    return;
+
+  bool has_expander = (pin->expander_drv != nullptr);
+
+  if (!has_expander) {
+    digitalWrite(pin->pin_name, pin_value ? HIGH : LOW);
+  } else {
+    pin->expander_drv->digitalWrite(pin->pin_name, pin_value ? HIGH : LOW);
+  }
 }
 
 /*!
     @brief  Gets a digital pin's value.
-    @param  pin_name
-            The pin's name.
+    @param  pin
+            The digital pin.
     @return The pin's value.
 */
-bool DigitalIOHardware::GetValue(uint8_t pin_name) {
-  return digitalRead(pin_name);
+bool DigitalIOHardware::GetValue(DigitalIOPin *pin) {
+  if (pin == nullptr)
+    return false;
+
+  bool has_expander = (pin->expander_drv != nullptr);
+
+  if (!has_expander) {
+    return digitalRead(pin->pin_name);
+  } else {
+    return pin->expander_drv->digitalRead(pin->pin_name);
+  }
 }
 
 /*!
     @brief  Checks if a pin is the status LED pin.
-    @param  pin_name
-            The pin's name.
+    @param  pin
+            The digital pin.
     @return True if the pin is the status LED pin.
 */
-bool DigitalIOHardware::IsStatusLEDPin(uint8_t pin_name) {
+bool DigitalIOHardware::IsStatusLEDPin(DigitalIOPin *pin) {
+  if (pin == nullptr)
+    return false;
 #ifdef STATUS_LED_PIN
-  return pin_name == STATUS_LED_PIN;
+  return pin->pin_name == STATUS_LED_PIN;
 #endif
   return false;
 }

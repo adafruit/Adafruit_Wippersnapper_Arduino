@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -19,13 +19,14 @@
 #include "wippersnapper.h"
 
 class wippersnapper;
+class ExpanderHardware;
 
 /**
  * @struct DigitalIOPin
  * @brief This struct represents a digital I/O pin.
  */
 struct DigitalIOPin {
-  uint8_t pin_name;                     ///< The pin's name.
+  uint8_t pin_name;                     ///< The pin's pin number.
   ws_digitalio_Direction pin_direction; ///< The pin's direction.
   ws_digitalio_SampleMode sample_mode;  ///< The pin's sample mode.
   bool pin_value;                       ///< The pin's value.
@@ -34,6 +35,9 @@ struct DigitalIOPin {
   ulong prv_pin_time;                   ///< The pin's previous time.
   bool
       did_read_send; ///< True if the last read was sent to IO, False otherwise.
+  ExpanderHardware
+      *expander_drv; ///< If this pin is on an expander, pointer to expander's
+                     ///< driver instance, otherwise nullptr
 };
 
 class DigitalIOModel;    // Forward declaration
