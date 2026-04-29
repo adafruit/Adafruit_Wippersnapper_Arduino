@@ -70,6 +70,7 @@ private:
   bool CheckTimerPin(DigitalIOPin *pin);
   bool IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time);
   int GetPinIdx(uint8_t pin_name);
+  DigitalIOPin *GetPin(uint8_t pin_name);
   std::vector<DigitalIOPin> _pins_input;
   std::vector<DigitalIOPin> _pins_output;
   DigitalIOModel *_dio_model;

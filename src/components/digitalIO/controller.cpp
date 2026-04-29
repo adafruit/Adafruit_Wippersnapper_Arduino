@@ -124,13 +124,10 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     pin_name = atoi(msg->pin_name + 1);
   }
 
-  // Check if the provided pin is also the status LED pin
-  if (_dio_hardware->IsStatusLEDPin(pin_name))
-    ReleaseStatusPixel();
-
   // Deinit the pin if it's already in use
-  if (GetPinIdx(pin_name) != -1)
-    _dio_hardware->deinit(pin_name);
+  DigitalIOPin *existing_pin = GetPin(pin_name);
+  if (existing_pin != nullptr)
+    _dio_hardware->deinit(existing_pin);
 
   // Get the initial value from the write message (if present)
   bool initial_value = false;
@@ -150,6 +147,10 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
                           .did_read_send = false,
                           .expander_drv = expander_drv};
 
+  // Check if the provided pin is also the status LED pin
+  if (_dio_hardware->IsStatusLEDPin(&new_pin))
+    ReleaseStatusPixel();
+
   // Set the pin mode
   _dio_hardware->SetPinMode(&new_pin);
 
@@ -159,7 +160,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     _pins_input.push_back(new_pin);
   } else if (msg->gpio_direction == ws_digitalio_Direction_D_OUTPUT) {
     // Write the initial value to the output pin
-    _dio_hardware->SetValue(pin_name, initial_value);
+    _dio_hardware->SetValue(&new_pin, initial_value);
     _pins_output.push_back(new_pin);
   }
 
@@ -189,7 +190,7 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
 
   for (size_t i = 0; i < _pins_output.size(); i++) {
     if (_pins_output[i].pin_name == pin_name) {
-      _dio_hardware->deinit(pin_name);
+      _dio_hardware->deinit(&_pins_output[i]);
       _pins_output.erase(_pins_output.begin() + i);
       did_remove = true;
       break;
@@ -199,7 +200,7 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
   if (!did_remove) {
     for (size_t i = 0; i < _pins_input.size(); i++) {
       if (_pins_input[i].pin_name == pin_name) {
-        _dio_hardware->deinit(pin_name);
+        _dio_hardware->deinit(&_pins_input[i]);
         _pins_input.erase(_pins_input.begin() + i);
         did_remove = true;
         break;
@@ -240,6 +241,24 @@ int DigitalIOController::GetPinIdx(uint8_t pin_name) {
 }
 
 /*!
+    @brief  Get a pointer to a digital pin by pin name
+    @param  pin_name
+            The pin's name.
+    @return Pointer to the digital pin, or nullptr if not found.
+*/
+DigitalIOPin *DigitalIOController::GetPin(uint8_t pin_name) {
+  for (size_t i = 0; i < _pins_output.size(); i++) {
+    if (_pins_output[i].pin_name == pin_name)
+      return &_pins_output[i];
+  }
+  for (size_t i = 0; i < _pins_input.size(); i++) {
+    if (_pins_input[i].pin_name == pin_name)
+      return &_pins_input[i];
+  }
+  return nullptr;
+}
+
+/*!
     @brief  Write a digital pin
     @param  msg
             Pointer to the DigitalIO write message.
@@ -277,8 +296,7 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
     return true;
 
   // Write the value
-  _dio_hardware->SetValue(_pins_output[pin_idx].pin_name,
-                          msg->value.value.bool_value);
+  _dio_hardware->SetValue(&_pins_output[pin_idx], msg->value.value.bool_value);
 
   // Update the pin's value
   _pins_output[pin_idx].pin_value = msg->value.value.bool_value;
@@ -314,7 +332,7 @@ bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
 
   // Fill in the pin's current time and value
   pin->prv_pin_time = cur_time;
-  pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
+  pin->pin_value = _dio_hardware->GetValue(pin);
 
   return true;
 }
@@ -329,7 +347,7 @@ bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
   if (!pin)
     return false;
   // Get the pin's current value
-  pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
+  pin->pin_value = _dio_hardware->GetValue(pin);
 
   // Bail out if the pin value hasn't changed
   if (pin->pin_value == pin->prv_pin_value)
@@ -424,7 +442,7 @@ void DigitalIOController::update(bool force) {
       }
     } else {
       // Force read the pin value
-      pin.pin_value = _dio_hardware->GetValue(pin.pin_name);
+      pin.pin_value = _dio_hardware->GetValue(&pin);
     }
 
     // Encode and publish the event

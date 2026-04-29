@@ -73,16 +73,26 @@ bool DigitalIOHardware::SetPinMode(DigitalIOPin *pin) {
 
 /*!
     @brief  Deinitializes a digital pin.
-    @param  pin_name
+    @param  pin
             The digital pin to deinitialize.
 */
-void DigitalIOHardware::deinit(uint8_t pin_name) {
+void DigitalIOHardware::deinit(DigitalIOPin *pin) {
+  if (pin == nullptr)
+    return;
+
+  bool has_expander = (pin->expander_drv != nullptr);
+
   // Turn off pin output and reset mode to hi-z floating state
-  digitalWrite(pin_name, LOW);
-  pinMode(pin_name, INPUT);
+  if (!has_expander) {
+    digitalWrite(pin->pin_name, LOW);
+    pinMode(pin->pin_name, INPUT);
+  } else {
+    pin->expander_drv->digitalWrite(pin->pin_name, LOW);
+    pin->expander_drv->pinMode(pin->pin_name, INPUT);
+  }
   // Prior to using this pin as a DIO,
   // was this a status LED pin?
-  if (IsStatusLEDPin(pin_name)) {
+  if (IsStatusLEDPin(pin)) {
     initStatusLED(); // it was! re-init status led
   }
 }
