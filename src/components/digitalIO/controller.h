@@ -19,29 +19,7 @@
 #include "wippersnapper.h"
 
 class wippersnapper;
-class ExpanderHardware;
-
-/**
- * @struct DigitalIOPin
- * @brief This struct represents a digital I/O pin.
- */
-struct DigitalIOPin {
-  uint8_t pin_name;                     ///< The pin's pin number.
-  ws_digitalio_Direction pin_direction; ///< The pin's direction.
-  ws_digitalio_SampleMode sample_mode;  ///< The pin's sample mode.
-  bool pin_value;                       ///< The pin's value.
-  bool prv_pin_value;                   ///< The pin's previous value.
-  ulong pin_period;                     ///< The pin's period.
-  ulong prv_pin_time;                   ///< The pin's previous time.
-  bool
-      did_read_send; ///< True if the last read was sent to IO, False otherwise.
-  ExpanderHardware
-      *expander_drv; ///< If this pin is on an expander, pointer to expander's
-                     ///< driver instance, otherwise nullptr
-};
-
-class DigitalIOModel;    // Forward declaration
-class DigitalIOHardware; // Forward declaration
+class DigitalIOModel;
 
 /*!
     @brief  Routes messages using the digitalio.proto API to the
@@ -57,24 +35,17 @@ public:
   bool Handle_DigitalIO_Remove(ws_digitalio_Remove *msg);
   bool Handle_DigitalIO_Write(ws_digitalio_Write *msg);
   void update(bool force = false);
-  // For sleep cycles
   bool UpdateComplete();
   void ResetFlags();
-
-  // Called once per-run, during CheckinResponse processing
   void SetMaxDigitalPins(uint8_t max_digital_pins);
 
 private:
   bool EncodePublishPinEvent(uint8_t pin_name, bool pin_value);
-  bool CheckEventPin(DigitalIOPin *pin);
-  bool CheckTimerPin(DigitalIOPin *pin);
-  bool IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time);
-  int GetPinIdx(uint8_t pin_name);
-  DigitalIOPin *GetPin(uint8_t pin_name);
-  std::vector<DigitalIOPin> _pins_input;
-  std::vector<DigitalIOPin> _pins_output;
+  bool RemovePin(uint8_t pin_num);
+  DigitalIOHardware *GetPin(uint8_t pin_num);
+  std::vector<DigitalIOHardware *> _pins_input;
+  std::vector<DigitalIOHardware *> _pins_output;
   DigitalIOModel *_dio_model;
-  DigitalIOHardware *_dio_hardware;
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_DIGITALIO_CONTROLLER_H

@@ -20,15 +20,17 @@
 */
 DigitalIOController::DigitalIOController() {
   _dio_model = new DigitalIOModel();
-  _dio_hardware = new DigitalIOHardware();
 }
 
 /*!
     @brief  DigitalIOController destructor
 */
 DigitalIOController::~DigitalIOController() {
+  for (size_t i = 0; i < _pins_input.size(); i++)
+    delete _pins_input[i];
+  for (size_t i = 0; i < _pins_output.size(); i++)
+    delete _pins_output[i];
   delete _dio_model;
-  delete _dio_hardware;
 }
 
 /*!
@@ -78,6 +80,31 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
 }
 
 /*!
+    @brief  Removes a pin from both vectors by pin number.
+            Deletes the pin object (destructor deinits hardware).
+    @param  pin_num
+            The pin number to remove.
+    @return True if the pin was found and removed.
+*/
+bool DigitalIOController::RemovePin(uint8_t pin_num) {
+  for (size_t i = 0; i < _pins_output.size(); i++) {
+    if (_pins_output[i]->GetPinNum() == pin_num) {
+      delete _pins_output[i];
+      _pins_output.erase(_pins_output.begin() + i);
+      return true;
+    }
+  }
+  for (size_t i = 0; i < _pins_input.size(); i++) {
+    if (_pins_input[i]->GetPinNum() == pin_num) {
+      delete _pins_input[i];
+      _pins_input.erase(_pins_input.begin() + i);
+      return true;
+    }
+  }
+  return false;
+}
+
+/*!
     @brief  Adds a digital pin to the controller
     @param  msg
             The DigitalIOAdd message.
@@ -85,7 +112,7 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
 */
 bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   WS_DEBUG_PRINTLN("[dio] Handle_DigitalIO_Add MESSAGE...");
-  uint8_t pin_name = 0;
+  uint8_t pin_num = 0;
 
   // Validate all fields of the digital pin add message before adding the pin
   if (msg->gpio_direction == ws_digitalio_Direction_D_UNSPECIFIED) {
@@ -107,27 +134,24 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   // Expander Pin Format: "EXP_<EXPANDER-I2C-ADDR>_<PIN-#>"
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
-    // Attempt to parse the I2C address and configure the expander driver for
-    // this pin
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
     expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
       WS_DEBUG_PRINTLN("[dio] ERROR: Expander not found for address!");
       return false;
     }
-    // If the pin is on an expander, we need to strip the expander prefix from
-    // the pin name for internal use
     const char *pin_str = strchr(msg->pin_name + 4, '_');
-    pin_name = atoi(pin_str + 1);
+    if (!pin_str) {
+      WS_DEBUG_PRINTLN("[dio] ERROR: Malformed expander pin name!");
+      return false;
+    }
+    pin_num = atoi(pin_str + 1);
   } else {
-    // For non-expander pins, we just parse the pin number as usual
-    pin_name = atoi(msg->pin_name + 1);
+    pin_num = atoi(msg->pin_name + 1);
   }
 
-  // Deinit the pin if it's already in use
-  DigitalIOPin *existing_pin = GetPin(pin_name);
-  if (existing_pin != nullptr)
-    _dio_hardware->deinit(existing_pin);
+  // Remove existing pin if re-adding (destructor deinits hardware)
+  RemovePin(pin_num);
 
   // Get the initial value from the write message (if present)
   bool initial_value = false;
@@ -135,45 +159,24 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     initial_value = msg->write.value.value.bool_value;
   }
 
-  // Create the digital pin and add it to the vector
-  DigitalIOPin new_pin = {.pin_name = pin_name,
-                          .pin_direction = msg->gpio_direction,
-                          .sample_mode = msg->sample_mode,
-                          .pin_value = initial_value,
-                          .prv_pin_value = initial_value,
-                          .pin_period = (ulong)(msg->period * 1000.0f),
-                          .prv_pin_time =
-                              0, // Set to 0 so timer pins trigger immediately
-                          .did_read_send = false,
-                          .expander_drv = expander_drv};
-
-  // Check if the provided pin is also the status LED pin
-  if (_dio_hardware->IsStatusLEDPin(&new_pin))
-    ReleaseStatusPixel();
-
-  // Set the pin mode
-  _dio_hardware->SetPinMode(&new_pin);
+  // Initialize a new digital pin instance
+  DigitalIOHardware *new_pin = new DigitalIOHardware(
+      pin_num, msg->gpio_direction, msg->sample_mode, initial_value,
+      (ulong)(msg->period * 1000.0f), expander_drv);
 
   // Add the pin to the controller's list of pins
   if (msg->gpio_direction == ws_digitalio_Direction_D_INPUT ||
       msg->gpio_direction == ws_digitalio_Direction_D_INPUT_PULL_UP) {
     _pins_input.push_back(new_pin);
   } else if (msg->gpio_direction == ws_digitalio_Direction_D_OUTPUT) {
-    // Write the initial value to the output pin
-    _dio_hardware->SetValue(&new_pin, initial_value);
     _pins_output.push_back(new_pin);
   }
 
-  // Print out the pin's details
   WS_DEBUG_PRINTLN("[dio] Added new pin:");
   WS_DEBUG_PRINT("Pin Name: ");
-  WS_DEBUG_PRINTLNVAR(new_pin.pin_name);
-  WS_DEBUG_PRINT("Period: ");
-  WS_DEBUG_PRINTLNVAR(new_pin.pin_period);
-  WS_DEBUG_PRINT("Sample Mode: ");
-  WS_DEBUG_PRINTLNVAR(new_pin.sample_mode);
+  WS_DEBUG_PRINTLNVAR(new_pin->GetPinNum());
   WS_DEBUG_PRINT("Direction: ");
-  WS_DEBUG_PRINTLNVAR(new_pin.pin_direction);
+  WS_DEBUG_PRINTLNVAR(new_pin->GetDirection());
 
   return true;
 }
@@ -185,75 +188,32 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     @return True if the digital pin was successfully removed, False otherwise.
 */
 bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
-  bool did_remove = false;
-  uint8_t pin_name = atoi(msg->pin_name + 1);
+  uint8_t pin_num = atoi(msg->pin_name + 1);
 
-  for (size_t i = 0; i < _pins_output.size(); i++) {
-    if (_pins_output[i].pin_name == pin_name) {
-      _dio_hardware->deinit(&_pins_output[i]);
-      _pins_output.erase(_pins_output.begin() + i);
-      did_remove = true;
-      break;
-    }
-  }
-
-  if (!did_remove) {
-    for (size_t i = 0; i < _pins_input.size(); i++) {
-      if (_pins_input[i].pin_name == pin_name) {
-        _dio_hardware->deinit(&_pins_input[i]);
-        _pins_input.erase(_pins_input.begin() + i);
-        did_remove = true;
-        break;
-      }
-    }
-  }
-  if (!did_remove) {
+  if (!RemovePin(pin_num)) {
     WS_DEBUG_PRINTLN("[dio] ERROR: Unable to find requested pin!");
     return false;
   }
 
   WS_DEBUG_PRINT("[dio] Pin removed: ");
-  WS_DEBUG_PRINTLNVAR(pin_name);
+  WS_DEBUG_PRINTLNVAR(pin_num);
   return true;
 }
 
 /*!
-    @brief  Get the index of a digital output pin
-    @param  pin_name
-            The pin's name.
-    @return The index of the digital output pin.
-*/
-int DigitalIOController::GetPinIdx(uint8_t pin_name) {
-  // Search through output pins first
-  for (int i = 0; i < _pins_output.size(); i++) {
-    if (_pins_output[i].pin_name == pin_name) {
-      return i;
-    }
-  }
-
-  // Search through input pins next
-  for (int i = 0; i < _pins_input.size(); i++) {
-    if (_pins_input[i].pin_name == pin_name) {
-      return i;
-    }
-  }
-  return -1; // Pin not found
-}
-
-/*!
-    @brief  Get a pointer to a digital pin by pin name
-    @param  pin_name
-            The pin's name.
+    @brief  Get a pointer to a digital pin by pin number
+    @param  pin_num
+            The pin's number.
     @return Pointer to the digital pin, or nullptr if not found.
 */
-DigitalIOPin *DigitalIOController::GetPin(uint8_t pin_name) {
+DigitalIOHardware *DigitalIOController::GetPin(uint8_t pin_num) {
   for (size_t i = 0; i < _pins_output.size(); i++) {
-    if (_pins_output[i].pin_name == pin_name)
-      return &_pins_output[i];
+    if (_pins_output[i]->GetPinNum() == pin_num)
+      return _pins_output[i];
   }
   for (size_t i = 0; i < _pins_input.size(); i++) {
-    if (_pins_input[i].pin_name == pin_name)
-      return &_pins_input[i];
+    if (_pins_input[i]->GetPinNum() == pin_num)
+      return _pins_input[i];
   }
   return nullptr;
 }
@@ -265,16 +225,15 @@ DigitalIOPin *DigitalIOController::GetPin(uint8_t pin_name) {
     @return True if the digital pin was successfully written.
 */
 bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
-  // Get the digital pin
-  int pin_idx = GetPinIdx(atoi(msg->pin_name + 1));
-  // Check if the pin was found and is a valid digital output pin
-  if (pin_idx == -1) {
+  uint8_t pin_num = atoi(msg->pin_name + 1);
+
+  DigitalIOHardware *pin = GetPin(pin_num);
+  if (!pin) {
     WS_DEBUG_PRINTLN("[dio] ERROR: Unable to find the requested output pin!");
     return false;
   }
 
-  // Ensure pin_idx exists within pins_output vector
-  if (pin_idx >= _pins_output.size()) {
+  if (pin->GetDirection() != ws_digitalio_Direction_D_OUTPUT) {
     WS_DEBUG_PRINTLN("[dio] ERROR: Requested pin is not a digital output pin!");
     return false;
   }
@@ -288,104 +247,36 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   WS_DEBUG_PRINT("[dio] Writing: ");
   WS_DEBUG_PRINTVAR(msg->value.value.bool_value);
   WS_DEBUG_PRINT(" to Pin ");
-  WS_DEBUG_PRINTLNVAR(_pins_output[pin_idx].pin_name);
+  WS_DEBUG_PRINTLNVAR(pin->GetPinNum());
 
-  // Is the pin already set to this value? If so, we don't need to write it
-  // again
-  if (_pins_output[pin_idx].pin_value == msg->value.value.bool_value)
-    return true;
-
-  // Write the value
-  _dio_hardware->SetValue(&_pins_output[pin_idx], msg->value.value.bool_value);
-
-  // Update the pin's value
-  _pins_output[pin_idx].pin_value = msg->value.value.bool_value;
-  return true;
-}
-
-/*!
-    @brief  Check if a pin's timer has expired
-    @param  pin
-            The pin to check.
-    @param  cur_time
-            The current time.
-    @return True if the pin's timer has expired.
-*/
-bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
-  return cur_time - pin->prv_pin_time > pin->pin_period;
-}
-
-/*!
-    @brief  Check if a pin's timer has expired
-    @param  pin
-            The pin to check.
-    @return True if the pin's timer has expired.
-*/
-bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
-  if (!pin)
-    return false;
-
-  ulong cur_time = millis();
-  // Bail out if the pin's timer has not expired
-  if (!IsPinTimerExpired(pin, cur_time))
-    return false;
-
-  // Fill in the pin's current time and value
-  pin->prv_pin_time = cur_time;
-  pin->pin_value = _dio_hardware->GetValue(pin);
-
-  return true;
-}
-
-/*!
-    @brief  Check if a pin's value has changed
-    @param  pin
-            The pin to check.
-    @return True if the pin's value has changed.
-*/
-bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
-  if (!pin)
-    return false;
-  // Get the pin's current value
-  pin->pin_value = _dio_hardware->GetValue(pin);
-
-  // Bail out if the pin value hasn't changed
-  if (pin->pin_value == pin->prv_pin_value)
-    return false;
-
-  // Update the pin's previous value to the current value
-  pin->prv_pin_value = pin->pin_value;
-
+  pin->Write(msg->value.value.bool_value);
   return true;
 }
 
 /*!
     @brief  Encode and publish a pin event
-    @param  pin_name
-            The pin's name.
+    @param  pin_num
+            The pin's number.
     @param  pin_value
             The pin's value.
     @return True if the pin event was successfully encoded and published.
 */
-bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
+bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_num,
                                                 bool pin_value) {
-  // Prefix pin_name with "D" to match the expected pin name format
-  char c_pin_name[12];
-  sprintf(c_pin_name, "D%d", pin_name);
+  char c_pin_num[12];
+  sprintf(c_pin_num, "D%d", pin_num);
 
-  // If we are in ONLINE mode, publish the event to the broker
   if (!Ws._sdCardV2->isModeOffline()) {
     WS_DEBUG_PRINT("[dio] Publish Event: ");
-    WS_DEBUG_PRINTVAR(c_pin_name);
+    WS_DEBUG_PRINTVAR(c_pin_num);
     WS_DEBUG_PRINT(" | value: ");
     WS_DEBUG_PRINTLNVAR(pin_value);
-    // Encode the DigitalIOEvent message
-    if (!_dio_model->EncodeDigitalIOEvent(c_pin_name, pin_value)) {
+
+    if (!_dio_model->EncodeDigitalIOEvent(c_pin_num, pin_value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");
       return false;
     }
 
-    // Publish the DigitalIOEvent message to the broker
     if (!Ws.PublishD2b(ws_signal_DeviceToBroker_digitalio_tag,
                        _dio_model->GetDigitalIOD2B())) {
       WS_DEBUG_PRINTLN("[dio] ERROR: Unable to publish event message, "
@@ -394,8 +285,7 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     }
     WS_DEBUG_PRINTLN("[dio] Published!")
   } else {
-    // let's log the event to the SD card
-    if (!Ws._sdCardV2->LogGPIOSensorEventToSD(pin_name, pin_value,
+    if (!Ws._sdCardV2->LogGPIOSensorEventToSD(pin_num, pin_value,
                                               ws_sensor_Type_T_BOOLEAN))
       return false;
   }
@@ -410,70 +300,54 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
             If true, forces a read on all pins regardless of timers/events.
 */
 void DigitalIOController::update(bool force) {
-  // Bail out if we have no digital input pins to poll
   if (_pins_input.empty())
     return;
 
-  // Check the input pins for events or timer expirations
-  const size_t num_input_pins = _pins_input.size();
-  for (size_t i = 0; i < num_input_pins; i++) {
-    // Create a pin object for this iteration
-    DigitalIOPin &pin = _pins_input[i];
+  for (size_t i = 0; i < _pins_input.size(); i++) {
+    DigitalIOHardware *pin = _pins_input[i];
 
-    // (force only) - Was pin previously read and sent?
-    if (pin.did_read_send && force)
-      continue;
-
-    // Skip normal checks if we're forcing a read
-    if (!force) {
-      switch (pin.sample_mode) {
-      case ws_digitalio_SampleMode_SM_EVENT:
-        // Check if the pin value has changed
-        if (!CheckEventPin(&pin))
-          continue; // No change in pin value detected, move onto the next pin
-        break;
-      case ws_digitalio_SampleMode_SM_TIMER:
-        // Check if the timer has expired
-        if (!CheckTimerPin(&pin))
-          continue; // Timer has not expired yet, move onto the next pin
-        break;
-      default:
+    if (force) {
+      if (pin->DidReadSend())
         continue;
-      }
+      pin->ReadValue();
     } else {
-      // Force read the pin value
-      pin.pin_value = _dio_hardware->GetValue(&pin);
+      bool changed;
+      if (pin->GetSampleMode() == ws_digitalio_SampleMode_SM_EVENT)
+        changed = pin->CheckEvent();
+      else
+        changed = pin->CheckTimer();
+      if (!changed)
+        continue;
     }
 
-    // Encode and publish the event
-    if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value)) {
+    if (!EncodePublishPinEvent(pin->GetPinNum(), pin->GetPinValue())) {
       WS_DEBUG_PRINTLN("[dio] ERROR: Unable to record pin value!");
-      pin.did_read_send = false;
+      pin->ResetSendFlag();
       continue;
     }
-    pin.did_read_send = true;
+    pin->MarkSent();
   }
 }
 
 /*!
-    @brief  Checks if all digital input pins have been read and their values
-   sent.
+    @brief  SLEEP MODE: Checks if all digital input pins have been read and
+   their values sent.
     @return True if all pins have been read and sent, False otherwise.
 */
 bool DigitalIOController::UpdateComplete() {
   for (size_t i = 0; i < _pins_input.size(); i++) {
-    if (!_pins_input[i].did_read_send) {
+    if (!_pins_input[i]->DidReadSend())
       return false;
-    }
   }
   return true;
 }
 
 /*!
-    @brief  Resets all digital input pins' did_read_send flags to false.
+    @brief  SLEEP MODE: Resets all digital input pins' did_read_send flags to
+   false.
 */
 void DigitalIOController::ResetFlags() {
   for (size_t i = 0; i < _pins_input.size(); i++) {
-    _pins_input[i].did_read_send = false;
+    _pins_input[i]->ResetSendFlag();
   }
 }
