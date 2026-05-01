@@ -14,12 +14,12 @@
  */
 #ifndef WS_DIGITALIO_CONTROLLER_H
 #define WS_DIGITALIO_CONTROLLER_H
-#include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
 
 class wippersnapper;
 class DigitalIOModel;
+class DigitalIOHardware;
 
 /*!
     @brief  Routes messages using the digitalio.proto API to the

@@ -13,6 +13,7 @@
  *
  */
 #include "controller.h"
+#include "hardware.h"
 #include "../expander/controller.h"
 
 /*!
