@@ -124,7 +124,7 @@ void CheckinModel::ConfigureControllers() {
       _CheckinB2D.payload.response.total_gpio_pins);
   Ws.analogio_controller->SetRefVoltage(
       _CheckinB2D.payload.response.reference_voltage);
-  Ws.analogio_controller->SetTotalAnalogPins(
+  Ws.analogio_controller->SetMaxAnalogPins(
       _CheckinB2D.payload.response.total_analog_pins);
 }
 

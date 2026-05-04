@@ -95,20 +95,24 @@ ws_analogio_D2B *AnalogIOModel::GetAnalogIOD2B() { return &_msg_AnalogioD2B; }
 
 /*!
     @brief  Encodes an AnalogIOEvent message.
-    @param pin_name
-           The requested pin's name.
+    @param pin
+           The requested pin's number.
     @param pin_value
            The value of the pin.
     @param read_type
            The type of sensor event to encode.
     @return True if successful, False otherwise.
 */
-bool AnalogIOModel::EncodeAnalogIOEvent(char *pin_name, float pin_value,
+bool AnalogIOModel::EncodeAnalogIOEvent(uint8_t pin, float pin_value,
                                         ws_sensor_Type read_type) {
+  // Convert pin number to pin name string
+  char c_pin_name[12];
+  sprintf(c_pin_name, "A%d", pin);
+
   // Initialize the AnalogIOEvent message to default values
   memset(&_msg_AnalogioEvent, 0, sizeof(_msg_AnalogioEvent));
   // Fill the AnalogIOEvent message's fields
-  strncpy(_msg_AnalogioEvent.pin_name, pin_name,
+  strncpy(_msg_AnalogioEvent.pin_name, c_pin_name,
           sizeof(_msg_AnalogioEvent.pin_name));
   _msg_AnalogioEvent.has_value = true;
   _msg_AnalogioEvent.value.type = read_type;
@@ -125,33 +129,32 @@ bool AnalogIOModel::EncodeAnalogIOEvent(char *pin_name, float pin_value,
 
 /*!
     @brief  Encodes an AnalogIOEvent message with a raw pin value.
-    @param pin_name
-           The requested pin's name.
+    @param pin
+           The requested pin's number.
     @param pin_value
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, float pin_value) {
-  WS_DEBUG_PRINT("[analogio] Pin: ");
-  WS_DEBUG_PRINTVAR(pin_name);
+bool AnalogIOModel::EncodeAnalogIOEventRaw(uint8_t pin, float pin_value) {
+  WS_DEBUG_PRINT("[analogio] Pin: A");
+  WS_DEBUG_PRINTVAR(pin);
   WS_DEBUG_PRINT(" | Raw Value: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
-  return EncodeAnalogIOEvent(pin_name, pin_value, ws_sensor_Type_T_RAW);
+  return EncodeAnalogIOEvent(pin, pin_value, ws_sensor_Type_T_RAW);
 }
 
 /*!
     @brief  Encodes an AnalogIOEvent message with a voltage pin value.
-    @param pin_name
-           The requested pin's name.
+    @param pin
+           The requested pin's number.
     @param pin_value
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogIOModel::EncodeAnalogIOEventVoltage(char *pin_name,
-                                               float pin_value) {
-  WS_DEBUG_PRINT("[analogio] Pin: ");
-  WS_DEBUG_PRINTVAR(pin_name);
+bool AnalogIOModel::EncodeAnalogIOEventVoltage(uint8_t pin, float pin_value) {
+  WS_DEBUG_PRINT("[analogio] Pin: A");
+  WS_DEBUG_PRINTVAR(pin);
   WS_DEBUG_PRINT(" | Voltage: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
-  return EncodeAnalogIOEvent(pin_name, pin_value, ws_sensor_Type_T_VOLTAGE);
+  return EncodeAnalogIOEvent(pin, pin_value, ws_sensor_Type_T_VOLTAGE);
 }
