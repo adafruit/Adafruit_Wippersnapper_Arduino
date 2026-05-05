@@ -45,6 +45,7 @@ public:
   bool DidReadSend() const;
   void MarkSent();
   void ResetSendFlag();
+
 private:
   uint16_t ReadRawValue();
   float ReadVoltage();
@@ -58,15 +59,15 @@ private:
   ws_analogio_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)
   ulong _period;                       ///< The pin's period, in milliseconds.
   ulong _prv_time;                     ///< Last read timestamp.
-  bool _did_read_send;                 ///< True if the last read was sent to IO.
-  uint16_t _value_raw;                 ///< Last raw ADC reading.
-  float _value_voltage;                ///< Last voltage reading.
-  uint16_t _prv_value_raw;             ///< Previous raw value for event detection.
-  uint8_t _native_adc_resolution;      ///< Hardware's native ADC resolution.
-  uint8_t _desired_adc_resolution;     ///< Desired (final) ADC resolution.
-  int _max_scale_resolution_desired;   ///< Maximum scale resolution desired.
-  int _max_scale_resolution_native;    ///< Maximum scale resolution native.
-  float _mcu_vref;                     ///< Reference voltage for reading analog pins.
-  ExpanderHardware *_expander_drv;     ///< Pointer to expander driver, or nullptr.
+  bool _did_read_send;             ///< True if the last read was sent to IO.
+  uint16_t _value_raw;             ///< Last raw ADC reading.
+  float _value_voltage;            ///< Last voltage reading.
+  uint16_t _prv_value_raw;         ///< Previous raw value for event detection.
+  uint8_t _native_adc_resolution;  ///< Hardware's native ADC resolution.
+  uint8_t _desired_adc_resolution; ///< Desired (final) ADC resolution.
+  int _max_scale_resolution_desired; ///< Maximum scale resolution desired.
+  int _max_scale_resolution_native;  ///< Maximum scale resolution native.
+  float _mcu_vref; ///< Reference voltage for reading analog pins.
+  ExpanderHardware *_expander_drv; ///< Pointer to expander driver, or nullptr.
 };
 #endif // WS_ANALOGIO_HARDWARE_H

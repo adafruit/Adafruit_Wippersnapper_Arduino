@@ -31,11 +31,12 @@ public:
   virtual void pinMode(uint8_t pin, uint8_t mode) = 0;
   virtual void digitalWrite(uint8_t pin, uint8_t value) = 0;
   virtual uint8_t digitalRead(uint8_t pin) = 0;
-  virtual uint16_t analogRead(uint8_t pin) = 0;
+  virtual uint16_t analogRead(uint8_t pin) { return 0; }
+  virtual uint8_t getAdcResolution() { return 0; }
   uint8_t getAddress() const { return _i2c_addr; }
 
 protected:
-  uint8_t _i2c_addr = 0;  ///< I2C address of the expander
+  uint8_t _i2c_addr = 0; ///< I2C address of the expander
 };
 
 #endif // WS_EXPANDER_HARDWARE_H

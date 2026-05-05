@@ -18,6 +18,9 @@
 #include "../hardware.h"
 #include <Adafruit_seesaw.h>
 
+#define DEFAULT_SEESAW_ADC_RESOLUTION                                          \
+  10 ///< Default ADC resolution for the Seesaw, in bits
+
 /*!
     @brief  Expander driver for the Adafruit Seesaw (various GPIO pins, I2C).
 */
@@ -26,7 +29,7 @@ public:
   /*!
    * @brief Constructor for the Seesaw expander driver.
    */
-  ExpanderSeesaw() {}
+  ExpanderSeesaw() { _resolution = DEFAULT_SEESAW_ADC_RESOLUTION; }
 
   /*!
    * @brief Destructor for the Seesaw expander driver.
@@ -68,15 +71,22 @@ public:
    */
   uint8_t digitalRead(uint8_t pin) override { return _ss.digitalRead(pin); }
 
-
   /*!
-   * @brief This function is used to get the ADC raw value for a given pin/ADC channel.
+   * @brief Gets the ADC raw value for a given pin/ADC channel.
    * @param pin GPIO pin to read analog value
    * @return Analog raw value (non-calibrated).
    */
   uint16_t analogRead(uint8_t pin) override { return _ss.analogRead(pin); }
+
+  /*!
+   * @brief Gets the resolution of the seesaw ADC.
+   * @return ADC resolution, in bits.
+   */
+  uint8_t getAdcResolution() override { return _resolution; }
+
 private:
   Adafruit_seesaw _ss; ///< Adafruit Seesaw driver instance
+  uint8_t _resolution;
 };
 
 #endif // WS_EXPANDER_DRV_SEESAW_H
