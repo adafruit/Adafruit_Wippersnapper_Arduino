@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -17,15 +17,16 @@
 /*!
     @brief  Ctor for PWMController.
 */
-PWMController::PWMController() {
-  _pwm_model = new PWMModel();
-  _active_pwm_pins = 0;
-}
+PWMController::PWMController() { _pwm_model = new PWMModel(); }
 
 /*!
     @brief  Dtor for PWMController.
 */
-PWMController::~PWMController() { delete _pwm_model; }
+PWMController::~PWMController() {
+  for (size_t i = 0; i < _pins.size(); i++)
+    delete _pins[i];
+  delete _pwm_model;
+}
 
 /*!
     @brief  Routes messages using the pwm.proto API to the
@@ -69,32 +70,39 @@ bool PWMController::Router(pb_istream_t *stream) {
     @return True if the message was handled successfully, false otherwise.
 */
 bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
-  bool did_attach;
   uint8_t pin = atoi(msg->pin + 1);
-  _pwm_hardware[_active_pwm_pins] = new PWMHardware();
 
-  WS_DEBUG_PRINT("[pwm] Attaching pin: ");
-  WS_DEBUG_PRINTVAR(msg->pin);
-  did_attach = _pwm_hardware[_active_pwm_pins]->AttachPin(
-      pin, (uint32_t)msg->frequency, (uint32_t)msg->resolution);
+  // If pin already exists, remove it before re-adding (for updates)
+  if (GetPin(pin) != nullptr) {
+    RemovePin(pin);
+  }
+
+  PWMHardware *new_pin = new PWMHardware();
+  bool did_attach =
+      new_pin->attach(pin, (uint32_t)msg->frequency, (uint32_t)msg->resolution);
   if (!did_attach) {
     WS_DEBUG_PRINTLN("[pwm] Failed to attach pin!");
-    delete _pwm_hardware[_active_pwm_pins];
+    delete new_pin;
   } else {
-    _active_pwm_pins++;
+    _pins.push_back(new_pin);
   }
 
-  // Publish PixelsAdded message to the broker
+  // Publish PWMAdded message to the broker
   if (!_pwm_model->EncodePWMAdded(msg->pin, did_attach)) {
     WS_DEBUG_PRINTLN("[pwm]: Failed to encode PWMAdded message!");
+    RemovePin(pin);
     return false;
   }
+
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_pwm_tag,
                      _pwm_model->GetPWMAddedMsg())) {
     WS_DEBUG_PRINTLN("[PWM]: Unable to publish PWMAdded message!");
+    RemovePin(pin);
     return false;
   }
-  WS_DEBUG_PRINTLN("...attached!");
+
+  WS_DEBUG_PRINT("[pwm] Attached pin: ");
+  WS_DEBUG_PRINTVAR(msg->pin);
   return true;
 }
 
@@ -105,49 +113,45 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
 */
 bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
   uint8_t pin = atoi(msg->pin + 1);
-  int pin_idx = GetPWMHardwareIdx(pin);
-  if (pin_idx == -1) {
+  if (!RemovePin(pin)) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;
   }
 
-  // Detach and free the pin for other uses
-  WS_DEBUG_PRINT("[pwm] Detaching pin: ");
+  WS_DEBUG_PRINT("[pwm] Removed pin: ");
   WS_DEBUG_PRINTVAR(msg->pin);
-  if (_pwm_hardware[pin_idx] != nullptr) {
-    bool detach_result = _pwm_hardware[pin_idx]->DetachPin();
-    if (!detach_result) {
-      WS_DEBUG_PRINTLN("[pwm] Error: Failed to detach pin.");
-    }
-    delete _pwm_hardware[pin_idx];
-    _pwm_hardware[pin_idx] = nullptr;
-  } else {
-    WS_DEBUG_PRINTLN("[pwm] Error: Pin not attached!");
-  }
-
-  // Reorganize _active_pwm_pins
-  _active_pwm_pins--;
-  for (int i = pin_idx; i < _active_pwm_pins; i++) {
-    _pwm_hardware[i] = _pwm_hardware[i + 1];
-  }
-  _pwm_hardware[_active_pwm_pins] = nullptr;
-  WS_DEBUG_PRINTLN("...detached!");
   return true;
 }
 
 /*!
-    @brief  Returns the index of the PWM hardware object that corresponds
-            to the given pin.
-    @param  pin The pin number to search for.
-    @return The index of the PWM hardware object, or -1 if not found.
+    @brief  Removes a pin from the vector by pin number.
+            Detaches and deletes the pin object, freeing the hardware resource.
+    @param  pin The pin number to remove.
+    @return True if the pin was found and removed, False otherwise.
 */
-int PWMController::GetPWMHardwareIdx(uint8_t pin) {
-  for (int i = 0; i < _active_pwm_pins; i++) {
-    if (_pwm_hardware[i]->GetPin() == pin) {
-      return i;
+bool PWMController::RemovePin(uint8_t pin) {
+  for (size_t i = 0; i < _pins.size(); i++) {
+    if (_pins[i]->GetPin() == pin) {
+      _pins[i]->detach();
+      delete _pins[i];
+      _pins.erase(_pins.begin() + i);
+      return true;
     }
   }
-  return -1;
+  return false;
+}
+
+/*!
+    @brief  Get a pointer to a PWM pin by pin number.
+    @param  pin The pin number to search for.
+    @return Pointer to the PWM hardware object, or nullptr if not found.
+*/
+PWMHardware *PWMController::GetPin(uint8_t pin) {
+  for (size_t i = 0; i < _pins.size(); i++) {
+    if (_pins[i]->GetPin() == pin)
+      return _pins[i];
+  }
+  return nullptr;
 }
 
 /*!
@@ -157,36 +161,14 @@ int PWMController::GetPWMHardwareIdx(uint8_t pin) {
 */
 bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
   uint8_t pin = atoi(msg->pin + 1);
-  int pin_idx = GetPWMHardwareIdx(pin);
-  if (pin_idx == -1) {
+  PWMHardware *hw = GetPin(pin);
+  if (hw == nullptr) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;
   }
 
-  // Check which payload type we have
-  if (msg->which_payload == ws_pwm_Write_duty_cycle_tag) {
-    // Write the duty cycle to the pin
-    if (!_pwm_hardware[pin_idx]->WriteDutyCycle(msg->payload.duty_cycle)) {
-      WS_DEBUG_PRINTLN("[pwm] Error: Failed to write duty cycle!");
-      return false;
-    }
-    WS_DEBUG_PRINT("[pwm] Wrote duty cycle: ");
-    WS_DEBUG_PRINTVAR(msg->payload.duty_cycle);
-    WS_DEBUG_PRINT(" to pin: ");
-    WS_DEBUG_PRINTLNVAR(msg->pin);
-  } else if (msg->which_payload == ws_pwm_Write_frequency_tag) {
-    // Write the frequency to the pin
-    if (_pwm_hardware[pin_idx]->WriteTone(msg->payload.frequency) !=
-        msg->payload.frequency) {
-      WS_DEBUG_PRINTLN("[pwm] Error: Failed to write frequency!");
-      return false;
-    }
-    WS_DEBUG_PRINT("[pwm] Wrote frequency: ");
-    WS_DEBUG_PRINTVAR(msg->payload.frequency);
-    WS_DEBUG_PRINT(" to pin: ");
-    WS_DEBUG_PRINTLNVAR(msg->pin);
-  } else {
-    WS_DEBUG_PRINTLN("[pwm] Error: Invalid payload type!");
+  if (!hw->write(msg)) {
+    WS_DEBUG_PRINTLN("[pwm] Error: Failed to write to pin!");
     return false;
   }
 

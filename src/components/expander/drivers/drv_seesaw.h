@@ -84,6 +84,13 @@ public:
    */
   uint8_t getAdcResolution() override { return _resolution; }
 
+  /*!
+   * @brief Writes an analog value (PWM waveform) to a pin on the Seesaw.
+   * @param pin The pin number to write to.
+   * @param value The duty cycle value to write.
+   */
+  void analogWrite(uint8_t pin, uint16_t value) override { _ss.analogWrite(pin, value); }
+
 private:
   Adafruit_seesaw _ss; ///< Adafruit Seesaw driver instance
   uint8_t _resolution;

@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -24,7 +24,7 @@ PWMHardware::PWMHardware() { _is_attached = false; }
 */
 PWMHardware::~PWMHardware() {
   if (_is_attached)
-    DetachPin();
+    detach();
 }
 
 /*!
@@ -34,7 +34,7 @@ PWMHardware::~PWMHardware() {
     @param  resolution The resolution of the PWM signal
     @return true if the pin was successfully attached, false otherwise
 */
-bool PWMHardware::AttachPin(uint8_t pin, uint32_t frequency,
+bool PWMHardware::attach(uint8_t pin, uint32_t frequency,
                             uint32_t resolution) {
 #ifdef ARDUINO_ARCH_ESP32
   _is_attached = ledcAttach(pin, frequency, resolution);
@@ -56,7 +56,7 @@ bool PWMHardware::AttachPin(uint8_t pin, uint32_t frequency,
     @brief  Detaches a PWM pin and frees it for use.
     @return true if the PWM pin was successfully detached, false otherwise.
 */
-bool PWMHardware::DetachPin() {
+bool PWMHardware::detach() {
   if (!_is_attached) {
     WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
     return false;
@@ -74,12 +74,27 @@ bool PWMHardware::DetachPin() {
 }
 
 /*!
+    @brief  Dispatches a PWM write message to the appropriate method.
+    @param  msg The PWM write message containing the payload type and value.
+    @return true if the write was successful, false otherwise.
+*/
+bool PWMHardware::write(ws_pwm_Write *msg) {
+  if (msg->which_payload == ws_pwm_Write_duty_cycle_tag) {
+    return writeDutyCycle(msg->payload.duty_cycle);
+  } else if (msg->which_payload == ws_pwm_Write_frequency_tag) {
+    return writeTone(msg->payload.frequency) == msg->payload.frequency;
+  }
+  WS_DEBUG_PRINTLN("[pwm] Error: Invalid payload type!");
+  return false;
+}
+
+/*!
     @brief  Writes a duty cycle to a PWM pin with a fixed frequency
             of 5kHz and 8-bit resolution.
     @param  duty The desired duty cycle to write to the pin.
     @return true if the duty cycle was successfully written, false otherwise
 */
-bool PWMHardware::WriteDutyCycle(uint32_t duty) {
+bool PWMHardware::writeDutyCycle(uint32_t duty) {
   if (!_is_attached) {
     WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
     return false;
@@ -108,7 +123,7 @@ bool PWMHardware::WriteDutyCycle(uint32_t duty) {
     @param  freq The desired frequency to write to the pin.
     @return The frequency that was written to the pin.
 */
-uint32_t PWMHardware::WriteTone(uint32_t freq) {
+uint32_t PWMHardware::writeTone(uint32_t freq) {
   if (!_is_attached) {
     WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
     return false;

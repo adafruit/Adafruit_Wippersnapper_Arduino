@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -27,10 +27,9 @@ class PWMHardware {
 public:
   PWMHardware();
   ~PWMHardware();
-  bool AttachPin(uint8_t pin, uint32_t frequency, uint32_t resolution);
-  bool DetachPin();
-  bool WriteDutyCycle(uint32_t duty);
-  uint32_t WriteTone(uint32_t freq);
+  bool attach(uint8_t pin, uint32_t frequency, uint32_t resolution);
+  bool detach();
+  bool write(ws_pwm_Write *msg);
   uint8_t GetPin();
 
 // Abstractions for LEDC API
@@ -38,6 +37,8 @@ public:
   bool analogWrite(uint32_t value);
 #endif
 private:
+  bool writeDutyCycle(uint32_t duty);
+  uint32_t writeTone(uint32_t freq);
   bool _is_attached;
   uint8_t _pin;
   uint32_t _frequency;
