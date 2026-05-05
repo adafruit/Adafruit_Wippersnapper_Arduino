@@ -27,18 +27,15 @@
 class ExpanderHardware {
 public:
   virtual ~ExpanderHardware();
-
   virtual bool begin(uint8_t i2c_addr, TwoWire *wire) = 0;
   virtual void pinMode(uint8_t pin, uint8_t mode) = 0;
   virtual void digitalWrite(uint8_t pin, uint8_t value) = 0;
   virtual uint8_t digitalRead(uint8_t pin) = 0;
-
+  virtual uint16_t analogRead(uint8_t pin) = 0;
   uint8_t getAddress() const { return _i2c_addr; }
-  uint8_t getPinCount() const { return _pin_count; }
 
 protected:
   uint8_t _i2c_addr = 0;  ///< I2C address of the expander
-  uint8_t _pin_count = 0; ///< Number of GPIO pins on the expander
 };
 
 #endif // WS_EXPANDER_HARDWARE_H

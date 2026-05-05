@@ -68,6 +68,13 @@ public:
    */
   uint8_t digitalRead(uint8_t pin) override { return _ss.digitalRead(pin); }
 
+
+  /*!
+   * @brief This function is used to get the ADC raw value for a given pin/ADC channel.
+   * @param pin GPIO pin to read analog value
+   * @return Analog raw value (non-calibrated).
+   */
+  uint16_t analogRead(uint8_t pin) override { return _ss.analogRead(pin); }
 private:
   Adafruit_seesaw _ss; ///< Adafruit Seesaw driver instance
 };
