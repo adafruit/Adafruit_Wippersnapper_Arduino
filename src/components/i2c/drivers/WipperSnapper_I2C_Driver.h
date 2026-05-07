@@ -605,9 +605,9 @@ public:
   @param    period
   The time when the light sensor was queried last.
   */
- /*******************************************************************************/
- virtual void setSensorLightPeriodPrv(long period) {
-   _lightSensorPeriodPrv = period;
+  /*******************************************************************************/
+  virtual void setSensorLightPeriodPrv(long period) {
+    _lightSensorPeriodPrv = period;
   }
 
   /*******************************************************************************/
@@ -625,7 +625,7 @@ public:
                       // function.
     return false;
   }
-  
+
   /**************************** SENSOR_TYPE: LUX
    * ****************************/
   /*********************************************************************************/
@@ -672,7 +672,7 @@ public:
   /*******************************************************************************/
   virtual bool getEventLux(sensors_event_t *luxEvent) {
     (void)luxEvent; // Parameter is intentionally unused in this virtual
-                     // function.
+                    // function.
     return false;
   }
 
@@ -1435,9 +1435,8 @@ protected:
                                ///< read.
   long _luxSensorPeriod =
       0L; ///< The time period between reading the lux sensor's value.
-  long _luxSensorPeriodPrv =
-      PERIOD_24HRS_AGO_MILLIS; ///< The time when the lux sensor was last
-                               ///< read.
+  long _luxSensorPeriodPrv = PERIOD_24HRS_AGO_MILLIS; ///< The time when the lux
+                                                      ///< sensor was last read.
   long _PM10SensorPeriod =
       0L; ///< The time period between reading the pm25 sensor's value.
   long _PM10SensorPeriodPrv =

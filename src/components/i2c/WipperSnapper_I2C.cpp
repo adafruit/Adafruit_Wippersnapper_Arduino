@@ -1590,8 +1590,8 @@ void WipperSnapper_Component_I2C::update() {
                       &WipperSnapper_I2C_Driver::getSensorLuxPeriod,
                       &WipperSnapper_I2C_Driver::getSensorLuxPeriodPrv,
                       &WipperSnapper_I2C_Driver::setSensorLuxPeriodPrv,
-                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LUX,
-                      "Lux", " lux", event, &sensors_event_t::light,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LUX, "Lux",
+                      " lux", event, &sensors_event_t::light,
                       sensorsReturningFalse, retries);
 
       // PM10_STD sensor
