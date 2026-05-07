@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Tyeth Gundry 2025 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2026 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -96,17 +96,17 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the MAX44009's current ambient light reading.
-      @param    lightEvent
+      @brief    Gets the MAX44009's current ambient light reading in lux.
+      @param    luxEvent
                 Light sensor reading, in lux.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventLight(sensors_event_t *lightEvent) {
+  bool getEventLux(sensors_event_t *luxEvent) {
     if (!_readSensor())
       return false;
-    *lightEvent = _cachedLight;
+    *luxEvent = _cachedLight;
     return true;
   }
 

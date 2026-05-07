@@ -1340,6 +1340,7 @@ void WipperSnapper_Component_I2C::displayDeviceEventMessage(
                (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LUX:
       snprintf(buffer, 100, "[I2C: %x] Read: %0.3f lux\n",
                (unsigned int)sensorAddress, value);
       break;
@@ -1581,6 +1582,16 @@ void WipperSnapper_Component_I2C::update() {
                       &WipperSnapper_I2C_Driver::setSensorLightPeriodPrv,
                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT,
                       "Light", " lux", event, &sensors_event_t::light,
+                      sensorsReturningFalse, retries);
+
+      // Lux sensor
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventLux,
+                      &WipperSnapper_I2C_Driver::getSensorLuxPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorLuxPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorLuxPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LUX,
+                      "Lux", " lux", event, &sensors_event_t::light,
                       sensorsReturningFalse, retries);
 
       // PM10_STD sensor
