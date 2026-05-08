@@ -118,6 +118,9 @@ public:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
       _lightSensorPeriod = sensorPeriod;
       break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LUX:
+      _luxSensorPeriod = sensorPeriod;
+      break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
       _PM10SensorPeriod = sensorPeriod;
       break;
@@ -597,10 +600,10 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Sets a timestamp for when the light sensor
-                was queried.
-      @param    period
-                The time when the light sensor was queried last.
+  @brief    Sets a timestamp for when the light sensor
+  was queried.
+  @param    period
+  The time when the light sensor was queried last.
   */
   /*******************************************************************************/
   virtual void setSensorLightPeriodPrv(long period) {
@@ -612,7 +615,7 @@ public:
       @brief    Base implementation - Reads a object light sensor and
                 converts the reading into the expected SI unit.
       @param    lightEvent
-                Light sensor reading, in meters.
+                Light sensor reading (raw).
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
@@ -620,6 +623,56 @@ public:
   virtual bool getEventLight(sensors_event_t *lightEvent) {
     (void)lightEvent; // Parameter is intentionally unused in this virtual
                       // function.
+    return false;
+  }
+
+  /**************************** SENSOR_TYPE: LUX
+   * ****************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object lux sensor's
+     period, if set.
+      @returns  Time when the object lux sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorLuxPeriod() { return _luxSensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the lux sensor was queried last.
+      @returns  Time when the lux sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorLuxPeriodPrv() { return _luxSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the lux sensor
+                was queried.
+      @param    period
+                The time when the lux sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorLuxPeriodPrv(long period) {
+    _luxSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object Light(lux) sensor and
+                converts the reading into the expected SI unit.
+      @param    luxEvent
+                Light sensor reading, in lux.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventLux(sensors_event_t *luxEvent) {
+    (void)luxEvent; // Parameter is intentionally unused in this virtual
+                    // function.
     return false;
   }
 
@@ -1380,6 +1433,10 @@ protected:
   long _lightSensorPeriodPrv =
       PERIOD_24HRS_AGO_MILLIS; ///< The time when the light sensor was last
                                ///< read.
+  long _luxSensorPeriod =
+      0L; ///< The time period between reading the lux sensor's value.
+  long _luxSensorPeriodPrv = PERIOD_24HRS_AGO_MILLIS; ///< The time when the lux
+                                                      ///< sensor was last read.
   long _PM10SensorPeriod =
       0L; ///< The time period between reading the pm25 sensor's value.
   long _PM10SensorPeriodPrv =
