@@ -13,6 +13,7 @@
  *
  */
 #include "controller.h"
+#include "../expander/controller.h"
 
 /*!
     @brief  Ctor for PWMController.
@@ -70,7 +71,26 @@ bool PWMController::Router(pb_istream_t *stream) {
     @return True if the message was handled successfully, false otherwise.
 */
 bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
-  uint8_t pin = atoi(msg->pin + 1);
+  // Check if the pin is located on an expander and resolve the expander driver
+  // Expander Pin Format: "EXP_<EXPANDER-I2C-ADDR>_<PIN-#>"
+  uint8_t pin = 0;
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin, "EXP_", 4) == 0) {
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      WS_DEBUG_PRINTLN("[pwm] ERROR: Expander not found for address!");
+      return false;
+    }
+    const char *pin_str = strchr(msg->pin + 4, '_');
+    if (!pin_str) {
+      WS_DEBUG_PRINTLN("[pwm] ERROR: Malformed expander pin name!");
+      return false;
+    }
+    pin = atoi(pin_str + 1);
+  } else {
+    pin = atoi(msg->pin + 1);
+  }
 
   // If pin already exists, remove it before re-adding (for updates)
   if (GetPin(pin) != nullptr) {
@@ -78,8 +98,8 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   }
 
   PWMHardware *new_pin = new PWMHardware();
-  bool did_attach =
-      new_pin->attach(pin, (uint32_t)msg->frequency, (uint32_t)msg->resolution);
+  bool did_attach = new_pin->attach(pin, (uint32_t)msg->frequency,
+                                    (uint32_t)msg->resolution, expander_drv);
   if (!did_attach) {
     WS_DEBUG_PRINTLN("[pwm] Failed to attach pin!");
     delete new_pin;
@@ -112,7 +132,17 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
     @return True if the message was handled successfully, false otherwise.
 */
 bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
-  uint8_t pin = atoi(msg->pin + 1);
+  uint8_t pin = 0;
+  if (strncmp(msg->pin, "EXP_", 4) == 0) {
+    const char *pin_str = strchr(msg->pin + 4, '_');
+    if (!pin_str) {
+      WS_DEBUG_PRINTLN("[pwm] ERROR: Malformed expander pin name!");
+      return false;
+    }
+    pin = atoi(pin_str + 1);
+  } else {
+    pin = atoi(msg->pin + 1);
+  }
   if (!RemovePin(pin)) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;
@@ -160,7 +190,17 @@ PWMHardware *PWMController::GetPin(uint8_t pin) {
     @return True if the message was handled successfully, false otherwise.
 */
 bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
-  uint8_t pin = atoi(msg->pin + 1);
+  uint8_t pin = 0;
+  if (strncmp(msg->pin, "EXP_", 4) == 0) {
+    const char *pin_str = strchr(msg->pin + 4, '_');
+    if (!pin_str) {
+      WS_DEBUG_PRINTLN("[pwm] ERROR: Malformed expander pin name!");
+      return false;
+    }
+    pin = atoi(pin_str + 1);
+  } else {
+    pin = atoi(msg->pin + 1);
+  }
   PWMHardware *hw = GetPin(pin);
   if (hw == nullptr) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");

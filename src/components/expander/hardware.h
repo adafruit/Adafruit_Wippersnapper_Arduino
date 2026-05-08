@@ -35,6 +35,7 @@ public:
   virtual uint16_t analogRead(uint8_t pin) { return 0; }
   virtual uint8_t getAdcResolution() { return 0; }
   virtual void analogWrite(uint8_t pin, uint16_t value) {};
+
 protected:
   uint8_t _i2c_addr = 0; ///< I2C address of the expander
 };

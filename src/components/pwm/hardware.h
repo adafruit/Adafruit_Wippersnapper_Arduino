@@ -20,6 +20,8 @@
 #include "esp_err.h"
 #endif
 
+class ExpanderHardware;
+
 /*!
     @brief  Interface for interacting with hardware's PWM API.
 */
@@ -27,7 +29,8 @@ class PWMHardware {
 public:
   PWMHardware();
   ~PWMHardware();
-  bool attach(uint8_t pin, uint32_t frequency, uint32_t resolution);
+  bool attach(uint8_t pin, uint32_t frequency, uint32_t resolution,
+              ExpanderHardware *expander_drv);
   bool detach();
   bool write(ws_pwm_Write *msg);
   uint8_t GetPin();
@@ -44,5 +47,6 @@ private:
   uint32_t _frequency;
   uint32_t _resolution;
   uint32_t _duty_cycle;
+  ExpanderHardware *_expander_drv = nullptr;
 };
 #endif // WS_PWM_HARDWARE_H

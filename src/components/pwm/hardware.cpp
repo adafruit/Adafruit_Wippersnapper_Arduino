@@ -34,13 +34,21 @@ PWMHardware::~PWMHardware() {
     @param  resolution The resolution of the PWM signal
     @return true if the pin was successfully attached, false otherwise
 */
-bool PWMHardware::attach(uint8_t pin, uint32_t frequency,
-                            uint32_t resolution) {
+bool PWMHardware::attach(uint8_t pin, uint32_t frequency, uint32_t resolution,
+                         ExpanderHardware *expander_drv) {
+  bool has_expander = (_expander_drv != nullptr);
+
+  // Attach the pin
+  if (!has_expander) {
 #ifdef ARDUINO_ARCH_ESP32
-  _is_attached = ledcAttach(pin, frequency, resolution);
+    _is_attached = ledcAttach(pin, frequency, resolution);
 #else
-  _is_attached = true;
+    _is_attached = true;
 #endif
+  } else {
+    _is_attached = true;
+    _expander_drv = expander_drv;
+  }
 
   if (_is_attached) {
     _pin = pin;
@@ -57,17 +65,24 @@ bool PWMHardware::attach(uint8_t pin, uint32_t frequency,
     @return true if the PWM pin was successfully detached, false otherwise.
 */
 bool PWMHardware::detach() {
-  if (!_is_attached) {
-    WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
+  if (!_is_attached)
     return false;
-  }
+
   bool did_detach = false;
+  bool has_expander = (_expander_drv != nullptr);
+
+  // Detach the pin
+  if (!has_expander) {
 #ifdef ARDUINO_ARCH_ESP32
-  did_detach = ledcDetach(_pin);
+    did_detach = ledcDetach(_pin);
 #else
-  digitalWrite(_pin, LOW); // "Disable" the pin's output
-  did_detach = true;
+    digitalWrite(_pin, LOW); // "Disable" the pin's output
+    did_detach = true;
+  } else {
+    _expander_drv->analogWrite(_pin, 0);
+    did_detach = true;
 #endif
+  }
 
   _is_attached = false; // always mark as false, for tracking
   return did_detach;
@@ -95,11 +110,13 @@ bool PWMHardware::write(ws_pwm_Write *msg) {
     @return true if the duty cycle was successfully written, false otherwise
 */
 bool PWMHardware::writeDutyCycle(uint32_t duty) {
-  if (!_is_attached) {
-    WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
+  if (!_is_attached)
     return false;
-  }
+
   bool did_write = false;
+  bool has_expander = (_expander_drv != nullptr);
+
+// Handle inversion for certain boards (e.g. Adafruit Feather ESP8266)
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) && defined(STATUS_LED_PIN)
   // Adafruit Feather ESP8266's analogWrite() gets inverted since the builtin
   // LED is reverse-wired
@@ -108,14 +125,19 @@ bool PWMHardware::writeDutyCycle(uint32_t duty) {
   _duty_cycle = duty;
 #endif
 
+  if (!has_expander) {
 #ifdef ARDUINO_ARCH_ESP32
-  did_write = analogWrite(_duty_cycle);
+    did_write = analogWrite(_duty_cycle);
 #else
-  analogWrite(_pin, duty);
-  did_write = true;
+    analogWrite(_pin, duty);
+    did_write = true;
 #endif
+  } else {
+    _expander_drv->analogWrite(_pin, (uint16_t)duty);
+    did_write = true;
+  }
 
-  return true;
+  return did_write;
 }
 
 /*!
@@ -128,6 +150,10 @@ uint32_t PWMHardware::writeTone(uint32_t freq) {
     WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
     return false;
   }
+
+  // NOTE: Tone generation is not supported on expander pins
+  if (_expander_drv != nullptr)
+    return 0;
 
   uint32_t rc = 0;
 #ifdef ARDUINO_ARCH_ESP32
