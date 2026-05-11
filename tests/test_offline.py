@@ -160,7 +160,7 @@ async def test_invalid_checksum(client):
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
-        '"components": [{"componentAPI": "analogio", "name": "Analog Pin", "pinName": "D14", '
+        '"components": [{"componentAPI": "analogin", "name": "Analog Pin", "pinName": "D14", '
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
         '"analogReadMode": "PIN_VALUE", "period": 5, "isPin": true}], "checksum": 5}\\n'
     )
@@ -176,9 +176,9 @@ async def test_valid_checksum(client):
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
-        '"components": [{"componentAPI": "analogio", "name": "Analog Pin", "pinName": "D14", '
+        '"components": [{"componentAPI": "analogin", "name": "Analog Pin", "pinName": "D14", '
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
-        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 28}\\n'
+        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 27}\\n'
     )
     await wait_for_text("[SD] Successfully deserialized JSON config file!")
 
@@ -230,14 +230,14 @@ async def test_analog_input(client):
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
-        '"components": [{"componentAPI": "analogio", "name": "Analog Pin", "pinName": "D14", '
+        '"components": [{"componentAPI": "analogin", "name": "Analog Pin", "pinName": "D14", '
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
-        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 149}\\n'
+        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 148}\\n'
     )
     await client.serial_write("\n")
 
     # Wait for pin configuration
-    await wait_for_text("[analogio] Added new pin:")
+    await wait_for_text("[analogin] Added new pin:")
     await wait_for_text("Pin Name: 14")
     await wait_for_text("Period: 5000")
     await wait_for_text("Read Mode: 18")

@@ -165,14 +165,14 @@ bool ErrorController::PublishError(pb_size_t which_component_type,
 /*! Helper Functions */
 
 /*!
-    @brief  Publishes an AnalogIO error message to the broker.
+    @brief  Publishes an AnalogIn error message to the broker.
     @param  error_msg
             The error message to publish.
     @param  pin_name
             The name of the pin that caused the error.
     @return True if the message was successfully published, False otherwise.
 */
-bool ErrorController::PublishAnalogIO(const char *error_msg,
+bool ErrorController::PublishAnalogIn(const char *error_msg,
                                       const char *pin_name) {
   if (!error_msg || !pin_name)
     return false;
@@ -187,7 +187,7 @@ bool ErrorController::PublishAnalogIO(const char *error_msg,
   pin_callback.arg = (void *)pin_name;
 
   // Pass to PublishError
-  return PublishError(ws_signal_DeviceToBroker_analogio_tag,
+  return PublishError(ws_signal_DeviceToBroker_analogin_tag,
                       ws_error_ErrorD2B_pin_tag, pin_callback,
                       error_msg_callback);
 }

@@ -29,7 +29,7 @@ public:
   ErrorController();
   ~ErrorController();
   bool Router(pb_istream_t *stream);
-  bool PublishAnalogIO(const char *error_msg, const char *pin_name);
+  bool PublishAnalogIn(const char *error_msg, const char *pin_name);
   bool PublishDigitalIO(const char *error_msg, const char *pin_name);
   bool PublishDS18x20(const char *error_msg, const char *pin_name);
   bool PublishPixels(const char *error_msg, const char *pin_name);

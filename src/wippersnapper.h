@@ -117,7 +117,7 @@
 #endif
 
 // Components (API v2)
-#include "components/analogIO/controller.h"
+#include "components/analogIn/controller.h"
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/ds18x20/controller.h"
@@ -165,7 +165,7 @@ class ErrorController;
 class ExpanderController;
 class SensorModel;
 class DigitalIOController;
-class AnalogIOController;
+class AnalogInController;
 class DS18X20Controller;
 class GPSController;
 class I2cController;
@@ -255,8 +255,8 @@ public:
   SensorModel *sensor_model = nullptr; ///< Instance of SensorModel class
   DigitalIOController *digital_io_controller =
       nullptr; ///< Instance of DigitalIO controller class
-  AnalogIOController *analogio_controller =
-      nullptr; ///< Instance of AnalogIO controller
+  AnalogInController *analogin_controller =
+      nullptr; ///< Instance of AnalogIn controller
   DS18X20Controller *_ds18x20_controller =
       nullptr; ///< Instance of DS18X20 controller
   ExpanderController *_expander_controller =

@@ -1,7 +1,7 @@
 /*!
- * @file src/components/analogIO/hardware.h
+ * @file src/components/analogIn/hardware.h
  *
- * Hardware implementation for the analogio.proto message.
+ * Hardware implementation for the analogin.proto message.
  * Each instance represents a single analog input pin and
  * carries its own ADC configuration as instance members.
  *
@@ -14,8 +14,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_ANALOGIO_HARDWARE_H
-#define WS_ANALOGIO_HARDWARE_H
+#ifndef WS_ANALOGIN_HARDWARE_H
+#define WS_ANALOGIN_HARDWARE_H
 #include "wippersnapper.h"
 
 #define DEFAULT_ADC_RESOLUTION 16 ///< Default ADC resolution, in bits
@@ -29,18 +29,18 @@ class ExpanderHardware;
             its state. Each instance carries its own ADC
             configuration.
 */
-class AnalogIOHardware {
+class AnalogInHardware {
 public:
-  AnalogIOHardware(uint8_t pin_name, ws_sensor_Type read_mode,
-                   ws_analogio_SampleMode sample_mode, ulong period,
+  AnalogInHardware(uint8_t pin_name, ws_sensor_Type read_mode,
+                   ws_analogin_SampleMode sample_mode, ulong period,
                    float ref_voltage, ExpanderHardware *expander_drv);
-  ~AnalogIOHardware();
+  ~AnalogInHardware();
   float ReadValue();
   bool CheckEvent();
   bool CheckTimer();
   uint8_t GetPinNum() const;
   ws_sensor_Type GetReadMode() const;
-  ws_analogio_SampleMode GetSampleMode() const;
+  ws_analogin_SampleMode GetSampleMode() const;
   float GetValue() const;
   bool DidReadSend() const;
   void MarkSent();
@@ -56,7 +56,7 @@ private:
   void CalculateScaleFactor();
   uint8_t _name;                       ///< The pin's number.
   ws_sensor_Type _read_mode;           ///< Type of analog read (RAW or VOLTAGE)
-  ws_analogio_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)
+  ws_analogin_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)
   ulong _period;                       ///< The pin's period, in milliseconds.
   ulong _prv_time;                     ///< Last read timestamp.
   bool _did_read_send;             ///< True if the last read was sent to IO.
@@ -70,4 +70,4 @@ private:
   float _mcu_vref; ///< Reference voltage for reading analog pins.
   ExpanderHardware *_expander_drv; ///< Pointer to expander driver, or nullptr.
 };
-#endif // WS_ANALOGIO_HARDWARE_H
+#endif // WS_ANALOGIN_HARDWARE_H
