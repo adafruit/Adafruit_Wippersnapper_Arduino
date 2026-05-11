@@ -1,7 +1,7 @@
 /*!
- * @file src/components/expander/drivers/drv_ads1015.h
+ * @file src/components/expander/drivers/drv_ads1115.h
  *
- * Header-only expander driver for the ADS1015 4-channel, 12-bit, ADC.
+ * Header-only expander driver for the ADS1115 4-channel, 16-bit, ADC.
  * Wraps the Adafruit_ADS1X15 library.
  *
  * Adafruit invests time and resources providing this open source code,
@@ -13,28 +13,28 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_EXPANDER_DRV_ADS1015_H
-#define WS_EXPANDER_DRV_ADS1015_H
+#ifndef WS_EXPANDER_DRV_ADS1115_H
+#define WS_EXPANDER_DRV_ADS1115_H
 #include "../hardware.h"
 #include <Adafruit_ADS1X15.h>
 
 /*!
-    @brief  Expander driver for the ADS1015 4-channel, 12-bit ADC.
+    @brief  Expander driver for the ADS1115 4-channel, 16-bit ADC.
 */
-class ExpanderADS1015 : public ExpanderHardware {
+class ExpanderADS1115 : public ExpanderHardware {
 public:
   /*!
-   * @brief Constructor for the ADS1015 expander driver.
+   * @brief Constructor for the ADS1115 expander driver.
    */
-  ExpanderADS1015() {}
+  ExpanderADS1115() {}
 
   /*!
-   * @brief Destructor for the ADS1015 expander driver.
+   * @brief Destructor for the ADS1115 expander driver.
    */
-  ~ExpanderADS1015() {}
+  ~ExpanderADS1115() {}
 
   /*!
-   * @brief Initializes the ADS1015 driver with the given I2C address and bus.
+   * @brief Initializes the ADS1115 driver with the given I2C address and bus.
    * @param i2c_addr The I2C address of the expander.
    * @param wire The TwoWire I2C bus to use for communication.
    * @return True if initialization was successful, False otherwise.
@@ -80,7 +80,7 @@ public:
   }
 
 private:
-  Adafruit_ADS1015 _ads; ///< Adafruit ADS1015 driver instance
+  Adafruit_ADS1115 _ads; ///< Adafruit ADS1115 driver instance
 };
 
-#endif // WS_EXPANDER_DRV_ADS1015_H
+#endif // WS_EXPANDER_DRV_ADS1115_H
