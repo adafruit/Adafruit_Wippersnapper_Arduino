@@ -34,6 +34,7 @@ public:
   virtual uint8_t digitalRead(uint8_t pin) = 0;
   virtual uint16_t analogRead(uint8_t pin) { return 0; }
   virtual uint8_t getAdcResolution() { return 0; }
+  virtual bool setGain(uint8_t gain) { return false; }
   virtual void analogWrite(uint8_t pin, uint16_t value) {};
 
 protected:

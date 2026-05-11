@@ -156,7 +156,7 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   // Create a new analog input pin
   AnalogInHardware *new_pin = new AnalogInHardware(
       pin_num, msg->read_mode, msg->sample_mode, (ulong)(msg->period * 1000.0f),
-      _mcu_vref, expander_drv);
+      _mcu_vref, expander_drv, msg->gain);
 
   // Add the pin to the controller's list
   _pins.push_back(new_pin);

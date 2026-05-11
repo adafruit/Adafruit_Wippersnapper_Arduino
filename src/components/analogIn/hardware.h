@@ -33,7 +33,8 @@ class AnalogInHardware {
 public:
   AnalogInHardware(uint8_t pin_name, ws_sensor_Type read_mode,
                    ws_analogin_SampleMode sample_mode, ulong period,
-                   float ref_voltage, ExpanderHardware *expander_drv);
+                   float ref_voltage, ExpanderHardware *expander_drv,
+                   ws_analogin_Gain gain);
   ~AnalogInHardware();
   float ReadValue();
   bool CheckEvent();
@@ -69,5 +70,6 @@ private:
   int _max_scale_resolution_native;  ///< Maximum scale resolution native.
   float _mcu_vref; ///< Reference voltage for reading analog pins.
   ExpanderHardware *_expander_drv; ///< Pointer to expander driver, or nullptr.
+  ws_analogin_Gain _gain;          ///< ADC gain setting for expander pins.
 };
 #endif // WS_ANALOGIN_HARDWARE_H
