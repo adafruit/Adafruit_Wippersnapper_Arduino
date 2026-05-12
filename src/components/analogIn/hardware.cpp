@@ -151,7 +151,7 @@ float AnalogInHardware::ReadVoltage() {
 #ifdef ARDUINO_ARCH_ESP32
   _value_voltage = analogReadMilliVolts(_name) / 1000.0;
 #else
-  _value_voltage = (ReadRawValue() * _mcu_vref) / 65536;
+  _value_voltage = (ReadRawValue() * _mcu_vref) / MAX_DESIRED_SCALE_RESOLUTION;
 #endif // ARDUINO_ARCH_ESP32
   return _value_voltage;
 }
@@ -161,7 +161,7 @@ float AnalogInHardware::ReadVoltage() {
     @return True if the value changed.
 */
 bool AnalogInHardware::CheckEvent() {
-  ReadRawValue();
+  ReadValue();
 
   if (_value_raw == _prv_value_raw)
     return false;
@@ -188,6 +188,8 @@ bool AnalogInHardware::CheckTimer() {
   ulong cur_time = millis();
   if (cur_time - _prv_time <= _period)
     return false;
+  // Timer expired, read the pin
+  ReadValue();
   _prv_time = cur_time;
   return true;
 }
@@ -221,6 +223,14 @@ float AnalogInHardware::GetValue() const {
     return (float)_value_raw;
   }
   return _value_voltage;
+}
+
+/*!
+    @brief  Gets the expander driver, or nullptr for native pins.
+    @return Pointer to the expander driver, or nullptr.
+*/
+ExpanderHardware *AnalogInHardware::GetExpanderDriver() const {
+  return _expander_drv;
 }
 
 /*!

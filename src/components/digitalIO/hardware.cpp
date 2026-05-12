@@ -192,6 +192,14 @@ ws_digitalio_SampleMode DigitalIOHardware::GetSampleMode() const {
 }
 
 /*!
+    @brief  Gets the expander driver, or nullptr for native pins.
+    @return Pointer to the expander driver, or nullptr.
+*/
+ExpanderHardware *DigitalIOHardware::GetExpanderDriver() const {
+  return _expander_drv;
+}
+
+/*!
     @brief  Gets whether the last read was sent to IO.
     @returns  True if the last read was sent successfully, False otherwise.
 */

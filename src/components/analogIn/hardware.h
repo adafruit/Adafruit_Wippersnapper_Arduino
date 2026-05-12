@@ -20,6 +20,8 @@
 
 #define DEFAULT_ADC_RESOLUTION 16 ///< Default ADC resolution, in bits
 #define DEFAULT_MCU_VREF 3.3      ///< Default reference voltage, in volts
+#define MAX_DESIRED_SCALE_RESOLUTION                                           \
+  65536 ///< Maximum desired scale resolution, in bits
 
 class ExpanderHardware;
 
@@ -43,6 +45,7 @@ public:
   ws_sensor_Type GetReadMode() const;
   ws_analogin_SampleMode GetSampleMode() const;
   float GetValue() const;
+  ExpanderHardware *GetExpanderDriver() const;
   bool DidReadSend() const;
   void MarkSent();
   void ResetSendFlag();

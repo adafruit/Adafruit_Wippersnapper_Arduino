@@ -18,6 +18,8 @@
 #include "../hardware.h"
 #include <Adafruit_ADS1X15.h>
 
+#define ADS1015_RESOLUTION 12 ///< ADC resolution, in bits
+
 /*!
     @brief  Expander driver for the ADS1015 4-channel, 12-bit ADC.
 */
@@ -32,6 +34,8 @@ public:
    * @brief Destructor for the ADS1015 expander driver.
    */
   ~ExpanderADS1015() {}
+
+  uint8_t getAdcResolution() override { return ADS1015_RESOLUTION; }
 
   /*!
    * @brief Initializes the ADS1015 driver with the given I2C address and bus.

@@ -125,9 +125,12 @@ AnalogInHardware *AnalogInController::GetPin(uint8_t pin_num) {
 bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   WS_DEBUG_PRINTLN("[analogin] Handle_AnalogInAdd MESSAGE...");
   uint8_t pin_num = 0;
+  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
+    WS_DEBUG_PRINTLN("[analogin] ERROR: Malformed expander pin name!");
+    return false;
+  }
 
-  // Check if the pin is located on an expander and resolve the expander driver
-  // Expander Pin Format: "EXP_<EXPANDER-I2C-ADDR>_<PIN-#>"
+  // Resolve the expander driver if this is an expander pin
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
@@ -136,22 +139,10 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
       WS_DEBUG_PRINTLN("[analogin] ERROR: Expander not found for address!");
       return false;
     }
-    const char *pin_str = strchr(msg->pin_name + 4, '_');
-    if (!pin_str) {
-      WS_DEBUG_PRINTLN("[analogin] ERROR: Malformed expander pin name!");
-      return false;
-    }
-    pin_num = atoi(pin_str + 1);
-  } else {
-    pin_num = atoi(msg->pin_name + 1);
   }
 
   // If pin is being updated, remove the existing pin first
-  if (!RemovePin(pin_num)) {
-    WS_DEBUG_PRINT("[analogin] ERROR: Unable to find requested pin: ");
-    WS_DEBUG_PRINTLNVAR(msg->pin_name);
-    return false;
-  }
+  RemovePin(pin_num);
 
   // Create a new analog input pin
   AnalogInHardware *new_pin = new AnalogInHardware(
@@ -182,8 +173,11 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
     @return True if the pin was successfully removed, False otherwise.
 */
 bool AnalogInController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
-  // Get the pin name
-  uint8_t pin_num = atoi(msg->pin_name + 1);
+  uint8_t pin_num = 0;
+  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
+    WS_DEBUG_PRINTLN("[analogin] ERROR: Malformed expander pin name!");
+    return false;
+  }
 
   if (!RemovePin(pin_num)) {
     WS_DEBUG_PRINTLN("[analogin] ERROR: Unable to find requested pin!");
@@ -211,13 +205,23 @@ bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
     return Ws._sdCardV2->LogGPIOSensorEventToSD(pin_num, value, read_type);
   }
 
+  // Format pin name: expander pins use "EXP_0xNN_P", native pins use "AN"
+  char c_pin_name[20];
+  ExpanderHardware *expander = pin->GetExpanderDriver();
+  if (expander != nullptr) {
+    ExpanderHardware::FormatPinName(c_pin_name, sizeof(c_pin_name),
+                                    expander->getAddress(), pin_num);
+  } else {
+    snprintf(c_pin_name, sizeof(c_pin_name), "A%d", pin_num);
+  }
+
   if (read_type == ws_sensor_Type_T_RAW) {
-    if (!_analogin_model->EncodeAnalogInEventRaw(pin_num, value)) {
+    if (!_analogin_model->EncodeAnalogInEventRaw(c_pin_name, value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIn raw adc message!");
       return false;
     }
   } else if (read_type == ws_sensor_Type_T_VOLTAGE) {
-    if (!_analogin_model->EncodeAnalogInEventVoltage(pin_num, value)) {
+    if (!_analogin_model->EncodeAnalogInEventVoltage(c_pin_name, value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIn voltage message!");
       return false;
     }

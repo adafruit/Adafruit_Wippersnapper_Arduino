@@ -40,7 +40,7 @@ public:
   void SetMaxDigitalPins(uint8_t max_digital_pins);
 
 private:
-  bool EncodePublishPinEvent(uint8_t pin_name, bool pin_value);
+  bool EncodePublishPinEvent(DigitalIOHardware *pin);
   bool RemovePin(uint8_t pin_num);
   DigitalIOHardware *GetPin(uint8_t pin_num);
   std::vector<DigitalIOHardware *> _pins_input;

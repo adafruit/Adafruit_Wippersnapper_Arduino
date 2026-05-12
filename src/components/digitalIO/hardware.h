@@ -43,6 +43,7 @@ public:
   bool GetPinValue() const;
   ws_digitalio_Direction GetDirection() const;
   ws_digitalio_SampleMode GetSampleMode() const;
+  ExpanderHardware *GetExpanderDriver() const;
 
   // Sleep cycle support
   bool DidReadSend() const;

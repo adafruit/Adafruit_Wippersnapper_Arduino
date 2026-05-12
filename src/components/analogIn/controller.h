@@ -17,7 +17,7 @@
 #include "model.h"
 #include "wippersnapper.h"
 
-class wippersnapper;   ///< Forward declaration
+class wippersnapper;    ///< Forward declaration
 class AnalogInModel;    ///< Forward declaration
 class AnalogInHardware; ///< Forward declaration
 

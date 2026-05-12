@@ -13,8 +13,8 @@
  *
  */
 #include "controller.h"
-#include "hardware.h"
 #include "../expander/controller.h"
+#include "hardware.h"
 
 /*!
     @brief  DigitalIOController constructor
@@ -131,8 +131,12 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     return false;
   }
 
-  // Check if the pin is located on an expander and resolve the expander driver
-  // Expander Pin Format: "EXP_<EXPANDER-I2C-ADDR>_<PIN-#>"
+  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
+    WS_DEBUG_PRINTLN("[dio] ERROR: Malformed expander pin name!");
+    return false;
+  }
+
+  // Resolve the expander driver if this is an expander pin
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
@@ -141,14 +145,6 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
       WS_DEBUG_PRINTLN("[dio] ERROR: Expander not found for address!");
       return false;
     }
-    const char *pin_str = strchr(msg->pin_name + 4, '_');
-    if (!pin_str) {
-      WS_DEBUG_PRINTLN("[dio] ERROR: Malformed expander pin name!");
-      return false;
-    }
-    pin_num = atoi(pin_str + 1);
-  } else {
-    pin_num = atoi(msg->pin_name + 1);
   }
 
   // Remove existing pin if re-adding (destructor deinits hardware)
@@ -189,7 +185,11 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     @return True if the digital pin was successfully removed, False otherwise.
 */
 bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
-  uint8_t pin_num = atoi(msg->pin_name + 1);
+  uint8_t pin_num = 0;
+  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
+    WS_DEBUG_PRINTLN("[dio] ERROR: Malformed expander pin name!");
+    return false;
+  }
 
   if (!RemovePin(pin_num)) {
     WS_DEBUG_PRINTLN("[dio] ERROR: Unable to find requested pin!");
@@ -226,7 +226,11 @@ DigitalIOHardware *DigitalIOController::GetPin(uint8_t pin_num) {
     @return True if the digital pin was successfully written.
 */
 bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
-  uint8_t pin_num = atoi(msg->pin_name + 1);
+  uint8_t pin_num = 0;
+  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
+    WS_DEBUG_PRINTLN("[dio] ERROR: Malformed expander pin name!");
+    return false;
+  }
 
   DigitalIOHardware *pin = GetPin(pin_num);
   if (!pin) {
@@ -256,24 +260,31 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
 
 /*!
     @brief  Encode and publish a pin event
-    @param  pin_num
-            The pin's number.
-    @param  pin_value
-            The pin's value.
+    @param  pin
+            Pointer to the digital pin hardware object.
     @return True if the pin event was successfully encoded and published.
 */
-bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_num,
-                                                bool pin_value) {
-  char c_pin_num[12];
-  sprintf(c_pin_num, "D%d", pin_num);
+bool DigitalIOController::EncodePublishPinEvent(DigitalIOHardware *pin) {
+  uint8_t pin_num = pin->GetPinNum();
+  bool pin_value = pin->GetPinValue();
+
+  // Format pin name: expander pins use "EXP_0xNN_P", native pins use "DN"
+  char c_pin_name[20];
+  ExpanderHardware *expander = pin->GetExpanderDriver();
+  if (expander != nullptr) {
+    ExpanderHardware::FormatPinName(c_pin_name, sizeof(c_pin_name),
+                                    expander->getAddress(), pin_num);
+  } else {
+    snprintf(c_pin_name, sizeof(c_pin_name), "D%d", pin_num);
+  }
 
   if (!Ws._sdCardV2->isModeOffline()) {
     WS_DEBUG_PRINT("[dio] Publish Event: ");
-    WS_DEBUG_PRINTVAR(c_pin_num);
+    WS_DEBUG_PRINTVAR(c_pin_name);
     WS_DEBUG_PRINT(" | value: ");
     WS_DEBUG_PRINTLNVAR(pin_value);
 
-    if (!_dio_model->EncodeDigitalIOEvent(c_pin_num, pin_value)) {
+    if (!_dio_model->EncodeDigitalIOEvent(c_pin_name, pin_value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");
       return false;
     }
@@ -321,7 +332,7 @@ void DigitalIOController::update(bool force) {
         continue;
     }
 
-    if (!EncodePublishPinEvent(pin->GetPinNum(), pin->GetPinValue())) {
+    if (!EncodePublishPinEvent(pin)) {
       WS_DEBUG_PRINTLN("[dio] ERROR: Unable to record pin value!");
       pin->ResetSendFlag();
       continue;

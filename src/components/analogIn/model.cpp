@@ -95,24 +95,20 @@ ws_analogin_D2B *AnalogInModel::GetAnalogInD2B() { return &_msg_AnalogInD2B; }
 
 /*!
     @brief  Encodes an AnalogInEvent message.
-    @param pin
-           The requested pin's number.
+    @param pin_name
+           The pin's name string (e.g. "A0" or "EXP_0x48_0").
     @param pin_value
            The value of the pin.
     @param read_type
            The type of sensor event to encode.
     @return True if successful, False otherwise.
 */
-bool AnalogInModel::EncodeAnalogInEvent(uint8_t pin, float pin_value,
+bool AnalogInModel::EncodeAnalogInEvent(const char *pin_name, float pin_value,
                                         ws_sensor_Type read_type) {
-  // Convert pin number to pin name string
-  char c_pin_name[12];
-  sprintf(c_pin_name, "A%d", pin);
-
   // Initialize the AnalogInEvent message to default values
   memset(&_msg_AnalogInEvent, 0, sizeof(_msg_AnalogInEvent));
   // Fill the AnalogInEvent message's fields
-  strncpy(_msg_AnalogInEvent.pin_name, c_pin_name,
+  strncpy(_msg_AnalogInEvent.pin_name, pin_name,
           sizeof(_msg_AnalogInEvent.pin_name));
   _msg_AnalogInEvent.has_value = true;
   _msg_AnalogInEvent.value.type = read_type;
@@ -129,32 +125,34 @@ bool AnalogInModel::EncodeAnalogInEvent(uint8_t pin, float pin_value,
 
 /*!
     @brief  Encodes an AnalogInEvent message with a raw pin value.
-    @param pin
-           The requested pin's number.
+    @param pin_name
+           The pin's name string.
     @param pin_value
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogInModel::EncodeAnalogInEventRaw(uint8_t pin, float pin_value) {
-  WS_DEBUG_PRINT("[analogin] Pin: A");
-  WS_DEBUG_PRINTVAR(pin);
+bool AnalogInModel::EncodeAnalogInEventRaw(const char *pin_name,
+                                           float pin_value) {
+  WS_DEBUG_PRINT("[analogin] Pin: ");
+  WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Raw Value: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
-  return EncodeAnalogInEvent(pin, pin_value, ws_sensor_Type_T_RAW);
+  return EncodeAnalogInEvent(pin_name, pin_value, ws_sensor_Type_T_RAW);
 }
 
 /*!
     @brief  Encodes an AnalogInEvent message with a voltage pin value.
-    @param pin
-           The requested pin's number.
+    @param pin_name
+           The pin's name string.
     @param pin_value
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogInModel::EncodeAnalogInEventVoltage(uint8_t pin, float pin_value) {
-  WS_DEBUG_PRINT("[analogin] Pin: A");
-  WS_DEBUG_PRINTVAR(pin);
+bool AnalogInModel::EncodeAnalogInEventVoltage(const char *pin_name,
+                                               float pin_value) {
+  WS_DEBUG_PRINT("[analogin] Pin: ");
+  WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Voltage: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
-  return EncodeAnalogInEvent(pin, pin_value, ws_sensor_Type_T_VOLTAGE);
+  return EncodeAnalogInEvent(pin_name, pin_value, ws_sensor_Type_T_VOLTAGE);
 }

@@ -38,7 +38,7 @@ PWMHardware::~PWMHardware() {
 */
 bool PWMHardware::attach(uint8_t pin, uint32_t frequency, uint32_t resolution,
                          ExpanderHardware *expander_drv) {
-  bool has_expander = (_expander_drv != nullptr);
+  bool has_expander = (expander_drv != nullptr);
 
   // Attach the pin
   if (!has_expander) {
@@ -78,12 +78,12 @@ bool PWMHardware::detach() {
 #ifdef ARDUINO_ARCH_ESP32
     did_detach = ledcDetach(_pin);
 #else
-    digitalWrite(_pin, LOW); // "Disable" the pin's output
+    digitalWrite(_pin, LOW);
     did_detach = true;
+#endif
   } else {
     _expander_drv->analogWrite(_pin, 0);
     did_detach = true;
-#endif
   }
 
   _is_attached = false; // always mark as false, for tracking

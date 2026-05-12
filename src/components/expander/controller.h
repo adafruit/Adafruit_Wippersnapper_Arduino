@@ -15,6 +15,8 @@
  */
 #ifndef WS_EXPANDER_CONTROLLER_H
 #define WS_EXPANDER_CONTROLLER_H
+#include "drivers/drv_ads1015.h"
+#include "drivers/drv_ads1115.h"
 #include "drivers/drv_aw9523.h"
 #include "drivers/drv_mcp23x08.h"
 #include "drivers/drv_mcp23x17.h"
@@ -22,8 +24,6 @@
 #include "drivers/drv_pcf8575.h"
 #include "drivers/drv_seesaw.h"
 #include "drivers/drv_tca8418.h"
-#include "drivers/drv_ads1015.h"
-#include "drivers/drv_ads1115.h"
 #include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
