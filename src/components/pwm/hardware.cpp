@@ -32,6 +32,8 @@ PWMHardware::~PWMHardware() {
     @param  pin The pin to attach
     @param  frequency The frequency of the PWM signal
     @param  resolution The resolution of the PWM signal
+    @param  expander_drv Pointer to an expander driver, or nullptr for
+                         native pins.
     @return true if the pin was successfully attached, false otherwise
 */
 bool PWMHardware::attach(uint8_t pin, uint32_t frequency, uint32_t resolution,

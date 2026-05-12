@@ -22,6 +22,7 @@
     @param  period        The pin's period in milliseconds.
     @param  ref_voltage   The reference voltage for analog reads.
     @param  expander_drv  Pointer to expander driver, or nullptr.
+    @param  gain          An optional gain setting for the ADC.
 */
 AnalogInHardware::AnalogInHardware(uint8_t pin_name, ws_sensor_Type read_mode,
                                    ws_analogin_SampleMode sample_mode,

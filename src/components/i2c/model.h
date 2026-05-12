@@ -19,7 +19,8 @@
 #include <Adafruit_Sensor.h>
 #include <protos/i2c_output.pb.h>
 
-#define MAX_DEVICE_EVENTS    16 ///< Maximum number of SensorEvents within I2cDeviceEvent
+#define MAX_DEVICE_EVENTS                                                      \
+  16 ///< Maximum number of SensorEvents within I2cDeviceEvent
 #define MAX_I2C_SCAN_DEVICES 16 ///< Maximum number of devices found on the bus
 
 /*!
@@ -34,6 +35,9 @@ public:
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
   bool DecodeI2cBusScan(pb_istream_t *stream);
+  /*!  @brief  Decodes an I2C device output write message from a stream.
+       @param  stream  Pointer to the nanopb input stream.
+       @return True if decoding succeeded, false otherwise. */
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
   bool encodeMsgI2cDeviceAddedorReplaced(
@@ -43,6 +47,8 @@ public:
   // Getters
   ws_i2c_DeviceRemove *GetI2cDeviceRemoveMsg();
   ws_i2c_DeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
+  /*!  @brief  Returns a pointer to the I2C output add message.
+       @return Pointer to the ws_i2c_output_Add message. */
   ws_i2c_output_Add *GetI2cOutputAddMsg();
   ws_i2c_DeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
   ws_i2c_DeviceEvent *GetI2cDeviceEvent();
@@ -58,8 +64,7 @@ public:
   ws_i2c_D2B *GetI2cD2B();
   // DeviceEvent Message API
   void ClearI2cDeviceEvent();
-  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
-                                         uint32_t pin_sda,
+  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl, uint32_t pin_sda,
                                          uint32_t addr_device,
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
@@ -86,10 +91,20 @@ public:
   I2cOutputModel();
   ~I2cOutputModel();
   // Decoders
+  /*!  @brief  Decodes a LED backpack write message from a stream.
+       @param  stream  Pointer to the nanopb input stream.
+       @return True if decoding succeeded, false otherwise. */
   bool DecodeLedBackpackWrite(pb_istream_t *stream);
+  /*!  @brief  Decodes a character LCD write message from a stream.
+       @param  stream  Pointer to the nanopb input stream.
+       @return True if decoding succeeded, false otherwise. */
   bool DecodeCharLCDWrite(pb_istream_t *stream);
   // Getters
+  /*!  @brief  Returns a pointer to the LED backpack write message.
+       @return Pointer to the ws_i2c_output_LedBackpackWrite message. */
   ws_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
+  /*!  @brief  Returns a pointer to the character LCD write message.
+       @return Pointer to the ws_i2c_output_CharLCDWrite message. */
   ws_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
 
 private:

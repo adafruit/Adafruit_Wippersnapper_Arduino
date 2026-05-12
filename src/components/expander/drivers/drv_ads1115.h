@@ -44,36 +44,45 @@ public:
     return _ads.begin(i2c_addr, wire);
   }
 
+  /*!
+   * @brief Reads the raw ADC value from the specified pin.
+   * @param pin The pin number to read from (0-3 for ADS1115).
+   * @return The raw ADC value read from the pin.
+   */
   uint16_t analogRead(uint8_t pin) override {
     return _ads.readADC_SingleEnded(pin);
   }
 
+  /*!
+   * @brief Sets the gain for the ADC readings.
+   * @param gain The gain setting (1=1x, 2=2x, 3=2/3x, 4=4x, 5=8x, 6=16x).
+   * @return True if the gain was successfully set, False otherwise.
+   */
   bool setGain(uint8_t gain) override {
-    // map gain value to adsGain_t
-    // Values match ws_analogin_Gain: 1=1x, 2=2x, 3=2/3x, 4=4x, 5=8x, 6=16x
+    // maps gain value to adsGain_t
     adsGain_t ads_gain;
     switch (gain) {
-      case 1:
-        ads_gain = GAIN_ONE;
-        break;
-      case 2:
-        ads_gain = GAIN_TWO;
-        break;
-      case 3:
-        ads_gain = GAIN_TWOTHIRDS;
-        break;
-      case 4:
-        ads_gain = GAIN_FOUR;
-        break;
-      case 5:
-        ads_gain = GAIN_EIGHT;
-        break;
-      case 6:
-        ads_gain = GAIN_SIXTEEN;
-        break;
-      default:
-        ads_gain = GAIN_ONE; // default to 1x gain
-        break;
+    case 1:
+      ads_gain = GAIN_ONE;
+      break;
+    case 2:
+      ads_gain = GAIN_TWO;
+      break;
+    case 3:
+      ads_gain = GAIN_TWOTHIRDS;
+      break;
+    case 4:
+      ads_gain = GAIN_FOUR;
+      break;
+    case 5:
+      ads_gain = GAIN_EIGHT;
+      break;
+    case 6:
+      ads_gain = GAIN_SIXTEEN;
+      break;
+    default:
+      ads_gain = GAIN_ONE; // default to 1x gain
+      break;
     }
     _ads.setGain(ads_gain);
     return true;

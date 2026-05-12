@@ -42,11 +42,10 @@ wippersnapper::wippersnapper()
     : _mqttV2(nullptr), sensor_model(nullptr), error_controller(nullptr),
       digital_io_controller(nullptr), analogin_controller(nullptr),
       _ds18x20_controller(nullptr), _expander_controller(nullptr),
-      _gps_controller(nullptr),
-      _i2c_controller(nullptr), _uart_controller(nullptr),
-      _pixels_controller(nullptr), _pwm_controller(nullptr),
-      _servo_controller(nullptr), _wdt(nullptr), _device_uidV2(nullptr),
-      _mqtt_client_id(nullptr) {
+      _gps_controller(nullptr), _i2c_controller(nullptr),
+      _uart_controller(nullptr), _pixels_controller(nullptr),
+      _pwm_controller(nullptr), _servo_controller(nullptr), _wdt(nullptr),
+      _device_uidV2(nullptr), _mqtt_client_id(nullptr) {
   // Initialize WDT wrapper
   _wdt = new ws_wdt();
 
@@ -111,6 +110,7 @@ void wippersnapper::_connect() {
 
 /*!
     @brief    Disconnect Wippersnapper MQTT session and network.
+    @param    wifi_off  True to also power off the WiFi radio.
 */
 void wippersnapper::_disconnect(bool wifi_off) {
   (void)wifi_off; // Avoid unused parameter warning for some network interfaces
