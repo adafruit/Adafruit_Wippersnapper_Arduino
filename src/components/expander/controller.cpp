@@ -83,9 +83,9 @@ bool ExpanderController::AddExpander(const char *device_name, uint8_t i2c_addr,
     drv = new ExpanderTCA8418();
   } else if (strcmp(device_name, "seesaw") == 0) {
     drv = new ExpanderSeesaw();
-    } else if (strcmp(device_name, "ads1015") == 0) {
+  } else if (strcmp(device_name, "ads1015") == 0) {
     drv = new ExpanderADS1015();
-    } else if (strcmp(device_name, "ads1115") == 0) {
+  } else if (strcmp(device_name, "ads1115") == 0) {
     drv = new ExpanderADS1115();
   } else {
     WS_DEBUG_PRINTLN("[expander] ERROR: Unsupported expander device type!");
