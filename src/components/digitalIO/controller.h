@@ -20,6 +20,7 @@
 class wippersnapper;
 class DigitalIOModel;
 class DigitalIOHardware;
+class ExpanderHardware;
 
 /*!
     @brief  Routes messages using the digitalio.proto API to the
@@ -41,8 +42,8 @@ public:
 
 private:
   bool EncodePublishPinEvent(DigitalIOHardware *pin);
-  bool RemovePin(uint8_t pin_num);
-  DigitalIOHardware *GetPin(uint8_t pin_num);
+  bool RemovePin(uint8_t pin_num, ExpanderHardware *expander);
+  DigitalIOHardware *GetPin(uint8_t pin_num, ExpanderHardware *expander);
   std::vector<DigitalIOHardware *> _pins_input;
   std::vector<DigitalIOHardware *> _pins_output;
   DigitalIOModel *_dio_model;

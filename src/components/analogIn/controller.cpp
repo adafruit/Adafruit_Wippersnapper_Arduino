@@ -90,9 +90,11 @@ bool AnalogInController::Router(pb_istream_t *stream) {
             The pin number to remove.
     @return True if the pin was found and removed.
 */
-bool AnalogInController::RemovePin(uint8_t pin_num) {
+bool AnalogInController::RemovePin(uint8_t pin_num,
+                                   ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
-    if (_pins[i]->GetPinNum() == pin_num) {
+    if (_pins[i]->GetPinNum() == pin_num &&
+        _pins[i]->GetExpanderDriver() == expander) {
       delete _pins[i];
       _pins.erase(_pins.begin() + i);
       return true;
@@ -107,9 +109,11 @@ bool AnalogInController::RemovePin(uint8_t pin_num) {
             The pin's number.
     @return Pointer to the analog pin, or nullptr if not found.
 */
-AnalogInHardware *AnalogInController::GetPin(uint8_t pin_num) {
+AnalogInHardware *AnalogInController::GetPin(uint8_t pin_num,
+                                             ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
-    if (_pins[i]->GetPinNum() == pin_num)
+    if (_pins[i]->GetPinNum() == pin_num &&
+        _pins[i]->GetExpanderDriver() == expander)
       return _pins[i];
   }
   return nullptr;
@@ -130,6 +134,19 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
     return false;
   }
 
+  // Validate the read mode
+  if (msg->read_mode != ws_sensor_Type_T_RAW &&
+      msg->read_mode != ws_sensor_Type_T_VOLTAGE) {
+    WS_DEBUG_PRINTLN("[analogin] ERROR: Invalid read mode in message!");
+    return false;
+  }
+  // Validate the sample mode
+  if (msg->sample_mode != ws_analogin_SampleMode_SM_TIMER &&
+      msg->sample_mode != ws_analogin_SampleMode_SM_EVENT) {
+    WS_DEBUG_PRINTLN("[analogin] ERROR: Invalid sample mode in message!");
+    return false;
+  }
+
   // Resolve the expander driver if this is an expander pin
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
@@ -142,7 +159,7 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   }
 
   // If pin is being updated, remove the existing pin first
-  RemovePin(pin_num);
+  RemovePin(pin_num, expander_drv);
 
   // Create a new analog input pin
   AnalogInHardware *new_pin = new AnalogInHardware(
@@ -179,7 +196,18 @@ bool AnalogInController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
     return false;
   }
 
-  if (!RemovePin(pin_num)) {
+  // Resolve the expander driver if this is an expander pin
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      WS_DEBUG_PRINTLN("[analogin] ERROR: Expander not found for address!");
+      return false;
+    }
+  }
+
+  if (!RemovePin(pin_num, expander_drv)) {
     WS_DEBUG_PRINTLN("[analogin] ERROR: Unable to find requested pin!");
     return false;
   }

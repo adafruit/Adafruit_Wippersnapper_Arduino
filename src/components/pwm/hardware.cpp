@@ -174,6 +174,13 @@ uint32_t PWMHardware::writeTone(uint32_t freq) {
 */
 uint8_t PWMHardware::GetPin() { return _pin; }
 
+/*!
+    @brief  Returns a pointer to the expander driver, or nullptr for native
+   pins.
+    @return Pointer to the ExpanderHardware driver, or nullptr.
+*/
+ExpanderHardware *PWMHardware::GetExpanderDriver() { return _expander_drv; }
+
 // LEDC API Wrappers
 #ifdef ARDUINO_ARCH_ESP32
 /*!

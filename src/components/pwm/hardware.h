@@ -34,6 +34,7 @@ public:
   bool detach();
   bool write(ws_pwm_Write *msg);
   uint8_t GetPin();
+  ExpanderHardware *GetExpanderDriver();
 
 // Abstractions for LEDC API
 #ifdef ARDUINO_ARCH_ESP32

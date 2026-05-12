@@ -20,6 +20,7 @@
 class wippersnapper;    ///< Forward declaration
 class AnalogInModel;    ///< Forward declaration
 class AnalogInHardware; ///< Forward declaration
+class ExpanderHardware; ///< Forward declaration
 
 /*!
     @brief  Routes messages using the analogin.proto API to the
@@ -46,8 +47,8 @@ public:
 
 private:
   bool EncodePublishPinEvent(AnalogInHardware *pin);
-  bool RemovePin(uint8_t pin_num);
-  AnalogInHardware *GetPin(uint8_t pin_num);
+  bool RemovePin(uint8_t pin_num, ExpanderHardware *expander);
+  AnalogInHardware *GetPin(uint8_t pin_num, ExpanderHardware *expander);
   std::vector<AnalogInHardware *> _pins; ///< Vector of analog pin objects
   AnalogInModel *_analogin_model;        ///< AnalogIn model
   float _mcu_vref; ///< Reference voltage passed to each new pin

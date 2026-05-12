@@ -38,8 +38,8 @@ public:
   bool Handle_PWM_Remove(ws_pwm_Remove *msg);
 
 private:
-  bool RemovePin(uint8_t pin);
-  PWMHardware *GetPin(uint8_t pin);
+  bool RemovePin(uint8_t pin, ExpanderHardware *expander);
+  PWMHardware *GetPin(uint8_t pin, ExpanderHardware *expander);
   PWMModel *_pwm_model;
   std::vector<PWMHardware *> _pins;
 };

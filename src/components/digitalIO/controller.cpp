@@ -87,16 +87,19 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
             The pin number to remove.
     @return True if the pin was found and removed.
 */
-bool DigitalIOController::RemovePin(uint8_t pin_num) {
+bool DigitalIOController::RemovePin(uint8_t pin_num,
+                                    ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins_output.size(); i++) {
-    if (_pins_output[i]->GetPinNum() == pin_num) {
+    if (_pins_output[i]->GetPinNum() == pin_num &&
+        _pins_output[i]->GetExpanderDriver() == expander) {
       delete _pins_output[i];
       _pins_output.erase(_pins_output.begin() + i);
       return true;
     }
   }
   for (size_t i = 0; i < _pins_input.size(); i++) {
-    if (_pins_input[i]->GetPinNum() == pin_num) {
+    if (_pins_input[i]->GetPinNum() == pin_num &&
+        _pins_input[i]->GetExpanderDriver() == expander) {
       delete _pins_input[i];
       _pins_input.erase(_pins_input.begin() + i);
       return true;
@@ -148,7 +151,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   }
 
   // Remove existing pin if re-adding (destructor deinits hardware)
-  RemovePin(pin_num);
+  RemovePin(pin_num, expander_drv);
 
   // Get the initial value from the write message (if present)
   bool initial_value = false;
@@ -191,7 +194,18 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
     return false;
   }
 
-  if (!RemovePin(pin_num)) {
+  // Resolve the expander driver if this is an expander pin
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      WS_DEBUG_PRINTLN("[dio] ERROR: Expander not found for address!");
+      return false;
+    }
+  }
+
+  if (!RemovePin(pin_num, expander_drv)) {
     WS_DEBUG_PRINTLN("[dio] ERROR: Unable to find requested pin!");
     return false;
   }
@@ -207,13 +221,16 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
             The pin's number.
     @return Pointer to the digital pin, or nullptr if not found.
 */
-DigitalIOHardware *DigitalIOController::GetPin(uint8_t pin_num) {
+DigitalIOHardware *DigitalIOController::GetPin(uint8_t pin_num,
+                                               ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins_output.size(); i++) {
-    if (_pins_output[i]->GetPinNum() == pin_num)
+    if (_pins_output[i]->GetPinNum() == pin_num &&
+        _pins_output[i]->GetExpanderDriver() == expander)
       return _pins_output[i];
   }
   for (size_t i = 0; i < _pins_input.size(); i++) {
-    if (_pins_input[i]->GetPinNum() == pin_num)
+    if (_pins_input[i]->GetPinNum() == pin_num &&
+        _pins_input[i]->GetExpanderDriver() == expander)
       return _pins_input[i];
   }
   return nullptr;
@@ -232,7 +249,18 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
     return false;
   }
 
-  DigitalIOHardware *pin = GetPin(pin_num);
+  // Resolve the expander driver if this is an expander pin
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      WS_DEBUG_PRINTLN("[dio] ERROR: Expander not found for address!");
+      return false;
+    }
+  }
+
+  DigitalIOHardware *pin = GetPin(pin_num, expander_drv);
   if (!pin) {
     WS_DEBUG_PRINTLN("[dio] ERROR: Unable to find the requested output pin!");
     return false;

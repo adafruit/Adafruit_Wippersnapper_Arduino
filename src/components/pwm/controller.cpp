@@ -89,8 +89,8 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   }
 
   // If pin already exists, remove it before re-adding (for updates)
-  if (GetPin(pin) != nullptr) {
-    RemovePin(pin);
+  if (GetPin(pin, expander_drv) != nullptr) {
+    RemovePin(pin, expander_drv);
   }
 
   PWMHardware *new_pin = new PWMHardware();
@@ -106,14 +106,14 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   // Publish PWMAdded message to the broker
   if (!_pwm_model->EncodePWMAdded(msg->pin, did_attach)) {
     WS_DEBUG_PRINTLN("[pwm]: Failed to encode PWMAdded message!");
-    RemovePin(pin);
+    RemovePin(pin, expander_drv);
     return false;
   }
 
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_pwm_tag,
                      _pwm_model->GetPWMAddedMsg())) {
     WS_DEBUG_PRINTLN("[PWM]: Unable to publish PWMAdded message!");
-    RemovePin(pin);
+    RemovePin(pin, expander_drv);
     return false;
   }
 
@@ -133,7 +133,19 @@ bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
     WS_DEBUG_PRINTLN("[pwm] ERROR: Malformed expander pin name!");
     return false;
   }
-  if (!RemovePin(pin)) {
+
+  // Resolve the expander driver if this is an expander pin
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin, "EXP_", 4) == 0) {
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      WS_DEBUG_PRINTLN("[pwm] ERROR: Expander not found for address!");
+      return false;
+    }
+  }
+
+  if (!RemovePin(pin, expander_drv)) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;
   }
@@ -149,9 +161,10 @@ bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
     @param  pin The pin number to remove.
     @return True if the pin was found and removed, False otherwise.
 */
-bool PWMController::RemovePin(uint8_t pin) {
+bool PWMController::RemovePin(uint8_t pin, ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
-    if (_pins[i]->GetPin() == pin) {
+    if (_pins[i]->GetPin() == pin &&
+        _pins[i]->GetExpanderDriver() == expander) {
       _pins[i]->detach();
       delete _pins[i];
       _pins.erase(_pins.begin() + i);
@@ -166,9 +179,9 @@ bool PWMController::RemovePin(uint8_t pin) {
     @param  pin The pin number to search for.
     @return Pointer to the PWM hardware object, or nullptr if not found.
 */
-PWMHardware *PWMController::GetPin(uint8_t pin) {
+PWMHardware *PWMController::GetPin(uint8_t pin, ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
-    if (_pins[i]->GetPin() == pin)
+    if (_pins[i]->GetPin() == pin && _pins[i]->GetExpanderDriver() == expander)
       return _pins[i];
   }
   return nullptr;
@@ -185,7 +198,19 @@ bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
     WS_DEBUG_PRINTLN("[pwm] ERROR: Malformed expander pin name!");
     return false;
   }
-  PWMHardware *hw = GetPin(pin);
+
+  // Resolve the expander driver if this is an expander pin
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin, "EXP_", 4) == 0) {
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      WS_DEBUG_PRINTLN("[pwm] ERROR: Expander not found for address!");
+      return false;
+    }
+  }
+
+  PWMHardware *hw = GetPin(pin, expander_drv);
   if (hw == nullptr) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;
