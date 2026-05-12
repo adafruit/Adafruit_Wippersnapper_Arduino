@@ -26,7 +26,7 @@
 */
 class ExpanderHardware {
 public:
-  virtual ~ExpanderHardware();
+  virtual ~ExpanderHardware() {}
 
   /*!  @brief  Initializes the expander hardware.
        @param  i2c_addr  The I2C address of the expander.
