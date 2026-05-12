@@ -166,7 +166,7 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   WS_DEBUG_PRINT("Pin Name: ");
   WS_DEBUG_PRINTLNVAR(new_pin->GetPinNum());
   WS_DEBUG_PRINT("Period: ");
-  WS_DEBUG_PRINTLN(msg->period * 1000.0f);
+  WS_DEBUG_PRINTLNVAR(msg->period * 1000.0f);
   WS_DEBUG_PRINT("Read Mode: ");
   ws_sensor_Type pin_read_mode = new_pin->GetReadMode();
   WS_DEBUG_PRINTLNVAR(pin_read_mode);
