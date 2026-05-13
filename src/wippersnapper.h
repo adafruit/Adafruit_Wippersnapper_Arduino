@@ -45,8 +45,10 @@
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  { WS_PRINTER.println(__VA_ARGS__); } /**< Print debug message with newline   \
-                                        */
+  {                                                                            \
+    WS_PRINTER.println(__VA_ARGS__);                                           \
+  } /**< Print debug message with newline                                      \
+     */
 #endif
 
 // Variable printing macros - use for non-string-literal arguments
