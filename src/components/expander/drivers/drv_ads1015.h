@@ -59,31 +59,31 @@ public:
 
   /*!
    * @brief Sets the gain for the ADC readings.
-   * @param gain The gain setting (1=1x, 2=2x, 3=2/3x, 4=4x, 5=8x, 6=16x).
+   * @param gain The gain setting from ws_analogin_Gain.
+   *             Values: 1=1x, 2=2x, 3=4x, 4=8x, 5=16x, 9=2/3x.
+   *             Unsupported gains (32x, 64x, 128x) fall back to 1x.
    * @return True if the gain was successfully set, False otherwise.
    */
   bool setGain(uint8_t gain) override {
-    // map gain value to adsGain_t
-    // Values match ws_analogin_Gain: 1=1x, 2=2x, 3=2/3x, 4=4x, 5=8x, 6=16x
     adsGain_t ads_gain;
     switch (gain) {
-    case 1:
+    case 1: // G_1X
       ads_gain = GAIN_ONE;
       break;
-    case 2:
+    case 2: // G_2X
       ads_gain = GAIN_TWO;
       break;
-    case 3:
-      ads_gain = GAIN_TWOTHIRDS;
-      break;
-    case 4:
+    case 3: // G_4X
       ads_gain = GAIN_FOUR;
       break;
-    case 5:
+    case 4: // G_8X
       ads_gain = GAIN_EIGHT;
       break;
-    case 6:
+    case 5: // G_16X
       ads_gain = GAIN_SIXTEEN;
+      break;
+    case 9: // G_2_3X
+      ads_gain = GAIN_TWOTHIRDS;
       break;
     default:
       ads_gain = GAIN_ONE; // default to 1x gain
