@@ -95,7 +95,7 @@ bool I2cHardware::begin() {
 // NOTE: Each platform has a slightly different bus initialization routine
 #ifdef ARDUINO_ARCH_ESP32
   _bus = new TwoWire(_instance);
-  // _bus->setPins(_sda, _scl); TODO: This is possibly not required due to ctor
+  _bus->setPins(_sda, _scl); // TODO: This is possibly not required due to ctor
   if (!_bus->begin(_sda, _scl)) {
     _bus_status = ws_i2c_BusStatus_BS_ERROR_HANG;
     return false;
