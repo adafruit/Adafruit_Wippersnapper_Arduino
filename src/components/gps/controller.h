@@ -15,10 +15,10 @@
  */
 #ifndef WS_GPS_CONTROLLER_H
 #define WS_GPS_CONTROLLER_H
+#include "components/uart/hardware.h"
 #include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
-#include "components/uart/hardware.h"
 #include <Adafruit_GPS.h>
 
 class wippersnapper; ///< Forward declaration
