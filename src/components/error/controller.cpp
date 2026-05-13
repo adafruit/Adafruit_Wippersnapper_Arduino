@@ -96,8 +96,8 @@ bool ErrorController::HandleThrottle(const ws_error_ErrorIOThrottle &throttle) {
     // Calculate remaining time
     unsigned long time_remaining = duration_throttle - time_elapsed;
     unsigned long time_delay = 0UL;
-    if (time_remaining > WS_KEEPALIVE_INTERVAL_MS) {
-      time_delay = WS_KEEPALIVE_INTERVAL_MS;
+    if (time_remaining > WS_DEVICE_PING_MS) {
+      time_delay = WS_DEVICE_PING_MS;
     } else {
       time_delay = time_remaining;
     }
