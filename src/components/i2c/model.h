@@ -64,7 +64,7 @@ public:
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
   bool AddI2cDeviceSensorEvent(sensors_event_t &event,
-                               ws_sensor_Type sensor_type);
+                               ws_i2c_Add_TypesEntry type_entry);
 
 private:
   ws_i2c_D2B _msg_i2c_d2b;

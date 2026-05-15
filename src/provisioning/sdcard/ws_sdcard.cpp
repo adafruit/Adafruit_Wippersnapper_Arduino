@@ -639,12 +639,13 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   const char *mux_channel = component["i2cMuxChannel"] | "0xFFFF";
   msg_i2c_add.descriptor.address_space.mux_channel = HexStrToInt(mux_channel);
 
-  msg_i2c_add.device_sensor_types_count = 0;
+  msg_i2c_add.types_count = 0;
   for (JsonObject components_0_i2cDeviceSensorType :
        component["i2cDeviceSensorTypes"].as<JsonArray>()) {
-    msg_i2c_add.device_sensor_types[msg_i2c_add.device_sensor_types_count] =
+    msg_i2c_add.types[msg_i2c_add.types_count].key = msg_i2c_add.types_count;
+    msg_i2c_add.types[msg_i2c_add.types_count].value =
         ParseSensorType(components_0_i2cDeviceSensorType["type"]);
-    msg_i2c_add.device_sensor_types_count++;
+    msg_i2c_add.types_count++;
   }
 
   return true;
@@ -1360,11 +1361,11 @@ bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_Event *msg_device_event) {
   }
 
   // Log each event
-  for (pb_size_t i = 0; i < msg_device_event->device_events_count; i++) {
+  for (pb_size_t i = 0; i < msg_device_event->events_count; i++) {
     doc["timestamp"] = GetTimestamp();
-    doc["value"] = msg_device_event->device_events[i].value.float_value;
+    doc["value"] = msg_device_event->events[i].value.value.float_value;
     doc["si_unit"] =
-        SensorTypeToSIUnit(msg_device_event->device_events[i].type);
+        SensorTypeToSIUnit(msg_device_event->events[i].value.type);
     if (!LogJSONDoc(doc))
       return false;
   }

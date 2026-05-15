@@ -409,14 +409,14 @@ bool I2cController::Router(pb_istream_t *stream) {
   // Route based on payload type
   bool res = false;
   switch (b2d.which_payload) {
-  case ws_i2c_B2D_bus_scan_tag:
-    res = Handle_I2cBusScan(&b2d.payload.bus_scan);
+  case ws_i2c_B2D_probe_tag:
+    res = Handle_Probe(&b2d.payload.probe);
     break;
   case ws_i2c_B2D_add_tag:
-    res = Handle_I2cDeviceAddOrReplace(&b2d.payload.add);
+    res = Handle_Add(&b2d.payload.add);
     break;
   case ws_i2c_B2D_remove_tag:
-    res = Handle_I2cDeviceRemove(&b2d.payload.remove);
+    res = Handle_Remove(&b2d.payload.remove);
     break;
   default:
     WS_DEBUG_PRINTLN("[i2c] WARNING: Unsupported I2C payload");
@@ -541,7 +541,7 @@ bool I2cController::publishScan() {
     @returns  True if the I2cDeviceRemove message was handled, False
               otherwise.
 */
-bool I2cController::Handle_I2cDeviceRemove(ws_i2c_Remove *msg) {
+bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
   // TODO [Online]: Implement the rest of this function
   // TODO: Remember to handle removal of a mux device or a device on a mux
   if (!msg->has_descriptor) {
@@ -671,13 +671,13 @@ I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda) 
 }
 
 /*!
-    @brief   Handles an I2C bus scan request.
-    @param   msg
-             Pointer to the I2cBusScan message.
-    @returns True if the I2C bus was successfully scanned and the
-             I2cBusScan message was published to IO, False otherwise.
+    @brief    Implements handling for a I2cProbe message
+    @param    msg
+              Pointer to the I2cProbe message.
+    @returns  True if the I2cProbe message was handled successfully, False
+              otherwise.
 */
-bool I2cController::Handle_I2cBusScan(ws_i2c_Scan *msg) {
+bool I2cController::Handle_Probe(ws_i2c_Scan *msg) {
   _i2c_model->ClearI2cBusScanned();
   ws_i2c_Scanned *scan_results = _i2c_model->GetI2cBusScannedMsg();
 
@@ -750,7 +750,7 @@ bool I2cController::Handle_I2cBusScan(ws_i2c_Scan *msg) {
     @returns  True if the I2cDeviceAddOrReplace message was handled
               (created or replaced), False otherwise.
 */
-bool I2cController::Handle_I2cDeviceAddOrReplace(
+bool I2cController::Handle_Add(
     ws_i2c_Add *msg) {
 
   ws_i2c_Status device_status = ws_i2c_Status_S_UNSPECIFIED;
@@ -833,8 +833,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   drv->SetPins(hw_bus->getSCL(), hw_bus->getSDA());
 
   // Configure sensor driver settings
-  drv->EnableSensorReads(msg->device_sensor_types,
-                         msg->device_sensor_types_count);
+  drv->EnableSensorReads(msg->types, msg->types_count);
   drv->SetSensorPeriod(msg->period);
 
   // Optionally configure the driver's MUX address
@@ -912,7 +911,7 @@ void I2cController::update(bool force) {
     for (size_t i = 0; i < sensor_count; i++) {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
-      if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
+      if (!drv->GetSensorEvent(drv->_sensors[i].value, &event)) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to read sensor!");
         read_succeeded = false;
         continue;
@@ -920,7 +919,7 @@ void I2cController::update(bool force) {
 
       // Check if this is a battery monitor reporting percentage
       if (Ws._sdCardV2 != nullptr &&
-          drv->_sensors[i] == ws_sensor_Type_T_UNITLESS_PERCENT &&
+          drv->_sensors[i].value == ws_sensor_Type_T_UNITLESS_PERCENT &&
           (strcmp(drv->GetDrvName(), "max17048") == 0 ||
            strcmp(drv->GetDrvName(), "lc709203f") == 0 ||
            strcmp(drv->GetDrvName(), "sensor_mock") == 0)) {

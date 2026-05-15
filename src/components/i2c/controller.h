@@ -88,9 +88,9 @@ public:
   void ResetFlags();
   // Routing //
   bool Router(pb_istream_t *stream);
-  bool Handle_I2cDeviceAddOrReplace(ws_i2c_Add *msg);
-  bool Handle_I2cBusScan(ws_i2c_Scan *msg);
-  bool Handle_I2cDeviceRemove(ws_i2c_Remove *msg);
+  bool Handle_Add(ws_i2c_Add *msg);
+  bool Handle_Probe(ws_i2c_Scan *msg);
+  bool Handle_Remove(ws_i2c_Remove *msg);
   // Publishing //
   bool publishDeviceAddedOrReplaced(
       const ws_i2c_Descriptor &device_descriptor,

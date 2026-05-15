@@ -322,7 +322,7 @@ ws_i2c_Added *I2cModel::GetMsgI2cDeviceAddedOrReplaced() {
 */
 void I2cModel::ClearI2cDeviceEvent() {
   memset(&_msg_i2c_event, 0, sizeof(_msg_i2c_event));
-  _msg_i2c_event.device_events_count = 0;
+  _msg_i2c_event.events_count = 0;
 }
 
 /*!
@@ -361,17 +361,21 @@ void I2cModel::SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
     @returns  True if the SensorEvent was added successfully, False otherwise.
 */
 bool I2cModel::AddI2cDeviceSensorEvent(sensors_event_t &event,
-                                       ws_sensor_Type sensor_type) {
-  if (_msg_i2c_event.device_events_count >= MAX_DEVICE_EVENTS)
+                                       ws_i2c_Add_TypesEntry type_entry) {
+  if (_msg_i2c_event.events_count >= MAX_DEVICE_EVENTS)
     return false; // Maximum amount of events reached
 
-  _msg_i2c_event.device_events[_msg_i2c_event.device_events_count]
-      .type = sensor_type;
-  float value = GetValueFromSensorsEvent(sensor_type, &event);
-  _msg_i2c_event.device_events[_msg_i2c_event.device_events_count]
-      .value.float_value = value;
+  pb_size_t idx = _msg_i2c_event.events_count;
+  _msg_i2c_event.events[idx].key = type_entry.key;
+  _msg_i2c_event.events[idx].has_value = true;
+  _msg_i2c_event.events[idx].value.type = type_entry.value;
 
-  _msg_i2c_event.device_events_count++;
+  float value = GetValueFromSensorsEvent(type_entry.value, &event);
+  _msg_i2c_event.events[idx].value.which_value =
+      ws_sensor_Event_float_value_tag;
+  _msg_i2c_event.events[idx].value.value.float_value = value;
+
+  _msg_i2c_event.events_count++;
   return true;
 }
 

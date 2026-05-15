@@ -310,7 +310,7 @@ bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode i2c add");
     return false;
   }
-  return Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(&add_msg);
+  return Ws._i2c_controller->Handle_Add(&add_msg);
 }
 
 /*!
