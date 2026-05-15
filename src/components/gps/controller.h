@@ -35,8 +35,8 @@ public:
   ~GPSController();
   // Routing
   bool Router(pb_istream_t *stream);
-  bool Handle_GpsDeviceAddOrReplace(ws_gps_DeviceAddOrReplace *msg);
-  bool Handle_GpsDeviceRemove(ws_gps_DeviceRemove *msg);
+  bool Handle_GpsDeviceAddOrReplace(ws_gps_Add *msg);
+  bool Handle_GpsDeviceRemove(ws_gps_Remove *msg);
   // GPS transport setup
   bool AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config);
   bool AddGPS(TwoWire *wire, uint32_t i2c_addr, ws_gps_Config *gps_config);

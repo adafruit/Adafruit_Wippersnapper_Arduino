@@ -51,11 +51,11 @@ bool GPSController::Router(pb_istream_t *stream) {
 
   bool res = false;
   switch (b2d.which_payload) {
-  case ws_gps_B2D_device_add_replace_tag:
-    res = Handle_GpsDeviceAddOrReplace(&b2d.payload.device_add_replace);
+  case ws_gps_B2D_add_tag:
+    res = Handle_GpsDeviceAddOrReplace(&b2d.payload.add);
     break;
-  case ws_gps_B2D_device_remove_tag:
-    res = Handle_GpsDeviceRemove(&b2d.payload.device_remove);
+  case ws_gps_B2D_remove_tag:
+    res = Handle_GpsDeviceRemove(&b2d.payload.remove);
     break;
   default:
     WS_DEBUG_PRINTLN("[gps] WARNING: Unsupported GPS payload");
@@ -71,7 +71,7 @@ bool GPSController::Router(pb_istream_t *stream) {
  * @return True if the GPS device was added successfully, False otherwise.
  */
 bool GPSController::Handle_GpsDeviceAddOrReplace(
-    ws_gps_DeviceAddOrReplace *msg) {
+    ws_gps_Add *msg) {
   if (!msg->has_config) {
     WS_DEBUG_PRINTLN("[gps] ERROR: No GPS config provided!");
     return false;
@@ -115,7 +115,7 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(
  * @param msg The DeviceRemove message.
  * @return True if the GPS device was removed successfully, False otherwise.
  */
-bool GPSController::Handle_GpsDeviceRemove(ws_gps_DeviceRemove *msg) {
+bool GPSController::Handle_GpsDeviceRemove(ws_gps_Remove *msg) {
   // TODO: Implement GPS device removal
   (void)msg;
   WS_DEBUG_PRINTLN("[gps] GPS device removal not yet implemented");
