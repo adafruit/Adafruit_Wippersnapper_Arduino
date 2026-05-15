@@ -305,8 +305,8 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg) {
-  ws_i2c_DeviceAddOrReplace add_msg = ws_i2c_DeviceAddOrReplace_init_zero;
-  if (!pb_decode(stream, ws_i2c_DeviceAddOrReplace_fields, &add_msg)) {
+  ws_i2c_Add add_msg = ws_i2c_Add_init_zero;
+  if (!pb_decode(stream, ws_i2c_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode i2c add");
     return false;
   }

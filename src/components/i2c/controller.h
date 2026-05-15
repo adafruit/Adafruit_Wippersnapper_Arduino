@@ -88,18 +88,18 @@ public:
   void ResetFlags();
   // Routing //
   bool Router(pb_istream_t *stream);
-  bool Handle_I2cDeviceAddOrReplace(ws_i2c_DeviceAddOrReplace *msg);
+  bool Handle_I2cDeviceAddOrReplace(ws_i2c_Add *msg);
   bool Handle_I2cBusScan(ws_i2c_Scan *msg);
-  bool Handle_I2cDeviceRemove(ws_i2c_DeviceRemove *msg);
+  bool Handle_I2cDeviceRemove(ws_i2c_Remove *msg);
   // Publishing //
   bool publishDeviceAddedOrReplaced(
       const ws_i2c_DeviceDescriptor &device_descriptor,
       I2cHardware *bus,
-      const ws_i2c_DeviceStatus &device_status);
+      const ws_i2c_Status &device_status);
   bool publishScan();
   // Helpers //
   TwoWire *GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda);
-  ws_i2c_DeviceStatus InitMux(I2cHardware *bus, const char *name, uint32_t address);
+  ws_i2c_Status InitMux(I2cHardware *bus, const char *name, uint32_t address);
   bool RemoveDriver(uint32_t address,
                     uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
   size_t GetI2cBusCount();

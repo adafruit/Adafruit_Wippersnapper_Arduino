@@ -617,26 +617,26 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
              parsed, False otherwise.
 */
 bool ws_sdcard::ParseI2cDeviceAddReplace(
-    JsonObject &component, ws_i2c_DeviceAddOrReplace &msg_i2c_add) {
-  strcpy(msg_i2c_add.device_name, component["i2cDeviceName"] | UNKNOWN_VALUE);
-  msg_i2c_add.device_period = component["period"] | 0.0;
-  if (msg_i2c_add.device_period == 0.0) {
+    JsonObject &component, ws_i2c_Add &msg_i2c_add) {
+  strcpy(msg_i2c_add.name, component["i2cDeviceName"] | UNKNOWN_VALUE);
+  msg_i2c_add.period = component["period"] | 0.0;
+  if (msg_i2c_add.period == 0.0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Invalid I2C device period!");
     return false;
   }
 
-  msg_i2c_add.has_device_description = true;
-  component["i2cBusScl"] = msg_i2c_add.device_description.pin_scl;
-  component["i2cBusSda"] = msg_i2c_add.device_description.pin_sda;
+  msg_i2c_add.has_descriptor = true;
+  component["i2cBusScl"] = msg_i2c_add.descriptor.pin_scl;
+  component["i2cBusSda"] = msg_i2c_add.descriptor.pin_sda;
 
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
-  msg_i2c_add.device_description.device_address = HexStrToInt(addr_device);
+  msg_i2c_add.descriptor.device_address = HexStrToInt(addr_device);
 
   const char *addr_mux = component["i2cMuxAddress"] | "0x00";
-  msg_i2c_add.device_description.mux_address = HexStrToInt(addr_mux);
+  msg_i2c_add.descriptor.mux_address = HexStrToInt(addr_mux);
 
   const char *mux_channel = component["i2cMuxChannel"] | "0xFFFF";
-  msg_i2c_add.device_description.mux_channel = HexStrToInt(mux_channel);
+  msg_i2c_add.descriptor.mux_channel = HexStrToInt(mux_channel);
 
   msg_i2c_add.device_sensor_types_count = 0;
   for (JsonObject components_0_i2cDeviceSensorType :
@@ -1004,16 +1004,16 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.payload.ds18x20.payload.add = msg_DS18X20Add;
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
-      ws_i2c_DeviceAddOrReplace msg_i2c_add_replace =
-          ws_i2c_DeviceAddOrReplace_init_default;
+      ws_i2c_Add msg_i2c_add_replace =
+          ws_i2c_Add_init_default;
       if (!ParseI2cDeviceAddReplace(component, msg_i2c_add_replace)) {
         WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to parse I2C Component");
         return false;
       }
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_i2c_tag;
       msg_signal_b2d.payload.i2c.which_payload =
-          ws_i2c_B2D_device_add_replace_tag;
-      msg_signal_b2d.payload.i2c.payload.device_add_replace =
+          ws_i2c_B2D_add_tag;
+      msg_signal_b2d.payload.i2c.payload.add =
           msg_i2c_add_replace;
     } else {
       WS_DEBUG_PRINT("[SD] Runtime Error: Unknown Component API Type: ");
@@ -1341,12 +1341,12 @@ bool ws_sdcard::LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg) {
             The I2cDeviceEvent message to log.
     @returns True if the event was successfully logged, False otherwise.
 */
-bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event) {
+bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_Event *msg_device_event) {
   if (IsBatteryLow())
     return true;
   JsonDocument doc;
-  // Pull the DeviceDescriptor out
-  ws_i2c_DeviceDescriptor descriptor = msg_device_event->device_description;
+  // Pull the Descriptor out
+  ws_i2c_DeviceDescriptor descriptor = msg_device_event->descriptor;
   char hex_addr[5];
   snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.device_address);
   doc["i2c_address"] = hex_addr;
