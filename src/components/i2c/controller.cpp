@@ -399,8 +399,10 @@ I2cController::~I2cController() {
     @return True if the message was successfully routed, False otherwise.
 */
 bool I2cController::Router(pb_istream_t *stream) {
-  // Attempt to decode the I2C B2D envelope
+  // Set up Probe decode callbacks before B2D decode
   ws_i2c_B2D b2d = ws_i2c_B2D_init_zero;
+  _i2c_model->SetupProbeDecodeCallbacks(&b2d.payload.probe);
+
   if (!ws_pb_decode(stream, ws_i2c_B2D_fields, &b2d)) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2C B2D envelope");
     return false;
@@ -410,7 +412,7 @@ bool I2cController::Router(pb_istream_t *stream) {
   bool res = false;
   switch (b2d.which_payload) {
   case ws_i2c_B2D_probe_tag:
-    res = Handle_Probe(&b2d.payload.probe);
+    res = Handle_Probe();
     break;
   case ws_i2c_B2D_add_tag:
     res = Handle_Add(&b2d.payload.add);
@@ -513,22 +515,21 @@ bool I2cController::publishDeviceAddedOrReplaced(
 }
 
 /*!
-    @brief    Publishes the ws_i2c_Scanned message to IO.
-    @note     Call setI2cBusScannedStatus() on the model before calling this.
+    @brief    Publishes the ws_i2c_Probed message to IO.
     @returns  True if published successfully, False otherwise.
 */
-bool I2cController::publishScan() {
+bool I2cController::publishProbed() {
   if (Ws._sdCardV2->isModeOffline())
     return true;
 
-  if (!_i2c_model->encodeI2cScanned()) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to encode ws_i2c_Scanned message!");
+  if (!_i2c_model->EncodeProbed()) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to encode ws_i2c_Probed message!");
     return false;
   }
 
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
                      _i2c_model->GetI2cD2B())) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish ws_i2c_Scanned message!");
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish ws_i2c_Probed message!");
     return false;
   }
   return true;
@@ -578,16 +579,25 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
         did_remove = false;
       }
     }
-    // Case 2: Is the I2C device a MUX?
+    // Case 2: Is the I2C device a MUX? Remove all devices on it.
     if (msg->descriptor.address ==
         msg->descriptor.address_space.mux_address) {
-      ws_i2c_Scanned scan_results = ws_i2c_Scanned_init_zero;
-      hw_bus->ScanMux(&scan_results);
-      for (int i = 0; i < scan_results.found_devices_count; i++) {
-        // Select the channel and remove the device
-        hw_bus->SelectMuxChannel(scan_results.found_devices[i].mux_channel);
-        RemoveDriver(scan_results.found_devices[i].device_address,
-                     scan_results.found_devices[i].mux_channel);
+      // Probe each mux channel to find devices, then remove them
+      // TODO: MUX channel count should come from the hardware layer
+      for (uint8_t ch = 0; ch < 8; ch++) {
+        ws_i2c_AddressSpace mux_space = {};
+        mux_space.pin_scl = msg->descriptor.address_space.pin_scl;
+        mux_space.pin_sda = msg->descriptor.address_space.pin_sda;
+        mux_space.mux_address = msg->descriptor.address;
+        mux_space.mux_channel = ch;
+        ws_i2c_AddressSpaceResult result = {};
+        uint32_t found_buf[112];
+        size_t found_count = 0;
+        hw_bus->ProbeAddresses(&mux_space, nullptr, 0,
+                               &result, found_buf, &found_count);
+        for (size_t j = 0; j < found_count; j++) {
+          RemoveDriver(found_buf[j], ch);
+        }
       }
       hw_bus->RemoveMux();
     }
@@ -671,72 +681,57 @@ I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda) 
 }
 
 /*!
-    @brief    Implements handling for a I2cProbe message
-    @param    msg
-              Pointer to the I2cProbe message.
-    @returns  True if the I2cProbe message was handled successfully, False
-              otherwise.
+    @brief    Handles an I2C Probe request. Iterates each address space
+              decoded from the Probe message, probes the listed addresses
+              on each, and publishes the Probed results.
+    @returns  True if probe completed and results published, False otherwise.
 */
-bool I2cController::Handle_Probe(ws_i2c_Scan *msg) {
-  _i2c_model->ClearI2cBusScanned();
-  ws_i2c_Scanned *scan_results = _i2c_model->GetI2cBusScannedMsg();
+bool I2cController::Handle_Probe() {
+  ws_i2c_AddressSpace *spaces = _i2c_model->GetProbeAddressSpaces();
+  size_t spaces_count = _i2c_model->GetProbeAddressSpacesCount();
+  uint32_t *addresses = _i2c_model->GetProbeAddresses();
+  size_t addresses_count = _i2c_model->GetProbeAddressesCount();
 
-  // Find or create the bus using shared helper
-  I2cHardware *bus_to_scan = findOrCreateBus(msg->pin_scl, msg->pin_sda);
-  if (bus_to_scan == nullptr) {
-    // We failed to find or create the bus, publish error status and back out
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus for scanning!");
-    _i2c_model->setI2cBusScannedStatus(ws_i2c_BusStatus_BS_ERROR_WIRING);
-    publishScan();
-    return false;
-  }
+  _i2c_model->ClearProbed();
 
-  // Scan the bus (with or without MUX)
-  bool scan_success = true;
-  if (!bus_to_scan->HasMux()) { 
-    WS_DEBUG_PRINTLN("[i2c] Scanning bus directly...");
-    if (!bus_to_scan->ScanBus(scan_results)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C bus!");
-      scan_success = false;
+  for (size_t i = 0; i < spaces_count; i++) {
+    ws_i2c_AddressSpaceResult *result = _i2c_model->GetNextProbedResult();
+    if (result == nullptr) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Too many address spaces to probe!");
+      break;
     }
-  } else {
-    WS_DEBUG_PRINTLN("[i2c] Detected MUX on bus, scanning MUX channels...");
-    if (!bus_to_scan->ScanMux(scan_results)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan I2C MUX on bus!");
-      scan_success = false;
+
+    // Find or create the bus for this address space
+    I2cHardware *bus = findOrCreateBus(spaces[i].pin_scl, spaces[i].pin_sda);
+    if (bus == nullptr) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus!");
+      result->has_address_space = true;
+      result->address_space = spaces[i];
+      result->bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
+      continue;
     }
+
+    // Get the found-addresses buffer for this result index
+    size_t result_idx = i;
+    uint32_t *found_buf = _i2c_model->GetFoundAddressBuf(result_idx);
+    size_t *found_count = _i2c_model->GetFoundAddressCount(result_idx);
+
+    // Probe the addresses on this bus/mux channel
+    if (!bus->ProbeAddresses(&spaces[i], addresses, addresses_count,
+                             result, found_buf, found_count)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: ProbeAddresses failed!");
+      continue;
+    }
+
+    WS_DEBUG_PRINT("[i2c] Probed address space ");
+    WS_DEBUG_PRINTVAR(i);
+    WS_DEBUG_PRINT(", found ");
+    WS_DEBUG_PRINTVAR(*found_count);
+    WS_DEBUG_PRINTLN(" devices.");
   }
 
-  // If the scan encountered an error, publish the error status and back out
-  if (!scan_success) {
-    _i2c_model->setI2cBusScannedStatus(bus_to_scan->GetBusStatus());
-    publishScan();
-    return false;
-  }
-
-  // Print out content of scan_results
-  WS_DEBUG_PRINT("[i2c] Scan found ");
-  WS_DEBUG_PRINTVAR(scan_results->found_devices_count);
-  WS_DEBUG_PRINTLN(" devices.");
-  for (int i = 0; i < scan_results->found_devices_count; i++) {
-    WS_DEBUG_PRINTLNVAR(i);
-    WS_DEBUG_PRINT("Address: ");
-    WS_DEBUG_PRINTHEX(scan_results->found_devices[i].device_address);
-    WS_DEBUG_PRINTLN("");
-    WS_DEBUG_PRINT("SCL Pin: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].pin_scl);
-    WS_DEBUG_PRINT("SDA Pin: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].pin_sda);
-    WS_DEBUG_PRINT("MUX Address: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].mux_address);
-    WS_DEBUG_PRINT("MUX Channel: ");
-    WS_DEBUG_PRINTLNVAR(scan_results->found_devices[i].mux_channel);
-  }
-
-  // Set bus status and publish scan results
-  _i2c_model->setI2cBusScannedStatus(ws_i2c_BusStatus_BS_SUCCESS);
-  if (!publishScan()) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to publish I2C bus scan results!");
+  if (!publishProbed()) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to publish Probed results!");
     return false;
   }
   return true;

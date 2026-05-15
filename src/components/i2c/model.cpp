@@ -19,8 +19,9 @@
 */
 I2cModel::I2cModel() {
   memset(&_msg_i2c_d2b, 0, sizeof(_msg_i2c_d2b));
-  memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
-  memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
+  memset(&_msg_probed, 0, sizeof(_msg_probed));
+  _probe_spaces_count = 0;
+  _probe_addresses_count = 0;
   memset(&_msg_i2c_add, 0, sizeof(_msg_i2c_add));
   memset(&_msg_i2c_added, 0,
          sizeof(_msg_i2c_added));
@@ -34,8 +35,9 @@ I2cModel::I2cModel() {
 */
 I2cModel::~I2cModel() {
   memset(&_msg_i2c_d2b, 0, sizeof(_msg_i2c_d2b));
-  memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
-  memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
+  memset(&_msg_probed, 0, sizeof(_msg_probed));
+  _probe_spaces_count = 0;
+  _probe_addresses_count = 0;
   memset(&_msg_i2c_add, 0, sizeof(_msg_i2c_add));
   memset(&_msg_i2c_added, 0,
          sizeof(_msg_i2c_added));
@@ -152,93 +154,114 @@ ws_i2c_Remove *I2cModel::GetI2cDeviceRemoveMsg() {
   return &_msg_i2c_remove;
 }
 
+// ---- Probe decode/encode API ----
+
 /*!
-    @brief    Decodes a I2cBusScan message from an input stream.
-    @param    stream
-                A pointer to the pb_istream_t stream.
-    @returns  True if the I2cBusScan message was decoded successfully, False
-              otherwise.
+    @brief    Sets up nanopb decode callbacks on a Probe message before B2D decode.
+    @param    probe
+                Pointer to the ws_i2c_Probe inside the B2D union.
 */
-bool I2cModel::DecodeI2cBusScan(pb_istream_t *stream) {
-  memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
-  return pb_decode(stream, ws_i2c_Scan_fields, &_msg_i2c_bus_scan);
+void I2cModel::SetupProbeDecodeCallbacks(ws_i2c_Probe *probe) {
+  _probe_spaces_count = 0;
+  _probe_addresses_count = 0;
+  probe->address_spaces.funcs.decode = cbDecodeAddressSpace;
+  probe->address_spaces.arg = this;
+  probe->addresses.funcs.decode = cbDecodeAddress;
+  probe->addresses.arg = this;
 }
 
-/*!
-    @brief    Returns a pointer to the I2cBusScan message.
-    @returns  Pointer to a I2cBusScan message.
-*/
-ws_i2c_Scan *I2cModel::GetI2cBusScanMsg() { return &_msg_i2c_bus_scan; }
-
-/*!
-    @brief    Returns a pointer to the I2cBusScanned message.
-    @returns  Pointer to a I2cBusScanned message.
-*/
-ws_i2c_Scanned *I2cModel::GetI2cBusScannedMsg() {
-  return &_msg_i2c_bus_scanned;
-}
-
-/*!
-    @brief    Clears the I2cBusScanned message.
-*/
-void I2cModel::ClearI2cBusScanned() {
-  memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
-  _msg_i2c_bus_scanned.found_devices_count = 0; // zero-out the count
-}
-
-/*!
-    @brief    Adds a device to the I2cBusScanned message.
-    @param    pin_scl
-                The device's SCL pin number.
-    @param    pin_sda
-                The device's SDA pin number.
-    @param    addr_device
-                The device's i2c address.
-    @param    addr_mux
-                Optional MUX address.
-    @param    mux_channel
-                Optional MUX channel
-    @returns  True if the device was added to the bus scan, False otherwise.
-*/
-bool I2cModel::AddDeviceToBusScan(uint32_t pin_scl, uint32_t pin_sda,
-                                  uint32_t addr_device, uint32_t addr_mux,
-                                  uint32_t mux_channel) {
-  pb_size_t idx_device = _msg_i2c_bus_scanned.found_devices_count;
-  if (idx_device >= MAX_I2C_SCAN_DEVICES)
+bool I2cModel::cbDecodeAddressSpace(pb_istream_t *stream,
+                                    const pb_field_t *field, void **arg) {
+  I2cModel *model = (I2cModel *)*arg;
+  if (model->_probe_spaces_count >= MAX_PROBE_SPACES)
     return false;
-  // Fill I2cDeviceDescriptor
-  _msg_i2c_bus_scanned.found_devices[idx_device].pin_scl = pin_scl;
-  _msg_i2c_bus_scanned.found_devices[idx_device].pin_sda = pin_sda;
-  _msg_i2c_bus_scanned.found_devices[idx_device].device_address = addr_device;
-  // Optionally fill MUX info
-  if (_msg_i2c_bus_scanned.found_devices[idx_device].mux_address != 0xFFFF) {
-    _msg_i2c_bus_scanned.found_devices[idx_device].mux_address = addr_mux;
-    _msg_i2c_bus_scanned.found_devices[idx_device].mux_channel = mux_channel;
+  ws_i2c_AddressSpace space = ws_i2c_AddressSpace_init_zero;
+  if (!pb_decode(stream, ws_i2c_AddressSpace_fields, &space))
+    return false;
+  model->_probe_spaces[model->_probe_spaces_count] = space;
+  model->_probe_spaces_count++;
+  return true;
+}
+
+bool I2cModel::cbDecodeAddress(pb_istream_t *stream, const pb_field_t *field,
+                               void **arg) {
+  I2cModel *model = (I2cModel *)*arg;
+  if (model->_probe_addresses_count >= MAX_PROBE_ADDRESSES)
+    return false;
+  uint32_t addr = 0;
+  if (!pb_decode_varint32(stream, &addr))
+    return false;
+  model->_probe_addresses[model->_probe_addresses_count] = addr;
+  model->_probe_addresses_count++;
+  return true;
+}
+
+ws_i2c_AddressSpace *I2cModel::GetProbeAddressSpaces() {
+  return _probe_spaces;
+}
+
+size_t I2cModel::GetProbeAddressSpacesCount() { return _probe_spaces_count; }
+
+uint32_t *I2cModel::GetProbeAddresses() { return _probe_addresses; }
+
+size_t I2cModel::GetProbeAddressesCount() { return _probe_addresses_count; }
+
+void I2cModel::ClearProbed() {
+  memset(&_msg_probed, 0, sizeof(_msg_probed));
+  for (size_t i = 0; i < MAX_PROBE_SPACES; i++) {
+    _found_ctx[i].count = 0;
   }
-  _msg_i2c_bus_scanned.found_devices_count++;
+}
+
+ws_i2c_AddressSpaceResult *I2cModel::GetNextProbedResult() {
+  if (_msg_probed.results_count >= MAX_PROBE_SPACES)
+    return nullptr;
+  size_t idx = _msg_probed.results_count;
+  _msg_probed.results_count++;
+  return &_msg_probed.results[idx];
+}
+
+uint32_t *I2cModel::GetFoundAddressBuf(size_t idx) {
+  if (idx >= MAX_PROBE_SPACES)
+    return nullptr;
+  return _found_ctx[idx].addresses;
+}
+
+size_t *I2cModel::GetFoundAddressCount(size_t idx) {
+  if (idx >= MAX_PROBE_SPACES)
+    return nullptr;
+  return &_found_ctx[idx].count;
+}
+
+bool I2cModel::cbEncodeFoundAddresses(pb_ostream_t *stream,
+                                      const pb_field_t *field,
+                                      void *const *arg) {
+  FoundAddressesCtx *ctx = (FoundAddressesCtx *)*arg;
+  for (size_t i = 0; i < ctx->count; i++) {
+    if (!pb_encode_tag_for_field(stream, field))
+      return false;
+    if (!pb_encode_varint(stream, ctx->addresses[i]))
+      return false;
+  }
   return true;
 }
 
 /*!
-    @brief    Sets the bus status on the I2cBusScanned message.
-    @param    bus_status
-              The bus status (SUCCESS, ERROR_WIRING, etc.)
-*/
-void I2cModel::setI2cBusScannedStatus(ws_i2c_BusStatus bus_status) {
-  _msg_i2c_bus_scanned.bus_status = bus_status;
-}
-
-/*!
-    @brief    Encodes the I2cBusScanned message for publishing.
-    @note     Call setI2cBusScannedStatus() and AddDeviceToBusScan()
-              before calling this method.
+    @brief    Encodes the Probed message for publishing.
     @returns  True if encoding succeeded, False otherwise.
 */
-bool I2cModel::encodeI2cScanned() {
-  // Wrap the complete scanned message in D2B envelope
+bool I2cModel::EncodeProbed() {
+  // Set up encode callbacks for found_addresses on each result
+  for (pb_size_t i = 0; i < _msg_probed.results_count; i++) {
+    _msg_probed.results[i].found_addresses.funcs.encode =
+        cbEncodeFoundAddresses;
+    _msg_probed.results[i].found_addresses.arg = &_found_ctx[i];
+  }
+
+  // Wrap in D2B envelope
   memset(&_msg_i2c_d2b, 0, sizeof(_msg_i2c_d2b));
   _msg_i2c_d2b.which_payload = ws_i2c_D2B_probed_tag;
-  _msg_i2c_d2b.payload.probed = _msg_i2c_bus_scanned;
+  _msg_i2c_d2b.payload.probed = _msg_probed;
 
   // Verify we can get the encoded size
   size_t sz_msg;

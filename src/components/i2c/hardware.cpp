@@ -140,81 +140,85 @@ bool I2cHardware::begin() {
 }
 
 /*!
-    @brief  Clears the MUX channel.
-    @param  scan_results
-                The I2C bus scan results.
-    @returns  True if the MUX channel was successfully cleared,
-              False otherwise.
+    @brief    Probes specific I2C addresses on this bus for a given address space.
+              Handles MUX channel selection/clearing internally.
+    @param    address_space
+                The address space to probe (bus pins + optional mux info).
+    @param    addresses
+                Array of specific addresses to probe. NULL or count==0 means scan all (1-126).
+    @param    addresses_count
+                Number of addresses in the array.
+    @param    result
+                Output AddressSpaceResult to populate.
+    @param    found_buf
+                Buffer to store found addresses (caller-owned).
+    @param    found_count
+                Output: number of addresses found.
+    @returns  True if the probe completed, False on bus error.
 */
-bool I2cHardware::ScanBus(ws_i2c_Scanned *scan_results) {
-  if (!scan_results)
+bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
+                                 uint32_t *addresses, size_t addresses_count,
+                                 ws_i2c_AddressSpaceResult *result,
+                                 uint32_t *found_buf, size_t *found_count) {
+  if (!result || !found_buf || !found_count)
     return false;
 
-  // TODO: WS object needs to be added for this to work?
-  /*     #ifndef ARDUINO_ARCH_ESP32
-        // Set I2C WDT timeout to catch I2C hangs, SAMD-specific
-        WS.enableWDT(I2C_WDT_TIMEOUT_MS);
-        WS.feedWDT();
-      #endif */
+  *found_count = 0;
 
-  // Perform a bus scan
-  WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
-  for (uint8_t address = 1; address < 127; ++address) {
-    WS_DEBUG_PRINT("[i2c] Scanning Address: 0x");
-    WS_DEBUG_PRINTHEX(address);
-    WS_DEBUG_PRINTLN("");
-    _bus->beginTransmission(address);
-    uint8_t endTransmissionRC = _bus->endTransmission();
+  // Copy address space into result
+  result->has_address_space = true;
+  result->address_space = *address_space;
 
-    if (endTransmissionRC == 0) {
-      WS_DEBUG_PRINTLN("[i2c] Found Device!");
-      scan_results->found_devices[scan_results->found_devices_count]
-          .device_address = address;
-      scan_results->found_devices[scan_results->found_devices_count]
-          .mux_address = 0xFFFF; // Tell user that device is not on a mux
-      scan_results->found_devices[scan_results->found_devices_count].pin_scl =
-          _scl;
-      scan_results->found_devices[scan_results->found_devices_count].pin_sda =
-          _sda;
-      scan_results->found_devices_count++;
+  // If this address space uses a MUX, select the channel
+  bool using_mux = (address_space->mux_address != 0);
+  if (using_mux) {
+    if (!_has_mux) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: AddressSpace specifies MUX but none on bus!");
+      result->bus_status = ws_i2c_BusStatus_BS_ERROR_INVALID_CHANNEL;
+      return false;
     }
-#if defined(ARDUINO_ARCH_ESP32)
-    // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
-    else if (endTransmissionRC == 3) {
-      WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
-      continue;
-    } else if (endTransmissionRC == 2) {
-      // WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of
-      // address!");
-      continue;
-    } else if (endTransmissionRC == 1) {
-      WS_DEBUG_PRINTLN(
-          "[i2c] Did not find device: data too long to fit in xmit buffer!");
-      continue;
-    } else if (endTransmissionRC == 4) {
-      WS_DEBUG_PRINTLN(
-          "[i2c] Did not find device: Unspecified bus error occured!");
-      continue;
-    } else if (endTransmissionRC == 5) {
-      WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
-      continue;
+    SelectMuxChannel(address_space->mux_channel);
+  }
+
+  // Probe addresses
+  if (addresses_count == 0) {
+    // v1-style: scan all 112 valid addresses
+    WS_DEBUG_PRINTLN("[i2c] Probing all addresses on bus...");
+    for (uint8_t addr = 1; addr < 127; ++addr) {
+      _bus->beginTransmission(addr);
+      uint8_t rc = _bus->endTransmission();
+      if (rc == 0) {
+        WS_DEBUG_PRINT("[i2c] Found device at 0x");
+        WS_DEBUG_PRINTHEX(addr);
+        WS_DEBUG_PRINTLN("");
+        found_buf[*found_count] = addr;
+        (*found_count)++;
+      }
     }
-#endif // ARDUINO_ARCH_ESP32
-    else {
-      WS_DEBUG_PRINTLN(
-          "[i2c] Did not find device: Unknown bus error has occured!");
-      continue;
+  } else {
+    // v2-style: probe only the listed addresses
+    WS_DEBUG_PRINTLN("[i2c] Probing specific addresses...");
+    for (size_t i = 0; i < addresses_count; i++) {
+      uint8_t addr = (uint8_t)addresses[i];
+      _bus->beginTransmission(addr);
+      uint8_t rc = _bus->endTransmission();
+      if (rc == 0) {
+        WS_DEBUG_PRINT("[i2c] Found device at 0x");
+        WS_DEBUG_PRINTHEX(addr);
+        WS_DEBUG_PRINTLN("");
+        found_buf[*found_count] = addr;
+        (*found_count)++;
+      }
     }
   }
 
-  /*
-  #ifndef ARDUINO_ARCH_ESP32
-      // re-enable WipperSnapper SAMD WDT global timeout
-      WS.enableWDT(WS_TIMEOUT_WDT);
-      WS.feedWDT();
-  #endif
-  */
-  return true; // TODO: Change this!
+  // Clear MUX channel if we used one
+  if (using_mux) {
+    ClearMuxChannel();
+  }
+
+  result->bus_status = ws_i2c_BusStatus_BS_SUCCESS;
+  return true;
 }
 
 /*!
@@ -292,26 +296,3 @@ void I2cHardware::SelectMuxChannel(uint32_t channel) {
 */
 bool I2cHardware::HasMux() { return _has_mux; }
 
-/*!
-    @brief  Returns the maximum number of channels on the MUX.
-    @param  scan_results
-                The I2C bus scan results.
-    @returns  The maximum number of channels on the MUX.
-*/
-bool I2cHardware::ScanMux(ws_i2c_Scanned *scan_results) {
-  if (!HasMux()) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: No MUX present on the bus!");
-    return false;
-  }
-
-  for (uint8_t ch = 0; ch < _mux_max_channels; ch++) {
-    SelectMuxChannel(ch);
-    WS_DEBUG_PRINT("[i2c] Scanning MUX Channel # ");
-    WS_DEBUG_PRINTLNVAR(ch);
-    if (!ScanBus(scan_results)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan MUX channel!");
-      return false;
-    }
-  }
-  return true;
-}

@@ -33,7 +33,10 @@ public:
   ~I2cHardware();
   // Bus API
   bool begin();
-  bool ScanBus(ws_i2c_Scanned *scan_results);
+  bool ProbeAddresses(ws_i2c_AddressSpace *address_space,
+                      uint32_t *addresses, size_t addresses_count,
+                      ws_i2c_AddressSpaceResult *result,
+                      uint32_t *found_buf, size_t *found_count);
   TwoWire *GetBus();
   uint8_t getSDA() { return _sda; }
   uint8_t getSCL() { return _scl; }
@@ -45,7 +48,6 @@ public:
   bool HasMux();
   void ClearMuxChannel();
   void SelectMuxChannel(uint32_t channel);
-  bool ScanMux(ws_i2c_Scanned *scan_results);
 
 private:
   TwoWire *_bus = nullptr;        ///< I2C bus instance

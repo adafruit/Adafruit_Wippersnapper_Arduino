@@ -19,8 +19,9 @@
 #include <Adafruit_Sensor.h>
 #include <protos/i2c_output.pb.h>
 
-#define MAX_DEVICE_EVENTS    16 ///< Maximum number of SensorEvents within I2cDeviceEvent
-#define MAX_I2C_SCAN_DEVICES 16 ///< Maximum number of devices found on the bus
+#define MAX_DEVICE_EVENTS      16 ///< Maximum number of SensorEvents within I2cEvent
+#define MAX_PROBE_SPACES       16 ///< Maximum number of AddressSpaces in a Probe
+#define MAX_PROBE_ADDRESSES   112 ///< Maximum number of addresses to probe
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -33,7 +34,6 @@ public:
   // Decoders
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
-  bool DecodeI2cBusScan(pb_istream_t *stream);
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
   bool encodeMsgI2cDeviceAddedorReplaced(
@@ -46,16 +46,18 @@ public:
   ws_i2c_output_Add *GetI2cOutputAddMsg();
   ws_i2c_Added *GetMsgI2cDeviceAddedOrReplaced();
   ws_i2c_Event *GetI2cDeviceEvent();
-  ws_i2c_Scan *GetI2cBusScanMsg();
-  ws_i2c_Scanned *GetI2cBusScannedMsg();
-  // I2cBusScanned Message API
-  void ClearI2cBusScanned();
-  bool AddDeviceToBusScan(uint32_t pin_scl, uint32_t pin_sda,
-                          uint32_t addr_device, uint32_t addr_mux,
-                          uint32_t mux_channel);
-  void setI2cBusScannedStatus(ws_i2c_BusStatus bus_status);
-  bool encodeI2cScanned();
   ws_i2c_D2B *GetI2cD2B();
+  // Probe API — model owns decode/encode/storage
+  void SetupProbeDecodeCallbacks(ws_i2c_Probe *probe);
+  ws_i2c_AddressSpace *GetProbeAddressSpaces();
+  size_t GetProbeAddressSpacesCount();
+  uint32_t *GetProbeAddresses();
+  size_t GetProbeAddressesCount();
+  void ClearProbed();
+  ws_i2c_AddressSpaceResult *GetNextProbedResult();
+  uint32_t *GetFoundAddressBuf(size_t idx);
+  size_t *GetFoundAddressCount(size_t idx);
+  bool EncodeProbed();
   // DeviceEvent Message API
   void ClearI2cDeviceEvent();
   void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
@@ -67,9 +69,28 @@ public:
                                ws_i2c_Add_TypesEntry type_entry);
 
 private:
+  // Probe decode buffers
+  ws_i2c_AddressSpace _probe_spaces[MAX_PROBE_SPACES];
+  size_t _probe_spaces_count;
+  uint32_t _probe_addresses[MAX_PROBE_ADDRESSES];
+  size_t _probe_addresses_count;
+  // Probe results
+  ws_i2c_Probed _msg_probed;
+  struct FoundAddressesCtx {
+    uint32_t addresses[MAX_PROBE_ADDRESSES];
+    size_t count;
+  };
+  FoundAddressesCtx _found_ctx[MAX_PROBE_SPACES];
+  // Probe nanopb callbacks
+  static bool cbDecodeAddressSpace(pb_istream_t *stream,
+                                   const pb_field_t *field, void **arg);
+  static bool cbDecodeAddress(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg);
+  static bool cbEncodeFoundAddresses(pb_ostream_t *stream,
+                                     const pb_field_t *field,
+                                     void *const *arg);
+  // Message storage
   ws_i2c_D2B _msg_i2c_d2b;
-  ws_i2c_Scan _msg_i2c_bus_scan;
-  ws_i2c_Scanned _msg_i2c_bus_scanned;
   ws_i2c_Add _msg_i2c_add;
   ws_i2c_Added _msg_i2c_added;
   ws_i2c_Remove _msg_i2c_remove;
