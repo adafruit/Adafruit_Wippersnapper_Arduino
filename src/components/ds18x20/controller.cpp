@@ -79,7 +79,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
   WS_DEBUG_PRINTLN("[ds18x20] Handle_Ds18x20Add MESSAGE...");
 
   // If we receive no sensor types to configure, bail out
-  if (msg->sensor_types_count == 0) {
+  if (msg->types_count == 0) {
     WS_DEBUG_PRINTLN("ERROR | DS18x20: No ds18x sensor types provided!");
     return false;
   }
@@ -104,7 +104,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
   WS_DEBUG_PRINT("Sensor # on Bus: ");
   WS_DEBUG_PRINTLNVAR(_num_drivers);
   WS_DEBUG_PRINT("Sensor Type Count: ");
-  WS_DEBUG_PRINTLNVAR(msg->sensor_types_count);
+  WS_DEBUG_PRINTLNVAR(msg->types_count);
 
   if (is_initialized) {
     WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
@@ -119,10 +119,10 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
     new_dsx_driver->SetPeriod(msg->period);
 
     // Configure the types of sensor reads to perform
-    for (int i = 0; i < msg->sensor_types_count; i++) {
-      if (msg->sensor_types[i] == ws_sensor_Type_T_OBJECT_TEMPERATURE) {
+    for (int i = 0; i < msg->types_count; i++) {
+      if (msg->types[i] == ws_sensor_Type_T_OBJECT_TEMPERATURE) {
         new_dsx_driver->is_read_temp_c = true;
-      } else if (msg->sensor_types[i] ==
+      } else if (msg->types[i] ==
                  ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT) {
         new_dsx_driver->is_read_temp_f = true;
       } else {
@@ -151,8 +151,8 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
     WS_DEBUG_PRINT("\tPeriod: ");
     WS_DEBUG_PRINTLNVAR(msg->period);
     WS_DEBUG_PRINT("\tSI Units: ");
-    for (int i = 0; i < msg->sensor_types_count; i++) {
-      WS_DEBUG_PRINTVAR(msg->sensor_types[i]);
+    for (int i = 0; i < msg->types_count; i++) {
+      WS_DEBUG_PRINTVAR(msg->types[i]);
       WS_DEBUG_PRINT(", ");
     }
     WS_DEBUG_PRINTLN("");
@@ -277,7 +277,7 @@ void DS18X20Controller::update(bool force) {
 
     // Get the Ds18x20Event message
     ws_ds18x20_Event *event_msg = _DS18X20_model->GetDS18x20EventMsg();
-    pb_size_t event_count = event_msg->sensor_events_count;
+    pb_size_t event_count = event_msg->events_count;
 
     if (!Ws._sdCardV2->isModeOffline()) {
       // Encode the Ds18x20Event message

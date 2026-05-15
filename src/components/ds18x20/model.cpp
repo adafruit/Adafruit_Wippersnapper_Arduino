@@ -137,7 +137,7 @@ bool DS18X20Model::EncodeDs18x20Event() {
 */
 void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
-  _msg_DS18x20Event.sensor_events_count = 0;
+  _msg_DS18x20Event.events_count = 0;
   strcpy(_msg_DS18x20Event.onewire_pin, ow_pin_name);
 }
 
@@ -150,14 +150,14 @@ void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
 */
 void DS18X20Model::addSensorEvent(ws_sensor_Type sensor_type,
                                   float sensor_value) {
-  _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count].type =
+  _msg_DS18x20Event.events[_msg_DS18x20Event.events_count].type =
       sensor_type;
-  _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count]
+  _msg_DS18x20Event.events[_msg_DS18x20Event.events_count]
       .which_value = ws_sensor_Event_float_value_tag;
 
   // Convert the float to 2 decimal places
   sensor_value = roundf(sensor_value * 100) / 100;
-  _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count]
+  _msg_DS18x20Event.events[_msg_DS18x20Event.events_count]
       .value.float_value = sensor_value;
-  _msg_DS18x20Event.sensor_events_count++;
+  _msg_DS18x20Event.events_count++;
 }

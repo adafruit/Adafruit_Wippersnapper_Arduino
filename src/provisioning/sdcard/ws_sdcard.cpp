@@ -577,21 +577,21 @@ bool ws_sdcard::ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
     WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor count not found!");
     return false;
   }
-  msg_DS18X20Add.sensor_types_count = num_sensors;
+  msg_DS18X20Add.types_count = num_sensors;
 
   // Parse the first sensor type
   if (strcmp(sensor_type_1, UNKNOWN_VALUE) == 0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor type 1 not found!");
     return false;
   }
-  msg_DS18X20Add.sensor_types[0] = ParseSensorType(sensor_type_1);
+  msg_DS18X20Add.types[0] = ParseSensorType(sensor_type_1);
   // Parse the second sensor type, if it exists
   if (num_sensors == 2) {
     if (strcmp(sensor_type_2, UNKNOWN_VALUE) == 0) {
       WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor type 2 not found!");
       return false;
     }
-    msg_DS18X20Add.sensor_types[1] = ParseSensorType(sensor_type_2);
+    msg_DS18X20Add.types[1] = ParseSensorType(sensor_type_2);
   }
   return true;
 }
@@ -1325,12 +1325,12 @@ bool ws_sdcard::LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg) {
   JsonDocument doc;
   // Iterate over the event message's sensor events
   // TODO: Standardize this Event with I2C
-  for (int i = 0; i < event_msg->sensor_events_count; i++) {
+  for (int i = 0; i < event_msg->events_count; i++) {
     uint32_t timestamp = GetTimestamp();
     doc["timestamp"] = timestamp;
     doc["pin"] = event_msg->onewire_pin;
-    doc["value"] = event_msg->sensor_events[i].value.float_value;
-    doc["si_unit"] = SensorTypeToSIUnit(event_msg->sensor_events[i].type);
+    doc["value"] = event_msg->events[i].value.float_value;
+    doc["si_unit"] = SensorTypeToSIUnit(event_msg->events[i].type);
     LogJSONDoc(doc);
   }
   return true;
