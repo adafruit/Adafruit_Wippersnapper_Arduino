@@ -158,7 +158,7 @@ bool ErrorController::PublishError(pb_size_t which_component_type,
 }
 
 // bool PublishError(pb_size_t which_component_type, pb_size_t
-// which_component_id, ws_i2c_DeviceDescriptor i2c, pb_callback_t error_msg);
+// which_component_id, ws_i2c_Descriptor i2c, pb_callback_t error_msg);
 // bool PublishError(pb_size_t which_component_type, pb_size_t
 // which_component_id, ws_uart_Descriptor uart, pb_callback_t error_msg);
 
@@ -330,7 +330,7 @@ bool ErrorController::PublishServo(const char *error_msg,
     @return True if the message was successfully published, False otherwise.
 */
 bool ErrorController::PublishGPS(const char *error_msg,
-                                 ws_i2c_DeviceDescriptor *i2c_device) {
+                                 ws_i2c_Descriptor *i2c_device) {
   // TODO: Implement GPS error publishing for I2C devices
   (void)error_msg;
   (void)i2c_device;
@@ -362,7 +362,7 @@ bool ErrorController::PublishGPS(const char *error_msg,
     @return True if the message was successfully published, False otherwise.
 */
 bool ErrorController::PublishI2C(const char *error_msg,
-                                 ws_i2c_DeviceDescriptor *i2c_device) {
+                                 ws_i2c_Descriptor *i2c_device) {
   // TODO: Implement I2C error publishing
   (void)error_msg;
   (void)i2c_device;

@@ -483,7 +483,7 @@ bool I2cController::IsBusStatusOK(I2cHardware *bus) {
               successfully, False otherwise.
 */
 bool I2cController::publishDeviceAddedOrReplaced(
-    const ws_i2c_DeviceDescriptor &device_descriptor,
+    const ws_i2c_Descriptor &device_descriptor,
     I2cHardware *bus,
     const ws_i2c_Status &device_status) {
   // If we're in offline mode, don't publish out to IO
@@ -553,8 +553,8 @@ bool I2cController::Handle_I2cDeviceRemove(ws_i2c_Remove *msg) {
   bool did_remove = true;
 
   // Find the bus for this device using pin configuration
-  I2cHardware *hw_bus = findOrCreateBus(msg->descriptor.pin_scl,
-                                        msg->descriptor.pin_sda);
+  I2cHardware *hw_bus = findOrCreateBus(msg->descriptor.address_space.pin_scl,
+                                        msg->descriptor.address_space.pin_sda);
   if (hw_bus == nullptr) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find I2C bus for device removal!");
     return false;
@@ -562,25 +562,25 @@ bool I2cController::Handle_I2cDeviceRemove(ws_i2c_Remove *msg) {
 
   WS_DEBUG_PRINTLN("[i2c] Removing device from bus...");
   if (!hw_bus->HasMux()) {
-    if (!RemoveDriver(msg->descriptor.device_address)) {
+    if (!RemoveDriver(msg->descriptor.address)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to remove i2c device from bus!");
       did_remove = false;
     }
   } else {
     // Bus has a I2C MUX attached
     // Case 1: Is the I2C device connected to a MUX?
-    if (msg->descriptor.mux_address != 0xFFFF &&
-        msg->descriptor.mux_channel >= 0) {
-      hw_bus->SelectMuxChannel(msg->descriptor.mux_channel);
-      if (!RemoveDriver(msg->descriptor.device_address,
-                        msg->descriptor.mux_channel)) {
+    if (msg->descriptor.address_space.mux_address != 0xFFFF &&
+        msg->descriptor.address_space.mux_channel >= 0) {
+      hw_bus->SelectMuxChannel(msg->descriptor.address_space.mux_channel);
+      if (!RemoveDriver(msg->descriptor.address,
+                        msg->descriptor.address_space.mux_channel)) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to remove i2c device from bus!");
         did_remove = false;
       }
     }
     // Case 2: Is the I2C device a MUX?
-    if (msg->descriptor.device_address ==
-        msg->descriptor.mux_address) {
+    if (msg->descriptor.address ==
+        msg->descriptor.address_space.mux_address) {
       ws_i2c_Scanned scan_results = ws_i2c_Scanned_init_zero;
       hw_bus->ScanMux(&scan_results);
       for (int i = 0; i < scan_results.found_devices_count; i++) {
@@ -757,16 +757,16 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   // Parse out device name and descriptor
   char device_name[15];
   strcpy(device_name, msg->name);
-  ws_i2c_DeviceDescriptor device_descriptor = msg->descriptor;
+  ws_i2c_Descriptor device_descriptor = msg->descriptor;
 
   // Should we use the MUX for this device? We determine this based on if the mux_address field is set in the descriptor
-  bool use_mux = (device_descriptor.mux_address != 0x00);
+  bool use_mux = (device_descriptor.address_space.mux_address != 0x00);
 
   // Attempt to remove any existing driver at this address (or mux_channel).
-  RemoveDriver(device_descriptor.device_address, device_descriptor.mux_channel);
+  RemoveDriver(device_descriptor.address, device_descriptor.address_space.mux_channel);
 
   // Attempt to find or create the I2C bus specified by the device descriptor
-  I2cHardware *hw_bus = findOrCreateBus(device_descriptor.pin_scl, device_descriptor.pin_sda);
+  I2cHardware *hw_bus = findOrCreateBus(device_descriptor.address_space.pin_scl, device_descriptor.address_space.pin_sda);
   if (hw_bus == nullptr) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus specified by device descriptor!");
     publishDeviceAddedOrReplaced(device_descriptor, nullptr, ws_i2c_Status_S_FAIL_INIT);
@@ -792,7 +792,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   TwoWire *wire = hw_bus->GetBus();
 
   // Check we are trying to add a new MUX - if so, initialize and return
-  ws_i2c_Status mux_status = InitMux(hw_bus, device_name, device_descriptor.mux_address);
+  ws_i2c_Status mux_status = InitMux(hw_bus, device_name, device_descriptor.address_space.mux_address);
   if (mux_status == ws_i2c_Status_S_SUCCESS) {
     // MUX initialized successfully, publish and back out since we don't need to create a driver for the MUX itself
     publishDeviceAddedOrReplaced(device_descriptor, hw_bus, mux_status);
@@ -808,7 +808,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   if (use_mux) {
     if (hw_bus->HasMux()) {
       hw_bus->ClearMuxChannel(); // TODO: We may be able to remove this, test against IO first!
-      hw_bus->SelectMuxChannel(device_descriptor.mux_channel);
+      hw_bus->SelectMuxChannel(device_descriptor.address_space.mux_channel);
     } else {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Expected a MUX on this bus but none found!");
       publishDeviceAddedOrReplaced(device_descriptor, hw_bus, ws_i2c_Status_S_FAIL_UNSUPPORTED_SENSOR);
@@ -820,8 +820,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
   // Attempt to initialize a new sensor driver
   WS_DEBUG_PRINTLN("[i2c] Creating sensor driver...");
   drvBase *drv = CreateI2cSensorDrv(device_name, wire,
-                                    device_descriptor.device_address,
-                                    device_descriptor.mux_channel, device_status);
+                                    device_descriptor.address,
+                                    device_descriptor.address_space.mux_channel, device_status);
 
   if (drv == nullptr) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver failed to initialize!");
@@ -839,7 +839,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(
 
   // Optionally configure the driver's MUX address
   if (use_mux) {
-    drv->SetMuxAddress(device_descriptor.mux_address);
+    drv->SetMuxAddress(device_descriptor.address_space.mux_address);
     WS_DEBUG_PRINTLN("[i2c] Set driver to use MUX");
   }
 

@@ -93,7 +93,7 @@ public:
   bool Handle_I2cDeviceRemove(ws_i2c_Remove *msg);
   // Publishing //
   bool publishDeviceAddedOrReplaced(
-      const ws_i2c_DeviceDescriptor &device_descriptor,
+      const ws_i2c_Descriptor &device_descriptor,
       I2cHardware *bus,
       const ws_i2c_Status &device_status);
   bool publishScan();

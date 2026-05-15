@@ -626,17 +626,18 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   }
 
   msg_i2c_add.has_descriptor = true;
-  component["i2cBusScl"] = msg_i2c_add.descriptor.pin_scl;
-  component["i2cBusSda"] = msg_i2c_add.descriptor.pin_sda;
+  msg_i2c_add.descriptor.has_address_space = true;
+  component["i2cBusScl"] = msg_i2c_add.descriptor.address_space.pin_scl;
+  component["i2cBusSda"] = msg_i2c_add.descriptor.address_space.pin_sda;
 
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
-  msg_i2c_add.descriptor.device_address = HexStrToInt(addr_device);
+  msg_i2c_add.descriptor.address = HexStrToInt(addr_device);
 
   const char *addr_mux = component["i2cMuxAddress"] | "0x00";
-  msg_i2c_add.descriptor.mux_address = HexStrToInt(addr_mux);
+  msg_i2c_add.descriptor.address_space.mux_address = HexStrToInt(addr_mux);
 
   const char *mux_channel = component["i2cMuxChannel"] | "0xFFFF";
-  msg_i2c_add.descriptor.mux_channel = HexStrToInt(mux_channel);
+  msg_i2c_add.descriptor.address_space.mux_channel = HexStrToInt(mux_channel);
 
   msg_i2c_add.device_sensor_types_count = 0;
   for (JsonObject components_0_i2cDeviceSensorType :
@@ -1346,16 +1347,16 @@ bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_Event *msg_device_event) {
     return true;
   JsonDocument doc;
   // Pull the Descriptor out
-  ws_i2c_DeviceDescriptor descriptor = msg_device_event->descriptor;
+  ws_i2c_Descriptor descriptor = msg_device_event->descriptor;
   char hex_addr[5];
-  snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.device_address);
+  snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.address);
   doc["i2c_address"] = hex_addr;
 
   // Using I2C MUX?
-  if (descriptor.mux_address != 0x00) {
-    snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.mux_address);
+  if (descriptor.address_space.mux_address != 0x00) {
+    snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.address_space.mux_address);
     doc["i2c_mux_addr"] = hex_addr;
-    doc["i2c_mux_ch"] = descriptor.mux_channel;
+    doc["i2c_mux_ch"] = descriptor.address_space.mux_channel;
   }
 
   // Log each event

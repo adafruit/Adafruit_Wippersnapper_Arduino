@@ -286,7 +286,7 @@ ws_i2c_Add *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
     @returns  True if the message was encoded successfully, False otherwise.
 */
 bool I2cModel::encodeMsgI2cDeviceAddedorReplaced(
-    ws_i2c_DeviceDescriptor device_descriptor, ws_i2c_BusStatus bus_status,
+    ws_i2c_Descriptor device_descriptor, ws_i2c_BusStatus bus_status,
     ws_i2c_Status device_status) {
   size_t sz_msg;
 
@@ -344,11 +344,12 @@ void I2cModel::SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
                                                  uint32_t addr_mux,
                                                  uint32_t mux_channel) {
   _msg_i2c_event.has_descriptor = true;
-  _msg_i2c_event.descriptor.pin_scl = pin_scl;
-  _msg_i2c_event.descriptor.pin_sda = pin_sda;
-  _msg_i2c_event.descriptor.device_address = addr_device;
-  _msg_i2c_event.descriptor.mux_address = addr_mux;
-  _msg_i2c_event.descriptor.mux_channel = mux_channel;
+  _msg_i2c_event.descriptor.has_address_space = true;
+  _msg_i2c_event.descriptor.address_space.pin_scl = pin_scl;
+  _msg_i2c_event.descriptor.address_space.pin_sda = pin_sda;
+  _msg_i2c_event.descriptor.address = addr_device;
+  _msg_i2c_event.descriptor.address_space.mux_address = addr_mux;
+  _msg_i2c_event.descriptor.address_space.mux_channel = mux_channel;
 }
 
 /*!

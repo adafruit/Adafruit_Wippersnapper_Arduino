@@ -35,9 +35,9 @@ public:
   bool PublishPixels(const char *error_msg, const char *pin_name);
   bool PublishPWM(const char *error_msg, const char *pin_name);
   bool PublishServo(const char *error_msg, const char *pin_name);
-  bool PublishGPS(const char *error_msg, ws_i2c_DeviceDescriptor *i2c_device);
+  bool PublishGPS(const char *error_msg, ws_i2c_Descriptor *i2c_device);
   bool PublishGPS(const char *error_msg, ws_uart_Descriptor *uart_device);
-  bool PublishI2C(const char *error_msg, ws_i2c_DeviceDescriptor *i2c_device);
+  bool PublishI2C(const char *error_msg, ws_i2c_Descriptor *i2c_device);
   bool PublishUART(const char *error_msg, ws_uart_Descriptor *uart_device);
 
 private:
@@ -47,7 +47,7 @@ private:
                     pb_size_t which_component_id, pb_callback_t pin,
                     pb_callback_t error_msg);
   bool PublishError(pb_size_t which_component_type,
-                    pb_size_t which_component_id, ws_i2c_DeviceDescriptor i2c,
+                    pb_size_t which_component_id, ws_i2c_Descriptor i2c,
                     pb_callback_t error_msg);
   bool PublishError(pb_size_t which_component_type,
                     pb_size_t which_component_id, ws_uart_Descriptor uart,

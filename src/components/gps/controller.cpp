@@ -94,11 +94,11 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(
   } else if (msg->has_add_i2c) {
     // I2C transport path
     WS_DEBUG_PRINTLN("[gps] Configuring GPS via I2C transport...");
-    ws_i2c_DeviceDescriptor desc = msg->add_i2c.descriptor;
-    TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(desc.pin_scl, desc.pin_sda);
+    ws_i2c_Descriptor desc = msg->add_i2c.descriptor;
+    TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(desc.address_space.pin_scl, desc.address_space.pin_sda);
     if (wire == nullptr)
       return false;
-    did_add = AddGPS(wire, desc.device_address, &msg->config);
+    did_add = AddGPS(wire, desc.address, &msg->config);
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: No transport (UART or I2C) specified!");
     return false;
