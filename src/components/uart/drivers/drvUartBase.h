@@ -94,7 +94,7 @@ public:
                 The configuration settings for the UART device.
   */
   void ConfigureDriver(ws_uart_DeviceConfig &cfg_device) {
-    _device_type = cfg_device.device_type;
+    _device_type = cfg_device.type;
 
     switch (_device_type) {
     case ws_uart_DeviceType_DT_GENERIC_INPUT:

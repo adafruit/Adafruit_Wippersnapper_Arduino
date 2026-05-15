@@ -78,7 +78,7 @@ bool UARTModel::EncodeUartAdded(int32_t uart_nbr, ws_uart_DeviceType type,
   _msg_UartAdded.descriptor.type = type;
   // For now, we'll use the device_id directly - will need callback encoding
   // later
-  _msg_UartAdded.descriptor.device_id.arg = (void *)id;
+  _msg_UartAdded.descriptor.id.arg = (void *)id;
   _msg_UartAdded.success = success;
   // Calculate the size of the encoded message
   size_t sz_msg;
@@ -141,7 +141,7 @@ void UARTModel::ConfigureUartInputEventMsg(uint32_t uart_nbr,
   _msg_UartInputEvent.descriptor.type = type;
   // For now, we'll use the device_id directly - will need callback encoding
   // later
-  _msg_UartInputEvent.descriptor.device_id.arg = (void *)device_id;
+  _msg_UartInputEvent.descriptor.id.arg = (void *)device_id;
 }
 
 /*!

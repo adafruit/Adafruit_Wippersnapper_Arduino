@@ -99,22 +99,22 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // TODO: Have we already added this UART device?!
   drvUartBase *uart_driver = nullptr;
   ws_uart_DeviceConfig cfg_device = msg->cfg_device;
-  switch (cfg_device.device_type) {
+  switch (cfg_device.type) {
   case ws_uart_DeviceType_DT_UNSPECIFIED:
     WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
     return false;
   case ws_uart_DeviceType_DT_GENERIC_INPUT:
     // check if device_type is "us100"
-    if (strcmp(cfg_device.device_id, "us100") == 0) {
+    if (strcmp(cfg_device.id, "us100") == 0) {
       WS_DEBUG_PRINTLN("[uart] Adding US-100 device..");
       // Create a new US-100 driver instance
       WS_DEBUG_PRINT("[uart] Adding US-100 Driver...");
       uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
-                                     cfg_device.device_id, cfg_serial.uart_nbr);
+                                     cfg_device.id, cfg_serial.uart_nbr);
       uart_driver->ConfigureDriver(cfg_device);
       uart_driver->EnableSensorEvents(
-          cfg_device.config.generic_input.sensor_types,
-          cfg_device.config.generic_input.sensor_types_count);
+          cfg_device.config.generic_input.types,
+          cfg_device.config.generic_input.types_count);
       uart_driver->SetSensorPeriod(cfg_device.config.generic_input.period);
       WS_DEBUG_PRINT("added!");
     } else {
@@ -137,11 +137,11 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     // Create a new PM2.5 AQI driver instance
     // TODO: Support SoftwareSerial as well, currently only HardwareSerial
     uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
-                                  cfg_device.device_id, cfg_serial.uart_nbr);
+                                  cfg_device.id, cfg_serial.uart_nbr);
     uart_driver->ConfigureDriver(cfg_device);
     uart_driver->EnableSensorEvents(
-        cfg_device.config.pm25aqi.sensor_types,
-        cfg_device.config.pm25aqi.sensor_types_count);
+        cfg_device.config.pm25aqi.types,
+        cfg_device.config.pm25aqi.types_count);
     uart_driver->SetSensorPeriod(cfg_device.config.pm25aqi.period);
     WS_DEBUG_PRINT("added!");
     break;
@@ -174,8 +174,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // Encode and publish out to Adafruit IO
   WS_DEBUG_PRINTLN("[uart] Encoding UartAdded message...");
   if (!_uart_model->EncodeUartAdded(uart_hardware->GetBusNumber(),
-                                    cfg_device.device_type,
-                                    cfg_device.device_id, did_begin)) {
+                                    cfg_device.type,
+                                    cfg_device.id, did_begin)) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to encode UartAdded message!");
     return false;
   }
@@ -213,7 +213,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
         if ((*driver_it)->GetPortNum() == port_num &&
             (*driver_it)->GetDeviceType() == msg->descriptor.type &&
             strcmp((*driver_it)->GetName(),
-                   (const char *)msg->descriptor.device_id.arg) == 0) {
+                   (const char *)msg->descriptor.id.arg) == 0) {
           // Driver found, remove it
           WS_DEBUG_PRINT("[uart] Removing UART driver: ");
           WS_DEBUG_PRINTVAR((*driver_it)->GetName());
