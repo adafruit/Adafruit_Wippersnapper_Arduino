@@ -23,6 +23,7 @@
 #endif
 
 #define I2C_WDT_TIMEOUT_MS 50
+#define MAX_I2C_ADDRESSES 112 ///< 128 total 7-bit addresses minus 16 reserved
 
 /*!
     @brief  Interfaces with the I2C bus via the Arduino "Wire" API.
@@ -33,9 +34,8 @@ public:
   ~I2cHardware();
   // Bus API
   bool begin();
-  bool ProbeAddresses(ws_i2c_AddressSpace *address_space,
-                      uint32_t *addresses, size_t addresses_count,
-                      ws_i2c_AddressSpaceResult *result,
+  bool ProbeAddresses(ws_i2c_AddressSpace *address_space, uint32_t *addresses,
+                      size_t addresses_count, ws_i2c_AddressSpaceResult *result,
                       uint32_t *found_buf, size_t *found_count);
   TwoWire *GetBus();
   uint8_t getSDA() { return _sda; }
@@ -50,12 +50,13 @@ public:
   void SelectMuxChannel(uint32_t channel);
 
 private:
-  TwoWire *_bus = nullptr;        ///< I2C bus instance
-  ws_i2c_BusStatus _bus_status;   ///< I2C bus status
-  uint8_t _sda;                   ///< SDA pin
-  uint8_t _scl;                   ///< SCL pin
-  uint8_t _instance;              ///< I2C bus instance number (for hardware with multiple I2C buses)
-  bool _has_mux;                  ///< Is a MUX present on the bus?
+  TwoWire *_bus = nullptr;      ///< I2C bus instance
+  ws_i2c_BusStatus _bus_status; ///< I2C bus status
+  uint8_t _sda;                 ///< SDA pin
+  uint8_t _scl;                 ///< SCL pin
+  uint8_t _instance; ///< I2C bus instance number (for hardware with multiple
+                     ///< I2C buses)
+  bool _has_mux;     ///< Is a MUX present on the bus?
   uint32_t _mux_address_register; ///< I2C address for the MUX
   int _mux_max_channels;          ///< Maximum possible number of MUX channels
 };

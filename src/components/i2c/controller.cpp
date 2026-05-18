@@ -446,8 +446,7 @@ bool I2cController::RemoveDriver(uint32_t address, uint32_t mux_channel) {
       continue;
     if (driver->GetAddress() != address)
       continue;
-    if (mux_channel != WS_I2C_MUX_CHANNEL_ANY &&
-        driver->GetMuxChannel() != mux_channel)
+    if (driver->GetMuxChannel() != mux_channel)
       continue;
 
     std::vector<drvBase *>::iterator it =
@@ -572,7 +571,7 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
   } else {
     // Bus has a I2C MUX attached
     // Case 1: Is the I2C device connected to a MUX?
-    if (msg->descriptor.address_space.mux_address != 0xFFFF &&
+    if (msg->descriptor.address_space.mux_address != 0 &&
         msg->descriptor.address_space.mux_channel >= 0) {
       hw_bus->SelectMuxChannel(msg->descriptor.address_space.mux_channel);
       if (!RemoveDriver(msg->descriptor.address,
@@ -762,7 +761,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
 
   ws_i2c_Status device_status = ws_i2c_Status_S_UNSPECIFIED;
   // Parse out device name and descriptor
-  char device_name[15];
+  char device_name[16];
   strcpy(device_name, msg->name);
   ws_i2c_Descriptor device_descriptor = msg->descriptor;
 
