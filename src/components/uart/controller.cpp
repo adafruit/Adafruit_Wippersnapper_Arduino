@@ -129,7 +129,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     delete uart_hardware; // cleanup
     return false;
   case ws_uart_DeviceType_DT_GPS:
-    WS_DEBUG_PRINTLN("[uart] GPS is now handled by the GPS controller directly!");
+    WS_DEBUG_PRINTLN(
+        "[uart] GPS is now handled by the GPS controller directly!");
     delete uart_hardware; // cleanup
     return false;
   case ws_uart_DeviceType_DT_PM25AQI:
@@ -139,9 +140,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
                                   cfg_device.id, cfg_serial.uart_nbr);
     uart_driver->ConfigureDriver(cfg_device);
-    uart_driver->EnableSensorEvents(
-        cfg_device.config.pm25aqi.types,
-        cfg_device.config.pm25aqi.types_count);
+    uart_driver->EnableSensorEvents(cfg_device.config.pm25aqi.types,
+                                    cfg_device.config.pm25aqi.types_count);
     uart_driver->SetSensorPeriod(cfg_device.config.pm25aqi.period);
     WS_DEBUG_PRINT("added!");
     break;
@@ -174,8 +174,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // Encode and publish out to Adafruit IO
   WS_DEBUG_PRINTLN("[uart] Encoding UartAdded message...");
   if (!_uart_model->EncodeUartAdded(uart_hardware->GetBusNumber(),
-                                    cfg_device.type,
-                                    cfg_device.id, did_begin)) {
+                                    cfg_device.type, cfg_device.id,
+                                    did_begin)) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to encode UartAdded message!");
     return false;
   }

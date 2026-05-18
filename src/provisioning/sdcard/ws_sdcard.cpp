@@ -616,8 +616,8 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
     @returns True if the I2cDeviceAddOrReplace message was successfully
              parsed, False otherwise.
 */
-bool ws_sdcard::ParseI2cDeviceAddReplace(
-    JsonObject &component, ws_i2c_Add &msg_i2c_add) {
+bool ws_sdcard::ParseI2cDeviceAddReplace(JsonObject &component,
+                                         ws_i2c_Add &msg_i2c_add) {
   strcpy(msg_i2c_add.name, component["i2cDeviceName"] | UNKNOWN_VALUE);
   msg_i2c_add.period = component["period"] | 0.0;
   if (msg_i2c_add.period == 0.0) {
@@ -1006,17 +1006,14 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.payload.ds18x20.payload.add = msg_DS18X20Add;
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
-      ws_i2c_Add msg_i2c_add_replace =
-          ws_i2c_Add_init_default;
+      ws_i2c_Add msg_i2c_add_replace = ws_i2c_Add_init_default;
       if (!ParseI2cDeviceAddReplace(component, msg_i2c_add_replace)) {
         WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to parse I2C Component");
         return false;
       }
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_i2c_tag;
-      msg_signal_b2d.payload.i2c.which_payload =
-          ws_i2c_B2D_add_tag;
-      msg_signal_b2d.payload.i2c.payload.add =
-          msg_i2c_add_replace;
+      msg_signal_b2d.payload.i2c.which_payload = ws_i2c_B2D_add_tag;
+      msg_signal_b2d.payload.i2c.payload.add = msg_i2c_add_replace;
     } else {
       WS_DEBUG_PRINT("[SD] Runtime Error: Unknown Component API Type: ");
       WS_DEBUG_PRINTLNVAR(component_api_type);
@@ -1355,7 +1352,8 @@ bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_Event *msg_device_event) {
 
   // Using I2C MUX?
   if (descriptor.address_space.mux_address != 0x00) {
-    snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.address_space.mux_address);
+    snprintf(hex_addr, sizeof(hex_addr), "0x%02X",
+             descriptor.address_space.mux_address);
     doc["i2c_mux_addr"] = hex_addr;
     doc["i2c_mux_ch"] = descriptor.address_space.mux_channel;
   }
@@ -1364,8 +1362,7 @@ bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_Event *msg_device_event) {
   for (pb_size_t i = 0; i < msg_device_event->events_count; i++) {
     doc["timestamp"] = GetTimestamp();
     doc["value"] = msg_device_event->events[i].value.value.float_value;
-    doc["si_unit"] =
-        SensorTypeToSIUnit(msg_device_event->events[i].value.type);
+    doc["si_unit"] = SensorTypeToSIUnit(msg_device_event->events[i].value.type);
     if (!LogJSONDoc(doc))
       return false;
   }

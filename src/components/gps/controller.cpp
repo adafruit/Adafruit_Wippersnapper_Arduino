@@ -70,8 +70,7 @@ bool GPSController::Router(pb_istream_t *stream) {
  * @param msg The DeviceAddOrReplace message.
  * @return True if the GPS device was added successfully, False otherwise.
  */
-bool GPSController::Handle_GpsDeviceAddOrReplace(
-    ws_gps_Add *msg) {
+bool GPSController::Handle_GpsDeviceAddOrReplace(ws_gps_Add *msg) {
   if (!msg->has_config) {
     WS_DEBUG_PRINTLN("[gps] ERROR: No GPS config provided!");
     return false;
@@ -95,7 +94,8 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(
     // I2C transport path
     WS_DEBUG_PRINTLN("[gps] Configuring GPS via I2C transport...");
     ws_i2c_Descriptor desc = msg->add_i2c.descriptor;
-    TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(desc.address_space.pin_scl, desc.address_space.pin_sda);
+    TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(
+        desc.address_space.pin_scl, desc.address_space.pin_sda);
     if (wire == nullptr)
       return false;
     did_add = AddGPS(wire, desc.address, &msg->config);
