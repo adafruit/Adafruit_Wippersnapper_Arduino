@@ -71,9 +71,9 @@
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
 
-class wippersnapper;  ///< Forward declaration
-class I2cModel;    ///< Forward declaration
-class I2cHardware; ///< Forward declaration
+class wippersnapper; ///< Forward declaration
+class I2cModel;      ///< Forward declaration
+class I2cHardware;   ///< Forward declaration
 
 /*!
     @brief  Routes messages using the i2c.proto API to the
@@ -89,13 +89,12 @@ public:
   // Routing //
   bool Router(pb_istream_t *stream);
   bool Handle_Add(ws_i2c_Add *msg);
-  bool Handle_Probe();
+  bool Handle_Probe(pb_istream_t *stream);
   bool Handle_Remove(ws_i2c_Remove *msg);
   // Publishing //
-  bool publishDeviceAddedOrReplaced(
-      const ws_i2c_Descriptor &device_descriptor,
-      I2cHardware *bus,
-      const ws_i2c_Status &device_status);
+  bool publishDeviceAddedOrReplaced(const ws_i2c_Descriptor &device_descriptor,
+                                    I2cHardware *bus,
+                                    const ws_i2c_Status &device_status);
   bool publishProbed();
   // Helpers //
   TwoWire *GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda);
@@ -109,9 +108,10 @@ private:
   I2cHardware *findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda);
   bool IsBusStatusOK(I2cHardware *bus);
   TwoWire *GetI2cBus(uint32_t pin_scl, uint32_t pin_sda);
-  I2cModel *_i2c_model = nullptr;        ///< Pointer to an I2C model object
-  std::vector<I2cHardware *> _i2c_buses; ///< Vector of ptrs to I2C hardware buses
-  std::vector<drvBase *> _i2c_drivers;   ///< Vector of ptrs to I2C drivers
+  I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
+  std::vector<I2cHardware *>
+      _i2c_buses;                      ///< Vector of ptrs to I2C hardware buses
+  std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C drivers
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_I2C_CONTROLLER_H
