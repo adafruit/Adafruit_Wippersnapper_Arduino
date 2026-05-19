@@ -23,11 +23,11 @@
 #define WS_DEBUG          /**< Define to enable debugging to serial terminal */
 #define WS_PRINTER Serial /**< Where debug messages will be printed */
 
-#define ONE_MINUTE_IN_MS 60000
-#define ONE_SECOND_IN_MS 1000
-#define ONE_SECOND_IN_US 1000000
-#define TEN_SECONDS_IN_MS 10000
-#define TEN_SECONDS_IN_US 10000000
+#define ONE_MINUTE_IN_MS 60000     ///< One minute expressed in milliseconds
+#define ONE_SECOND_IN_MS 1000      ///< One second expressed in milliseconds
+#define ONE_SECOND_IN_US 1000000   ///< One second expressed in microseconds
+#define TEN_SECONDS_IN_MS 10000    ///< Ten seconds expressed in milliseconds
+#define TEN_SECONDS_IN_US 10000000 ///< Ten seconds expressed in microseconds
 
 /*!
     @brief  Debug print macros for WipperSnapper debugging output
