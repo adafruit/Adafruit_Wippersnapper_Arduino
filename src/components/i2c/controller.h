@@ -96,7 +96,7 @@ public:
   void ResetFlags();
   // Helpers //
   TwoWire *GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda);
-  ws_i2c_Status InitMux(I2cHardware *bus, const char *name, uint32_t address);
+  bool InitMux(I2cHardware *bus, const char *name, uint32_t address);
   bool RemoveDriver(uint32_t address,
                     uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
   size_t GetI2cBusCount();
