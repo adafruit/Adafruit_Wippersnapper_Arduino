@@ -646,7 +646,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
         WS_DEBUG_PRINTLNVAR(Ws._mqttV2->connectErrorString(mqttRC));
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
-        delay(3000);
+        delay(3 * ONE_SECOND_IN_MS);
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
@@ -930,7 +930,7 @@ void PrintDeviceInfo() {
     @brief    Connects to Adafruit IO+ wippersnapper broker.
 */
 void wippersnapper::connect() {
-  delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
+  delay(5 * ONE_SECOND_IN_MS); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   PrintDeviceInfo();

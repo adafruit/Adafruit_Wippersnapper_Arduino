@@ -492,7 +492,7 @@ void Wippersnapper_FS::fsHalt(String msg) {
   while (1) {
     WS_DEBUG_PRINT("Execution Halted: ");
     WS_DEBUG_PRINTLNVAR(msg.c_str());
-    delay(5000);
+    delay(5 * ONE_SECOND_IN_MS);
     yield();
   }
 }
@@ -509,7 +509,7 @@ void Wippersnapper_FS::fsHalt(String msg, ws_led_status_t ledStatusColor) {
   while (1) {
     WS_DEBUG_PRINT("Execution Halted: ");
     WS_DEBUG_PRINTLNVAR(msg.c_str());
-    delay(5000);
+    delay(5 * ONE_SECOND_IN_MS);
     yield();
   }
 }

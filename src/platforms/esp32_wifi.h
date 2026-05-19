@@ -341,7 +341,7 @@ protected:
                              Ws._multiNetworksV2[i].pass);
           }
         }
-        if (_wifiMulti.run(20000) == WL_CONNECTED) {
+        if (_wifiMulti.run(20 * ONE_SECOND_IN_MS) == WL_CONNECTED) {
           _statusV2 = WS_NET_CONNECTED;
         } else {
           _statusV2 = WS_NET_DISCONNECTED;
@@ -351,7 +351,7 @@ protected:
         WiFi.begin(_ssid, _pass);
         _statusV2 = WS_NET_DISCONNECTED;
         Ws._wdt->feed();
-        delay(5000);
+        delay(5 * ONE_SECOND_IN_MS);
       }
       Ws._wdt->feed();
     }
