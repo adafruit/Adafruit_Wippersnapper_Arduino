@@ -380,6 +380,11 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
 // I2C display initialization (OLED, CharLCD, LED backpack, etc.)
 // ---------------------------------------------------------------------------
 bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
+  if (!msg) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Null add message for I2C display!");
+    return false;
+  }
+
   if (msg->which_interface_type != ws_display_Add_i2c_tag) {
     WS_DEBUG_PRINTLN(
         "[display] ERROR: Expected I2C interface for I2C display!");
