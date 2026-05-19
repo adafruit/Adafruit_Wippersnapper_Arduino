@@ -143,6 +143,12 @@ public:
     // Write to the display's buffer
     int cur_idx = pos_start;
     for (size_t i = 0; i < len_display; i++) {
+      // Skip decimal separators; they are handled as a display flag on the
+      // preceding character.
+      if (message[i] == '.') {
+        continue;
+      }
+
       // skip position 2
       if (cur_idx == 2) {
         cur_idx++;
@@ -156,7 +162,6 @@ public:
       if (i + 1 < len_display && message[i + 1] == '.') {
         display_dot = true;
         i++;
-        len_display++;
       }
 
       // Write the character to the display buffer
