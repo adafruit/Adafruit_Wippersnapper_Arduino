@@ -34,7 +34,6 @@ public:
   // UartAdded
   bool EncodeUartAdded(int32_t uart_nbr, ws_uart_DeviceType type,
                        const char *id, bool success);
-  ws_uart_Added *GetUartAddedMsg();
   // UartRemove
   ws_uart_Remove *GetUartRemoveMsg();
   // UartInputEvent
@@ -47,7 +46,6 @@ public:
 
 private:
   ws_uart_Add _msg_UartAdd;               ///< ws_uart_Add message
-  ws_uart_Added _msg_UartAdded;           ///< ws_uart_Added message
   ws_uart_Remove _msg_UartRemove;         ///< ws_uart_Remove message
   ws_uart_Write _msg_UartWrite;           ///< ws_uart_Write message
   ws_uart_Written _msg_UartWritten;       ///< ws_uart_Written message

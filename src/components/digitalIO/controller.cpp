@@ -97,8 +97,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
 
   // Attempt to configure the pin
   if (!_dio_hardware->ConfigurePin(pin_name, msg->gpio_direction)) {
-    WS_DEBUG_PRINTLN(
-        "[dio] ERROR: Pin provided an invalid protobuf direction!");
+    Ws.error_controller->publishComponentError(msg->pin_name, "Failed to configure pin");
     return false;
   }
 
@@ -173,7 +172,7 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
     }
   }
   if (!did_remove) {
-    WS_DEBUG_PRINTLN("[dio] ERROR: Unable to find requested pin!");
+    Ws.error_controller->publishComponentError(msg->pin_name, "Failed to find pin");
     return false;
   }
 
@@ -216,19 +215,19 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   int pin_idx = GetPinIdx(atoi(msg->pin_name + 1));
   // Check if the pin was found and is a valid digital output pin
   if (pin_idx == -1) {
-    WS_DEBUG_PRINTLN("[dio] ERROR: Unable to find the requested output pin!");
+    Ws.error_controller->publishComponentError(msg->pin_name, "Failed to find pin");
     return false;
   }
 
   // Ensure pin_idx exists within pins_output vector
   if (pin_idx >= _pins_output.size()) {
-    WS_DEBUG_PRINTLN("[dio] ERROR: Requested pin is not a digital output pin!");
+    Ws.error_controller->publishComponentError(msg->pin_name, "Requested pin is not a digital output pin");
     return false;
   }
 
   // Ensure the value type to write is boolean
   if (msg->value.which_value != ws_sensor_Event_bool_value_tag) {
-    WS_DEBUG_PRINTLN("[dio] ERROR: controller received invalid value type!");
+    Ws.error_controller->publishComponentError(msg->pin_name, "Invalid value type for digital write, expected boolean");
     return false;
   }
 

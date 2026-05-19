@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -75,8 +75,7 @@ bool UARTController::Router(pb_istream_t *stream) {
 bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // TODO: fix the id field, currently it is a callback and should be a string.
   if (!msg->has_cfg_serial && !msg->has_cfg_device) {
-    WS_DEBUG_PRINTLN(
-        "[uart] ERROR: No configuration provided for UART device!");
+    Ws.error_controller->publishComponentError(ws_uart_Descriptor, "No configuration provided for UART device");
     return false;
   }
 

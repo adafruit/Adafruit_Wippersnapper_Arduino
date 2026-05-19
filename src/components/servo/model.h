@@ -26,8 +26,6 @@ public:
   ~ServoModel();
   bool DecodeServoAdd(pb_istream_t *stream);
   ws_servo_Add *GetServoAddMsg();
-  bool EncodeServoAdded(char *pin_name, bool did_attach);
-  ws_servo_Added *GetServoAddedMsg();
   bool DecodeServoRemove(pb_istream_t *stream);
   ws_servo_Remove *GetServoRemoveMsg();
   bool DecodeServoWrite(pb_istream_t *stream);
@@ -35,7 +33,6 @@ public:
 
 private:
   ws_servo_Add _msg_servo_add;       ///< ServoAdd message object
-  ws_servo_Added _msg_servo_added;   ///< ServoAdded message object
   ws_servo_Remove _msg_servo_remove; ///< ServoRemove message object
   ws_servo_Write _msg_servo_write;   ///< ServoWrite message object
 };
