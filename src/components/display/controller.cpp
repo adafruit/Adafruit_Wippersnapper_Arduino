@@ -92,21 +92,18 @@ bool DisplayController::Router(pb_istream_t *stream) {
 }
 
 /*!
-    @brief  Handles a request to add or replace a display.
-    @param  msg  The Display Add message.
-    @return True if successful, False otherwise.
-*/
-/*!
     @brief  Resolves component-name based driver/mode defaults for EPD displays.
             Called before passing the Add message to hardware so that the
             controller owns the "what driver" decision and hardware just inits.
     @param  msg  The Display Add message (may be modified in place).
+    @param  name  The unique name for the display to add or replace.
+    @return True if defaults were resolved, False otherwise.
 */
-static void resolveEpdDefaults(ws_display_Add *msg, const char *name) {
+static bool resolveEpdDefaults(ws_display_Add *msg, const char *name) {
   if (msg->which_interface_type != ws_display_Add_spi_epd_tag)
-    return;
+    return false;
   if (msg->which_config != ws_display_Add_config_epd_tag)
-    return;
+    return false;
 
   ws_display_EPDConfig *config = &msg->config.config_epd;
 
@@ -115,7 +112,7 @@ static void resolveEpdDefaults(ws_display_Add *msg, const char *name) {
   if (strcmp(name, "eink-magtag") == 0) {
     if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED)
       config->mode = ws_display_EPDMode_EPD_MODE_GRAYSCALE4;
-    return;
+    return true;
   }
 
   // Map specific component names to driver + default mode
@@ -145,25 +142,28 @@ static void resolveEpdDefaults(ws_display_Add *msg, const char *name) {
       WS_DEBUG_PRINT("' -> driver '");
       WS_DEBUG_PRINTVAR(msg->driver);
       WS_DEBUG_PRINTLN("'");
-      return;
+      return true;
     }
   }
 
   WS_DEBUG_PRINT("[display] No specific driver/mode defaults for component '");
   WS_DEBUG_PRINTVAR(name);
   WS_DEBUG_PRINTLN("'");
+  return false;
 }
 
 /*!
     @brief  Resolves component-name based driver/panel defaults for RGB666
             dotclock displays (Qualia).
     @param  msg  The Display Add message (may be modified in place).
+    @param  name  The unique name for the display to add or replace.
+    @return True if defaults were resolved, False otherwise.
 */
-static void resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
+static bool resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
   if (msg->which_interface_type != ws_display_Add_ttl_rgb666_tag)
-    return;
+    return false;
   if (msg->which_config != ws_display_Add_config_display_tag)
-    return;
+    return false;
 
   struct {
     const char *component;
@@ -187,25 +187,46 @@ static void resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
       WS_DEBUG_PRINT("', panel '");
       WS_DEBUG_PRINTVAR(msg->panel);
       WS_DEBUG_PRINTLN("'");
-      return;
+      return true;
     }
   }
+  WS_DEBUG_PRINT("[display] No specific driver/panel defaults for component '");
+  WS_DEBUG_PRINTVAR(name);
+  WS_DEBUG_PRINTLN("'");
+  return false;
 }
 
+
+/*!
+    @brief  Handles a request to add or replace a display.
+    @param  msg  The Display Add message.
+    @param  name  The unique name for the display to add or replace.
+    @return True if successful, False otherwise.
+*/
 bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
                                            const char *name) {
   WS_DEBUG_PRINT("[display] Adding display: ");
   WS_DEBUG_PRINTLNVAR(name);
 
+  bool foundDefaults = false;
   // Resolve component-name defaults before passing to hardware
   if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_EPD) {
-    resolveEpdDefaults(msg, name);
+    foundDefaults = resolveEpdDefaults(msg, name);
   } else if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_TFT &&
              msg->which_interface_type == ws_display_Add_ttl_rgb666_tag) {
-    resolveRgb666Defaults(msg, name);
+    foundDefaults = resolveRgb666Defaults(msg, name);
+  }
+  if (!foundDefaults) {
+    // The resolve defaults funcs are not mandatory (come in proto)
+    WS_DEBUG_PRINTLN("[display] No defaults resolved for this display");
   }
 
-  removeExistingDisplayByName(name);
+  // If display with same name exists, remove it first to allow replacement
+  if (removeExistingDisplayByName(name)) {
+    WS_DEBUG_PRINT("[display] Replaced existing display with same name '");
+    WS_DEBUG_PRINTVAR(name);
+    WS_DEBUG_PRINTLN("'");
+  }
 
   if (_num_displays >= MAX_DISPLAYS) {
     WS_DEBUG_PRINTLN("[display] ERROR: Maximum number of displays reached!");
