@@ -91,7 +91,7 @@ public:
   void EnableBackLightCharLCD(bool enable_backlight) {
     if (_lcd == nullptr)
       return;
-    if (_enable_backlight) {
+    if (enable_backlight) {
       _lcd->setBacklight(HIGH);
     } else {
       _lcd->setBacklight(LOW);

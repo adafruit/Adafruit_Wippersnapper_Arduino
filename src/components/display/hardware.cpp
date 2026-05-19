@@ -36,6 +36,11 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
 }
 
 bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
+  if (!addMsg) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Null add message!");
+    return false;
+  }
+
   snprintf(_name, sizeof(_name), "%s", name ? name : "");
   _type = addMsg->type;
 
@@ -45,15 +50,15 @@ bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
   WS_DEBUG_PRINTLNVAR(addMsg->driver);
   WS_DEBUG_PRINT("[display] Panel: ");
   WS_DEBUG_PRINTLNVAR(addMsg->panel);
-
+  
   switch (addMsg->which_interface_type) {
+  // DSI + i8080 todo
   case ws_display_Add_spi_tft_tag:
     return beginSpiTft(addMsg);
   case ws_display_Add_spi_epd_tag:
     return beginSpiEpd(addMsg);
   case ws_display_Add_ttl_rgb666_tag:
     return beginTtlRgb666(addMsg);
-  // DSI + i8080 todo
   case ws_display_Add_i2c_tag:
     return beginI2cDisplay(addMsg);
   default:
