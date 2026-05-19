@@ -587,7 +587,8 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
   ws_i2c_B2D b2d = ws_i2c_B2D_init_zero;
   _i2c_model->SetupProbeDecodeCallbacks(&b2d.payload.probe);
   if (!ws_pb_decode(stream, ws_i2c_B2D_fields, &b2d)) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2C Probe");
+    Ws.error_controller->publishComponentError(
+        ws_i2c_Descriptor{}, "Failed to decode Probe message!");
     return false;
   }
 
@@ -601,17 +602,22 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
   for (size_t i = 0; i < spaces_count; i++) {
     ws_i2c_AddressSpaceResult *result = _i2c_model->GetNextProbedResult();
     if (result == nullptr) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Too many address spaces to probe!");
+      ws_i2c_Descriptor desc = {};
+      desc.has_address_space = true;
+      desc.address_space = spaces[i];
+      Ws.error_controller->publishComponentError(
+          desc, "Too many address spaces to probe!");
       break;
     }
 
     // Find or create the bus for this address space
     I2cHardware *bus = findOrCreateBus(spaces[i].pin_scl, spaces[i].pin_sda);
     if (bus == nullptr) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus!");
-      result->has_address_space = true;
-      result->address_space = spaces[i];
-      result->bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
+      ws_i2c_Descriptor desc = {};
+      desc.has_address_space = true;
+      desc.address_space = spaces[i];
+      Ws.error_controller->publishComponentError(
+          desc, "Failed to find or create I2C bus!");
       continue;
     }
 
@@ -619,11 +625,23 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
     size_t result_idx = i;
     uint32_t *found_buf = _i2c_model->GetFoundAddressBuf(result_idx);
     size_t *found_count = _i2c_model->GetFoundAddressCount(result_idx);
+    if (found_buf == nullptr || found_count == nullptr) {
+      ws_i2c_Descriptor desc = {};
+      desc.has_address_space = true;
+      desc.address_space = spaces[i];
+      Ws.error_controller->publishComponentError(
+          desc, "Internal error: probe buffer overflow!");
+      continue;
+    }
 
     // Probe the addresses on this bus/mux channel
     if (!bus->ProbeAddresses(&spaces[i], addresses, addresses_count, result,
                              found_buf, found_count)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: ProbeAddresses failed!");
+      ws_i2c_Descriptor desc = {};
+      desc.has_address_space = true;
+      desc.address_space = spaces[i];
+      Ws.error_controller->publishComponentError(
+          desc, "ProbeAddresses failed!");
       continue;
     }
 
@@ -635,9 +653,11 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
   }
 
   if (!publishProbed()) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to publish Probed results!");
+    Ws.error_controller->publishComponentError(
+        ws_i2c_Descriptor{}, "Failed to publish Probed results!");
     return false;
   }
+
   return true;
 }
 
@@ -731,6 +751,7 @@ bool I2cController::publishProbed() {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish ws_i2c_Probed message!");
     return false;
   }
+
   return true;
 }
 
