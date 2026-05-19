@@ -350,7 +350,9 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg,
 
   int8_t idx = findDisplayIndexByName(name);
   if (idx < 0) {
-    WS_DEBUG_PRINTLN("[display] ERROR: Display not found!");
+    WS_DEBUG_PRINT("[display] ERROR: Display (");
+    WS_DEBUG_PRINT(name);
+    WS_DEBUG_PRINTLN(") not found!");
     return false;
   }
 
