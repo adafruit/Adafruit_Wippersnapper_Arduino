@@ -528,7 +528,7 @@ void wippersnapper::errorWriteHangV2(const char *error) {
     WS_DEBUG_PRINTLNVAR(error);
     Ws._wdt->feed();
     statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
-    delay(1000);
+    delay(ONE_SECOND_IN_MS);
   }
 }
 
@@ -695,11 +695,11 @@ void wippersnapper::haltErrorV2(const char *error,
     } else {
 // Let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266
-      delay(1000);
+      delay(ONE_SECOND_IN_MS);
 #else
       // Calls to delay() and yield() feed the ESP8266's
       // hardware and software watchdog timers, delayMicroseconds does not.
-      delayMicroseconds(1000000);
+      delayMicroseconds(ONE_SECOND_IN_US);
 #endif
     }
   }
@@ -935,7 +935,7 @@ void wippersnapper::connect() {
   // Dump device info to the serial monitor
   PrintDeviceInfo();
 
-  _brokerKeepAliveIntervalSeconds = WS_BROKER_KEEPALIVE_MS / 1000;
+  _brokerKeepAliveIntervalSeconds = WS_BROKER_KEEPALIVE_MS / ONE_SECOND_IN_MS;
 
   // TODO: Does this need to be here?
   Ws.error_controller = new ErrorController();

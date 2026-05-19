@@ -355,7 +355,7 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg,
   int8_t idx = findDisplayIndexByName(name);
   if (idx < 0) {
     WS_DEBUG_PRINT("[display] ERROR: Display (");
-    WS_DEBUG_PRINT(name);
+    WS_DEBUG_PRINTVAR(name);
     WS_DEBUG_PRINTLN(") not found!");
     return false;
   }
@@ -373,14 +373,15 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     return;
 
   unsigned long now = millis();
-  if (now - _last_bar_update < 60000)
+  if (now - _last_bar_update < ONE_MINUTE_IN_MS)
     return;
   _last_bar_update = now;
-
+  // TODO: Get actual battery level if available
+  uint8_t battery_charge_level = 100; 
   for (uint8_t i = 0; i < _num_displays; i++) {
     if (_displays[i]) {
       WS_DEBUG_PRINTLN("[display] Updating status bar...");
-      _displays[i]->updateStatusBar(rssi, 100, is_connected);
+      _displays[i]->updateStatusBar(rssi, battery_charge_level, is_connected);
     }
   }
 }
