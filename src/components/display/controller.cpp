@@ -290,12 +290,16 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
    same name.
 */
 bool DisplayController::removeExistingDisplayByName(const char *name) {
+  if (!name) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Null display name provided for removal");
+    return false;
+  }
+
   // If display with same name exists, remove it first
   int8_t existingIdx = findDisplayIndexByName(name);
   if (existingIdx >= 0) {
     WS_DEBUG_PRINTLN("[display] Replacing existing display");
     delete _displays[existingIdx];
-    _displays[existingIdx] = nullptr;
     // Shift remaining displays down
     for (int i = existingIdx; i < _num_displays - 1; i++) {
       _displays[i] = _displays[i + 1];
@@ -386,7 +390,7 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     @param  name  The display name to search for.
     @return Index of the display, or -1 if not found.
 */
-uint8_t DisplayController::findDisplayIndexByName(const char *name) {
+int8_t DisplayController::findDisplayIndexByName(const char *name) {
   for (uint8_t i = 0; i < _num_displays; i++) {
     if (_displays[i] && strcmp(_displays[i]->getName(), name) == 0) {
       return i;
