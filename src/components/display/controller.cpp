@@ -340,6 +340,11 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg,
 */
 bool DisplayController::Handle_Display_Write(ws_display_Write *msg,
                                              const char *name) {
+  if (!msg || !name) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Invalid display write request!");
+    return false;
+  }
+
   WS_DEBUG_PRINT("[display] Writing to display: ");
   WS_DEBUG_PRINTLNVAR(name);
 
