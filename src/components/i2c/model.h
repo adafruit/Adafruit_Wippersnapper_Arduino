@@ -36,15 +36,11 @@ public:
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
-  bool encodeMsgI2cDeviceAddedorReplaced(
-      ws_i2c_Descriptor i2c_device_description,
-      ws_i2c_BusStatus i2c_bus_status, ws_i2c_Status i2c_device_status);
   bool EncodeI2cDeviceEvent();
   // Getters
   ws_i2c_Remove *GetI2cDeviceRemoveMsg();
   ws_i2c_Add *GetI2cDeviceAddOrReplaceMsg();
   ws_i2c_output_Add *GetI2cOutputAddMsg();
-  ws_i2c_Added *GetMsgI2cDeviceAddedOrReplaced();
   ws_i2c_Event *GetI2cDeviceEvent();
   ws_i2c_D2B *GetI2cD2B();
   // Probe API — model owns decode/encode/storage
@@ -92,9 +88,7 @@ private:
   // Message storage
   ws_i2c_D2B _msg_i2c_d2b;
   ws_i2c_Add _msg_i2c_add;
-  ws_i2c_Added _msg_i2c_added;
   ws_i2c_Remove _msg_i2c_remove;
-  ws_i2c_Removed _msg_i2c_removed;
   ws_i2c_Event _msg_i2c_event;
 };
 

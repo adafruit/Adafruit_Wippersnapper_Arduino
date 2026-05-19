@@ -640,8 +640,8 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
       ws_i2c_Descriptor desc = {};
       desc.has_address_space = true;
       desc.address_space = spaces[i];
-      Ws.error_controller->publishComponentError(
-          desc, "ProbeAddresses failed!");
+      Ws.error_controller->publishComponentError(desc,
+                                                 "ProbeAddresses failed!");
       continue;
     }
 
@@ -1028,7 +1028,7 @@ I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl,
 bool I2cController::IsBusStatusOK(I2cHardware *bus) {
   if (bus == nullptr)
     return false;
-  return (bus->GetBusStatus() == ws_i2c_BusStatus_BS_SUCCESS);
+  return bus->isBusInitialized();
 }
 
 /*!

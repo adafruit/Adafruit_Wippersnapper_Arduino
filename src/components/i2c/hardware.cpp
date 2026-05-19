@@ -18,7 +18,7 @@
     @brief  Default I2C bus hardware class constructor
 */
 I2cHardware::I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance) {
-  _bus_status = ws_i2c_BusStatus_BS_UNSPECIFIED;
+  _bus_init = false;
   _has_mux = false;
   _scl = (uint8_t)scl;
   _sda = (uint8_t)sda;
@@ -31,10 +31,10 @@ I2cHardware::I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance) {
 I2cHardware::~I2cHardware() { _has_mux = false; }
 
 /*!
-    @brief  Returns the I2C bus' status.
-    @returns  The I2C bus status, as a ws_i2c_BusStatus.
+    @brief  Returns the I2C bus' status as a boolean (true = OK, false = error)
+    @returns  True if the I2C bus is OK, False otherwise.
 */
-ws_i2c_BusStatus I2cHardware::GetBusStatus() { return _bus_status; }
+bool I2cHardware::isBusInitialized() { return _bus_init; }
 
 /*!
     @brief  Optionally turns on the I2C bus, used for hardware with
@@ -66,7 +66,7 @@ void I2cHardware::TogglePowerPin() {
 /*!
     @brief   Attempts to initialize the I2C bus
     @returns True if the bus was successfully initialized, False otherwise.
-    NOTE: If False, the bus' status can be retrieved with GetBusStatus() to
+    NOTE: If False, the bus' status can be retrieved with isBusInitialized() to
    provide the failure reason.
 */
 bool I2cHardware::begin() {
@@ -84,7 +84,7 @@ bool I2cHardware::begin() {
 
   // Is the bus stuck LOW?
   if (digitalRead(_scl) == 0 || digitalRead(_sda) == 0) {
-    _bus_status = ws_i2c_BusStatus_BS_ERROR_PULLUPS;
+    _bus_init = false;
     return false;
   }
 
@@ -98,7 +98,7 @@ bool I2cHardware::begin() {
   _bus = new TwoWire(_instance);
   _bus->setPins(_sda, _scl); // TODO: This is possibly not required due to ctor
   if (!_bus->begin(_sda, _scl)) {
-    _bus_status = ws_i2c_BusStatus_BS_ERROR_HANG;
+    _bus_init = false;
     return false;
   }
   _bus->setClock(50000);
@@ -120,11 +120,11 @@ bool I2cHardware::begin() {
 
   // Select IO pins to use before calling begin()
   if (!_bus->setSDA(_sda)) {
-    _bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
+    _bus_init = false;
     return false;
   }
   if (!_bus->setSCL(_scl)) {
-    _bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
+    _bus_init = false;
     return false;
   }
 
@@ -137,7 +137,7 @@ bool I2cHardware::begin() {
 #error "I2C implementation not supported by this platform!"
 #endif
 
-  _bus_status = ws_i2c_BusStatus_BS_SUCCESS;
+  _bus_init = true;
   return true;
 }
 
@@ -178,7 +178,6 @@ bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
     if (!_has_mux) {
       WS_DEBUG_PRINTLN(
           "[i2c] ERROR: AddressSpace specifies MUX but none on bus!");
-      result->bus_status = ws_i2c_BusStatus_BS_ERROR_INVALID_CHANNEL;
       return false;
     }
     SelectMuxChannel(address_space->mux_channel);
@@ -211,7 +210,6 @@ bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
     ClearMuxChannel();
   }
 
-  result->bus_status = ws_i2c_BusStatus_BS_SUCCESS;
   return true;
 }
 

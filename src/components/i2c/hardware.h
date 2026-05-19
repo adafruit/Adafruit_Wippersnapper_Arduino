@@ -40,7 +40,7 @@ public:
   TwoWire *GetBus();
   uint8_t getSDA() { return _sda; }
   uint8_t getSCL() { return _scl; }
-  ws_i2c_BusStatus GetBusStatus();
+  bool isBusInitialized();
   void TogglePowerPin();
   // MUX API
   bool AddMuxToBus(uint32_t address_register, const char *name);
@@ -51,13 +51,13 @@ public:
   int GetMuxMaxChannels();
 
 private:
-  TwoWire *_bus = nullptr;      ///< I2C bus instance
-  ws_i2c_BusStatus _bus_status; ///< I2C bus status
-  uint8_t _sda;                 ///< SDA pin
-  uint8_t _scl;                 ///< SCL pin
+  TwoWire *_bus = nullptr; ///< I2C bus instance
+  bool _bus_init = false;  ///< I2C bus status
+  bool _has_mux = false;   ///< Is a MUX present on the bus?
+  uint8_t _sda;            ///< SDA pin
+  uint8_t _scl;            ///< SCL pin
   uint8_t _instance; ///< I2C bus instance number (for hardware with multiple
                      ///< I2C buses)
-  bool _has_mux;     ///< Is a MUX present on the bus?
   uint32_t _mux_address_register; ///< I2C address for the MUX
   int _mux_max_channels;          ///< Maximum possible number of MUX channels
 };

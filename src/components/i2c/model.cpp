@@ -23,10 +23,7 @@ I2cModel::I2cModel() {
   _probe_spaces_count = 0;
   _probe_addresses_count = 0;
   memset(&_msg_i2c_add, 0, sizeof(_msg_i2c_add));
-  memset(&_msg_i2c_added, 0,
-         sizeof(_msg_i2c_added));
   memset(&_msg_i2c_remove, 0, sizeof(_msg_i2c_remove));
-  memset(&_msg_i2c_removed, 0, sizeof(_msg_i2c_removed));
   memset(&_msg_i2c_event, 0, sizeof(_msg_i2c_event));
 }
 
@@ -39,10 +36,7 @@ I2cModel::~I2cModel() {
   _probe_spaces_count = 0;
   _probe_addresses_count = 0;
   memset(&_msg_i2c_add, 0, sizeof(_msg_i2c_add));
-  memset(&_msg_i2c_added, 0,
-         sizeof(_msg_i2c_added));
   memset(&_msg_i2c_remove, 0, sizeof(_msg_i2c_remove));
-  memset(&_msg_i2c_removed, 0, sizeof(_msg_i2c_removed));
   memset(&_msg_i2c_event, 0, sizeof(_msg_i2c_event));
 }
 
@@ -297,48 +291,6 @@ ws_i2c_Add *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
   return &_msg_i2c_add;
 }
 
-
-/*!
-    @brief    Encodes a I2cDeviceAddedOrReplaced message.
-    @param    device_descriptor
-              The I2cDeviceDescriptor message.
-    @param    bus_status
-              The I2cBusStatus message.
-    @param    device_status
-              The I2cDeviceStatus message.
-    @returns  True if the message was encoded successfully, False otherwise.
-*/
-bool I2cModel::encodeMsgI2cDeviceAddedorReplaced(
-    ws_i2c_Descriptor device_descriptor, ws_i2c_BusStatus bus_status,
-    ws_i2c_Status device_status) {
-  size_t sz_msg;
-
-  // Fill I2cDeviceAddedOrReplaced message
-  memset(&_msg_i2c_added, 0,
-         sizeof(_msg_i2c_added));
-  _msg_i2c_added.has_descriptor = true;
-  _msg_i2c_added.descriptor = device_descriptor;
-  _msg_i2c_added.bus_status = bus_status;
-  _msg_i2c_added.status = device_status;
-
-  // Encode message
-  if (!pb_get_encoded_size(&sz_msg, ws_i2c_Added_fields,
-                           &_msg_i2c_added))
-    return false;
-
-  uint8_t buf[sz_msg];
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_i2c_Added_fields,
-                   &_msg_i2c_added);
-}
-
-/*!
-    @brief    Returns a pointer to the I2cDeviceAddedOrReplaced message.
-    @returns  Pointer to the I2cDeviceAddedOrReplaced message.
-*/
-ws_i2c_Added *I2cModel::GetMsgI2cDeviceAddedOrReplaced() {
-  return &_msg_i2c_added;
-}
 
 /*!
     @brief    Clears the I2cDeviceEvent message.
