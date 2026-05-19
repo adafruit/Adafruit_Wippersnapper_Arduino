@@ -196,7 +196,6 @@ static bool resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
   return false;
 }
 
-
 /*!
     @brief  Handles a request to add or replace a display.
     @param  msg  The Display Add message.
@@ -377,7 +376,7 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     return;
   _last_bar_update = now;
   // TODO: Get actual battery level if available
-  uint8_t battery_charge_level = 100; 
+  uint8_t battery_charge_level = 100;
   for (uint8_t i = 0; i < _num_displays; i++) {
     if (_displays[i]) {
       WS_DEBUG_PRINTLN("[display] Updating status bar...");

@@ -50,7 +50,7 @@ bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
   WS_DEBUG_PRINTLNVAR(addMsg->driver);
   WS_DEBUG_PRINT("[display] Panel: ");
   WS_DEBUG_PRINTLNVAR(addMsg->panel);
-  
+
   switch (addMsg->which_interface_type) {
   // DSI + i8080 todo
   case ws_display_Add_spi_tft_tag:

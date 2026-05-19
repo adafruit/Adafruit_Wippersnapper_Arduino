@@ -273,7 +273,8 @@ protected:
         // wait for a connection to be established
         long startRetry = millis();
         WS_DEBUG_PRINTLN("CONNECTING");
-        while (WiFi.status() != WL_CONNECTED && millis() - startRetry < TEN_SECONDS_IN_MS) {
+        while (WiFi.status() != WL_CONNECTED &&
+               millis() - startRetry < TEN_SECONDS_IN_MS) {
           // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
           yield();
         }

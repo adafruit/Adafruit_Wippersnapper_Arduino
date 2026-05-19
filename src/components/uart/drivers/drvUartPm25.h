@@ -77,8 +77,8 @@ public:
   */
   bool begin() override {
     delay(3 * ONE_SECOND_IN_MS); // Wait for the sensor to boot up
-                 /*     if (IsSoftwareSerial)
-                       return _pm25->begin_UART(_sw_serial); */
+                                 /*     if (IsSoftwareSerial)
+                                       return _pm25->begin_UART(_sw_serial); */
     return _pm25->begin_UART(_hw_serial);
   }
 
