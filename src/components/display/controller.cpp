@@ -112,7 +112,7 @@ static void resolveEpdDefaults(ws_display_Add *msg, const char *name) {
 
   // MagTag auto-detection is handled at hardware level (needs SPI probing),
   // but we can still set mode default
-  if (strncmp(name, "eink-magtag", 11) == 0) {
+  if (strcmp(name, "eink-magtag") == 0) {
     if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED)
       config->mode = ws_display_EPDMode_EPD_MODE_GRAYSCALE4;
     return;
@@ -135,7 +135,7 @@ static void resolveEpdDefaults(ws_display_Add *msg, const char *name) {
   };
 
   for (auto &m : mappings) {
-    if (strncmp(name, m.component, strlen(m.component)) == 0) {
+    if (strcmp(name, m.component) == 0) {
       strncpy(msg->driver, m.driver, sizeof(msg->driver) - 1);
       msg->driver[sizeof(msg->driver) - 1] = '\0';
       if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED)
@@ -148,6 +148,10 @@ static void resolveEpdDefaults(ws_display_Add *msg, const char *name) {
       return;
     }
   }
+
+  WS_DEBUG_PRINT("[display] No specific driver/mode defaults for component '");
+  WS_DEBUG_PRINTVAR(name);
+  WS_DEBUG_PRINTLN("'");
 }
 
 /*!
@@ -171,7 +175,7 @@ static void resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
   };
 
   for (auto &m : mappings) {
-    if (strncmp(name, m.component, strlen(m.component)) == 0) {
+    if (strcmp(name, m.component) == 0) {
       strncpy(msg->driver, m.driver, sizeof(msg->driver) - 1);
       msg->driver[sizeof(msg->driver) - 1] = '\0';
       strncpy(msg->panel, m.panel, sizeof(msg->panel) - 1);
