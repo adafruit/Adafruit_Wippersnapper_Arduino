@@ -18,26 +18,20 @@
 
 class wippersnapper; ///< Forward declaration
 
-bool encode_string_callback(pb_ostream_t *stream, const pb_field_t *field,
-                            void *const *arg);
-
 /*!
-    @brief  Provides an interface for creating, encoding, and parsing
-            messages from error.proto.
+    @brief  Provides an interface for creating, encoding, and publishing
+            error.proto messages.
 */
 class ErrorModel {
 public:
   ErrorModel();
   ~ErrorModel();
-  bool FillErrorD2B(pb_size_t which_component_type,
-                    pb_size_t which_component_id, pb_callback_t pin,
-                    pb_callback_t error_msg);
-  ws_error_ErrorD2B *getErrorD2BMessage();
-  bool encodeErrorD2B(uint8_t *buffer, size_t buffer_size,
-                      size_t *encoded_size);
-
+  bool publishComponentError(const char *pin, const char *error_msg);
+  bool publishComponentError(ws_i2c_Descriptor i2c, const char *error_msg);
+  bool publishComponentError(ws_uart_Descriptor uart, const char *error_msg);
 private:
-  ws_error_ErrorD2B _error_d2b_msg; ///< ErrorD2B message instance;
+  ws_error_D2B _d2b_msg; ///< D2B message instance
+  bool publishD2B();
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_ERROR_MODEL_H

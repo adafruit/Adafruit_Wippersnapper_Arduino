@@ -48,6 +48,7 @@ public:
   bool HasMux();
   void ClearMuxChannel();
   void SelectMuxChannel(uint32_t channel);
+  int GetMuxMaxChannels();
 
 private:
   TwoWire *_bus = nullptr;      ///< I2C bus instance

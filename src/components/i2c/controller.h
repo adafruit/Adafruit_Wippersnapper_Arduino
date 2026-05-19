@@ -83,19 +83,17 @@ class I2cController {
 public:
   I2cController();
   ~I2cController();
-  void update(bool force = false);
-  bool UpdateComplete();
-  void ResetFlags();
   // Routing //
   bool Router(pb_istream_t *stream);
   bool Handle_Add(ws_i2c_Add *msg);
   bool Handle_Probe(pb_istream_t *stream);
   bool Handle_Remove(ws_i2c_Remove *msg);
   // Publishing //
-  bool publishDeviceAddedOrReplaced(const ws_i2c_Descriptor &device_descriptor,
-                                    I2cHardware *bus,
-                                    const ws_i2c_Status &device_status);
   bool publishProbed();
+  // Update //
+  void update(bool force = false);
+  bool UpdateComplete();
+  void ResetFlags();
   // Helpers //
   TwoWire *GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda);
   ws_i2c_Status InitMux(I2cHardware *bus, const char *name, uint32_t address);

@@ -14,8 +14,6 @@
  */
 #include "model.h"
 
-// TODO: Remove all debug prints after we are confident during testing
-
 /*!
     @brief  ErrorModel constructor
 */
@@ -36,8 +34,9 @@ ErrorModel::~ErrorModel() {}
             Pointer to the string to encode.
     @return True if encoding was successful, False otherwise.
 */
-bool encode_string_callback(pb_ostream_t *stream, const pb_field_t *field,
-                            void *const *arg) {
+static bool encode_string_callback(pb_ostream_t *stream,
+                                   const pb_field_t *field,
+                                   void *const *arg) {
   // Retrieve the string from arg
   const char *str = (const char *)*arg;
   // Handle null string case
@@ -50,62 +49,49 @@ bool encode_string_callback(pb_ostream_t *stream, const pb_field_t *field,
   return pb_encode_string(stream, (const uint8_t *)str, len);
 }
 
-/*!
-    @brief  Fills the ErrorD2B message with component information.
-    @param  which_component_type
-            The component type identifier.
-    @param  which_component_id
-            The component ID field selector.
-    @param  pin
-            Callback containing the pin name string.
-    @param  error_msg
-            Callback containing the error message string.
-    @return True if successful.
-*/
-bool ErrorModel::FillErrorD2B(pb_size_t which_component_type,
-                              pb_size_t which_component_id, pb_callback_t pin,
-                              pb_callback_t error_msg) {
-  _error_d2b_msg = ws_error_ErrorD2B_init_zero;
-  _error_d2b_msg.type = (ws_error_ComponentType)which_component_type;
-  _error_d2b_msg.which_component_id = which_component_id;
-  _error_d2b_msg.component_id.pin.funcs.encode = encode_string_callback;
-  _error_d2b_msg.component_id.pin.arg = pin.arg;
-  _error_d2b_msg.error = error_msg;
-  return true;
+bool ErrorModel::publishComponentError(const char *pin,
+                                       const char *error_msg) {
+  _d2b_msg = ws_error_D2B_init_zero;
+  _d2b_msg.which_payload = ws_error_D2B_component_tag;
+
+  ws_error_ComponentError *comp = &_d2b_msg.payload.component;
+  comp->message.funcs.encode = encode_string_callback;
+  comp->message.arg = (void *)error_msg;
+  comp->which_descriptor = ws_error_ComponentError_pin_tag;
+  comp->descriptor.pin.funcs.encode = encode_string_callback;
+  comp->descriptor.pin.arg = (void *)pin;
+
+  return publishD2B();
 }
 
-/*!
-    @brief  Returns a pointer to the ErrorD2B message.
-    @return Pointer to the internal ErrorD2B message struct.
-*/
-ws_error_ErrorD2B *ErrorModel::getErrorD2BMessage() { return &_error_d2b_msg; }
+bool ErrorModel::publishComponentError(ws_i2c_Descriptor i2c,
+                                       const char *error_msg) {
+  _d2b_msg = ws_error_D2B_init_zero;
+  _d2b_msg.which_payload = ws_error_D2B_component_tag;
 
-/*!
-    @brief  Encodes the ErrorD2B message into a buffer.
-    @param  buffer
-            Output buffer to write encoded data.
-    @param  buffer_size
-            Size of the output buffer.
-    @param  encoded_size
-            Output parameter for the number of bytes written.
-    @return True if encoding was successful, False otherwise.
-*/
-bool ErrorModel::encodeErrorD2B(uint8_t *buffer, size_t buffer_size,
-                                size_t *encoded_size) {
-  // Get size of the encoded ErrorD2B message
-  size_t sz_error_d2b_msg;
-  if (!pb_get_encoded_size(&sz_error_d2b_msg, ws_error_ErrorD2B_fields,
-                           &_error_d2b_msg)) {
-    WS_DEBUG_PRINTLN("[Error] ERROR: Unable to get size of ErrorD2B message");
-    return false;
-  }
+  ws_error_ComponentError *comp = &_d2b_msg.payload.component;
+  comp->message.funcs.encode = encode_string_callback;
+  comp->message.arg = (void *)error_msg;
+  comp->which_descriptor = ws_error_ComponentError_i2c_tag;
+  comp->descriptor.i2c = i2c;
 
-  // Encode the ErrorD2B message
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buffer, sz_error_d2b_msg);
-  if (!pb_encode(&msg_stream, ws_error_ErrorD2B_fields, &_error_d2b_msg)) {
-    WS_DEBUG_PRINTLN("[Error] ERROR: Unable to encode ErrorD2B message");
-    return false;
-  }
-  *encoded_size = msg_stream.bytes_written;
-  return true;
+  return publishD2B();
+}
+
+bool ErrorModel::publishComponentError(ws_uart_Descriptor uart,
+                                       const char *error_msg) {
+  _d2b_msg = ws_error_D2B_init_zero;
+  _d2b_msg.which_payload = ws_error_D2B_component_tag;
+
+  ws_error_ComponentError *comp = &_d2b_msg.payload.component;
+  comp->message.funcs.encode = encode_string_callback;
+  comp->message.arg = (void *)error_msg;
+  comp->which_descriptor = ws_error_ComponentError_uart_tag;
+  comp->descriptor.uart = uart;
+
+  return publishD2B();
+}
+
+bool ErrorModel::publishD2B() {
+  return Ws.PublishD2b(ws_signal_DeviceToBroker_error_tag, &_d2b_msg);
 }

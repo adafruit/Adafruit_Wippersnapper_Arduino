@@ -289,3 +289,5 @@ void I2cHardware::SelectMuxChannel(uint32_t channel) {
     @returns  True if a MUX is present on the bus, False otherwise.
 */
 bool I2cHardware::HasMux() { return _has_mux; }
+
+int I2cHardware::GetMuxMaxChannels() { return _mux_max_channels; }

@@ -29,29 +29,13 @@ public:
   ErrorController();
   ~ErrorController();
   bool Router(pb_istream_t *stream);
-  bool PublishAnalogIO(const char *error_msg, const char *pin_name);
-  bool PublishDigitalIO(const char *error_msg, const char *pin_name);
-  bool PublishDS18x20(const char *error_msg, const char *pin_name);
-  bool PublishPixels(const char *error_msg, const char *pin_name);
-  bool PublishPWM(const char *error_msg, const char *pin_name);
-  bool PublishServo(const char *error_msg, const char *pin_name);
-  bool PublishGPS(const char *error_msg, ws_i2c_Descriptor *i2c_device);
-  bool PublishGPS(const char *error_msg, ws_uart_Descriptor *uart_device);
-  bool PublishI2C(const char *error_msg, ws_i2c_Descriptor *i2c_device);
-  bool PublishUART(const char *error_msg, ws_uart_Descriptor *uart_device);
+  bool publishComponentError(const char *pin, const char *error_msg);
+  bool publishComponentError(ws_i2c_Descriptor i2c, const char *error_msg);
+  bool publishComponentError(ws_uart_Descriptor uart, const char *error_msg);
 
 private:
-  bool HandleThrottle(const ws_error_ErrorIOThrottle &throttle);
-  bool HandleBan(const ws_error_ErrorIOBan &ban);
-  bool PublishError(pb_size_t which_component_type,
-                    pb_size_t which_component_id, pb_callback_t pin,
-                    pb_callback_t error_msg);
-  bool PublishError(pb_size_t which_component_type,
-                    pb_size_t which_component_id, ws_i2c_Descriptor i2c,
-                    pb_callback_t error_msg);
-  bool PublishError(pb_size_t which_component_type,
-                    pb_size_t which_component_id, ws_uart_Descriptor uart,
-                    pb_callback_t error_msg);
+  bool HandleThrottle(const ws_error_ThrottleError &throttle);
+  bool HandleBan(const ws_error_BanError &ban);
   ErrorModel *_model = nullptr; ///< Instance of ErrorModel class
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance

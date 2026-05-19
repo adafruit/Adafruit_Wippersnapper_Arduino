@@ -728,7 +728,7 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   switch (which_payload) {
   case ws_signal_DeviceToBroker_error_tag:
     msg->which_payload = ws_signal_DeviceToBroker_error_tag;
-    msg->payload.error = *(ws_error_ErrorD2B *)payload;
+    msg->payload.error = *(ws_error_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_checkin_tag:
     msg->which_payload = ws_signal_DeviceToBroker_checkin_tag;

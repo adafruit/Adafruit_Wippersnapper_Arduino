@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -388,6 +388,10 @@ I2cController::~I2cController() {
     delete _i2c_model;
 }
 
+/******************************************************************************/
+/*!                             Routing                                       */
+/******************************************************************************/
+
 /*!
     @brief  Routes messages using the i2c.proto API to the
             appropriate controller functions.
@@ -430,324 +434,6 @@ bool I2cController::Router(pb_istream_t *stream) {
   }
 
   return res;
-}
-
-/*!
-    @brief  Removes an I2C driver from the controller and frees memory.
-    @param    address
-                The desired I2C device's address.
-    @param    mux_channel
-                The MUX channel (use 0xFFFFFFFF to match any channel).
-    @returns True if the driver was removed, False otherwise.
-*/
-bool I2cController::RemoveDriver(uint32_t address, uint32_t mux_channel) {
-  for (drvBase *driver : _i2c_drivers) {
-    if (driver == nullptr)
-      continue;
-    if (driver->GetAddress() != address)
-      continue;
-    if (driver->GetMuxChannel() != mux_channel)
-      continue;
-
-    std::vector<drvBase *>::iterator it =
-        std::find(_i2c_drivers.begin(), _i2c_drivers.end(), driver);
-    if (it != _i2c_drivers.end()) {
-      _i2c_drivers.erase(it);
-    }
-    delete driver;
-    return true;
-  }
-
-  // We didn't find the driver to remove
-  WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to find driver to remove!");
-  return false;
-}
-
-/*!
-    @brief    Returns if the I2C bus has been created successfully.
-    @param    bus
-              Pointer to the I2C hardware bus to check.
-    @returns  True if the I2C bus has already been created, False otherwise.
-*/
-bool I2cController::IsBusStatusOK(I2cHardware *bus) {
-  if (bus == nullptr)
-    return false;
-  return (bus->GetBusStatus() == ws_i2c_BusStatus_BS_SUCCESS);
-}
-
-/*!
-    @brief    Publishes an I2cDeviceAddedorReplaced message to the broker
-    @param    device_descriptor
-                The I2cDeviceDescriptor message.
-    @param    bus
-                Pointer to the I2C hardware bus.
-    @param    device_status
-                The I2cDeviceStatus message.
-    @returns  True if the I2cDeviceAddedorReplaced message was published
-              successfully, False otherwise.
-*/
-bool I2cController::publishDeviceAddedOrReplaced(
-    const ws_i2c_Descriptor &device_descriptor, I2cHardware *bus,
-    const ws_i2c_Status &device_status) {
-  // If we're in offline mode, don't publish out to IO
-  if (Ws._sdCardV2->isModeOffline())
-    return true; // Back out if we're in offline mode
-
-  // Get bus status (use provided bus, or find it from descriptor)
-  ws_i2c_BusStatus bus_status = ws_i2c_BusStatus_BS_UNSPECIFIED;
-  if (bus != nullptr) {
-    bus_status = bus->GetBusStatus();
-  }
-
-  // Encode the I2cDeviceAddedorReplaced message and publish it to IO
-  if (!_i2c_model->encodeMsgI2cDeviceAddedorReplaced(
-          device_descriptor, bus_status, device_status)) {
-    WS_DEBUG_PRINTLN(
-        "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
-    return false;
-  }
-  if (!Ws.PublishD2b(ws_signal_BrokerToDevice_i2c_tag,
-                     _i2c_model->GetMsgI2cDeviceAddedOrReplaced())) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish I2cDeviceAddedorReplaced "
-                     "message to IO!");
-    return false;
-  }
-  return true;
-}
-
-/*!
-    @brief    Publishes the ws_i2c_Probed message to IO.
-    @returns  True if published successfully, False otherwise.
-*/
-bool I2cController::publishProbed() {
-  if (Ws._sdCardV2->isModeOffline())
-    return true;
-
-  if (!_i2c_model->EncodeProbed()) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to encode ws_i2c_Probed message!");
-    return false;
-  }
-
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
-                     _i2c_model->GetI2cD2B())) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish ws_i2c_Probed message!");
-    return false;
-  }
-  return true;
-}
-
-/*!
-    @brief    Implements handling for a I2cDeviceRemove message
-    @param    msg
-              Pointer to the I2cDeviceRemove message.
-    @returns  True if the I2cDeviceRemove message was handled, False
-              otherwise.
-*/
-bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
-  // TODO [Online]: Implement the rest of this function
-  // TODO: Remember to handle removal of a mux device or a device on a mux
-  if (!msg->has_descriptor) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: I2cDeviceRemove message missing required "
-                     "device description!");
-    return false;
-  }
-
-  bool did_remove = true;
-
-  // Find the bus for this device using pin configuration
-  I2cHardware *hw_bus = findOrCreateBus(msg->descriptor.address_space.pin_scl,
-                                        msg->descriptor.address_space.pin_sda);
-  if (hw_bus == nullptr) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find I2C bus for device removal!");
-    return false;
-  }
-
-  WS_DEBUG_PRINTLN("[i2c] Removing device from bus...");
-  if (!hw_bus->HasMux()) {
-    if (!RemoveDriver(msg->descriptor.address)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to remove i2c device from bus!");
-      did_remove = false;
-    }
-  } else {
-    // Bus has a I2C MUX attached
-    // Case 1: Is the I2C device connected to a MUX?
-    if (msg->descriptor.address_space.mux_address != 0 &&
-        msg->descriptor.address_space.mux_channel >= 0) {
-      hw_bus->SelectMuxChannel(msg->descriptor.address_space.mux_channel);
-      if (!RemoveDriver(msg->descriptor.address,
-                        msg->descriptor.address_space.mux_channel)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to remove i2c device from bus!");
-        did_remove = false;
-      }
-    }
-    // Case 2: Is the I2C device a MUX? Remove all devices on it.
-    if (msg->descriptor.address == msg->descriptor.address_space.mux_address) {
-      // Probe each mux channel to find devices, then remove them
-      // TODO: MUX channel count should come from the hardware layer
-      for (uint8_t ch = 0; ch < 8; ch++) {
-        ws_i2c_AddressSpace mux_space = {};
-        mux_space.pin_scl = msg->descriptor.address_space.pin_scl;
-        mux_space.pin_sda = msg->descriptor.address_space.pin_sda;
-        mux_space.mux_address = msg->descriptor.address;
-        mux_space.mux_channel = ch;
-        ws_i2c_AddressSpaceResult result = {};
-        uint32_t found_buf[112];
-        size_t found_count = 0;
-        hw_bus->ProbeAddresses(&mux_space, nullptr, 0, &result, found_buf,
-                               &found_count);
-        for (size_t j = 0; j < found_count; j++) {
-          RemoveDriver(found_buf[j], ch);
-        }
-      }
-      hw_bus->RemoveMux();
-    }
-  }
-
-  // Publish with did_remove to the response
-  // TODO !
-
-  return true;
-}
-
-/*!
-    @brief    Attempts to initialize a MUX on the bus.
-    @param    bus
-                Pointer to the I2C hardware bus.
-    @param    name
-                The device name - checks if this is a supported MUX type.
-    @param    address
-                The MUX's I2C address.
-    @returns  DS_SUCCESS if MUX initialized, DS_UNSPECIFIED if not a MUX,
-              or failure status if MUX init failed.
-*/
-ws_i2c_Status I2cController::InitMux(I2cHardware *bus, const char *name,
-                                     uint32_t address) {
-  // Check if this is a MUX device
-  if ((strcmp(name, "pca9546") != 0) && (strcmp(name, "pca9548") != 0)) {
-    return ws_i2c_Status_S_UNSPECIFIED;
-  }
-
-  WS_DEBUG_PRINT("[i2c] Initializing MUX driver...");
-  if (bus == nullptr) {
-    WS_DEBUG_PRINTLN("FAILED - bus is null!");
-    return ws_i2c_Status_S_FAIL_UNSUPPORTED_SENSOR;
-  }
-  if (!bus->HasMux()) {
-    if (!bus->AddMuxToBus(address, name)) {
-      WS_DEBUG_PRINTLN("FAILED!");
-      return ws_i2c_Status_S_FAIL_UNSUPPORTED_SENSOR;
-    }
-  }
-  WS_DEBUG_PRINTLN("OK!");
-  return ws_i2c_Status_S_SUCCESS;
-}
-
-/*!
-    @brief    Finds an existing I2C bus by SCL/SDA pins, or creates a new one.
-    @param    pin_scl
-              The SCL pin number.
-    @param    pin_sda
-              The SDA pin number.
-    @returns  Pointer to the I2cHardware bus, or nullptr if initialization
-              failed.
-*/
-I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl,
-                                            uint32_t pin_sda) {
-  // Search existing buses
-  for (I2cHardware *bus : _i2c_buses) {
-    if (bus == nullptr)
-      continue;
-    if (pin_scl == (uint32_t)bus->getSCL() &&
-        pin_sda == (uint32_t)bus->getSDA()) {
-      return bus;
-    }
-  }
-
-  // Bus not found, create new one
-  WS_DEBUG_PRINTLN("[i2c] Initializing new I2C bus...");
-  WS_DEBUG_PRINT("SCL Pin: ");
-  WS_DEBUG_PRINTLNVAR(pin_scl);
-  WS_DEBUG_PRINT("SDA Pin: ");
-  WS_DEBUG_PRINTLNVAR(pin_sda);
-
-  I2cHardware *new_bus = new I2cHardware(pin_sda, pin_scl);
-  if (!new_bus->begin()) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
-    delete new_bus;
-    return nullptr;
-  }
-  _i2c_buses.push_back(new_bus);
-  WS_DEBUG_PRINTLN("[i2c] I2C bus initialized successfully!");
-  return new_bus;
-}
-
-/*!
-    @brief    Handles an I2C Probe request. Decodes the B2D envelope with
-              probe callbacks to capture repeated fields, then iterates
-              each address space, probes the listed addresses on each,
-              and publishes the Probed results.
-    @param    stream
-              Saved copy of the nanopb input stream (pre-decode).
-    @returns  True if probe completed and results published, False otherwise.
-*/
-bool I2cController::Handle_Probe(pb_istream_t *stream) {
-  // Decode B2D with probe callbacks — safe to write to the probe union
-  // member here because we know the payload IS a probe.
-  ws_i2c_B2D b2d = ws_i2c_B2D_init_zero;
-  _i2c_model->SetupProbeDecodeCallbacks(&b2d.payload.probe);
-  if (!ws_pb_decode(stream, ws_i2c_B2D_fields, &b2d)) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2C Probe");
-    return false;
-  }
-
-  ws_i2c_AddressSpace *spaces = _i2c_model->GetProbeAddressSpaces();
-  size_t spaces_count = _i2c_model->GetProbeAddressSpacesCount();
-  uint32_t *addresses = _i2c_model->GetProbeAddresses();
-  size_t addresses_count = _i2c_model->GetProbeAddressesCount();
-
-  _i2c_model->ClearProbed();
-
-  for (size_t i = 0; i < spaces_count; i++) {
-    ws_i2c_AddressSpaceResult *result = _i2c_model->GetNextProbedResult();
-    if (result == nullptr) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Too many address spaces to probe!");
-      break;
-    }
-
-    // Find or create the bus for this address space
-    I2cHardware *bus = findOrCreateBus(spaces[i].pin_scl, spaces[i].pin_sda);
-    if (bus == nullptr) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus!");
-      result->has_address_space = true;
-      result->address_space = spaces[i];
-      result->bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
-      continue;
-    }
-
-    // Get the found-addresses buffer for this result index
-    size_t result_idx = i;
-    uint32_t *found_buf = _i2c_model->GetFoundAddressBuf(result_idx);
-    size_t *found_count = _i2c_model->GetFoundAddressCount(result_idx);
-
-    // Probe the addresses on this bus/mux channel
-    if (!bus->ProbeAddresses(&spaces[i], addresses, addresses_count, result,
-                             found_buf, found_count)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: ProbeAddresses failed!");
-      continue;
-    }
-
-    WS_DEBUG_PRINT("[i2c] Probed address space ");
-    WS_DEBUG_PRINTVAR(i);
-    WS_DEBUG_PRINT(", found ");
-    WS_DEBUG_PRINTVAR(*found_count);
-    WS_DEBUG_PRINTLN(" devices.");
-  }
-
-  if (!publishProbed()) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to publish Probed results!");
-    return false;
-  }
-  return true;
 }
 
 /*!
@@ -892,6 +578,170 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
 }
 
 /*!
+    @brief    Handles an I2C Probe request. Decodes the B2D envelope with
+              probe callbacks to capture repeated fields, then iterates
+              each address space, probes the listed addresses on each,
+              and publishes the Probed results.
+    @param    stream
+              Saved copy of the nanopb input stream (pre-decode).
+    @returns  True if probe completed and results published, False otherwise.
+*/
+bool I2cController::Handle_Probe(pb_istream_t *stream) {
+  // Decode B2D with probe callbacks — safe to write to the probe union
+  // member here because we know the payload IS a probe.
+  ws_i2c_B2D b2d = ws_i2c_B2D_init_zero;
+  _i2c_model->SetupProbeDecodeCallbacks(&b2d.payload.probe);
+  if (!ws_pb_decode(stream, ws_i2c_B2D_fields, &b2d)) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2C Probe");
+    return false;
+  }
+
+  ws_i2c_AddressSpace *spaces = _i2c_model->GetProbeAddressSpaces();
+  size_t spaces_count = _i2c_model->GetProbeAddressSpacesCount();
+  uint32_t *addresses = _i2c_model->GetProbeAddresses();
+  size_t addresses_count = _i2c_model->GetProbeAddressesCount();
+
+  _i2c_model->ClearProbed();
+
+  for (size_t i = 0; i < spaces_count; i++) {
+    ws_i2c_AddressSpaceResult *result = _i2c_model->GetNextProbedResult();
+    if (result == nullptr) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Too many address spaces to probe!");
+      break;
+    }
+
+    // Find or create the bus for this address space
+    I2cHardware *bus = findOrCreateBus(spaces[i].pin_scl, spaces[i].pin_sda);
+    if (bus == nullptr) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus!");
+      result->has_address_space = true;
+      result->address_space = spaces[i];
+      result->bus_status = ws_i2c_BusStatus_BS_ERROR_WIRING;
+      continue;
+    }
+
+    // Get the found-addresses buffer for this result index
+    size_t result_idx = i;
+    uint32_t *found_buf = _i2c_model->GetFoundAddressBuf(result_idx);
+    size_t *found_count = _i2c_model->GetFoundAddressCount(result_idx);
+
+    // Probe the addresses on this bus/mux channel
+    if (!bus->ProbeAddresses(&spaces[i], addresses, addresses_count, result,
+                             found_buf, found_count)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: ProbeAddresses failed!");
+      continue;
+    }
+
+    WS_DEBUG_PRINT("[i2c] Probed address space ");
+    WS_DEBUG_PRINTVAR(i);
+    WS_DEBUG_PRINT(", found ");
+    WS_DEBUG_PRINTVAR(*found_count);
+    WS_DEBUG_PRINTLN(" devices.");
+  }
+
+  if (!publishProbed()) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to publish Probed results!");
+    return false;
+  }
+  return true;
+}
+
+/*!
+    @brief    Implements handling for a I2cDeviceRemove message
+    @param    msg
+              Pointer to the I2cDeviceRemove message.
+    @returns  True if the I2cDeviceRemove message was handled, False
+              otherwise.
+*/
+bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
+  // Validate message
+  if (msg->descriptor.address == 0) {
+    Ws.error_controller->publishComponentError(msg->descriptor, "I2c address required for remove");
+    return false;
+  }
+  if (msg->descriptor.address_space.pin_scl == 0 ||
+      msg->descriptor.address_space.pin_sda == 0) {
+    Ws.error_controller->publishComponentError(msg->descriptor, "SCL/SDA required for remove");
+    return false;
+  }
+
+  I2cHardware *hw_bus = findOrCreateBus(msg->descriptor.address_space.pin_scl,
+                                        msg->descriptor.address_space.pin_sda);
+  if (hw_bus == nullptr) {
+    Ws.error_controller->publishComponentError(
+        msg->descriptor, "Failed to find I2C bus for remove");
+    return false;
+  }
+
+  // Removing the MUX itself — tear down all devices on it first
+  if (msg->descriptor.address == msg->descriptor.address_space.mux_address) {
+    for (uint8_t ch = 0; ch < hw_bus->GetMuxMaxChannels(); ch++) {
+      ws_i2c_AddressSpace mux_space = {};
+      mux_space.pin_scl = msg->descriptor.address_space.pin_scl;
+      mux_space.pin_sda = msg->descriptor.address_space.pin_sda;
+      mux_space.mux_address = msg->descriptor.address;
+      mux_space.mux_channel = ch;
+      ws_i2c_AddressSpaceResult result = {};
+      uint32_t found_buf[112];
+      size_t found_count = 0;
+      hw_bus->ProbeAddresses(&mux_space, nullptr, 0, &result, found_buf,
+                             &found_count);
+      for (size_t j = 0; j < found_count; j++) {
+        (void)RemoveDriver(found_buf[j], ch);
+      }
+    }
+    hw_bus->RemoveMux();
+  // Removing a device behind a MUX
+  } else if (msg->descriptor.address_space.mux_address != 0) {
+    hw_bus->SelectMuxChannel(msg->descriptor.address_space.mux_channel);
+    if (!RemoveDriver(msg->descriptor.address,
+                      msg->descriptor.address_space.mux_channel)) {
+      Ws.error_controller->publishComponentError(
+          msg->descriptor, "Failed to remove I2C device from MUX channel");
+      return false;
+    }
+  // Removing a device on the bare bus
+  } else {
+    if (!RemoveDriver(msg->descriptor.address)) {
+      Ws.error_controller->publishComponentError(
+          msg->descriptor, "Failed to remove I2C device from bus");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/******************************************************************************/
+/*!                            Publishing                                     */
+/******************************************************************************/
+
+/*!
+    @brief    Publishes the ws_i2c_Probed message to IO.
+    @returns  True if published successfully, False otherwise.
+*/
+bool I2cController::publishProbed() {
+  if (Ws._sdCardV2->isModeOffline())
+    return true;
+
+  if (!_i2c_model->EncodeProbed()) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to encode ws_i2c_Probed message!");
+    return false;
+  }
+
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
+                     _i2c_model->GetI2cD2B())) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish ws_i2c_Probed message!");
+    return false;
+  }
+  return true;
+}
+
+/******************************************************************************/
+/*!                              Update                                       */
+/******************************************************************************/
+
+/*!
     @brief    Handles polling, reading, and logger for i2c devices
               attached to the I2C controller.
     @param    force
@@ -1003,6 +853,10 @@ void I2cController::ResetFlags() {
   }
 }
 
+/******************************************************************************/
+/*!                             Helpers                                       */
+/******************************************************************************/
+
 /*!
     @brief  Finds or creates an I2C bus by SCL/SDA pins, validates it,
             and returns the underlying TwoWire instance.
@@ -1027,23 +881,66 @@ TwoWire *I2cController::GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda) {
 }
 
 /*!
-    @brief  Returns a pointer to the I2C bus by SCL/SDA pins
-    @param  pin_scl
-            The SCL pin number.
-    @param  pin_sda
-            The SDA pin number.
-    @returns  Pointer to the TwoWire bus, or nullptr if the bus doesn't exist.
+    @brief    Attempts to initialize a MUX on the bus.
+    @param    bus
+                Pointer to the I2C hardware bus.
+    @param    name
+                The device name - checks if this is a supported MUX type.
+    @param    address
+                The MUX's I2C address.
+    @returns  DS_SUCCESS if MUX initialized, DS_UNSPECIFIED if not a MUX,
+              or failure status if MUX init failed.
 */
-TwoWire *I2cController::GetI2cBus(uint32_t pin_scl, uint32_t pin_sda) {
-  for (I2cHardware *bus : _i2c_buses) {
-    if (bus == nullptr)
-      continue;
-    if (pin_scl == (uint32_t)bus->getSCL() &&
-        pin_sda == (uint32_t)bus->getSDA()) {
-      return bus->GetBus();
+ws_i2c_Status I2cController::InitMux(I2cHardware *bus, const char *name,
+                                     uint32_t address) {
+  // Check if this is a MUX device
+  if ((strcmp(name, "pca9546") != 0) && (strcmp(name, "pca9548") != 0)) {
+    return ws_i2c_Status_S_UNSPECIFIED;
+  }
+
+  WS_DEBUG_PRINT("[i2c] Initializing MUX driver...");
+  if (bus == nullptr) {
+    WS_DEBUG_PRINTLN("FAILED - bus is null!");
+    return ws_i2c_Status_S_FAIL_UNSUPPORTED_SENSOR;
+  }
+  if (!bus->HasMux()) {
+    if (!bus->AddMuxToBus(address, name)) {
+      WS_DEBUG_PRINTLN("FAILED!");
+      return ws_i2c_Status_S_FAIL_UNSUPPORTED_SENSOR;
     }
   }
-  return nullptr;
+  WS_DEBUG_PRINTLN("OK!");
+  return ws_i2c_Status_S_SUCCESS;
+}
+
+/*!
+    @brief  Removes an I2C driver from the controller and frees memory.
+    @param    address
+                The desired I2C device's address.
+    @param    mux_channel
+                The MUX channel (use 0xFFFFFFFF to match any channel).
+    @returns True if the driver was removed, False otherwise.
+*/
+bool I2cController::RemoveDriver(uint32_t address, uint32_t mux_channel) {
+  for (drvBase *driver : _i2c_drivers) {
+    if (driver == nullptr)
+      continue;
+    if (driver->GetAddress() != address)
+      continue;
+    if (driver->GetMuxChannel() != mux_channel)
+      continue;
+
+    std::vector<drvBase *>::iterator it =
+        std::find(_i2c_drivers.begin(), _i2c_drivers.end(), driver);
+    if (it != _i2c_drivers.end()) {
+      _i2c_drivers.erase(it);
+    }
+    delete driver;
+    return true;
+  }
+
+  // We didn't find the driver to remove
+  return false;
 }
 
 /*!
@@ -1061,6 +958,81 @@ size_t I2cController::GetI2cBusCount() { return _i2c_buses.size(); }
 TwoWire *I2cController::GetI2cBusByIndex(size_t index) {
   if (index < _i2c_buses.size() && _i2c_buses[index] != nullptr) {
     return _i2c_buses[index]->GetBus();
+  }
+  return nullptr;
+}
+
+/******************************************************************************/
+/*!                             Private                                       */
+/******************************************************************************/
+
+/*!
+    @brief    Finds an existing I2C bus by SCL/SDA pins, or creates a new one.
+    @param    pin_scl
+              The SCL pin number.
+    @param    pin_sda
+              The SDA pin number.
+    @returns  Pointer to the I2cHardware bus, or nullptr if initialization
+              failed.
+*/
+I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl,
+                                            uint32_t pin_sda) {
+  // Search existing buses
+  for (I2cHardware *bus : _i2c_buses) {
+    if (bus == nullptr)
+      continue;
+    if (pin_scl == (uint32_t)bus->getSCL() &&
+        pin_sda == (uint32_t)bus->getSDA()) {
+      return bus;
+    }
+  }
+
+  // Bus not found, create new one
+  WS_DEBUG_PRINTLN("[i2c] Initializing new I2C bus...");
+  WS_DEBUG_PRINT("SCL Pin: ");
+  WS_DEBUG_PRINTLNVAR(pin_scl);
+  WS_DEBUG_PRINT("SDA Pin: ");
+  WS_DEBUG_PRINTLNVAR(pin_sda);
+
+  I2cHardware *new_bus = new I2cHardware(pin_sda, pin_scl);
+  if (!new_bus->begin()) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
+    delete new_bus;
+    return nullptr;
+  }
+  _i2c_buses.push_back(new_bus);
+  WS_DEBUG_PRINTLN("[i2c] I2C bus initialized successfully!");
+  return new_bus;
+}
+
+/*!
+    @brief    Returns if the I2C bus has been created successfully.
+    @param    bus
+              Pointer to the I2C hardware bus to check.
+    @returns  True if the I2C bus has already been created, False otherwise.
+*/
+bool I2cController::IsBusStatusOK(I2cHardware *bus) {
+  if (bus == nullptr)
+    return false;
+  return (bus->GetBusStatus() == ws_i2c_BusStatus_BS_SUCCESS);
+}
+
+/*!
+    @brief  Returns a pointer to the I2C bus by SCL/SDA pins
+    @param  pin_scl
+            The SCL pin number.
+    @param  pin_sda
+            The SDA pin number.
+    @returns  Pointer to the TwoWire bus, or nullptr if the bus doesn't exist.
+*/
+TwoWire *I2cController::GetI2cBus(uint32_t pin_scl, uint32_t pin_sda) {
+  for (I2cHardware *bus : _i2c_buses) {
+    if (bus == nullptr)
+      continue;
+    if (pin_scl == (uint32_t)bus->getSCL() &&
+        pin_sda == (uint32_t)bus->getSDA()) {
+      return bus->GetBus();
+    }
   }
   return nullptr;
 }
