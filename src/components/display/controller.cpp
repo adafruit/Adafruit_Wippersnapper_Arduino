@@ -205,6 +205,11 @@ static bool resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
 */
 bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
                                            const char *name) {
+  if (name == nullptr) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Display name is null!");
+    return false;
+  }
+
   WS_DEBUG_PRINT("[display] Adding display: ");
   WS_DEBUG_PRINTLNVAR(name);
 
@@ -374,7 +379,7 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     @param  name  The display name to search for.
     @return Index of the display, or -1 if not found.
 */
-int8_t DisplayController::findDisplayIndexByName(const char *name) {
+uint8_t DisplayController::findDisplayIndexByName(const char *name) {
   for (uint8_t i = 0; i < _num_displays; i++) {
     if (_displays[i] && strcmp(_displays[i]->getName(), name) == 0) {
       return i;
