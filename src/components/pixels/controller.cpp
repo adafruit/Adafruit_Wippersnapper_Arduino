@@ -79,28 +79,17 @@ bool PixelsController::Handle_Pixels_Add(ws_pixels_Add *msg) {
   _pixel_strands[_num_strands] = new PixelsHardware();
 
   // Configure the pixel strand
-  bool did_init = false;
-  did_init = _pixel_strands[_num_strands]->AddStrand(
-      msg->type, msg->ordering, msg->num, msg->brightness, msg->pin_data,
-      msg->pin_dotstar_clock);
-  if (!did_init) {
-    WS_DEBUG_PRINTLN("[pixels] Failed to create strand!");
-  } else {
-    _num_strands++;
-    WS_DEBUG_PRINT("[pixels]: Added strand #");
-    WS_DEBUG_PRINTLNVAR(_num_strands);
+  if (!_pixel_strands[_num_strands]->AddStrand(
+          msg->type, msg->ordering, msg->num, msg->brightness, msg->pin_data,
+          msg->pin_dotstar_clock)) {
+    Ws.error_controller->publishComponentError(
+        msg->pin_data, "Failed to initialize pixel strand!");
+    return false;
   }
 
-  // Publish PixelsAdded message to the broker
-  if (!_pixels_model->EncodePixelsAdded(msg->pin_data, did_init)) {
-    WS_DEBUG_PRINTLN("[pixels]: Failed to encode PixelsAdded message!");
-    return false;
-  }
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_pixels_tag,
-                     _pixels_model->GetPixelsAddedMsg())) {
-    WS_DEBUG_PRINTLN("[pixels]: Unable to publish PixelsAdded message!");
-    return false;
-  }
+  WS_DEBUG_PRINT("[pixels]: Added strand on Pin ");
+  WS_DEBUG_PRINTLNVAR(msg->pin_data);
+  _num_strands++;
 
   return true;
 }
@@ -135,7 +124,8 @@ bool PixelsController::Handle_Pixels_Remove(ws_pixels_Remove *msg) {
   uint16_t pin_data = atoi(msg->pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
   if (idx == STRAND_NOT_FOUND) {
-    WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
+    Ws.error_controller->publishComponentError(msg->pin_data,
+                                               "Failed to find strand index!");
     return false;
   }
 
