@@ -39,27 +39,28 @@ public:
       @return True if the display was added successfully, False otherwise.
   */
   bool Handle_Display_Add(ws_display_Add *msg, const char *name);
-  bool removeExistingDisplayByName(const char *name);
   /*!
-      @brief  Handles a request to remove a display.
+  @brief  Handles a request to remove a display.
+      @param  msg   The Display Remove message.
       @param  name  The unique name of the display to remove.
       @return True if the display was removed, False otherwise.
   */
-  bool Handle_Display_Remove(const char *name);
-  /*!
-      @brief  Handles a request to write to a display.
-      @param  msg   The Display Write message.
-      @param  name  The unique name of the target display.
-      @return True if the write succeeded, False otherwise.
-  */
-  bool Handle_Display_Write(ws_display_Write *msg, const char *name);
-  void update(int32_t rssi, bool is_connected);
+ bool Handle_Display_Remove(ws_display_Remove *msg, const char *name);
+ /*!
+ @brief  Handles a request to write to a display.
+ @param  msg   The Display Write message.
+ @param  name  The unique name of the target display.
+ @return True if the write succeeded, False otherwise.
+ */
+bool Handle_Display_Write(ws_display_Write *msg, const char *name);
+void update(int32_t rssi, bool is_connected);
 
 private:
-  DisplayHardware *_displays[MAX_DISPLAYS] = {nullptr};
-  uint8_t _num_displays;
-  unsigned long _last_bar_update; ///< Timestamp of last status bar update
-  int8_t findDisplayByName(const char *name);
+DisplayHardware *_displays[MAX_DISPLAYS] = {nullptr};
+uint8_t _num_displays;
+unsigned long _last_bar_update; ///< Timestamp of last status bar update
+bool removeExistingDisplayByName(const char *name);
+int8_t findDisplayIndexByName(const char *name);
 };
 extern wippersnapper Ws; ///< Global V2 instance
 #endif                   // WS_DISPLAY_CONTROLLER_H

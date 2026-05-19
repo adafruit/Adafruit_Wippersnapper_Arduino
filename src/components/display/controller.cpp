@@ -20,12 +20,21 @@ static bool decode_string_cb(pb_istream_t *stream, const pb_field_t *field,
                              void **arg) {
   (void)field;
   char *buf = (char *)*arg;
-  size_t len = stream->bytes_left;
+  size_t total = stream->bytes_left;
+  size_t len = total;
   if (len >= 64)
     len = 63;
   if (!pb_read(stream, (pb_byte_t *)buf, len))
     return false;
   buf[len] = '\0';
+  // Discard any remaining bytes so the stream is not left in a corrupt state.
+  if (total > len) {
+    uint8_t discard;
+    for (size_t i = len; i < total; i++) {
+      if (!pb_read(stream, &discard, 1))
+        return false;
+    }
+  }
   return true;
 }
 
@@ -73,7 +82,7 @@ bool DisplayController::Router(pb_istream_t *stream) {
   case ws_display_B2D_add_tag:
     return Handle_Display_Add(&b2d.payload.add, display_name);
   case ws_display_B2D_remove_tag:
-    return Handle_Display_Remove(display_name);
+    return Handle_Display_Remove(&b2d.payload.remove, display_name);
   case ws_display_B2D_write_tag:
     return Handle_Display_Write(&b2d.payload.write, display_name);
   default:
@@ -252,7 +261,7 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
 */
 bool DisplayController::removeExistingDisplayByName(const char *name) {
   // If display with same name exists, remove it first
-  int8_t existingIdx = findDisplayByName(name);
+  int8_t existingIdx = findDisplayIndexByName(name);
   if (existingIdx >= 0) {
     WS_DEBUG_PRINTLN("[display] Replacing existing display");
     delete _displays[existingIdx];
@@ -273,7 +282,8 @@ bool DisplayController::removeExistingDisplayByName(const char *name) {
     @param  name  The unique name of the display to remove.
     @return True if successful, False otherwise.
 */
-bool DisplayController::Handle_Display_Remove(const char *name) {
+bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg,
+                                              const char *name) {
   WS_DEBUG_PRINT("[display] Removing display: ");
   WS_DEBUG_PRINTLNVAR(name);
 
@@ -303,7 +313,7 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg,
   WS_DEBUG_PRINT("[display] Writing to display: ");
   WS_DEBUG_PRINTLNVAR(name);
 
-  int8_t idx = findDisplayByName(name);
+  int8_t idx = findDisplayIndexByName(name);
   if (idx < 0) {
     WS_DEBUG_PRINTLN("[display] ERROR: Display not found!");
     return false;
@@ -339,7 +349,7 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     @param  name  The display name to search for.
     @return Index of the display, or -1 if not found.
 */
-int8_t DisplayController::findDisplayByName(const char *name) {
+int8_t DisplayController::findDisplayIndexByName(const char *name) {
   for (uint8_t i = 0; i < _num_displays; i++) {
     if (_displays[i] && strcmp(_displays[i]->getName(), name) == 0) {
       return i;
