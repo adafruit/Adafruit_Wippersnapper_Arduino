@@ -30,10 +30,10 @@ GPSController::~GPSController() {
     _gps_model = nullptr;
   }
   // Clean up UART ports owned by GPS
-  for (UARTHardware *port : _uart_ports) {
+  for (UARTHardware *port : _ports) {
     delete port;
   }
-  _uart_ports.clear();
+  _ports.clear();
 }
 
 /*!
@@ -87,7 +87,7 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(ws_gps_Add *msg) {
       delete uart_hw;
       return false;
     }
-    _uart_ports.push_back(uart_hw);
+    _ports.push_back(uart_hw);
 
     did_add = AddGPS(uart_hw->GetHardwareSerial(), &msg->config);
   } else if (msg->has_add_i2c) {

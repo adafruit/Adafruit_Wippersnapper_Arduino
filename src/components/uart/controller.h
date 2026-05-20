@@ -47,7 +47,7 @@ public:
 private:
   UARTModel *_uart_model; ///< UART model
   std::vector<UARTHardware *>
-      _uart_ports; ///< Vector of UART hardware instances
+      _ports; ///< Vector of UART hardware instances
   std::vector<drvUartBase *>
       _uart_drivers; ///< Vector of UART device drivers (eg: PM2.5, etc.)
 };

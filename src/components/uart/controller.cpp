@@ -73,125 +73,90 @@ bool UARTController::Router(pb_istream_t *stream) {
     @return True if the message was handled successfully, False otherwise.
 */
 bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
-  // TODO: fix the id field, currently it is a callback and should be a string.
   if (!msg->has_cfg_serial && !msg->has_cfg_device) {
-    // TODO BELOW add back
-    // Ws.error_controller->publishComponentError(ws_uartdes, "No configuration provided for UART device");
+    Ws.error_controller->publishComponentError(msg->descriptor, "Missing serial/device configuration");
     return false;
   }
 
-  // Configure a UART hardware instance using the provided serial configuration
-  // TODO: Have we already configured this UART hardware instance?!
-  WS_DEBUG_PRINTLN("[uart] Configuring UART hardware instance...");
+  // Have we already added this UART port?
+  int port = msg->descriptor.uart_nbr;
+  for (UARTHardware *hw : _ports) {
+    if (hw->getPortNum() == port) {
+      Ws.error_controller->publishComponentError(msg->descriptor, "Port already in use");
+      return false;
+    }
+  }
+
+  // Configure a new UART port using the provided serial configuration
   ws_uart_SerialConfig cfg_serial = msg->cfg_serial;
   UARTHardware *uart_hardware = new UARTHardware(cfg_serial, msg->descriptor.uart_nbr);
   if (!uart_hardware->ConfigureSerial()) {
-    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to configure UART hardware!");
-    delete uart_hardware; // cleanup
+    Ws.error_controller->publishComponentError(msg->descriptor, "Failed to configure UART hardware");
+    delete uart_hardware;
     return false;
   }
-  // Add the newly configured hardware instance to the controller's vector of
-  // UART ports
-  _uart_ports.push_back(uart_hardware);
-  WS_DEBUG_PRINTLN("[uart] UART hardware instance configured successfully!");
+  _ports.push_back(uart_hardware);
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
-  // TODO: Have we already added this UART device?!
   drvUartBase *uart_driver = nullptr;
-  ws_uart_DeviceConfig cfg_device = msg->cfg_device;
+  ws_sensor_Type *sensor_types = nullptr;
+  size_t sensor_types_count = 0;
+  float sensor_period = 0;
+
   switch (msg->descriptor.type) {
-  case ws_uart_DeviceType_DT_UNSPECIFIED:
-    WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
-    return false;
   case ws_uart_DeviceType_DT_GENERIC_INPUT:
-    // check if device_type is "us100"
-    if (strcmp(msg->descriptor.id, "us100") == 0) {
-      WS_DEBUG_PRINTLN("[uart] Adding US-100 device..");
-      // Create a new US-100 driver instance
-      WS_DEBUG_PRINT("[uart] Adding US-100 Driver...");
-      uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
-                                     msg->descriptor.id, msg->descriptor.uart_nbr);
-      uart_driver->ConfigureDriver(msg->descriptor.type, cfg_device);
-      uart_driver->EnableSensorEvents(
-          cfg_device.config.generic_input.types,
-          cfg_device.config.generic_input.types_count);
-      uart_driver->SetSensorPeriod(cfg_device.config.generic_input.period);
-      WS_DEBUG_PRINT("added!");
-    } else {
-      WS_DEBUG_PRINTLN(
-          "[uart] Specified generic device type is not implemented!");
-      delete uart_hardware; // cleanup
+    if (strcmp(msg->descriptor.id, "us100") != 0) {
+      Ws.error_controller->publishComponentError(msg->descriptor, "Unsupported generic input device ID");
+      delete uart_hardware;
       return false;
     }
+    uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
+                                   msg->descriptor.id, msg->descriptor.uart_nbr);
+    sensor_types = msg->cfg_device.config.generic_input.types;
+    sensor_types_count = msg->cfg_device.config.generic_input.types_count;
+    sensor_period = msg->cfg_device.config.generic_input.period;
+    WS_DEBUG_PRINTLN("[uart] Added US-100 Ultrasonic Distance Sensor!");
     break;
-  case ws_uart_DeviceType_DT_GENERIC_OUTPUT:
-    WS_DEBUG_PRINTLN("[uart] Generic Output device type not implemented!");
-    delete uart_hardware; // cleanup
-    return false;
-  case ws_uart_DeviceType_DT_GPS:
-    WS_DEBUG_PRINTLN(
-        "[uart] GPS is now handled by the GPS controller directly!");
-    delete uart_hardware; // cleanup
-    return false;
   case ws_uart_DeviceType_DT_PM25AQI:
-    WS_DEBUG_PRINTLN("[uart] Adding PM2.5 AQI device..");
-    // Create a new PM2.5 AQI driver instance
     // TODO: Support SoftwareSerial as well, currently only HardwareSerial
     uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
                                   msg->descriptor.id, msg->descriptor.uart_nbr);
-    uart_driver->ConfigureDriver(msg->descriptor.type, cfg_device);
-    uart_driver->EnableSensorEvents(cfg_device.config.pm25aqi.types,
-                                    cfg_device.config.pm25aqi.types_count);
-    uart_driver->SetSensorPeriod(cfg_device.config.pm25aqi.period);
-    WS_DEBUG_PRINT("added!");
+    sensor_types = msg->cfg_device.config.pm25aqi.types;
+    sensor_types_count = msg->cfg_device.config.pm25aqi.types_count;
+    sensor_period = msg->cfg_device.config.pm25aqi.period;
+    WS_DEBUG_PRINTLN("[uart] Added PM2.5 AQI device!");
     break;
+  case ws_uart_DeviceType_DT_GENERIC_OUTPUT:
+  case ws_uart_DeviceType_DT_GPS:
   case ws_uart_DeviceType_DT_TM22XX:
-    WS_DEBUG_PRINTLN("[uart] TM22XX device type not implemented!");
-    delete uart_hardware; // cleanup
+    Ws.error_controller->publishComponentError(msg->descriptor, "Unsupported UART device type");
+    delete uart_hardware;
     return false;
   default:
-    WS_DEBUG_PRINTLN("[uart] ERROR: Unknown device type!");
-    delete uart_hardware; // cleanup
+    Ws.error_controller->publishComponentError(msg->descriptor, "Unknown device type");
+    delete uart_hardware;
     return false;
   }
+
+  // Common driver configuration
+  uart_driver->ConfigureDriver(msg->descriptor.type, msg->cfg_device);
+  uart_driver->EnableSensorEvents(sensor_types, sensor_types_count);
+  uart_driver->SetSensorPeriod(sensor_period);
 
   // Attempt to initialize the UART driver
-  WS_DEBUG_PRINTLN("[uart] Initializing UART driver...");
-  bool did_begin = uart_driver->begin();
-  if (did_begin) {
-    WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
-    _uart_drivers.push_back(uart_driver);
-  } else {
-    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
-    delete uart_driver; // cleanup
+  if (!uart_driver->begin()) {
+    Ws.error_controller->publishComponentError(msg->descriptor, "Failed to initialize UART driver");
+    delete uart_driver;
     return false;
   }
+  _uart_drivers.push_back(uart_driver);
 
-  // Are we in offline mode?
-  if (Ws._sdCardV2->isModeOffline())
-    return true; // Don't publish to IO in offline mode
-
-  // Encode and publish out to Adafruit IO
-  WS_DEBUG_PRINTLN("[uart] Encoding UartAdded message...");
-  if (!_uart_model->EncodeUartAdded(uart_hardware->GetBusNumber(),
-                                    msg->descriptor.type, msg->descriptor.id,
-                                    did_begin)) {
-    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to encode UartAdded message!");
-    return false;
-  }
-  WS_DEBUG_PRINTLN("[uart] UartAdded message encoded successfully!");
-
-  WS_DEBUG_PRINTLN("[uart] Publishing UartAdded message to IO...");
-  // TODO: Unsure why this is causing a crash on GPS, figure out later
-  // Currently commented out to prevent crashes
-  /*   if
-    (!Ws.PublishD2b(wippersnapper_signal_DeviceToBroker_uart_added_tag,
-                            _uart_model->GetUartAddedMsg())) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to
-    IO!"); return false;
-    } */
-  WS_DEBUG_PRINTLN("[uart] UartAdded message published successfully!");
-
+  // Print what we added on uart
+  WS_DEBUG_PRINT("[uart] Added UART device: ");
+  WS_DEBUG_PRINTVAR(msg->descriptor.id);
+  WS_DEBUG_PRINT(" on port ");
+  WS_DEBUG_PRINTVAR(msg->descriptor.uart_nbr);
+  WS_DEBUG_PRINTLN();
   return true;
 }
 
@@ -205,8 +170,8 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
 
   // Find the corresponding hardware instance for the UART port
   uint32_t port_num = msg->descriptor.uart_nbr;
-  for (auto it = _uart_ports.begin(); it != _uart_ports.end(); ++it) {
-    if ((*it)->GetBusNumber() == port_num) {
+  for (auto it = _ports.begin(); it != _ports.end(); ++it) {
+    if ((*it)->getPortNum() == port_num) {
       // Find the corresponding driver for the uart port
       for (auto driver_it = _uart_drivers.begin();
            driver_it != _uart_drivers.end(); ++driver_it) {

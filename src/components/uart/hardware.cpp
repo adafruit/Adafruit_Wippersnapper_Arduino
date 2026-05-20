@@ -197,7 +197,7 @@ bool UARTHardware::isSoftwareSerial() const {
  * @brief  Gets the bus number of the hardware instance.
  * @return The bus number of the hardware instance, or -1 if not set.
  */
-int UARTHardware::GetBusNumber() { return _uart_nbr; }
+int UARTHardware::getPortNum() { return _uart_nbr; }
 
 /*!
  * @brief  Gets the HardwareSerial instance for this port
