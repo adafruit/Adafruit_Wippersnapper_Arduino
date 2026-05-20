@@ -1,5 +1,5 @@
 /*!
- * @file src/components/display/drivers/drvOutQuadAlphaNum.h
+ * @file src/components/display/drivers/dispDrvQuadAlphaNum.h
  *
  * Device driver for Quad Alphanumeric Displays w/I2C Backpack
  *
@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef DRV_OUT_QUAD_ALPHANUM_H
-#define DRV_OUT_QUAD_ALPHANUM_H
+#ifndef WS_DISP_DRV_QUAD_ALPHANUM_H
+#define WS_DISP_DRV_QUAD_ALPHANUM_H
 
-#include "drvOutputBase.h"
+#include "dispDrvBaseI2c.h"
 #include <Adafruit_LEDBackpack.h>
 #include <Arduino.h>
 
@@ -24,10 +24,10 @@
     @brief  Class that provides a driver interface for Quad Alphanumeric
    Displays w/I2C Backpack
 */
-class drvOutQuadAlphaNum : public drvOutputBase {
+class dispDrvQuadAlphaNum : public dispDrvBaseI2c {
 public:
   /*!
-      @brief    Constructor for a quad alphanumeric display..
+      @brief    Constructor for a quad alphanumeric display.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -37,16 +37,14 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  drvOutQuadAlphaNum(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-                     const char *driver_name)
-      : drvOutputBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
-  }
+  dispDrvQuadAlphaNum(TwoWire *i2c, uint16_t sensorAddress,
+                      uint32_t mux_channel, const char *driver_name)
+      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name) {}
 
   /*!
-      @brief    Destructor for a quad alphanumeric display.
+      @brief    Destructor.
   */
-  ~drvOutQuadAlphaNum() {
+  ~dispDrvQuadAlphaNum() {
     if (_alpha4) {
       delete _alpha4;
       _alpha4 = nullptr;
@@ -54,7 +52,7 @@ public:
   }
 
   /*!
-      @brief    Initializes the drvOutQuadAlphaNum sensor and begins I2C.
+      @brief    Initializes the quad alphanumeric display and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() override {
@@ -71,15 +69,16 @@ public:
     @param    alignment
               The alignment of the LED backpack.
 */
-  void ConfigureI2CBackpack(int32_t brightness, uint32_t alignment) {
-    WS_DEBUG_PRINTLN("[i2c] drvOutQuadAlphaNum::ConfigureI2CBackpack() called");
+  void ConfigureI2CBackpack(int32_t brightness, uint32_t alignment) override {
+    WS_DEBUG_PRINTLN(
+        "[i2c] dispDrvQuadAlphaNum::ConfigureI2CBackpack() called");
     if (alignment == LED_BACKPACK_ALIGNMENT_RIGHT) {
       _alignment = LED_BACKPACK_ALIGNMENT_RIGHT;
     } else {
       _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT;
     }
     _brightness = brightness;
-    WS_DEBUG_PRINTLN("[i2c] drvOutQuadAlphaNum::configured");
+    WS_DEBUG_PRINTLN("[i2c] dispDrvQuadAlphaNum::configured");
   }
 
   /*!
@@ -87,7 +86,7 @@ public:
       @param    b
                   The brightness value, from 0 (off) to 15 (full brightness).
   */
-  void SetLedBackpackBrightness(uint8_t b) {
+  void SetLedBackpackBrightness(uint8_t b) override {
     if (_alpha4 == nullptr) {
       return;
     }
@@ -99,7 +98,7 @@ public:
       @param    message
                   The message to be displayed.
   */
-  void WriteMessage(const char *message) {
+  void WriteMessage(const char *message) override {
     if (_alpha4 == nullptr || message == nullptr) {
       return;
     }
@@ -162,7 +161,7 @@ public:
                   The value to be displayed. Only the first four digits are
       displayed.
   */
-  void WriteValue(float value) {
+  void WriteValue(float value) override {
     char message[8 + 1];
     snprintf(message, sizeof(message), "%.3f", value);
     WriteMessage(message);
@@ -174,7 +173,7 @@ public:
                   The value to be displayed. Only the first four digits are
       displayed.
   */
-  void WriteValue(int32_t value) {
+  void WriteValue(int32_t value) override {
     char message[LED_MAX_CHARS + 1];
     snprintf(message, sizeof(message), "%ld", value);
     WriteMessage(message);
@@ -190,4 +189,4 @@ protected:
                                       ///< message displayed
 };
 
-#endif // DRV_OUT_QUAD_ALPHANUM_H
+#endif // WS_DISP_DRV_QUAD_ALPHANUM_H

@@ -21,12 +21,6 @@
 #include "model.h"
 #include "wippersnapper.h"
 // I2C Drivers
-#include "../display/drivers/drvOut7Seg.h"
-#include "../display/drivers/drvOutCharLcd.h"
-#include "../display/drivers/drvOutQuadAlphaNum.h"
-#include "../display/drivers/drvOutSh1107.h"
-#include "../display/drivers/drvOutSsd1306.h"
-#include "../display/drivers/drvOutputBase.h" ///< Base i2c output driver class
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
 #include "drivers/drvBase.h" ///< Base i2c input driver class

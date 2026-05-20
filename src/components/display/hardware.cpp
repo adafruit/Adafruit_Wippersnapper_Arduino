@@ -426,19 +426,19 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     return false;
   }
 
-  // Create the appropriate I2C output driver based on driver string
-  drvOutputBase *drv = nullptr;
+  // Create the appropriate I2C display driver based on driver string
+  dispDrvBaseI2c *drv = nullptr;
   const char *driverName = msg->driver;
   if (strcasecmp(driverName, "SSD1306") == 0) {
-    drv = new drvOutSsd1306(i2c, addr, 0, driverName);
+    drv = new dispDrvSsd1306(i2c, addr, 0, driverName);
   } else if (strcasecmp(driverName, "SH1107") == 0) {
-    drv = new drvOutSh1107(i2c, addr, 0, driverName);
+    drv = new dispDrvSh1107(i2c, addr, 0, driverName);
   } else if (strcasecmp(driverName, "charlcd") == 0) {
-    drv = new drvOutCharLcd(i2c, addr, 0, driverName);
+    drv = new dispDrvCharLcd(i2c, addr, 0, driverName);
   } else if (strcasecmp(driverName, "7seg") == 0) {
-    drv = new drvOut7Seg(i2c, addr, 0, driverName);
+    drv = new dispDrv7Seg(i2c, addr, 0, driverName);
   } else if (strcasecmp(driverName, "quadalphanum") == 0) {
-    drv = new drvOutQuadAlphaNum(i2c, addr, 0, driverName);
+    drv = new dispDrvQuadAlphaNum(i2c, addr, 0, driverName);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported I2C display driver: ");
     WS_DEBUG_PRINTLNVAR(driverName);
@@ -470,7 +470,7 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     drv->ConfigureI2CBackpack(cfg->brightness, cfg->alignment);
   } else {
     // No matching config — for OLEDs, apply safe defaults to prevent
-    // crash from uninitialized width/height in drvOutSsd1306::begin()
+    // crash from uninitialized width/height in dispDrvSsd1306::begin()
     WS_DEBUG_PRINTLN("[display] WARNING: No config for I2C display, "
                      "applying defaults");
     if (strcasecmp(driverName, "SSD1306") == 0) {
@@ -486,13 +486,7 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     return false;
   }
 
-  _drvDisp = new dispDrvBaseI2c(drv);
-  if (!_drvDisp) {
-    WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate I2C display wrapper!");
-    delete drv;
-    return false;
-  }
-
+  _drvDisp = drv;
   WS_DEBUG_PRINTLN("[display] I2C display initialized successfully!");
   return true;
 }

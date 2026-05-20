@@ -1,5 +1,5 @@
 /*!
- * @file src/components/display/drivers/drvOutSh1107.h
+ * @file src/components/display/drivers/dispDrvSh1107.h
  *
  * Device driver for OLED displays with a SH1107 driver
  * (e.g., 128x64 OLED FeatherWing)
@@ -14,10 +14,10 @@
  *
  */
 
-#ifndef DRV_OUT_SH1107_H
-#define DRV_OUT_SH1107_H
+#ifndef WS_DISP_DRV_SH1107_H
+#define WS_DISP_DRV_SH1107_H
 
-#include "drvOutputBase.h"
+#include "dispDrvBaseI2c.h"
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
@@ -29,7 +29,7 @@
 /*!
     @brief  Class that provides a driver interface for a SH1107 OLED display.
 */
-class drvOutSh1107 : public drvOutputBase {
+class dispDrvSh1107 : public dispDrvBaseI2c {
 public:
   /*!
       @brief  Constructor for the SH1107 OLED display driver.
@@ -38,11 +38,11 @@ public:
       @param  mux_channel    Optional I2C MUX channel for the display.
       @param  driver_name    The name of the driver.
   */
-  drvOutSh1107(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-               const char *driver_name)
-      : drvOutputBase(i2c, sensorAddress, mux_channel, driver_name) {}
+  dispDrvSh1107(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+                const char *driver_name)
+      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name) {}
 
-  ~drvOutSh1107() {
+  ~dispDrvSh1107() {
     if (_display != nullptr) {
       _display->clearDisplay();
       _display->display();
@@ -103,7 +103,7 @@ public:
     for (size_t i = 0; i < msg_size; i++) {
       char parsed_char = 0;
       bool is_newline = false;
-      if (ParseWriteToken(message, msg_size, i, parsed_char, is_newline,
+      if (parseWriteToken(message, msg_size, i, parsed_char, is_newline,
                           char(247))) {
         if (is_newline) {
           y_idx += line_height;
@@ -122,10 +122,6 @@ public:
 
 protected:
   Adafruit_SH1107 *_display = nullptr; ///< SH1107 driver instance
-  uint8_t _width;                      ///< Display width in pixels
-  uint8_t _height;                     ///< Display height in pixels
-  uint8_t _rotation = 0;               ///< Display rotation (0-3)
-  uint8_t _text_sz = 1;                ///< Text size multiplier
 };
 
-#endif // DRV_OUT_SH1107_H
+#endif // WS_DISP_DRV_SH1107_H

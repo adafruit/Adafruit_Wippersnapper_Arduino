@@ -1,5 +1,5 @@
 /*!
- * @file src/components/display/drivers/drvOut7Seg.h
+ * @file src/components/display/drivers/dispDrv7Seg.h
  *
  * Device driver designed specifically to work with the Adafruit LED 7-Segment
  * I2C backpacks:
@@ -18,10 +18,10 @@
  *
  */
 
-#ifndef DRV_OUT_7SEG_H
-#define DRV_OUT_7SEG_H
+#ifndef WS_DISP_DRV_7SEG_H
+#define WS_DISP_DRV_7SEG_H
 
-#include "drvOutputBase.h"
+#include "dispDrvBaseI2c.h"
 #include <Adafruit_LEDBackpack.h>
 #include <Arduino.h>
 
@@ -29,7 +29,7 @@
     @brief  Class that provides a driver for an Adafruit 7-Segment LED matrix
    w/I2C backpack.
 */
-class drvOut7Seg : public drvOutputBase {
+class dispDrv7Seg : public dispDrvBaseI2c {
 public:
   /*!
       @brief    Constructor for an Adafruit 7-Segment LED matrix w/I2C backpack.
@@ -42,16 +42,14 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  drvOut7Seg(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-             const char *driver_name)
-      : drvOutputBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
-  }
+  dispDrv7Seg(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+              const char *driver_name)
+      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name) {}
 
   /*!
-      @brief    Destructor for an Adafruit 7-Segment LED matrix w/I2C backpack.
+      @brief    Destructor.
   */
-  ~drvOut7Seg() {
+  ~dispDrv7Seg() {
     if (_matrix) {
       delete _matrix;
       _matrix = nullptr;
@@ -99,7 +97,7 @@ public:
       @param    b
                   The brightness value, from 0 (off) to 15 (full brightness).
   */
-  void SetLedBackpackBrightness(uint8_t b) {
+  void SetLedBackpackBrightness(uint8_t b) override {
     if (_matrix == nullptr) {
       return;
     }
@@ -112,7 +110,7 @@ public:
       @param    message
                   The message to be displayed.
   */
-  void WriteMessage(const char *message) {
+  void WriteMessage(const char *message) override {
     if (_matrix == nullptr || message == nullptr) {
       return;
     }
@@ -179,7 +177,7 @@ public:
                   The value to be displayed. Only the first four digits are
       displayed.
   */
-  void WriteValue(float value) {
+  void WriteValue(float value) override {
     char message[8 + 1];
     snprintf(message, sizeof(message), "%.5f", value);
     WriteMessage(message);
@@ -191,7 +189,7 @@ public:
                   The value to be displayed. Only the first four digits are
       displayed.
   */
-  void WriteValue(int32_t value) {
+  void WriteValue(int32_t value) override {
     char message[LED_MAX_CHARS + 1];
     snprintf(message, sizeof(message), "%ld", value);
     WriteMessage(message);
@@ -207,4 +205,4 @@ protected:
                                       ///< message displayed
 };
 
-#endif // DRV_OUT_7SEG_H
+#endif // WS_DISP_DRV_7SEG_H

@@ -1,5 +1,5 @@
 /*!
- * @file src/components/display/drivers/drvOutSsd1306.h
+ * @file src/components/display/drivers/dispDrvSsd1306.h
  *
  * Device driver for OLED displays with a SSD1306 driver
  *
@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef DRV_OUT_SSD1306_H
-#define DRV_OUT_SSD1306_H
+#ifndef WS_DISP_DRV_SSD1306_H
+#define WS_DISP_DRV_SSD1306_H
 
-#include "drvOutputBase.h"
+#include "dispDrvBaseI2c.h"
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 
@@ -24,10 +24,10 @@
     @brief  Class that provides a driver interface for a SSD1306 OLED display.
             This class is a wrapper around the Adafruit_SSD1306 library.
 */
-class drvOutSsd1306 : public drvOutputBase {
+class dispDrvSsd1306 : public dispDrvBaseI2c {
 public:
   /*!
-      @brief    Constructor for a lcd character display.
+      @brief    Constructor for a SSD1306 OLED display driver.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -37,16 +37,14 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  drvOutSsd1306(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-                const char *driver_name)
-      : drvOutputBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvOutPutBase constructor
-  }
+  dispDrvSsd1306(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+                 const char *driver_name)
+      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name) {}
 
   /*!
-      @brief    Destructor for a quad alphanumeric display.
+      @brief    Destructor.
   */
-  ~drvOutSsd1306() {
+  ~dispDrvSsd1306() {
     if (_display != nullptr) {
       _display->ssd1306_command(SSD1306_DISPLAYOFF);
       delete _display;
@@ -58,7 +56,7 @@ public:
       @brief    Initializes the SSD1306 display and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  bool begin() {
+  bool begin() override {
     // Attempt to create and allocate a SSD1306 obj.
     _display = new Adafruit_SSD1306(_width, _height, _i2c);
     if (!_display->begin(SSD1306_SWITCHCAPVCC, _address))
@@ -84,7 +82,8 @@ public:
       @param    text_size
                   The magnification factor for the text size.
   */
-  void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size) {
+  void ConfigureSSD1306(uint8_t width, uint8_t height,
+                        uint8_t text_size) override {
     _width = width;
     _height = height;
     _text_sz = text_size;
@@ -115,7 +114,7 @@ public:
     for (size_t i = 0; i < msg_size; i++) {
       char parsed_char = 0;
       bool is_newline = false;
-      if (ParseWriteToken(message, msg_size, i, parsed_char, is_newline,
+      if (parseWriteToken(message, msg_size, i, parsed_char, is_newline,
                           char(247))) {
         if (is_newline) {
           y_idx += line_height;
@@ -134,10 +133,7 @@ public:
 
 protected:
   Adafruit_SSD1306 *_display =
-      nullptr;      ///< Pointer to the Adafruit_SSD1306 object
-  uint8_t _width;   ///< Width of the display in pixels
-  uint8_t _height;  ///< Height of the display in pixels
-  uint8_t _text_sz; ///< Text size of the display
+      nullptr; ///< Pointer to the Adafruit_SSD1306 object
 };
 
-#endif // DRV_OUT_SSD1306_H
+#endif // WS_DISP_DRV_SSD1306_H

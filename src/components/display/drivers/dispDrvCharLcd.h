@@ -1,5 +1,5 @@
 /*!
- * @file src/components/display/drivers/drvOutCharLcd.h
+ * @file src/components/display/drivers/dispDrvCharLcd.h
  *
  * Device driver for I2C Character LCDs (HD44780)
  *
@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef DRV_OUT_CHAR_LCD
-#define DRV_OUT_CHAR_LCD
+#ifndef WS_DISP_DRV_CHAR_LCD_H
+#define WS_DISP_DRV_CHAR_LCD_H
 
-#include "drvOutputBase.h"
+#include "dispDrvBaseI2c.h"
 #include <Adafruit_LiquidCrystal.h>
 #include <Arduino.h>
 
@@ -24,7 +24,7 @@
     @brief  Class that provides a driver interface for a lcd character display.
             This class is a wrapper around the Adafruit_LiquidCrystal library.
 */
-class drvOutCharLcd : public drvOutputBase {
+class dispDrvCharLcd : public dispDrvBaseI2c {
 public:
   /*!
       @brief    Constructor for a lcd character display.
@@ -37,16 +37,14 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  drvOutCharLcd(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-                const char *driver_name)
-      : drvOutputBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvOutPutBase constructor
-  }
+  dispDrvCharLcd(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+                 const char *driver_name)
+      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name) {}
 
   /*!
-      @brief    Destructor for a quad alphanumeric display.
+      @brief    Destructor.
   */
-  ~drvOutCharLcd() {
+  ~dispDrvCharLcd() {
     if (_lcd) {
       delete _lcd;
       _lcd = nullptr;
@@ -67,7 +65,7 @@ public:
   }
 
   /*!
-      @brief    Writes a message to the LCD.
+      @brief    Configures the LCD's size and backlight.
       @note     MUST be called prior to begin() to configure the LCD's size
       @param   rows
                 The number of rows in the LCD.
@@ -88,7 +86,7 @@ public:
        @param    enable_backlight
                    True to enable the backlight, False to disable it.
  */
-  void EnableBackLightCharLCD(bool enable_backlight) {
+  void EnableBackLightCharLCD(bool enable_backlight) override {
     if (_lcd == nullptr)
       return;
     if (enable_backlight) {
@@ -104,7 +102,7 @@ public:
       @param    message
                 The message to be displayed.
   */
-  void WriteMessage(const char *message) {
+  void WriteMessage(const char *message) override {
     if (_lcd == nullptr)
       return;
 
@@ -124,7 +122,7 @@ public:
            cur_col++) {
         char parsed_char = 0;
         bool is_newline = false;
-        if (ParseWriteToken(message, message_length, cur_idx, parsed_char,
+        if (parseWriteToken(message, message_length, cur_idx, parsed_char,
                             is_newline, char(0xDF))) {
           if (is_newline) {
             cur_idx++;
@@ -149,4 +147,4 @@ protected:
   bool _enable_backlight; ///< Flag to enable/disable backlight
 };
 
-#endif // DRV_OUT_CHAR_LCD
+#endif // WS_DISP_DRV_CHAR_LCD_H
