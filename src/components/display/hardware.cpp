@@ -362,6 +362,12 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   }
   ws_display_EPDConfig *config = &msg->config.config_epd;
 
+  // Parse EPD mode
+  if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED) {
+    WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
+    return false;
+  }
+
   if (_drvDisp) {
     delete _drvDisp;
     _drvDisp = nullptr;
@@ -402,14 +408,6 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate EPD driver!");
-    return false;
-  }
-
-  // Parse EPD mode
-  if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED) {
-    WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
-    delete _drvDisp;
-    _drvDisp = nullptr;
     return false;
   }
 
