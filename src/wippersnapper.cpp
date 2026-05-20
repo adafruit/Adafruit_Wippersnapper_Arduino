@@ -742,18 +742,6 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     msg->which_payload = ws_signal_DeviceToBroker_analogio_tag;
     msg->payload.analogio = *(ws_analogio_D2B *)payload;
     break;
-  case ws_signal_DeviceToBroker_servo_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_servo_tag;
-    msg->payload.servo = *(ws_servo_D2B *)payload;
-    break;
-  case ws_signal_DeviceToBroker_pwm_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_pwm_tag;
-    msg->payload.pwm = *(ws_pwm_D2B *)payload;
-    break;
-  case ws_signal_DeviceToBroker_pixels_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_pixels_tag;
-    msg->payload.pixels = *(ws_pixels_D2B *)payload;
-    break;
   case ws_signal_DeviceToBroker_ds18x20_tag:
     msg->which_payload = ws_signal_DeviceToBroker_ds18x20_tag;
     msg->payload.ds18x20 = *(ws_ds18x20_D2B *)payload;
