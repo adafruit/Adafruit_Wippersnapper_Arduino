@@ -97,6 +97,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   }  
 
   if (dev->bus != 0) {
+    //TODO: fire this back up via errorController
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
@@ -479,7 +480,6 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     }
   }
 
-  WS_DEBUG_PRINTLN("[display] Calling I2C driver begin()...");
   if (!drv->begin()) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin I2C display driver!");
     delete drv;
