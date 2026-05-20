@@ -120,6 +120,11 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
     return false;
   }
 
+  if (!_drvDisp) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate TFT driver!");
+    return false;
+  }
+
 #if defined(TFT_BACKLITE)
   _drvDisp->setBacklightPin(TFT_BACKLITE);
 #elif defined(TFT_BACKLIGHT)
