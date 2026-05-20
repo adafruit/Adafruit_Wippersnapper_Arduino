@@ -33,10 +33,6 @@
 #include "drivers/dispDrvThinkInkMonoBAAMFGN.h"
 #include "drivers/dispDrvThinkInkMonoM06.h"
 
-/*!
-    @brief  Interface for interacting with display hardware (TFT, eInk,
-            OLED, etc.) in the V2 API.
-*/
 class DisplayHardware {
 public:
   DisplayHardware();
