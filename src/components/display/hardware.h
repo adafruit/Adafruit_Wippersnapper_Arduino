@@ -86,13 +86,15 @@ private:
   bool beginSpiEpd(ws_display_Add *msg);
   bool beginTtlRgb666(ws_display_Add *msg);
   bool beginI2cDisplay(ws_display_Add *msg);
-  int16_t parsePin(const char *pinStr);
+    static int16_t parsePin(const char *pinStr);
+    static uint8_t EpdBitBangReadRegister(uint8_t cmd,
+                                                                                ws_display_EpdSpiConfig *config);
 
   // EPD auto-detection helpers
-  bool detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst);
-  bool detect_ssd1683(uint8_t cs, uint8_t dc, uint8_t rst);
-  bool detect_uc8151d(uint8_t cs, uint8_t dc, uint8_t rst);
-  bool detect_uc8179(uint8_t cs, uint8_t dc, uint8_t rst);
-  bool detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst);
+  bool detect_ssd1680(ws_display_EpdSpiConfig *config);
+  bool detect_ssd1683(ws_display_EpdSpiConfig *config);
+  bool detect_uc8151d(ws_display_EpdSpiConfig *config);
+  bool detect_uc8179(ws_display_EpdSpiConfig *config);
+  bool detect_uc8253(ws_display_EpdSpiConfig *config);
 };
 #endif // WS_DISPLAY_HARDWARE_H

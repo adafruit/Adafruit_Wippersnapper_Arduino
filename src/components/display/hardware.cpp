@@ -153,10 +153,17 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
 // ---------------------------------------------------------------------------
 // Bit-bang SPI helper for EPD auto-detection
 // ---------------------------------------------------------------------------
-static uint8_t EpdBitBangReadRegister(uint8_t cs, uint8_t dc, uint8_t rst,
-                                      uint8_t cmd) {
-  pinMode(MOSI, OUTPUT);
-  pinMode(SCK, OUTPUT);
+uint8_t DisplayHardware::EpdBitBangReadRegister(uint8_t cmd,
+                                                ws_display_EpdSpiConfig *config) {
+  int16_t mosi = DisplayHardware::parsePin(config->spi.pin_mosi);
+  int16_t miso = DisplayHardware::parsePin(config->spi.pin_miso);
+  int16_t sck = DisplayHardware::parsePin(config->spi.pin_sck);
+  int16_t cs = DisplayHardware::parsePin(config->spi.pin_cs);
+  int16_t dc = DisplayHardware::parsePin(config->pin_dc);
+  int16_t rst = DisplayHardware::parsePin(config->pin_rst);
+
+  pinMode(mosi, OUTPUT);
+  pinMode(sck, OUTPUT);
   pinMode(cs, OUTPUT);
   pinMode(dc, OUTPUT);
   pinMode(rst, OUTPUT);
@@ -173,58 +180,58 @@ static uint8_t EpdBitBangReadRegister(uint8_t cs, uint8_t dc, uint8_t rst,
   // Begin transaction
   digitalWrite(cs, LOW);
   digitalWrite(dc, LOW);
-  digitalWrite(MOSI, LOW);
+  digitalWrite(mosi, LOW);
   digitalWrite(rst, HIGH);
-  digitalWrite(SCK, LOW);
+  digitalWrite(sck, LOW);
 
   // Write command
   for (int i = 0; i < 8; i++) {
-    digitalWrite(MOSI, (cmd & (1 << (7 - i))) != 0);
-    digitalWrite(SCK, HIGH);
-    digitalWrite(SCK, LOW);
+    digitalWrite(mosi, (cmd & (1 << (7 - i))) != 0);
+    digitalWrite(sck, HIGH);
+    digitalWrite(sck, LOW);
   }
 
-  // Switch MOSI to input for reading
-  pinMode(MOSI, INPUT_PULLUP);
+  // Switch read pin to input
+  pinMode(miso, INPUT_PULLUP);
   digitalWrite(dc, HIGH);
 
   // Read response
   uint8_t status = 0;
   for (int i = 0; i < 8; i++) {
     status <<= 1;
-    if (digitalRead(MOSI))
+    if (digitalRead(miso))
       status |= 1;
-    digitalWrite(SCK, HIGH);
-    digitalWrite(SCK, LOW);
+    digitalWrite(sck, HIGH);
+    digitalWrite(sck, LOW);
   }
 
   digitalWrite(cs, HIGH);
-  pinMode(MOSI, OUTPUT);
+  pinMode(mosi, OUTPUT);
   return status;
 }
 
-bool DisplayHardware::detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst) {
-  uint8_t status = EpdBitBangReadRegister(cs, dc, rst, 0x71);
+bool DisplayHardware::detect_ssd1680(ws_display_EpdSpiConfig *config) {
+  uint8_t status = EpdBitBangReadRegister(0x71, config);
   return status == 0xFF;
 }
 
-bool DisplayHardware::detect_ssd1683(uint8_t cs, uint8_t dc, uint8_t rst) {
-  uint8_t status = EpdBitBangReadRegister(cs, dc, rst, 0x2F);
+bool DisplayHardware::detect_ssd1683(ws_display_EpdSpiConfig *config) {
+  uint8_t status = EpdBitBangReadRegister(0x2F, config);
   return (status & 0x03) == 0x01;
 }
 
-bool DisplayHardware::detect_uc8151d(uint8_t cs, uint8_t dc, uint8_t rst) {
-  uint8_t rev = EpdBitBangReadRegister(cs, dc, rst, 0x70);
+bool DisplayHardware::detect_uc8151d(ws_display_EpdSpiConfig *config) {
+  uint8_t rev = EpdBitBangReadRegister(0x70, config);
   return rev != 0xFF;
 }
 
-bool DisplayHardware::detect_uc8179(uint8_t cs, uint8_t dc, uint8_t rst) {
-  uint8_t dualspi = EpdBitBangReadRegister(cs, dc, rst, 0x15);
+bool DisplayHardware::detect_uc8179(ws_display_EpdSpiConfig *config) {
+  uint8_t dualspi = EpdBitBangReadRegister(0x15, config);
   return dualspi != 0xFF;
 }
 
-bool DisplayHardware::detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst) {
-  uint8_t status = EpdBitBangReadRegister(cs, dc, rst, 0x71);
+bool DisplayHardware::detect_uc8253(ws_display_EpdSpiConfig *config) {
+  uint8_t status = EpdBitBangReadRegister(0x71, config);
   return status != 0xFF;
 }
 
@@ -232,17 +239,26 @@ bool DisplayHardware::detect_uc8253(uint8_t cs, uint8_t dc, uint8_t rst) {
 // SPI EPD initialization
 // ---------------------------------------------------------------------------
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
-  ws_display_EpdSpiConfig *spi = &msg->interface_type.spi_epd;
-  ws_spi_Config *dev = &spi->spi;
+  ws_display_EpdSpiConfig *spi_epd_config = &msg->interface_type.spi_epd;
+  ws_spi_Config *spi_pin_config = &spi_epd_config->spi;
 
-  int16_t dc = parsePin(spi->pin_dc);
-  int16_t rst = parsePin(spi->pin_rst);
-  int16_t cs = parsePin(dev->pin_cs);
+  int16_t dc = parsePin(spi_epd_config->pin_dc);
+  int16_t rst = parsePin(spi_epd_config->pin_rst);
+  int16_t cs = parsePin(spi_pin_config->pin_cs);
+  int16_t mosi = -1;
+  int16_t sck = -1;
+  int16_t miso = -1;
   int16_t sram_cs = -1, busy = -1;
-  if (strlen(spi->pin_sram_cs) >= 2)
-    sram_cs = parsePin(spi->pin_sram_cs);
-  if (strlen(spi->pin_busy) >= 2)
-    busy = parsePin(spi->pin_busy);
+  if (strlen(spi_pin_config->pin_mosi) >= 2)
+    mosi = parsePin(spi_pin_config->pin_mosi);
+  if (strlen(spi_pin_config->pin_sck) >= 2)
+    sck = parsePin(spi_pin_config->pin_sck);
+  if (strlen(spi_pin_config->pin_miso) >= 2)
+    miso = parsePin(spi_pin_config->pin_miso);
+  if (strlen(spi_epd_config->pin_sram_cs) >= 2)
+    sram_cs = parsePin(spi_epd_config->pin_sram_cs);
+  if (strlen(spi_epd_config->pin_busy) >= 2)
+    busy = parsePin(spi_epd_config->pin_busy);
 
   WS_DEBUG_PRINT("[display] SPI EPD pins - DC:");
   WS_DEBUG_PRINTVAR(dc);
@@ -250,12 +266,27 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   WS_DEBUG_PRINTVAR(rst);
   WS_DEBUG_PRINT(" CS:");
   WS_DEBUG_PRINTVAR(cs);
+  WS_DEBUG_PRINT(" MOSI:");
+  WS_DEBUG_PRINTVAR(mosi);
+  WS_DEBUG_PRINT(" SCK:");
+  WS_DEBUG_PRINTVAR(sck);
+  WS_DEBUG_PRINT(" MISO:");
+  WS_DEBUG_PRINTVAR(miso);
   WS_DEBUG_PRINT(" SRAM_CS:");
   WS_DEBUG_PRINTVAR(sram_cs);
   WS_DEBUG_PRINT(" BUSY:");
   WS_DEBUG_PRINTLNVAR(busy);
 
-  if (dev->bus != 0) {
+  // EPD drivers currently use the default hardware SPI bus/pins.
+  // Reject explicit non-default SPI pins from the payload.
+  if ((mosi >= 0 && mosi != MOSI) || (sck >= 0 && sck != SCK) ||
+      (miso >= 0 && miso != MISO)) {
+    WS_DEBUG_PRINTLN(
+        "[display] ERROR: SPI EPD only supports default MOSI/SCK/MISO pins!");
+    return false;
+  }
+
+  if (spi_pin_config->bus != 0) {
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
@@ -274,7 +305,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   // MagTag hardware auto-detection (requires SPI probing)
   const char *driver = msg->driver;
   if (strncmp(_name, "eink-magtag", 11) == 0 && strlen(driver) == 0) {
-    if (detect_ssd1680(cs, dc, rst)) {
+    if (EpdBitBangReadRegister(0x71, spi_epd_config) == 0xFF) {
       driver = "SSD1680";
     } else {
       driver = "ILI0373";
