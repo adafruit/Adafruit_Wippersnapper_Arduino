@@ -14,10 +14,14 @@
  */
 #include "controller.h"
 
-DisplayHardware::DisplayHardware() {
-  memset(_name, 0, sizeof(_name));
-}
+/*!
+    @brief  Constructs a DisplayHardware with no active driver.
+*/
+DisplayHardware::DisplayHardware() { memset(_name, 0, sizeof(_name)); }
 
+/*!
+    @brief  Destructor. Tears down the underlying display driver, if any.
+*/
 DisplayHardware::~DisplayHardware() {
   if (_drvDisp) {
     delete _drvDisp;
@@ -25,8 +29,17 @@ DisplayHardware::~DisplayHardware() {
   }
 }
 
+/*!
+    @brief  Returns the name of this display instance.
+    @return Pointer to the display's name string.
+*/
 const char *DisplayHardware::getName() { return _name; }
 
+/*!
+    @brief  Parses a "D<n>" pin string into an integer pin number.
+    @param  pinStr  Null-terminated pin string (e.g. "D5").
+    @return The parsed pin number, or -1 if the input is invalid.
+*/
 int16_t DisplayHardware::parsePin(const char *pinStr) {
   if (!pinStr || strlen(pinStr) < 2 || pinStr[0] != 'D') {
     return -1;
@@ -34,6 +47,13 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
   return atoi(pinStr + 1);
 }
 
+/*!
+    @brief  Initializes the underlying display driver from a Display Add
+            message.
+    @param  addMsg  The Display Add message describing the display.
+    @param  name    The unique name for this display instance.
+    @return True if initialization succeeded, False otherwise.
+*/
 bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
   if (!addMsg) {
     WS_DEBUG_PRINTLN("[display] ERROR: Null add message!");
@@ -66,6 +86,11 @@ bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
   }
 }
 
+/*!
+    @brief  Initializes an SPI TFT display driver from an Add message.
+    @param  msg  The Display Add message with SPI TFT interface and config.
+    @return True on success, False on failure.
+*/
 bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   ws_display_TftSpiConfig *spi = &msg->interface_type.spi_tft;
   ws_spi_Config *dev = &spi->spi;
@@ -94,10 +119,10 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   if (cs < 0 || dc < 0 || mosi < 0 || sck < 0) {
     WS_DEBUG_PRINT("[display] ERROR: Invalid SPI TFT pin configuration! ");
     return false;
-  }  
+  }
 
   if (dev->bus != 0) {
-    //TODO: fire this back up via errorController
+    // TODO: fire this back up via errorController
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
@@ -153,8 +178,17 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
 // ---------------------------------------------------------------------------
 // Bit-bang SPI helper for EPD auto-detection
 // ---------------------------------------------------------------------------
-uint8_t DisplayHardware::EpdBitBangReadRegister(uint8_t cmd,
-                                                ws_display_EpdSpiConfig *config) {
+/*!
+    @brief  Bit-bangs an SPI read of a single register on an EPD before any
+            hardware SPI driver is bound, used to probe the panel for
+            auto-detection.
+    @param  cmd     The command/register byte to issue.
+    @param  config  EPD SPI pin configuration to use for the probe.
+    @return The byte returned by the panel.
+*/
+uint8_t
+DisplayHardware::EpdBitBangReadRegister(uint8_t cmd,
+                                        ws_display_EpdSpiConfig *config) {
   int16_t mosi = DisplayHardware::parsePin(config->spi.pin_mosi);
   int16_t miso = DisplayHardware::parsePin(config->spi.pin_miso);
   int16_t sck = DisplayHardware::parsePin(config->spi.pin_sck);
@@ -210,26 +244,51 @@ uint8_t DisplayHardware::EpdBitBangReadRegister(uint8_t cmd,
   return status;
 }
 
+/*!
+    @brief  Probes for an SSD1680 EPD controller.
+    @param  config  EPD SPI pin configuration to probe.
+    @return True if the panel responds as an SSD1680.
+*/
 bool DisplayHardware::detect_ssd1680(ws_display_EpdSpiConfig *config) {
   uint8_t status = EpdBitBangReadRegister(0x71, config);
   return status == 0xFF;
 }
 
+/*!
+    @brief  Probes for an SSD1683 EPD controller.
+    @param  config  EPD SPI pin configuration to probe.
+    @return True if the panel responds as an SSD1683.
+*/
 bool DisplayHardware::detect_ssd1683(ws_display_EpdSpiConfig *config) {
   uint8_t status = EpdBitBangReadRegister(0x2F, config);
   return (status & 0x03) == 0x01;
 }
 
+/*!
+    @brief  Probes for a UC8151D EPD controller.
+    @param  config  EPD SPI pin configuration to probe.
+    @return True if the panel responds as a UC8151D.
+*/
 bool DisplayHardware::detect_uc8151d(ws_display_EpdSpiConfig *config) {
   uint8_t rev = EpdBitBangReadRegister(0x70, config);
   return rev != 0xFF;
 }
 
+/*!
+    @brief  Probes for a UC8179 EPD controller.
+    @param  config  EPD SPI pin configuration to probe.
+    @return True if the panel responds as a UC8179.
+*/
 bool DisplayHardware::detect_uc8179(ws_display_EpdSpiConfig *config) {
   uint8_t dualspi = EpdBitBangReadRegister(0x15, config);
   return dualspi != 0xFF;
 }
 
+/*!
+    @brief  Probes for a UC8253 EPD controller.
+    @param  config  EPD SPI pin configuration to probe.
+    @return True if the panel responds as a UC8253.
+*/
 bool DisplayHardware::detect_uc8253(ws_display_EpdSpiConfig *config) {
   uint8_t status = EpdBitBangReadRegister(0x71, config);
   return status != 0xFF;
@@ -238,6 +297,12 @@ bool DisplayHardware::detect_uc8253(ws_display_EpdSpiConfig *config) {
 // ---------------------------------------------------------------------------
 // SPI EPD initialization
 // ---------------------------------------------------------------------------
+/*!
+    @brief  Initializes an SPI eInk display driver from an Add message,
+            including MagTag auto-detection of the underlying panel.
+    @param  msg  The Display Add message with SPI EPD interface and config.
+    @return True on success, False on failure.
+*/
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   ws_display_EpdSpiConfig *spi_epd_config = &msg->interface_type.spi_epd;
   ws_spi_Config *spi_pin_config = &spi_epd_config->spi;
@@ -373,6 +438,12 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 // ---------------------------------------------------------------------------
 // TTL RGB666 initialization (Qualia ESP32-S3)
 // ---------------------------------------------------------------------------
+/*!
+    @brief  Initializes a TTL RGB666 panel driver (Qualia ESP32-S3 only).
+    @param  msg  The Display Add message with RGB666 interface and config.
+    @return True on success, False on failure or when unsupported on this
+            board.
+*/
 bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
 #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
   if (msg->which_config != ws_display_Add_config_display_tag) {
@@ -427,6 +498,12 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
 // ---------------------------------------------------------------------------
 // I2C display initialization (OLED, CharLCD, LED backpack, etc.)
 // ---------------------------------------------------------------------------
+/*!
+    @brief  Initializes an I2C display driver (OLED, CharLCD, LED backpack)
+            from an Add message.
+    @param  msg  The Display Add message with I2C interface and config.
+    @return True on success, False on failure.
+*/
 bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   if (!msg) {
     WS_DEBUG_PRINTLN("[display] ERROR: Null add message for I2C display!");
@@ -523,22 +600,40 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   return true;
 }
 
+/*!
+    @brief  Shows the driver's splash screen, if supported.
+*/
 void DisplayHardware::showSplash() {
   if (_drvDisp)
     _drvDisp->showSplash();
 }
 
+/*!
+    @brief  Draws the status bar and the Adafruit IO username.
+    @param  io_username  Adafruit IO username to display.
+*/
 void DisplayHardware::drawStatusBar(const char *io_username) {
   if (_drvDisp)
     _drvDisp->drawStatusBar(io_username);
 }
 
+/*!
+    @brief  Updates status bar icons based on current state.
+    @param  rssi            Current WiFi RSSI value.
+    @param  bat             Current battery level (0-100).
+    @param  mqtt_connected  True if MQTT is connected.
+*/
 void DisplayHardware::updateStatusBar(int8_t rssi, uint8_t bat,
                                       bool mqtt_connected) {
   if (_drvDisp)
     _drvDisp->updateStatusBar(rssi, bat, mqtt_connected);
 }
 
+/*!
+    @brief  Writes a Display Write message to the display.
+    @param  msg  The Display Write message to render.
+    @return True if the write succeeded, False otherwise.
+*/
 bool DisplayHardware::write(ws_display_Write *msg) {
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] ERROR: No display driver initialized!");

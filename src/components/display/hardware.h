@@ -41,54 +41,26 @@ class DisplayHardware {
 public:
   DisplayHardware();
   ~DisplayHardware();
-
-  /*!
-      @brief  Initializes the underlying display driver from a Display Add
-              message.
-      @param  addMsg  The Display Add message describing the display.
-      @param  name    The unique name for this display instance.
-      @return True if initialization succeeded, False otherwise.
-  */
   bool begin(ws_display_Add *addMsg, const char *name);
-  /*!
-      @brief  Writes a Display Write message to the display.
-      @param  msg  The Display Write message to render.
-      @return True if the write succeeded, False otherwise.
-  */
   bool write(ws_display_Write *msg);
-  /*!
-      @brief  Returns the name of this display instance.
-      @return Pointer to the display's name string.
-  */
   const char *getName();
-
-  /*! @brief Shows the driver's splash screen, if supported. */
   void showSplash();
-  /*!
-      @brief  Draws the status bar and the Adafruit IO username.
-      @param  io_username  Adafruit IO username to display.
-  */
   void drawStatusBar(const char *io_username);
-  /*!
-      @brief  Updates status bar icons based on current state.
-      @param  rssi            Current WiFi RSSI value.
-      @param  bat             Current battery level (0-100).
-      @param  mqtt_connected  True if MQTT is connected.
-  */
   void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_connected);
 
 private:
   char _name[64];
-  ws_display_DisplayClass _class = ws_display_DisplayClass_DISPLAY_CLASS_UNSPECIFIED;
+  ws_display_DisplayClass _class =
+      ws_display_DisplayClass_DISPLAY_CLASS_UNSPECIFIED;
   dispDrvBase *_drvDisp = nullptr;
 
   bool beginSpiTft(ws_display_Add *msg);
   bool beginSpiEpd(ws_display_Add *msg);
   bool beginTtlRgb666(ws_display_Add *msg);
   bool beginI2cDisplay(ws_display_Add *msg);
-    static int16_t parsePin(const char *pinStr);
-    static uint8_t EpdBitBangReadRegister(uint8_t cmd,
-                                                                                ws_display_EpdSpiConfig *config);
+  static int16_t parsePin(const char *pinStr);
+  static uint8_t EpdBitBangReadRegister(uint8_t cmd,
+                                        ws_display_EpdSpiConfig *config);
 
   // EPD auto-detection helpers
   bool detect_ssd1680(ws_display_EpdSpiConfig *config);
