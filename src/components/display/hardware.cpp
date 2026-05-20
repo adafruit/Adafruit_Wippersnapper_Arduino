@@ -16,7 +16,7 @@
 
 DisplayHardware::DisplayHardware() {
   memset(_name, 0, sizeof(_name));
-  _type = ws_display_DisplayClass_DISPLAY_CLASS_UNSPECIFIED;
+  _class = ws_display_DisplayClass_DISPLAY_CLASS_UNSPECIFIED;
 }
 
 DisplayHardware::~DisplayHardware() {
@@ -42,10 +42,10 @@ bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
   }
 
   snprintf(_name, sizeof(_name), "%s", name ? name : "");
-  _type = addMsg->type;
+  _class = addMsg->type;
 
   WS_DEBUG_PRINT("[display] Type: ");
-  WS_DEBUG_PRINTLNVAR(_type);
+  WS_DEBUG_PRINTLNVAR(_class);
   WS_DEBUG_PRINT("[display] Driver: ");
   WS_DEBUG_PRINTLNVAR(addMsg->driver);
   WS_DEBUG_PRINT("[display] Panel: ");
