@@ -16,7 +16,6 @@
 
 DisplayHardware::DisplayHardware() {
   memset(_name, 0, sizeof(_name));
-  _class = ws_display_DisplayClass_DISPLAY_CLASS_UNSPECIFIED;
 }
 
 DisplayHardware::~DisplayHardware() {

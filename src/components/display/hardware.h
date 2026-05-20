@@ -79,7 +79,7 @@ public:
 
 private:
   char _name[64];
-  ws_display_DisplayClass _class;
+  ws_display_DisplayClass _class = ws_display_DisplayClass_DISPLAY_CLASS_UNSPECIFIED;
   dispDrvBase *_drvDisp = nullptr;
 
   bool beginSpiTft(ws_display_Add *msg);
