@@ -302,6 +302,11 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     return false;
   }
 
+  if (!_drvDisp) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate EPD driver!");
+    return false;
+  }
+
   // Parse EPD mode
   if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED) {
     WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
@@ -439,6 +444,11 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     return false;
   }
 
+  if (!drv) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate I2C display driver!");
+    return false;
+  }
+
   // Configure based on config type
   pb_size_t config = msg->which_config;
   WS_DEBUG_PRINT("[display] I2C config tag: ");
@@ -477,6 +487,12 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   }
 
   _drvDisp = new dispDrvBaseI2c(drv);
+  if (!_drvDisp) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate I2C display wrapper!");
+    delete drv;
+    return false;
+  }
+
   WS_DEBUG_PRINTLN("[display] I2C display initialized successfully!");
   return true;
 }
