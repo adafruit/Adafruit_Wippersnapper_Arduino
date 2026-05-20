@@ -23,7 +23,6 @@
     "cmake.configureOnOpen": false,
     "workbench.panel.defaultLocation": "right",
     "terminal.integrated.defaultLocation": "view",
-	"chatgpt.commentCodeLensEnabled": false
 
 
 }
