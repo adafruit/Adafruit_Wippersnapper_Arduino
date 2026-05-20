@@ -391,6 +391,10 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     @return Index of the display, or -1 if not found.
 */
 int8_t DisplayController::findDisplayIndexByName(const char *name) {
+  if (!name) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Null display name provided for search");
+    return -1;
+  }
   for (uint8_t i = 0; i < _num_displays; i++) {
     if (_displays[i] && strcmp(_displays[i]->getName(), name) == 0) {
       return i;
