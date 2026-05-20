@@ -35,7 +35,7 @@
 */
 class UARTHardware {
 public:
-  UARTHardware(const ws_uart_SerialConfig &config);
+  UARTHardware(const ws_uart_SerialConfig &config, uint32_t uart_nbr);
   ~UARTHardware();
   bool ConfigureSerial();
   uint16_t UartPacketFormatToConfig(const ws_uart_PacketFormat uart_format);

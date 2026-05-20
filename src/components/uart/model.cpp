@@ -97,9 +97,10 @@ void UARTModel::ConfigureUartInputEventMsg(uint32_t uart_nbr,
   _msg_UartInputEvent.has_descriptor = true;
   _msg_UartInputEvent.descriptor.uart_nbr = uart_nbr;
   _msg_UartInputEvent.descriptor.type = type;
-  // For now, we'll use the device_id directly - will need callback encoding
-  // later
-  _msg_UartInputEvent.descriptor.id.arg = (void *)device_id;
+  strncpy(_msg_UartInputEvent.descriptor.id, device_id,
+          sizeof(_msg_UartInputEvent.descriptor.id) - 1);
+  _msg_UartInputEvent.descriptor.id[sizeof(_msg_UartInputEvent.descriptor.id) -
+                                     1] = '\0';
 }
 
 /*!

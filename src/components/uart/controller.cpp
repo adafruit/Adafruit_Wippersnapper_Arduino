@@ -75,7 +75,8 @@ bool UARTController::Router(pb_istream_t *stream) {
 bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // TODO: fix the id field, currently it is a callback and should be a string.
   if (!msg->has_cfg_serial && !msg->has_cfg_device) {
-    Ws.error_controller->publishComponentError(ws_uart_Descriptor, "No configuration provided for UART device");
+    // TODO BELOW add back
+    // Ws.error_controller->publishComponentError(ws_uartdes, "No configuration provided for UART device");
     return false;
   }
 
@@ -83,7 +84,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // TODO: Have we already configured this UART hardware instance?!
   WS_DEBUG_PRINTLN("[uart] Configuring UART hardware instance...");
   ws_uart_SerialConfig cfg_serial = msg->cfg_serial;
-  UARTHardware *uart_hardware = new UARTHardware(cfg_serial);
+  UARTHardware *uart_hardware = new UARTHardware(cfg_serial, msg->descriptor.uart_nbr);
   if (!uart_hardware->ConfigureSerial()) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to configure UART hardware!");
     delete uart_hardware; // cleanup
@@ -98,19 +99,19 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // TODO: Have we already added this UART device?!
   drvUartBase *uart_driver = nullptr;
   ws_uart_DeviceConfig cfg_device = msg->cfg_device;
-  switch (cfg_device.type) {
+  switch (msg->descriptor.type) {
   case ws_uart_DeviceType_DT_UNSPECIFIED:
     WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
     return false;
   case ws_uart_DeviceType_DT_GENERIC_INPUT:
     // check if device_type is "us100"
-    if (strcmp(cfg_device.id, "us100") == 0) {
+    if (strcmp(msg->descriptor.id, "us100") == 0) {
       WS_DEBUG_PRINTLN("[uart] Adding US-100 device..");
       // Create a new US-100 driver instance
       WS_DEBUG_PRINT("[uart] Adding US-100 Driver...");
       uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
-                                     cfg_device.id, cfg_serial.uart_nbr);
-      uart_driver->ConfigureDriver(cfg_device);
+                                     msg->descriptor.id, msg->descriptor.uart_nbr);
+      uart_driver->ConfigureDriver(msg->descriptor.type, cfg_device);
       uart_driver->EnableSensorEvents(
           cfg_device.config.generic_input.types,
           cfg_device.config.generic_input.types_count);
@@ -137,8 +138,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     // Create a new PM2.5 AQI driver instance
     // TODO: Support SoftwareSerial as well, currently only HardwareSerial
     uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
-                                  cfg_device.id, cfg_serial.uart_nbr);
-    uart_driver->ConfigureDriver(cfg_device);
+                                  msg->descriptor.id, msg->descriptor.uart_nbr);
+    uart_driver->ConfigureDriver(msg->descriptor.type, cfg_device);
     uart_driver->EnableSensorEvents(cfg_device.config.pm25aqi.types,
                                     cfg_device.config.pm25aqi.types_count);
     uart_driver->SetSensorPeriod(cfg_device.config.pm25aqi.period);
@@ -173,7 +174,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   // Encode and publish out to Adafruit IO
   WS_DEBUG_PRINTLN("[uart] Encoding UartAdded message...");
   if (!_uart_model->EncodeUartAdded(uart_hardware->GetBusNumber(),
-                                    cfg_device.type, cfg_device.id,
+                                    msg->descriptor.type, msg->descriptor.id,
                                     did_begin)) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to encode UartAdded message!");
     return false;
@@ -212,7 +213,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
         if ((*driver_it)->GetPortNum() == port_num &&
             (*driver_it)->GetDeviceType() == msg->descriptor.type &&
             strcmp((*driver_it)->GetName(),
-                   (const char *)msg->descriptor.id.arg) == 0) {
+                   msg->descriptor.id) == 0) {
           // Driver found, remove it
           WS_DEBUG_PRINT("[uart] Removing UART driver: ");
           WS_DEBUG_PRINTVAR((*driver_it)->GetName());

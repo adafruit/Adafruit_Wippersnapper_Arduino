@@ -18,9 +18,10 @@
     @brief  Constructs a new UARTHardware object.
     @param  config The configuration for the serial.
 */
-UARTHardware::UARTHardware(const ws_uart_SerialConfig &config) {
+UARTHardware::UARTHardware(const ws_uart_SerialConfig &config,
+                           uint32_t uart_nbr) {
   _config = config;
-  _uart_nbr = config.uart_nbr;
+  _uart_nbr = uart_nbr;
 }
 
 /*!
@@ -129,10 +130,10 @@ bool UARTHardware::ConfigureSerial() {
 #if defined(ARDUINO_ARCH_RP2040) || defined(ADAFRUIT_METRO_M4_EXPRESS) ||      \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(ARDUINO_ARCH_SAMD)
-    if (_config.uart_nbr == 1) {
+    if (_uart_nbr == 1) {
       _hwSerial = &Serial1;
 #if !defined(ADAFRUIT_PYPORTAL) && !defined(ADAFRUIT_PYPORTAL_M4_TITANO)
-    } else if (_config.uart_nbr == 2) {
+    } else if (_uart_nbr == 2) {
       _hwSerial = &Serial2;
 #endif
     } else {
@@ -141,7 +142,7 @@ bool UARTHardware::ConfigureSerial() {
     }
 #else
     // Create a new HardwareSerial instance
-    _hwSerial = new HardwareSerial(_config.uart_nbr);
+    _hwSerial = new HardwareSerial(_uart_nbr);
 #endif
     if (_hwSerial == nullptr) {
       WS_DEBUG_PRINTLN(
