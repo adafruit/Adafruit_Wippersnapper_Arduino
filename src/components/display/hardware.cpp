@@ -458,33 +458,35 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   WS_DEBUG_PRINT("[display] RGB666 panel: ");
   WS_DEBUG_PRINTLNVAR(msg->panel);
 
-  dispDrvRgb666 *drv = new dispDrvRgb666(msg->panel);
-  if (!drv)
+  _drvDisp = new dispDrvRgb666(msg->panel);
+  if (!_drvDisp)
     return false;
 
   int16_t width = config->width;
   int16_t height = config->height;
 
-  // Some controller payloads may omit RGB666 dimensions.
-  // Apply panel-based safe defaults to avoid 0x0 display init.
+  // No controller payloads may omit RGB666 dimensions.
   if (width <= 0 || height <= 0) {
-    WS_DEBUG_PRINTLN("[display] WARNING: RGB666 config missing dimensions, "
+    WS_DEBUG_PRINTLN("[display] ERROR: RGB666 config missing dimensions, "
                      "failed to initialise display.");
-  }
-
-  drv->setWidth(width);
-  drv->setHeight(height);
-  drv->setRotation(config->rotation);
-  if (config->text_size > 0)
-    drv->setTextSize(config->text_size);
-
-  if (!drv->begin()) {
-    WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin RGB666 driver!");
-    delete drv;
+    delete _drvDisp;
+    _drvDisp = nullptr;
     return false;
   }
 
-  _drvDisp = drv;
+  _drvDisp->setWidth(width);
+  _drvDisp->setHeight(height);
+  _drvDisp->setRotation(config->rotation);
+  if (config->text_size > 0)
+    _drvDisp->setTextSize(config->text_size);
+
+  if (!_drvDisp->begin()) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin RGB666 driver!");
+    delete _drvDisp;
+    _drvDisp = nullptr;
+    return false;
+  }
+
   WS_DEBUG_PRINTLN("[display] TTL RGB666 initialized successfully!");
   return true;
 #else
