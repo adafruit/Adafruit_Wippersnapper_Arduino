@@ -154,14 +154,14 @@ bool UARTModel::AddUartInputEvent(sensors_event_t &event,
 bool UARTModel::EncodeUartInputEvent() {
   // Calculate the size of the encoded message
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_uart_InputEvent_fields,
+  if (!pb_get_encoded_size(&sz_msg, ws_uart_Event_fields,
                            &_msg_UartInputEvent))
     return false;
 
   // Attempt to encode the message into a buffer
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_uart_InputEvent_fields,
+  return pb_encode(&msg_stream, ws_uart_Event_fields,
                    &_msg_UartInputEvent);
 }
 
@@ -169,6 +169,6 @@ bool UARTModel::EncodeUartInputEvent() {
     @brief  Gets a pointer to the UartInputEvent message.
     @return Pointer to the UartInputEvent message.
 */
-ws_uart_InputEvent *UARTModel::GetUartInputEventMsg() {
+ws_uart_Event *UARTModel::GetUartInputEventMsg() {
   return &_msg_UartInputEvent;
 }

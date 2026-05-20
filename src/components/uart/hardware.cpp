@@ -28,7 +28,24 @@ UARTHardware::UARTHardware(const ws_uart_SerialConfig &config,
     @brief  Destructs the UARTHardware.
 */
 UARTHardware::~UARTHardware() {
-  // TODO
+  if (_hwSerial != nullptr) {
+    _hwSerial->end();
+    // Only delete if we heap-allocated it; on platforms where we
+    // assigned &Serial1/&Serial2 the pointer is a global reference.
+#if !defined(ARDUINO_ARCH_RP2040) && !defined(ADAFRUIT_METRO_M4_EXPRESS) &&    \
+    !defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) && !defined(ADAFRUIT_PYPORTAL) && \
+    !defined(ADAFRUIT_PYPORTAL_M4_TITANO) && !defined(ARDUINO_ARCH_SAMD)
+    delete _hwSerial;
+#endif
+    _hwSerial = nullptr;
+  }
+#if HAS_SW_SERIAL
+  if (_swSerial != nullptr) {
+    _swSerial->end();
+    delete _swSerial;
+    _swSerial = nullptr;
+  }
+#endif
 }
 
 /*!

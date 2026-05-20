@@ -19,7 +19,6 @@
 */
 ServoModel::ServoModel() {
   memset(&_msg_servo_add, 0, sizeof(_msg_servo_add));
-  memset(&_msg_servo_added, 0, sizeof(_msg_servo_added));
   memset(&_msg_servo_remove, 0, sizeof(_msg_servo_remove));
   memset(&_msg_servo_write, 0, sizeof(_msg_servo_write));
 }

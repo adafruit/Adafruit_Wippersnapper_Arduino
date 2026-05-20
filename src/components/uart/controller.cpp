@@ -24,8 +24,18 @@ UARTController::UARTController() { _uart_model = new UARTModel(); }
     @brief  Destructs the UARTController.
 */
 UARTController::~UARTController() {
+  // Delete drivers before ports — drivers hold a pointer to the
+  // hardware's serial, so hardware must outlive the driver teardown.
+  for (drvUartBase *drv : _uart_drivers) {
+    delete drv;
+  }
+  _uart_drivers.clear();
+  for (UARTHardware *hw : _ports) {
+    delete hw;
+  }
+  _ports.clear();
   if (_uart_model != nullptr) {
-    delete _uart_model; // cleanup model
+    delete _uart_model;
     _uart_model = nullptr;
   }
 }
@@ -170,28 +180,39 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
 
   // Find the corresponding hardware instance for the UART port
   uint32_t port_num = msg->descriptor.uart_nbr;
-  for (auto it = _ports.begin(); it != _ports.end(); ++it) {
+  for (std::vector<UARTHardware *>::iterator it = _ports.begin();
+       it != _ports.end(); ++it) {
     if ((*it)->getPortNum() == port_num) {
       // Find the corresponding driver for the uart port
-      for (auto driver_it = _uart_drivers.begin();
+      for (std::vector<drvUartBase *>::iterator driver_it =
+               _uart_drivers.begin();
            driver_it != _uart_drivers.end(); ++driver_it) {
         if ((*driver_it)->GetPortNum() == port_num &&
             (*driver_it)->GetDeviceType() == msg->descriptor.type &&
-            strcmp((*driver_it)->GetName(),
-                   msg->descriptor.id) == 0) {
+            strcmp((*driver_it)->GetName(), msg->descriptor.id) == 0) {
           // Driver found, remove it
-          WS_DEBUG_PRINT("[uart] Removing UART driver: ");
-          WS_DEBUG_PRINTVAR((*driver_it)->GetName());
-          WS_DEBUG_PRINT("...");
           delete *driver_it;
           _uart_drivers.erase(driver_it);
-          WS_DEBUG_PRINTLN("Removed!");
+          // Also remove and free the hardware port
+          delete *it;
+          _ports.erase(it);
+          WS_DEBUG_PRINT("[uart] Removed UART device: ");
+          WS_DEBUG_PRINTVAR(msg->descriptor.id);
+          WS_DEBUG_PRINT(" on port ");
+          WS_DEBUG_PRINTVAR(msg->descriptor.uart_nbr);
+          WS_DEBUG_PRINTLN();
           return true;
         }
       }
+      // Port found but no matching driver on it
+      Ws.error_controller->publishComponentError(
+          msg->descriptor, "No matching driver found on port");
+      return false;
     }
   }
 
+  Ws.error_controller->publishComponentError(msg->descriptor,
+                                              "Port not found for removal");
   return false;
 }
 
@@ -202,12 +223,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
     @return True if the message was handled successfully, False otherwise.
 */
 bool UARTController::Handle_UartWrite(ws_uart_Write *msg) {
-  // TODO: Needs implementation
-  // TO ADDRESS:
-  // 1) Hardware is the uart_nbr
-  // 2) type is the driver type
-  // 3) device_id is the unique identifier for the UART device, stored by the
-  // driver
+  Ws.error_controller->publishComponentError(msg->descriptor, "UartWrite not implemented.");
   return false;
 }
 
