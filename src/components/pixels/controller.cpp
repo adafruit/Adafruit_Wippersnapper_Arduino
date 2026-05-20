@@ -82,7 +82,7 @@ bool PixelsController::Handle_Pixels_Add(ws_pixels_Add *msg) {
   if (!_pixel_strands[_num_strands]->AddStrand(
           msg->type, msg->ordering, msg->num, msg->brightness, msg->pin_data,
           msg->pin_dotstar_clock)) {
-    Ws.error_controller->publishComponentError(
+    Ws.error_handler->publishComponentError(
         msg->pin_data, "Failed to initialize pixel strand!");
     return false;
   }
@@ -124,7 +124,7 @@ bool PixelsController::Handle_Pixels_Remove(ws_pixels_Remove *msg) {
   uint16_t pin_data = atoi(msg->pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
   if (idx == STRAND_NOT_FOUND) {
-    Ws.error_controller->publishComponentError(msg->pin_data,
+    Ws.error_handler->publishComponentError(msg->pin_data,
                                                "Failed to find strand index!");
     return false;
   }

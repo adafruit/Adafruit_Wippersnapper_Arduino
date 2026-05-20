@@ -39,7 +39,7 @@ wippersnapper Ws;
     @brief    wippersnapper constructor
 */
 wippersnapper::wippersnapper()
-    : _mqttV2(nullptr), sensor_model(nullptr), error_controller(nullptr),
+    : _mqttV2(nullptr), sensor_model(nullptr), error_handler(nullptr),
       digital_io_controller(nullptr), analogio_controller(nullptr),
       _ds18x20_controller(nullptr), _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
@@ -74,7 +74,7 @@ wippersnapper::~wippersnapper() {
   disconnect();
   delete this->_wdt;
   delete this->sensor_model;
-  // delete this->error_controller; // TODO: Why is this commented out?
+  delete this->error_handler;
   delete this->digital_io_controller;
   delete this->analogio_controller;
   delete this->_ds18x20_controller;
@@ -305,7 +305,7 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   // Pass to class' router based on tag type
   switch (field->tag) {
   case ws_signal_BrokerToDevice_error_tag:
-    return Ws.error_controller->Router(stream);
+    return Ws.error_handler->Router(stream);
   case ws_signal_BrokerToDevice_checkin_tag:
     return handleCheckinResponse(stream);
   case ws_signal_BrokerToDevice_digitalio_tag:
@@ -914,8 +914,7 @@ void wippersnapper::connect() {
 
   _brokerKeepAliveIntervalSeconds = WS_BROKER_KEEPALIVE_MS / 1000;
 
-  // TODO: Does this need to be here?
-  Ws.error_controller = new ErrorController();
+  Ws.error_handler = new ErrorHandler();
 
   // enable global WDT
   if (!Ws._wdt->enable(WS_TIMEOUT_WDT)) {
