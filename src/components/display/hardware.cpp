@@ -304,7 +304,8 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 
   // MagTag hardware auto-detection (requires SPI probing)
   const char *driver = msg->driver;
-  if (strncmp(_name, "eink-magtag", 11) == 0 && strlen(driver) == 0) {
+  if (strncmp(_name, "eink-magtag", sizeof("eink-magtag") - 1) == 0 &&
+      strlen(driver) == 0) {
     if (EpdBitBangReadRegister(0x71, spi_epd_config) == 0xFF) {
       driver = "SSD1680";
     } else {
