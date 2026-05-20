@@ -74,6 +74,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   int16_t dc = parsePin(spi->pin_dc);
   int16_t mosi = parsePin(dev->pin_mosi);
   int16_t sck = parsePin(dev->pin_sck);
+
   int16_t rst = parsePin(spi->pin_rst);
   int16_t miso = parsePin(dev->pin_miso);
 
@@ -89,6 +90,11 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   WS_DEBUG_PRINTVAR(rst);
   WS_DEBUG_PRINT(" MISO:");
   WS_DEBUG_PRINTLNVAR(miso);
+
+  if (cs < 0 || dc < 0 || mosi < 0 || sck < 0) {
+    WS_DEBUG_PRINT("[display] ERROR: Invalid SPI TFT pin configuration! ");
+    return false;
+  }  
 
   if (dev->bus != 0) {
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
