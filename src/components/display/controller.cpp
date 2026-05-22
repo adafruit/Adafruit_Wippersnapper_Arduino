@@ -242,7 +242,8 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
   if (!hw->begin(msg, name)) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to initialize display hardware!");
     delete hw;
-    // Publish failure response
+    
+    //TODO: Publish failure response / add model via ErrorHandler
     ws_display_D2B d2b = ws_display_D2B_init_zero;
     d2b.name.funcs.encode = encode_string_cb;
     d2b.name.arg = (void *)name;
@@ -265,7 +266,7 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
     Handle_Display_Write(&msg->write, name);
   }
 
-  // Publish success response
+  //TODO: Do not Publish success response, only errors
   ws_display_D2B d2b = ws_display_D2B_init_zero;
   d2b.name.funcs.encode = encode_string_cb;
   d2b.name.arg = (void *)name;
@@ -326,7 +327,7 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg,
     WS_DEBUG_PRINTLN("[display] WARNING: Display not found");
   }
 
-  // Publish response
+  // Publish remove errors but not success response
   ws_display_D2B d2b = ws_display_D2B_init_zero;
   d2b.name.funcs.encode = encode_string_cb;
   d2b.name.arg = (void *)name;
