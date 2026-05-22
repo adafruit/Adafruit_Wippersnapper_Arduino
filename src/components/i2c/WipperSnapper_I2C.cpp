@@ -30,6 +30,10 @@
 /***************************************************************************************************************/
 WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     wippersnapper_i2c_v1_I2CBusInitRequest *msgInitRequest) {
+  // ESP8266: detach the software-waveform PWM from the status LED before any
+  // pinMode/Wire.begin so the Timer1 NMI can't fire inside Wire's critical
+  // sections (see issue #914).
+  pauseStatusLEDPWM();
   WS_DEBUG_PRINTLN("EXEC: New I2C Port ");
   WS_DEBUG_PRINT("\tPort #: ");
   WS_DEBUG_PRINTLNVAR(msgInitRequest->i2c_port_number);
@@ -104,6 +108,7 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
   }
 
+  resumeStatusLEDPWM();
   WS.runNetFSM();
 }
 
