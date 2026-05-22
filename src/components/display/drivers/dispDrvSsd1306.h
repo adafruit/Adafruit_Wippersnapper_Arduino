@@ -38,8 +38,8 @@ public:
                 The name of the driver.
   */
   dispDrvSsd1306(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-                 const char *driver_name)
-      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name) {}
+                 const char *driver_name, const char *panel)
+      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name, panel) {}
 
   /*!
       @brief    Destructor.

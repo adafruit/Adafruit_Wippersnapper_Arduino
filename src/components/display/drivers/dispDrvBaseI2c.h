@@ -52,11 +52,13 @@ public:
       @param  driver_name  The name of the driver.
   */
   dispDrvBaseI2c(TwoWire *i2c, uint16_t address, uint32_t mux_channel,
-                 const char *driver_name)
+                 const char *driver_name, const char *panel)
       : dispDrvBase(), _i2c(i2c), _address(address),
         _i2c_mux_channel(mux_channel) {
     strncpy(_name, driver_name ? driver_name : "", sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
+    strncpy(_panel, panel ? panel : "", sizeof(_panel) - 1);
+    _panel[sizeof(_panel) - 1] = '\0';
   }
 
   /*! @brief  Virtual destructor. */
@@ -67,6 +69,12 @@ public:
       @returns  The driver's name.
   */
   const char *GetDrvName() { return _name; }
+
+  /*!
+      @brief    Gets the name of the panel.
+      @returns  The panel's name.
+  */
+  const char *GetPanelName() { return _panel; }
 
   /*!
       @brief    Gets the I2C device's address.
@@ -179,7 +187,8 @@ protected:
   TwoWire *_i2c = nullptr;       ///< I2C hardware interface
   uint16_t _address = 0;         ///< I2C device address
   uint32_t _i2c_mux_channel = 0; ///< Optional I2C MUX channel
-  char _name[15] = {0};          ///< Driver name
+  char _name[65] = {0};          ///< Driver name
+  char _panel[33] = {0};         ///< Panel name
 };
 
 #endif // WS_DISP_DRV_BASE_I2C_H

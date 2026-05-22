@@ -103,6 +103,8 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   int16_t rst = parsePin(spi->pin_rst);
   int16_t miso = parsePin(dev->pin_miso);
 
+#ifdef CORE_LOG_LEVEL
+#if CORE_LOG_LEVEL>1
   WS_DEBUG_PRINT("[display] SPI TFT pins - CS:");
   WS_DEBUG_PRINTVAR(cs);
   WS_DEBUG_PRINT(" DC:");
@@ -115,7 +117,8 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   WS_DEBUG_PRINTVAR(rst);
   WS_DEBUG_PRINT(" MISO:");
   WS_DEBUG_PRINTLNVAR(miso);
-
+#endif
+#endif
   if (cs < 0 || dc < 0 || mosi < 0 || sck < 0) {
     WS_DEBUG_PRINT("[display] ERROR: Invalid SPI TFT pin configuration! ");
     return false;
@@ -539,15 +542,15 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   dispDrvBaseI2c *drv = nullptr;
   const char *driverName = msg->driver;
   if (strcasecmp(driverName, "SSD1306") == 0) {
-    drv = new dispDrvSsd1306(i2c, addr, 0, driverName);
+    drv = new dispDrvSsd1306(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "SH1107") == 0) {
-    drv = new dispDrvSh1107(i2c, addr, 0, driverName);
+    drv = new dispDrvSh1107(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "charlcd") == 0) {
-    drv = new dispDrvCharLcd(i2c, addr, 0, driverName);
+    drv = new dispDrvCharLcd(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "7seg") == 0) {
-    drv = new dispDrv7Seg(i2c, addr, 0, driverName);
+    drv = new dispDrv7Seg(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "quadalphanum") == 0) {
-    drv = new dispDrvQuadAlphaNum(i2c, addr, 0, driverName);
+    drv = new dispDrvQuadAlphaNum(i2c, addr, 0, driverName, msg->panel);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported I2C display driver: ");
     WS_DEBUG_PRINTLNVAR(driverName);
@@ -578,8 +581,14 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     ws_display_LedBackpackConfig *cfg = &msg->config.config_led;
     drv->ConfigureI2CBackpack(cfg->brightness, cfg->alignment);
   } else {
-    // No matching config — for OLEDs, apply safe defaults to prevent
+    // No matching config — for v1 OLEDs, apply safe defaults to prevent
     // crash from uninitialized width/height in dispDrvSsd1306::begin()
+
+    /* TODO: refactor these i2c products / drivers to utilise panel name
+    so internalRotation can be factored in by panel allowing normal 
+    width/height in definition as user/UI expects not as driver ctor needs.
+    e.g. featherwing 128x64 OLED would be defined as 128x32 panel with internalRotation=90
+    */
     WS_DEBUG_PRINTLN("[display] WARNING: No config for I2C display, "
                      "applying defaults");
     if (strcasecmp(driverName, "SSD1306") == 0) {

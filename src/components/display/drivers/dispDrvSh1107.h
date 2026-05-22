@@ -39,8 +39,8 @@ public:
       @param  driver_name    The name of the driver.
   */
   dispDrvSh1107(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-                const char *driver_name)
-      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name) {}
+                const char *driver_name, const char *panel)
+      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name, panel) {}
 
   ~dispDrvSh1107() {
     if (_display != nullptr) {
@@ -53,9 +53,10 @@ public:
   }
 
   bool begin() override {
-    if (_width == OLED_128X64_WING_WIDTH &&
+    if ((_width == OLED_128X64_WING_WIDTH &&
         _height == OLED_128X64_WING_HEIGHT &&
-        _rotation == OLED_128X64_WING_ROTATION_90) {
+        _rotation == OLED_128X64_WING_ROTATION_90) || 
+        strcasecmp(_panel, "128x64featherwing") == 0) {
       // FeatherWing needs swapped w/h ctor args
       _display = new Adafruit_SH1107(_height, _width, _i2c);
     } else {
