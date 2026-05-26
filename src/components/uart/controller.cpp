@@ -165,8 +165,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   WS_DEBUG_PRINT("[uart] Added UART device: ");
   WS_DEBUG_PRINTVAR(msg->descriptor.id);
   WS_DEBUG_PRINT(" on port ");
-  WS_DEBUG_PRINTVAR(msg->descriptor.uart_nbr);
-  WS_DEBUG_PRINTLN();
+  WS_DEBUG_PRINTLNVAR(msg->descriptor.uart_nbr);
   return true;
 }
 
@@ -199,8 +198,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
           WS_DEBUG_PRINT("[uart] Removed UART device: ");
           WS_DEBUG_PRINTVAR(msg->descriptor.id);
           WS_DEBUG_PRINT(" on port ");
-          WS_DEBUG_PRINTVAR(msg->descriptor.uart_nbr);
-          WS_DEBUG_PRINTLN();
+          WS_DEBUG_PRINTLNVAR(msg->descriptor.uart_nbr);
           return true;
         }
       }

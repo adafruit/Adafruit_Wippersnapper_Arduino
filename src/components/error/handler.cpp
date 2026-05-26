@@ -165,9 +165,9 @@ bool ErrorHandler::publishComponentError(const char *pin,
 bool ErrorHandler::publishComponentError(ws_i2c_Descriptor i2c,
                                          const char *error_msg) {
   WS_DEBUG_PRINT("[error] I2C 0x");
-  WS_DEBUG_PRINT(i2c.address, HEX);
+  WS_DEBUG_PRINTHEX(i2c.address);
   WS_DEBUG_PRINT(": ");
-  WS_DEBUG_PRINTLN(error_msg);
+  WS_DEBUG_PRINTLNVAR(error_msg);
 
   _d2b_msg = ws_error_D2B_init_zero;
   _d2b_msg.which_payload = ws_error_D2B_component_tag;
