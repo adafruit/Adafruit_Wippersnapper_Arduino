@@ -84,7 +84,8 @@ bool UARTController::Router(pb_istream_t *stream) {
 */
 bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   if (!msg->has_cfg_serial && !msg->has_cfg_device) {
-    Ws.error_handler->publishComponentError(msg->descriptor, "Missing serial/device configuration");
+    Ws.error_handler->publishComponentError(
+        msg->descriptor, "Missing serial/device configuration");
     return false;
   }
 
@@ -92,16 +93,19 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   int port = msg->descriptor.uart_nbr;
   for (UARTHardware *hw : _ports) {
     if (hw->getPortNum() == port) {
-      Ws.error_handler->publishComponentError(msg->descriptor, "Port already in use");
+      Ws.error_handler->publishComponentError(msg->descriptor,
+                                              "Port already in use");
       return false;
     }
   }
 
   // Configure a new UART port using the provided serial configuration
   ws_uart_SerialConfig cfg_serial = msg->cfg_serial;
-  UARTHardware *uart_hardware = new UARTHardware(cfg_serial, msg->descriptor.uart_nbr);
+  UARTHardware *uart_hardware =
+      new UARTHardware(cfg_serial, msg->descriptor.uart_nbr);
   if (!uart_hardware->ConfigureSerial()) {
-    Ws.error_handler->publishComponentError(msg->descriptor, "Failed to configure UART hardware");
+    Ws.error_handler->publishComponentError(
+        msg->descriptor, "Failed to configure UART hardware");
     delete uart_hardware;
     return false;
   }
@@ -116,12 +120,14 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   switch (msg->descriptor.type) {
   case ws_uart_DeviceType_DT_GENERIC_INPUT:
     if (strcmp(msg->descriptor.id, "us100") != 0) {
-      Ws.error_handler->publishComponentError(msg->descriptor, "Unsupported generic input device ID");
+      Ws.error_handler->publishComponentError(
+          msg->descriptor, "Unsupported generic input device ID");
       delete uart_hardware;
       return false;
     }
-    uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
-                                   msg->descriptor.id, msg->descriptor.uart_nbr);
+    uart_driver =
+        new drvUartUs100(uart_hardware->GetHardwareSerial(), msg->descriptor.id,
+                         msg->descriptor.uart_nbr);
     sensor_types = msg->cfg_device.config.generic_input.types;
     sensor_types_count = msg->cfg_device.config.generic_input.types_count;
     sensor_period = msg->cfg_device.config.generic_input.period;
@@ -139,11 +145,13 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   case ws_uart_DeviceType_DT_GENERIC_OUTPUT:
   case ws_uart_DeviceType_DT_GPS:
   case ws_uart_DeviceType_DT_TM22XX:
-    Ws.error_handler->publishComponentError(msg->descriptor, "Unsupported UART device type");
+    Ws.error_handler->publishComponentError(msg->descriptor,
+                                            "Unsupported UART device type");
     delete uart_hardware;
     return false;
   default:
-    Ws.error_handler->publishComponentError(msg->descriptor, "Unknown device type");
+    Ws.error_handler->publishComponentError(msg->descriptor,
+                                            "Unknown device type");
     delete uart_hardware;
     return false;
   }
@@ -155,7 +163,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 
   // Attempt to initialize the UART driver
   if (!uart_driver->begin()) {
-    Ws.error_handler->publishComponentError(msg->descriptor, "Failed to initialize UART driver");
+    Ws.error_handler->publishComponentError(msg->descriptor,
+                                            "Failed to initialize UART driver");
     delete uart_driver;
     return false;
   }
@@ -210,7 +219,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
   }
 
   Ws.error_handler->publishComponentError(msg->descriptor,
-                                              "Port not found for removal");
+                                          "Port not found for removal");
   return false;
 }
 
@@ -221,7 +230,8 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
     @return True if the message was handled successfully, False otherwise.
 */
 bool UARTController::Handle_UartWrite(ws_uart_Write *msg) {
-  Ws.error_handler->publishComponentError(msg->descriptor, "UartWrite not implemented.");
+  Ws.error_handler->publishComponentError(msg->descriptor,
+                                          "UartWrite not implemented.");
   return false;
 }
 

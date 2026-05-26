@@ -25,8 +25,7 @@
     @return True if encoding was successful, False otherwise.
 */
 static bool encode_string_callback(pb_ostream_t *stream,
-                                   const pb_field_t *field,
-                                   void *const *arg) {
+                                   const pb_field_t *field, void *const *arg) {
   const char *str = (const char *)*arg;
   if (!str) {
     return pb_encode_string(stream, (const uint8_t *)"", 0);
@@ -39,15 +38,12 @@ static bool encode_string_callback(pb_ostream_t *stream,
 /*!
     @brief  ErrorHandler constructor
 */
-ErrorHandler::ErrorHandler() {
-  _d2b_msg = ws_error_D2B_init_zero;
-}
+ErrorHandler::ErrorHandler() { _d2b_msg = ws_error_D2B_init_zero; }
 
 /*!
     @brief  ErrorHandler destructor
 */
-ErrorHandler::~ErrorHandler() {
-}
+ErrorHandler::~ErrorHandler() {}
 
 /*!
     @brief  Routes messages using the error.proto API to the
