@@ -46,17 +46,24 @@ public:
   // Getters
   ws_i2c_Remove *GetI2cDeviceRemoveMsg();
   ws_i2c_Add *GetI2cDeviceAddOrReplaceMsg();
-  ws_i2c_output_Add *GetI2cOutputAddMsg(); ///< Returns the I2C output Add msg.
+  /// Returns the I2C output Add message.
+  ws_i2c_output_Add *GetI2cOutputAddMsg();
   ws_i2c_Event *GetI2cDeviceEvent();
   ws_i2c_D2B *GetI2cD2B();
   // Probe API — model owns decode/encode/storage
   void SetupProbeDecodeCallbacks(ws_i2c_Probe *probe);
-  ws_i2c_AddressSpace *GetProbeAddressSpaces(); ///< Returns probe address spaces.
-  size_t GetProbeAddressSpacesCount(); ///< Returns probe address spaces count.
-  uint32_t *GetProbeAddresses(); ///< Returns probe addresses array.
-  size_t GetProbeAddressesCount(); ///< Returns probe addresses count.
-  void ClearProbed(); ///< Clears probed results.
-  ws_i2c_AddressSpaceResult *GetNextProbedResult(); ///< Returns next probed result slot.
+  /// Returns probe address spaces.
+  ws_i2c_AddressSpace *GetProbeAddressSpaces();
+  /// Returns probe address spaces count.
+  size_t GetProbeAddressSpacesCount();
+  /// Returns probe addresses array.
+  uint32_t *GetProbeAddresses();
+  /// Returns probe addresses count.
+  size_t GetProbeAddressesCount();
+  /// Clears probed results.
+  void ClearProbed();
+  /// Returns next probed result slot.
+  ws_i2c_AddressSpaceResult *GetNextProbedResult();
   /*!
       @brief    Returns the found-address buffer for a given index.
       @param    idx
