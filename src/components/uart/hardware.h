@@ -55,8 +55,8 @@ private:
 #if HAS_SW_SERIAL
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance for this bus
 #endif                                 // HAS_SW_SERIAL
-  uint32_t _pin_rx;    ///< The RX pin number
-  uint32_t _pin_tx;    ///< The TX pin number
+  uint32_t _pin_rx;                    ///< The RX pin number
+  uint32_t _pin_tx;                    ///< The TX pin number
   uint32_t _baud_rate; ///< The baud rate for this hardware instance
 };
 #endif // WS_UART_HARDWARE_H

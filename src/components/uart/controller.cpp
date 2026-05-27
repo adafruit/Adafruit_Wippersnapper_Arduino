@@ -101,9 +101,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 
   // Configure a new UART port using the provided serial configuration
   ws_uart_SerialConfig cfg_serial = msg->cfg_serial;
-  UARTHardware *uart_hardware =
-      new UARTHardware(cfg_serial, msg->descriptor.pin_rx,
-                       msg->descriptor.pin_tx);
+  UARTHardware *uart_hardware = new UARTHardware(
+      cfg_serial, msg->descriptor.pin_rx, msg->descriptor.pin_tx);
   if (!uart_hardware->ConfigureSerial()) {
     Ws.error_handler->publishComponentError(
         msg->descriptor, "Failed to configure UART hardware");
@@ -134,8 +133,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     WS_DEBUG_PRINTLN("[uart] Added US-100 Ultrasonic Distance Sensor!");
     break;
   case ws_uart_DeviceConfig_pm25aqi_tag:
-    uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
-                                  msg->name, msg->descriptor.pin_rx);
+    uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(), msg->name,
+                                  msg->descriptor.pin_rx);
     sensor_types = msg->cfg_device.config.pm25aqi.types;
     sensor_types_count = msg->cfg_device.config.pm25aqi.types_count;
     sensor_period = msg->cfg_device.config.pm25aqi.period;

@@ -81,14 +81,8 @@ void UARTModel::ClearUartInputEventMsg() {
 
 /*!
     @brief  Configures an UartInputEvent message with addressing information.
-    @param  uart_nbr
-            The UART port number (eg: 0, 1, 2, etc.) that the device is attached
-   to.
-    @param  type
-            The category of device attached to the UART port, corresponds to its
-   driver type.
-    @param  device_id
-            The unique identifier string for the UART device.
+    @param  pin_rx
+            The RX pin number for the UART port.
 */
 void UARTModel::ConfigureUartInputEventMsg(uint32_t pin_rx) {
   _msg_UartInputEvent.has_descriptor = true;

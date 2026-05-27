@@ -294,10 +294,10 @@ public:
 protected:
   HardwareSerial *_hw_serial; ///< Pointer to a HardwareSerial instance
 #if HAS_SW_SERIAL
-  SoftwareSerial *_sw_serial;      ///< Pointer to a SoftwareSerial instance
-#endif                             // HAS_SW_SERIAL
-  char _name[32];                  ///< The device's name
-  uint32_t _port_num = 0;          ///< The port number for the UART device
+  SoftwareSerial *_sw_serial; ///< Pointer to a SoftwareSerial instance
+#endif                        // HAS_SW_SERIAL
+  char _name[32];             ///< The device's name
+  uint32_t _port_num = 0;     ///< The port number for the UART device
   bool _is_software_serial =
       false; ///< Indicates if this driver uses SoftwareSerial
   // Sensor API - UART INPUT
