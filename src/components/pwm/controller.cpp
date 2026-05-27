@@ -73,7 +73,7 @@ bool PWMController::Router(pb_istream_t *stream) {
 bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   uint8_t pin = 0;
   if (!ExpanderHardware::ParsePinNum(msg->pin, pin)) {
-    WS_DEBUG_PRINTLN("[pwm] ERROR: Malformed expander pin name!");
+    Ws.error_handler->publishComponentError(msg->pin, "Malformed pin name");
     return false;
   }
 
@@ -83,7 +83,7 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
     expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
-      WS_DEBUG_PRINTLN("[pwm] ERROR: Expander not found for address!");
+      Ws.error_handler->publishComponentError(msg->pin, "Expander not found");
       return false;
     }
   }
@@ -97,7 +97,7 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   bool did_attach = new_pin->attach(pin, (uint32_t)msg->frequency,
                                     (uint32_t)msg->resolution, expander_drv);
   if (!did_attach) {
-    WS_DEBUG_PRINTLN("[pwm] Failed to attach pin!");
+    Ws.error_handler->publishComponentError(msg->pin, "Failed to attach pin");
     delete new_pin;
   } else {
     _pins.push_back(new_pin);
@@ -105,14 +105,16 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
 
   // Publish PWMAdded message to the broker
   if (!_pwm_model->EncodePWMAdded(msg->pin, did_attach)) {
-    WS_DEBUG_PRINTLN("[pwm]: Failed to encode PWMAdded message!");
+    Ws.error_handler->publishComponentError(msg->pin,
+                                            "Failed to encode PWMAdded");
     RemovePin(pin, expander_drv);
     return false;
   }
 
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_pwm_tag,
                      _pwm_model->GetPWMAddedMsg())) {
-    WS_DEBUG_PRINTLN("[PWM]: Unable to publish PWMAdded message!");
+    Ws.error_handler->publishComponentError(msg->pin,
+                                            "Unable to publish PWMAdded");
     RemovePin(pin, expander_drv);
     return false;
   }
@@ -130,7 +132,7 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
 bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
   uint8_t pin = 0;
   if (!ExpanderHardware::ParsePinNum(msg->pin, pin)) {
-    WS_DEBUG_PRINTLN("[pwm] ERROR: Malformed expander pin name!");
+    Ws.error_handler->publishComponentError(msg->pin, "Malformed pin name");
     return false;
   }
 
@@ -140,13 +142,13 @@ bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
     expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
-      WS_DEBUG_PRINTLN("[pwm] ERROR: Expander not found for address!");
+      Ws.error_handler->publishComponentError(msg->pin, "Expander not found");
       return false;
     }
   }
 
   if (!RemovePin(pin, expander_drv)) {
-    WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
+    Ws.error_handler->publishComponentError(msg->pin, "Failed to find pin");
     return false;
   }
 
@@ -195,7 +197,7 @@ PWMHardware *PWMController::GetPin(uint8_t pin, ExpanderHardware *expander) {
 bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
   uint8_t pin = 0;
   if (!ExpanderHardware::ParsePinNum(msg->pin, pin)) {
-    WS_DEBUG_PRINTLN("[pwm] ERROR: Malformed expander pin name!");
+    Ws.error_handler->publishComponentError(msg->pin, "Malformed pin name");
     return false;
   }
 
@@ -205,19 +207,20 @@ bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
     expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
-      WS_DEBUG_PRINTLN("[pwm] ERROR: Expander not found for address!");
+      Ws.error_handler->publishComponentError(msg->pin, "Expander not found");
       return false;
     }
   }
 
   PWMHardware *hw = GetPin(pin, expander_drv);
   if (hw == nullptr) {
-    WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
+    Ws.error_handler->publishComponentError(msg->pin, "Failed to find pin");
     return false;
   }
 
   if (!hw->write(msg)) {
-    WS_DEBUG_PRINTLN("[pwm] Error: Failed to write to pin!");
+    Ws.error_handler->publishComponentError(msg->pin,
+                                            "Failed to write to pin");
     return false;
   }
 

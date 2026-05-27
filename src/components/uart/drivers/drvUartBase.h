@@ -90,11 +90,14 @@ public:
 
   /*!
       @brief    Configures the UART driver with device-specific settings.
+      @param    type
+                The UART device type.
       @param    cfg_device
                 The configuration settings for the UART device.
   */
-  void ConfigureDriver(ws_uart_DeviceConfig &cfg_device) {
-    _device_type = cfg_device.device_type;
+  void ConfigureDriver(ws_uart_DeviceType type,
+                       ws_uart_DeviceConfig &cfg_device) {
+    _device_type = type;
 
     switch (_device_type) {
     case ws_uart_DeviceType_DT_GENERIC_INPUT:

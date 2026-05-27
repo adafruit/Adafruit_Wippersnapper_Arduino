@@ -19,9 +19,9 @@
 #include <Adafruit_Sensor.h>
 #include <protos/i2c_output.pb.h>
 
-#define MAX_DEVICE_EVENTS                                                      \
-  16 ///< Maximum number of SensorEvents within I2cDeviceEvent
-#define MAX_I2C_SCAN_DEVICES 16 ///< Maximum number of devices found on the bus
+#define MAX_DEVICE_EVENTS 16 ///< Maximum number of SensorEvents within I2cEvent
+#define MAX_PROBE_SPACES 16  ///< Maximum number of AddressSpaces in a Probe
+#define MAX_PROBE_ADDRESSES 112 ///< Maximum number of addresses to probe
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -34,34 +34,69 @@ public:
   // Decoders
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
-  bool DecodeI2cBusScan(pb_istream_t *stream);
-  /*!  @brief  Decodes an I2C device output write message from a stream.
-       @param  stream  Pointer to the nanopb input stream.
-       @return True if decoding succeeded, false otherwise. */
+  /*!
+      @brief    Decodes an I2C output device write message.
+      @param    stream
+                The nanopb input stream.
+      @returns  True if decoded successfully, False otherwise.
+  */
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
-  bool encodeMsgI2cDeviceAddedorReplaced(
-      ws_i2c_DeviceDescriptor i2c_device_description,
-      ws_i2c_BusStatus i2c_bus_status, ws_i2c_DeviceStatus i2c_device_status);
   bool EncodeI2cDeviceEvent();
   // Getters
-  ws_i2c_DeviceRemove *GetI2cDeviceRemoveMsg();
-  ws_i2c_DeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
-  /*!  @brief  Returns a pointer to the I2C output add message.
-       @return Pointer to the ws_i2c_output_Add message. */
+  ws_i2c_Remove *GetI2cDeviceRemoveMsg();
+  ws_i2c_Add *GetI2cDeviceAddOrReplaceMsg();
+  /*!
+      @brief  Returns the I2C output Add message.
+      @returns Pointer to the I2C output Add message.
+  */
   ws_i2c_output_Add *GetI2cOutputAddMsg();
-  ws_i2c_DeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
-  ws_i2c_DeviceEvent *GetI2cDeviceEvent();
-  ws_i2c_Scan *GetI2cBusScanMsg();
-  ws_i2c_Scanned *GetI2cBusScannedMsg();
-  // I2cBusScanned Message API
-  void ClearI2cBusScanned();
-  bool AddDeviceToBusScan(uint32_t pin_scl, uint32_t pin_sda,
-                          uint32_t addr_device, uint32_t addr_mux,
-                          uint32_t mux_channel);
-  void setI2cBusScannedStatus(ws_i2c_BusStatus bus_status);
-  bool encodeI2cScanned();
+  ws_i2c_Event *GetI2cDeviceEvent();
   ws_i2c_D2B *GetI2cD2B();
+  // Probe API — model owns decode/encode/storage
+  void SetupProbeDecodeCallbacks(ws_i2c_Probe *probe);
+  /*!
+      @brief  Returns probe address spaces.
+      @returns Pointer to the probe address spaces array.
+  */
+  ws_i2c_AddressSpace *GetProbeAddressSpaces();
+  /*!
+      @brief  Returns probe address spaces count.
+      @returns The number of probe address spaces.
+  */
+  size_t GetProbeAddressSpacesCount();
+  /*!
+      @brief  Returns probe addresses array.
+      @returns Pointer to the probe addresses array.
+  */
+  uint32_t *GetProbeAddresses();
+  /*!
+      @brief  Returns probe addresses count.
+      @returns The number of probe addresses.
+  */
+  size_t GetProbeAddressesCount();
+  /// Clears probed results.
+  void ClearProbed();
+  /*!
+      @brief  Returns next probed result slot.
+      @returns Pointer to the next probed result.
+  */
+  ws_i2c_AddressSpaceResult *GetNextProbedResult();
+  /*!
+      @brief    Returns the found-address buffer for a given index.
+      @param    idx
+                The address space index.
+      @returns  Pointer to the found-address buffer.
+  */
+  uint32_t *GetFoundAddressBuf(size_t idx);
+  /*!
+      @brief    Returns the found-address count for a given index.
+      @param    idx
+                The address space index.
+      @returns  Pointer to the found-address count.
+  */
+  size_t *GetFoundAddressCount(size_t idx);
+  bool EncodeProbed();
   // DeviceEvent Message API
   void ClearI2cDeviceEvent();
   void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl, uint32_t pin_sda,
@@ -69,17 +104,33 @@ public:
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
   bool AddI2cDeviceSensorEvent(sensors_event_t &event,
-                               ws_sensor_Type sensor_type);
+                               ws_i2c_Add_TypesEntry type_entry);
 
 private:
+  // Probe decode buffers
+  ws_i2c_AddressSpace _probe_spaces[MAX_PROBE_SPACES];
+  size_t _probe_spaces_count;
+  uint32_t _probe_addresses[MAX_PROBE_ADDRESSES];
+  size_t _probe_addresses_count;
+  // Probe results
+  ws_i2c_Probed _msg_probed;
+  struct FoundAddressesCtx {
+    uint32_t addresses[MAX_PROBE_ADDRESSES];
+    size_t count;
+  };
+  FoundAddressesCtx _found_ctx[MAX_PROBE_SPACES];
+  // Probe nanopb callbacks
+  static bool cbDecodeAddressSpace(pb_istream_t *stream,
+                                   const pb_field_t *field, void **arg);
+  static bool cbDecodeAddress(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg);
+  static bool cbEncodeFoundAddresses(pb_ostream_t *stream,
+                                     const pb_field_t *field, void *const *arg);
+  // Message storage
   ws_i2c_D2B _msg_i2c_d2b;
-  ws_i2c_Scan _msg_i2c_bus_scan;
-  ws_i2c_Scanned _msg_i2c_bus_scanned;
-  ws_i2c_DeviceAddOrReplace _msg_i2c_device_add_replace;
-  ws_i2c_DeviceAddedOrReplaced _msg_i2c_device_added_replaced;
-  ws_i2c_DeviceRemove _msg_i2c_device_remove;
-  ws_i2c_DeviceRemoved _msg_i2c_device_removed;
-  ws_i2c_DeviceEvent _msg_i2c_device_event;
+  ws_i2c_Add _msg_i2c_add;
+  ws_i2c_Remove _msg_i2c_remove;
+  ws_i2c_Event _msg_i2c_event;
 };
 
 /*!
@@ -91,20 +142,30 @@ public:
   I2cOutputModel();
   ~I2cOutputModel();
   // Decoders
-  /*!  @brief  Decodes a LED backpack write message from a stream.
-       @param  stream  Pointer to the nanopb input stream.
-       @return True if decoding succeeded, false otherwise. */
+  /*!
+      @brief    Decodes an LED backpack write message.
+      @param    stream
+                The nanopb input stream.
+      @returns  True if decoded successfully, False otherwise.
+  */
   bool DecodeLedBackpackWrite(pb_istream_t *stream);
-  /*!  @brief  Decodes a character LCD write message from a stream.
-       @param  stream  Pointer to the nanopb input stream.
-       @return True if decoding succeeded, false otherwise. */
+  /*!
+      @brief    Decodes a character LCD write message.
+      @param    stream
+                The nanopb input stream.
+      @returns  True if decoded successfully, False otherwise.
+  */
   bool DecodeCharLCDWrite(pb_istream_t *stream);
   // Getters
-  /*!  @brief  Returns a pointer to the LED backpack write message.
-       @return Pointer to the ws_i2c_output_LedBackpackWrite message. */
+  /*!
+      @brief  Returns the LED backpack write message.
+      @returns Pointer to the LED backpack write message.
+  */
   ws_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
-  /*!  @brief  Returns a pointer to the character LCD write message.
-       @return Pointer to the ws_i2c_output_CharLCDWrite message. */
+  /*!
+      @brief  Returns the character LCD write message.
+      @returns Pointer to the character LCD write message.
+  */
   ws_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
 
 private:

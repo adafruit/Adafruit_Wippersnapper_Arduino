@@ -19,7 +19,6 @@
 */
 ServoModel::ServoModel() {
   memset(&_msg_servo_add, 0, sizeof(_msg_servo_add));
-  memset(&_msg_servo_added, 0, sizeof(_msg_servo_added));
   memset(&_msg_servo_remove, 0, sizeof(_msg_servo_remove));
   memset(&_msg_servo_write, 0, sizeof(_msg_servo_write));
 }
@@ -29,7 +28,6 @@ ServoModel::ServoModel() {
 */
 ServoModel::~ServoModel() {
   memset(&_msg_servo_add, 0, sizeof(_msg_servo_add));
-  memset(&_msg_servo_added, 0, sizeof(_msg_servo_added));
   memset(&_msg_servo_remove, 0, sizeof(_msg_servo_remove));
   memset(&_msg_servo_write, 0, sizeof(_msg_servo_write));
 }
@@ -50,36 +48,6 @@ bool ServoModel::DecodeServoAdd(pb_istream_t *stream) {
     @returns Pointer to ServoAdd message
 */
 ws_servo_Add *ServoModel::GetServoAddMsg() { return &_msg_servo_add; }
-
-/*!
-    @brief Encodes a ServoAdded message
-    @param pin_name
-           Name of the pin
-    @param did_attach
-           True if a servo was attached to the pin successfully,
-           False otherwise
-    @returns True if successful, False otherwise
-*/
-bool ServoModel::EncodeServoAdded(char *pin_name, bool did_attach) {
-  // Fill the message
-  memset(&_msg_servo_added, 0, sizeof(_msg_servo_added));
-  _msg_servo_added.attach_success = did_attach;
-  strncpy(_msg_servo_added.servo_pin, pin_name,
-          sizeof(_msg_servo_added.servo_pin) - 1);
-  // Encode it!
-  size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_servo_Added_fields, &_msg_servo_added))
-    return false;
-  uint8_t buf[sz_msg];
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_servo_Added_fields, &_msg_servo_added);
-}
-
-/*!
-    @brief  Returns a pointer to the ServoAdded message
-    @returns Pointer to ServoAdded message
-*/
-ws_servo_Added *ServoModel::GetServoAddedMsg() { return &_msg_servo_added; }
 
 /*!
     @brief  Decodes a ServoRemove message from a pb_istream_t
