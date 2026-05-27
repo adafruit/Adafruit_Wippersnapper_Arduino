@@ -40,8 +40,7 @@ public:
   /*!
       @brief    Destructor for a UARTDevice object.
   */
-  ~UARTDevice() { /* no-op destructor */
-  }
+  ~UARTDevice() { /* no-op destructor */ }
 
   /*!
       @brief    Creates the Adafruit_GenericDevice instance.
@@ -151,8 +150,7 @@ public:
   /*!
       @brief    Destructor for a US-100 UART device.
   */
-  ~drvUartUs100() { /* TODO: Add back CTOR */
-  }
+  ~drvUartUs100() { /* TODO: Add back CTOR */ }
 
   /*!
       @brief    Initializes the US-100 UART device.
