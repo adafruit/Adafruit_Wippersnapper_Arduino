@@ -30,10 +30,10 @@ GPSController::~GPSController() {
     _gps_model = nullptr;
   }
   // Clean up UART ports owned by GPS
-  for (UARTHardware *port : _uart_ports) {
+  for (UARTHardware *port : _ports) {
     delete port;
   }
-  _uart_ports.clear();
+  _ports.clear();
 }
 
 /*!
@@ -51,11 +51,11 @@ bool GPSController::Router(pb_istream_t *stream) {
 
   bool res = false;
   switch (b2d.which_payload) {
-  case ws_gps_B2D_device_add_replace_tag:
-    res = Handle_GpsDeviceAddOrReplace(&b2d.payload.device_add_replace);
+  case ws_gps_B2D_add_tag:
+    res = Handle_GpsDeviceAddOrReplace(&b2d.payload.add);
     break;
-  case ws_gps_B2D_device_remove_tag:
-    res = Handle_GpsDeviceRemove(&b2d.payload.device_remove);
+  case ws_gps_B2D_remove_tag:
+    res = Handle_GpsDeviceRemove(&b2d.payload.remove);
     break;
   default:
     WS_DEBUG_PRINTLN("[gps] WARNING: Unsupported GPS payload");
@@ -70,8 +70,7 @@ bool GPSController::Router(pb_istream_t *stream) {
  * @param msg The DeviceAddOrReplace message.
  * @return True if the GPS device was added successfully, False otherwise.
  */
-bool GPSController::Handle_GpsDeviceAddOrReplace(
-    ws_gps_DeviceAddOrReplace *msg) {
+bool GPSController::Handle_GpsDeviceAddOrReplace(ws_gps_Add *msg) {
   if (!msg->has_config) {
     WS_DEBUG_PRINTLN("[gps] ERROR: No GPS config provided!");
     return false;
@@ -82,23 +81,25 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(
   if (msg->has_add_uart) {
     // UART transport path
     WS_DEBUG_PRINTLN("[gps] Configuring GPS via UART transport...");
-    UARTHardware *uart_hw = new UARTHardware(msg->add_uart.cfg_serial);
+    UARTHardware *uart_hw = new UARTHardware(msg->add_uart.cfg_serial,
+                                             msg->add_uart.descriptor.uart_nbr);
     if (!uart_hw->ConfigureSerial()) {
       WS_DEBUG_PRINTLN("[gps] ERROR: Failed to configure UART hardware!");
       delete uart_hw;
       return false;
     }
-    _uart_ports.push_back(uart_hw);
+    _ports.push_back(uart_hw);
 
     did_add = AddGPS(uart_hw->GetHardwareSerial(), &msg->config);
   } else if (msg->has_add_i2c) {
     // I2C transport path
     WS_DEBUG_PRINTLN("[gps] Configuring GPS via I2C transport...");
-    ws_i2c_DeviceDescriptor desc = msg->add_i2c.device_description;
-    TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(desc.pin_scl, desc.pin_sda);
+    ws_i2c_Descriptor desc = msg->add_i2c.descriptor;
+    TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(
+        desc.address_space.pin_scl, desc.address_space.pin_sda);
     if (wire == nullptr)
       return false;
-    did_add = AddGPS(wire, desc.device_address, &msg->config);
+    did_add = AddGPS(wire, desc.address, &msg->config);
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: No transport (UART or I2C) specified!");
     return false;
@@ -115,7 +116,7 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(
  * @param msg The DeviceRemove message.
  * @return True if the GPS device was removed successfully, False otherwise.
  */
-bool GPSController::Handle_GpsDeviceRemove(ws_gps_DeviceRemove *msg) {
+bool GPSController::Handle_GpsDeviceRemove(ws_gps_Remove *msg) {
   // TODO: Implement GPS device removal
   (void)msg;
   WS_DEBUG_PRINTLN("[gps] GPS device removal not yet implemented");

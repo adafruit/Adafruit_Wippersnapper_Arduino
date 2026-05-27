@@ -305,12 +305,12 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg) {
-  ws_i2c_DeviceAddOrReplace add_msg = ws_i2c_DeviceAddOrReplace_init_zero;
-  if (!pb_decode(stream, ws_i2c_DeviceAddOrReplace_fields, &add_msg)) {
+  ws_i2c_Add add_msg = ws_i2c_Add_init_zero;
+  if (!pb_decode(stream, ws_i2c_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode i2c add");
     return false;
   }
-  return Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(&add_msg);
+  return Ws._i2c_controller->Handle_Add(&add_msg);
 }
 
 /*!
@@ -336,7 +336,7 @@ ws_sleep_SleepConfig *CheckinModel::GetSleepConfig() {
     @brief  Configures sleep controller based on checkin response.
 */
 void CheckinModel::configureSleep() {
-  #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Process sleep configuration if present
   if (IsSleepEnabled()) {
     ws_sleep_SleepConfig *sleep_cfg = GetSleepConfig();
@@ -345,7 +345,7 @@ void CheckinModel::configureSleep() {
       Ws._sleep_controller->handleSleepConfig(sleep_cfg, true);
     }
   }
-  #endif
+#endif
 }
 
 /*!

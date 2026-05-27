@@ -51,6 +51,6 @@ public:
 private:
   ws_gps_Config _msg_gps_config; ///< GPS configuration message
   ws_gps_Event _msg_gps_event;   ///< GPS event message
-  ws_gps_D2B _msg_gps_d2b;      ///< GPS D2B envelope for publishing
+  ws_gps_D2B _msg_gps_d2b;       ///< GPS D2B envelope for publishing
 };
 #endif // WS_GPS_MODEL_H
