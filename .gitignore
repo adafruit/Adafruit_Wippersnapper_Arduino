@@ -81,3 +81,5 @@ tests/sleep_mode/__pycache__/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+src/Wippersnapper_demo.ino.cpp
