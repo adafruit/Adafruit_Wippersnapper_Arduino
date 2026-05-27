@@ -46,18 +46,16 @@ public:
     @brief    Instantiates a UART device.
     @param    sw_serial
               Pointer to a SoftwareSerial instance.
-    @param    device_type
-              The type of device connected to the UART port.
     @param    driver_name
               The name of the driver.
     @param   port_num
               The port number for the UART device corresponding to the Serial
     instance.
 */
-  drvUartPm25(SoftwareSerial *sw_serial, ws_uart_DeviceType device_type,
-              const char *driver_name, uint32_t port_num)
+  drvUartPm25(SoftwareSerial *sw_serial, const char *driver_name,
+              uint32_t port_num)
       : drvUartBase(sw_serial, driver_name, port_num) {
-    _device_type = device_type; // Set device type after base constructor
+    // Handled by drvUartBase constructor
   }
 #endif // HAS_SW_SERIAL
 
