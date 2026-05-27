@@ -38,8 +38,16 @@ public:
                       size_t addresses_count, ws_i2c_AddressSpaceResult *result,
                       uint32_t *found_buf, size_t *found_count);
   TwoWire *GetBus();
-  uint8_t getSDA() { return _sda; } ///< Returns the SDA pin number.
-  uint8_t getSCL() { return _scl; } ///< Returns the SCL pin number.
+  /*!
+      @brief  Returns the SDA pin number.
+      @returns The SDA pin number.
+  */
+  uint8_t getSDA() { return _sda; }
+  /*!
+      @brief  Returns the SCL pin number.
+      @returns The SCL pin number.
+  */
+  uint8_t getSCL() { return _scl; }
   bool isBusInitialized();
   void TogglePowerPin();
   // MUX API
@@ -48,7 +56,11 @@ public:
   bool HasMux();
   void ClearMuxChannel();
   void SelectMuxChannel(uint32_t channel);
-  int GetMuxMaxChannels(); ///< Returns the max number of MUX channels.
+  /*!
+      @brief  Returns the max number of MUX channels.
+      @returns The max number of MUX channels.
+  */
+  int GetMuxMaxChannels();
 
 private:
   TwoWire *_bus = nullptr; ///< I2C bus instance

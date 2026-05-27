@@ -46,23 +46,41 @@ public:
   // Getters
   ws_i2c_Remove *GetI2cDeviceRemoveMsg();
   ws_i2c_Add *GetI2cDeviceAddOrReplaceMsg();
-  /// Returns the I2C output Add message.
+  /*!
+      @brief  Returns the I2C output Add message.
+      @returns Pointer to the I2C output Add message.
+  */
   ws_i2c_output_Add *GetI2cOutputAddMsg();
   ws_i2c_Event *GetI2cDeviceEvent();
   ws_i2c_D2B *GetI2cD2B();
   // Probe API — model owns decode/encode/storage
   void SetupProbeDecodeCallbacks(ws_i2c_Probe *probe);
-  /// Returns probe address spaces.
+  /*!
+      @brief  Returns probe address spaces.
+      @returns Pointer to the probe address spaces array.
+  */
   ws_i2c_AddressSpace *GetProbeAddressSpaces();
-  /// Returns probe address spaces count.
+  /*!
+      @brief  Returns probe address spaces count.
+      @returns The number of probe address spaces.
+  */
   size_t GetProbeAddressSpacesCount();
-  /// Returns probe addresses array.
+  /*!
+      @brief  Returns probe addresses array.
+      @returns Pointer to the probe addresses array.
+  */
   uint32_t *GetProbeAddresses();
-  /// Returns probe addresses count.
+  /*!
+      @brief  Returns probe addresses count.
+      @returns The number of probe addresses.
+  */
   size_t GetProbeAddressesCount();
   /// Clears probed results.
   void ClearProbed();
-  /// Returns next probed result slot.
+  /*!
+      @brief  Returns next probed result slot.
+      @returns Pointer to the next probed result.
+  */
   ws_i2c_AddressSpaceResult *GetNextProbedResult();
   /*!
       @brief    Returns the found-address buffer for a given index.
@@ -139,9 +157,15 @@ public:
   */
   bool DecodeCharLCDWrite(pb_istream_t *stream);
   // Getters
-  /// Returns the LED backpack write message.
+  /*!
+      @brief  Returns the LED backpack write message.
+      @returns Pointer to the LED backpack write message.
+  */
   ws_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
-  /// Returns the character LCD write message.
+  /*!
+      @brief  Returns the character LCD write message.
+      @returns Pointer to the character LCD write message.
+  */
   ws_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
 
 private:
