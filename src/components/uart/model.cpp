@@ -99,8 +99,8 @@ void UARTModel::ConfigureUartInputEventMsg(uint32_t uart_nbr,
   _msg_UartInputEvent.descriptor.type = type;
   strncpy(_msg_UartInputEvent.descriptor.id, device_id,
           sizeof(_msg_UartInputEvent.descriptor.id) - 1);
-  _msg_UartInputEvent.descriptor.id[sizeof(_msg_UartInputEvent.descriptor.id) -
-                                     1] = '\0';
+  _msg_UartInputEvent.descriptor
+      .id[sizeof(_msg_UartInputEvent.descriptor.id) - 1] = '\0';
 }
 
 /*!
@@ -154,15 +154,13 @@ bool UARTModel::AddUartInputEvent(sensors_event_t &event,
 bool UARTModel::EncodeUartInputEvent() {
   // Calculate the size of the encoded message
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_uart_Event_fields,
-                           &_msg_UartInputEvent))
+  if (!pb_get_encoded_size(&sz_msg, ws_uart_Event_fields, &_msg_UartInputEvent))
     return false;
 
   // Attempt to encode the message into a buffer
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_uart_Event_fields,
-                   &_msg_UartInputEvent);
+  return pb_encode(&msg_stream, ws_uart_Event_fields, &_msg_UartInputEvent);
 }
 
 /*!

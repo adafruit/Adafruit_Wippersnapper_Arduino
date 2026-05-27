@@ -128,8 +128,7 @@ public:
       @param    sensor_types_count
                 The number of active sensors to read from the device.
   */
-  void EnableSensorReads(ws_i2c_Add_TypesEntry *types,
-                         size_t types_count) {
+  void EnableSensorReads(ws_i2c_Add_TypesEntry *types, size_t types_count) {
     _sensors_count = types_count;
     for (size_t i = 0; i < _sensors_count; i++) {
       _sensors[i] = types[i];

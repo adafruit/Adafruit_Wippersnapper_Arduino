@@ -125,7 +125,7 @@ bool PixelsController::Handle_Pixels_Remove(ws_pixels_Remove *msg) {
   uint16_t idx = GetStrandIndex(pin_data);
   if (idx == STRAND_NOT_FOUND) {
     Ws.error_handler->publishComponentError(msg->pin_data,
-                                               "Failed to find strand index!");
+                                            "Failed to find strand index!");
     return false;
   }
 

@@ -45,10 +45,10 @@ public:
                                   const char *device_id);
 
 private:
-  ws_uart_Add _msg_UartAdd;               ///< ws_uart_Add message
-  ws_uart_Remove _msg_UartRemove;         ///< ws_uart_Remove message
-  ws_uart_Write _msg_UartWrite;           ///< ws_uart_Write message
-  ws_uart_Write _msg_UartWritten;       ///< ws_uart_Written message
+  ws_uart_Add _msg_UartAdd;          ///< ws_uart_Add message
+  ws_uart_Remove _msg_UartRemove;    ///< ws_uart_Remove message
+  ws_uart_Write _msg_UartWrite;      ///< ws_uart_Write message
+  ws_uart_Write _msg_UartWritten;    ///< ws_uart_Written message
   ws_uart_Event _msg_UartInputEvent; ///< ws_uart_Event message
 };
 #endif // WS_UART_MODEL_H

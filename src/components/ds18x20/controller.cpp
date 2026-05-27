@@ -85,13 +85,13 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
   // If we receive no sensor types to configure, bail out
   if (msg->types_count == 0) {
     Ws.error_handler->publishComponentError(msg->onewire_pin,
-                                               "No sensor types provided");
+                                            "No sensor types provided");
     return false;
   }
   // Validate pin name exists and is in correct format (ex. D5, A1, etc.)
   if (strlen(msg->onewire_pin) < 2) {
     Ws.error_handler->publishComponentError(msg->onewire_pin,
-                                               "Invalid pin name");
+                                            "Invalid pin name");
     return false;
   }
 
@@ -128,7 +128,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
       new_dsx_driver->is_read_temp_f = true;
     } else {
       Ws.error_handler->publishComponentError(msg->onewire_pin,
-                                                 "Unknown SensorType provided");
+                                              "Unknown SensorType provided");
       delete new_dsx_driver;
       return false;
     }
@@ -171,7 +171,7 @@ bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
   // Validate the pin name
   if (strlen(msg->onewire_pin) < 2) {
     Ws.error_handler->publishComponentError(msg->onewire_pin,
-                                               "Invalid pin name");
+                                            "Invalid pin name");
     return false;
   }
   uint8_t pin_name = atoi(msg->onewire_pin + 1);
@@ -186,8 +186,7 @@ bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
       return true;
     }
   }
-  Ws.error_handler->publishComponentError(msg->onewire_pin,
-                                             "Sensor not found");
+  Ws.error_handler->publishComponentError(msg->onewire_pin, "Sensor not found");
   return false;
 }
 

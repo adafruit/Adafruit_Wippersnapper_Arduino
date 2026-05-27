@@ -19,9 +19,9 @@
 #include <Adafruit_Sensor.h>
 #include <protos/i2c_output.pb.h>
 
-#define MAX_DEVICE_EVENTS      16 ///< Maximum number of SensorEvents within I2cEvent
-#define MAX_PROBE_SPACES       16 ///< Maximum number of AddressSpaces in a Probe
-#define MAX_PROBE_ADDRESSES   112 ///< Maximum number of addresses to probe
+#define MAX_DEVICE_EVENTS 16 ///< Maximum number of SensorEvents within I2cEvent
+#define MAX_PROBE_SPACES 16  ///< Maximum number of AddressSpaces in a Probe
+#define MAX_PROBE_ADDRESSES 112 ///< Maximum number of addresses to probe
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -56,8 +56,7 @@ public:
   bool EncodeProbed();
   // DeviceEvent Message API
   void ClearI2cDeviceEvent();
-  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
-                                         uint32_t pin_sda,
+  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl, uint32_t pin_sda,
                                          uint32_t addr_device,
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
@@ -83,8 +82,7 @@ private:
   static bool cbDecodeAddress(pb_istream_t *stream, const pb_field_t *field,
                               void **arg);
   static bool cbEncodeFoundAddresses(pb_ostream_t *stream,
-                                     const pb_field_t *field,
-                                     void *const *arg);
+                                     const pb_field_t *field, void *const *arg);
   // Message storage
   ws_i2c_D2B _msg_i2c_d2b;
   ws_i2c_Add _msg_i2c_add;

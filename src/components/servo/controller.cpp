@@ -85,17 +85,20 @@ bool ServoController::Router(pb_istream_t *stream) {
 bool ServoController::Handle_Servo_Add(ws_servo_Add *msg) {
   if (_active_servo_pins >= MAX_SERVOS) {
     WS_DEBUG_PRINTLN("[servo] Error: Maximum number of servos reached!");
-    Ws.error_handler->publishComponentError(msg->servo_pin, "Maximum number of servos reached");
+    Ws.error_handler->publishComponentError(msg->servo_pin,
+                                            "Maximum number of servos reached");
     return false;
   }
 
-  // Attempt to create a ServoHardware object for the specified pin and attach it
+  // Attempt to create a ServoHardware object for the specified pin and attach
+  // it
   uint8_t pin = atoi(msg->servo_pin + 1);
   _servo_hardware[_active_servo_pins] =
       new ServoHardware(pin, (int)msg->min_pulse_width,
                         (int)msg->max_pulse_width, (int)msg->freq);
   if (!_servo_hardware[_active_servo_pins]->ServoAttach()) {
-    Ws.error_handler->publishComponentError(msg->servo_pin, "Failed to attach servo");
+    Ws.error_handler->publishComponentError(msg->servo_pin,
+                                            "Failed to attach servo");
     delete _servo_hardware[_active_servo_pins];
     _servo_hardware[_active_servo_pins] = nullptr;
   }
@@ -118,7 +121,8 @@ bool ServoController::Handle_Servo_Write(ws_servo_Write *msg) {
   uint8_t pin = atoi(msg->servo_pin + 1);
   int servo_idx = GetServoIndex(pin);
   if (servo_idx == -1) {
-    Ws.error_handler->publishComponentError(msg->servo_pin, "Failed to find pin");
+    Ws.error_handler->publishComponentError(msg->servo_pin,
+                                            "Failed to find pin");
     return false;
   }
   // Write the pulse width to the servo
@@ -134,14 +138,16 @@ bool ServoController::Handle_Servo_Write(ws_servo_Write *msg) {
 */
 bool ServoController::Handle_Servo_Remove(ws_servo_Remove *msg) {
   if (_active_servo_pins <= 0) {
-    Ws.error_handler->publishComponentError(msg->servo_pin, "No active servos to remove");
+    Ws.error_handler->publishComponentError(msg->servo_pin,
+                                            "No active servos to remove");
     return false;
   }
 
   uint8_t pin = atoi(msg->servo_pin + 1);
   int servo_idx = GetServoIndex(pin);
   if (servo_idx == -1) {
-    Ws.error_handler->publishComponentError(msg->servo_pin, "Failed to find pin");
+    Ws.error_handler->publishComponentError(msg->servo_pin,
+                                            "Failed to find pin");
     return false;
   }
 
@@ -166,7 +172,8 @@ bool ServoController::Handle_Servo_Remove(ws_servo_Remove *msg) {
     @brief  Gets the index of the servo hardware for a given pin
     @param  pin
             The pin number to search for
-    @returns The index of the servo hardware for the given pin, or -1 if not found
+    @returns The index of the servo hardware for the given pin, or -1 if not
+   found
 */
 int ServoController::GetServoIndex(uint8_t pin) {
   for (int i = 0; i < _active_servo_pins; i++) {

@@ -15,10 +15,10 @@
  */
 #ifndef WS_GPS_CONTROLLER_H
 #define WS_GPS_CONTROLLER_H
+#include "components/uart/hardware.h"
 #include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
-#include "components/uart/hardware.h"
 #include <Adafruit_GPS.h>
 
 class wippersnapper; ///< Forward declaration
@@ -48,7 +48,7 @@ public:
 private:
   GPSModel *_gps_model;                    ///< GPS model instance
   std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
-  std::vector<UARTHardware *> _ports; ///< UART hardware for GPS serial
+  std::vector<UARTHardware *> _ports;      ///< UART hardware for GPS serial
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_GPS_CONTROLLER_H

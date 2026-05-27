@@ -45,9 +45,8 @@ public:
   void ResetFlags();
 
 private:
-  UARTModel *_uart_model; ///< UART model
-  std::vector<UARTHardware *>
-      _ports; ///< Vector of UART hardware instances
+  UARTModel *_uart_model;             ///< UART model
+  std::vector<UARTHardware *> _ports; ///< Vector of UART hardware instances
   std::vector<drvUartBase *>
       _uart_drivers; ///< Vector of UART device drivers (eg: PM2.5, etc.)
 };

@@ -39,7 +39,7 @@ public:
 private:
   void ConvertSleepMode(const char *mode_str, ws_sleep_SleepMode &mode);
   ws_sleep_Goodnight _msg_sleep_goodnight; ///< Goodnight message object
-  ws_sleep_SleepConfig _msg_sleep_enter;         ///< Enter message object
+  ws_sleep_SleepConfig _msg_sleep_enter;   ///< Enter message object
   uint32_t _run_duration = 60; ///< Duration to run before sleeping, in seconds
 };
 

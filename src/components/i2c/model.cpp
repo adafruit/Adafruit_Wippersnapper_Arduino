@@ -133,8 +133,7 @@ bool I2cModel::DecodeI2cDeviceRemove(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[i2c] Set _msg_i2c_remove...");
   memset(&_msg_i2c_remove, 0, sizeof(_msg_i2c_remove));
   bool is_success = false;
-  is_success =
-      pb_decode(stream, ws_i2c_Remove_fields, &_msg_i2c_remove);
+  is_success = pb_decode(stream, ws_i2c_Remove_fields, &_msg_i2c_remove);
   WS_DEBUG_PRINT("is_success: ");
   WS_DEBUG_PRINTLNVAR(is_success);
   return is_success;
@@ -144,14 +143,13 @@ bool I2cModel::DecodeI2cDeviceRemove(pb_istream_t *stream) {
     @brief    Returns a pointer to the I2cDeviceRemove message.
     @returns  Pointer to the I2cDeviceRemove message.
 */
-ws_i2c_Remove *I2cModel::GetI2cDeviceRemoveMsg() {
-  return &_msg_i2c_remove;
-}
+ws_i2c_Remove *I2cModel::GetI2cDeviceRemoveMsg() { return &_msg_i2c_remove; }
 
 // ---- Probe decode/encode API ----
 
 /*!
-    @brief    Sets up nanopb decode callbacks on a Probe message before B2D decode.
+    @brief    Sets up nanopb decode callbacks on a Probe message before B2D
+   decode.
     @param    probe
                 Pointer to the ws_i2c_Probe inside the B2D union.
 */
@@ -190,9 +188,7 @@ bool I2cModel::cbDecodeAddress(pb_istream_t *stream, const pb_field_t *field,
   return true;
 }
 
-ws_i2c_AddressSpace *I2cModel::GetProbeAddressSpaces() {
-  return _probe_spaces;
-}
+ws_i2c_AddressSpace *I2cModel::GetProbeAddressSpaces() { return _probe_spaces; }
 
 size_t I2cModel::GetProbeAddressSpacesCount() { return _probe_spaces_count; }
 
@@ -279,18 +275,14 @@ ws_i2c_D2B *I2cModel::GetI2cD2B() { return &_msg_i2c_d2b; }
 */
 bool I2cModel::DecodeI2cDeviceAddReplace(pb_istream_t *stream) {
   memset(&_msg_i2c_add, 0, sizeof(_msg_i2c_add));
-  return pb_decode(stream, ws_i2c_Add_fields,
-                   &_msg_i2c_add);
+  return pb_decode(stream, ws_i2c_Add_fields, &_msg_i2c_add);
 }
 
 /*!
     @brief    Returns a pointer to the I2cDeviceAddOrReplace message.
     @returns  Pointer to the I2cDeviceAddOrReplace message.
 */
-ws_i2c_Add *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
-  return &_msg_i2c_add;
-}
-
+ws_i2c_Add *I2cModel::GetI2cDeviceAddOrReplaceMsg() { return &_msg_i2c_add; }
 
 /*!
     @brief    Clears the I2cDeviceEvent message.
@@ -360,20 +352,16 @@ bool I2cModel::AddI2cDeviceSensorEvent(sensors_event_t &event,
 */
 bool I2cModel::EncodeI2cDeviceEvent() {
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_i2c_Event_fields,
-                           &_msg_i2c_event))
+  if (!pb_get_encoded_size(&sz_msg, ws_i2c_Event_fields, &_msg_i2c_event))
     return false;
 
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_i2c_Event_fields,
-                   &_msg_i2c_event);
+  return pb_encode(&msg_stream, ws_i2c_Event_fields, &_msg_i2c_event);
 }
 
 /*!
     @brief    Returns a pointer to the I2cDeviceEvent message.
     @returns  Pointer to the I2cDeviceEvent message.
 */
-ws_i2c_Event *I2cModel::GetI2cDeviceEvent() {
-  return &_msg_i2c_event;
-}
+ws_i2c_Event *I2cModel::GetI2cDeviceEvent() { return &_msg_i2c_event; }
