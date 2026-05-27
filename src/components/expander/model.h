@@ -25,10 +25,5 @@ class ExpanderModel {
 public:
   ExpanderModel();
   ~ExpanderModel();
-  ws_expander_D2B *GetAddedD2B(const ws_i2c_DeviceAddedOrReplaced &response);
-  ws_expander_D2B *GetRemovedD2B(const ws_i2c_DeviceRemoved &response);
-
-private:
-  ws_expander_D2B _msg_d2b; ///< D2B envelope for publishing
 };
 #endif // WS_EXPANDER_MODEL_H

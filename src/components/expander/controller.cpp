@@ -127,13 +127,13 @@ ExpanderHardware *ExpanderController::GetDriver(uint8_t addr) {
  * @return True if the expander was added successfully, False otherwise.
  */
 bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
-  if (!msg->has_cfg) {
+  if (!msg->has_cfg_i2c) {
     WS_DEBUG_PRINTLN("[expander] ERROR: No configuration provided!");
     return false;
   }
 
-  ws_i2c_DeviceDescriptor desc = msg->cfg.device_description;
-  uint8_t addr = (uint8_t)desc.device_address;
+  ws_i2c_Descriptor desc = msg->cfg_i2c.descriptor;
+  uint8_t addr = (uint8_t)desc.address;
 
   // Check if this expander has already been added
   if (GetDriver(addr) != nullptr) {
@@ -142,29 +142,17 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
   }
 
   // Get or create the I2C bus for the expander
-  TwoWire *wire =
-      Ws._i2c_controller->GetOrCreateI2cBus(desc.pin_scl, desc.pin_sda);
+  TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(
+      desc.address_space.pin_scl, desc.address_space.pin_sda);
   if (wire == nullptr) {
     WS_DEBUG_PRINTLN("[expander] ERROR: Failed to get/create I2C bus!");
     return false;
   }
 
   // Attempt to initialize the expander
-  bool did_add = AddExpander(msg->cfg.device_name, addr, wire);
-
-  // Build and publish the Added response
-  ws_i2c_DeviceAddedOrReplaced response;
-  memset(&response, 0, sizeof(response));
-  response.has_device_description = true;
-  response.device_description = desc;
-  response.bus_status = ws_i2c_BusStatus_BS_SUCCESS;
-  response.device_status = did_add ? ws_i2c_DeviceStatus_DS_SUCCESS
-                                   : ws_i2c_DeviceStatus_DS_FAIL_INIT;
-
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_expander_tag,
-                     _model->GetAddedD2B(response))) {
-    WS_DEBUG_PRINTLN("[expander] ERROR: Failed to publish Added response!");
-    return false;
+  bool did_add = AddExpander(msg->cfg_i2c.name, addr, wire);
+  if (!did_add) {
+    WS_DEBUG_PRINTLN("[expander] ERROR: Failed to add expander!");
   }
   return did_add;
 }
@@ -175,13 +163,13 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
  * @return True if the expander was removed successfully, False otherwise.
  */
 bool ExpanderController::Handle_Remove(ws_expander_Remove *msg) {
-  if (!msg->has_cfg) {
+  if (!msg->has_cfg_i2c) {
     WS_DEBUG_PRINTLN("[expander] ERROR: No I2C config provided in Remove!");
     return false;
   }
 
-  ws_i2c_DeviceDescriptor desc = msg->cfg.device_description;
-  uint8_t addr = (uint8_t)desc.device_address;
+  ws_i2c_Descriptor desc = msg->cfg_i2c.descriptor;
+  uint8_t addr = (uint8_t)desc.address;
   bool did_remove = false;
 
   // Find and remove the expander by address
@@ -196,19 +184,6 @@ bool ExpanderController::Handle_Remove(ws_expander_Remove *msg) {
 
   if (!did_remove) {
     WS_DEBUG_PRINTLN("[expander] WARNING: Expander not found for removal!");
-  }
-
-  // Build and publish the Removed response
-  ws_i2c_DeviceRemoved response;
-  memset(&response, 0, sizeof(response));
-  response.has_device_description = true;
-  response.device_description = desc;
-  response.did_remove = did_remove;
-
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_expander_tag,
-                     _model->GetRemovedD2B(response))) {
-    WS_DEBUG_PRINTLN("[expander] ERROR: Failed to publish Removed response!");
-    return false;
   }
   return did_remove;
 }

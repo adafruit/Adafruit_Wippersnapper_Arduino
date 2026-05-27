@@ -103,22 +103,6 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
     _pins.push_back(new_pin);
   }
 
-  // Publish PWMAdded message to the broker
-  if (!_pwm_model->EncodePWMAdded(msg->pin, did_attach)) {
-    Ws.error_handler->publishComponentError(msg->pin,
-                                            "Failed to encode PWMAdded");
-    RemovePin(pin, expander_drv);
-    return false;
-  }
-
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_pwm_tag,
-                     _pwm_model->GetPWMAddedMsg())) {
-    Ws.error_handler->publishComponentError(msg->pin,
-                                            "Unable to publish PWMAdded");
-    RemovePin(pin, expander_drv);
-    return false;
-  }
-
   WS_DEBUG_PRINT("[pwm] Attached pin: ");
   WS_DEBUG_PRINTVAR(msg->pin);
   return true;

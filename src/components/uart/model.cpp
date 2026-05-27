@@ -90,17 +90,9 @@ void UARTModel::ClearUartInputEventMsg() {
     @param  device_id
             The unique identifier string for the UART device.
 */
-void UARTModel::ConfigureUartInputEventMsg(uint32_t uart_nbr,
-                                           ws_uart_DeviceType type,
-                                           const char *device_id) {
-  // Addressing information
+void UARTModel::ConfigureUartInputEventMsg(uint32_t pin_rx) {
   _msg_UartInputEvent.has_descriptor = true;
-  _msg_UartInputEvent.descriptor.uart_nbr = uart_nbr;
-  _msg_UartInputEvent.descriptor.type = type;
-  strncpy(_msg_UartInputEvent.descriptor.id, device_id,
-          sizeof(_msg_UartInputEvent.descriptor.id) - 1);
-  _msg_UartInputEvent.descriptor
-      .id[sizeof(_msg_UartInputEvent.descriptor.id) - 1] = '\0';
+  _msg_UartInputEvent.descriptor.pin_rx = pin_rx;
 }
 
 /*!

@@ -27,14 +27,13 @@
 AnalogInHardware::AnalogInHardware(uint8_t pin_name, ws_sensor_Type read_mode,
                                    ws_analogin_SampleMode sample_mode,
                                    ulong period, float ref_voltage,
-                                   ExpanderHardware *expander_drv,
-                                   ws_analogin_Gain gain)
+                                   ExpanderHardware *expander_drv)
     : _name(pin_name), _read_mode(read_mode), _sample_mode(sample_mode),
       _period(period), _prv_time(0), _did_read_send(false), _value_raw(0),
       _value_voltage(0.0f), _prv_value_raw(0), _native_adc_resolution(0),
       _desired_adc_resolution(0), _max_scale_resolution_desired(0),
       _max_scale_resolution_native(0), _mcu_vref(ref_voltage),
-      _expander_drv(expander_drv), _gain(gain) {
+      _expander_drv(expander_drv) {
   if (_expander_drv != nullptr) {
     _native_adc_resolution = _expander_drv->getAdcResolution();
   } else {
@@ -55,9 +54,6 @@ AnalogInHardware::~AnalogInHardware() { DeinitPin(); }
 void AnalogInHardware::InitPin() {
   if (_expander_drv != nullptr) {
     _expander_drv->pinMode(_name, INPUT);
-    if (_gain != ws_analogin_Gain_G_UNSPECIFIED) {
-      _expander_drv->setGain(_gain);
-    }
   } else {
     pinMode(_name, INPUT);
   }

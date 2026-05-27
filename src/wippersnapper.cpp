@@ -761,10 +761,6 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     msg->which_payload = ws_signal_DeviceToBroker_i2c_tag;
     msg->payload.i2c = *(ws_i2c_D2B *)payload;
     break;
-  case ws_signal_DeviceToBroker_expander_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_expander_tag;
-    msg->payload.expander = *(ws_expander_D2B *)payload;
-    break;
   case ws_signal_DeviceToBroker_gps_tag:
     msg->which_payload = ws_signal_DeviceToBroker_gps_tag;
     msg->payload.gps = *(ws_gps_D2B *)payload;

@@ -19,10 +19,11 @@
     @param  config   The configuration for the serial.
     @param  uart_nbr The UART port number.
 */
-UARTHardware::UARTHardware(const ws_uart_SerialConfig &config,
-                           uint32_t uart_nbr) {
+UARTHardware::UARTHardware(const ws_uart_SerialConfig &config, uint32_t pin_rx,
+                           uint32_t pin_tx) {
   _config = config;
-  _uart_nbr = uart_nbr;
+  _pin_rx = pin_rx;
+  _pin_tx = pin_tx;
 }
 
 /*!
@@ -117,18 +118,8 @@ uint16_t UARTHardware::UartPacketFormatToConfig(
  * @return True if the serial was successfully configured, False otherwise.
  */
 bool UARTHardware::ConfigureSerial() {
-  int8_t rx_pin = -1;
-  int8_t tx_pin = -1;
-  if (_config.pin_rx[0] == 'D' || _config.pin_rx[0] == 'A') {
-    rx_pin = atoi(_config.pin_rx + 1);
-  } else {
-    rx_pin = atoi(_config.pin_rx);
-  }
-  if (_config.pin_tx[0] == 'D' || _config.pin_tx[0] == 'A') {
-    tx_pin = atoi(_config.pin_tx + 1);
-  } else {
-    tx_pin = atoi(_config.pin_tx);
-  }
+  int8_t rx_pin = (int8_t)_pin_rx;
+  int8_t tx_pin = (int8_t)_pin_tx;
   uint16_t cfg = UartPacketFormatToConfig(_config.format);
 
   if (_config.use_sw_serial) {
@@ -148,19 +139,10 @@ bool UARTHardware::ConfigureSerial() {
 #if defined(ARDUINO_ARCH_RP2040) || defined(ADAFRUIT_METRO_M4_EXPRESS) ||      \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(ARDUINO_ARCH_SAMD)
-    if (_uart_nbr == 1) {
-      _hwSerial = &Serial1;
-#if !defined(ADAFRUIT_PYPORTAL) && !defined(ADAFRUIT_PYPORTAL_M4_TITANO)
-    } else if (_uart_nbr == 2) {
-      _hwSerial = &Serial2;
-#endif
-    } else {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Invalid UART number for this board!");
-      return false;
-    }
+    _hwSerial = &Serial1;
 #else
-    // Create a new HardwareSerial instance
-    _hwSerial = new HardwareSerial(_uart_nbr);
+    // Create a new HardwareSerial instance (use UART1 by default)
+    _hwSerial = new HardwareSerial(1);
 #endif
     if (_hwSerial == nullptr) {
       WS_DEBUG_PRINTLN(
@@ -215,7 +197,7 @@ bool UARTHardware::isSoftwareSerial() const {
  * @brief  Gets the bus number of the hardware instance.
  * @return The bus number of the hardware instance, or -1 if not set.
  */
-int UARTHardware::getPortNum() { return _uart_nbr; }
+int UARTHardware::getPortNum() { return (int)_pin_rx; }
 
 /*!
  * @brief  Gets the HardwareSerial instance for this port

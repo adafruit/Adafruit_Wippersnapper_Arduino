@@ -68,6 +68,7 @@ report.xml
 
 # Claude settings
 CLAUDE.md
+.claude/
 .inbox.md
 results.md
 testplan.md
