@@ -16,6 +16,12 @@
 
 /*!
     @brief  Default I2C bus hardware class constructor
+    @param  sda
+            The SDA pin number.
+    @param  scl
+            The SCL pin number.
+    @param  instance
+            The I2C bus instance number.
 */
 I2cHardware::I2cHardware(uint32_t sda, uint32_t scl, uint8_t instance) {
   _bus_init = false;

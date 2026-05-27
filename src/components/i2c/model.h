@@ -34,24 +34,42 @@ public:
   // Decoders
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
+  /*!
+      @brief    Decodes an I2C output device write message.
+      @param    stream
+                The nanopb input stream.
+      @returns  True if decoded successfully, False otherwise.
+  */
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
   bool EncodeI2cDeviceEvent();
   // Getters
   ws_i2c_Remove *GetI2cDeviceRemoveMsg();
   ws_i2c_Add *GetI2cDeviceAddOrReplaceMsg();
-  ws_i2c_output_Add *GetI2cOutputAddMsg();
+  ws_i2c_output_Add *GetI2cOutputAddMsg(); ///< Returns the I2C output Add msg.
   ws_i2c_Event *GetI2cDeviceEvent();
   ws_i2c_D2B *GetI2cD2B();
   // Probe API — model owns decode/encode/storage
   void SetupProbeDecodeCallbacks(ws_i2c_Probe *probe);
-  ws_i2c_AddressSpace *GetProbeAddressSpaces();
-  size_t GetProbeAddressSpacesCount();
-  uint32_t *GetProbeAddresses();
-  size_t GetProbeAddressesCount();
-  void ClearProbed();
-  ws_i2c_AddressSpaceResult *GetNextProbedResult();
+  ws_i2c_AddressSpace *GetProbeAddressSpaces(); ///< Returns probe address spaces.
+  size_t GetProbeAddressSpacesCount(); ///< Returns probe address spaces count.
+  uint32_t *GetProbeAddresses(); ///< Returns probe addresses array.
+  size_t GetProbeAddressesCount(); ///< Returns probe addresses count.
+  void ClearProbed(); ///< Clears probed results.
+  ws_i2c_AddressSpaceResult *GetNextProbedResult(); ///< Returns next probed result slot.
+  /*!
+      @brief    Returns the found-address buffer for a given index.
+      @param    idx
+                The address space index.
+      @returns  Pointer to the found-address buffer.
+  */
   uint32_t *GetFoundAddressBuf(size_t idx);
+  /*!
+      @brief    Returns the found-address count for a given index.
+      @param    idx
+                The address space index.
+      @returns  Pointer to the found-address count.
+  */
   size_t *GetFoundAddressCount(size_t idx);
   bool EncodeProbed();
   // DeviceEvent Message API
@@ -99,10 +117,24 @@ public:
   I2cOutputModel();
   ~I2cOutputModel();
   // Decoders
+  /*!
+      @brief    Decodes an LED backpack write message.
+      @param    stream
+                The nanopb input stream.
+      @returns  True if decoded successfully, False otherwise.
+  */
   bool DecodeLedBackpackWrite(pb_istream_t *stream);
+  /*!
+      @brief    Decodes a character LCD write message.
+      @param    stream
+                The nanopb input stream.
+      @returns  True if decoded successfully, False otherwise.
+  */
   bool DecodeCharLCDWrite(pb_istream_t *stream);
   // Getters
+  /// Returns the LED backpack write message.
   ws_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
+  /// Returns the character LCD write message.
   ws_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
 
 private:

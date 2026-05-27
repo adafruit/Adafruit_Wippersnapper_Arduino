@@ -123,9 +123,9 @@ public:
 
   /*!
       @brief    Configures an i2c device's sensors.
-      @param    sensor_types
-                Pointer to an array of SensorType objects.
-      @param    sensor_types_count
+      @param    types
+                Pointer to an array of TypesEntry objects.
+      @param    types_count
                 The number of active sensors to read from the device.
   */
   void EnableSensorReads(ws_i2c_Add_TypesEntry *types, size_t types_count) {

@@ -90,6 +90,8 @@ public:
 
   /*!
       @brief    Configures the UART driver with device-specific settings.
+      @param    type
+                The UART device type.
       @param    cfg_device
                 The configuration settings for the UART device.
   */

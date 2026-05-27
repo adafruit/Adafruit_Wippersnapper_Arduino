@@ -323,8 +323,8 @@ void I2cModel::SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
     @brief    Adds a SensorEvent to the I2cDeviceEvent message.
     @param    event
                 The sensors_event_t event.
-    @param    sensor_type
-                The SensorType.
+    @param    type_entry
+                The TypesEntry for this sensor.
     @returns  True if the SensorEvent was added successfully, False otherwise.
 */
 bool I2cModel::AddI2cDeviceSensorEvent(sensors_event_t &event,

@@ -28,6 +28,14 @@ public:
   bool DecodeDS18x20Add(pb_istream_t *stream);
   ws_ds18x20_Add *GetDS18x20AddMsg();
   // DS18x20Added Message API
+  /*!
+      @brief    Encodes a DS18x20Added response message.
+      @param    onewire_pin
+                The OneWire pin name.
+      @param    is_init
+                True if encoding during initialization, False otherwise.
+      @returns  True if encoded successfully, False otherwise.
+  */
   bool EncodeDS18x20Added(char *onewire_pin, bool is_init);
   // Ds18x20Remove Message API
   bool DecodeDS18x20Remove(pb_istream_t *stream);

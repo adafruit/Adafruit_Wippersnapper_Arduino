@@ -16,7 +16,8 @@
 
 /*!
     @brief  Constructs a new UARTHardware object.
-    @param  config The configuration for the serial.
+    @param  config   The configuration for the serial.
+    @param  uart_nbr The UART port number.
 */
 UARTHardware::UARTHardware(const ws_uart_SerialConfig &config,
                            uint32_t uart_nbr) {
