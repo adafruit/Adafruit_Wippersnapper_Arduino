@@ -1087,14 +1087,6 @@ jobs:
   clang_and_doxy:
     name: 🔎Clang & Doxygen
     runs-on: ubuntu-latest
-    needs:
-      [
-        build-samd,
-        build-esp32,
-        build-esp32sx,
-        build-esp8266,
-        build-rp2040,
-      ]
     steps:
       - uses: actions/setup-python@v5
         with:
