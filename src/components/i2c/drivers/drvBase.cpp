@@ -68,6 +68,26 @@ bool drvBase::configure(DecodedSetting *settings, size_t count) {
         if (!setProxMeasRate(settings[i].int_value))
           success = false;
       }
+    } else if (strcmp(settings[i].key, "temp_oversampling") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setTempOversampling(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "pressure_oversampling") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setPressureOversampling(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "humidity_oversampling") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setHumidityOversampling(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "iir_filter") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setIirFilter(settings[i].int_value))
+          success = false;
+      }
     } else {
       // Unknown key - report failure but keep applying the remaining settings
       success = false;

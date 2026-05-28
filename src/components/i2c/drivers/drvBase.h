@@ -365,6 +365,46 @@ public:
   virtual bool setProxMeasRate(int32_t prox_meas_rate) { return false; }
 
   /*!
+      @brief    Base implementation - Applies a temperature oversampling
+                setting to the driver. Must override in driver.
+      @param    temp_oversampling
+                The temperature oversampling index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setTempOversampling(int32_t temp_oversampling) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a pressure oversampling setting
+                to the driver. Must override in driver.
+      @param    pressure_oversampling
+                The pressure oversampling index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setPressureOversampling(int32_t pressure_oversampling) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a humidity oversampling setting
+                to the driver. Must override in driver.
+      @param    humidity_oversampling
+                The humidity oversampling index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setHumidityOversampling(int32_t humidity_oversampling) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an IIR filter setting to the
+                driver. Must override in driver.
+      @param    iir_filter
+                The IIR filter index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setIirFilter(int32_t iir_filter) { return false; }
+
+  /*!
       @brief    Base implementation - Reads a object light sensor and
                 converts the reading into the expected SI unit.
       @param    lightEvent

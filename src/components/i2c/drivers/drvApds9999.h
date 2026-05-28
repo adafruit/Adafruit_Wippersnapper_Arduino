@@ -67,12 +67,18 @@ public:
       @returns  True if applied successfully, False otherwise.
   */
   bool configureDefaults() override {
-    _apds9999->setLightGain(APDS9999_LIGHT_GAIN_3X);
-    _apds9999->setLightResolution(APDS9999_LIGHT_RES_18BIT);
-    _apds9999->setLightMeasRate(APDS9999_LIGHT_RATE_100MS);
-    _apds9999->setProxResolution(APDS9999_PROX_RES_11BIT);
-    _apds9999->setProxMeasRate(APDS9999_PROX_RATE_100MS);
-    return true;
+    bool is_success = true;
+    if (!_apds9999->setLightGain(APDS9999_LIGHT_GAIN_3X))
+      is_success = false;
+    if (!_apds9999->setLightResolution(APDS9999_LIGHT_RES_18BIT))
+      is_success = false;
+    if (!_apds9999->setLightMeasRate(APDS9999_LIGHT_RATE_100MS))
+      is_success = false;
+    if (!_apds9999->setProxResolution(APDS9999_PROX_RES_11BIT))
+      is_success = false;
+    if (!_apds9999->setProxMeasRate(APDS9999_PROX_RATE_100MS))
+      is_success = false;
+    return is_success;
   }
 
   /*!
