@@ -23,6 +23,7 @@
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
+#include "drivers/drvApds9999.h"
 #include "drivers/drvBase.h" ///< Base i2c input driver class
 #include "drivers/drvBh1750.h"
 #include "drivers/drvBme280.h"
@@ -71,10 +72,10 @@
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
 
-class wippersnapper;    ///< Forward declaration
-class I2cModel;         ///< Forward declaration
-class I2cHardware;      ///< Forward declaration
-struct DecodedSetting;  ///< Forward declaration
+class wippersnapper;   ///< Forward declaration
+class I2cModel;        ///< Forward declaration
+class I2cHardware;     ///< Forward declaration
+struct DecodedSetting; ///< Forward declaration
 
 /*!
     @brief  Routes messages using the i2c.proto API to the

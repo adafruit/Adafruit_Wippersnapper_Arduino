@@ -67,6 +67,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvAhtx0(i2c, addr, mux_channel, driver_name);
      }},
+    {"apds9999",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvApds9999(i2c, addr, mux_channel, driver_name);
+     }},
     {"bh1750",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -589,24 +594,16 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   WS_DEBUG_PRINTLNVAR(name);
   _i2c_drivers.push_back(drv);
 
-  // If provided, apply driver settings
+  // Apply settings if provided, otherwise apply defaults
+  DecodedSetting *settings = nullptr;
+  size_t cnt_settings = 0;
   if (msg->has_settings) {
-    // Get the decoded settings from the model
-    DecodedSetting *settings = _i2c_model->GetDecodedSettings();
-    size_t settings_count = _i2c_model->GetDecodedSettingsCount();
-    for (size_t i = 0; i < settings_count; i++) {
-      if (!settings[i].has_value)
-        continue;
-
-      // Determine which setting this is based on the key, and apply it to the driver
-      if (strcmp(settings[i].key, "gain") == 0) {
-        if (settings[i].which_value == ws_config_Value_int_value_tag) {
-          drv->setGain(settings[i].int_value);
-        }
-      } else {
-        Ws.error_handler->publishComponentError(descriptor, "Unsupported setting key");
-      }
-    }
+    settings = _i2c_model->GetDecodedSettings();
+    cnt_settings = _i2c_model->GetDecodedSettingsCount();
+  }
+  if (!drv->configure(settings, cnt_settings)) {
+    Ws.error_handler->publishComponentError(
+        descriptor, "Failed to apply all driver settings!");
   }
 
   // If we're using a MUX, lets clear the channel for any subsequent bus

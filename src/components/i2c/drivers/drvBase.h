@@ -22,6 +22,7 @@
 #include <map>
 #include <protos/i2c.pb.h>
 
+struct DecodedSetting;    ///< Forward declaration
 #define NO_MUX_CH 0xFFFF; ///< No MUX channel specified
 
 /*!
@@ -288,6 +289,28 @@ public:
   virtual void SelectMUXChannel(uint8_t channel) { return; }
 
   /*!
+      @brief    Applies a set of decoded settings to the driver. When no
+                settings are provided, the driver's default configuration is
+                applied instead. Dispatches each setting key to the matching
+                set* method; unknown keys are reported via the return value.
+      @param    settings
+                Pointer to the decoded settings array, or nullptr.
+      @param    count
+                The number of settings in the array.
+      @returns  True if all settings (or the defaults) were applied
+                successfully, False if any setting key was unsupported.
+  */
+  bool configure(DecodedSetting *settings, size_t count);
+
+  /*!
+      @brief    Base implementation - Applies the driver's default
+                configuration. Override in drivers that have configurable
+                defaults to apply when no broker settings are provided.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool configureDefaults() { return true; }
+
+  /*!
       @brief    Base implementation - Applies a gain setting to the driver.
                 Must override in driver.
       @param    gain
@@ -295,6 +318,51 @@ public:
       @returns  True if applied successfully, False otherwise.
   */
   virtual bool setGain(int32_t gain) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a light gain setting to the
+                driver. Must override in driver.
+      @param    light_gain
+                The light gain index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setLightGain(int32_t light_gain) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a light resolution setting to
+                the driver. Must override in driver.
+      @param    light_resolution
+                The light resolution index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setLightResolution(int32_t light_resolution) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a proximity resolution setting
+                to the driver. Must override in driver.
+      @param    prox_resolution
+                The proximity resolution index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setProxResolution(int32_t prox_resolution) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a light measurement rate setting
+                to the driver. Must override in driver.
+      @param    light_meas_rate
+                The light measurement rate index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setLightMeasRate(int32_t light_meas_rate) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a proximity measurement rate
+                setting to the driver. Must override in driver.
+      @param    prox_meas_rate
+                The proximity measurement rate index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setProxMeasRate(int32_t prox_meas_rate) { return false; }
 
   /*!
       @brief    Base implementation - Reads a object light sensor and
