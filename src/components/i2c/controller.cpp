@@ -392,6 +392,14 @@ void I2cController::SetupAddDecodeCallbacks(ws_i2c_Add *add) {
   _i2c_model->SetupAddDecodeCallbacks(add);
 }
 
+DecodedSetting *I2cController::GetDecodedSettings() {
+  return _i2c_model->GetDecodedSettings();
+}
+
+size_t I2cController::GetDecodedSettingsCount() {
+  return _i2c_model->GetDecodedSettingsCount();
+}
+
 /******************************************************************************/
 /*!                             Routing                                       */
 /******************************************************************************/

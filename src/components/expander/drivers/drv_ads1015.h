@@ -57,6 +57,40 @@ public:
     return _ads.readADC_SingleEnded(pin);
   }
 
+  /*!
+   * @brief Applies a gain setting to the ADS1015.
+   * @param gain The gain index (0-5) from the broker's settings, mapping to:
+   *             0=2/3x, 1=1x, 2=2x, 3=4x, 4=8x, 5=16x
+   * @return True if applied successfully, False if index is out of range.
+   */
+  bool setGain(int32_t gain) override {
+    adsGain_t g;
+    switch (gain) {
+    case 0:
+      g = GAIN_TWOTHIRDS;
+      break;
+    case 1:
+      g = GAIN_ONE;
+      break;
+    case 2:
+      g = GAIN_TWO;
+      break;
+    case 3:
+      g = GAIN_FOUR;
+      break;
+    case 4:
+      g = GAIN_EIGHT;
+      break;
+    case 5:
+      g = GAIN_SIXTEEN;
+      break;
+    default:
+      return false;
+    }
+    _ads.setGain(g);
+    return true;
+  }
+
 private:
   Adafruit_ADS1015 _ads; ///< Adafruit ADS1015 driver instance
 };

@@ -96,6 +96,12 @@ public:
        @param  value The PWM value. */
   virtual void analogWrite(uint8_t pin, uint16_t value) {};
 
+  /*!  @brief  Applies a gain setting to the expander.
+               Override in subclass to apply gain to the hardware driver.
+       @param  gain  The gain index from the broker's settings.
+       @return True if applied successfully, false otherwise. */
+  virtual bool setGain(int32_t gain) { return false; }
+
 protected:
   uint8_t _i2c_addr = 0; ///< I2C address of the expander
 };
