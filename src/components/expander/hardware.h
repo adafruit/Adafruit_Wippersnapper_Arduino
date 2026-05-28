@@ -91,11 +91,6 @@ public:
        @return The ADC resolution. */
   virtual uint8_t getAdcResolution() { return 0; }
 
-  /*!  @brief  Sets the ADC gain of the expander.
-       @param  gain The gain value.
-       @return True if the gain was set successfully. */
-  virtual bool setGain(uint8_t gain) { return false; }
-
   /*!  @brief  Writes an analog (PWM) value to a pin on the expander.
        @param  pin   The pin number.
        @param  value The PWM value. */
