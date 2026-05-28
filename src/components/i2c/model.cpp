@@ -284,6 +284,93 @@ bool I2cModel::DecodeI2cDeviceAddReplace(pb_istream_t *stream) {
 */
 ws_i2c_Add *I2cModel::GetI2cDeviceAddOrReplaceMsg() { return &_msg_i2c_add; }
 
+// ---- Settings decode API ----
+
+/*!
+    @brief    Sets up nanopb decode callbacks on an Add message's settings
+              field before decode.
+    @param    add
+              Pointer to the ws_i2c_Add message to wire callbacks on.
+*/
+void I2cModel::SetupAddDecodeCallbacks(ws_i2c_Add *add) {
+  _decoded_settings_count = 0;
+  add->settings.settings.funcs.decode = cbDecodeSettingsEntry;
+  add->settings.settings.arg = this;
+}
+
+DecodedSetting *I2cModel::GetDecodedSettings() { return _decoded_settings; }
+
+size_t I2cModel::GetDecodedSettingsCount() { return _decoded_settings_count; }
+
+bool I2cModel::cbDecodeSettingKey(pb_istream_t *stream, const pb_field_t *field,
+                                  void **arg) {
+  char *key_buf = (char *)*arg;
+  size_t len = stream->bytes_left;
+  if (len >= MAX_SETTING_KEY_LEN) {
+    len = MAX_SETTING_KEY_LEN - 1;
+  }
+  if (!pb_read(stream, (pb_byte_t *)key_buf, len)) {
+    return false;
+  }
+  key_buf[len] = '\0';
+  return true;
+}
+
+bool I2cModel::cbDecodeSettingStrValue(pb_istream_t *stream,
+                                       const pb_field_t *field, void **arg) {
+  char *str_buf = (char *)*arg;
+  size_t len = stream->bytes_left;
+  if (len >= MAX_SETTING_STR_LEN) {
+    len = MAX_SETTING_STR_LEN - 1;
+  }
+  if (!pb_read(stream, (pb_byte_t *)str_buf, len)) {
+    return false;
+  }
+  str_buf[len] = '\0';
+  return true;
+}
+
+bool I2cModel::cbDecodeSettingsEntry(pb_istream_t *stream,
+                                     const pb_field_t *field, void **arg) {
+  I2cModel *model = (I2cModel *)*arg;
+  if (model->_decoded_settings_count >= MAX_I2C_SETTINGS) {
+    return false;
+  }
+
+  DecodedSetting *setting =
+      &model->_decoded_settings[model->_decoded_settings_count];
+  memset(setting, 0, sizeof(DecodedSetting));
+
+  // Prepare entry with callbacks for key and string value
+  ws_config_Settings_SettingsEntry entry =
+      ws_config_Settings_SettingsEntry_init_zero;
+  entry.key.funcs.decode = cbDecodeSettingKey;
+  entry.key.arg = setting->key;
+  entry.value.value.str_value.funcs.decode = cbDecodeSettingStrValue;
+  entry.value.value.str_value.arg = setting->str_value;
+
+  if (!pb_decode(stream, ws_config_Settings_SettingsEntry_fields, &entry)) {
+    return false;
+  }
+
+  // Copy decoded values into the DecodedSetting
+  setting->has_value = entry.has_value;
+  if (entry.has_value) {
+    setting->which_value = entry.value.which_value;
+    if (entry.value.which_value == ws_config_Value_int_value_tag) {
+      setting->int_value = entry.value.value.int_value;
+    } else if (entry.value.which_value == ws_config_Value_float_value_tag) {
+      setting->float_value = entry.value.value.float_value;
+    } else if (entry.value.which_value == ws_config_Value_bool_value_tag) {
+      setting->bool_value = entry.value.value.bool_value;
+    }
+    // str_value already written by cbDecodeSettingStrValue callback
+  }
+
+  model->_decoded_settings_count++;
+  return true;
+}
+
 /*!
     @brief    Clears the I2cDeviceEvent message.
 */

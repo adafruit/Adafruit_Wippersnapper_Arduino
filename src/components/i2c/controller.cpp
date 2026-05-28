@@ -383,6 +383,15 @@ I2cController::~I2cController() {
     delete _i2c_model;
 }
 
+/*!
+    @brief    Sets up nanopb decode callbacks for settings on an Add message.
+    @param    add
+              Pointer to the ws_i2c_Add message to wire callbacks on.
+*/
+void I2cController::SetupAddDecodeCallbacks(ws_i2c_Add *add) {
+  _i2c_model->SetupAddDecodeCallbacks(add);
+}
+
 /******************************************************************************/
 /*!                             Routing                                       */
 /******************************************************************************/
@@ -395,8 +404,8 @@ I2cController::~I2cController() {
     @return True if the message was successfully routed, False otherwise.
 */
 bool I2cController::Router(pb_istream_t *stream) {
-  // Save stream before decoding — Handle_Probe needs to re-decode
-  // with callbacks, and ws_pb_decode consumes the stream.
+  // Save stream before decoding — Handle_Probe and the add case need to
+  // re-decode with callbacks, and ws_pb_decode consumes the stream.
   pb_istream_t saved_stream = *stream;
 
   // Decode B2D without callbacks to determine which payload is active.
@@ -416,9 +425,18 @@ bool I2cController::Router(pb_istream_t *stream) {
     // already consumed the stream.
     res = Handle_Probe(&saved_stream);
     break;
-  case ws_i2c_B2D_add_tag:
-    res = Handle_Add(&b2d.payload.add);
+  case ws_i2c_B2D_add_tag: {
+    // Re-decode from saved stream with settings callbacks wired up,
+    // same pattern as Handle_Probe.
+    ws_i2c_B2D b2d_add = ws_i2c_B2D_init_zero;
+    _i2c_model->SetupAddDecodeCallbacks(&b2d_add.payload.add);
+    if (!ws_pb_decode(&saved_stream, ws_i2c_B2D_fields, &b2d_add)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to re-decode add with settings");
+      return false;
+    }
+    res = Handle_Add(&b2d_add.payload.add);
     break;
+  }
   case ws_i2c_B2D_remove_tag:
     res = Handle_Remove(&b2d.payload.remove);
     break;
@@ -562,6 +580,26 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   WS_DEBUG_PRINTLN("[i2c] Driver initialized: ");
   WS_DEBUG_PRINTLNVAR(name);
   _i2c_drivers.push_back(drv);
+
+  // If provided, apply driver settings
+  if (msg->has_settings) {
+    // Get the decoded settings from the model
+    DecodedSetting *settings = _i2c_model->GetDecodedSettings();
+    size_t settings_count = _i2c_model->GetDecodedSettingsCount();
+    for (size_t i = 0; i < settings_count; i++) {
+      if (!settings[i].has_value)
+        continue;
+
+      // Determine which setting this is based on the key, and apply it to the driver
+      if (strcmp(settings[i].key, "gain") == 0) {
+        if (settings[i].which_value == ws_config_Value_int_value_tag) {
+          drv->setGain(settings[i].int_value);
+        }
+      } else {
+        Ws.error_handler->publishComponentError(descriptor, "Unsupported setting key");
+      }
+    }
+  }
 
   // If we're using a MUX, lets clear the channel for any subsequent bus
   // operations that may not involve the MUX

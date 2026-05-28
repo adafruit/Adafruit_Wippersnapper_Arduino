@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -286,6 +286,15 @@ public:
                 The MUX channel to select.
   */
   virtual void SelectMUXChannel(uint8_t channel) { return; }
+
+  /*!
+      @brief    Base implementation - Applies a gain setting to the driver.
+                Must override in driver.
+      @param    gain
+                The gain index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setGain(int32_t gain) { return false; }
 
   /*!
       @brief    Base implementation - Reads a object light sensor and

@@ -94,6 +94,8 @@ public:
   void update(bool force = false);
   bool UpdateComplete();
   void ResetFlags();
+  // Settings //
+  void SetupAddDecodeCallbacks(ws_i2c_Add *add);
   // Helpers //
   TwoWire *GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda);
   bool InitMux(I2cHardware *bus, const char *name, uint32_t address);
