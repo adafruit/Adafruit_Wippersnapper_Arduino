@@ -54,7 +54,11 @@ public:
    * @return The raw ADC value read from the pin.
    */
   uint32_t analogRead(uint8_t pin) override {
-    return (uint32_t)(uint16_t)_ads.readADC_SingleEnded(pin);
+    int16_t value = _ads.readADC_SingleEnded(pin);
+    if (value < 0) {
+      value = 0;
+    }
+    return (uint32_t)value;
   }
 
   /*!
