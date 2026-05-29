@@ -54,10 +54,7 @@ public:
   }
 
   bool begin() override {
-    if ((_width == OLED_128X64_WING_WIDTH &&
-         _height == OLED_128X64_WING_HEIGHT &&
-         _rotation == OLED_128X64_WING_ROTATION_90) ||
-        strcasecmp(_panel, "128x64featherwing") == 0) {
+    if (strcasecmp(_panel, "128x64featherwing") == 0) {
       // FeatherWing needs swapped w/h ctor args
       _display = new Adafruit_SH1107(_height, _width, _i2c);
     } else {
@@ -68,6 +65,7 @@ public:
 
     _display->clearDisplay();
     _display->display();
+    // TODO: Test: do we shift rot by 1 if panel=128x64featherwing?
     _display->setRotation(_rotation);
     _display->setTextSize(_text_sz);
     _display->setTextColor(SH110X_WHITE);
@@ -83,10 +81,12 @@ public:
     _height = height;
     _text_sz = text_size;
     // SH1107 requires rotation 0-3, not degrees
-    _rotation =
-        (width == OLED_128X64_WING_WIDTH && height == OLED_128X64_WING_HEIGHT)
-            ? OLED_128X64_WING_ROTATION_90
-            : 0;
+
+    // TODO: Test: do we switch if panel=128x64featherwing?
+    // _rotation =
+    //     (width == OLED_128X64_WING_WIDTH && height == OLED_128X64_WING_HEIGHT)
+    //         ? OLED_128X64_WING_ROTATION_90
+    //         : 0;
   }
 
   void WriteMessage(const char *message) override {

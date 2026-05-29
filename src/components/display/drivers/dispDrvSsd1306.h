@@ -60,7 +60,12 @@ public:
   */
   bool begin() override {
     // Attempt to create and allocate a SSD1306 obj.
-    _display = new Adafruit_SSD1306(_width, _height, _i2c);
+    if (strcasecmp(_panel, "128x32featherwing") == 0) {
+      // FeatherWing needs swapped w/h ctor args
+      _display = new Adafruit_SSD1306(_height, _width, _i2c);
+    } else {
+      _display = new Adafruit_SSD1306(_width, _height, _i2c);
+    }
     if (!_display->begin(SSD1306_SWITCHCAPVCC, _address))
       return false;
     // Clear the buffer

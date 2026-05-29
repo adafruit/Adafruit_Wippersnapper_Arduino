@@ -565,7 +565,7 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   pb_size_t config = msg->which_config;
   WS_DEBUG_PRINT("[display] I2C config tag: ");
   WS_DEBUG_PRINTLNVAR(config);
-  if (config == ws_display_Add_config_display_tag) {
+  if (config == ws_display_Add_config_display_tag) { // OLED/TFT
     ws_display_DisplayProperties *cfg = &msg->config.config_display;
     WS_DEBUG_PRINT("[display] OLED config: ");
     WS_DEBUG_PRINTVAR(cfg->width);
@@ -580,22 +580,9 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     ws_display_LedBackpackConfig *cfg = &msg->config.config_led;
     drv->ConfigureI2CBackpack(cfg->brightness, cfg->alignment);
   } else {
-    // No matching config — for v1 OLEDs, apply safe defaults to prevent
-    // crash from uninitialized width/height in dispDrvSsd1306::begin()
-
-    /* TODO: refactor these i2c products / drivers to utilise panel name
-    so internalRotation can be factored in by panel allowing normal
-    width/height in definition as user/UI expects not as driver ctor needs.
-    e.g. featherwing 128x64 OLED would be defined as 128x32 panel with
-    internalRotation=90
-    */
-    WS_DEBUG_PRINTLN("[display] WARNING: No config for I2C display, "
-                     "applying defaults");
-    if (strcasecmp(driverName, "SSD1306") == 0) {
-      drv->ConfigureSSD1306(128, 32, 1);
-    } else if (strcasecmp(driverName, "SH1107") == 0) {
-      drv->ConfigureSSD1306(128, 64, 1);
-    }
+    WS_DEBUG_PRINTLN("[display] ERROR: Unsupported config type for I2C display!");
+    delete drv;
+    return false;
   }
 
   if (!drv->begin()) {

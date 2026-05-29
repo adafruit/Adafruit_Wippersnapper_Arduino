@@ -14,40 +14,6 @@
  */
 #include "controller.h"
 
-// Nanopb callback to decode a string field into a char buffer.
-// Set cb.arg to point at a char[] before calling pb_decode.
-static bool decode_string_cb(pb_istream_t *stream, const pb_field_t *field,
-                             void **arg) {
-  (void)field;
-  char *buf = (char *)*arg;
-  size_t total = stream->bytes_left;
-  size_t len = total;
-  if (len >= 64)
-    len = 63;
-  if (!pb_read(stream, (pb_byte_t *)buf, len))
-    return false;
-  buf[len] = '\0';
-  // Discard any remaining bytes so the stream is not left in a corrupt state.
-  if (total > len) {
-    uint8_t discard;
-    for (size_t i = len; i < total; i++) {
-      if (!pb_read(stream, &discard, 1))
-        return false;
-    }
-  }
-  return true;
-}
-
-// Nanopb callback to encode a string field from a char pointer.
-// Set cb.arg to point at the string before calling pb_encode.
-static bool encode_string_cb(pb_ostream_t *stream, const pb_field_t *field,
-                             void *const *arg) {
-  const char *str = (const char *)*arg;
-  if (!pb_encode_tag_for_field(stream, field))
-    return false;
-  return pb_encode_string(stream, (const pb_byte_t *)str, strlen(str));
-}
-
 DisplayController::DisplayController() {
   _num_displays = 0;
   _last_bar_update = 0;
