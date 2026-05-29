@@ -23,7 +23,7 @@
 #define MAX_PROBE_SPACES 16  ///< Maximum number of AddressSpaces in a Probe
 #define MAX_PROBE_ADDRESSES 112 ///< Maximum number of addresses to probe
 #define MAX_I2C_SETTINGS 8      ///< Maximum settings per I2C device
-#define MAX_SETTING_KEY_LEN 16  ///< Maximum length of a setting key string
+#define MAX_SETTING_KEY_LEN 32  ///< Maximum length of a setting key string
 #define MAX_SETTING_STR_LEN 32  ///< Maximum length of a setting string value
 
 /// A single decoded key-value setting from ws_config_Settings.
