@@ -178,6 +178,33 @@ bool ErrorHandler::publishComponentError(ws_i2c_Descriptor i2c,
 }
 
 /*!
+    @brief  Publishes a component error for an SPI-based component.
+    @param  spi
+            The SPI descriptor.
+    @param  error_msg
+            The error message string.
+    @return True if the error was published successfully, False otherwise.
+*/
+bool ErrorHandler::publishComponentError(ws_spi_Descriptor spi,
+                                         const char *error_msg) {
+  WS_DEBUG_PRINT("[error] SPI CS pin ");
+  WS_DEBUG_PRINTVAR(spi.pin_cs);
+  WS_DEBUG_PRINT(": ");
+  WS_DEBUG_PRINTLNVAR(error_msg);
+
+  _d2b_msg = ws_error_D2B_init_zero;
+  _d2b_msg.which_payload = ws_error_D2B_component_tag;
+
+  ws_error_ComponentError *comp = &_d2b_msg.payload.component;
+  comp->message.funcs.encode = encode_string_callback;
+  comp->message.arg = (void *)error_msg;
+  comp->which_descriptor = ws_error_ComponentError_spi_tag;
+  comp->descriptor.spi = spi;
+
+  return publishD2B();
+}
+
+/*!
     @brief  Publishes a component error for a UART-based component.
     @param  uart
             The UART descriptor.

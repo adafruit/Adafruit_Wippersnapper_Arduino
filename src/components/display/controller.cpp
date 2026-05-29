@@ -68,11 +68,7 @@ DisplayController::~DisplayController() {
 */
 bool DisplayController::Router(pb_istream_t *stream) {
   // B2D envelope carries the display name as a callback field
-  char display_name[64] = {0};
   ws_display_B2D b2d = ws_display_B2D_init_zero;
-  b2d.name.funcs.decode = decode_string_cb;
-  b2d.name.arg = display_name;
-
   if (!ws_pb_decode(stream, ws_display_B2D_fields, &b2d)) {
     WS_DEBUG_PRINTLN("[display] ERROR: Unable to decode Display B2D envelope");
     return false;
@@ -80,11 +76,11 @@ bool DisplayController::Router(pb_istream_t *stream) {
 
   switch (b2d.which_payload) {
   case ws_display_B2D_add_tag:
-    return Handle_Display_Add(&b2d.payload.add, display_name);
+    return Handle_Display_Add(&b2d.payload.add);
   case ws_display_B2D_remove_tag:
-    return Handle_Display_Remove(&b2d.payload.remove, display_name);
+    return Handle_Display_Remove(&b2d.payload.remove);
   case ws_display_B2D_write_tag:
-    return Handle_Display_Write(&b2d.payload.write, display_name);
+    return Handle_Display_Write(&b2d.payload.write);
   default:
     WS_DEBUG_PRINTLN("[display] WARNING: Unsupported Display payload");
     return false;
@@ -199,26 +195,24 @@ static bool resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
 /*!
     @brief  Handles a request to add or replace a display.
     @param  msg  The Display Add message.
-    @param  name  The unique name for the display to add or replace.
     @return True if successful, False otherwise.
 */
-bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
-                                           const char *name) {
-  if (name == nullptr) {
+bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
+  if (msg == nullptr || msg->name == nullptr) {
     WS_DEBUG_PRINTLN("[display] ERROR: Display name is null!");
     return false;
   }
 
   WS_DEBUG_PRINT("[display] Adding display: ");
-  WS_DEBUG_PRINTLNVAR(name);
+  WS_DEBUG_PRINTLNVAR(msg->name);
 
   bool foundDefaults = false;
   // Resolve component-name defaults before passing to hardware
   if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_EPD) {
-    foundDefaults = resolveEpdDefaults(msg, name);
+    foundDefaults = resolveEpdDefaults(msg, msg->name);
   } else if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_TFT &&
              msg->which_interface_type == ws_display_Add_ttl_rgb666_tag) {
-    foundDefaults = resolveRgb666Defaults(msg, name);
+    foundDefaults = resolveRgb666Defaults(msg, msg->name);
   }
   if (!foundDefaults) {
     // The resolve defaults funcs are not mandatory (come in proto)
@@ -226,9 +220,9 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
   }
 
   // If display with same name exists, remove it first to allow replacement
-  if (removeExistingDisplayByName(name)) {
+  if (removeExistingDisplayByName(msg->name)) {
     WS_DEBUG_PRINT("[display] Replaced existing display with same name '");
-    WS_DEBUG_PRINTVAR(name);
+    WS_DEBUG_PRINTVAR(msg->name);
     WS_DEBUG_PRINTLN("'");
   }
 
@@ -239,17 +233,29 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
 
   // Create and initialize new display hardware
   DisplayHardware *hw = new DisplayHardware();
-  if (!hw->begin(msg, name)) {
+  if (!hw->begin(msg)) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to initialize display hardware!");
     delete hw;
     
-    //TODO: Publish failure response / add model via ErrorHandler
-    ws_display_D2B d2b = ws_display_D2B_init_zero;
-    d2b.name.funcs.encode = encode_string_cb;
-    d2b.name.arg = (void *)name;
-    d2b.did_succeed = false;
-    d2b.which_payload = ws_display_D2B_added_or_replaced_tag;
-    Ws.PublishD2b(ws_signal_DeviceToBroker_display_tag, &d2b);
+    switch (msg->which_interface_type) {
+    case ws_display_Add_spi_epd_tag:
+      Ws.error_handler->publishComponentError(
+          msg->interface_type.spi_epd.spi, "Failed to initialize SPI display hardware for add request");
+      break;
+    case ws_display_Add_spi_tft_tag:
+      Ws.error_handler->publishComponentError(
+          msg->interface_type.spi_tft.spi, "Failed to initialize SPI display hardware for add request");
+      break;
+    case ws_display_Add_i2c_tag:
+      Ws.error_handler->publishComponentError(
+          msg->interface_type.i2c, "Failed to initialize I2C display hardware for add request");
+      break;
+    default:
+      Ws.error_handler->publishComponentError(
+          "Unknown interface", "Failed to initialize display hardware for add request");
+      break;
+    }
+    
     return false;
   }
 
@@ -263,21 +269,11 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg,
   // Handle optional initial write
   if (msg->has_write) {
     WS_DEBUG_PRINTLN("[display] Processing initial write...");
-    Handle_Display_Write(&msg->write, name);
-  }
-
-  //TODO: Do not Publish success response, only errors
-  ws_display_D2B d2b = ws_display_D2B_init_zero;
-  d2b.name.funcs.encode = encode_string_cb;
-  d2b.name.arg = (void *)name;
-  d2b.did_succeed = true;
-  d2b.which_payload = ws_display_D2B_added_or_replaced_tag;
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_display_tag, &d2b)) {
-    WS_DEBUG_PRINTLN("[display] WARNING: Failed to publish AddedOrReplaced");
+    Handle_Display_Write(&msg->write);
   }
 
   WS_DEBUG_PRINT("[display] Display added successfully: ");
-  WS_DEBUG_PRINTLNVAR(name);
+  WS_DEBUG_PRINTLNVAR(msg->name);
   return true;
 }
 
@@ -316,24 +312,32 @@ bool DisplayController::removeExistingDisplayByName(const char *name) {
     @param  name  The unique name of the display to remove.
     @return True if successful, False otherwise.
 */
-bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg,
-                                              const char *name) {
+bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
   WS_DEBUG_PRINT("[display] Removing display: ");
-  WS_DEBUG_PRINTLNVAR(name);
+  WS_DEBUG_PRINTLNVAR(msg->name);
 
-  bool did_remove = removeExistingDisplayByName(name);
-
+  bool did_remove = removeExistingDisplayByName(msg->name);
   if (!did_remove) {
+    const char *error_msg = "Display not found for remove request";
     WS_DEBUG_PRINTLN("[display] WARNING: Display not found");
+    switch (msg->which_descriptor) {
+    case ws_display_Remove_spi_epd_tag:
+      Ws.error_handler->publishComponentError(
+          msg->descriptor.spi_epd.spi, error_msg);
+      break;
+    case ws_display_Remove_spi_tft_tag:
+      Ws.error_handler->publishComponentError(
+          msg->descriptor.spi_tft.spi, error_msg);
+      break;
+    case ws_display_Remove_i2c_tag:
+      Ws.error_handler->publishComponentError(
+          msg->descriptor.i2c, error_msg);
+      break;
+    default:
+      WS_DEBUG_PRINTLN("[display] WARNING: Unknown interface type in remove request - failed to remove display");
+      break;
+    }
   }
-
-  // Publish remove errors but not success response
-  ws_display_D2B d2b = ws_display_D2B_init_zero;
-  d2b.name.funcs.encode = encode_string_cb;
-  d2b.name.arg = (void *)name;
-  d2b.did_succeed = did_remove;
-  d2b.which_payload = ws_display_D2B_removed_tag;
-  Ws.PublishD2b(ws_signal_DeviceToBroker_display_tag, &d2b);
   return did_remove;
 }
 
@@ -342,20 +346,19 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg,
     @param  msg  The Display Write message.
     @return True if successful, False otherwise.
 */
-bool DisplayController::Handle_Display_Write(ws_display_Write *msg,
-                                             const char *name) {
-  if (!msg || !name) {
+bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
+  if (!msg || !msg->name) {
     WS_DEBUG_PRINTLN("[display] ERROR: Invalid display write request!");
     return false;
   }
 
   WS_DEBUG_PRINT("[display] Writing to display: ");
-  WS_DEBUG_PRINTLNVAR(name);
+  WS_DEBUG_PRINTLNVAR(msg->name);
 
-  int8_t idx = findDisplayIndexByName(name);
+  int8_t idx = findDisplayIndexByName(msg->name);
   if (idx < 0) {
     WS_DEBUG_PRINT("[display] ERROR: Display (");
-    WS_DEBUG_PRINTVAR(name);
+    WS_DEBUG_PRINTVAR(msg->name);
     WS_DEBUG_PRINTLN(") not found!");
     return false;
   }

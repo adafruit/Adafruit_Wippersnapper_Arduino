@@ -37,7 +37,7 @@ class DisplayHardware {
 public:
   DisplayHardware();
   ~DisplayHardware();
-  bool begin(ws_display_Add *addMsg, const char *name);
+  bool begin(ws_display_Add *addMsg);
   bool write(ws_display_Write *msg);
   const char *getName();
   void showSplash();
@@ -56,13 +56,13 @@ private:
   bool beginI2cDisplay(ws_display_Add *msg);
   static int16_t parsePin(const char *pinStr);
   static uint8_t EpdBitBangReadRegister(uint8_t cmd,
-                                        ws_display_EpdSpiConfig *config);
+                                        ws_display_EpdSpiDescriptor *config);
 
   // EPD auto-detection helpers
-  bool detect_ssd1680(ws_display_EpdSpiConfig *config);
-  bool detect_ssd1683(ws_display_EpdSpiConfig *config);
-  bool detect_uc8151d(ws_display_EpdSpiConfig *config);
-  bool detect_uc8179(ws_display_EpdSpiConfig *config);
-  bool detect_uc8253(ws_display_EpdSpiConfig *config);
+  bool detect_ssd1680(ws_display_EpdSpiDescriptor *config);
+  bool detect_ssd1683(ws_display_EpdSpiDescriptor *config);
+  bool detect_uc8151d(ws_display_EpdSpiDescriptor *config);
+  bool detect_uc8179(ws_display_EpdSpiDescriptor *config);
+  bool detect_uc8253(ws_display_EpdSpiDescriptor *config);
 };
 #endif // WS_DISPLAY_HARDWARE_H

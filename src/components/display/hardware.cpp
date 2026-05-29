@@ -54,13 +54,13 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
     @param  name    The unique name for this display instance.
     @return True if initialization succeeded, False otherwise.
 */
-bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
+bool DisplayHardware::begin(ws_display_Add *addMsg) {
   if (!addMsg) {
     WS_DEBUG_PRINTLN("[display] ERROR: Null add message!");
     return false;
   }
 
-  snprintf(_name, sizeof(_name), "%s", name ? name : "");
+  snprintf(_name, sizeof(_name), "%s", addMsg->name ? addMsg->name : "");
   _class = addMsg->type;
 
   WS_DEBUG_PRINT("[display] Type: ");
@@ -92,8 +92,8 @@ bool DisplayHardware::begin(ws_display_Add *addMsg, const char *name) {
     @return True on success, False on failure.
 */
 bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
-  ws_display_TftSpiConfig *spi = &msg->interface_type.spi_tft;
-  ws_spi_Config *dev = &spi->spi;
+  ws_display_TftSpiDescriptor *spi = &msg->interface_type.spi_tft;
+  ws_spi_Descriptor *dev = &spi->spi;
 
   int16_t cs = parsePin(dev->pin_cs);
   int16_t dc = parsePin(spi->pin_dc);
@@ -191,7 +191,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
 */
 uint8_t
 DisplayHardware::EpdBitBangReadRegister(uint8_t cmd,
-                                        ws_display_EpdSpiConfig *config) {
+                                        ws_display_EpdSpiDescriptor *config) {
   int16_t mosi = DisplayHardware::parsePin(config->spi.pin_mosi);
   int16_t miso = DisplayHardware::parsePin(config->spi.pin_miso);
   int16_t sck = DisplayHardware::parsePin(config->spi.pin_sck);
@@ -252,7 +252,7 @@ DisplayHardware::EpdBitBangReadRegister(uint8_t cmd,
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as an SSD1680.
 */
-bool DisplayHardware::detect_ssd1680(ws_display_EpdSpiConfig *config) {
+bool DisplayHardware::detect_ssd1680(ws_display_EpdSpiDescriptor *config) {
   uint8_t status = EpdBitBangReadRegister(0x71, config);
   return status == 0xFF;
 }
@@ -262,7 +262,7 @@ bool DisplayHardware::detect_ssd1680(ws_display_EpdSpiConfig *config) {
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as an SSD1683.
 */
-bool DisplayHardware::detect_ssd1683(ws_display_EpdSpiConfig *config) {
+bool DisplayHardware::detect_ssd1683(ws_display_EpdSpiDescriptor *config) {
   uint8_t status = EpdBitBangReadRegister(0x2F, config);
   return (status & 0x03) == 0x01;
 }
@@ -272,7 +272,7 @@ bool DisplayHardware::detect_ssd1683(ws_display_EpdSpiConfig *config) {
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as a UC8151D.
 */
-bool DisplayHardware::detect_uc8151d(ws_display_EpdSpiConfig *config) {
+bool DisplayHardware::detect_uc8151d(ws_display_EpdSpiDescriptor *config) {
   uint8_t rev = EpdBitBangReadRegister(0x70, config);
   return rev != 0xFF;
 }
@@ -282,7 +282,7 @@ bool DisplayHardware::detect_uc8151d(ws_display_EpdSpiConfig *config) {
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as a UC8179.
 */
-bool DisplayHardware::detect_uc8179(ws_display_EpdSpiConfig *config) {
+bool DisplayHardware::detect_uc8179(ws_display_EpdSpiDescriptor *config) {
   uint8_t dualspi = EpdBitBangReadRegister(0x15, config);
   return dualspi != 0xFF;
 }
@@ -292,7 +292,7 @@ bool DisplayHardware::detect_uc8179(ws_display_EpdSpiConfig *config) {
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as a UC8253.
 */
-bool DisplayHardware::detect_uc8253(ws_display_EpdSpiConfig *config) {
+bool DisplayHardware::detect_uc8253(ws_display_EpdSpiDescriptor *config) {
   uint8_t status = EpdBitBangReadRegister(0x71, config);
   return status != 0xFF;
 }
@@ -307,8 +307,8 @@ bool DisplayHardware::detect_uc8253(ws_display_EpdSpiConfig *config) {
     @return True on success, False on failure.
 */
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
-  ws_display_EpdSpiConfig *spi_epd_config = &msg->interface_type.spi_epd;
-  ws_spi_Config *spi_pin_config = &spi_epd_config->spi;
+  ws_display_EpdSpiDescriptor *spi_epd_config = &msg->interface_type.spi_epd;
+  ws_spi_Descriptor *spi_pin_config = &spi_epd_config->spi;
 
   int16_t dc = parsePin(spi_epd_config->pin_dc);
   int16_t rst = parsePin(spi_epd_config->pin_rst);
@@ -518,8 +518,8 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
         "[display] ERROR: Expected I2C interface for I2C display!");
     return false;
   }
-  ws_i2c_DeviceDescriptor *i2c_cfg = &msg->interface_type.i2c;
-  uint16_t addr = (uint16_t)i2c_cfg->device_address;
+  ws_i2c_Descriptor *i2c_cfg = &msg->interface_type.i2c;
+  uint16_t addr = (uint16_t)i2c_cfg->address;
 
   if (_drvDisp) {
     delete _drvDisp;
@@ -532,7 +532,7 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   WS_DEBUG_PRINTLNVAR(addr, HEX);
 
   TwoWire *i2c =
-      Ws._i2c_controller->GetOrCreateI2cBus(i2c_cfg->pin_scl, i2c_cfg->pin_sda);
+      Ws._i2c_controller->GetOrCreateI2cBus(i2c_cfg->address_space.pin_scl, i2c_cfg->address_space.pin_sda);
   if (i2c == nullptr) {
     WS_DEBUG_PRINTLN("[display] ERROR: I2C bus not found for Display device!");
     return false;

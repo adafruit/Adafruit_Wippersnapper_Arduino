@@ -35,24 +35,21 @@ public:
   /*!
       @brief  Handles a request to add a display.
       @param  msg   The Display Add message.
-      @param  name  The unique name for the new display.
       @return True if the display was added successfully, False otherwise.
   */
-  bool Handle_Display_Add(ws_display_Add *msg, const char *name);
+  bool Handle_Display_Add(ws_display_Add *msg);
   /*!
   @brief  Handles a request to remove a display.
       @param  msg   The Display Remove message.
-      @param  name  The unique name of the display to remove.
       @return True if the display was removed, False otherwise.
   */
-  bool Handle_Display_Remove(ws_display_Remove *msg, const char *name);
+  bool Handle_Display_Remove(ws_display_Remove *msg);
   /*!
   @brief  Handles a request to write to a display.
   @param  msg   The Display Write message.
-  @param  name  The unique name of the target display.
   @return True if the write succeeded, False otherwise.
   */
-  bool Handle_Display_Write(ws_display_Write *msg, const char *name);
+  bool Handle_Display_Write(ws_display_Write *msg);
   void update(int32_t rssi, bool is_connected);
 
 private:

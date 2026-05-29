@@ -50,7 +50,6 @@ public:
       @brief  Returns the I2C output Add message.
       @returns Pointer to the I2C output Add message.
   */
-  ws_i2c_output_Add *GetI2cOutputAddMsg();
   ws_i2c_Event *GetI2cDeviceEvent();
   ws_i2c_D2B *GetI2cD2B();
   // Probe API — model owns decode/encode/storage
@@ -133,42 +132,4 @@ private:
   ws_i2c_Event _msg_i2c_event;
 };
 
-/*!
-    @brief  Provides an interface for creating, encoding, and parsing
-            display write messages for I2C output devices.
-*/
-class I2cOutputModel {
-public:
-  I2cOutputModel();
-  ~I2cOutputModel();
-  // Decoders
-  /*!
-      @brief    Decodes an LED backpack write message.
-      @param    stream
-                The nanopb input stream.
-      @returns  True if decoded successfully, False otherwise.
-  */
-  bool DecodeLedBackpackWrite(pb_istream_t *stream);
-  /*!
-      @brief    Decodes a character LCD write message.
-      @param    stream
-                The nanopb input stream.
-      @returns  True if decoded successfully, False otherwise.
-  */
-  bool DecodeCharLCDWrite(pb_istream_t *stream);
-  // Getters
-  /*!
-      @brief  Returns the LED backpack write message.
-      @returns Pointer to the LED backpack write message.
-  */
-  ws_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
-  /*!
-      @brief  Returns the character LCD write message.
-      @returns Pointer to the character LCD write message.
-  */
-  ws_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
-
-private:
-  ws_display_Write _msg_display_write;
-};
 #endif // WS_I2C_MODEL_H
