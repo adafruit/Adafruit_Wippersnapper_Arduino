@@ -303,13 +303,16 @@ protected:
       NULL; ///< Ptr to an adafruit_sensor representing the pressure
   Adafruit_Sensor *_bmp_humidity =
       NULL; ///< Ptr to an adafruit_sensor representing the humidity
-  Adafruit_BMP280::sensor_mode _mode = Adafruit_BMP280::MODE_NORMAL;
+  Adafruit_BMP280::sensor_mode _mode =
+      Adafruit_BMP280::MODE_NORMAL; ///< Operating mode
   Adafruit_BMP280::sensor_sampling _temp_sampling =
-      Adafruit_BMP280::SAMPLING_X16;
+      Adafruit_BMP280::SAMPLING_X16; ///< Temperature oversampling
   Adafruit_BMP280::sensor_sampling _press_sampling =
-      Adafruit_BMP280::SAMPLING_X16;
-  Adafruit_BMP280::sensor_filter _filter = Adafruit_BMP280::FILTER_OFF;
-  Adafruit_BMP280::standby_duration _duration = Adafruit_BMP280::STANDBY_MS_1;
+      Adafruit_BMP280::SAMPLING_X16; ///< Pressure oversampling
+  Adafruit_BMP280::sensor_filter _filter =
+      Adafruit_BMP280::FILTER_OFF; ///< Filter setting
+  Adafruit_BMP280::standby_duration _duration =
+      Adafruit_BMP280::STANDBY_MS_1; ///< Standby duration
 };
 
 #endif // drvBmp280

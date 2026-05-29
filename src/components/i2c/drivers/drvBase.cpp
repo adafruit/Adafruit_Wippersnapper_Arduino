@@ -15,16 +15,6 @@
 #include "drvBase.h"
 #include "../model.h"
 
-/*!
-    @brief    Applies settings to the driver.
-    @param    settings
-              Pointer to the decoded settings array, or nullptr.
-    @param    count
-              The number of settings in the array.
-    @returns  True if all settings (or the defaults) were applied
-              successfully, False if any setting key was unsupported or if a
-   setting failed to apply.
-*/
 bool drvBase::configure(DecodedSetting *settings, size_t count) {
   // No broker-provided settings, so apply the driver's default configuration
   if (settings == nullptr || count == 0) {

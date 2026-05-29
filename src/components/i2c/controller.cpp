@@ -397,10 +397,18 @@ void I2cController::SetupAddDecodeCallbacks(ws_i2c_Add *add) {
   _i2c_model->SetupAddDecodeCallbacks(add);
 }
 
+/*!
+    @brief    Gets a pointer to the array of decoded settings from the model.
+    @returns  Pointer to the array of decoded settings from the model.
+*/
 DecodedSetting *I2cController::GetDecodedSettings() {
   return _i2c_model->GetDecodedSettings();
 }
 
+/*!
+    @brief    Gets the count of decoded settings from the model.
+    @returns  The count of decoded settings from the model.
+*/
 size_t I2cController::GetDecodedSettingsCount() {
   return _i2c_model->GetDecodedSettingsCount();
 }
