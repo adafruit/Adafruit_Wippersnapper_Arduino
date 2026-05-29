@@ -126,12 +126,13 @@
 #endif
 
 // Components (API v2)
-#include "components/analogIO/controller.h"
+#include "components/analogIn/controller.h"
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/display/controller.h"
 #include "components/ds18x20/controller.h"
 #include "components/error/handler.h"
+#include "components/expander/controller.h"
 #include "components/gps/controller.h"
 #include "components/i2c/controller.h"
 #include "components/pixels/controller.h"
@@ -173,10 +174,11 @@ class WipperSnapper_LittleFS;
 class ws_sdcard;
 class CheckinModel;
 class ErrorHandler;
+class ExpanderController;
 class SensorModel;
 class DigitalIOController;
 class DisplayController;
-class AnalogIOController;
+class AnalogInController;
 class DS18X20Controller;
 class GPSController;
 class I2cController;
@@ -265,12 +267,14 @@ public:
   SensorModel *sensor_model = nullptr;   ///< Instance of SensorModel class
   DigitalIOController *digital_io_controller =
       nullptr; ///< Instance of DigitalIO controller class
-  AnalogIOController *analogio_controller =
-      nullptr; ///< Instance of AnalogIO controller
+  AnalogInController *analogin_controller =
+      nullptr; ///< Instance of AnalogIn controller
   DisplayController *_display_controller =
       nullptr; ///< Instance of Display controller
   DS18X20Controller *_ds18x20_controller =
-      nullptr;                              ///< Instance of DS18X20 controller
+      nullptr; ///< Instance of DS18X20 controller
+  ExpanderController *_expander_controller =
+      nullptr;                              ///< Instance of Expander controller
   GPSController *_gps_controller = nullptr; ///< Instance of GPS controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
   PixelsController *_pixels_controller =

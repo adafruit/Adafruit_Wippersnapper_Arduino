@@ -35,7 +35,8 @@
 */
 class UARTHardware {
 public:
-  UARTHardware(const ws_uart_SerialConfig &config, uint32_t uart_nbr);
+  UARTHardware(const ws_uart_SerialConfig &config, uint32_t pin_rx,
+               uint32_t pin_tx);
   ~UARTHardware();
   bool ConfigureSerial();
   uint16_t UartPacketFormatToConfig(const ws_uart_PacketFormat uart_format);
@@ -54,7 +55,8 @@ private:
 #if HAS_SW_SERIAL
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance for this bus
 #endif                                 // HAS_SW_SERIAL
-  int _uart_nbr = -1;  ///< The UART bus number this hardware instance is using
+  uint32_t _pin_rx;                    ///< The RX pin number
+  uint32_t _pin_tx;                    ///< The TX pin number
   uint32_t _baud_rate; ///< The baud rate for this hardware instance
 };
 #endif // WS_UART_HARDWARE_H

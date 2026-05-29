@@ -98,7 +98,7 @@ private:
   bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd, const char *pin,
                          float period, bool value, const char *sample_mode,
                          const char *direction, const char *pull);
-  bool ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd, const char *pin,
+  bool ParseAnalogInAdd(ws_analogin_Add &msg_AnalogInAdd, const char *pin,
                         float period, const char *mode);
   bool ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
                        int resolution, float period, int num_sensors,

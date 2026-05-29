@@ -76,3 +76,5 @@ testplan.md
 *.vcxproj.filters
 *.vcxproj.user
 logs/
+
+src/Wippersnapper_demo.ino.cpp

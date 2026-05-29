@@ -39,7 +39,7 @@ private:
                   void **arg); //< Pre-decode callback to set up component_adds
   static bool cbDigitalIOAdds(pb_istream_t *stream, const pb_field_t *field,
                               void **arg);
-  static bool cbAnalogIOAdds(pb_istream_t *stream, const pb_field_t *field,
+  static bool cbAnalogInAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg);
   static bool cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
                           void **arg);
