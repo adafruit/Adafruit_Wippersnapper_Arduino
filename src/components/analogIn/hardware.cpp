@@ -150,7 +150,8 @@ float AnalogInHardware::ReadVoltage() {
 #ifdef ARDUINO_ARCH_ESP32
   _value_voltage = analogReadMilliVolts(_name) / 1000.0;
 #else
-  _value_voltage = (ReadRawValue() * _ref_voltage) / _max_scale_resolution_desired;
+  _value_voltage =
+      (ReadRawValue() * _ref_voltage) / _max_scale_resolution_desired;
 #endif // ARDUINO_ARCH_ESP32
   return _value_voltage;
 }

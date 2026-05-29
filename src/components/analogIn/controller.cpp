@@ -38,7 +38,9 @@ AnalogInController::~AnalogInController() {
     @param  voltage
             The reference voltage.
 */
-void AnalogInController::SetRefVoltage(float voltage) { _mcu_ref_voltage = voltage; }
+void AnalogInController::SetRefVoltage(float voltage) {
+  _mcu_ref_voltage = voltage;
+}
 
 /*!
     @brief  Allocate memory for the total number of analog pins.
