@@ -33,6 +33,11 @@
 #include "drivers/dispDrvThinkInkMonoBAAMFGN.h"
 #include "drivers/dispDrvThinkInkMonoM06.h"
 
+/*!
+    @brief  High-level wrapper that owns the active display driver and routes
+            display Add/Write requests to the appropriate concrete driver
+            (SPI TFT, SPI EPD, RGB666, or I2C).
+*/
 class DisplayHardware {
 public:
   DisplayHardware();

@@ -36,6 +36,8 @@ public:
                 The I2C multiplexer channel.
       @param    driver_name
                 The name of the driver.
+      @param    panel
+                The panel/variant name.
   */
   dispDrvCharLcd(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
                  const char *driver_name, const char *panel)

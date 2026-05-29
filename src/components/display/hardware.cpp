@@ -51,7 +51,6 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
     @brief  Initializes the underlying display driver from a Display Add
             message.
     @param  addMsg  The Display Add message describing the display.
-    @param  name    The unique name for this display instance.
     @return True if initialization succeeded, False otherwise.
 */
 bool DisplayHardware::begin(ws_display_Add *addMsg) {

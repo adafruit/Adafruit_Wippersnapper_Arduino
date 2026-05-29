@@ -37,6 +37,7 @@ public:
       @param  sensorAddress  The I2C address of the display.
       @param  mux_channel    Optional I2C MUX channel for the display.
       @param  driver_name    The name of the driver.
+      @param  panel          The panel/variant name.
   */
   dispDrvSh1107(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
                 const char *driver_name, const char *panel)

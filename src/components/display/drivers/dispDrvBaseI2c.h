@@ -50,6 +50,7 @@ public:
       @param  address      The I2C device's unique address.
       @param  mux_channel  Optional channel number for I2C MUX addressing.
       @param  driver_name  The name of the driver.
+      @param  panel        The panel/variant name.
   */
   dispDrvBaseI2c(TwoWire *i2c, uint16_t address, uint32_t mux_channel,
                  const char *driver_name, const char *panel)

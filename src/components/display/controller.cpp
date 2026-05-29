@@ -313,7 +313,7 @@ bool DisplayController::removeExistingDisplayByName(const char *name) {
 
 /*!
     @brief  Handles a request to remove a display.
-    @param  name  The unique name of the display to remove.
+    @param  msg  The Display Remove proto message identifying the display.
     @return True if successful, False otherwise.
 */
 bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
