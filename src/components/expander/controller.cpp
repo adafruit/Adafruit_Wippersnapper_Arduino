@@ -141,7 +141,8 @@ ExpanderHardware *ExpanderController::GetDriver(uint8_t addr) {
  */
 bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
   if (!msg->has_cfg_i2c) {
-    Ws.error_handler->publishComponentError(ws_i2c_Descriptor{}, "No configuration provided!");
+    Ws.error_handler->publishComponentError(ws_i2c_Descriptor{},
+                                            "No configuration provided!");
     return false;
   }
 
@@ -150,7 +151,8 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
 
   // Check if this expander has already been added
   if (GetDriver(addr) != nullptr) {
-    Ws.error_handler->publishComponentError(desc, "Expander exists at this address!");
+    Ws.error_handler->publishComponentError(desc,
+                                            "Expander exists at this address!");
     return false;
   }
 
@@ -158,13 +160,15 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
   TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(
       desc.address_space.pin_scl, desc.address_space.pin_sda);
   if (wire == nullptr) {
-    Ws.error_handler->publishComponentError(desc, "Failed to get/create I2C bus!");
+    Ws.error_handler->publishComponentError(desc,
+                                            "Failed to get/create I2C bus!");
     return false;
   }
 
   // Attempt to initialize the expander
   if (!AddExpander(msg->cfg_i2c.name, addr, wire)) {
-    Ws.error_handler->publishComponentError(desc, "Failed to initialize expander!");
+    Ws.error_handler->publishComponentError(desc,
+                                            "Failed to initialize expander!");
     return false;
   }
 
@@ -183,7 +187,8 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
           drv->setGain(settings[i].int_value);
         }
       } else {
-        Ws.error_handler->publishComponentError(desc, "Unsupported setting key!");
+        Ws.error_handler->publishComponentError(desc,
+                                                "Unsupported setting key!");
         continue;
       }
     }
@@ -198,7 +203,8 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
  */
 bool ExpanderController::Handle_Remove(ws_expander_Remove *msg) {
   if (!msg->has_cfg_i2c) {
-    Ws.error_handler->publishComponentError(ws_i2c_Descriptor{}, "No I2C config provided in Remove!");
+    Ws.error_handler->publishComponentError(
+        ws_i2c_Descriptor{}, "No I2C config provided in Remove!");
     return false;
   }
 

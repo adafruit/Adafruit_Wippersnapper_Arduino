@@ -28,13 +28,14 @@
 
 /// A single decoded key-value setting from ws_config_Settings.
 struct DecodedSetting {
-  char key[MAX_SETTING_KEY_LEN];   ///< Setting key name (e.g., "gain")
-  bool has_value;                  ///< Whether the value field is present
-  pb_size_t which_value;           ///< ws_config_Value_*_tag indicating type
-  int32_t int_value;               ///< Valid when which_value == int_value_tag
-  float float_value;               ///< Valid when which_value == float_value_tag
-  bool bool_value;                 ///< Valid when which_value == bool_value_tag
-  char str_value[MAX_SETTING_STR_LEN]; ///< Valid when which_value == str_value_tag
+  char key[MAX_SETTING_KEY_LEN]; ///< Setting key name (e.g., "gain")
+  bool has_value;                ///< Whether the value field is present
+  pb_size_t which_value;         ///< ws_config_Value_*_tag indicating type
+  int32_t int_value;             ///< Valid when which_value == int_value_tag
+  float float_value;             ///< Valid when which_value == float_value_tag
+  bool bool_value;               ///< Valid when which_value == bool_value_tag
+  char str_value[MAX_SETTING_STR_LEN]; ///< Valid when which_value ==
+                                       ///< str_value_tag
 };
 
 /*!
