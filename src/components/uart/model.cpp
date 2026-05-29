@@ -19,7 +19,6 @@
 */
 UARTModel::UARTModel() {
   memset(&_msg_UartAdd, 0, sizeof(_msg_UartAdd));
-  memset(&_msg_UartAdded, 0, sizeof(_msg_UartAdded));
   memset(&_msg_UartRemove, 0, sizeof(_msg_UartRemove));
   memset(&_msg_UartWrite, 0, sizeof(_msg_UartWrite));
   memset(&_msg_UartWritten, 0, sizeof(_msg_UartWritten));
@@ -31,7 +30,6 @@ UARTModel::UARTModel() {
 */
 UARTModel::~UARTModel() {
   memset(&_msg_UartAdd, 0, sizeof(_msg_UartAdd));
-  memset(&_msg_UartAdded, 0, sizeof(_msg_UartAdded));
   memset(&_msg_UartRemove, 0, sizeof(_msg_UartRemove));
   memset(&_msg_UartWrite, 0, sizeof(_msg_UartWrite));
   memset(&_msg_UartWritten, 0, sizeof(_msg_UartWritten));
@@ -55,46 +53,6 @@ bool UARTModel::DecodeUartAdd(pb_istream_t *stream) {
     @return Pointer to the decoded UartAdd message.
 */
 ws_uart_Add *UARTModel::GetUartAddMsg() { return &_msg_UartAdd; }
-
-/*!
-    @brief  Encodes a UartAdded message.
-    @param  uart_nbr
-            The UART port number (eg: 0, 1, 2, etc.) that the device was
-   attached to.
-    @param  type
-            The category of device attached to the UART port, corresponds to its
-   driver type.
-    @param  id
-            The unique identifier string for the UART device.
-    @param  success
-            True if the device on the UART port was successfully initialized,
-   False otherwise.
-    @return True if the message was encoded successfully, False otherwise.
-*/
-bool UARTModel::EncodeUartAdded(int32_t uart_nbr, ws_uart_DeviceType type,
-                                const char *id, bool success) {
-  _msg_UartAdded.has_descriptor = true;
-  _msg_UartAdded.descriptor.uart_nbr = uart_nbr;
-  _msg_UartAdded.descriptor.type = type;
-  // For now, we'll use the device_id directly - will need callback encoding
-  // later
-  _msg_UartAdded.descriptor.device_id.arg = (void *)id;
-  _msg_UartAdded.success = success;
-  // Calculate the size of the encoded message
-  size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_uart_Added_fields, &_msg_UartAdded))
-    return false;
-  // Attempt to encode the message into a buffer
-  uint8_t buf[sz_msg];
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_uart_Added_fields, &_msg_UartAdded);
-}
-
-/*!
-    @brief  Gets a pointer to the encoded UartAdded message.
-    @return Pointer to the encoded UartAdded message.
-*/
-ws_uart_Added *UARTModel::GetUartAddedMsg() { return &_msg_UartAdded; }
 
 /*!
     @brief  Decodes a UartDeviceRemove message from an input stream.
@@ -139,9 +97,10 @@ void UARTModel::ConfigureUartInputEventMsg(uint32_t uart_nbr,
   _msg_UartInputEvent.has_descriptor = true;
   _msg_UartInputEvent.descriptor.uart_nbr = uart_nbr;
   _msg_UartInputEvent.descriptor.type = type;
-  // For now, we'll use the device_id directly - will need callback encoding
-  // later
-  _msg_UartInputEvent.descriptor.device_id.arg = (void *)device_id;
+  strncpy(_msg_UartInputEvent.descriptor.id, device_id,
+          sizeof(_msg_UartInputEvent.descriptor.id) - 1);
+  _msg_UartInputEvent.descriptor
+      .id[sizeof(_msg_UartInputEvent.descriptor.id) - 1] = '\0';
 }
 
 /*!
@@ -195,21 +154,19 @@ bool UARTModel::AddUartInputEvent(sensors_event_t &event,
 bool UARTModel::EncodeUartInputEvent() {
   // Calculate the size of the encoded message
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_uart_InputEvent_fields,
-                           &_msg_UartInputEvent))
+  if (!pb_get_encoded_size(&sz_msg, ws_uart_Event_fields, &_msg_UartInputEvent))
     return false;
 
   // Attempt to encode the message into a buffer
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_uart_InputEvent_fields,
-                   &_msg_UartInputEvent);
+  return pb_encode(&msg_stream, ws_uart_Event_fields, &_msg_UartInputEvent);
 }
 
 /*!
     @brief  Gets a pointer to the UartInputEvent message.
     @return Pointer to the UartInputEvent message.
 */
-ws_uart_InputEvent *UARTModel::GetUartInputEventMsg() {
+ws_uart_Event *UARTModel::GetUartInputEventMsg() {
   return &_msg_UartInputEvent;
 }

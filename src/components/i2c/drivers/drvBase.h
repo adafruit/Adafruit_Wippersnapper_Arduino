@@ -124,16 +124,15 @@ public:
 
   /*!
       @brief    Configures an i2c device's sensors.
-      @param    sensor_types
-                Pointer to an array of SensorType objects.
-      @param    sensor_types_count
+      @param    types
+                Pointer to an array of TypesEntry objects.
+      @param    types_count
                 The number of active sensors to read from the device.
   */
-  void EnableSensorReads(ws_sensor_Type *sensor_types,
-                         size_t sensor_types_count) {
-    _sensors_count = sensor_types_count;
+  void EnableSensorReads(ws_i2c_Add_TypesEntry *types, size_t types_count) {
+    _sensors_count = types_count;
     for (size_t i = 0; i < _sensors_count; i++) {
-      _sensors[i] = sensor_types[i];
+      _sensors[i] = types[i];
     }
   }
 
@@ -621,7 +620,7 @@ public:
          return this->getEventTVOC(event);
        }}}; ///< SensorType to function call map
 
-  ws_sensor_Type _sensors[15]; ///< Sensors attached to the device.
+  ws_i2c_Add_TypesEntry _sensors[16]; ///< Keyed sensor types from broker.
 
 protected:
   TwoWire *_i2c;             ///< Pointer to the TwoWire bus

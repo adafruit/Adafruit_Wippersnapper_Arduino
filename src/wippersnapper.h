@@ -131,7 +131,7 @@
 #include "components/digitalIO/controller.h"
 #include "components/display/controller.h"
 #include "components/ds18x20/controller.h"
-#include "components/error/controller.h"
+#include "components/error/handler.h"
 #include "components/gps/controller.h"
 #include "components/i2c/controller.h"
 #include "components/pixels/controller.h"
@@ -172,7 +172,7 @@ class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class ws_sdcard;
 class CheckinModel;
-class ErrorController;
+class ErrorHandler;
 class SensorModel;
 class DigitalIOController;
 class DisplayController;
@@ -260,10 +260,9 @@ public:
   ws_sdcard *_sdCardV2; ///< Instance of SD card class
 
   // API v2 Components
-  CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
-  ErrorController *error_controller =
-      nullptr;                         ///< Instance of ErrorController class
-  SensorModel *sensor_model = nullptr; ///< Instance of SensorModel class
+  CheckinModel *CheckInModel = nullptr;  ///< Instance of CheckinModel class
+  ErrorHandler *error_handler = nullptr; ///< Instance of ErrorHandler class
+  SensorModel *sensor_model = nullptr;   ///< Instance of SensorModel class
   DigitalIOController *digital_io_controller =
       nullptr; ///< Instance of DigitalIO controller class
   AnalogIOController *analogio_controller =

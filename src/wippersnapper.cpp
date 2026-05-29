@@ -39,7 +39,7 @@ wippersnapper Ws;
     @brief    wippersnapper constructor
 */
 wippersnapper::wippersnapper()
-    : _mqttV2(nullptr), sensor_model(nullptr), error_controller(nullptr),
+    : _mqttV2(nullptr), sensor_model(nullptr), error_handler(nullptr),
       digital_io_controller(nullptr), _display_controller(nullptr),
       analogio_controller(nullptr), _ds18x20_controller(nullptr),
       _gps_controller(nullptr), _i2c_controller(nullptr),
@@ -75,7 +75,7 @@ wippersnapper::~wippersnapper() {
   disconnect();
   delete this->_wdt;
   delete this->sensor_model;
-  // delete this->error_controller; // TODO: Why is this commented out?
+  delete this->error_handler;
   delete this->digital_io_controller;
   delete this->_display_controller;
   delete this->analogio_controller;
@@ -110,8 +110,9 @@ void wippersnapper::_connect() {
 
 /*!
     @brief    Disconnect Wippersnapper MQTT session and network.
-    @param    wifi_off  If true, turns off WiFi radio. If false, keeps WiFi
-                        driver initialized for quick reconnection.
+    @param    wifi_off
+              If true, turns off WiFi radio. If false, keeps WiFi
+              driver initialized for quick reconnection.
 */
 void wippersnapper::_disconnect(bool wifi_off) {
   (void)wifi_off; // Avoid unused parameter warning for some network interfaces
@@ -309,7 +310,7 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   // Pass to class' router based on tag type
   switch (field->tag) {
   case ws_signal_BrokerToDevice_error_tag:
-    return Ws.error_controller->Router(stream);
+    return Ws.error_handler->Router(stream);
   case ws_signal_BrokerToDevice_checkin_tag:
     return handleCheckinResponse(stream);
   case ws_signal_BrokerToDevice_digitalio_tag:
@@ -734,7 +735,7 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   switch (which_payload) {
   case ws_signal_DeviceToBroker_error_tag:
     msg->which_payload = ws_signal_DeviceToBroker_error_tag;
-    msg->payload.error = *(ws_error_ErrorD2B *)payload;
+    msg->payload.error = *(ws_error_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_checkin_tag:
     msg->which_payload = ws_signal_DeviceToBroker_checkin_tag;
@@ -747,18 +748,6 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   case ws_signal_DeviceToBroker_analogio_tag:
     msg->which_payload = ws_signal_DeviceToBroker_analogio_tag;
     msg->payload.analogio = *(ws_analogio_D2B *)payload;
-    break;
-  case ws_signal_DeviceToBroker_servo_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_servo_tag;
-    msg->payload.servo = *(ws_servo_D2B *)payload;
-    break;
-  case ws_signal_DeviceToBroker_pwm_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_pwm_tag;
-    msg->payload.pwm = *(ws_pwm_D2B *)payload;
-    break;
-  case ws_signal_DeviceToBroker_pixels_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_pixels_tag;
-    msg->payload.pixels = *(ws_pixels_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_ds18x20_tag:
     msg->which_payload = ws_signal_DeviceToBroker_ds18x20_tag;
@@ -938,8 +927,7 @@ void wippersnapper::connect() {
 
   _brokerKeepAliveIntervalSeconds = WS_BROKER_KEEPALIVE_MS / ONE_SECOND_IN_MS;
 
-  // TODO: Does this need to be here?
-  Ws.error_controller = new ErrorController();
+  Ws.error_handler = new ErrorHandler();
 
   // enable global WDT
   if (!Ws._wdt->enable(WS_TIMEOUT_WDT)) {

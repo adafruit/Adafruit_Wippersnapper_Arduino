@@ -32,25 +32,35 @@ public:
   bool DecodeUartDeviceRemove(pb_istream_t *stream);
   ws_uart_Add *GetUartAddMsg();
   // UartAdded
+  /*!
+      @brief    Encodes a UartAdded response message.
+      @param    uart_nbr
+                The UART port number.
+      @param    type
+                The UART device type.
+      @param    id
+                The device identifier string.
+      @param    success
+                True if the device was added successfully.
+      @returns  True if encoded successfully, False otherwise.
+  */
   bool EncodeUartAdded(int32_t uart_nbr, ws_uart_DeviceType type,
                        const char *id, bool success);
-  ws_uart_Added *GetUartAddedMsg();
   // UartRemove
   ws_uart_Remove *GetUartRemoveMsg();
   // UartInputEvent
   bool AddUartInputEvent(sensors_event_t &event, ws_sensor_Type sensor_type);
   bool EncodeUartInputEvent();
-  ws_uart_InputEvent *GetUartInputEventMsg();
+  ws_uart_Event *GetUartInputEventMsg();
   void ClearUartInputEventMsg();
   void ConfigureUartInputEventMsg(uint32_t uart_nbr, ws_uart_DeviceType type,
                                   const char *device_id);
 
 private:
-  ws_uart_Add _msg_UartAdd;               ///< ws_uart_Add message
-  ws_uart_Added _msg_UartAdded;           ///< ws_uart_Added message
-  ws_uart_Remove _msg_UartRemove;         ///< ws_uart_Remove message
-  ws_uart_Write _msg_UartWrite;           ///< ws_uart_Write message
-  ws_uart_Written _msg_UartWritten;       ///< ws_uart_Written message
-  ws_uart_InputEvent _msg_UartInputEvent; ///< ws_uart_InputEvent message
+  ws_uart_Add _msg_UartAdd;          ///< ws_uart_Add message
+  ws_uart_Remove _msg_UartRemove;    ///< ws_uart_Remove message
+  ws_uart_Write _msg_UartWrite;      ///< ws_uart_Write message
+  ws_uart_Write _msg_UartWritten;    ///< ws_uart_Written message
+  ws_uart_Event _msg_UartInputEvent; ///< ws_uart_Event message
 };
 #endif // WS_UART_MODEL_H

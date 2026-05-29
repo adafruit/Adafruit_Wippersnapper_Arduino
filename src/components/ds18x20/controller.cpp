@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -26,6 +26,10 @@ DS18X20Controller::DS18X20Controller() {
     @brief  DS18X20Controller destructor
 */
 DS18X20Controller::~DS18X20Controller() {
+  for (size_t i = 0; i < _DS18X20_pins.size(); i++) {
+    delete _DS18X20_pins[i];
+  }
+  _DS18X20_pins.clear();
   _num_drivers = 0;
   delete _DS18X20_model;
 }
@@ -79,105 +83,75 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
   WS_DEBUG_PRINTLN("[ds18x20] Handle_Ds18x20Add MESSAGE...");
 
   // If we receive no sensor types to configure, bail out
-  if (msg->sensor_types_count == 0) {
-    WS_DEBUG_PRINTLN("ERROR | DS18x20: No ds18x sensor types provided!");
+  if (msg->types_count == 0) {
+    Ws.error_handler->publishComponentError(msg->onewire_pin,
+                                            "No sensor types provided");
+    return false;
+  }
+  // Validate pin name exists and is in correct format (ex. D5, A1, etc.)
+  if (strlen(msg->onewire_pin) < 2) {
+    Ws.error_handler->publishComponentError(msg->onewire_pin,
+                                            "Invalid pin name");
     return false;
   }
 
   // Extract the OneWire pin from the message
   uint8_t pin_name = atoi(msg->onewire_pin + 1);
 
-#ifdef ARDUINO_ARCH_SAMD
-  auto new_dsx_driver = new DS18X20Hardware(pin_name, _num_drivers);
-  std::unique_ptr<DS18X20Hardware> unique_driver(new_dsx_driver);
-#else
-  auto new_dsx_driver =
-      std::make_unique<DS18X20Hardware>(pin_name, _num_drivers);
-#endif
+  DS18X20Hardware *new_dsx_driver = new DS18X20Hardware(pin_name, _num_drivers);
   // Attempt to get the sensor's ID on the OneWire bus to show it's been init'd
-  bool is_initialized = new_dsx_driver->GetSensor();
+  if (!new_dsx_driver->GetSensor()) {
+    Ws.error_handler->publishComponentError(
+        msg->onewire_pin, "Unable to initialize sensor on OneWire bus");
+    delete new_dsx_driver;
+    return false;
+  }
 
-  WS_DEBUG_PRINT("DS18x20 Sensor Initialization Status: ");
-  WS_DEBUG_PRINTLNVAR(is_initialized ? "SUCCESS" : "FAILURE");
+  WS_DEBUG_PRINT("DS18x20 Initialized: ");
   WS_DEBUG_PRINT("OneWire Pin: ");
   WS_DEBUG_PRINTLNVAR(pin_name);
   WS_DEBUG_PRINT("Sensor # on Bus: ");
   WS_DEBUG_PRINTLNVAR(_num_drivers);
   WS_DEBUG_PRINT("Sensor Type Count: ");
-  WS_DEBUG_PRINTLNVAR(msg->sensor_types_count);
+  WS_DEBUG_PRINTLNVAR(msg->types_count);
 
-  if (is_initialized) {
-    WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
-
-    // Set the sensor's pin name (non-logical name)
-    new_dsx_driver->setOneWirePinName(msg->onewire_pin);
-
-    // Set the sensor's resolution
-    new_dsx_driver->SetResolution(msg->sensor_resolution);
-
-    // Set the sensor's period
-    new_dsx_driver->SetPeriod(msg->period);
-
-    // Configure the types of sensor reads to perform
-    for (int i = 0; i < msg->sensor_types_count; i++) {
-      if (msg->sensor_types[i] == ws_sensor_Type_T_OBJECT_TEMPERATURE) {
-        new_dsx_driver->is_read_temp_c = true;
-      } else if (msg->sensor_types[i] ==
-                 ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT) {
-        new_dsx_driver->is_read_temp_f = true;
-      } else {
-        WS_DEBUG_PRINTLN(
-            "ERROR | DS18x20: Unknown SensorType, failed to add sensor!");
-        is_initialized = false;
-      }
-    }
-
-    // If the sensor was successfully initialized, add it to the controller
-    if (is_initialized == true) {
-#ifdef ARDUINO_ARCH_SAMD
-      _DS18X20_pins.push_back(std::move(unique_driver));
-#else
-      _DS18X20_pins.push_back(std::move(new_dsx_driver));
-#endif
-      _num_drivers++;
-    }
-
-    // Print out the details
-    WS_DEBUG_PRINTLN("[ds18x] New Sensor Added!");
-    WS_DEBUG_PRINT("\tPin: ");
-    WS_DEBUG_PRINTLNVAR(pin_name);
-    WS_DEBUG_PRINT("\tResolution: ");
-    WS_DEBUG_PRINTLNVAR(msg->sensor_resolution);
-    WS_DEBUG_PRINT("\tPeriod: ");
-    WS_DEBUG_PRINTLNVAR(msg->period);
-    WS_DEBUG_PRINT("\tSI Units: ");
-    for (int i = 0; i < msg->sensor_types_count; i++) {
-      WS_DEBUG_PRINTVAR(msg->sensor_types[i]);
-      WS_DEBUG_PRINT(", ");
-    }
-    WS_DEBUG_PRINTLN("");
-  } else {
-    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to get sensor ID!");
-    is_initialized = false;
-  }
-
-  // If we're not in offline mode, publish a Ds18x20Added message back to the
-  // broker
-  if (!Ws._sdCardV2->isModeOffline()) {
-    // Encode and publish a Ds18x20Added message back to the broker
-    if (!_DS18X20_model->EncodeDS18x20Added(msg->onewire_pin, is_initialized)) {
-      WS_DEBUG_PRINTLN(
-          "ERROR | DS18x20: Unable to encode Ds18x20Added message!");
-      return false;
-    }
-
-    if (!Ws.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
-                       _DS18X20_model->GetDS18x20AddedMsg())) {
-      WS_DEBUG_PRINTLN(
-          "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
+  WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
+  // Configure the dirver
+  new_dsx_driver->setOneWirePinName(msg->onewire_pin);
+  new_dsx_driver->SetResolution(msg->sensor_resolution);
+  new_dsx_driver->SetPeriod(msg->period);
+  for (int i = 0; i < msg->types_count; i++) {
+    if (msg->types[i] == ws_sensor_Type_T_OBJECT_TEMPERATURE) {
+      new_dsx_driver->is_read_temp_c = true;
+    } else if (msg->types[i] ==
+               ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT) {
+      new_dsx_driver->is_read_temp_f = true;
+    } else {
+      Ws.error_handler->publishComponentError(msg->onewire_pin,
+                                              "Unknown SensorType provided");
+      delete new_dsx_driver;
       return false;
     }
   }
+
+  // Add the driver to the controller
+  _DS18X20_pins.push_back(new_dsx_driver);
+  _num_drivers++;
+
+  // Print out the details
+  WS_DEBUG_PRINTLN("[ds18x] New Sensor Added!");
+  WS_DEBUG_PRINT("\tPin: ");
+  WS_DEBUG_PRINTLNVAR(pin_name);
+  WS_DEBUG_PRINT("\tResolution: ");
+  WS_DEBUG_PRINTLNVAR(msg->sensor_resolution);
+  WS_DEBUG_PRINT("\tPeriod: ");
+  WS_DEBUG_PRINTLNVAR(msg->period);
+  WS_DEBUG_PRINT("\tSI Units: ");
+  for (int i = 0; i < msg->types_count; i++) {
+    WS_DEBUG_PRINTVAR(msg->types[i]);
+    WS_DEBUG_PRINT(", ");
+  }
+  WS_DEBUG_PRINTLN("");
 
   return true;
 }
@@ -194,19 +168,26 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
 bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
   WS_DEBUG_PRINT("[ds18x20] Handle_Ds18x20Remove MESSAGE...");
 
-  // Get the pin name
+  // Validate the pin name
+  if (strlen(msg->onewire_pin) < 2) {
+    Ws.error_handler->publishComponentError(msg->onewire_pin,
+                                            "Invalid pin name");
+    return false;
+  }
   uint8_t pin_name = atoi(msg->onewire_pin + 1);
 
-  // Find the driver/bus in the vector and remove it
+  // Attempt to find the driver and remove it
   for (size_t i = 0; i < _DS18X20_pins.size(); ++i) {
     if (_DS18X20_pins[i]->GetOneWirePin() == pin_name) {
+      delete _DS18X20_pins[i];
       _DS18X20_pins.erase(_DS18X20_pins.begin() + i);
+      WS_DEBUG_PRINTLN("Removed!");
+      _num_drivers--;
       return true;
     }
   }
-  WS_DEBUG_PRINTLN("Removed!");
-  _num_drivers--;
-  return true;
+  Ws.error_handler->publishComponentError(msg->onewire_pin, "Sensor not found");
+  return false;
 }
 
 /*!
@@ -277,7 +258,7 @@ void DS18X20Controller::update(bool force) {
 
     // Get the Ds18x20Event message
     ws_ds18x20_Event *event_msg = _DS18X20_model->GetDS18x20EventMsg();
-    pb_size_t event_count = event_msg->sensor_events_count;
+    pb_size_t event_count = event_msg->events_count;
 
     if (!Ws._sdCardV2->isModeOffline()) {
       // Encode the Ds18x20Event message

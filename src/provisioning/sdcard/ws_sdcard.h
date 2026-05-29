@@ -69,7 +69,7 @@ public:
   bool LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
                               ws_sensor_Type read_type);
   bool LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg);
-  bool LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event);
+  bool LogI2cDeviceEvent(ws_i2c_Event *msg_device_event);
   void SetBatteryPercent(float percent);
   bool IsBatteryLow() const;
   bool isRTCSoft() const;
@@ -103,9 +103,7 @@ private:
   bool ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
                        int resolution, float period, int num_sensors,
                        const char *sensor_type_1, const char *sensor_type_2);
-  bool ParseI2cDeviceAddReplace(
-      JsonObject &component,
-      ws_i2c_DeviceAddOrReplace &msg_i2c_device_add_replace);
+  bool ParseI2cDeviceAddReplace(JsonObject &component, ws_i2c_Add &msg_i2c_add);
   uint32_t HexStrToInt(const char *hex_str);
 
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
