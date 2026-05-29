@@ -769,10 +769,6 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     msg->which_payload = ws_signal_DeviceToBroker_gps_tag;
     msg->payload.gps = *(ws_gps_D2B *)payload;
     break;
-  case ws_signal_DeviceToBroker_display_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_display_tag;
-    msg->payload.display = *(ws_display_D2B *)payload;
-    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     free(msg);
