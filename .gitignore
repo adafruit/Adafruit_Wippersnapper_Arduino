@@ -66,8 +66,6 @@ report.xml
 # VSCode settings
 .vscode/settings.json
 
-# Claude settings
-CLAUDE.md
 .inbox.md
 results.md
 testplan.md
@@ -80,3 +78,5 @@ tests/sleep_mode/__pycache__/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+src/Wippersnapper_demo.ino.cpp

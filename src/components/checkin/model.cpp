@@ -122,9 +122,9 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
 void CheckinModel::ConfigureControllers() {
   Ws.digital_io_controller->SetMaxDigitalPins(
       _CheckinB2D.payload.response.total_gpio_pins);
-  Ws.analogio_controller->SetRefVoltage(
+  Ws.analogin_controller->SetRefVoltage(
       _CheckinB2D.payload.response.reference_voltage);
-  Ws.analogio_controller->SetTotalAnalogPins(
+  Ws.analogin_controller->SetMaxAnalogPins(
       _CheckinB2D.payload.response.total_analog_pins);
 }
 
@@ -151,8 +151,8 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   response->component_adds.digitalio_adds.funcs.decode = &cbDigitalIOAdds;
   response->component_adds.digitalio_adds.arg = model;
 
-  response->component_adds.analogio_adds.funcs.decode = &cbAnalogIOAdds;
-  response->component_adds.analogio_adds.arg = model;
+  response->component_adds.analogin_adds.funcs.decode = &cbAnalogInAdds;
+  response->component_adds.analogin_adds.arg = model;
 
   response->component_adds.servo_adds.funcs.decode = &cbServoAdds;
   response->component_adds.servo_adds.arg = model;
@@ -195,20 +195,20 @@ bool CheckinModel::cbDigitalIOAdds(pb_istream_t *stream,
 }
 
 /*!
-    @brief    Callback for decoding AnalogIO Add messages.
+    @brief    Callback for decoding AnalogIn Add messages.
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
     @returns  True if decoded and executed successfully, False otherwise.
 */
-bool CheckinModel::cbAnalogIOAdds(pb_istream_t *stream, const pb_field_t *field,
+bool CheckinModel::cbAnalogInAdds(pb_istream_t *stream, const pb_field_t *field,
                                   void **arg) {
-  ws_analogio_Add add_msg = ws_analogio_Add_init_zero;
-  if (!pb_decode(stream, ws_analogio_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analogio add");
+  ws_analogin_Add add_msg = ws_analogin_Add_init_zero;
+  if (!pb_decode(stream, ws_analogin_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analogin add");
     return false;
   }
-  return Ws.analogio_controller->Handle_AnalogIOAdd(&add_msg);
+  return Ws.analogin_controller->Handle_AnalogInAdd(&add_msg);
 }
 
 /*!

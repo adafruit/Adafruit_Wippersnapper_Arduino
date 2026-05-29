@@ -82,7 +82,8 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(ws_gps_Add *msg) {
     // UART transport path
     WS_DEBUG_PRINTLN("[gps] Configuring GPS via UART transport...");
     UARTHardware *uart_hw = new UARTHardware(msg->add_uart.cfg_serial,
-                                             msg->add_uart.descriptor.uart_nbr);
+                                             msg->add_uart.descriptor.pin_rx,
+                                             msg->add_uart.descriptor.pin_tx);
     if (!uart_hw->ConfigureSerial()) {
       WS_DEBUG_PRINTLN("[gps] ERROR: Failed to configure UART hardware!");
       delete uart_hw;

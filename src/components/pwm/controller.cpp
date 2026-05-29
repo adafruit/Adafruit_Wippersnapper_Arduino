@@ -7,25 +7,27 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
  */
 #include "controller.h"
+#include "../expander/controller.h"
 
 /*!
     @brief  Ctor for PWMController.
 */
-PWMController::PWMController() {
-  _pwm_model = new PWMModel();
-  _active_pwm_pins = 0;
-}
+PWMController::PWMController() { _pwm_model = new PWMModel(); }
 
 /*!
     @brief  Dtor for PWMController.
 */
-PWMController::~PWMController() { delete _pwm_model; }
+PWMController::~PWMController() {
+  for (size_t i = 0; i < _pins.size(); i++)
+    delete _pins[i];
+  delete _pwm_model;
+}
 
 /*!
     @brief  Routes messages using the pwm.proto API to the
@@ -69,20 +71,40 @@ bool PWMController::Router(pb_istream_t *stream) {
     @return True if the message was handled successfully, false otherwise.
 */
 bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
-  uint8_t pin = atoi(msg->pin + 1);
-  // Create new PWM hardware object and attempt to attach the pin
-  _pwm_hardware[_active_pwm_pins] = new PWMHardware();
-  if (!_pwm_hardware[_active_pwm_pins]->AttachPin(pin, (uint32_t)msg->frequency,
-                                                  (uint32_t)msg->resolution)) {
-    Ws.error_handler->publishComponentError(msg->pin, "Failed to attach pin");
-    delete _pwm_hardware[_active_pwm_pins];
+  uint8_t pin = 0;
+  if (!ExpanderHardware::ParsePinNum(msg->pin, pin)) {
+    Ws.error_handler->publishComponentError(msg->pin, "Malformed pin name");
     return false;
+  }
+
+  // Resolve the expander driver if this is an expander pin
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin, "EXP_", 4) == 0) {
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      Ws.error_handler->publishComponentError(msg->pin, "Expander not found");
+      return false;
+    }
+  }
+
+  // If pin already exists, remove it before re-adding (for updates)
+  if (GetPin(pin, expander_drv) != nullptr) {
+    RemovePin(pin, expander_drv);
+  }
+
+  PWMHardware *new_pin = new PWMHardware();
+  bool did_attach = new_pin->attach(pin, (uint32_t)msg->frequency,
+                                    (uint32_t)msg->resolution, expander_drv);
+  if (!did_attach) {
+    Ws.error_handler->publishComponentError(msg->pin, "Failed to attach pin");
+    delete new_pin;
+  } else {
+    _pins.push_back(new_pin);
   }
 
   WS_DEBUG_PRINT("[pwm] Attached pin: ");
   WS_DEBUG_PRINTVAR(msg->pin);
-  _active_pwm_pins++;
-
   return true;
 }
 
@@ -92,46 +114,63 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
     @return True if the message was handled successfully, false otherwise.
 */
 bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
-  uint8_t pin = atoi(msg->pin + 1);
-  int pin_idx = GetPWMHardwareIdx(pin);
-  if (pin_idx == -1) {
+  uint8_t pin = 0;
+  if (!ExpanderHardware::ParsePinNum(msg->pin, pin)) {
+    Ws.error_handler->publishComponentError(msg->pin, "Malformed pin name");
+    return false;
+  }
+
+  // Resolve the expander driver if this is an expander pin
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin, "EXP_", 4) == 0) {
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      Ws.error_handler->publishComponentError(msg->pin, "Expander not found");
+      return false;
+    }
+  }
+
+  if (!RemovePin(pin, expander_drv)) {
     Ws.error_handler->publishComponentError(msg->pin, "Failed to find pin");
     return false;
   }
 
-  // Attempt to detach and free pin
-  WS_DEBUG_PRINT("[pwm] Detaching pin: ");
+  WS_DEBUG_PRINT("[pwm] Removed pin: ");
   WS_DEBUG_PRINTVAR(msg->pin);
-  if (!_pwm_hardware[pin_idx]->DetachPin()) {
-    Ws.error_handler->publishComponentError(msg->pin, "Failed to detach pin");
-    return false;
-  }
-  delete _pwm_hardware[pin_idx];
-  _pwm_hardware[pin_idx] = nullptr;
-
-  // Reorganize _active_pwm_pins
-  _active_pwm_pins--;
-  for (int i = pin_idx; i < _active_pwm_pins; i++) {
-    _pwm_hardware[i] = _pwm_hardware[i + 1];
-  }
-  _pwm_hardware[_active_pwm_pins] = nullptr;
-
   return true;
 }
 
 /*!
-    @brief  Returns the index of the PWM hardware object that corresponds
-            to the given pin.
-    @param  pin The pin number to search for.
-    @return The index of the PWM hardware object, or -1 if not found.
+    @brief  Removes a pin from the vector by pin number.
+            Detaches and deletes the pin object, freeing the hardware resource.
+    @param  pin The pin number to remove.
+    @return True if the pin was found and removed, False otherwise.
 */
-int PWMController::GetPWMHardwareIdx(uint8_t pin) {
-  for (int i = 0; i < _active_pwm_pins; i++) {
-    if (_pwm_hardware[i]->GetPin() == pin) {
-      return i;
+bool PWMController::RemovePin(uint8_t pin, ExpanderHardware *expander) {
+  for (size_t i = 0; i < _pins.size(); i++) {
+    if (_pins[i]->GetPin() == pin &&
+        _pins[i]->GetExpanderDriver() == expander) {
+      _pins[i]->detach();
+      delete _pins[i];
+      _pins.erase(_pins.begin() + i);
+      return true;
     }
   }
-  return -1;
+  return false;
+}
+
+/*!
+    @brief  Get a pointer to a PWM pin by pin number.
+    @param  pin The pin number to search for.
+    @return Pointer to the PWM hardware object, or nullptr if not found.
+*/
+PWMHardware *PWMController::GetPin(uint8_t pin, ExpanderHardware *expander) {
+  for (size_t i = 0; i < _pins.size(); i++) {
+    if (_pins[i]->GetPin() == pin && _pins[i]->GetExpanderDriver() == expander)
+      return _pins[i];
+  }
+  return nullptr;
 }
 
 /*!
@@ -140,40 +179,31 @@ int PWMController::GetPWMHardwareIdx(uint8_t pin) {
     @return True if the message was handled successfully, false otherwise.
 */
 bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
-  uint8_t pin = atoi(msg->pin + 1);
-  int pin_idx = GetPWMHardwareIdx(pin);
-  if (pin_idx == -1) {
+  uint8_t pin = 0;
+  if (!ExpanderHardware::ParsePinNum(msg->pin, pin)) {
+    Ws.error_handler->publishComponentError(msg->pin, "Malformed pin name");
+    return false;
+  }
+
+  // Resolve the expander driver if this is an expander pin
+  ExpanderHardware *expander_drv = nullptr;
+  if (strncmp(msg->pin, "EXP_", 4) == 0) {
+    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
+    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    if (!expander_drv) {
+      Ws.error_handler->publishComponentError(msg->pin, "Expander not found");
+      return false;
+    }
+  }
+
+  PWMHardware *hw = GetPin(pin, expander_drv);
+  if (hw == nullptr) {
     Ws.error_handler->publishComponentError(msg->pin, "Failed to find pin");
     return false;
   }
 
-  // Check which payload type we have
-  if (msg->which_payload == ws_pwm_Write_duty_cycle_tag) {
-    // Attempt to write the duty cycle to the pin
-    if (!_pwm_hardware[pin_idx]->WriteDutyCycle(msg->payload.duty_cycle)) {
-      Ws.error_handler->publishComponentError(msg->pin,
-                                              "Failed to write duty cycle");
-      return false;
-    }
-
-    WS_DEBUG_PRINT("[pwm] Wrote duty cycle: ");
-    WS_DEBUG_PRINTVAR(msg->payload.duty_cycle);
-    WS_DEBUG_PRINT(" to pin: ");
-    WS_DEBUG_PRINTLNVAR(msg->pin);
-  } else if (msg->which_payload == ws_pwm_Write_frequency_tag) {
-    // Attempt to write the frequency to the pin
-    if (_pwm_hardware[pin_idx]->WriteTone(msg->payload.frequency) !=
-        msg->payload.frequency) {
-      Ws.error_handler->publishComponentError(msg->pin,
-                                              "Failed to write frequency");
-      return false;
-    }
-    WS_DEBUG_PRINT("[pwm] Wrote frequency: ");
-    WS_DEBUG_PRINTVAR(msg->payload.frequency);
-    WS_DEBUG_PRINT(" to pin: ");
-    WS_DEBUG_PRINTLNVAR(msg->pin);
-  } else {
-    Ws.error_handler->publishComponentError(msg->pin, "Invalid payload type");
+  if (!hw->write(msg)) {
+    Ws.error_handler->publishComponentError(msg->pin, "Failed to write to pin");
     return false;
   }
 

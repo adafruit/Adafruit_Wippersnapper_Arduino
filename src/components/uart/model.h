@@ -31,21 +31,6 @@ public:
   bool DecodeUartAdd(pb_istream_t *stream);
   bool DecodeUartDeviceRemove(pb_istream_t *stream);
   ws_uart_Add *GetUartAddMsg();
-  // UartAdded
-  /*!
-      @brief    Encodes a UartAdded response message.
-      @param    uart_nbr
-                The UART port number.
-      @param    type
-                The UART device type.
-      @param    id
-                The device identifier string.
-      @param    success
-                True if the device was added successfully.
-      @returns  True if encoded successfully, False otherwise.
-  */
-  bool EncodeUartAdded(int32_t uart_nbr, ws_uart_DeviceType type,
-                       const char *id, bool success);
   // UartRemove
   ws_uart_Remove *GetUartRemoveMsg();
   // UartInputEvent
@@ -53,8 +38,7 @@ public:
   bool EncodeUartInputEvent();
   ws_uart_Event *GetUartInputEventMsg();
   void ClearUartInputEventMsg();
-  void ConfigureUartInputEventMsg(uint32_t uart_nbr, ws_uart_DeviceType type,
-                                  const char *device_id);
+  void ConfigureUartInputEventMsg(uint32_t pin_rx);
 
 private:
   ws_uart_Add _msg_UartAdd;          ///< ws_uart_Add message

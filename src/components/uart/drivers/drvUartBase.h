@@ -89,50 +89,6 @@ public:
   void SetDidReadSend(bool did_read_send) { _did_read_send = did_read_send; }
 
   /*!
-      @brief    Configures the UART driver with device-specific settings.
-      @param    type
-                The UART device type.
-      @param    cfg_device
-                The configuration settings for the UART device.
-  */
-  void ConfigureDriver(ws_uart_DeviceType type,
-                       ws_uart_DeviceConfig &cfg_device) {
-    _device_type = type;
-
-    switch (_device_type) {
-    case ws_uart_DeviceType_DT_GENERIC_INPUT:
-      // Handle Generic Input device configuration
-      // TODO!
-      break;
-    case ws_uart_DeviceType_DT_GENERIC_OUTPUT:
-      // Handle Generic Output device configuration
-      // TODO!
-      break;
-    case ws_uart_DeviceType_DT_GPS:
-      // Handle GPS device configuration
-      // TODO!
-      break;
-    case ws_uart_DeviceType_DT_PM25AQI:
-      // Handle PM2.5 AQI device configuration
-      WS_DEBUG_PRINTLN("[uart] Configuring PM2.5 AQI device...");
-      break;
-    case ws_uart_DeviceType_DT_TM22XX:
-      // Handle TM22XX device configuration
-      // TODO!
-      break;
-    default:
-      WS_DEBUG_PRINTLN("[uart] ERROR: Unknown device type!");
-      return; // bail if the device type is unknown
-    }
-  }
-
-  /*!
-      @brief    Gets the UART device type.
-      @returns  The UART device type.
-  */
-  ws_uart_DeviceType GetDeviceType() { return _device_type; }
-
-  /*!
       @brief    Gets the name of the UART driver.
       @returns  The name of the UART driver.
   */
@@ -338,11 +294,10 @@ public:
 protected:
   HardwareSerial *_hw_serial; ///< Pointer to a HardwareSerial instance
 #if HAS_SW_SERIAL
-  SoftwareSerial *_sw_serial;      ///< Pointer to a SoftwareSerial instance
-#endif                             // HAS_SW_SERIAL
-  ws_uart_DeviceType _device_type; ///< The UART device type
-  char _name[15];                  ///< The device's name
-  uint32_t _port_num = 0;          ///< The port number for the UART device
+  SoftwareSerial *_sw_serial; ///< Pointer to a SoftwareSerial instance
+#endif                        // HAS_SW_SERIAL
+  char _name[32];             ///< The device's name
+  uint32_t _port_num = 0;     ///< The port number for the UART device
   bool _is_software_serial =
       false; ///< Indicates if this driver uses SoftwareSerial
   // Sensor API - UART INPUT
