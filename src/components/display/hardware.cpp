@@ -104,7 +104,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   int16_t miso = parsePin(dev->pin_miso);
 
 #ifdef CORE_LOG_LEVEL
-#if CORE_LOG_LEVEL>1
+#if CORE_LOG_LEVEL > 1
   WS_DEBUG_PRINT("[display] SPI TFT pins - CS:");
   WS_DEBUG_PRINTVAR(cs);
   WS_DEBUG_PRINT(" DC:");
@@ -531,8 +531,8 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   WS_DEBUG_PRINT(" addr: 0x");
   WS_DEBUG_PRINTLNVAR(addr, HEX);
 
-  TwoWire *i2c =
-      Ws._i2c_controller->GetOrCreateI2cBus(i2c_cfg->address_space.pin_scl, i2c_cfg->address_space.pin_sda);
+  TwoWire *i2c = Ws._i2c_controller->GetOrCreateI2cBus(
+      i2c_cfg->address_space.pin_scl, i2c_cfg->address_space.pin_sda);
   if (i2c == nullptr) {
     WS_DEBUG_PRINTLN("[display] ERROR: I2C bus not found for Display device!");
     return false;
@@ -585,9 +585,10 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     // crash from uninitialized width/height in dispDrvSsd1306::begin()
 
     /* TODO: refactor these i2c products / drivers to utilise panel name
-    so internalRotation can be factored in by panel allowing normal 
+    so internalRotation can be factored in by panel allowing normal
     width/height in definition as user/UI expects not as driver ctor needs.
-    e.g. featherwing 128x64 OLED would be defined as 128x32 panel with internalRotation=90
+    e.g. featherwing 128x64 OLED would be defined as 128x32 panel with
+    internalRotation=90
     */
     WS_DEBUG_PRINTLN("[display] WARNING: No config for I2C display, "
                      "applying defaults");

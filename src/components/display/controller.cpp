@@ -236,26 +236,30 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   if (!hw->begin(msg)) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to initialize display hardware!");
     delete hw;
-    
+
     switch (msg->which_interface_type) {
     case ws_display_Add_spi_epd_tag:
       Ws.error_handler->publishComponentError(
-          msg->interface_type.spi_epd.spi, "Failed to initialize SPI display hardware for add request");
+          msg->interface_type.spi_epd.spi,
+          "Failed to initialize SPI display hardware for add request");
       break;
     case ws_display_Add_spi_tft_tag:
       Ws.error_handler->publishComponentError(
-          msg->interface_type.spi_tft.spi, "Failed to initialize SPI display hardware for add request");
+          msg->interface_type.spi_tft.spi,
+          "Failed to initialize SPI display hardware for add request");
       break;
     case ws_display_Add_i2c_tag:
       Ws.error_handler->publishComponentError(
-          msg->interface_type.i2c, "Failed to initialize I2C display hardware for add request");
+          msg->interface_type.i2c,
+          "Failed to initialize I2C display hardware for add request");
       break;
     default:
       Ws.error_handler->publishComponentError(
-          "Unknown interface", "Failed to initialize display hardware for add request");
+          "Unknown interface",
+          "Failed to initialize display hardware for add request");
       break;
     }
-    
+
     return false;
   }
 
@@ -322,19 +326,19 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
     WS_DEBUG_PRINTLN("[display] WARNING: Display not found");
     switch (msg->which_descriptor) {
     case ws_display_Remove_spi_epd_tag:
-      Ws.error_handler->publishComponentError(
-          msg->descriptor.spi_epd.spi, error_msg);
+      Ws.error_handler->publishComponentError(msg->descriptor.spi_epd.spi,
+                                              error_msg);
       break;
     case ws_display_Remove_spi_tft_tag:
-      Ws.error_handler->publishComponentError(
-          msg->descriptor.spi_tft.spi, error_msg);
+      Ws.error_handler->publishComponentError(msg->descriptor.spi_tft.spi,
+                                              error_msg);
       break;
     case ws_display_Remove_i2c_tag:
-      Ws.error_handler->publishComponentError(
-          msg->descriptor.i2c, error_msg);
+      Ws.error_handler->publishComponentError(msg->descriptor.i2c, error_msg);
       break;
     default:
-      WS_DEBUG_PRINTLN("[display] WARNING: Unknown interface type in remove request - failed to remove display");
+      WS_DEBUG_PRINTLN("[display] WARNING: Unknown interface type in remove "
+                       "request - failed to remove display");
       break;
     }
   }

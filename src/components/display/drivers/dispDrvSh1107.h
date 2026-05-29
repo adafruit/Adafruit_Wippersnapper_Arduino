@@ -54,8 +54,8 @@ public:
 
   bool begin() override {
     if ((_width == OLED_128X64_WING_WIDTH &&
-        _height == OLED_128X64_WING_HEIGHT &&
-        _rotation == OLED_128X64_WING_ROTATION_90) || 
+         _height == OLED_128X64_WING_HEIGHT &&
+         _rotation == OLED_128X64_WING_ROTATION_90) ||
         strcasecmp(_panel, "128x64featherwing") == 0) {
       // FeatherWing needs swapped w/h ctor args
       _display = new Adafruit_SH1107(_height, _width, _i2c);
