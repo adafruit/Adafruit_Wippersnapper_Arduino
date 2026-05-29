@@ -365,6 +365,53 @@ public:
   virtual bool setProxMeasRate(int32_t prox_meas_rate) { return false; }
 
   /*!
+      @brief    Base implementation - Applies an integration time setting to
+                the driver. Must override in driver.
+      @param    integration_time
+                The integration time index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setIntegrationTime(int32_t integration_time) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a measurement rate setting to
+                the driver. Must override in driver.
+      @param    measurement_rate
+                The measurement rate index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMeasurementRate(int32_t measurement_rate) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies an averaged sample count setting
+                to the driver. Must override in driver.
+      @param    averaged_samples
+                The averaged sample count index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setAveragedSamples(int32_t averaged_samples) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a read delay setting to the
+                driver. The read delay is the minimum delay between new
+                measurements. Must override in driver.
+      @param    read_delay
+                The read delay index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setReadDelay(int32_t read_delay) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a lux reading method setting to
+                the driver. Selects the method used to calculate lux. Must
+                override in driver.
+      @param    lux_method
+                The lux method index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setLuxMethod(int32_t lux_method) { return false; }
+
+  /*!
       @brief    Base implementation - Applies a temperature oversampling
                 setting to the driver. Must override in driver.
       @param    temp_oversampling
@@ -405,6 +452,16 @@ public:
   virtual bool setIirFilter(int32_t iir_filter) { return false; }
 
   /*!
+      @brief    Base implementation - Applies an output data rate (ODR)
+                setting to the driver. The ODR selects the sensor's sampling
+                frequency, in Hz. Must override in driver.
+      @param    output_data_rate
+                The output data rate index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setOutputDataRate(int32_t output_data_rate) { return false; }
+
+  /*!
       @brief    Base implementation - Applies a measurement mode setting to
                 the driver. Must override in driver.
       @param    mode
@@ -430,6 +487,16 @@ public:
       @returns  True if applied successfully, False otherwise.
   */
   virtual bool setStandby(int32_t standby) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a calibration setting to the
+                driver. The calibration selects the voltage range and max
+                current measurement. Must override in driver.
+      @param    calibration
+                The calibration index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setCalibration(int32_t calibration) { return false; }
 
   /*!
       @brief    Base implementation - Reads a object light sensor and

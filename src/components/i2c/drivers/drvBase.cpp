@@ -68,6 +68,31 @@ bool drvBase::configure(DecodedSetting *settings, size_t count) {
         if (!setProxMeasRate(settings[i].int_value))
           success = false;
       }
+    } else if (strcmp(settings[i].key, "integration_time") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setIntegrationTime(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "measurement_rate") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setMeasurementRate(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "averaged_samples") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setAveragedSamples(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "read_delay") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setReadDelay(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "lux_method") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setLuxMethod(settings[i].int_value))
+          success = false;
+      }
     } else if (strcmp(settings[i].key, "temp_oversampling") == 0) {
       if (settings[i].which_value == ws_config_Value_int_value_tag) {
         if (!setTempOversampling(settings[i].int_value))
@@ -88,6 +113,11 @@ bool drvBase::configure(DecodedSetting *settings, size_t count) {
         if (!setIirFilter(settings[i].int_value))
           success = false;
       }
+    } else if (strcmp(settings[i].key, "output_data_rate") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setOutputDataRate(settings[i].int_value))
+          success = false;
+      }
     } else if (strcmp(settings[i].key, "mode") == 0) {
       if (settings[i].which_value == ws_config_Value_int_value_tag) {
         if (!setMode(settings[i].int_value))
@@ -101,6 +131,11 @@ bool drvBase::configure(DecodedSetting *settings, size_t count) {
     } else if (strcmp(settings[i].key, "standby") == 0) {
       if (settings[i].which_value == ws_config_Value_int_value_tag) {
         if (!setStandby(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "calibration") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setCalibration(settings[i].int_value))
           success = false;
       }
     } else {

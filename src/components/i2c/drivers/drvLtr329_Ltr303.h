@@ -55,12 +55,134 @@ public:
     if (!_LTR329->begin(_i2c))
       return false;
 
+    return true;
+  }
+
+  /*!
+      @brief    Configures the LTR329/303 sensor with default settings.
+      @returns  True if configured successfully, False otherwise.
+  */
+  bool configureDefaults() override {
     // Configure LTR329 sensor - tested on a dull British day Oct'23 @7kLux
     // Matches similar lux value from LTR390 with default configuration.
     _LTR329->setGain(LTR3XX_GAIN_48);
     _LTR329->setIntegrationTime(LTR3XX_INTEGTIME_100);
     _LTR329->setMeasurementRate(LTR3XX_MEASRATE_100);
-    _delayBetweenReads = 110; // 100ms measurement time + 10ms fudge-factor
+    return true;
+  }
+
+  /*!
+      @brief    Applies the ALS gain setting to the driver.
+      @param    gain
+                The gain index from the broker
+                (0=1x, 1=2x, 2=4x, 3=8x, 4=48x, 5=96x).
+      @returns  True if applied successfully, False otherwise.
+  */
+  bool setGain(int32_t gain) override {
+    ltr329_gain_t als_gain;
+    switch (gain) {
+    case 0:
+      als_gain = LTR3XX_GAIN_1;
+      break;
+    case 1:
+      als_gain = LTR3XX_GAIN_2;
+      break;
+    case 2:
+      als_gain = LTR3XX_GAIN_4;
+      break;
+    case 3:
+      als_gain = LTR3XX_GAIN_8;
+      break;
+    case 4:
+      als_gain = LTR3XX_GAIN_48;
+      break;
+    case 5:
+      als_gain = LTR3XX_GAIN_96;
+      break;
+    default:
+      als_gain = LTR3XX_GAIN_48;
+      break;
+    }
+    _LTR329->setGain(als_gain);
+    return true;
+  }
+
+  /*!
+      @brief    Applies the ALS integration time setting to the driver.
+      @param    integration_time
+                The integration time index from the broker
+                (0=50ms, 1=100ms, 2=150ms, 3=200ms, 4=250ms, 5=300ms,
+                6=350ms, 7=400ms).
+      @returns  True if applied successfully, False otherwise.
+  */
+  bool setIntegrationTime(int32_t integration_time) override {
+    ltr329_integrationtime_t int_time;
+    switch (integration_time) {
+    case 0:
+      int_time = LTR3XX_INTEGTIME_50;
+      break;
+    case 1:
+      int_time = LTR3XX_INTEGTIME_100;
+      break;
+    case 2:
+      int_time = LTR3XX_INTEGTIME_150;
+      break;
+    case 3:
+      int_time = LTR3XX_INTEGTIME_200;
+      break;
+    case 4:
+      int_time = LTR3XX_INTEGTIME_250;
+      break;
+    case 5:
+      int_time = LTR3XX_INTEGTIME_300;
+      break;
+    case 6:
+      int_time = LTR3XX_INTEGTIME_350;
+      break;
+    case 7:
+      int_time = LTR3XX_INTEGTIME_400;
+      break;
+    default:
+      int_time = LTR3XX_INTEGTIME_100;
+      break;
+    }
+    _LTR329->setIntegrationTime(int_time);
+    return true;
+  }
+
+  /*!
+      @brief    Applies the ALS measurement rate setting to the driver.
+      @param    measurement_rate
+                The measurement rate index from the broker
+                (0=50ms, 1=100ms, 2=200ms, 3=500ms, 4=1000ms, 5=2000ms).
+      @returns  True if applied successfully, False otherwise.
+  */
+  bool setMeasurementRate(int32_t measurement_rate) override {
+    ltr329_measurerate_t meas_rate;
+    switch (measurement_rate) {
+    case 0:
+      meas_rate = LTR3XX_MEASRATE_50;
+      break;
+    case 1:
+      meas_rate = LTR3XX_MEASRATE_100;
+      break;
+    case 2:
+      meas_rate = LTR3XX_MEASRATE_200;
+      break;
+    case 3:
+      meas_rate = LTR3XX_MEASRATE_500;
+      break;
+    case 4:
+      meas_rate = LTR3XX_MEASRATE_1000;
+      break;
+    case 5:
+      meas_rate = LTR3XX_MEASRATE_2000;
+      break;
+    default:
+      meas_rate = LTR3XX_MEASRATE_100;
+      break;
+    }
+    _LTR329->setMeasurementRate(meas_rate);
     return true;
   }
 
@@ -89,13 +211,8 @@ public:
                 otherwise.
   */
   bool getEventRaw(sensors_event_t *rawEvent) {
-
-    if (!_LTR329->newDataAvailable()) {
-      delay(
-          _delayBetweenReads); // Raw comes after Light event and needs new data
-      if (!_LTR329->newDataAvailable())
-        return false;
-    }
+    if (!_LTR329->newDataAvailable())
+      return false;
 
     uint16_t visible_plus_ir, infrared;
     _LTR329->readBothChannels(visible_plus_ir, infrared);
@@ -105,11 +222,6 @@ public:
 
 protected:
   Adafruit_LTR329 *_LTR329; ///< Pointer to LTR329 light sensor object
-
-  /**
-   * @brief The delay between consecutive reads in milliseconds.
-   */
-  uint16_t _delayBetweenReads;
 };
 
 #endif // drvLtr329_Ltr303
