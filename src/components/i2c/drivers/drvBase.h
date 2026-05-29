@@ -405,6 +405,33 @@ public:
   virtual bool setIirFilter(int32_t iir_filter) { return false; }
 
   /*!
+      @brief    Base implementation - Applies a measurement mode setting to
+                the driver. Must override in driver.
+      @param    mode
+                The measurement mode index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMode(int32_t mode) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a filter setting to the driver.
+                Must override in driver.
+      @param    filter
+                The filter index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setFilter(int32_t filter) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a standby duration setting to
+                the driver. Must override in driver.
+      @param    standby
+                The standby duration index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setStandby(int32_t standby) { return false; }
+
+  /*!
       @brief    Base implementation - Reads a object light sensor and
                 converts the reading into the expected SI unit.
       @param    lightEvent

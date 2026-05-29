@@ -88,6 +88,21 @@ bool drvBase::configure(DecodedSetting *settings, size_t count) {
         if (!setIirFilter(settings[i].int_value))
           success = false;
       }
+    } else if (strcmp(settings[i].key, "mode") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setMode(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "filter") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setFilter(settings[i].int_value))
+          success = false;
+      }
+    } else if (strcmp(settings[i].key, "standby") == 0) {
+      if (settings[i].which_value == ws_config_Value_int_value_tag) {
+        if (!setStandby(settings[i].int_value))
+          success = false;
+      }
     } else {
       // Unknown key - report failure but keep applying the remaining settings
       success = false;
