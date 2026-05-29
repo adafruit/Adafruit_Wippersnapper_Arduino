@@ -31,7 +31,7 @@ AnalogInHardware::AnalogInHardware(uint8_t pin_name, ws_sensor_Type read_mode,
       _period(period), _prv_time(0), _did_read_send(false), _value_raw(0),
       _value_voltage(0.0f), _prv_value_raw(0), _native_adc_resolution(0),
       _desired_adc_resolution(0), _max_scale_resolution_desired(0),
-      _max_scale_resolution_native(0), _mcu_vref(ref_voltage),
+      _max_scale_resolution_native(0), _ref_voltage(ref_voltage),
       _expander_drv(expander_drv) {
   if (_expander_drv != nullptr) {
     _native_adc_resolution = _expander_drv->getAdcResolution();
@@ -144,13 +144,13 @@ uint32_t AnalogInHardware::ReadRawValue() {
 float AnalogInHardware::ReadVoltage() {
   if (_expander_drv != nullptr) {
     _value_voltage =
-        (ReadRawValue() * _mcu_vref) / _max_scale_resolution_desired;
+        (ReadRawValue() * _ref_voltage) / _max_scale_resolution_desired;
     return _value_voltage;
   }
 #ifdef ARDUINO_ARCH_ESP32
   _value_voltage = analogReadMilliVolts(_name) / 1000.0;
 #else
-  _value_voltage = (ReadRawValue() * _mcu_vref) / _max_scale_resolution_desired;
+  _value_voltage = (ReadRawValue() * _ref_voltage) / _max_scale_resolution_desired;
 #endif // ARDUINO_ARCH_ESP32
   return _value_voltage;
 }

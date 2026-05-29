@@ -69,7 +69,8 @@ private:
   uint8_t _desired_adc_resolution; ///< Desired (final) ADC resolution.
   uint32_t _max_scale_resolution_desired; ///< Maximum scale resolution desired.
   uint32_t _max_scale_resolution_native;  ///< Maximum scale resolution native.
-  float _mcu_vref; ///< Reference voltage for reading analog pins.
+  float _ref_voltage; ///< Reference voltage for reading this pin (MCU vref for
+                      ///< native pins, message vref for expander pins).
   ExpanderHardware *_expander_drv; ///< Pointer to expander driver, or nullptr.
 };
 #endif // WS_ANALOGIN_HARDWARE_H
