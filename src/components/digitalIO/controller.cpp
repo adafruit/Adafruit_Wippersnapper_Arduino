@@ -85,6 +85,8 @@ bool DigitalIOController::Router(pb_istream_t *stream) {
             Deletes the pin object (destructor deinits hardware).
     @param  pin_num
             The pin number to remove.
+    @param  expander
+            Pointer to the expander driver, or nullptr for native pins.
     @return True if the pin was found and removed.
 */
 bool DigitalIOController::RemovePin(uint8_t pin_num,

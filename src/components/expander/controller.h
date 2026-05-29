@@ -2,7 +2,7 @@
  * @file src/components/expander/controller.h
  *
  * Controller for WipperSnapper's expander component, bridges between the
- * expander.proto API, the model, and the hardware layer.
+ * expander.proto API and the hardware layer.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -25,11 +25,9 @@
 #include "drivers/drv_seesaw.h"
 #include "drivers/drv_tca8418.h"
 #include "hardware.h"
-#include "model.h"
 #include "wippersnapper.h"
 
 class wippersnapper;    ///< Forward declaration
-class ExpanderModel;    ///< Forward declaration
 class ExpanderHardware; ///< Forward declaration
 
 /*!
@@ -46,7 +44,6 @@ public:
 
 private:
   bool AddExpander(const char *device_name, uint8_t i2c_addr, TwoWire *wire);
-  ExpanderModel *_model;                      ///< Expander model instance
   std::vector<ExpanderHardware *> _expanders; ///< Expander hardware instances
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance

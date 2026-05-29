@@ -2,7 +2,7 @@
  * @file src/components/expander/controller.cpp
  *
  * Controller for WipperSnapper's expander component, bridges between the
- * expander.proto API, the model, and the hardware layer.
+ * expander.proto API and the hardware layer.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -15,13 +15,9 @@
  */
 #include "controller.h"
 
-ExpanderController::ExpanderController() { _model = new ExpanderModel(); }
+ExpanderController::ExpanderController() {}
 
 ExpanderController::~ExpanderController() {
-  if (_model) {
-    delete _model;
-    _model = nullptr;
-  }
   for (ExpanderHardware *drv : _expanders) {
     delete drv;
   }

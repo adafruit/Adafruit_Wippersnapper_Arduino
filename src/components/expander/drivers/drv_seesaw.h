@@ -76,7 +76,9 @@ public:
    * @param pin GPIO pin to read analog value
    * @return Analog raw value (non-calibrated).
    */
-  uint16_t analogRead(uint8_t pin) override { return _ss.analogRead(pin); }
+  uint32_t analogRead(uint8_t pin) override {
+    return (uint32_t)_ss.analogRead(pin);
+  }
 
   /*!
    * @brief Gets the resolution of the seesaw ADC.

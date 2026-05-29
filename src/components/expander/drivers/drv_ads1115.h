@@ -53,8 +53,8 @@ public:
    * @param pin The pin number to read from (0-3 for ADS1115).
    * @return The raw ADC value read from the pin.
    */
-  uint16_t analogRead(uint8_t pin) override {
-    return _ads.readADC_SingleEnded(pin);
+  uint32_t analogRead(uint8_t pin) override {
+    return (uint32_t)(uint16_t)_ads.readADC_SingleEnded(pin);
   }
 
   /*!
