@@ -84,7 +84,8 @@ public:
 
     // TODO: Test: do we switch if panel=128x64featherwing?
     // _rotation =
-    //     (width == OLED_128X64_WING_WIDTH && height == OLED_128X64_WING_HEIGHT)
+    //     (width == OLED_128X64_WING_WIDTH && height ==
+    //     OLED_128X64_WING_HEIGHT)
     //         ? OLED_128X64_WING_ROTATION_90
     //         : 0;
   }

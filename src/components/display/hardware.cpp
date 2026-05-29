@@ -580,7 +580,8 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     ws_display_LedBackpackConfig *cfg = &msg->config.config_led;
     drv->ConfigureI2CBackpack(cfg->brightness, cfg->alignment);
   } else {
-    WS_DEBUG_PRINTLN("[display] ERROR: Unsupported config type for I2C display!");
+    WS_DEBUG_PRINTLN(
+        "[display] ERROR: Unsupported config type for I2C display!");
     delete drv;
     return false;
   }
