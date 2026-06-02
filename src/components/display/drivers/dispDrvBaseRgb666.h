@@ -40,7 +40,7 @@ public:
       @param  panel        The panel/variant name.
   */
   dispDrvBaseRgb666(ws_display_TtlRgb666PinDescriptor descriptor,
-                 const char *driver_name, const char *panel)
+                    const char *driver_name, const char *panel)
       : dispDrvBase(), _descriptor(descriptor) {
     strncpy(_name, driver_name ? driver_name : "", sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
@@ -146,14 +146,12 @@ public:
     // noop
   }
 
-  char* getPinDescriptor() {
-    return (char*)&_descriptor.pin_b0;
-  }
+  char *getPinDescriptor() { return (char *)&_descriptor.pin_b0; }
 
 protected:
   ws_display_TtlRgb666PinDescriptor _descriptor; ///< RGB666 pin descriptor
-  char _name[65] = {0};          ///< Driver name
-  char _panel[33] = {0};         ///< Panel name
+  char _name[65] = {0};                          ///< Driver name
+  char _panel[33] = {0};                         ///< Panel name
 };
 
 #endif // WS_DISP_DRV_BASE_RGB666_H

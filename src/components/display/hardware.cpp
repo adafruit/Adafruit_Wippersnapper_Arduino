@@ -33,9 +33,7 @@ DisplayHardware::~DisplayHardware() {
     @brief  Gets the stored Display Add message for this display instance.
     @return The Display Add message struct.
 */
-ws_display_Add DisplayHardware::getAddMsg() {
-  return _addMsg;
-}
+ws_display_Add DisplayHardware::getAddMsg() { return _addMsg; }
 
 /*!
     @brief  Returns the name of this display instance.
@@ -66,10 +64,11 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
     WS_DEBUG_PRINTLN("[display] ERROR: Null add message!");
     return false;
   } else if (!addMsg->has_interface_type) {
-    WS_DEBUG_PRINTLN("[display] ERROR: No interface type specified in add message!");
+    WS_DEBUG_PRINTLN(
+        "[display] ERROR: No interface type specified in add message!");
     return false;
   }
-  
+
   _addMsg = *addMsg; // Store the add message for potential future reference
   snprintf(_name, sizeof(_name), "%s", addMsg->name ? addMsg->name : "");
   _class = addMsg->type;
@@ -319,15 +318,17 @@ bool DisplayHardware::detect_uc8253(ws_display_EpdSpiDescriptor *config) {
 */
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (!msg->has_interface_type) {
-    WS_DEBUG_PRINTLN("[display] ERROR: No interface type specified for SPI EPD!");
+    WS_DEBUG_PRINTLN(
+        "[display] ERROR: No interface type specified for SPI EPD!");
     return false;
   }
-  ws_display_EpdSpiDescriptor *spi_epd_config = &msg->interface_type.descriptor.spi_epd;
+  ws_display_EpdSpiDescriptor *spi_epd_config =
+      &msg->interface_type.descriptor.spi_epd;
   ws_spi_Descriptor *spi_pin_config = &spi_epd_config->spi;
 
-  int16_t dc = -1; 
+  int16_t dc = -1;
   int16_t rst = -1;
-  int16_t cs = -1; 
+  int16_t cs = -1;
   int16_t mosi = -1;
   int16_t sck = -1;
   int16_t miso = -1;
@@ -374,14 +375,14 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   // Reject explicit non-default SPI pins from the payload.
   if ((mosi >= 0 && mosi != MOSI) || (sck >= 0 && sck != SCK) ||
       (miso >= 0 && miso != MISO)) {
-    //TODO: report back to broker so user and team sees this!
+    // TODO: report back to broker so user and team sees this!
     WS_DEBUG_PRINTLN(
         "[display] ERROR: SPI EPD only supports default MOSI/SCK/MISO pins!");
     return false;
   }
 
   if (spi_pin_config->bus != 0) {
-    //TODO: report back to broker so user and team sees this!
+    // TODO: report back to broker so user and team sees this!
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
@@ -540,7 +541,8 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     return false;
   }
 
-  if (!msg->has_interface_type || msg->interface_type.which_descriptor != ws_display_InterfaceDescriptor_i2c_tag) {
+  if (!msg->has_interface_type || msg->interface_type.which_descriptor !=
+                                      ws_display_InterfaceDescriptor_i2c_tag) {
     WS_DEBUG_PRINTLN(
         "[display] ERROR: Expected I2C interface for I2C display!");
     return false;
@@ -655,7 +657,8 @@ void DisplayHardware::updateStatusBar(int8_t rssi, uint8_t bat,
 }
 
 /*!
-    @brief  Initializes the display hardware, showing the splash screen and status bar.
+    @brief  Initializes the display hardware, showing the splash screen and
+   status bar.
     @param  aio_user  Adafruit IO username to display on the status bar.
 */
 void DisplayHardware::initialise(const char *aio_user) {
@@ -691,10 +694,12 @@ bool DisplayHardware::write(ws_display_Write *msg) {
 */
 void DisplayHardware::publishAndLogError(const char *error) {
   WS_DEBUG_PRINTLN(error);
-  Ws._display_controller->PublishDisplayComponentError(getAddMsg().interface_type, error);
+  Ws._display_controller->PublishDisplayComponentError(
+      getAddMsg().interface_type, error);
 }
 
 void DisplayHardware::publishAndLogError(const __FlashStringHelper *error) {
   WS_DEBUG_PRINTLN(error);
-  Ws._display_controller->PublishDisplayComponentError(getAddMsg().interface_type, (const char *)error);
+  Ws._display_controller->PublishDisplayComponentError(
+      getAddMsg().interface_type, (const char *)error);
 }

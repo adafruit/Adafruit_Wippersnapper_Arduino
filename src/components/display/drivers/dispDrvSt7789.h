@@ -203,8 +203,8 @@ public:
 
     // Clear only below status bar, start text below status bar
     _display->fillRect(0, ST7789_STATUSBAR_HEIGHT, _display->width(),
-                        _display->height() - ST7789_STATUSBAR_HEIGHT,
-                        ST77XX_BLACK);
+                       _display->height() - ST7789_STATUSBAR_HEIGHT,
+                       ST77XX_BLACK);
 
     int16_t y_idx = ST7789_STATUSBAR_HEIGHT + 5;
     int16_t line_height = 8 * _text_sz;

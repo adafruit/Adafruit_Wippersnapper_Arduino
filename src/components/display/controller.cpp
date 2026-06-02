@@ -62,7 +62,9 @@ bool DisplayController::Router(pb_istream_t *stream) {
     @return True if defaults were resolved, False otherwise.
 */
 static bool resolveEpdDefaults(ws_display_Add *msg, const char *name) {
-  if (!msg->has_interface_type || msg->interface_type.which_descriptor != ws_display_InterfaceDescriptor_spi_epd_tag)
+  if (!msg->has_interface_type ||
+      msg->interface_type.which_descriptor !=
+          ws_display_InterfaceDescriptor_spi_epd_tag)
     return false;
   if (msg->which_config != ws_display_Add_config_epd_tag)
     return false;
@@ -122,7 +124,9 @@ static bool resolveEpdDefaults(ws_display_Add *msg, const char *name) {
     @return True if defaults were resolved, False otherwise.
 */
 static bool resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
-  if (!msg->has_interface_type || msg->interface_type.which_descriptor != ws_display_InterfaceDescriptor_ttl_rgb666_tag)
+  if (!msg->has_interface_type ||
+      msg->interface_type.which_descriptor !=
+          ws_display_InterfaceDescriptor_ttl_rgb666_tag)
     return false;
   if (msg->which_config != ws_display_Add_config_display_tag)
     return false;
@@ -177,7 +181,9 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_EPD) {
     foundDefaults = resolveEpdDefaults(msg, msg->name);
   } else if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_TFT &&
-    (msg->has_interface_type && msg->interface_type.which_descriptor == ws_display_InterfaceDescriptor_ttl_rgb666_tag)) {
+             (msg->has_interface_type &&
+              msg->interface_type.which_descriptor ==
+                  ws_display_InterfaceDescriptor_ttl_rgb666_tag)) {
     foundDefaults = resolveRgb666Defaults(msg, msg->name);
   }
   if (!foundDefaults) {
@@ -194,7 +200,9 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
 
   if (_num_displays >= MAX_DISPLAYS) {
     WS_DEBUG_PRINTLN("[display] ERROR: Maximum number of displays reached!");
-    PublishDisplayComponentError(msg->interface_type, "Failed to add. Maximum number of displays reached");
+    PublishDisplayComponentError(
+        msg->interface_type,
+        "Failed to add. Maximum number of displays reached");
     return false;
   }
 
@@ -203,7 +211,9 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   if (!hw->begin(msg)) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to initialize display hardware!");
     delete hw;
-    PublishDisplayComponentError(msg->interface_type, "Failed to initialize display hardware for add request");
+    PublishDisplayComponentError(
+        msg->interface_type,
+        "Failed to initialize display hardware for add request");
     return false;
   }
 
@@ -226,13 +236,13 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
 
 /*!
     @brief  Publishes a component error related to a display add request.
-    @param  descriptor  The Interface descriptor for the display that caused the error.
+    @param  descriptor  The Interface descriptor for the display that caused the
+   error.
     @param  error The error message to publish.
 */
-void DisplayController::PublishDisplayComponentError(ws_display_InterfaceDescriptor msg, const char *error)
-{
-  switch (msg.which_descriptor)
-  {
+void DisplayController::PublishDisplayComponentError(
+    ws_display_InterfaceDescriptor msg, const char *error) {
+  switch (msg.which_descriptor) {
   case ws_display_InterfaceDescriptor_spi_epd_tag:
     Ws.error_handler->publishComponentError(msg.descriptor.spi_epd.spi, error);
     break;
@@ -243,7 +253,8 @@ void DisplayController::PublishDisplayComponentError(ws_display_InterfaceDescrip
     Ws.error_handler->publishComponentError(msg.descriptor.i2c, error);
     break;
   case ws_display_InterfaceDescriptor_ttl_rgb666_tag:
-    Ws.error_handler->publishComponentError(msg.descriptor.ttl_rgb666.pin_b0, error);
+    Ws.error_handler->publishComponentError(msg.descriptor.ttl_rgb666.pin_b0,
+                                            error);
     break;
   case ws_display_InterfaceDescriptor_i8080_tag:
     Ws.error_handler->publishComponentError(msg.descriptor.i8080.pin_d0, error);
@@ -252,7 +263,8 @@ void DisplayController::PublishDisplayComponentError(ws_display_InterfaceDescrip
     Ws.error_handler->publishComponentError(msg.descriptor.dsi.pin_rst, error);
     break;
   default:
-    WS_DEBUG_PRINTLN("[display] WARNING: Unknown interface type in add request");
+    WS_DEBUG_PRINTLN(
+        "[display] WARNING: Unknown interface type in add request");
     Ws.error_handler->publishComponentError("Unknown interface", error);
     break;
   }
@@ -303,7 +315,8 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
     if (msg->has_descriptor) {
       PublishDisplayComponentError(msg->descriptor, error_msg);
     } else {
-      WS_DEBUG_PRINTLN("[display] WARNING: No descriptor in remove message to publish error against");
+      WS_DEBUG_PRINTLN("[display] WARNING: No descriptor in remove message to "
+                       "publish error against");
     }
   }
   return did_remove;
@@ -329,9 +342,11 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
     WS_DEBUG_PRINTVAR(msg->name);
     WS_DEBUG_PRINTLN(") not found!");
     if (msg->has_descriptor) {
-      PublishDisplayComponentError(msg->descriptor, "Display not found for write request");
+      PublishDisplayComponentError(msg->descriptor,
+                                   "Display not found for write request");
     } else {
-      WS_DEBUG_PRINTLN("[display] WARNING: No descriptor in write message to publish error against");
+      WS_DEBUG_PRINTLN("[display] WARNING: No descriptor in write message to "
+                       "publish error against");
     }
     return false;
   }

@@ -154,7 +154,7 @@ public:
       return;
 
     _display->fillRect(0, EPD_STATUS_BAR_HEIGHT, _display->width(),
-                      _display->height() - EPD_STATUS_BAR_HEIGHT, EPD_WHITE);
+                       _display->height() - EPD_STATUS_BAR_HEIGHT, EPD_WHITE);
     int16_t y_idx = EPD_STATUS_BAR_HEIGHT + 4;
     _display->setCursor(0, y_idx);
     int16_t line_height = 8 * _text_sz;
