@@ -230,8 +230,7 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   }
 
   // Show splash screen and status bar
-  hw->showSplash();
-  hw->drawStatusBar(Ws._configV2.aio_user);
+  hw->initialise(Ws._configV2.aio_user);
 
   _displays[_num_displays] = hw;
   _num_displays++;

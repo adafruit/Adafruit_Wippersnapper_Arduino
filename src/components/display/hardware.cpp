@@ -348,12 +348,14 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   // Reject explicit non-default SPI pins from the payload.
   if ((mosi >= 0 && mosi != MOSI) || (sck >= 0 && sck != SCK) ||
       (miso >= 0 && miso != MISO)) {
+    //TODO: report back to broker so user and team sees this!
     WS_DEBUG_PRINTLN(
         "[display] ERROR: SPI EPD only supports default MOSI/SCK/MISO pins!");
     return false;
   }
 
   if (spi_pin_config->bus != 0) {
+    //TODO: report back to broker so user and team sees this!
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
@@ -624,6 +626,15 @@ void DisplayHardware::updateStatusBar(int8_t rssi, uint8_t bat,
                                       bool mqtt_connected) {
   if (_drvDisp)
     _drvDisp->updateStatusBar(rssi, bat, mqtt_connected);
+}
+
+/*!
+    @brief  Initializes the display hardware, showing the splash screen and status bar.
+    @param  aio_user  Adafruit IO username to display on the status bar.
+*/
+void DisplayHardware::initialise(const char *aio_user) {
+  showSplash();
+  drawStatusBar(aio_user);
 }
 
 /*!

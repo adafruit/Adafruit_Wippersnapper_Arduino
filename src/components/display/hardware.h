@@ -48,6 +48,7 @@ public:
   void showSplash();
   void drawStatusBar(const char *io_username);
   void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_connected);
+  void initialise(const char *aio_user);
 
 private:
   char _name[64];
