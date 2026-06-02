@@ -203,12 +203,12 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
 uint8_t
 DisplayHardware::EpdBitBangReadRegister(uint8_t cmd,
                                         ws_display_EpdSpiDescriptor *config) {
-  int16_t mosi = DisplayHardware::parsePin(config->spi.pin_mosi);
-  int16_t miso = DisplayHardware::parsePin(config->spi.pin_miso);
-  int16_t sck = DisplayHardware::parsePin(config->spi.pin_sck);
-  int16_t cs = DisplayHardware::parsePin(config->spi.pin_cs);
-  int16_t dc = DisplayHardware::parsePin(config->pin_dc);
-  int16_t rst = DisplayHardware::parsePin(config->pin_rst);
+  int16_t mosi = parsePin(config->spi.pin_mosi);
+  int16_t miso = parsePin(config->spi.pin_miso);
+  int16_t sck = parsePin(config->spi.pin_sck);
+  int16_t cs = parsePin(config->spi.pin_cs);
+  int16_t dc = parsePin(config->pin_dc);
+  int16_t rst = parsePin(config->pin_rst);
 
   pinMode(mosi, OUTPUT);
   pinMode(sck, OUTPUT);
