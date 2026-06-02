@@ -17,6 +17,7 @@
 #include "drivers/dispDrv7Seg.h"
 #include "drivers/dispDrvBase.h"
 #include "drivers/dispDrvBaseI2c.h"
+#include "drivers/dispDrvBaseRgb666.h"
 #include "drivers/dispDrvCharLcd.h"
 #include "drivers/dispDrvQuadAlphaNum.h"
 #include "drivers/dispDrvSh1107.h"
@@ -45,16 +46,21 @@ public:
   bool begin(ws_display_Add *addMsg);
   bool write(ws_display_Write *msg);
   const char *getName();
+  ws_display_Add getAddMsg();
   void showSplash();
   void drawStatusBar(const char *io_username);
   void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_connected);
   void initialise(const char *aio_user);
+  void publishAndLogError(const char *error);
+  void publishAndLogError(const __FlashStringHelper *error);
 
-private:
-  char _name[64];
+protected:
+  char _name[64] = {0}; ///< Display name from add message
   ws_display_DisplayClass _class =
       ws_display_DisplayClass_DISPLAY_CLASS_UNSPECIFIED;
   dispDrvBase *_drvDisp = nullptr;
+  ws_display_Add _addMsg = ws_display_Add_init_default; 
+  ///< Store the add message for interface descriptor
 
   bool beginSpiTft(ws_display_Add *msg);
   bool beginSpiEpd(ws_display_Add *msg);

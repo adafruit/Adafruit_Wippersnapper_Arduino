@@ -17,7 +17,7 @@
 /*!
     @brief  Constructs a DisplayHardware with no active driver.
 */
-DisplayHardware::DisplayHardware() { memset(_name, 0, sizeof(_name)); }
+DisplayHardware::DisplayHardware() {}
 
 /*!
     @brief  Destructor. Tears down the underlying display driver, if any.
@@ -27,6 +27,14 @@ DisplayHardware::~DisplayHardware() {
     delete _drvDisp;
     _drvDisp = nullptr;
   }
+}
+
+/*!
+    @brief  Gets the stored Display Add message for this display instance.
+    @return The Display Add message struct.
+*/
+ws_display_Add DisplayHardware::getAddMsg() {
+  return _addMsg;
 }
 
 /*!
@@ -57,8 +65,12 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
   if (!addMsg) {
     WS_DEBUG_PRINTLN("[display] ERROR: Null add message!");
     return false;
+  } else if (!addMsg->has_interface_type) {
+    WS_DEBUG_PRINTLN("[display] ERROR: No interface type specified in add message!");
+    return false;
   }
-
+  
+  _addMsg = *addMsg; // Store the add message for potential future reference
   snprintf(_name, sizeof(_name), "%s", addMsg->name ? addMsg->name : "");
   _class = addMsg->type;
 
@@ -69,15 +81,15 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
   WS_DEBUG_PRINT("[display] Panel: ");
   WS_DEBUG_PRINTLNVAR(addMsg->panel);
 
-  switch (addMsg->which_interface_type) {
+  switch (addMsg->interface_type.which_descriptor) {
   // DSI + i8080 todo
-  case ws_display_Add_spi_tft_tag:
+  case ws_display_InterfaceDescriptor_spi_tft_tag:
     return beginSpiTft(addMsg);
-  case ws_display_Add_spi_epd_tag:
+  case ws_display_InterfaceDescriptor_spi_epd_tag:
     return beginSpiEpd(addMsg);
-  case ws_display_Add_ttl_rgb666_tag:
+  case ws_display_InterfaceDescriptor_ttl_rgb666_tag:
     return beginTtlRgb666(addMsg);
-  case ws_display_Add_i2c_tag:
+  case ws_display_InterfaceDescriptor_i2c_tag:
     return beginI2cDisplay(addMsg);
   default:
     WS_DEBUG_PRINTLN("[display] ERROR: Unsupported display interface type!");
@@ -91,7 +103,7 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
     @return True on success, False on failure.
 */
 bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
-  ws_display_TftSpiDescriptor *spi = &msg->interface_type.spi_tft;
+  ws_display_TftSpiDescriptor *spi = &msg->interface_type.descriptor.spi_tft;
   ws_spi_Descriptor *dev = &spi->spi;
 
   int16_t cs = parsePin(dev->pin_cs);
@@ -306,7 +318,11 @@ bool DisplayHardware::detect_uc8253(ws_display_EpdSpiDescriptor *config) {
     @return True on success, False on failure.
 */
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
-  ws_display_EpdSpiDescriptor *spi_epd_config = &msg->interface_type.spi_epd;
+  if (!msg->has_interface_type) {
+    WS_DEBUG_PRINTLN("[display] ERROR: No interface type specified for SPI EPD!");
+    return false;
+  }
+  ws_display_EpdSpiDescriptor *spi_epd_config = &msg->interface_type.descriptor.spi_epd;
   ws_spi_Descriptor *spi_pin_config = &spi_epd_config->spi;
 
   int16_t dc = parsePin(spi_epd_config->pin_dc);
@@ -514,12 +530,12 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     return false;
   }
 
-  if (msg->which_interface_type != ws_display_Add_i2c_tag) {
+  if (!msg->has_interface_type || msg->interface_type.which_descriptor != ws_display_InterfaceDescriptor_i2c_tag) {
     WS_DEBUG_PRINTLN(
         "[display] ERROR: Expected I2C interface for I2C display!");
     return false;
   }
-  ws_i2c_Descriptor *i2c_cfg = &msg->interface_type.i2c;
+  ws_i2c_Descriptor *i2c_cfg = &msg->interface_type.descriptor.i2c;
   uint16_t addr = (uint16_t)i2c_cfg->address;
 
   if (_drvDisp) {
@@ -644,7 +660,11 @@ void DisplayHardware::initialise(const char *aio_user) {
 */
 bool DisplayHardware::write(ws_display_Write *msg) {
   if (!_drvDisp) {
-    WS_DEBUG_PRINTLN("[display] ERROR: No display driver initialized!");
+    publishAndLogError(F("[display] ERROR: No display driver initialized!"));
+    return false;
+  }
+  if (!msg || !msg->message) {
+    publishAndLogError(F("[display] ERROR: Invalid write message!"));
     return false;
   }
 
@@ -652,4 +672,19 @@ bool DisplayHardware::write(ws_display_Write *msg) {
   WS_DEBUG_PRINTLNVAR(msg->message);
   _drvDisp->writeMessage(msg->message);
   return true;
+}
+
+/*!
+    @brief  Publishes an error related to this display hardware back to the
+            broker.
+    @param  error   The error message to publish.
+*/
+void DisplayHardware::publishAndLogError(const char *error) {
+  WS_DEBUG_PRINTLN(error);
+  Ws._display_controller->PublishDisplayComponentError(getAddMsg().interface_type, error);
+}
+
+void DisplayHardware::publishAndLogError(const __FlashStringHelper *error) {
+  WS_DEBUG_PRINTLN(error);
+  Ws._display_controller->PublishDisplayComponentError(getAddMsg().interface_type, (const char *)error);
 }

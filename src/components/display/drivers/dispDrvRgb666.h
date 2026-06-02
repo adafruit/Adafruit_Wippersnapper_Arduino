@@ -29,15 +29,15 @@
 /*!
     @brief  Driver for RGB666 dotclock displays on Qualia ESP32-S3.
 */
-class dispDrvRgb666 : public dispDrvBase {
+class dispDrvRgb666 : public dispDrvBaseRgb666 {
 public:
   /*!
       @brief  Constructor — panel selection by name string.
       @param  panel  Panel identifier (e.g. "TL021WVC02", "TL032FWV01").
   */
   dispDrvRgb666(const char *panel)
-      : dispDrvBase(), _display(nullptr), _expander(nullptr),
-        _rgbpanel(nullptr) {
+      : dispDrvBaseRgb666(ws_display_TtlRgb666PinDescriptor{}, "dispDrvRgb666", panel),
+        _display(nullptr), _expander(nullptr), _rgbpanel(nullptr) {
     strncpy(_panel, panel, sizeof(_panel) - 1);
     _panel[sizeof(_panel) - 1] = '\0';
   }

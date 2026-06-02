@@ -35,9 +35,10 @@ public:
   bool Handle_Display_Add(ws_display_Add *msg);
   bool Handle_Display_Remove(ws_display_Remove *msg);
   bool Handle_Display_Write(ws_display_Write *msg);
+  void PublishDisplayComponentError(ws_display_InterfaceDescriptor descriptor, const char *error);
   void update(int32_t rssi, bool is_connected);
-
-private:
+  
+  private:
   DisplayHardware *_displays[MAX_DISPLAYS] = {nullptr};
   uint8_t _num_displays;
   unsigned long _last_bar_update; ///< Timestamp of last status bar update
