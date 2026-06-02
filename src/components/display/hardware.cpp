@@ -698,6 +698,11 @@ void DisplayHardware::publishAndLogError(const char *error) {
       getAddMsg().interface_type, error);
 }
 
+/*!
+    @brief  Publishes an error related to this display hardware back to the
+            broker.
+    @param  error   The flash-resident error message to publish.
+*/
 void DisplayHardware::publishAndLogError(const __FlashStringHelper *error) {
   WS_DEBUG_PRINTLN(error);
   Ws._display_controller->PublishDisplayComponentError(

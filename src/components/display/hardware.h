@@ -56,8 +56,10 @@ public:
 
 protected:
   char _name[64] = {0}; ///< Display name from add message
+  /// Display class requested by the add message.
   ws_display_DisplayClass _class =
       ws_display_DisplayClass_DISPLAY_CLASS_UNSPECIFIED;
+  /// Active concrete display driver.
   dispDrvBase *_drvDisp = nullptr;
   ws_display_Add _addMsg = ws_display_Add_init_default;
   ///< Store the add message for interface descriptor
