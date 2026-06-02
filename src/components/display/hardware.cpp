@@ -325,9 +325,9 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   ws_display_EpdSpiDescriptor *spi_epd_config = &msg->interface_type.descriptor.spi_epd;
   ws_spi_Descriptor *spi_pin_config = &spi_epd_config->spi;
 
-  int16_t dc = parsePin(spi_epd_config->pin_dc);
-  int16_t rst = parsePin(spi_epd_config->pin_rst);
-  int16_t cs = parsePin(spi_pin_config->pin_cs);
+  int16_t dc = -1; 
+  int16_t rst = -1;
+  int16_t cs = -1; 
   int16_t mosi = -1;
   int16_t sck = -1;
   int16_t miso = -1;
@@ -342,7 +342,15 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     sram_cs = parsePin(spi_epd_config->pin_sram_cs);
   if (strlen(spi_epd_config->pin_busy) >= 2)
     busy = parsePin(spi_epd_config->pin_busy);
+  if (strlen(spi_epd_config->pin_dc) >= 2)
+    dc = parsePin(spi_epd_config->pin_dc);
+  if (strlen(spi_epd_config->pin_rst) >= 2)
+    rst = parsePin(spi_epd_config->pin_rst);
+  if (strlen(spi_pin_config->pin_cs) >= 2)
+    cs = parsePin(spi_pin_config->pin_cs);
 
+#ifdef CORE_LOG_LEVEL
+#if CORE_LOG_LEVEL > 1
   WS_DEBUG_PRINT("[display] SPI EPD pins - DC:");
   WS_DEBUG_PRINTVAR(dc);
   WS_DEBUG_PRINT(" RST:");
@@ -359,6 +367,8 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   WS_DEBUG_PRINTVAR(sram_cs);
   WS_DEBUG_PRINT(" BUSY:");
   WS_DEBUG_PRINTLNVAR(busy);
+#endif
+#endif
 
   // EPD drivers currently use the default hardware SPI bus/pins.
   // Reject explicit non-default SPI pins from the payload.

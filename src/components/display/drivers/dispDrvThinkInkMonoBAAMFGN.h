@@ -148,16 +148,13 @@ public:
     _display->display();
   }
 
-  void writeMessage(const char *message, bool clear_first = true,
-                    int32_t cursor_x = 0, int32_t cursor_y = 0) override {
+  void writeMessage(const char *message) override {
     if (!_display)
       return;
-    if (clear_first) {
-      _display->fillRect(0, EPD_STATUS_BAR_HEIGHT, _display->width(),
-                         _display->height() - EPD_STATUS_BAR_HEIGHT, EPD_WHITE);
-    }
-    int16_t y_idx = (cursor_y > 0) ? cursor_y : (EPD_STATUS_BAR_HEIGHT + 4);
-    _display->setCursor(cursor_x, y_idx);
+    _display->fillRect(0, EPD_STATUS_BAR_HEIGHT, _display->width(),
+                       _display->height() - EPD_STATUS_BAR_HEIGHT, EPD_WHITE);
+    int16_t y_idx = EPD_STATUS_BAR_HEIGHT + 4;
+    _display->setCursor(0, y_idx);
     int16_t line_height = 8 * _text_sz;
     size_t msg_size = strlen(message);
     _display->setTextSize(_text_sz);

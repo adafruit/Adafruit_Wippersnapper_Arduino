@@ -87,12 +87,8 @@ public:
   /*!
       @brief  Writes a message to the display.
       @param  message      Message text to render.
-      @param  clear_first  True to clear the target area before drawing.
-      @param  cursor_x     Horizontal cursor position.
-      @param  cursor_y     Vertical cursor position.
   */
-  virtual void writeMessage(const char *message, bool clear_first = true,
-                            int32_t cursor_x = 0, int32_t cursor_y = 0) = 0;
+  virtual void writeMessage(const char *message) = 0;
 
   /*!
       @brief  Sets the display width in pixels.

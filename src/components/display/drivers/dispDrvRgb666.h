@@ -225,8 +225,7 @@ public:
     }
   }
 
-  void writeMessage(const char *message, bool clear_first = true,
-                    int32_t cursor_x = 0, int32_t cursor_y = 0) override {
+  void writeMessage(const char *message) override {
     if (!_display)
       return;
 

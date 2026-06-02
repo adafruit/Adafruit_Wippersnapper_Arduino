@@ -197,23 +197,20 @@ public:
     }
   }
 
-  void writeMessage(const char *message, bool clear_first = true,
-                    int32_t cursor_x = 0, int32_t cursor_y = 0) override {
+  void writeMessage(const char *message) override {
     if (!_display)
       return;
 
-    // Default: clear only below status bar, start text below status bar
-    if (clear_first) {
-      _display->fillRect(0, ST7789_STATUSBAR_HEIGHT, _display->width(),
-                         _display->height() - ST7789_STATUSBAR_HEIGHT,
-                         ST77XX_BLACK);
-    }
+    // Clear only below status bar, start text below status bar
+    _display->fillRect(0, ST7789_STATUSBAR_HEIGHT, _display->width(),
+                        _display->height() - ST7789_STATUSBAR_HEIGHT,
+                        ST77XX_BLACK);
 
-    int16_t y_idx = (cursor_y > 0) ? cursor_y : ST7789_STATUSBAR_HEIGHT + 5;
+    int16_t y_idx = ST7789_STATUSBAR_HEIGHT + 5;
     int16_t line_height = 8 * _text_sz;
 
     _display->setTextSize(_text_sz);
-    _display->setCursor(cursor_x, y_idx);
+    _display->setCursor(0, y_idx);
 
     size_t msg_len = strlen(message);
     for (size_t i = 0; i < msg_len; i++) {

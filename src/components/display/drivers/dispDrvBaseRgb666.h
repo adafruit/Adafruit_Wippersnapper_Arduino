@@ -146,24 +146,6 @@ public:
     // noop
   }
 
-  /*!
-      @brief  Satisfies the dispDrvBase contract; routes to WriteMessage().
-      @param  message      Null-terminated message to send.
-      @param  clear_first  Unused for I2C display drivers.
-      @param  cursor_x     Unused horizontal cursor position.
-      @param  cursor_y     Unused vertical cursor position.
-
-      I2C display drivers expose only a simple message-write API, so cursor
-      placement and clear behavior are ignored.
-  */
-  void writeMessage(const char *message, bool clear_first = true,
-                    int32_t cursor_x = 0, int32_t cursor_y = 0) override {
-    (void)clear_first;
-    (void)cursor_x;
-    (void)cursor_y;
-    WriteMessage(message);
-  }
-
   char* getPinDescriptor() {
     return (char*)&_descriptor.pin_b0;
   }
