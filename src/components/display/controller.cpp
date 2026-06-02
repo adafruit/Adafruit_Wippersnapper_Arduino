@@ -78,7 +78,7 @@ static bool resolveEpdDefaults(ws_display_Add *msg, const char *name) {
   }
 
   // Map specific component names to driver + default mode
-  struct {
+  struct EpdMapping {
     const char *component;
     const char *driver;
     ws_display_EPDMode mode;
@@ -93,7 +93,7 @@ static bool resolveEpdDefaults(ws_display_Add *msg, const char *name) {
        ws_display_EPDMode_EPD_MODE_MONO},
   };
 
-  for (auto &m : mappings) {
+  for (const EpdMapping &m : mappings) {
     if (strcmp(name, m.component) == 0) {
       strncpy(msg->driver, m.driver, sizeof(msg->driver) - 1);
       msg->driver[sizeof(msg->driver) - 1] = '\0';
