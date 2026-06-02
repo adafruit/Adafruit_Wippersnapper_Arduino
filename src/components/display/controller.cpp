@@ -127,7 +127,7 @@ static bool resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
   if (msg->which_config != ws_display_Add_config_display_tag)
     return false;
 
-  struct {
+  struct Rgb666DefaultMapping {
     const char *component;
     const char *driver;
     const char *panel;
@@ -136,7 +136,7 @@ static bool resolveRgb666Defaults(ws_display_Add *msg, const char *name) {
       {"qualia-bar-32-320x820", "ST7701S", "TL032FWV01"},
   };
 
-  for (auto &m : mappings) {
+  for (const Rgb666DefaultMapping &m : mappings) {
     if (strcmp(name, m.component) == 0) {
       strncpy(msg->driver, m.driver, sizeof(msg->driver) - 1);
       msg->driver[sizeof(msg->driver) - 1] = '\0';
