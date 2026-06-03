@@ -146,8 +146,11 @@ public:
     // noop
   }
 
-  /*! @brief Returns the first RGB666 pin field as a contiguous descriptor
-             pointer.
+  /*!
+      @brief    Returns the first RGB666 pin field as a contiguous descriptor
+                pointer.
+      @returns  Pointer to the first pin field in the RGB666 descriptor, for
+                use in error publications.
    */
   char *getPinDescriptor() { return (char *)&_descriptor.pin_b0; }
 
