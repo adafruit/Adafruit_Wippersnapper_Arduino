@@ -35,7 +35,6 @@ class dispDrvBaseRgb666 : public dispDrvBase {
 public:
   /*!
       @brief  Constructor.
-      @param  descriptor   The TTL RGB666 pin descriptor.
       @param  driver_name  The name of the driver.
       @param  panel        The panel/variant name.
   */
