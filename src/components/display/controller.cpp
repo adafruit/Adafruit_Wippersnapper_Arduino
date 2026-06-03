@@ -236,31 +236,35 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
 
 /*!
     @brief  Publishes a component error related to a display add request.
-    @param  descriptor  The Interface descriptor for the display that caused the
+    @param  iface  The Interface descriptor for the display that caused the
    error.
     @param  error The error message to publish.
 */
 void DisplayController::PublishDisplayComponentError(
-    ws_display_InterfaceDescriptor msg, const char *error) {
-  switch (msg.which_descriptor) {
+    ws_display_InterfaceDescriptor iface, const char *error) {
+  switch (iface.which_descriptor) {
   case ws_display_InterfaceDescriptor_spi_epd_tag:
-    Ws.error_handler->publishComponentError(msg.descriptor.spi_epd.spi, error);
+    Ws.error_handler->publishComponentError(iface.descriptor.spi_epd.spi,
+                                            error);
     break;
   case ws_display_InterfaceDescriptor_spi_tft_tag:
-    Ws.error_handler->publishComponentError(msg.descriptor.spi_tft.spi, error);
+    Ws.error_handler->publishComponentError(iface.descriptor.spi_tft.spi,
+                                            error);
     break;
   case ws_display_InterfaceDescriptor_i2c_tag:
-    Ws.error_handler->publishComponentError(msg.descriptor.i2c, error);
+    Ws.error_handler->publishComponentError(iface.descriptor.i2c, error);
     break;
   case ws_display_InterfaceDescriptor_ttl_rgb666_tag:
-    Ws.error_handler->publishComponentError(msg.descriptor.ttl_rgb666.pin_b0,
+    Ws.error_handler->publishComponentError(iface.descriptor.ttl_rgb666.pin_b0,
                                             error);
     break;
   case ws_display_InterfaceDescriptor_i8080_tag:
-    Ws.error_handler->publishComponentError(msg.descriptor.i8080.pin_d0, error);
+    Ws.error_handler->publishComponentError(iface.descriptor.i8080.pin_d0,
+                                            error);
     break;
   case ws_display_InterfaceDescriptor_dsi_tag:
-    Ws.error_handler->publishComponentError(msg.descriptor.dsi.pin_rst, error);
+    Ws.error_handler->publishComponentError(iface.descriptor.dsi.pin_rst,
+                                            error);
     break;
   default:
     WS_DEBUG_PRINTLN(

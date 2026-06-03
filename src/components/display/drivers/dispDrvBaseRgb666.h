@@ -146,6 +146,9 @@ public:
     // noop
   }
 
+  /*! @brief Returns the first RGB666 pin field as a contiguous descriptor
+             pointer.
+   */
   char *getPinDescriptor() { return (char *)&_descriptor.pin_b0; }
 
 protected:
