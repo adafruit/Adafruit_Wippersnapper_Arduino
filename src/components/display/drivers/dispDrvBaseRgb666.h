@@ -39,9 +39,8 @@ public:
       @param  driver_name  The name of the driver.
       @param  panel        The panel/variant name.
   */
-  dispDrvBaseRgb666(ws_display_TtlRgb666PinDescriptor descriptor,
-                    const char *driver_name, const char *panel)
-      : dispDrvBase(), _descriptor(descriptor) {
+  dispDrvBaseRgb666(const char *driver_name, const char *panel)
+      : dispDrvBase() {
     strncpy(_name, driver_name ? driver_name : "", sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
     strncpy(_panel, panel ? panel : "", sizeof(_panel) - 1);
@@ -146,16 +145,7 @@ public:
     // noop
   }
 
-  /*!
-      @brief    Returns the first RGB666 pin field as a contiguous descriptor
-                pointer.
-      @returns  Pointer to the first pin field in the RGB666 descriptor, for
-                use in error publications.
-   */
-  char *getPinDescriptor() { return (char *)&_descriptor.pin_b0; }
-
 protected:
-  ws_display_TtlRgb666PinDescriptor _descriptor; ///< RGB666 pin descriptor
   char _name[65] = {0};                          ///< Driver name
   char _panel[33] = {0};                         ///< Panel name
 };

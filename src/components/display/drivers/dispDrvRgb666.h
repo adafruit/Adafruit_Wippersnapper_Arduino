@@ -36,8 +36,7 @@ public:
       @param  panel  Panel identifier (e.g. "TL021WVC02", "TL032FWV01").
   */
   dispDrvRgb666(const char *panel)
-      : dispDrvBaseRgb666(ws_display_TtlRgb666PinDescriptor{}, "dispDrvRgb666",
-                          panel),
+      : dispDrvBaseRgb666("dispDrvRgb666", panel),
         _display(nullptr), _expander(nullptr), _rgbpanel(nullptr) {
     strncpy(_panel, panel, sizeof(_panel) - 1);
     _panel[sizeof(_panel) - 1] = '\0';
