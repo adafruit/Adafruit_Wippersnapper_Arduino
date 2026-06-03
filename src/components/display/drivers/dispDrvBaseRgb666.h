@@ -146,8 +146,8 @@ public:
   }
 
 protected:
-  char _name[65] = {0};                          ///< Driver name
-  char _panel[33] = {0};                         ///< Panel name
+  char _name[65] = {0};  ///< Driver name
+  char _panel[33] = {0}; ///< Panel name
 };
 
 #endif // WS_DISP_DRV_BASE_RGB666_H
