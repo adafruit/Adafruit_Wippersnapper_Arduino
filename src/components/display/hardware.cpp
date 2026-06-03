@@ -693,7 +693,8 @@ bool DisplayHardware::write(ws_display_Write *msg) {
     @param  error   The error message to publish.
 */
 void DisplayHardware::publishAndLogError(const char *error) {
-  WS_DEBUG_PRINTLN(error);
+  WS_DEBUG_PRINTVAR(error);
+  WS_DEBUG_PRINTLN("");
   Ws._display_controller->PublishDisplayComponentError(
       getAddMsg().interface_type, error);
 }
@@ -704,7 +705,8 @@ void DisplayHardware::publishAndLogError(const char *error) {
     @param  error   The flash-resident error message to publish.
 */
 void DisplayHardware::publishAndLogError(const __FlashStringHelper *error) {
-  WS_DEBUG_PRINTLN(error);
+  WS_DEBUG_PRINTVAR(error);
+  WS_DEBUG_PRINTLN("");
   Ws._display_controller->PublishDisplayComponentError(
       getAddMsg().interface_type, (const char *)error);
 }
