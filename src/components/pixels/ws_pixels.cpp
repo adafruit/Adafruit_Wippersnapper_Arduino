@@ -16,13 +16,13 @@
  */
 #include "ws_pixels.h"
 
-strand_s strands[MAX_PIXEL_STRANDS]; ///< Contains all pixel strands used by WipperSnapper
+strand_s strands[MAX_PIXEL_STRANDS]; ///< Contains all usable pixel strands
 
 /**************************************************************************/
 /*!
     @brief  Constructor
 */
-/******************************************************************************/
+/**************************************************************************/
 ws_pixels::ws_pixels() {
   // Initialize all strands to default values
   for (size_t i = 0; i < sizeof(strands) / sizeof(strands[0]); i++) {
