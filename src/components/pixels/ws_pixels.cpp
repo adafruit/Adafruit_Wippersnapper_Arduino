@@ -26,16 +26,15 @@ strand_s strands[MAX_PIXEL_STRANDS]; ///< Contains all pixel strands used by Wip
 ws_pixels::ws_pixels() {
   // Initialize all strands to default values
   for (size_t i = 0; i < sizeof(strands) / sizeof(strands[0]); i++) {
-    strands[i] = {
-        nullptr,
-        nullptr,
-        wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
-        0,
-        0,
-        wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
-        -1,
-        -1,
-        -1};
+    strands[i] = {nullptr,
+                  nullptr,
+                  wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
+                  0,
+                  0,
+                  wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
+                  -1,
+                  -1,
+                  -1};
   }
 }
 
