@@ -316,7 +316,7 @@ protected:
       if (lastResult == WL_CONNECTED) {
         _statusV2 = WS_NET_CONNECTED;
         // wait 2seconds for connection to stabilize
-        WS_DELAY_WITH_WDT(2000);
+        WS_DELAY_WITH_WDT(2 * ONE_SECOND_IN_MS);
       } else {
         _statusV2 = WS_NET_DISCONNECTED; // maybe connect failed instead?
       }
@@ -346,7 +346,7 @@ protected:
         pinMode(_gpio0Pin, INPUT);
       }
       // wait for the ESP32 to boot
-      delay(2000);
+      delay(2 * ONE_SECOND_IN_MS);
     }
   }
 

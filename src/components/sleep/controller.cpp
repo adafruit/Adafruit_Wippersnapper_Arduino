@@ -198,7 +198,7 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
 // Configure timer-based wakeup source
 #ifdef ARDUINO_ARCH_ESP32
     rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration *
-                                                 1000000);
+                                                 TEN_SECONDS_IN_US);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }

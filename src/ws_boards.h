@@ -239,6 +239,11 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#elif defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666)
+#define BOARD_ID "qualia-s3-rgb666"
+#define USE_TINYUSB
+#define USE_PSRAM
+#define BOOT_BUTTON 0
 #else
 #warning "Board type not identified within ws_boards.h!"
 #endif

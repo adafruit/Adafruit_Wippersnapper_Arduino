@@ -41,11 +41,12 @@ wippersnapper Ws;
 wippersnapper::wippersnapper()
     : _mqttV2(nullptr), sensor_model(nullptr), error_handler(nullptr),
       digital_io_controller(nullptr), analogin_controller(nullptr),
-      _ds18x20_controller(nullptr), _expander_controller(nullptr),
-      _gps_controller(nullptr), _i2c_controller(nullptr),
-      _uart_controller(nullptr), _pixels_controller(nullptr),
-      _pwm_controller(nullptr), _servo_controller(nullptr), _wdt(nullptr),
-      _device_uidV2(nullptr), _mqtt_client_id(nullptr) {
+      _display_controller(nullptr), _ds18x20_controller(nullptr),
+      _expander_controller(nullptr), _gps_controller(nullptr),
+      _i2c_controller(nullptr), _uart_controller(nullptr),
+      _pixels_controller(nullptr), _pwm_controller(nullptr),
+      _servo_controller(nullptr), _wdt(nullptr), _device_uidV2(nullptr),
+      _mqtt_client_id(nullptr) {
   // Initialize WDT wrapper
   _wdt = new ws_wdt();
 
@@ -55,6 +56,7 @@ wippersnapper::wippersnapper()
   // Initialize controller classes
   digital_io_controller = new DigitalIOController();
   analogin_controller = new AnalogInController();
+  _display_controller = new DisplayController();
   _ds18x20_controller = new DS18X20Controller();
   _expander_controller = new ExpanderController();
   _gps_controller = new GPSController();
@@ -77,6 +79,7 @@ wippersnapper::~wippersnapper() {
   delete this->sensor_model;
   delete this->error_handler;
   delete this->digital_io_controller;
+  delete this->_display_controller;
   delete this->analogin_controller;
   delete this->_ds18x20_controller;
   delete this->_expander_controller;
@@ -329,6 +332,8 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     return Ws._i2c_controller->Router(stream);
   case ws_signal_BrokerToDevice_uart_tag:
     return Ws._uart_controller->Router(stream);
+  case ws_signal_BrokerToDevice_display_tag:
+    return Ws._display_controller->Router(stream);
   case ws_signal_BrokerToDevice_expander_tag:
     return Ws._expander_controller->Router(stream);
   case ws_signal_BrokerToDevice_gps_tag:
@@ -529,7 +534,7 @@ void wippersnapper::errorWriteHangV2(const char *error) {
     WS_DEBUG_PRINTLNVAR(error);
     Ws._wdt->feed();
     statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
-    delay(1000);
+    delay(ONE_SECOND_IN_MS);
   }
 }
 
@@ -647,7 +652,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
         WS_DEBUG_PRINTLNVAR(Ws._mqttV2->connectErrorString(mqttRC));
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
-        delay(3000);
+        delay(3 * ONE_SECOND_IN_MS);
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
@@ -696,11 +701,11 @@ void wippersnapper::haltErrorV2(const char *error,
     } else {
 // Let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266
-      delay(1000);
+      delay(ONE_SECOND_IN_MS);
 #else
       // Calls to delay() and yield() feed the ESP8266's
       // hardware and software watchdog timers, delayMicroseconds does not.
-      delayMicroseconds(1000000);
+      delayMicroseconds(ONE_SECOND_IN_US);
 #endif
     }
   }
@@ -811,6 +816,7 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
             every STATUS_LED_KAT_BLINK_TIME milliseconds.
 */
 void wippersnapper::pingBrokerV2() {
+  Ws._wdt->feed();
   // if it's past time to send the next ping
   if (millis() > (_prv_pingV2 + WS_DEVICE_PING_MS)) {
     WS_DEBUG_PRINT("Sending MQTT PING: ");
@@ -914,12 +920,13 @@ void PrintDeviceInfo() {
     @brief    Connects to Adafruit IO+ wippersnapper broker.
 */
 void wippersnapper::connect() {
-  delay(5000); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON HARDWARE ONLY
+  delay(5 * ONE_SECOND_IN_MS); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON
+                               // HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   PrintDeviceInfo();
 
-  _brokerKeepAliveIntervalSeconds = WS_BROKER_KEEPALIVE_MS / 1000;
+  _brokerKeepAliveIntervalSeconds = WS_BROKER_KEEPALIVE_MS / ONE_SECOND_IN_MS;
 
   Ws.error_handler = new ErrorHandler();
 
@@ -1083,6 +1090,9 @@ void wippersnapper::loop() {
 
   // Process GPS controller events
   Ws._gps_controller->update();
+
+  // Update display status bars
+  Ws._display_controller->update(getRSSI(), Ws._mqttV2->connected());
 }
 
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)

@@ -1,0 +1,146 @@
+/*!
+ * @file src/components/display/drivers/dispDrvSsd1306.h
+ *
+ * Device driver for OLED displays with a SSD1306 driver
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Brent Rubell for Adafruit Industries 2025
+ *
+ * MIT license, all text here must be included in any redistribution.
+ *
+ */
+
+#ifndef WS_DISP_DRV_SSD1306_H
+#define WS_DISP_DRV_SSD1306_H
+
+#include "dispDrvBaseI2c.h"
+#include <Adafruit_SSD1306.h>
+#include <Arduino.h>
+
+/*!
+    @brief  Class that provides a driver interface for a SSD1306 OLED display.
+            This class is a wrapper around the Adafruit_SSD1306 library.
+*/
+class dispDrvSsd1306 : public dispDrvBaseI2c {
+public:
+  /*!
+      @brief    Constructor for a SSD1306 OLED display driver.
+      @param    i2c
+                The I2C interface.
+      @param    sensorAddress
+                7-bit device address.
+      @param    mux_channel
+                The I2C multiplexer channel.
+      @param    driver_name
+                The name of the driver.
+      @param    panel
+                The panel/variant name.
+  */
+  dispDrvSsd1306(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+                 const char *driver_name, const char *panel)
+      : dispDrvBaseI2c(i2c, sensorAddress, mux_channel, driver_name, panel) {}
+
+  /*!
+      @brief    Destructor.
+  */
+  ~dispDrvSsd1306() {
+    if (_display != nullptr) {
+      _display->ssd1306_command(SSD1306_DISPLAYOFF);
+      delete _display;
+      _display = nullptr;
+    }
+  }
+
+  /*!
+      @brief    Initializes the SSD1306 display and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  bool begin() override {
+    // Attempt to create and allocate a SSD1306 obj.
+    if (strcasecmp(_panel, "128x32featherwing") == 0) {
+      // FeatherWing needs swapped w/h ctor args
+      _display = new Adafruit_SSD1306(_height, _width, _i2c);
+    } else {
+      _display = new Adafruit_SSD1306(_width, _height, _i2c);
+    }
+    if (!_display->begin(SSD1306_SWITCHCAPVCC, _address))
+      return false;
+    // Clear the buffer
+    _display->clearDisplay();
+    // Configure the text size and color
+    _display->setTextSize(_text_sz);
+    _display->setTextColor(SSD1306_WHITE);
+    // Reset the cursor position
+    _display->setCursor(0, 0);
+    _display->display();
+    return true;
+  }
+
+  /*!
+      @brief    Configures a SSD1306 OLED display. Must be called before driver
+     begin()
+      @param    width
+                  The width of the display in pixels.
+      @param    height
+                  The height of the display in pixels.
+      @param    text_size
+                  The magnification factor for the text size.
+  */
+  void ConfigureSSD1306(uint8_t width, uint8_t height,
+                        uint8_t text_size) override {
+    _width = width;
+    _height = height;
+    _text_sz = text_size;
+  }
+
+  /*!
+      @brief    Writes a message to the SSD1306 display.
+      @param    message
+                  The message to be displayed.
+  */
+  void WriteMessage(const char *message) override {
+    if (_display == nullptr)
+      return;
+
+    // Start with a fresh display buffer
+    // and settings
+    int16_t y_idx = 0;
+    _display->clearDisplay();
+    _display->setTextSize(_text_sz);
+    _display->setTextColor(SSD1306_WHITE);
+    _display->setCursor(0, y_idx);
+    _display->display();
+
+    // Calculate the line height based on the text size (NOTE: base height is
+    // 8px)
+    int16_t line_height = 8 * _text_sz;
+    size_t msg_size = strlen(message);
+    for (size_t i = 0; i < msg_size; i++) {
+      char parsed_char = 0;
+      bool is_newline = false;
+      if (parseWriteToken(message, msg_size, i, parsed_char, is_newline,
+                          char(247))) {
+        if (is_newline) {
+          y_idx += line_height;
+          _display->setCursor(0, y_idx);
+        } else {
+          _display->write(parsed_char);
+          _display->display();
+        }
+        continue;
+      }
+
+      _display->print(message[i]);
+      _display->display();
+    }
+  }
+
+protected:
+  Adafruit_SSD1306 *_display =
+      nullptr; ///< Pointer to the Adafruit_SSD1306 object
+};
+
+#endif // WS_DISP_DRV_SSD1306_H

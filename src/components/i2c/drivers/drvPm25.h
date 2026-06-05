@@ -50,7 +50,7 @@ public:
   bool begin() override {
     _pm25 = new Adafruit_PM25AQI();
     // Wait three seconds for the sensor to boot up!
-    delay(3000);
+    delay(3 * ONE_SECOND_IN_MS);
     return _pm25->begin_I2C(_i2c);
   }
 

@@ -276,14 +276,14 @@ protected:
 
     WiFi.mode(WIFI_STA);
     Ws._wdt->feed();
-    WiFi.setTimeout(20000);
+    WiFi.setTimeout(20 * ONE_SECOND_IN_MS);
     Ws._wdt->feed();
 
     if (strlen(_ssid) == 0) {
       _statusV2 = WS_SSID_INVALID;
     } else {
       _disconnect();
-      delay(5000);
+      delay(5 * ONE_SECOND_IN_MS);
       Ws._wdt->feed();
       if (Ws._isWiFiMultiV2) {
         // multi network mode
@@ -296,7 +296,7 @@ protected:
                            Ws._multiNetworksV2[i].pass);
         }
         Ws._wdt->feed();
-        if (_wifiMulti.run(10000) == WL_CONNECTED) {
+        if (_wifiMulti.run(TEN_SECONDS_IN_MS) == WL_CONNECTED) {
           Ws._wdt->feed();
           _statusV2 = WS_NET_CONNECTED;
           return;
@@ -318,7 +318,7 @@ protected:
         if (lastResult == WL_CONNECTED) {
           _statusV2 = WS_NET_CONNECTED;
           // wait 2seconds for connection to stabilize
-          // WS_DELAY_WITH_WDT(2000);
+          // WS_DELAY_WITH_WDT(2 * ONE_SECOND_IN_MS);
           return;
         }
       }
@@ -334,7 +334,7 @@ protected:
     (void)wifi_off;
     Ws._wdt->feed();
     WiFi.disconnect();
-    delay(5000);
+    delay(5 * ONE_SECOND_IN_MS);
     Ws._wdt->feed();
   }
 };

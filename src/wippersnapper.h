@@ -23,6 +23,12 @@
 #define WS_DEBUG          /**< Define to enable debugging to serial terminal */
 #define WS_PRINTER Serial /**< Where debug messages will be printed */
 
+#define ONE_MINUTE_IN_MS 60000     ///< One minute expressed in milliseconds
+#define ONE_SECOND_IN_MS 1000      ///< One second expressed in milliseconds
+#define ONE_SECOND_IN_US 1000000   ///< One second expressed in microseconds
+#define TEN_SECONDS_IN_MS 10000    ///< Ten seconds expressed in milliseconds
+#define TEN_SECONDS_IN_US 10000000 ///< Ten seconds expressed in microseconds
+
 /*!
     @brief  Debug print macros for WipperSnapper debugging output
     @details These macros provide debug output functionality when WS_DEBUG is
@@ -123,6 +129,7 @@
 #include "components/analogIn/controller.h"
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
+#include "components/display/controller.h"
 #include "components/ds18x20/controller.h"
 #include "components/error/handler.h"
 #include "components/expander/controller.h"
@@ -170,6 +177,7 @@ class ErrorHandler;
 class ExpanderController;
 class SensorModel;
 class DigitalIOController;
+class DisplayController;
 class AnalogInController;
 class DS18X20Controller;
 class GPSController;
@@ -261,6 +269,8 @@ public:
       nullptr; ///< Instance of DigitalIO controller class
   AnalogInController *analogin_controller =
       nullptr; ///< Instance of AnalogIn controller
+  DisplayController *_display_controller =
+      nullptr; ///< Instance of Display controller
   DS18X20Controller *_ds18x20_controller =
       nullptr; ///< Instance of DS18X20 controller
   ExpanderController *_expander_controller =
