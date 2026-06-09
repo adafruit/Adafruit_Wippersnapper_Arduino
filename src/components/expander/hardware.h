@@ -85,7 +85,7 @@ public:
   /*!  @brief  Reads the analog value of a pin on the expander.
        @param  pin  The pin number.
        @return The raw ADC value. */
-  virtual uint16_t analogRead(uint8_t pin) { return 0; }
+  virtual uint32_t analogRead(uint8_t pin) { return 0; }
 
   /*!  @brief  Returns the ADC resolution of the expander in bits.
        @return The ADC resolution. */

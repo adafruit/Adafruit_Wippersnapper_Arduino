@@ -1,7 +1,7 @@
 /*!
  * @file src/components/i2c/model.cpp
  *
- * Model for the i2c.proto and i2c_output.proto messages.
+ * Model for the i2c.proto and display.proto messages.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing

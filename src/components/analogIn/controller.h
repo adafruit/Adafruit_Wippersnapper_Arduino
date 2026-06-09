@@ -51,7 +51,8 @@ private:
   AnalogInHardware *GetPin(uint8_t pin_num, ExpanderHardware *expander);
   std::vector<AnalogInHardware *> _pins; ///< Vector of analog pin objects
   AnalogInModel *_analogin_model;        ///< AnalogIn model
-  float _mcu_vref; ///< Reference voltage passed to each new pin
+  float _mcu_ref_voltage; ///< MCU/board reference voltage, used for native pins
+                          ///< (expander pins use their own message ref_voltage)
 };
 extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_ANALOGIN_CONTROLLER_H

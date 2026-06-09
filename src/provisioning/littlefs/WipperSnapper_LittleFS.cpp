@@ -142,7 +142,7 @@ void WipperSnapper_LittleFS::fsHalt(String msg, ws_led_status_t status_state) {
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
     WS_DEBUG_PRINTLNVAR(msg.c_str());
-    delay(1000);
+    delay(ONE_SECOND_IN_MS);
     yield();
   }
 }

@@ -21,7 +21,7 @@
 */
 AnalogInController::AnalogInController() {
   _analogin_model = new AnalogInModel();
-  _mcu_vref = DEFAULT_MCU_VREF;
+  _mcu_ref_voltage = DEFAULT_MCU_VREF;
 }
 
 /*!
@@ -38,7 +38,9 @@ AnalogInController::~AnalogInController() {
     @param  voltage
             The reference voltage.
 */
-void AnalogInController::SetRefVoltage(float voltage) { _mcu_vref = voltage; }
+void AnalogInController::SetRefVoltage(float voltage) {
+  _mcu_ref_voltage = voltage;
+}
 
 /*!
     @brief  Allocate memory for the total number of analog pins.
@@ -161,10 +163,17 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   // If pin is being updated, remove the existing pin first
   RemovePin(pin_num, expander_drv);
 
+  // Native MCU pins use the MCU's reference voltage; expander ADC pins carry
+  // their own reference voltage in the message.
+  float ref_voltage = _mcu_ref_voltage;
+  if (expander_drv != nullptr) {
+    ref_voltage = msg->ref_voltage;
+  }
+
   // Create a new analog input pin
   AnalogInHardware *new_pin = new AnalogInHardware(
       pin_num, msg->read_mode, msg->sample_mode, (ulong)(msg->period * 1000.0f),
-      _mcu_vref, expander_drv);
+      ref_voltage, expander_drv);
 
   // Add the pin to the controller's list
   _pins.push_back(new_pin);

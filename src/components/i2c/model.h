@@ -2,7 +2,7 @@
  * @file src/components/i2c/model.h
  *
  * Provides high-level interfaces for messages within i2c.proto and
- * i2c_output.proto.
+ * display.proto (for I2C output devices like OLED, LED backpack, char LCD).
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -17,7 +17,7 @@
 #define WS_I2C_MODEL_H
 #include "wippersnapper.h"
 #include <Adafruit_Sensor.h>
-#include <protos/i2c_output.pb.h>
+#include <protos/display.pb.h>
 
 #define MAX_DEVICE_EVENTS 16 ///< Maximum number of SensorEvents within I2cEvent
 #define MAX_PROBE_SPACES 16  ///< Maximum number of AddressSpaces in a Probe
@@ -65,7 +65,6 @@ public:
       @brief  Returns the I2C output Add message.
       @returns Pointer to the I2C output Add message.
   */
-  ws_i2c_output_Add *GetI2cOutputAddMsg();
   ws_i2c_Event *GetI2cDeviceEvent();
   ws_i2c_D2B *GetI2cD2B();
   // Probe API — model owns decode/encode/storage
@@ -170,43 +169,4 @@ private:
   ws_i2c_Event _msg_i2c_event;
 };
 
-/*!
-    @brief  Provides an interface for creating, encoding, and parsing
-            messages from i2c_output.proto.
-*/
-class I2cOutputModel {
-public:
-  I2cOutputModel();
-  ~I2cOutputModel();
-  // Decoders
-  /*!
-      @brief    Decodes an LED backpack write message.
-      @param    stream
-                The nanopb input stream.
-      @returns  True if decoded successfully, False otherwise.
-  */
-  bool DecodeLedBackpackWrite(pb_istream_t *stream);
-  /*!
-      @brief    Decodes a character LCD write message.
-      @param    stream
-                The nanopb input stream.
-      @returns  True if decoded successfully, False otherwise.
-  */
-  bool DecodeCharLCDWrite(pb_istream_t *stream);
-  // Getters
-  /*!
-      @brief  Returns the LED backpack write message.
-      @returns Pointer to the LED backpack write message.
-  */
-  ws_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
-  /*!
-      @brief  Returns the character LCD write message.
-      @returns Pointer to the character LCD write message.
-  */
-  ws_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
-
-private:
-  ws_i2c_output_LedBackpackWrite _msg_led_backpack_write;
-  ws_i2c_output_CharLCDWrite _msg_char_lcd_write;
-};
 #endif // WS_I2C_MODEL_H

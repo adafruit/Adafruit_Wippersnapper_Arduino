@@ -335,9 +335,10 @@ void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
   setStatusLEDBrightness(exported_from_device["statusLEDBrightness"] | 0.3f);
 
   // Parse offline mode heartbeat interval (in seconds), convert to ms
-  uint32_t heartbeat_sec = exported_from_device["heartbeatInterval"] |
-                           (WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS / 1000);
-  _heartbeat_interval_ms = heartbeat_sec * 1000;
+  uint32_t heartbeat_sec =
+      exported_from_device["heartbeatInterval"] |
+      (WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS / ONE_SECOND_IN_MS);
+  _heartbeat_interval_ms = heartbeat_sec * ONE_SECOND_IN_MS;
 }
 
 /*!

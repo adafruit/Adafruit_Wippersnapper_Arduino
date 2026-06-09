@@ -31,7 +31,7 @@ AnalogInHardware::AnalogInHardware(uint8_t pin_name, ws_sensor_Type read_mode,
       _period(period), _prv_time(0), _did_read_send(false), _value_raw(0),
       _value_voltage(0.0f), _prv_value_raw(0), _native_adc_resolution(0),
       _desired_adc_resolution(0), _max_scale_resolution_desired(0),
-      _max_scale_resolution_native(0), _mcu_vref(ref_voltage),
+      _max_scale_resolution_native(0), _ref_voltage(ref_voltage),
       _expander_drv(expander_drv) {
   if (_expander_drv != nullptr) {
     _native_adc_resolution = _expander_drv->getAdcResolution();
@@ -101,6 +101,9 @@ void AnalogInHardware::SetNativeADCResolution() {
             The requested resolution, in bits.
 */
 void AnalogInHardware::SetResolution(uint8_t resolution) {
+  if (resolution > MAX_ADC_RESOLUTION) {
+    resolution = MAX_ADC_RESOLUTION;
+  }
   _desired_adc_resolution = resolution;
   // Calculate (or re-calculate) the scale factor whenever we set the desired
   // read resolution
@@ -121,14 +124,15 @@ void AnalogInHardware::CalculateScaleFactor() {
             desired resolution.
     @return The raw ADC value.
 */
-uint16_t AnalogInHardware::ReadRawValue() {
+uint32_t AnalogInHardware::ReadRawValue() {
   if (_expander_drv != nullptr) {
-    _value_raw =
-        (_expander_drv->analogRead(_name) * _max_scale_resolution_desired) /
-        _max_scale_resolution_native;
+    _value_raw = (uint32_t)(((uint64_t)_expander_drv->analogRead(_name) *
+                             _max_scale_resolution_desired) /
+                            _max_scale_resolution_native);
   } else {
-    _value_raw = (analogRead(_name) * _max_scale_resolution_desired) /
-                 _max_scale_resolution_native;
+    _value_raw = (uint32_t)(((uint64_t)analogRead(_name) *
+                             _max_scale_resolution_desired) /
+                            _max_scale_resolution_native);
   }
   return _value_raw;
 }
@@ -140,13 +144,14 @@ uint16_t AnalogInHardware::ReadRawValue() {
 float AnalogInHardware::ReadVoltage() {
   if (_expander_drv != nullptr) {
     _value_voltage =
-        (ReadRawValue() * _mcu_vref) / _max_scale_resolution_desired;
+        (ReadRawValue() * _ref_voltage) / _max_scale_resolution_desired;
     return _value_voltage;
   }
 #ifdef ARDUINO_ARCH_ESP32
   _value_voltage = analogReadMilliVolts(_name) / 1000.0;
 #else
-  _value_voltage = (ReadRawValue() * _mcu_vref) / MAX_DESIRED_SCALE_RESOLUTION;
+  _value_voltage =
+      (ReadRawValue() * _ref_voltage) / _max_scale_resolution_desired;
 #endif // ARDUINO_ARCH_ESP32
   return _value_voltage;
 }
