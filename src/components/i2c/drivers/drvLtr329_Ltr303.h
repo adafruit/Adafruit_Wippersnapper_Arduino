@@ -199,6 +199,21 @@ public:
   }
 
   /*!
+      @brief    Reads both LTR329 channels into the cache when a new conversion
+                is available. The LTR329 produces visible+IR and IR-only in a
+                single conversion and reading clears the data-ready flag, so
+                both the Light and Raw events are served from one read.
+      @returns  True if a valid reading is cached, False otherwise.
+  */
+  bool readBothChannels() {
+    if (_LTR329->newDataAvailable()) {
+      _LTR329->readBothChannels(_visible_plus_ir, _infrared);
+      _has_reading = true;
+    }
+    return _has_reading;
+  }
+
+  /*!
       @brief    Reads the LTR329's ambient light level ([Visible+IR] - IR-only)
       @param    lightEvent
                 Light sensor reading.
@@ -206,12 +221,9 @@ public:
                 otherwise.
   */
   bool getEventLight(sensors_event_t *lightEvent) {
-    if (!_LTR329->newDataAvailable())
+    if (!readBothChannels())
       return false;
-
-    uint16_t visible_plus_ir, infrared;
-    _LTR329->readBothChannels(visible_plus_ir, infrared);
-    lightEvent->light = visible_plus_ir - infrared;
+    lightEvent->light = _visible_plus_ir - _infrared;
     return true;
   }
 
@@ -223,17 +235,17 @@ public:
                 otherwise.
   */
   bool getEventRaw(sensors_event_t *rawEvent) {
-    if (!_LTR329->newDataAvailable())
+    if (!readBothChannels())
       return false;
-
-    uint16_t visible_plus_ir, infrared;
-    _LTR329->readBothChannels(visible_plus_ir, infrared);
-    rawEvent->data[0] = (float)infrared;
+    rawEvent->data[0] = (float)_infrared;
     return true;
   }
 
 protected:
-  Adafruit_LTR329 *_LTR329; ///< Pointer to LTR329 light sensor object
+  Adafruit_LTR329 *_LTR329;      ///< Pointer to LTR329 light sensor object
+  uint16_t _visible_plus_ir = 0; ///< Cached visible+IR channel reading
+  uint16_t _infrared = 0;        ///< Cached IR-only channel reading
+  bool _has_reading = false;     ///< True once a conversion has been cached
 };
 
 #endif // drvLtr329_Ltr303

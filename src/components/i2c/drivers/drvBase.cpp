@@ -51,12 +51,6 @@ static const SettingHandler kSettingHandlers[] = {
 /*!
     @brief  Applies configuration settings from the broker to the driver by
             dispatching to the appropriate setter function for each setting.
-    @param  settings
-            Points to an array of DecodedSetting objects representing the
-            broker-provided settings to apply.
-    @param  count
-            The number of settings in the array.
-    @returns True if all settings were applied successfully, False otherwise.
 */
 bool drvBase::configure(DecodedSetting *settings, size_t count) {
   // No settings provided, so apply the driver's default configuration

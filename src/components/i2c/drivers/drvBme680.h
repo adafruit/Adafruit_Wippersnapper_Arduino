@@ -70,18 +70,12 @@ public:
       @returns  True if configured successfully, False otherwise.
   */
   bool configureDefaults() override {
-    bool is_success = true;
-    if (!_bme->setTemperatureOversampling(BME680_OS_8X))
-      is_success = false;
-    if (!_bme->setHumidityOversampling(BME680_OS_2X))
-      is_success = false;
-    if (!_bme->setPressureOversampling(BME680_OS_4X))
-      is_success = false;
-    if (!_bme->setIIRFilterSize(BME680_FILTER_SIZE_3))
-      is_success = false;
+    bool is_success = _bme->setTemperatureOversampling(BME680_OS_8X);
+    is_success &= _bme->setHumidityOversampling(BME680_OS_2X);
+    is_success &= _bme->setPressureOversampling(BME680_OS_4X);
+    is_success &= _bme->setIIRFilterSize(BME680_FILTER_SIZE_3);
     // 320*C for 150 ms
-    if ((!_bme->setGasHeater(320, 150)))
-      is_success = false;
+    is_success &= _bme->setGasHeater(320, 150);
     return is_success;
   }
 

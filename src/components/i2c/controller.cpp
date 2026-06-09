@@ -452,7 +452,9 @@ bool I2cController::Router(pb_istream_t *stream) {
     ws_i2c_B2D b2d_add = ws_i2c_B2D_init_zero;
     _i2c_model->SetupAddDecodeCallbacks(&b2d_add.payload.add);
     if (!ws_pb_decode(&saved_stream, ws_i2c_B2D_fields, &b2d_add)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to re-decode add with settings");
+      Ws.error_handler->publishComponentError(
+          b2d_add.payload.add.descriptor,
+          "Failed to decode I2C add message settings!");
       return false;
     }
     res = Handle_Add(&b2d_add.payload.add);
