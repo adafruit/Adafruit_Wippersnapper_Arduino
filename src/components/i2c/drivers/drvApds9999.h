@@ -121,8 +121,12 @@ public:
                 (0=1x, 1=3x, 2=6x, 3=9x, 4=18x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setLightGain(int32_t light_gain) override {
-    switch (light_gain) {
+  bool setLightGain(const ws_config_Value &light_gain) override {
+    if (light_gain.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = light_gain.value.int_value;
+    switch (val) {
     case 0:
       _apds9999->setLightGain(APDS9999_LIGHT_GAIN_1X);
       break;
@@ -151,8 +155,12 @@ public:
                 (0=20-bit, 1=19-bit, 2=18-bit, 3=17-bit, 4=16-bit, 5=13-bit).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setLightResolution(int32_t light_resolution) override {
-    switch (light_resolution) {
+  bool setLightResolution(const ws_config_Value &light_resolution) override {
+    if (light_resolution.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = light_resolution.value.int_value;
+    switch (val) {
     case 0:
       _apds9999->setLightResolution(APDS9999_LIGHT_RES_20BIT);
       break;
@@ -185,8 +193,12 @@ public:
                 6=2000ms).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setLightMeasRate(int32_t light_meas_rate) override {
-    switch (light_meas_rate) {
+  bool setLightMeasRate(const ws_config_Value &light_meas_rate) override {
+    if (light_meas_rate.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = light_meas_rate.value.int_value;
+    switch (val) {
     case 0:
       _apds9999->setLightMeasRate(APDS9999_LIGHT_RATE_25MS);
       break;
@@ -221,8 +233,12 @@ public:
                 (0=8-bit, 1=9-bit, 2=10-bit, 3=11-bit).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setProxResolution(int32_t prox_resolution) override {
-    switch (prox_resolution) {
+  bool setProxResolution(const ws_config_Value &prox_resolution) override {
+    if (prox_resolution.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = prox_resolution.value.int_value;
+    switch (val) {
     case 0:
       _apds9999->setProxResolution(APDS9999_PROX_RES_8BIT);
       break;
@@ -249,8 +265,12 @@ public:
                 6=400ms).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setProxMeasRate(int32_t prox_meas_rate) override {
-    switch (prox_meas_rate) {
+  bool setProxMeasRate(const ws_config_Value &prox_meas_rate) override {
+    if (prox_meas_rate.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = prox_meas_rate.value.int_value;
+    switch (val) {
     case 0:
       _apds9999->setProxMeasRate(APDS9999_PROX_RATE_6MS);
       break;

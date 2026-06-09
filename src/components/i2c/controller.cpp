@@ -610,8 +610,9 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
     cnt_settings = _i2c_model->GetDecodedSettingsCount();
   }
   if (!drv->configure(settings, cnt_settings)) {
-    Ws.error_handler->publishComponentError(
-        descriptor, "Failed to apply all driver settings!");
+    // configure() already published a per-setting error for each failure;
+    // avoid double-reporting here.
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to apply one or more settings!");
   }
 
   // If we're using a MUX, lets clear the channel for any subsequent bus

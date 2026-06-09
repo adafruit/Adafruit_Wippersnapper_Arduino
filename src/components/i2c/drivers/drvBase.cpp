@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2026 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -15,121 +15,90 @@
 #include "drvBase.h"
 #include "../model.h"
 
+/*!
+    @brief  Pointer to a member function that sets a driver configuration value.
+*/
+typedef bool (drvBase::*SetterFn)(const ws_config_Value &);
+
+struct SettingHandler {
+  const char *key; ///< Key (e.g. "gain", "mode"), from the broker
+  SetterFn setter; ///< Desired function to invoke, on the driver
+}; ///< Maps broker setting key to the driver's setter function
+
+static const SettingHandler kSettingHandlers[] = {
+    {"gain", &drvBase::setGain},
+    {"light_gain", &drvBase::setLightGain},
+    {"light_resolution", &drvBase::setLightResolution},
+    {"prox_resolution", &drvBase::setProxResolution},
+    {"light_meas_rate", &drvBase::setLightMeasRate},
+    {"prox_meas_rate", &drvBase::setProxMeasRate},
+    {"integration_time", &drvBase::setIntegrationTime},
+    {"measurement_rate", &drvBase::setMeasurementRate},
+    {"averaged_samples", &drvBase::setAveragedSamples},
+    {"read_delay", &drvBase::setReadDelay},
+    {"lux_method", &drvBase::setLuxMethod},
+    {"temp_oversampling", &drvBase::setTempOversampling},
+    {"pressure_oversampling", &drvBase::setPressureOversampling},
+    {"humidity_oversampling", &drvBase::setHumidityOversampling},
+    {"iir_filter", &drvBase::setIirFilter},
+    {"output_data_rate", &drvBase::setOutputDataRate},
+    {"mode", &drvBase::setMode},
+    {"filter", &drvBase::setFilter},
+    {"standby", &drvBase::setStandby},
+    {"calibration", &drvBase::setCalibration},
+}; ///< Maps a broker-provided key to a setter function in the driver
+
+/*!
+    @brief  Applies configuration settings from the broker to the driver by
+            dispatching to the appropriate setter function for each setting.
+    @param  settings
+            Points to an array of DecodedSetting objects representing the
+            broker-provided settings to apply.
+    @param  count
+            The number of settings in the array.
+    @returns True if all settings were applied successfully, False otherwise.
+*/
 bool drvBase::configure(DecodedSetting *settings, size_t count) {
-  // No broker-provided settings, so apply the driver's default configuration
+  // No settings provided, so apply the driver's default configuration
   if (settings == nullptr || count == 0) {
     return configureDefaults();
   }
 
   bool success = true;
-  // Walk the settings and apply them to the driver
+  // Walk the settings and dispatch each to its driver setter
   for (size_t i = 0; i < count; i++) {
     if (!settings[i].has_value) {
       continue;
     }
 
-    if (strcmp(settings[i].key, "gain") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setGain(settings[i].int_value))
-          success = false;
+    bool found = false;
+    for (const SettingHandler &handler : kSettingHandlers) {
+      if (strcmp(settings[i].key, handler.key) != 0) {
+        continue;
       }
-    } else if (strcmp(settings[i].key, "light_gain") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setLightGain(settings[i].int_value))
-          success = false;
+      // If the setting key was recognized but the value was invalid or failed
+      // to apply, log an error but continue processing remaining settings
+      if (!(this->*handler.setter)(DecodedSettingToValue(settings[i]))) {
+        char msg[64];
+        snprintf(msg, sizeof(msg), "Failed to apply setting: %s",
+                 settings[i].key);
+        ws_i2c_Descriptor descriptor = ws_i2c_Descriptor_init_zero;
+        descriptor.address = _address;
+        Ws.error_handler->publishComponentError(descriptor, msg);
+        success = false;
       }
-    } else if (strcmp(settings[i].key, "light_resolution") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setLightResolution(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "prox_resolution") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setProxResolution(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "light_meas_rate") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setLightMeasRate(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "prox_meas_rate") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setProxMeasRate(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "integration_time") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setIntegrationTime(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "measurement_rate") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setMeasurementRate(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "averaged_samples") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setAveragedSamples(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "read_delay") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setReadDelay(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "lux_method") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setLuxMethod(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "temp_oversampling") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setTempOversampling(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "pressure_oversampling") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setPressureOversampling(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "humidity_oversampling") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setHumidityOversampling(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "iir_filter") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setIirFilter(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "output_data_rate") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setOutputDataRate(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "mode") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setMode(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "filter") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setFilter(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "standby") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setStandby(settings[i].int_value))
-          success = false;
-      }
-    } else if (strcmp(settings[i].key, "calibration") == 0) {
-      if (settings[i].which_value == ws_config_Value_int_value_tag) {
-        if (!setCalibration(settings[i].int_value))
-          success = false;
-      }
-    } else {
-      // Unknown key - report failure but keep applying the remaining settings
+      found = true;
+      break;
+    }
+
+    // If the setting key was unrecognized, log an error but continue processing
+    // remaining settings
+    if (!found) {
+      char msg[64];
+      snprintf(msg, sizeof(msg), "Unknown setting key: %s", settings[i].key);
+      ws_i2c_Descriptor descriptor = ws_i2c_Descriptor_init_zero;
+      descriptor.address = _address;
+      Ws.error_handler->publishComponentError(descriptor, msg);
       success = false;
     }
   }

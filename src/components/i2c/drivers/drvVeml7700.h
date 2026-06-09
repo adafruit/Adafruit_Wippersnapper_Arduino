@@ -70,9 +70,13 @@ public:
                 (0=1x, 1=2x, 2=1/8x, 3=1/4x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setGain(int32_t gain) override {
+  bool setGain(const ws_config_Value &gain) override {
+    if (gain.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = gain.value.int_value;
     uint8_t als_gain;
-    switch (gain) {
+    switch (val) {
     case 0:
       als_gain = VEML7700_GAIN_1;
       break;
@@ -100,9 +104,13 @@ public:
                 (0=25ms, 1=50ms, 2=100ms, 3=200ms, 4=400ms, 5=800ms).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setIntegrationTime(int32_t integration_time) override {
+  bool setIntegrationTime(const ws_config_Value &integration_time) override {
+    if (integration_time.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = integration_time.value.int_value;
     uint8_t int_time;
-    switch (integration_time) {
+    switch (val) {
     case 0:
       int_time = VEML7700_IT_25MS;
       break;
@@ -138,8 +146,12 @@ public:
                 4=Corrected No-Wait).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setLuxMethod(int32_t lux_method) override {
-    switch (lux_method) {
+  bool setLuxMethod(const ws_config_Value &lux_method) override {
+    if (lux_method.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = lux_method.value.int_value;
+    switch (val) {
     case 0:
       _luxMethod = VEML_LUX_NORMAL;
       break;

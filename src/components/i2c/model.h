@@ -39,6 +39,15 @@ struct DecodedSetting {
 };
 
 /*!
+    @brief  Repackages a flattened DecodedSetting into the proto ws_config_Value
+            oneof expected by driver setters.
+    @param  setting
+            The decoded setting to convert.
+    @returns A ws_config_Value carrying the setting's tag and active value.
+*/
+ws_config_Value DecodedSettingToValue(const DecodedSetting &setting);
+
+/*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from i2c.proto.
 */

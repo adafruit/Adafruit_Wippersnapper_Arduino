@@ -130,6 +130,22 @@ ExpanderHardware *ExpanderController::GetDriver(uint8_t addr) {
   return nullptr;
 }
 
+/// Pointer to an expander setter that applies one decoded setting value.
+typedef bool (ExpanderHardware::*ExpanderSetterFn)(const ws_config_Value &);
+
+/// Maps a broker setting key to the expander setter that applies it.
+struct ExpanderSettingHandler {
+  const char *key;         ///< Setting key name (e.g. "gain")
+  ExpanderSetterFn setter; ///< Setter invoked with the decoded value
+};
+
+/// Dispatch table for expander settings.
+/// NOTE: When you add a new setting key, add a row here AND declare the
+/// matching virtual setter in ExpanderHardware (hardware.h).
+static const ExpanderSettingHandler kExpanderSettingHandlers[] = {
+    {"gain", &ExpanderHardware::setGain},
+};
+
 /*!
  * @brief Handles an expander Add message.
  * @param msg The Add message.
@@ -177,15 +193,25 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
         continue;
       }
 
-      // Apply settings based on key
-      if (strcmp(settings[i].key, "gain") == 0) {
-        if (settings[i].which_value == ws_config_Value_int_value_tag) {
-          drv->setGain(settings[i].int_value);
+      bool found = false;
+      for (const ExpanderSettingHandler &handler : kExpanderSettingHandlers) {
+        if (strcmp(settings[i].key, handler.key) != 0) {
+          continue;
         }
-      } else {
-        Ws.error_handler->publishComponentError(desc,
-                                                "Unsupported setting key!");
-        continue;
+        found = true;
+        if (!(drv->*handler.setter)(DecodedSettingToValue(settings[i]))) {
+          char err[64];
+          snprintf(err, sizeof(err), "Failed to apply setting: %s",
+                   settings[i].key);
+          Ws.error_handler->publishComponentError(desc, err);
+        }
+        break;
+      }
+
+      if (!found) {
+        char err[64];
+        snprintf(err, sizeof(err), "Unknown setting key: %s", settings[i].key);
+        Ws.error_handler->publishComponentError(desc, err);
       }
     }
   }

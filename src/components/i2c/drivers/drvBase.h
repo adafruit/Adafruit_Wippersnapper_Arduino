@@ -197,6 +197,246 @@ public:
   ulong GetSensorPeriodPrv() { return _sensor_period_prv; }
 
   /*!
+      @brief    Base implementation - Selects a MUX channel for use with the
+                I2C device.
+      @param    channel
+                The MUX channel to select.
+  */
+  virtual void SelectMUXChannel(uint8_t channel) { return; }
+
+  /*!
+      @brief    Applies a set of decoded settings to the driver. When no
+                settings are provided, the driver's default configuration is
+                applied instead. Dispatches each setting key to the matching
+                set* method; unknown keys are reported via the return value.
+      @param    settings
+                Pointer to the decoded settings array, or nullptr.
+      @param    count
+                The number of settings in the array.
+      @returns  True if all settings (or the defaults) were applied
+                successfully, False if any setting key was unsupported.
+  */
+  bool configure(DecodedSetting *settings, size_t count);
+
+  /*!
+      @brief    Base implementation - Applies the driver's default
+                configuration. Override in drivers that have configurable
+                defaults to apply when no broker settings are provided.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool configureDefaults() { return true; }
+
+  /*!
+      @brief    Base implementation - Applies a gain setting to the driver.
+                Must override in driver.
+      @param    gain
+                The gain index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setGain(const ws_config_Value &gain) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a light gain setting to the
+                driver. Must override in driver.
+      @param    light_gain
+                The light gain index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setLightGain(const ws_config_Value &light_gain) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a light resolution setting to
+                the driver. Must override in driver.
+      @param    light_resolution
+                The light resolution index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setLightResolution(const ws_config_Value &light_resolution) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a proximity resolution setting
+                to the driver. Must override in driver.
+      @param    prox_resolution
+                The proximity resolution index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setProxResolution(const ws_config_Value &prox_resolution) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a light measurement rate setting
+                to the driver. Must override in driver.
+      @param    light_meas_rate
+                The light measurement rate index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setLightMeasRate(const ws_config_Value &light_meas_rate) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a proximity measurement rate
+                setting to the driver. Must override in driver.
+      @param    prox_meas_rate
+                The proximity measurement rate index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setProxMeasRate(const ws_config_Value &prox_meas_rate) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an integration time setting to
+                the driver. Must override in driver.
+      @param    integration_time
+                The integration time index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setIntegrationTime(const ws_config_Value &integration_time) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a measurement rate setting to
+                the driver. Must override in driver.
+      @param    measurement_rate
+                The measurement rate index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMeasurementRate(const ws_config_Value &measurement_rate) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an averaged sample count setting
+                to the driver. Must override in driver.
+      @param    averaged_samples
+                The averaged sample count index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setAveragedSamples(const ws_config_Value &averaged_samples) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a read delay setting to the
+                driver. The read delay is the minimum delay between new
+                measurements. Must override in driver.
+      @param    read_delay
+                The read delay index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setReadDelay(const ws_config_Value &read_delay) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a lux reading method setting to
+                the driver. Selects the method used to calculate lux. Must
+                override in driver.
+      @param    lux_method
+                The lux method index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setLuxMethod(const ws_config_Value &lux_method) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a temperature oversampling
+                setting to the driver. Must override in driver.
+      @param    temp_oversampling
+                The temperature oversampling index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setTempOversampling(const ws_config_Value &temp_oversampling) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a pressure oversampling setting
+                to the driver. Must override in driver.
+      @param    pressure_oversampling
+                The pressure oversampling index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setPressureOversampling(const ws_config_Value &pressure_oversampling) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a humidity oversampling setting
+                to the driver. Must override in driver.
+      @param    humidity_oversampling
+                The humidity oversampling index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setHumidityOversampling(const ws_config_Value &humidity_oversampling) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an IIR filter setting to the
+                driver. Must override in driver.
+      @param    iir_filter
+                The IIR filter index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setIirFilter(const ws_config_Value &iir_filter) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies an output data rate (ODR)
+                setting to the driver. The ODR selects the sensor's sampling
+                frequency, in Hz. Must override in driver.
+      @param    output_data_rate
+                The output data rate index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setOutputDataRate(const ws_config_Value &output_data_rate) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a measurement mode setting to
+                the driver. Must override in driver.
+      @param    mode
+                The measurement mode index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMode(const ws_config_Value &mode) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a filter setting to the driver.
+                Must override in driver.
+      @param    filter
+                The filter index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setFilter(const ws_config_Value &filter) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a standby duration setting to
+                the driver. Must override in driver.
+      @param    standby
+                The standby duration index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setStandby(const ws_config_Value &standby) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a calibration setting to the
+                driver. The calibration selects the voltage range and max
+                current measurement. Must override in driver.
+      @param    calibration
+                The calibration index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setCalibration(const ws_config_Value &calibration) {
+    return false;
+  }
+
+  /*!
       @brief    Gets a sensor's CO2 value.
       @param    co2Event
                 The CO2 value, in ppm.
@@ -280,224 +520,6 @@ public:
   virtual bool getEventObjectTemp(sensors_event_t *objectTempEvent) {
     return false;
   }
-
-  /*!
-      @brief    Base implementation - Selects a MUX channel for use with the
-                I2C device.
-      @param    channel
-                The MUX channel to select.
-  */
-  virtual void SelectMUXChannel(uint8_t channel) { return; }
-
-  /*!
-      @brief    Applies a set of decoded settings to the driver. When no
-                settings are provided, the driver's default configuration is
-                applied instead. Dispatches each setting key to the matching
-                set* method; unknown keys are reported via the return value.
-      @param    settings
-                Pointer to the decoded settings array, or nullptr.
-      @param    count
-                The number of settings in the array.
-      @returns  True if all settings (or the defaults) were applied
-                successfully, False if any setting key was unsupported.
-  */
-  bool configure(DecodedSetting *settings, size_t count);
-
-  /*!
-      @brief    Base implementation - Applies the driver's default
-                configuration. Override in drivers that have configurable
-                defaults to apply when no broker settings are provided.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool configureDefaults() { return true; }
-
-  /*!
-      @brief    Base implementation - Applies a gain setting to the driver.
-                Must override in driver.
-      @param    gain
-                The gain index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setGain(int32_t gain) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a light gain setting to the
-                driver. Must override in driver.
-      @param    light_gain
-                The light gain index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setLightGain(int32_t light_gain) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a light resolution setting to
-                the driver. Must override in driver.
-      @param    light_resolution
-                The light resolution index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setLightResolution(int32_t light_resolution) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a proximity resolution setting
-                to the driver. Must override in driver.
-      @param    prox_resolution
-                The proximity resolution index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setProxResolution(int32_t prox_resolution) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a light measurement rate setting
-                to the driver. Must override in driver.
-      @param    light_meas_rate
-                The light measurement rate index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setLightMeasRate(int32_t light_meas_rate) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a proximity measurement rate
-                setting to the driver. Must override in driver.
-      @param    prox_meas_rate
-                The proximity measurement rate index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setProxMeasRate(int32_t prox_meas_rate) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies an integration time setting to
-                the driver. Must override in driver.
-      @param    integration_time
-                The integration time index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setIntegrationTime(int32_t integration_time) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a measurement rate setting to
-                the driver. Must override in driver.
-      @param    measurement_rate
-                The measurement rate index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setMeasurementRate(int32_t measurement_rate) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies an averaged sample count setting
-                to the driver. Must override in driver.
-      @param    averaged_samples
-                The averaged sample count index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setAveragedSamples(int32_t averaged_samples) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a read delay setting to the
-                driver. The read delay is the minimum delay between new
-                measurements. Must override in driver.
-      @param    read_delay
-                The read delay index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setReadDelay(int32_t read_delay) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a lux reading method setting to
-                the driver. Selects the method used to calculate lux. Must
-                override in driver.
-      @param    lux_method
-                The lux method index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setLuxMethod(int32_t lux_method) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a temperature oversampling
-                setting to the driver. Must override in driver.
-      @param    temp_oversampling
-                The temperature oversampling index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setTempOversampling(int32_t temp_oversampling) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a pressure oversampling setting
-                to the driver. Must override in driver.
-      @param    pressure_oversampling
-                The pressure oversampling index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setPressureOversampling(int32_t pressure_oversampling) {
-    return false;
-  }
-
-  /*!
-      @brief    Base implementation - Applies a humidity oversampling setting
-                to the driver. Must override in driver.
-      @param    humidity_oversampling
-                The humidity oversampling index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setHumidityOversampling(int32_t humidity_oversampling) {
-    return false;
-  }
-
-  /*!
-      @brief    Base implementation - Applies an IIR filter setting to the
-                driver. Must override in driver.
-      @param    iir_filter
-                The IIR filter index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setIirFilter(int32_t iir_filter) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies an output data rate (ODR)
-                setting to the driver. The ODR selects the sensor's sampling
-                frequency, in Hz. Must override in driver.
-      @param    output_data_rate
-                The output data rate index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setOutputDataRate(int32_t output_data_rate) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a measurement mode setting to
-                the driver. Must override in driver.
-      @param    mode
-                The measurement mode index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setMode(int32_t mode) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a filter setting to the driver.
-                Must override in driver.
-      @param    filter
-                The filter index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setFilter(int32_t filter) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a standby duration setting to
-                the driver. Must override in driver.
-      @param    standby
-                The standby duration index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setStandby(int32_t standby) { return false; }
-
-  /*!
-      @brief    Base implementation - Applies a calibration setting to the
-                driver. The calibration selects the voltage range and max
-                current measurement. Must override in driver.
-      @param    calibration
-                The calibration index from the broker.
-      @returns  True if applied successfully, False otherwise.
-  */
-  virtual bool setCalibration(int32_t calibration) { return false; }
 
   /*!
       @brief    Base implementation - Reads a object light sensor and

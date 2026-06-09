@@ -90,8 +90,12 @@ public:
                 The mode index from the broker (0=Sleep, 1=Forced, 2=Normal).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setMode(int32_t mode) override {
-    switch (mode) {
+  bool setMode(const ws_config_Value &mode) override {
+    if (mode.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = mode.value.int_value;
+    switch (val) {
     case 0:
       _mode = Adafruit_BMP280::MODE_SLEEP;
       break;
@@ -115,8 +119,12 @@ public:
                 (0=None, 1=1x, 2=2x, 3=4x, 4=8x, 5=16x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setTempOversampling(int32_t temp_oversampling) override {
-    switch (temp_oversampling) {
+  bool setTempOversampling(const ws_config_Value &temp_oversampling) override {
+    if (temp_oversampling.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = temp_oversampling.value.int_value;
+    switch (val) {
     case 0:
       _temp_sampling = Adafruit_BMP280::SAMPLING_NONE;
       break;
@@ -149,8 +157,13 @@ public:
                 (0=None, 1=1x, 2=2x, 3=4x, 4=8x, 5=16x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setPressureOversampling(int32_t pressure_oversampling) override {
-    switch (pressure_oversampling) {
+  bool setPressureOversampling(
+      const ws_config_Value &pressure_oversampling) override {
+    if (pressure_oversampling.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = pressure_oversampling.value.int_value;
+    switch (val) {
     case 0:
       _press_sampling = Adafruit_BMP280::SAMPLING_NONE;
       break;
@@ -183,8 +196,12 @@ public:
                 (0=Off, 1=2x, 2=4x, 3=8x, 4=16x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setFilter(int32_t filter) override {
-    switch (filter) {
+  bool setFilter(const ws_config_Value &filter) override {
+    if (filter.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = filter.value.int_value;
+    switch (val) {
     case 0:
       _filter = Adafruit_BMP280::FILTER_OFF;
       break;
@@ -215,8 +232,12 @@ public:
                 6=2000ms, 7=4000ms).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setStandby(int32_t standby) override {
-    switch (standby) {
+  bool setStandby(const ws_config_Value &standby) override {
+    if (standby.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = standby.value.int_value;
+    switch (val) {
     case 0:
       _duration = Adafruit_BMP280::STANDBY_MS_1;
       break;

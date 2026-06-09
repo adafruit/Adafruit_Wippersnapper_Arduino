@@ -85,9 +85,13 @@ public:
                 (0=None, 1=2x, 2=4x, 3=8x, 4=16x, 5=32x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setTempOversampling(int32_t temp_oversampling) override {
+  bool setTempOversampling(const ws_config_Value &temp_oversampling) override {
+    if (temp_oversampling.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = temp_oversampling.value.int_value;
     uint8_t oversampling;
-    switch (temp_oversampling) {
+    switch (val) {
     case 0:
       oversampling = BMP3_NO_OVERSAMPLING;
       break;
@@ -119,9 +123,14 @@ public:
                 (0=None, 1=2x, 2=4x, 3=8x, 4=16x, 5=32x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setPressureOversampling(int32_t pressure_oversampling) override {
+  bool setPressureOversampling(
+      const ws_config_Value &pressure_oversampling) override {
+    if (pressure_oversampling.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = pressure_oversampling.value.int_value;
     uint8_t oversampling;
-    switch (pressure_oversampling) {
+    switch (val) {
     case 0:
       oversampling = BMP3_NO_OVERSAMPLING;
       break;
@@ -154,9 +163,13 @@ public:
                 5=Coeff 31, 6=Coeff 63, 7=Coeff 127).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setIirFilter(int32_t iir_filter) override {
+  bool setIirFilter(const ws_config_Value &iir_filter) override {
+    if (iir_filter.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = iir_filter.value.int_value;
     uint8_t coeff;
-    switch (iir_filter) {
+    switch (val) {
     case 0:
       coeff = BMP3_IIR_FILTER_DISABLE;
       break;
@@ -196,9 +209,13 @@ public:
                 6=0.78Hz, 7=0.39Hz, 8=0.2Hz).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setOutputDataRate(int32_t output_data_rate) override {
+  bool setOutputDataRate(const ws_config_Value &output_data_rate) override {
+    if (output_data_rate.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = output_data_rate.value.int_value;
     uint8_t odr;
-    switch (output_data_rate) {
+    switch (val) {
     case 0:
       odr = BMP3_ODR_50_HZ;
       break;

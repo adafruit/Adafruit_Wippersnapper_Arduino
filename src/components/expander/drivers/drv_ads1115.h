@@ -67,9 +67,13 @@ public:
    *             0=2/3x, 1=1x, 2=2x, 3=4x, 4=8x, 5=16x
    * @return True if applied successfully, False if index is out of range.
    */
-  bool setGain(int32_t gain) override {
+  bool setGain(const ws_config_Value &gain) override {
+    if (gain.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = gain.value.int_value;
     adsGain_t g;
-    switch (gain) {
+    switch (val) {
     case 0:
       g = GAIN_TWOTHIRDS;
       break;

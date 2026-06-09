@@ -18,6 +18,7 @@
 #define WS_EXPANDER_HARDWARE_H
 #include <Arduino.h>
 #include <Wire.h>
+#include <protos/config.pb.h>
 
 /*!
     @brief  Base class for I/O expander hardware drivers.
@@ -98,9 +99,9 @@ public:
 
   /*!  @brief  Applies a gain setting to the expander.
                Override in subclass to apply gain to the hardware driver.
-       @param  gain  The gain index from the broker's settings.
+       @param  gain  The decoded gain setting from the broker.
        @return True if applied successfully, false otherwise. */
-  virtual bool setGain(int32_t gain) { return false; }
+  virtual bool setGain(const ws_config_Value &gain) { return false; }
 
 protected:
   uint8_t _i2c_addr = 0; ///< I2C address of the expander

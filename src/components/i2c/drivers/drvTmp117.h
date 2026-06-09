@@ -72,9 +72,13 @@ public:
                 (0=1x, 1=8x, 2=32x, 3=64x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setAveragedSamples(int32_t averaged_samples) override {
+  bool setAveragedSamples(const ws_config_Value &averaged_samples) override {
+    if (averaged_samples.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = averaged_samples.value.int_value;
     tmp117_average_count_t count;
-    switch (averaged_samples) {
+    switch (val) {
     case 0:
       count = TMP117_AVERAGE_1X;
       break;
@@ -103,9 +107,13 @@ public:
                 6=8000ms, 7=16000ms).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setReadDelay(int32_t read_delay) override {
+  bool setReadDelay(const ws_config_Value &read_delay) override {
+    if (read_delay.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = read_delay.value.int_value;
     tmp117_delay_t delay;
-    switch (read_delay) {
+    switch (val) {
     case 0:
       delay = TMP117_DELAY_0_MS;
       break;
@@ -144,9 +152,13 @@ public:
                 (0=Continuous, 1=Shutdown, 2=One Shot).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setMode(int32_t mode) override {
+  bool setMode(const ws_config_Value &mode) override {
+    if (mode.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = mode.value.int_value;
     tmp117_mode_t meas_mode;
-    switch (mode) {
+    switch (val) {
     case 0:
       meas_mode = TMP117_MODE_CONTINUOUS;
       break;

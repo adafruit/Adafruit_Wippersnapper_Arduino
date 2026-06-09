@@ -371,6 +371,20 @@ bool I2cModel::cbDecodeSettingsEntry(pb_istream_t *stream,
   return true;
 }
 
+ws_config_Value DecodedSettingToValue(const DecodedSetting &setting) {
+  ws_config_Value value = ws_config_Value_init_zero;
+  value.which_value = setting.which_value;
+  if (setting.which_value == ws_config_Value_int_value_tag) {
+    value.value.int_value = setting.int_value;
+  } else if (setting.which_value == ws_config_Value_float_value_tag) {
+    value.value.float_value = setting.float_value;
+  } else if (setting.which_value == ws_config_Value_bool_value_tag) {
+    value.value.bool_value = setting.bool_value;
+  }
+  // str_value is a proto callback and is not bridged here (no setter uses it).
+  return value;
+}
+
 /*!
     @brief    Clears the I2cDeviceEvent message.
 */

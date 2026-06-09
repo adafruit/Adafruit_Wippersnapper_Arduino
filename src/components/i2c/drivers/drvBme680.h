@@ -92,8 +92,12 @@ public:
                 (0=None, 1=1x, 2=2x, 3=4x, 4=8x, 5=16x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setTempOversampling(int32_t temp_oversampling) override {
-    switch (temp_oversampling) {
+  bool setTempOversampling(const ws_config_Value &temp_oversampling) override {
+    if (temp_oversampling.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = temp_oversampling.value.int_value;
+    switch (val) {
     case 0:
       return _bme->setTemperatureOversampling(BME680_OS_NONE);
     case 1:
@@ -118,8 +122,13 @@ public:
                 (0=None, 1=1x, 2=2x, 3=4x, 4=8x, 5=16x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setPressureOversampling(int32_t pressure_oversampling) override {
-    switch (pressure_oversampling) {
+  bool setPressureOversampling(
+      const ws_config_Value &pressure_oversampling) override {
+    if (pressure_oversampling.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = pressure_oversampling.value.int_value;
+    switch (val) {
     case 0:
       return _bme->setPressureOversampling(BME680_OS_NONE);
     case 1:
@@ -144,8 +153,13 @@ public:
                 (0=None, 1=1x, 2=2x, 3=4x, 4=8x, 5=16x).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setHumidityOversampling(int32_t humidity_oversampling) override {
-    switch (humidity_oversampling) {
+  bool setHumidityOversampling(
+      const ws_config_Value &humidity_oversampling) override {
+    if (humidity_oversampling.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = humidity_oversampling.value.int_value;
+    switch (val) {
     case 0:
       return _bme->setHumidityOversampling(BME680_OS_NONE);
     case 1:
@@ -171,8 +185,12 @@ public:
                 6=Size 63, 7=Size 127).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setIirFilter(int32_t iir_filter) override {
-    switch (iir_filter) {
+  bool setIirFilter(const ws_config_Value &iir_filter) override {
+    if (iir_filter.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = iir_filter.value.int_value;
+    switch (val) {
     case 0:
       return _bme->setIIRFilterSize(BME680_FILTER_SIZE_0);
     case 1:

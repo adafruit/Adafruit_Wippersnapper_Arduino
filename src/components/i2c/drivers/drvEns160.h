@@ -80,9 +80,13 @@ public:
                 (0=Deep Sleep, 1=Idle, 2=Standard, 3=Low Power).
       @returns  True if applied successfully, False otherwise.
   */
-  bool setMode(int32_t mode) override {
+  bool setMode(const ws_config_Value &mode) override {
+    if (mode.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = mode.value.int_value;
     uint8_t opmode;
-    switch (mode) {
+    switch (val) {
     case 0:
       opmode = ENS160_OPMODE_DEP_SLEEP;
       break;
