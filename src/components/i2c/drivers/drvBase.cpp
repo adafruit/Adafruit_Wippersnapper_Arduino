@@ -53,9 +53,15 @@ static const SettingHandler kSettingHandlers[] = {
             dispatching to the appropriate setter function for each setting.
 */
 bool drvBase::configure(DecodedSetting *settings, size_t count) {
-  // No settings provided, so apply the driver's default configuration
-  if (settings == nullptr || count == 0) {
-    return configureDefaults();
+  // First apply default configuration, then apply any overrides (or new
+  // configuration) from the broker.
+  if (!configureDefaults()) {
+    char msg[64];
+    snprintf(msg, sizeof(msg), "Failed to apply default configuration");
+    ws_i2c_Descriptor descriptor = ws_i2c_Descriptor_init_zero;
+    descriptor.address = _address;
+    Ws.error_handler->publishComponentError(descriptor, msg);
+    return false;
   }
 
   bool success = true;
