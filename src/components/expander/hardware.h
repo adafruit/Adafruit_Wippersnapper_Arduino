@@ -18,6 +18,7 @@
 #define WS_EXPANDER_HARDWARE_H
 #include <Arduino.h>
 #include <Wire.h>
+#include <protos/config.pb.h>
 
 /*!
     @brief  Base class for I/O expander hardware drivers.
@@ -91,15 +92,16 @@ public:
        @return The ADC resolution. */
   virtual uint8_t getAdcResolution() { return 0; }
 
-  /*!  @brief  Sets the ADC gain of the expander.
-       @param  gain The gain value.
-       @return True if the gain was set successfully. */
-  virtual bool setGain(uint8_t gain) { return false; }
-
   /*!  @brief  Writes an analog (PWM) value to a pin on the expander.
        @param  pin   The pin number.
        @param  value The PWM value. */
   virtual void analogWrite(uint8_t pin, uint16_t value) {};
+
+  /*!  @brief  Applies a gain setting to the expander.
+               Override in subclass to apply gain to the hardware driver.
+       @param  gain  The decoded gain setting from the broker.
+       @return True if applied successfully, false otherwise. */
+  virtual bool setGain(const ws_config_Value &gain) { return false; }
 
 protected:
   uint8_t _i2c_addr = 0; ///< I2C address of the expander

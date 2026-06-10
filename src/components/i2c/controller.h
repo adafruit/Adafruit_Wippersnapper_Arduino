@@ -23,6 +23,7 @@
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
+#include "drivers/drvApds9999.h"
 #include "drivers/drvBase.h" ///< Base i2c input driver class
 #include "drivers/drvBh1750.h"
 #include "drivers/drvBme280.h"
@@ -71,9 +72,10 @@
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
 
-class wippersnapper; ///< Forward declaration
-class I2cModel;      ///< Forward declaration
-class I2cHardware;   ///< Forward declaration
+class wippersnapper;   ///< Forward declaration
+class I2cModel;        ///< Forward declaration
+class I2cHardware;     ///< Forward declaration
+struct DecodedSetting; ///< Forward declaration
 
 /*!
     @brief  Routes messages using the i2c.proto API to the
@@ -94,6 +96,10 @@ public:
   void update(bool force = false);
   bool UpdateComplete();
   void ResetFlags();
+  // Settings //
+  void SetupAddDecodeCallbacks(ws_i2c_Add *add);
+  DecodedSetting *GetDecodedSettings();
+  size_t GetDecodedSettingsCount();
   // Helpers //
   TwoWire *GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda);
   bool InitMux(I2cHardware *bus, const char *name, uint32_t address);

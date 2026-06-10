@@ -67,6 +67,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvAhtx0(i2c, addr, mux_channel, driver_name);
      }},
+    {"apds9999",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvApds9999(i2c, addr, mux_channel, driver_name);
+     }},
     {"bh1750",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -383,6 +388,31 @@ I2cController::~I2cController() {
     delete _i2c_model;
 }
 
+/*!
+    @brief    Sets up nanopb decode callbacks for settings on an Add message.
+    @param    add
+              Pointer to the ws_i2c_Add message to wire callbacks on.
+*/
+void I2cController::SetupAddDecodeCallbacks(ws_i2c_Add *add) {
+  _i2c_model->SetupAddDecodeCallbacks(add);
+}
+
+/*!
+    @brief    Gets a pointer to the array of decoded settings from the model.
+    @returns  Pointer to the array of decoded settings from the model.
+*/
+DecodedSetting *I2cController::GetDecodedSettings() {
+  return _i2c_model->GetDecodedSettings();
+}
+
+/*!
+    @brief    Gets the count of decoded settings from the model.
+    @returns  The count of decoded settings from the model.
+*/
+size_t I2cController::GetDecodedSettingsCount() {
+  return _i2c_model->GetDecodedSettingsCount();
+}
+
 /******************************************************************************/
 /*!                             Routing                                       */
 /******************************************************************************/
@@ -395,8 +425,8 @@ I2cController::~I2cController() {
     @return True if the message was successfully routed, False otherwise.
 */
 bool I2cController::Router(pb_istream_t *stream) {
-  // Save stream before decoding — Handle_Probe needs to re-decode
-  // with callbacks, and ws_pb_decode consumes the stream.
+  // Save stream before decoding — Handle_Probe and the add case need to
+  // re-decode with callbacks, and ws_pb_decode consumes the stream.
   pb_istream_t saved_stream = *stream;
 
   // Decode B2D without callbacks to determine which payload is active.
@@ -416,9 +446,20 @@ bool I2cController::Router(pb_istream_t *stream) {
     // already consumed the stream.
     res = Handle_Probe(&saved_stream);
     break;
-  case ws_i2c_B2D_add_tag:
-    res = Handle_Add(&b2d.payload.add);
+  case ws_i2c_B2D_add_tag: {
+    // Re-decode from saved stream with settings callbacks wired up,
+    // same pattern as Handle_Probe.
+    ws_i2c_B2D b2d_add = ws_i2c_B2D_init_zero;
+    _i2c_model->SetupAddDecodeCallbacks(&b2d_add.payload.add);
+    if (!ws_pb_decode(&saved_stream, ws_i2c_B2D_fields, &b2d_add)) {
+      Ws.error_handler->publishComponentError(
+          b2d_add.payload.add.descriptor,
+          "Failed to decode I2C add message settings!");
+      return false;
+    }
+    res = Handle_Add(&b2d_add.payload.add);
     break;
+  }
   case ws_i2c_B2D_remove_tag:
     res = Handle_Remove(&b2d.payload.remove);
     break;
@@ -562,6 +603,19 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   WS_DEBUG_PRINTLN("[i2c] Driver initialized: ");
   WS_DEBUG_PRINTLNVAR(name);
   _i2c_drivers.push_back(drv);
+
+  // Apply settings if provided, otherwise apply defaults
+  DecodedSetting *settings = nullptr;
+  size_t cnt_settings = 0;
+  if (msg->has_settings) {
+    settings = _i2c_model->GetDecodedSettings();
+    cnt_settings = _i2c_model->GetDecodedSettingsCount();
+  }
+  if (!drv->configure(settings, cnt_settings)) {
+    // configure() already published a per-setting error for each failure;
+    // avoid double-reporting here.
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to apply one or more settings!");
+  }
 
   // If we're using a MUX, lets clear the channel for any subsequent bus
   // operations that may not involve the MUX

@@ -22,6 +22,30 @@
 #define MAX_DEVICE_EVENTS 16 ///< Maximum number of SensorEvents within I2cEvent
 #define MAX_PROBE_SPACES 16  ///< Maximum number of AddressSpaces in a Probe
 #define MAX_PROBE_ADDRESSES 112 ///< Maximum number of addresses to probe
+#define MAX_I2C_SETTINGS 8      ///< Maximum settings per I2C device
+#define MAX_SETTING_KEY_LEN 32  ///< Maximum length of a setting key string
+#define MAX_SETTING_STR_LEN 32  ///< Maximum length of a setting string value
+
+/// A single decoded key-value setting from ws_config_Settings.
+struct DecodedSetting {
+  char key[MAX_SETTING_KEY_LEN]; ///< Setting key name (e.g., "gain")
+  bool has_value;                ///< Whether the value field is present
+  pb_size_t which_value;         ///< ws_config_Value_*_tag indicating type
+  int32_t int_value;             ///< Valid when which_value == int_value_tag
+  float float_value;             ///< Valid when which_value == float_value_tag
+  bool bool_value;               ///< Valid when which_value == bool_value_tag
+  char str_value[MAX_SETTING_STR_LEN]; ///< Valid when which_value ==
+                                       ///< str_value_tag
+};
+
+/*!
+    @brief  Repackages a flattened DecodedSetting into the proto ws_config_Value
+            oneof expected by driver setters.
+    @param  setting
+            The decoded setting to convert.
+    @returns A ws_config_Value carrying the setting's tag and active value.
+*/
+ws_config_Value DecodedSettingToValue(const DecodedSetting &setting);
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -54,6 +78,18 @@ public:
   ws_i2c_D2B *GetI2cD2B();
   // Probe API — model owns decode/encode/storage
   void SetupProbeDecodeCallbacks(ws_i2c_Probe *probe);
+  // Settings API — decode settings from ws_i2c_Add
+  void SetupAddDecodeCallbacks(ws_i2c_Add *add);
+  /*!
+      @brief  Returns decoded settings array.
+      @returns Pointer to the decoded settings array.
+  */
+  DecodedSetting *GetDecodedSettings();
+  /*!
+      @brief  Returns decoded settings count.
+      @returns The number of decoded settings.
+  */
+  size_t GetDecodedSettingsCount();
   /*!
       @brief  Returns probe address spaces.
       @returns Pointer to the probe address spaces array.
@@ -125,6 +161,16 @@ private:
                               void **arg);
   static bool cbEncodeFoundAddresses(pb_ostream_t *stream,
                                      const pb_field_t *field, void *const *arg);
+  // Settings decode buffers
+  DecodedSetting _decoded_settings[MAX_I2C_SETTINGS];
+  size_t _decoded_settings_count;
+  // Settings nanopb callbacks
+  static bool cbDecodeSettingsEntry(pb_istream_t *stream,
+                                    const pb_field_t *field, void **arg);
+  static bool cbDecodeSettingKey(pb_istream_t *stream, const pb_field_t *field,
+                                 void **arg);
+  static bool cbDecodeSettingStrValue(pb_istream_t *stream,
+                                      const pb_field_t *field, void **arg);
   // Message storage
   ws_i2c_D2B _msg_i2c_d2b;
   ws_i2c_Add _msg_i2c_add;

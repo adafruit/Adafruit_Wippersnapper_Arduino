@@ -54,8 +54,45 @@ public:
     if (!_ina219->begin(_i2c))
       return false;
 
-    // TODO: use setCalibration()
+    return true;
+  }
 
+  /*!
+      @brief    Configures the INA219 sensor with default settings.
+      @returns  True if configured successfully, False otherwise.
+  */
+  bool configureDefaults() override {
+    _ina219->setCalibration_32V_2A();
+    return true;
+  }
+
+  /*!
+      @brief    Applies the calibration setting to the driver. The calibration
+                selects the voltage range and max current measurement.
+      @param    calibration
+                The calibration index from the broker
+                (0=32V_2A, 1=32V_1A, 2=16V_400mA).
+      @returns  True if applied successfully, False otherwise.
+  */
+  bool setCalibration(const ws_config_Value &calibration) override {
+    if (calibration.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = calibration.value.int_value;
+    switch (val) {
+    case 0:
+      _ina219->setCalibration_32V_2A();
+      break;
+    case 1:
+      _ina219->setCalibration_32V_1A();
+      break;
+    case 2:
+      _ina219->setCalibration_16V_400mA();
+      break;
+    default:
+      _ina219->setCalibration_32V_2A();
+      break;
+    }
     return true;
   }
 

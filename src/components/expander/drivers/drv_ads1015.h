@@ -62,38 +62,40 @@ public:
   }
 
   /*!
-   * @brief Sets the gain for the ADC readings.
-   * @param gain The gain setting from ws_analogin_Gain.
-   *             Values: 1=1x, 2=2x, 3=4x, 4=8x, 5=16x, 9=2/3x.
-   *             Unsupported gains (32x, 64x, 128x) fall back to 1x.
-   * @return True if the gain was successfully set, False otherwise.
+   * @brief Applies a gain setting to the ADS1015.
+   * @param gain The gain index (0-5) from the broker's settings, mapping to:
+   *             0=2/3x, 1=1x, 2=2x, 3=4x, 4=8x, 5=16x
+   * @return True if applied successfully, False if index is out of range.
    */
-  bool setGain(uint8_t gain) override {
-    adsGain_t ads_gain;
-    switch (gain) {
-    case 1: // G_1X
-      ads_gain = GAIN_ONE;
+  bool setGain(const ws_config_Value &gain) override {
+    if (gain.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = gain.value.int_value;
+    adsGain_t g;
+    switch (val) {
+    case 0:
+      g = GAIN_TWOTHIRDS;
       break;
-    case 2: // G_2X
-      ads_gain = GAIN_TWO;
+    case 1:
+      g = GAIN_ONE;
       break;
-    case 3: // G_4X
-      ads_gain = GAIN_FOUR;
+    case 2:
+      g = GAIN_TWO;
       break;
-    case 4: // G_8X
-      ads_gain = GAIN_EIGHT;
+    case 3:
+      g = GAIN_FOUR;
       break;
-    case 5: // G_16X
-      ads_gain = GAIN_SIXTEEN;
+    case 4:
+      g = GAIN_EIGHT;
       break;
-    case 9: // G_2_3X
-      ads_gain = GAIN_TWOTHIRDS;
+    case 5:
+      g = GAIN_SIXTEEN;
       break;
     default:
-      ads_gain = GAIN_ONE; // default to 1x gain
-      break;
+      return false;
     }
-    _ads.setGain(ads_gain);
+    _ads.setGain(g);
     return true;
   }
 
