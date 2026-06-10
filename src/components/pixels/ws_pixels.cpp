@@ -412,7 +412,7 @@ uint32_t ws_pixels::getGammaCorrectedColor(uint32_t pixel_color,
 void ws_pixels::fillStrand(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
   WS_DEBUG_PRINT("Filling strand on ");
-  WS_DEBUG_PRINTVAR(pixelsWriteMsg->pixels_pin_data);
+  WS_DEBUG_PRINTLNVAR(pixelsWriteMsg->pixels_pin_data);
   // Get index of pixel strand
   int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
                                pixelsWriteMsg->pixels_type);
