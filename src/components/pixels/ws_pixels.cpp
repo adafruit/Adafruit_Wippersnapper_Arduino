@@ -16,7 +16,7 @@
  */
 #include "ws_pixels.h"
 
-strand_s strands[MAX_PIXEL_STRANDS]; ///< Contains all usable pixel strands
+strand_s strands[MAX_PIXEL_STRANDS] = {0}; ///< Contains all usable pixel strands
 
 /**************************************************************************/
 /*!
@@ -341,8 +341,13 @@ bool ws_pixels::addStrand(
 /**************************************************************************/
 int ws_pixels::getStrandIdx(int16_t dataPin,
                             wippersnapper_pixels_v1_PixelsType type) {
+  WS_DEBUG_PRINT("Searching for strand with data pin GPIO #");
+  WS_DEBUG_PRINTLNVAR(dataPin);
   for (size_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
        strandIdx++) {
+    WS_DEBUG_PRINT("Checking strandIdx ");    WS_DEBUG_PRINTVAR(strandIdx);
+    WS_DEBUG_PRINT(" (Neo D"); WS_DEBUG_PRINTVAR(strands[strandIdx].pinNeoPixel); WS_DEBUG_PRINT(")");
+    WS_DEBUG_PRINT(" (Dot D"); WS_DEBUG_PRINTVAR(strands[strandIdx].pinDotStarData); WS_DEBUG_PRINT(" C"); WS_DEBUG_PRINTVAR(strands[strandIdx].pinDotStarClock); WS_DEBUG_PRINTLN(")");
     if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL &&
         strands[strandIdx].pinNeoPixel == dataPin)
       return strandIdx;
@@ -411,7 +416,8 @@ uint32_t ws_pixels::getGammaCorrectedColor(uint32_t pixel_color,
 /**************************************************************************/
 void ws_pixels::fillStrand(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
-
+  WS_DEBUG_PRINT("Filling strand on ");
+  WS_DEBUG_PRINTVAR(pixelsWriteMsg->pixels_pin_data);
   // Get index of pixel strand
   int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
                                pixelsWriteMsg->pixels_type);

@@ -383,7 +383,7 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
+  ws_pixels *_pixelsComponent; ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
   ws_servo *_servoComponent;      ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
