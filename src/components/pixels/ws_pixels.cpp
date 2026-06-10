@@ -341,20 +341,8 @@ bool ws_pixels::addStrand(
 /**************************************************************************/
 int ws_pixels::getStrandIdx(int16_t dataPin,
                             wippersnapper_pixels_v1_PixelsType type) {
-  WS_DEBUG_PRINT("Searching for strand with data pin GPIO #");
-  WS_DEBUG_PRINTLNVAR(dataPin);
   for (size_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
        strandIdx++) {
-    WS_DEBUG_PRINT("Checking strandIdx ");
-    WS_DEBUG_PRINTVAR(strandIdx);
-    WS_DEBUG_PRINT(" (Neo D");
-    WS_DEBUG_PRINTVAR(strands[strandIdx].pinNeoPixel);
-    WS_DEBUG_PRINT(")");
-    WS_DEBUG_PRINT(" (Dot D");
-    WS_DEBUG_PRINTVAR(strands[strandIdx].pinDotStarData);
-    WS_DEBUG_PRINT(" C");
-    WS_DEBUG_PRINTVAR(strands[strandIdx].pinDotStarClock);
-    WS_DEBUG_PRINTLN(")");
     if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL &&
         strands[strandIdx].pinNeoPixel == dataPin)
       return strandIdx;
