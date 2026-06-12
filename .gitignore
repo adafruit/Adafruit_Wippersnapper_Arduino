@@ -52,6 +52,7 @@ examples/Wippersnapper_demo/build/
 
 # Platformio artifacts
 .pio/
+output.map
 
 # Secrets
 data/

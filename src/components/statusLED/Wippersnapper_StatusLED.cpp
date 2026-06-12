@@ -320,6 +320,38 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 
 /****************************************************************************/
 /*!
+    @brief    Detaches the ESP8266 software-waveform PWM from the status LED
+              for the duration of an interrupt-sensitive operation (Wire/I2C
+              bring-up, sensor begin(), polling). On the Huzzah the status
+              LED PWM is driven by analogWrite() on GPIO0, which arms the
+              Timer1 NMI; pinMode(OUTPUT) tears that waveform down so the
+              NMI can't fire concurrently with Wire's critical sections.
+              No-op on architectures that use hardware PWM (ESP32 LEDC, etc).
+*/
+/****************************************************************************/
+void pauseStatusLEDPWM() {
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) && defined(USE_STATUS_LED)
+  pinMode(STATUS_LED_PIN, OUTPUT);
+  digitalWrite(STATUS_LED_PIN, HIGH); // HIGH = LED off (reverse-wired)
+#endif
+}
+
+/****************************************************************************/
+/*!
+    @brief    Re-arms the ESP8266 software-waveform PWM after a paired
+              pauseStatusLEDPWM(). Restores the LED to its OFF state via
+              analogWrite() so subsequent setStatusLEDColor() calls work.
+              No-op on other platforms.
+*/
+/****************************************************************************/
+void resumeStatusLEDPWM() {
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) && defined(USE_STATUS_LED)
+  analogWrite(STATUS_LED_PIN, 255); // 255 = LED off (reverse-wired)
+#endif
+}
+
+/****************************************************************************/
+/*!
     @brief    Converts the a ws_led_status_t status state to color.
     @param    statusState
               Hardware's status state.
