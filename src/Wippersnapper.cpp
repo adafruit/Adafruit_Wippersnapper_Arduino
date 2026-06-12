@@ -2770,6 +2770,8 @@ void print_reset_reason(int reason) {
 #include "esp32c3/rom/rtc.h"
 #elif CONFIG_IDF_TARGET_ESP32S3
 #include "esp32s3/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C5
+#include "esp32c5/rom/rtc.h"
 #elif CONFIG_IDF_TARGET_ESP32C6
 #include "esp32c6/rom/rtc.h"
 #else
