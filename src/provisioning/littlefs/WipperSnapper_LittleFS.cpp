@@ -17,8 +17,11 @@
     defined(ARDUINO_ADAFRUIT_ITSYBITSY_ESP32) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2) ||                              \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
+    defined(ARDUINO_ESP32C3_DEV) || defined(ARDUINO_SPARKLEMOTION_ESP32) ||    \
+    defined(ARDUINO_SPARKLEMOTIONMINI_ESP32) ||                                \
+    defined(ARDUINO_SPARKLEMOTIONSTICK_ESP32) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) ||                                  \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6)
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) || defined(ARDUINO_ESP32C5_DEV)
 #include "WipperSnapper_LittleFS.h"
 
 /**************************************************************************/
@@ -86,13 +89,12 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
     } else if (doc["network_type_wifi"]["alternative_networks"]
                    .is<JsonArray>()) {
-
       WS_DEBUG_PRINTLN("Found multiple wifi networks in secrets.json");
       // Parse network credentials from array in secrets
       JsonArray altnetworks = doc["network_type_wifi"]["alternative_networks"];
       int8_t altNetworkCount = (int8_t)altnetworks.size();
       WS_DEBUG_PRINT("Network count: ");
-      WS_DEBUG_PRINTLN(altNetworkCount);
+      WS_DEBUG_PRINTLNVAR(altNetworkCount);
       if (altNetworkCount == 0) {
         fsHalt("ERROR: No alternative network entries found under "
                "network_type_wifi.alternative_networks in secrets.json!");
@@ -102,14 +104,15 @@ void WipperSnapper_LittleFS::parseSecrets() {
         if (i >= 3) {
           WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
                          "only the first 3 will be used. Not using ");
-          WS_DEBUG_PRINTLN(altnetworks[i]["network_ssid"].as<const char *>());
+          WS_DEBUG_PRINTLNVAR(
+              altnetworks[i]["network_ssid"].as<const char *>());
           break;
         }
         convertFromJson(altnetworks[i], WS._multiNetworks[i]);
         WS_DEBUG_PRINT("Added SSID: ");
-        WS_DEBUG_PRINTLN(WS._multiNetworks[i].ssid);
+        WS_DEBUG_PRINTLNVAR(WS._multiNetworks[i].ssid);
         WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLN(WS._multiNetworks[i].pass);
+        WS_DEBUG_PRINTLNVAR(WS._multiNetworks[i].pass);
       }
       WS._isWiFiMulti = true;
     } else {
@@ -138,6 +141,12 @@ void WipperSnapper_LittleFS::parseSecrets() {
            "credentials!\n");
   }
 
+  // specify type of value for json key, by using the |operator to include
+  // a typed default value equivalent of with .as<float> w/ default value
+  // https://arduinojson.org/v7/api/jsonvariant/or/
+  WS._config.status_pixel_brightness =
+      doc["status_pixel_brightness"] | (float)STATUS_PIXEL_BRIGHTNESS_DEFAULT;
+
   // Close the file
   secretsFile.close();
 
@@ -156,7 +165,7 @@ void WipperSnapper_LittleFS::fsHalt(String msg) {
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
-    WS_DEBUG_PRINTLN(msg.c_str());
+    WS_DEBUG_PRINTLNVAR(msg.c_str());
     delay(1000);
     yield();
   }

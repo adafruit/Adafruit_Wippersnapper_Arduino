@@ -68,22 +68,22 @@ public:
       @returns  True if the data was read successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool readSensorData() {
+  bool ReadSensorData() {
     uint16_t status = _hdc302x->readStatus();
     if (status & 0x0010) {
-      WS_DEBUG_PRINTLN(F("Device Reset Detected"));
+      WS_DEBUG_PRINTLNVAR(F("Device Reset Detected"));
       return false;
     }
 
     if (status & 0x0001) {
-      WS_DEBUG_PRINTLN(
+      WS_DEBUG_PRINTLNVAR(
           F("Checksum Verification Fail (incorrect checksum received)"));
       return false;
     }
 
     if (!_hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
                                                    TRIGGERMODE_LP0)) {
-      WS_DEBUG_PRINTLN(F("Failed to read temperature and humidity."));
+      WS_DEBUG_PRINTLNVAR(F("Failed to read temperature and humidity."));
       return false;
     }
     return true;
@@ -99,7 +99,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (readSensorData() == false)
+    if (ReadSensorData() == false)
       return false;
     tempEvent->temperature = _temp;
     return true;
@@ -115,7 +115,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (readSensorData() == false)
+    if (ReadSensorData() == false)
       return false;
     humidEvent->relative_humidity = _humidity;
     return true;

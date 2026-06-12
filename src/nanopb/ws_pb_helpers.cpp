@@ -33,7 +33,7 @@ bool ws_pb_decode(pb_istream_t *stream, const pb_msgdesc_t *fields,
   bool status = pb_decode(stream, fields, dest_struct);
   if (!status) {
     WS_DEBUG_PRINT("Protobuf decode error: ");
-    WS_DEBUG_PRINTLN(PB_GET_ERROR(stream));
+    WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(stream));
   }
   return status;
 }
@@ -55,7 +55,7 @@ bool ws_pb_encode(pb_ostream_t *stream, const pb_msgdesc_t *fields,
   bool status = pb_encode(stream, fields, src_struct);
   if (!status) {
     WS_DEBUG_PRINT("Protobuf encode error: ");
-    WS_DEBUG_PRINTLN(PB_GET_ERROR(stream));
+    WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(stream));
   }
   return status;
 }

@@ -81,14 +81,17 @@ public:
   /*******************************************************************************/
   bool begin() override {
     _aqi = new Adafruit_PM25AQI();
+    bool is_pm1006 = (strcmp(getDriverID(), "pm1006") == 0);
 #ifdef USE_SW_UART
     if (!_aqi->begin_UART(
-            _swSerial)) { // connect to the sensor over software serial
+            _swSerial, // connect to the sensor over software serial
+            is_pm1006)) {
       return false;
     }
 #else
     if (!_aqi->begin_UART(
-            _hwSerial)) { // connect to the sensor over hardware serial
+            _hwSerial, // connect to the sensor over hardware serial
+            is_pm1006)) {
       return false;
     }
 #endif

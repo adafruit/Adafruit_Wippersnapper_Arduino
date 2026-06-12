@@ -16,11 +16,14 @@
 #ifndef WipperSnapper_I2C_Driver_H
 #define WipperSnapper_I2C_Driver_H
 
+#include "wippersnapper/i2c/v1/i2c.pb.h"
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
+#include <Wire.h>
 
 #define PERIOD_24HRS_AGO_MILLIS (millis() - (24 * 60 * 60 * 1000))
 ///< Used for last sensor read time, initially set 24hrs ago (max period)
+#define ONE_SECOND_IN_MILLIS 1000 ///< Used for period checks
 
 /**************************************************************************/
 /*!
@@ -32,7 +35,7 @@ class WipperSnapper_I2C_Driver {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Instanciates an I2C sensor.
+      @brief    Instantiates an I2C sensor.
       @param    i2c
                 The I2C hardware interface, default is Wire.
       @param    sensorAddress
@@ -50,6 +53,21 @@ public:
   */
   /*******************************************************************************/
   virtual ~WipperSnapper_I2C_Driver() {}
+
+  /*******************************************************************************/
+  /*!
+      @brief    Lightweight, per-update background hook for drivers that need
+                more frequent internal polling than the publish interval.
+                Default is a no-op; concrete drivers (e.g., SGP30/40) may
+                override this to perform a single non-blocking read and cache
+                results for later retrieval by getEvent*().
+      @note     Call site: WipperSnapper_Component_I2C::update() invokes this
+                once per loop for each driver. Implementations must be
+                non-blocking (do not delay); use millis()-based timing if
+                cadence is required.
+  */
+  /*******************************************************************************/
+  virtual void fastTick() {}
 
   /*******************************************************************************/
   /*!
@@ -99,6 +117,9 @@ public:
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
       _lightSensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LUX:
+      _luxSensorPeriod = sensorPeriod;
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
       _PM10SensorPeriod = sensorPeriod;
@@ -579,10 +600,10 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Sets a timestamp for when the light sensor
-                was queried.
-      @param    period
-                The time when the light sensor was queried last.
+  @brief    Sets a timestamp for when the light sensor
+  was queried.
+  @param    period
+  The time when the light sensor was queried last.
   */
   /*******************************************************************************/
   virtual void setSensorLightPeriodPrv(long period) {
@@ -594,7 +615,7 @@ public:
       @brief    Base implementation - Reads a object light sensor and
                 converts the reading into the expected SI unit.
       @param    lightEvent
-                Light sensor reading, in meters.
+                Light sensor reading (raw).
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
@@ -602,6 +623,56 @@ public:
   virtual bool getEventLight(sensors_event_t *lightEvent) {
     (void)lightEvent; // Parameter is intentionally unused in this virtual
                       // function.
+    return false;
+  }
+
+  /**************************** SENSOR_TYPE: LUX
+   * ****************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object lux sensor's
+     period, if set.
+      @returns  Time when the object lux sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorLuxPeriod() { return _luxSensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the lux sensor was queried last.
+      @returns  Time when the lux sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorLuxPeriodPrv() { return _luxSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the lux sensor
+                was queried.
+      @param    period
+                The time when the lux sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorLuxPeriodPrv(long period) {
+    _luxSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object Light(lux) sensor and
+                converts the reading into the expected SI unit.
+      @param    luxEvent
+                Light sensor reading, in lux.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventLux(sensors_event_t *luxEvent) {
+    (void)luxEvent; // Parameter is intentionally unused in this virtual
+                    // function.
     return false;
   }
 
@@ -1234,7 +1305,7 @@ public:
       @brief    Enables the device's proximity sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void enableSensorProximity(){};
+  virtual void enableSensorProximity() {};
 
   /*******************************************************************************/
   /*!
@@ -1310,7 +1381,7 @@ public:
       @brief    Updates the properties of a proximity sensor.
       @param    period
                 The time interval at which to return new data from the
-                proimity sensor.
+                proximity sensor.
   */
   /*******************************************************************************/
   virtual void updateSensorProximity(float period) {
@@ -1362,6 +1433,10 @@ protected:
   long _lightSensorPeriodPrv =
       PERIOD_24HRS_AGO_MILLIS; ///< The time when the light sensor was last
                                ///< read.
+  long _luxSensorPeriod =
+      0L; ///< The time period between reading the lux sensor's value.
+  long _luxSensorPeriodPrv = PERIOD_24HRS_AGO_MILLIS; ///< The time when the lux
+                                                      ///< sensor was last read.
   long _PM10SensorPeriod =
       0L; ///< The time period between reading the pm25 sensor's value.
   long _PM10SensorPeriodPrv =

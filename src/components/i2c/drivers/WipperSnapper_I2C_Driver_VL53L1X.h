@@ -83,9 +83,9 @@ public:
     int16_t proximityMM = _VL53L1X->distance();
     if (proximityMM == -1) {
       WS_DEBUG_PRINT("VL53L1X: Invalid proximity value:");
-      WS_DEBUG_PRINTLN(proximityMM);
+      WS_DEBUG_PRINTLNVAR(proximityMM);
       WS_DEBUG_PRINT("VL53L1X status: ");
-      WS_DEBUG_PRINTLN(_VL53L1X->vl_status);
+      WS_DEBUG_PRINTLNVAR(_VL53L1X->vl_status);
       proximityEvent->data[0] = NAN;
     } else {
       proximityEvent->data[0] = proximityMM;

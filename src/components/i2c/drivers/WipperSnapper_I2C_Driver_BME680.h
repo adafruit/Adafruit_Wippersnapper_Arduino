@@ -130,7 +130,7 @@ public:
   bool getEventPressure(sensors_event_t *pressureEvent) {
     if (!bmePerformReading())
       return false;
-    pressureEvent->pressure = (float)_bme->pressure;
+    pressureEvent->pressure = (float)_bme->pressure / 100.0;
     return true;
   }
 

@@ -94,15 +94,8 @@ bool ws_ds18x20::addDS18x20(
          msgDs18x20InitReq->onewire_pin);
 
   WS_DEBUG_PRINT("Created OneWireBus on GPIO ");
-  WS_DEBUG_PRINT(msgDs18x20InitReq->onewire_pin);
+  WS_DEBUG_PRINTVAR(msgDs18x20InitReq->onewire_pin);
   WS_DEBUG_PRINTLN(" with DS18x20 attached!");
-
-#ifdef USE_DISPLAY
-  char buffer[100];
-  snprintf(buffer, 100, "[DS18x] Attached DS18x20 sensor to pin %s\n",
-           msgDs18x20InitReq->onewire_pin);
-  WS._ui_helper->add_text_to_terminal(buffer);
-#endif
 
   // Encode and publish response back to broker
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
@@ -139,7 +132,7 @@ void ws_ds18x20::deleteDS18x20(
     if (strcmp(_ds18xDrivers[idx]->onewire_pin,
                msgDS18x20DeinitReq->onewire_pin) == 0) {
       WS_DEBUG_PRINT("Deleting OneWire instance on pin ");
-      WS_DEBUG_PRINTLN(msgDS18x20DeinitReq->onewire_pin);
+      WS_DEBUG_PRINTLNVAR(msgDS18x20DeinitReq->onewire_pin);
       delete _ds18xDrivers[idx]
           ->dallasTempObj; // delete dallas temp instance on pin
       delete _ds18xDrivers[idx]
@@ -148,13 +141,6 @@ void ws_ds18x20::deleteDS18x20(
                           idx); // erase vector and re-allocate
     }
   }
-
-#ifdef USE_DISPLAY
-  char buffer[100];
-  snprintf(buffer, 100, "[DS18x] Deleted DS18x20 sensor on pin %s\n",
-           msgDS18x20DeinitReq->onewire_pin);
-  WS._ui_helper->add_text_to_terminal(buffer);
-#endif
 }
 
 /*************************************************************/
@@ -194,11 +180,6 @@ void ws_ds18x20::update() {
         if (tempC == DEVICE_DISCONNECTED_C) {
           WS_DEBUG_PRINTLN("ERROR: Could not read temperature data, is the "
                            "sensor disconnected?");
-#ifdef USE_DISPLAY
-          WS._ui_helper->add_text_to_terminal(
-              "[DS18x ERROR] Unable to read temperature, is the sensor "
-              "disconnected?\n");
-#endif
           break;
         }
 
@@ -208,9 +189,9 @@ void ws_ds18x20::update() {
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
 
           WS_DEBUG_PRINT("(OneWireBus GPIO: ");
-          WS_DEBUG_PRINT((*iter)->onewire_pin);
+          WS_DEBUG_PRINTVAR((*iter)->onewire_pin);
           WS_DEBUG_PRINT(") DS18x20 Value: ");
-          WS_DEBUG_PRINT(tempC);
+          WS_DEBUG_PRINTVAR(tempC);
           WS_DEBUG_PRINTLN("*C")
           snprintf(buffer, 100, "[DS18x] Read %0.2f*C on GPIO %s\n", tempC,
                    (*iter)->onewire_pin);
@@ -230,9 +211,9 @@ void ws_ds18x20::update() {
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].value =
               (*iter)->dallasTempObj->toFahrenheit(tempC);
           WS_DEBUG_PRINT("(OneWireBus GPIO: ");
-          WS_DEBUG_PRINT((*iter)->onewire_pin);
+          WS_DEBUG_PRINTVAR((*iter)->onewire_pin);
           WS_DEBUG_PRINT(") DS18x20 Value: ");
-          WS_DEBUG_PRINT(
+          WS_DEBUG_PRINTVAR(
               msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
                   .value);
           WS_DEBUG_PRINTLN("*F")
@@ -274,16 +255,16 @@ void ws_ds18x20::update() {
                msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count;
                i++) {
             WS_DEBUG_PRINT("sensor_event[#]: ");
-            WS_DEBUG_PRINTLN(i);
+            WS_DEBUG_PRINTLNVAR(i);
             WS_DEBUG_PRINT("\tOneWire Bus: ");
-            WS_DEBUG_PRINTLN(
+            WS_DEBUG_PRINTLNVAR(
                 msgDS18x20Response.payload.resp_ds18x20_event.onewire_pin);
             WS_DEBUG_PRINT("\tsensor_event type: ");
-            WS_DEBUG_PRINTLN(
+            WS_DEBUG_PRINTLNVAR(
                 msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
                     .type);
             WS_DEBUG_PRINT("\tsensor_event value: ");
-            WS_DEBUG_PRINTLN(
+            WS_DEBUG_PRINTLNVAR(
                 msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
                     .value);
           }
@@ -301,10 +282,6 @@ void ws_ds18x20::update() {
             return;
           };
           WS_DEBUG_PRINTLN("PUBLISHED!");
-#ifdef USE_DISPLAY
-          WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
           (*iter)->sensorPeriodPrv = curTime; // set prv period
         }
       }

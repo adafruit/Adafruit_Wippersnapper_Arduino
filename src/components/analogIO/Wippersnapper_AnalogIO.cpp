@@ -90,7 +90,7 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   scaleAnalogRead = false;          // handled in bsp (analogReadResolution)
   analogReadResolution(resolution); // 16 bit values (shifted from 12 or 13bit)
 #if defined(ESP32S3)
-  _nativeResolution = 13;           // S3 ADC is 13-bit, others are 12-bit
+  _nativeResolution = 13; // S3 ADC is 13-bit, others are 12-bit
 #else
   _nativeResolution = 12;
 #endif
@@ -162,7 +162,7 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
     }
   }
   WS_DEBUG_PRINT("Configured Analog Input pin with polling time (ms):");
-  WS_DEBUG_PRINTLN(periodMs);
+  WS_DEBUG_PRINTLNVAR(periodMs);
 }
 
 /***********************************************************************************/
@@ -194,7 +194,7 @@ void Wippersnapper_AnalogIO::disableAnalogInPin(int pin) {
 void Wippersnapper_AnalogIO::deinitAnalogPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin) {
   WS_DEBUG_PRINT("Deinitializing analog pin A");
-  WS_DEBUG_PRINTLN(pin);
+  WS_DEBUG_PRINTLNVAR(pin);
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
     WS_DEBUG_PRINTLN("Deinitialized analog input pin obj.");
@@ -285,11 +285,6 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
             pinValVolts);
     snprintf(buffer, 100, "[Pin] A%d read: %0.2f\n", pinName, pinValVolts);
   }
-// display analog pin read on terminal
-#ifdef USE_DISPLAY
-  WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
   // Encode signal message
   pb_ostream_t stream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
@@ -396,7 +391,7 @@ void Wippersnapper_AnalogIO::update() {
       if (_analog_input_pins[i].period != 0L &&
           timerExpired(millis(), _analog_input_pins[i])) {
         WS_DEBUG_PRINT("Executing periodic event on A");
-        WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
+        WS_DEBUG_PRINTLNVAR(_analog_input_pins[i].pinName);
 
         // Read from analog pin
         if (_analog_input_pins[i].readMode ==

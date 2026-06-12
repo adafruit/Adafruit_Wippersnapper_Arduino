@@ -11,7 +11,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -27,12 +27,20 @@
 #include "WiFiNINA.h"
 #include "Wippersnapper.h"
 
+#if defined ARDUINO_ADAFRUIT_FRUITJAM_RP2350
+#define NINAFWVER                                                              \
+  "3.3.0" /*!< Fruit Jam's ESP32-C6 requires nina-fw version 3.3.0+ to work    \
+             with this library. */
+#else
 #define NINAFWVER                                                              \
   "1.7.7" /*!< min. nina-fw version compatible with this library. */
+#endif
 #define AIRLIFT_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define AIRLIFT_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
+#ifndef SPIWIFI
 #define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
+#endif
 
 extern Wippersnapper WS;
 /****************************************************************************/
@@ -49,9 +57,13 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_AIRLIFT() : Wippersnapper() {
-    _ssPin = SPIWIFI_SS;     // 10;
-    _ackPin = SPIWIFI_ACK;   // 7;
-    _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals
+    _ssPin = SPIWIFI_SS;
+    _ackPin = SPIWIFI_ACK;
+#ifdef ESP32_RESETN
+    _rstPin = ESP32_RESETN; // FruitJam
+#else
+    _rstPin = SPIWIFI_RESET;
+#endif // ESP32_RESETN
 #ifdef ESP32_GPIO0
     _gpio0Pin = ESP32_GPIO0;
 #else
@@ -103,8 +115,8 @@ public:
 
   /***********************************************************/
   /*!
-  @brief   Performs a scan of local WiFi networks.
-  @returns True if `_network_ssid` is found, False otherwise.
+    @brief   Performs a scan of local WiFi networks.
+    @returns True if `_network_ssid` is found, False otherwise.
   */
   /***********************************************************/
   bool check_valid_ssid() {
@@ -119,26 +131,33 @@ public:
       return false;
     }
 
-    // Was the network within secrets.json found?
-    for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
-        WS_DEBUG_PRINT("SSID found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
-        return true;
+    bool foundNetwork = false;
+
+    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
+    for (uint8_t i = 0; i < n; i++) {
+      if (!foundNetwork && strcmp(WiFi.SSID(i), _ssid) == 0) {
+        foundNetwork = true;
       }
-    }
-
-    // User-set network not found, print scan results to serial console
-    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
-    for (int i = 0; i < n; ++i) {
       WS_DEBUG_PRINT(WiFi.SSID(i));
-      WS_DEBUG_PRINT(" ");
+      WS_DEBUG_PRINT(" (");
+      uint8_t BSSID[WL_MAC_ADDR_LENGTH];
+      WiFi.BSSID(i, BSSID);
+      for (int m = 0; m < WL_MAC_ADDR_LENGTH; m++) {
+        if (m != 0)
+          WS_DEBUG_PRINT(":");
+        WS_DEBUG_PRINTHEX(BSSID[m]);
+      }
+      WS_DEBUG_PRINT(") ");
       WS_DEBUG_PRINT(WiFi.RSSI(i));
-      WS_DEBUG_PRINTLN("dB");
+      WS_DEBUG_PRINT("dB (ch");
+      WS_DEBUG_PRINT(WiFi.channel(i))
+      WS_DEBUG_PRINTLN(")");
     }
 
-    return false;
+    if (!foundNetwork) {
+      WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
+    }
+    return foundNetwork;
   }
 
   /********************************************************/
@@ -182,7 +201,7 @@ public:
   */
   /********************************************************/
   bool firmwareCheck() {
-    _fv = WiFi.firmwareVersion();
+    WS._airlift_version = _fv = WiFi.firmwareVersion();
     return compareVersions(_fv, NINAFWVER);
   }
 
@@ -229,7 +248,10 @@ public:
   */
   /********************************************************/
   void getMacAddr() {
-    uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    if (_fv == "0.0.1") {
+      (void)firmwareCheck(); // ensure _fv is set in bootlog
+    }
+    byte mac[6] = {0};
     WiFi.macAddress(mac);
     memcpy(WS._macAddr, mac, sizeof(mac));
   }
@@ -321,10 +343,14 @@ protected:
       WS_PRINTER.flush();
       feedWDT();
 
-      // validate co-processor's firmware version
+      // Validate nina-fw version
       if (!firmwareCheck()) {
-        WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the "
-                         "latest version.");
+        // TODO: see if there's a way to add to bootlog without usb reattach
+        WS_DEBUG_PRINTLN("ERROR: Incompatible nina-fw version!");
+        WS_DEBUG_PRINT("Required nina-fw version: ");
+        WS_DEBUG_PRINTLN(NINAFWVER);
+        WS_PRINTER.flush();
+        return;
       }
 
       WS_DEBUG_PRINT("Connecting to ");

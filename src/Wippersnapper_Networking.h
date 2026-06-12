@@ -16,9 +16,15 @@
 #ifndef WIPPERSNAPPER_NETWORKING_H
 #define WIPPERSNAPPER_NETWORKING_H
 
+#ifndef WL_MAC_ADDR_LENGTH
+#define WL_MAC_ADDR_LENGTH 6 ///< MAC address length - from RP2040 BSP
+#endif
+#define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
+
 #if defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                      \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
-    defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT)
+    defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT) ||            \
+    defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
 #include "network_interfaces/Wippersnapper_AIRLIFT.h"
 /** Nina-FW (adafruit fork) networking class */
 typedef Wippersnapper_AIRLIFT Wippersnapper_WiFi;
@@ -33,10 +39,6 @@ typedef Wippersnapper_ESP32 Wippersnapper_WiFi;
 #elif defined(ARDUINO_ARCH_RP2040)
 #include "network_interfaces/ws_networking_pico.h"
 typedef ws_networking_pico Wippersnapper_WiFi;
-#elif defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_SAMD_MKRWIFI1010)
-/** Nina-FW (arduino) networking class */
-#include "network_interfaces/Wippersnapper_WIFININA.h"
-typedef Wippersnapper_WIFININA Wippersnapper_WiFi;
 #else
 #warning "Must define network interface in config.h!"
 #endif

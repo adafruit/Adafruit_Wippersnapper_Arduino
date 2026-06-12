@@ -9,7 +9,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -19,6 +19,8 @@
 #define WIPPERSNAPPER_H
 
 // Cpp STD
+#include <math.h>
+
 #include <vector>
 
 // Nanopb dependencies
@@ -46,17 +48,45 @@
 
 // Define actual debug output functions when necessary.
 #ifdef WS_DEBUG
+
+#ifdef ARDUINO_ARCH_ESP8266
+// ESP8266: Use F() macro to store string literals in Flash (PROGMEM) instead
+// of RAM. This saves precious RAM on memory-constrained ESP8266 devices.
+// NOTE: WS_DEBUG_PRINT/PRINTLN only accept string literals on ESP8266.
+// Use WS_DEBUG_PRINTVAR/PRINTLNVAR for variables.
+#define WS_DEBUG_PRINT(x)                                                      \
+  { WS_PRINTER.print(F(x)); } ///< Prints string literal from Flash
+#define WS_DEBUG_PRINTLN(x)                                                    \
+  { WS_PRINTER.println(F(x)); } ///< Prints string literal line from Flash
+#else
+// Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
   { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#endif
+
+// Variable printing macros - use for non-string-literal arguments
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints variable (any type)
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints variable with newline
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints in hexadecimal
+
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} ///< Prints debug output
+  {} ///< Disabled debug output
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} ///< Prints line from debug output.
+  {} ///< Disabled debug output
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  {} ///< Disabled debug output
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  {} ///< Disabled debug output
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  {} ///< Disabled debug output
+#define WS_DEBUG_HEAP(label)                                                   \
+  {} ///< Disabled heap debug output
 #endif
 
 #define WS_DELAY_WITH_WDT(timeout)                                             \
@@ -121,12 +151,7 @@
 #include <Esp.h>
 #endif
 
-// Display
-#ifdef USE_DISPLAY
-#include "display/ws_display_driver.h"
-#include "display/ws_display_ui_helper.h"
-#endif
-
+#include "components/display/controller.h"
 #include "components/ds18x20/ws_ds18x20.h"
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
@@ -142,7 +167,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.93" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.129" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -153,6 +178,7 @@
 #define TOPIC_INFO "/info/"       ///< Registration sub-topic
 #define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
 #define TOPIC_I2C "/i2c"          ///< I2C sub-topic
+#define TOPIC_DISPLAY "/display"  ///< Display sub-topic (EPD, OLED, TFT, etc.)
 #define MQTT_TOPIC_PIXELS_DEVICE                                               \
   "/signals/device/pixel" ///< Pixels device->broker topic
 #define MQTT_TOPIC_PIXELS_BROKER                                               \
@@ -214,11 +240,18 @@ typedef enum {
   FSM_NET_ESTABLISH_MQTT,
 } fsm_net_t;
 
-#define WS_WDT_TIMEOUT 60000       ///< WDT timeout
+#ifdef ARDUINO_ARCH_RP2040
+#define WS_WDT_TIMEOUT 8388 ///< RP2040 Max WDT timeout
+#else
+#define WS_WDT_TIMEOUT 60000 ///< WDT timeout
+#endif
+
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
-#define WS_KEEPALIVE_INTERVAL_MS                                               \
-  5000 ///< Session keepalive interval time, in milliseconds
+#define WS_BROKER_KEEPALIVE_MS                                                 \
+  11000 ///< Maximum time without a ping before broker disconnects (ms)
+#define WS_DEVICE_PING_MS                                                      \
+  5000 ///< Interval at which device sends ping to broker, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
   512 ///< MAXIMUM expected payload size, in bytes
@@ -227,10 +260,6 @@ class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
-#ifdef USE_DISPLAY
-class ws_display_driver;
-class ws_display_ui_helper;
-#endif
 #ifdef ARDUINO_ARCH_ESP32
 class ws_ledc;
 #endif
@@ -240,6 +269,7 @@ class ws_pwm;
 class ws_ds18x20;
 class ws_pixels;
 class ws_uart;
+class DisplayController;
 
 /**************************************************************************/
 /*!
@@ -308,7 +338,8 @@ public:
 
   // Error handling helpers
   void haltError(String error,
-                 ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME);
+                 ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME,
+                 int seconds_until_reboot = 25);
   void errorWriteHang(String error);
 
   // MQTT topic callbacks //
@@ -354,22 +385,20 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-#ifdef USE_DISPLAY
-  ws_display_driver *_display = nullptr; ///< Instance of display driver class
-  ws_display_ui_helper *_ui_helper =
-      nullptr; ///< Instance of display UI helper class
-#endif
   ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
   ws_servo *_servoComponent;      ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
   ws_uart *_uartComponent;        ///< Instance of UART class
+  DisplayController
+      *_displayController; ///< Instance of display controller class
 
   // TODO: does this really need to be global?
-  uint8_t _macAddr[6];  /*!< Unique network iface identifier */
-  char sUID[13];        /*!< Unique network iface identifier */
-  const char *_boardId; /*!< Adafruit IO+ board string */
-  Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
+  uint8_t _macAddr[6];          /*!< Unique network iface identifier */
+  char sUID[13];                /*!< Unique network iface identifier */
+  const char *_airlift_version; /*!< AirLift Firmware version */
+  const char *_boardId;         /*!< Adafruit IO+ board string */
+  Adafruit_MQTT *_mqtt;         /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   secretsConfig _config; /*!< Wippersnapper secrets.json as a struct. */
   networkConfig _multiNetworks[3]; /*!< Wippersnapper networks as structs. */
@@ -400,6 +429,10 @@ public:
   char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
   char *_topic_signal_uart_brkr = NULL;     /*!< Topic carries UART messages */
   char *_topic_signal_uart_device = NULL;   /*!< Topic carries UART messages */
+  char *_topic_signal_display_brkr =
+      NULL; /*!< Topic carries messages from a device to a broker. */
+  char *_topic_signal_display_device =
+      NULL; /*!< Topic carries messages from a broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -426,6 +459,9 @@ public:
   wippersnapper_signal_v1_UARTRequest
       msgSignalUART; ///< UARTReq wrapper message
 
+  wippersnapper_signal_v1_DisplayRequest
+      msgSignalDisplay; ///< DisplayRequest wrapper message
+
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
@@ -444,6 +480,8 @@ protected:
   ws_status_t _status = WS_IDLE;   /*!< Adafruit IO connection status */
   uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                           Adafruit IO, in milliseconds. */
+  uint16_t _brokerKeepAliveIntervalSeconds =
+      0; /*!< Cached MQTT broker keepalive interval, in seconds. */
   uint32_t _prv_ping = 0;    /*!< Previous time when client pinged Adafruit IO's
                                 MQTT broker, in milliseconds. */
   uint32_t _prvKATBlink = 0; /*!< Previous time when client pinged Adafruit IO's
@@ -486,6 +524,8 @@ protected:
       *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_uart_sub; /*!< Subscribes to signal's UART topic. */
+  Adafruit_MQTT_Subscribe *_topic_signal_display_sub; /*!< Subscription callback
+                                                         for display topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

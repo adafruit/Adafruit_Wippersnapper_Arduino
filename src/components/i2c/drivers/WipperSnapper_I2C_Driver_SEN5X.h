@@ -1,14 +1,13 @@
 /*!
  * @file WipperSnapper_I2C_Driver_SEN5X.h
  *
- * Device driver for the SEN5X CO2, Temperature, and Humidity sensor.
- * TEMPORARY HACK
+ * Device driver for the SEN5X air quality sensors.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Marni Brewster 2022 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2022 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -44,6 +43,14 @@ public:
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
+    _massConcentrationPm1p0 = NAN;
+    _massConcentrationPm2p5 = NAN;
+    _massConcentrationPm4p0 = NAN;
+    _massConcentrationPm10p0 = NAN;
+    _ambientHumidity = NAN;
+    _ambientTemperature = NAN;
+    _vocIndex = NAN;
+    _noxIndex = NAN;
   }
 
   /*******************************************************************************/
@@ -71,6 +78,60 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Checks if sensor was read within last 1s, or is the first read.
+      @returns  True if the sensor was recently read, False otherwise.
+  */
+  bool HasBeenReadInLastSecond() {
+    return _lastRead != 0 && millis() - _lastRead < ONE_SECOND_IN_MILLIS;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Checks if the sensor is ready to be read
+      @returns  True if the sensor is ready, False otherwise.
+  */
+  /*******************************************************************************/
+  bool IsSensorReady() {
+    bool isDataReady = false;
+    for (int i = 0; i < 2; i++) {
+      uint16_t error = _sen->readDataReady(isDataReady);
+      if (error == 0 && isDataReady) {
+        return true;
+      }
+      delay(100);
+    }
+    return false;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the sensor.
+      @returns  True if the sensor was read successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool ReadSensorData() {
+    // dont read sensor more than once per second
+    if (HasBeenReadInLastSecond()) {
+      return true;
+    }
+
+    if (!IsSensorReady()) {
+      return false;
+    }
+
+    uint16_t error = _sen->readMeasuredValues(
+        _massConcentrationPm1p0, _massConcentrationPm2p5,
+        _massConcentrationPm4p0, _massConcentrationPm10p0, _ambientHumidity,
+        _ambientTemperature, _vocIndex, _noxIndex);
+    if (error != 0) {
+      return false;
+    }
+    _lastRead = millis();
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
       @brief    Gets the SEN5X's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -79,20 +140,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    float massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
-        ambientTemperature, vocIndex, noxIndex;
-    uint16_t error;
-
-    error = _sen->readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-    if ((_tempSensorPeriod != 0 && error != 0) || ambientTemperature == NAN) {
+    if (!ReadSensorData() || _ambientTemperature == NAN) {
       return false;
     }
-
-    tempEvent->temperature = ambientTemperature;
+    tempEvent->temperature = _ambientTemperature;
     return true;
   }
 
@@ -106,20 +157,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    float massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
-        ambientTemperature, vocIndex, noxIndex;
-    uint16_t error;
-
-    error = _sen->readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-    if ((_humidSensorPeriod != 0 && error != 0) || ambientHumidity == NAN) {
+    if (!ReadSensorData() || _ambientHumidity == NAN) {
       return false;
     }
-
-    humidEvent->relative_humidity = ambientHumidity;
+    humidEvent->relative_humidity = _ambientHumidity;
     return true;
   }
 
@@ -136,20 +177,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
-    float massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
-        ambientTemperature, vocIndex, noxIndex;
-    uint16_t error;
-
-    error = _sen->readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-    if ((_NOxIndexPeriod != 0 && error != 0) || noxIndex == NAN) {
+    if (!ReadSensorData() || _noxIndex == NAN) {
       return false;
     }
-
-    noxIndexEvent->nox_index = noxIndex;
+    noxIndexEvent->nox_index = _noxIndex;
     return true;
   }
 
@@ -163,20 +194,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    float massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
-        ambientTemperature, vocIndex, noxIndex;
-    uint16_t error;
-
-    error = _sen->readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-    if ((_VOCIndexPeriod != 0 && error != 0) || vocIndex == NAN) {
+    if (!ReadSensorData() || _vocIndex == NAN) {
       return false;
     }
-
-    vocIndexEvent->voc_index = vocIndex;
+    vocIndexEvent->voc_index = _vocIndex;
     return true;
   }
 
@@ -190,22 +211,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
-    float massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
-        ambientTemperature, vocIndex, noxIndex;
-    uint16_t error;
-
-    error = _sen->readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-    if ((_PM10SensorPeriod != 0 && error != 0) ||
-        massConcentrationPm1p0 == NAN ||
-        massConcentrationPm1p0 == OVERFLOW_SEN55) {
+    if (!ReadSensorData() || _massConcentrationPm1p0 == NAN ||
+        _massConcentrationPm1p0 == OVERFLOW_SEN55) {
       return false;
     }
-
-    pm10StdEvent->pm10_std = massConcentrationPm1p0;
+    pm10StdEvent->pm10_std = _massConcentrationPm1p0;
     return true;
   }
 
@@ -219,22 +229,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
-    float massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
-        ambientTemperature, vocIndex, noxIndex;
-    uint16_t error;
-
-    error = _sen->readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-    if ((_PM25SensorPeriod != 0 && error != 0) ||
-        massConcentrationPm2p5 == NAN ||
-        massConcentrationPm2p5 == OVERFLOW_SEN55) {
+    if (!ReadSensorData() || _massConcentrationPm2p5 == NAN ||
+        _massConcentrationPm2p5 == OVERFLOW_SEN55) {
       return false;
     }
-
-    pm25StdEvent->pm25_std = massConcentrationPm2p5;
+    pm25StdEvent->pm25_std = _massConcentrationPm2p5;
     return true;
   }
 
@@ -248,22 +247,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM40_STD(sensors_event_t *pm40StdEvent) {
-    float massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
-        ambientTemperature, vocIndex, noxIndex;
-    uint16_t error;
-
-    error = _sen->readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-    if ((_PM25SensorPeriod != 0 && error != 0) ||
-        massConcentrationPm4p0 == NAN ||
-        massConcentrationPm4p0 == OVERFLOW_SEN55) {
+    if (!ReadSensorData() || _massConcentrationPm4p0 == NAN ||
+        _massConcentrationPm4p0 == OVERFLOW_SEN55) {
       return false;
     }
-
-    pm40StdEvent->data[0] = massConcentrationPm4p0;
+    pm40StdEvent->data[0] = _massConcentrationPm4p0;
     return true;
   }
 
@@ -277,27 +265,25 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
-    float massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
-        ambientTemperature, vocIndex, noxIndex;
-    uint16_t error;
-
-    error = _sen->readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-    if ((_PM100SensorPeriod != 0 && error != 0) ||
-        massConcentrationPm10p0 == NAN ||
-        massConcentrationPm10p0 == OVERFLOW_SEN55) {
+    if (!ReadSensorData() || _massConcentrationPm10p0 == NAN ||
+        _massConcentrationPm10p0 == OVERFLOW_SEN55) {
       return false;
     }
-
-    pm100StdEvent->pm100_std = massConcentrationPm10p0;
+    pm100StdEvent->pm100_std = _massConcentrationPm10p0;
     return true;
   }
 
 protected:
-  SensirionI2CSen5x *_sen; ///< SEN5X driver object
+  SensirionI2CSen5x *_sen = nullptr; ///< SEN5X driver object
+  float _massConcentrationPm1p0;     ///< PM1.0 mass concentration
+  float _massConcentrationPm2p5;     ///< PM2.5 mass concentration
+  float _massConcentrationPm4p0;     ///< PM4.0 mass concentration
+  float _massConcentrationPm10p0;    ///< PM10.0 mass concentration
+  float _ambientHumidity;            ///< Ambient humidity
+  float _ambientTemperature;         ///< Ambient temperature
+  float _vocIndex;                   ///< VOC index
+  float _noxIndex;                   ///< NOx index
+  ulong _lastRead = 0uL;             ///< Last time the sensor was read
 };
 
 #endif // WipperSnapper_I2C_Driver_SEN5X

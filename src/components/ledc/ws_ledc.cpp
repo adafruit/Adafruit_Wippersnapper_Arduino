@@ -54,7 +54,8 @@ bool ws_ledc::analogWrite(uint8_t pin, int value) {
 
   // Calculate duty cycle for the `value` passed in
   // (assumes 12-bit resolution, 2^12)
-  uint32_t dutyCycle = (4095 / 255) * min(value, 255);
+  uint32_t dutyCycle =
+      (uint32_t)(((double)4095 / 255.0) * min((uint32_t)value, (uint32_t)255));
 
   // Call duty cycle write
   return setDuty(pin, dutyCycle);
