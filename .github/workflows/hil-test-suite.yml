@@ -1,1 +1,134 @@
-## Add tailscale linked HIL test stuff here
+# Hardware-in-the-loop (HIL) test suite.
+#
+# Compares two firmware builds on REAL hardware via the usbip-hil-controller and
+# posts the result to the PR. The headline case (#926/#927): a v1
+# ws.signal.pixelWrite to an uninitialised NeoPixel strand (pin D0, colour 200)
+# CRASHES + reboots release 1.0.0-beta.127, but the #927 fix logs
+# "Pixel strand not found" and continues with no reset.
+#
+# CONTRACT: low_ref = a published RELEASE, high_ref = THIS PR's build. Any other
+# combination routes to a custom-script note instead of the standard matrix.
+#
+# It runs AFTER the build workflow (depends on its artifacts) and only for the
+# board(s) the controller reports available — today only qtpy_esp32s3_n4r2; the
+# rest of the bench is marked offline, skipped, and listed in the comment.
+#
+# Required repo secrets:  TAILSCALE_AUTHKEY_TYETH, HIL_API_TOKEN
+#                         (+ HIL_IO_USERNAME/HIL_IO_KEY/HIL_WIFI_SSID/HIL_WIFI_PASSWORD)
+# Optional repo vars:     HIL_API_BASE (default below), HIL_LOW_REF (release tag),
+#                         HIL_TARGETS (space-separated build targets; default qtpy)
+name: HIL test suite
+
+on:
+  workflow_run:
+    workflows: ["WipperSnapper Build CI"]   # the build job we depend on
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      low_ref:
+        description: "LOW ref — a published release tag (e.g. 1.0.0-beta.127)"
+        required: true
+        default: "1.0.0-beta.127"
+      high_ref:
+        description: "HIGH ref — leave blank to use this PR's build"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  actions: read          # download build artifacts from the triggering run
+  pull-requests: write   # post the result comment
+
+concurrency:
+  group: hil-${{ github.event.workflow_run.head_branch || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  hil:
+    # Only run when the build succeeded (workflow_run) or on manual dispatch.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'pull_request')
+    runs-on: ubuntu-latest
+    env:
+      HIL_API_BASE: ${{ vars.HIL_API_BASE || 'http://tachyon-16ee27b8.ostrich-escalator.ts.net:8080' }}
+      HIL_API_TOKEN: ${{ secrets.HIL_API_TOKEN }}
+      LOW_REF: ${{ github.event.inputs.low_ref || vars.HIL_LOW_REF || '1.0.0-beta.127' }}
+      TARGETS: ${{ vars.HIL_TARGETS || 'qtpy_esp32s3_n4r2' }}
+      BUILD_RUN_ID: ${{ github.event.workflow_run.id }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The contract: low=release, high=this PR. Manual runs with a high_ref that
+      # isn't this PR fall back to a custom run (handled out of band).
+      - name: Validate ref contract
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.high_ref }}" ]; then
+            echo "::warning::high_ref override given — not the standard (release-low, PR-high) matrix; consider a custom script run."
+          fi
+          gh release view "$LOW_REF" --repo "$GITHUB_REPOSITORY" >/dev/null \
+            || { echo "::error::LOW_REF '$LOW_REF' is not a published release (contract: low must be a release)"; exit 1; }
+
+      - name: Join Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY_TYETH }}
+          args: --hostname=gitlab-${{ github.run_id }} --accept-routes
+
+      - name: Query controller target availability
+        id: avail
+        run: |
+          set -euo pipefail
+          curl -fsS -H "Authorization: Bearer $HIL_API_TOKEN" "$HIL_API_BASE/v1/targets" > targets.json
+          echo "Controller targets:"; jq -r '.targets[] | "  \(.target)\t\(.status)\t\(.reason // "")"' targets.json
+
+      - name: Fetch + extract firmware (release LOW, PR-build HIGH)
+        run: |
+          set -euo pipefail
+          mkdir -p fw
+          for T in $TARGETS; do
+            # LOW: release fatfs zip (contains the combined.bin)
+            gh release download "$LOW_REF" --repo "$GITHUB_REPOSITORY" \
+              --pattern "*${T}*fatfs*.zip" --dir "fw/low-$T" || { echo "::warning::no LOW fatfs zip for $T"; continue; }
+            unzip -o "fw/low-$T/"*.zip -d "fw/low-$T" >/dev/null
+            # HIGH: this PR's build artifact (build-files-<target>-zip) from the build run
+            if [ -n "${BUILD_RUN_ID:-}" ]; then
+              gh run download "$BUILD_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+                --name "build-files-${T}-zip" --dir "fw/high-$T" || echo "::warning::no HIGH artifact for $T"
+              find "fw/high-$T" -name '*.zip' -exec unzip -o {} -d "fw/high-$T" \; >/dev/null || true
+            fi
+          done
+          echo "Extracted combined.bins:"; find fw -name '*combined.bin' -printf '  %p\n' || true
+
+      - name: Run A/B pixelWrite comparison on available targets
+        id: run
+        env:
+          HIL_IO_USERNAME: ${{ secrets.HIL_IO_USERNAME }}
+          HIL_IO_KEY: ${{ secrets.HIL_IO_KEY }}
+          HIL_WIFI_SSID: ${{ secrets.HIL_WIFI_SSID }}
+          HIL_WIFI_PASSWORD: ${{ secrets.HIL_WIFI_PASSWORD }}
+        run: bash .github/workflows/hil-pixelwrite-run.sh
+
+      - name: Upload captured HIL assets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-assets
+          path: hil-out/**
+          if-no-files-found: ignore
+
+      - name: Comment results on the PR
+        if: always() && github.event_name == 'workflow_run'
+        env:
+          PR_HEAD: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$PR_HEAD" --json number --jq '.[0].number' || true)
+          if [ -n "${PR:-}" ] && [ -f hil-out/comment.md ]; then
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file hil-out/comment.md
+          else
+            echo "No PR for head '$PR_HEAD' or no comment produced; skipping."
+          fi
