@@ -9,9 +9,13 @@
 # CONTRACT: low_ref = a published RELEASE, high_ref = THIS PR's build. Any other
 # combination routes to a custom-script note instead of the standard matrix.
 #
-# It runs AFTER the build workflow (depends on its artifacts) and only for the
-# board(s) the controller reports available — today only qtpy_esp32s3_n4r2; the
-# rest of the bench is marked offline, skipped, and listed in the comment.
+# TRIGGER: it DEPENDS ON the build job — `workflow_run` fires only after
+# "WipperSnapper Build CI" completes successfully — UNLESS manually triggered via
+# `workflow_dispatch` (pass build_run_id to pick the build whose artifacts to use).
+# (GitHub runs workflow_run from the DEFAULT branch, so the auto path engages once
+# this PR is merged; use workflow_dispatch to exercise it from the PR branch.)
+# It runs only for board(s) the controller reports available — today only
+# qtpy_esp32s3_n4r2; the rest of the bench is skipped + listed in the comment.
 #
 # Required repo secrets:  TAILSCALE_AUTHKEY_TYETH, HIL_API_KEY_TYETH
 #                         (+ HIL_IO_USERNAME/HIL_IO_KEY/HIL_WIFI_SSID/HIL_WIFI_PASSWORD)
@@ -34,7 +38,11 @@ on:
         required: true
         default: "1.0.0-beta.127"
       high_ref:
-        description: "HIGH ref — leave blank to use this PR's build"
+        description: "HIGH ref — informational; the HIGH build comes from build_run_id"
+        required: false
+        default: ""
+      build_run_id:
+        description: "WipperSnapper Build CI run id whose artifacts to flash as HIGH"
         required: false
         default: ""
 
@@ -60,7 +68,7 @@ jobs:
       HIL_API_TOKEN: ${{ secrets.HIL_API_KEY_TYETH }}
       LOW_REF: ${{ github.event.inputs.low_ref || vars.HIL_LOW_REF || '1.0.0-beta.127' }}
       TARGETS: ${{ vars.HIL_TARGETS || 'qtpy_esp32s3_n4r2' }}
-      BUILD_RUN_ID: ${{ github.event.workflow_run.id }}
+      BUILD_RUN_ID: ${{ github.event.workflow_run.id || github.event.inputs.build_run_id }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
