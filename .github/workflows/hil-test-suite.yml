@@ -170,27 +170,44 @@ jobs:
           done
           echo "Extracted combined.bins:"; find fw -name '*combined.bin' -printf '  %p\n' || true
 
-      # ── HIL test matrix ───────────────────────────────────────────────────
-      # The PR pixelWrite regression (#926/#927) is PARKED for now — re-enable the
-      # step below and disable the check-in smoke test to run the A/B again.
-      #
-      # - name: Run A/B pixelWrite comparison on available targets   # PARKED
-      #   id: run
-      #   env:
-      #     HIL_IO_USERNAME: ${{ secrets.HIL_IO_USERNAME }}
-      #     HIL_IO_KEY: ${{ secrets.HIL_IO_KEY }}
-      #     HIL_WIFI_SSID: ${{ secrets.HIL_WIFI_SSID }}
-      #     HIL_WIFI_PASSWORD: ${{ secrets.HIL_WIFI_PASSWORD }}
-      #   run: bash .github/workflows/hil-pixelwrite-run.sh
+      # ── HIL test array ────────────────────────────────────────────────────
+      # Each test is its own driver script; it appends a section (+ per-test
+      # assets) to the shared hil-out/comment.md, which the workflow owns (the
+      # marker + header are written once here, the sticky comment posts it all).
+      # Tests run with if:always() so one failing test still lets the others run
+      # and report; the job still fails if any test fails. Add a test by adding a
+      # driver + a step here.
+      - name: Init PR summary
+        run: |
+          mkdir -p hil-out
+          {
+            echo "<!-- hil-test-suite -->"
+            echo "## 🔌 HIL test results"
+            echo
+            echo "<sub>Driven by usbip-hil-controller over Tailscale; only bench-available targets run (others skipped + listed with reason). Per-test proof (serial.log / protomq.log / flash.log) attached as the \`hil-assets\` artifact. 🤖</sub>"
+          } > hil-out/comment.md
 
-      - name: Run check-in smoke test on available targets
-        id: run
+      # Test 1 — default gate: prove the end-to-end path (flash → secrets → checkin).
+      - name: "HIL test: check-in smoke test"
+        id: test_checkin
+        if: always()
         env:
           HIL_IO_USERNAME: ${{ secrets.HIL_IO_USERNAME }}
           HIL_IO_KEY: ${{ secrets.HIL_IO_KEY }}
           HIL_WIFI_SSID: ${{ secrets.HIL_WIFI_SSID }}
           HIL_WIFI_PASSWORD: ${{ secrets.HIL_WIFI_PASSWORD }}
         run: bash .github/workflows/hil-checkin-run.sh
+
+      # Test 2 — pixelWrite uninitialised-strand regression (#926, fixed by #927).
+      - name: "HIL test: pixelWrite regression (#926)"
+        id: test_pixelwrite_926
+        if: always()
+        env:
+          HIL_IO_USERNAME: ${{ secrets.HIL_IO_USERNAME }}
+          HIL_IO_KEY: ${{ secrets.HIL_IO_KEY }}
+          HIL_WIFI_SSID: ${{ secrets.HIL_WIFI_SSID }}
+          HIL_WIFI_PASSWORD: ${{ secrets.HIL_WIFI_PASSWORD }}
+        run: bash .github/workflows/hil-pixelwrite-run.sh
 
       - name: Upload captured HIL assets
         if: always()
