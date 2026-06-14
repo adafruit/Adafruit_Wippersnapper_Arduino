@@ -48,11 +48,16 @@ run_side() {  # side, target, device_id, fw_path -> echoes verdict (true|false|u
       -H 'Content-Type: application/json' --data @- "${API}/v1/jobs" | jq -r '.id') || return 1
   echo "::group::[$t/$side] job $jid" >&2
   local since=0 state="" verdict="unknown" out
-  for _ in $(seq 1 120); do
+  # Time-bounded poll (not an iteration count): firmware-bench floods serial
+  # events so each /wait returns instantly, exhausting a fixed loop before the
+  # ~6-8min pipeline + inject completes. Break as soon as the verdict appears.
+  local deadline=$(( $(date +%s) + 900 ))
+  while [ "$(date +%s)" -lt "$deadline" ]; do
     out=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/wait?since=${since}&timeout=10") || break
     echo "$out" | jq -r '.events[]?|.payload.msg // empty' 2>/dev/null | tee -a "hil-out/${t}-${side}.events.log" >&2
     if echo "$out" | grep -q 'PIXELWRITE_VERDICT rebooted=true'; then verdict=true; fi
     if echo "$out" | grep -q 'PIXELWRITE_VERDICT rebooted=false'; then verdict=false; fi
+    [ "$verdict" != unknown ] && break
     since=$(echo "$out" | jq -r '.next_since // .since // 0')
     state=$(echo "$out" | jq -r '.state // ""')
     case "$state" in finished|failed|cancelled|error|timeout) break;; esac

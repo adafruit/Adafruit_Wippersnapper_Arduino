@@ -47,11 +47,17 @@ run_target() {  # target, device_id, fw_path -> echoes checkin (true|false|unkno
   jid=$(jobreq "$t" "$dev" "$path" | curl -fsS "${AUTH[@]}" -X POST \
       -H 'Content-Type: application/json' --data @- "${API}/v1/jobs" | jq -r '.id') || return 1
   echo "::group::[$t/checkin] job $jid" >&2
-  for _ in $(seq 1 120); do
+  # Poll on a TIME budget, not an iteration count: firmware-bench floods serial
+  # events so each /wait returns instantly — a fixed loop count burns out long
+  # before the ~6-8min flash→secrets→checkin completes. Break as soon as the
+  # verdict appears, else keep going until the job is terminal or ~15min.
+  local deadline=$(( $(date +%s) + 900 ))
+  while [ "$(date +%s)" -lt "$deadline" ]; do
     out=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/wait?since=${since}&timeout=10") || break
     echo "$out" | jq -r '.events[]?|.payload.msg // empty' 2>/dev/null | tee -a "hil-out/${t}-checkin.events.log" >&2
     if echo "$out" | grep -q 'CHECKIN_VERDICT ok=true';  then checkin=true; fi
     if echo "$out" | grep -q 'CHECKIN_VERDICT ok=false'; then checkin=false; fi
+    [ "$checkin" != unknown ] && break
     since=$(echo "$out" | jq -r '.next_since // .since // 0')
     state=$(echo "$out" | jq -r '.state // ""')
     case "$state" in finished|failed|cancelled|error|timeout) break;; esac
