@@ -9,11 +9,15 @@
 # CONTRACT: low_ref = a published RELEASE, high_ref = THIS PR's build. Any other
 # combination routes to a custom-script note instead of the standard matrix.
 #
-# TRIGGER: it DEPENDS ON the build job — `workflow_run` fires only after
-# "WipperSnapper Build CI" completes successfully — UNLESS manually triggered via
-# `workflow_dispatch` (pass build_run_id to pick the build whose artifacts to use).
-# (GitHub runs workflow_run from the DEFAULT branch, so the auto path engages once
-# this PR is merged; use workflow_dispatch to exercise it from the PR branch.)
+# TRIGGER: it DEPENDS ON the build job. Three entry points:
+#   * `pull_request`  — runs from THIS branch's copy of the file (the only event
+#                       that does); waits for "WipperSnapper Build CI" on the head
+#                       SHA to succeed, then flashes that run's artifacts as HIGH.
+#   * `workflow_run`  — fires after "WipperSnapper Build CI" completes (engages
+#                       once this file is on the DEFAULT branch, i.e. post-merge).
+#   * `workflow_dispatch` — manual; pass build_run_id to pick the build artifacts.
+# (GitHub reads workflow_run/workflow_dispatch only from the DEFAULT branch, so on
+# a feature branch use the pull_request path to exercise it before merge.)
 # It runs only for board(s) the controller reports available — today only
 # qtpy_esp32s3_n4r2; the rest of the bench is skipped + listed in the comment.
 #
@@ -28,6 +32,8 @@
 name: HIL test suite
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_run:
     workflows: ["WipperSnapper Build CI"]   # the build job we depend on
     types: [completed]
@@ -57,8 +63,9 @@ concurrency:
 
 jobs:
   hil:
-    # Only run when the build succeeded (workflow_run) or on manual dispatch.
+    # Run on a PR, on manual dispatch, or when the depended-on build succeeded.
     if: >-
+      github.event_name == 'pull_request' ||
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'pull_request')
@@ -68,10 +75,43 @@ jobs:
       HIL_API_TOKEN: ${{ secrets.HIL_API_KEY_TYETH }}
       LOW_REF: ${{ github.event.inputs.low_ref || vars.HIL_LOW_REF || '1.0.0-beta.127' }}
       TARGETS: ${{ vars.HIL_TARGETS || 'qtpy_esp32s3_n4r2' }}
-      BUILD_RUN_ID: ${{ github.event.workflow_run.id || github.event.inputs.build_run_id }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
+
+      # Resolve which build's artifacts are HIGH, per trigger. For a PR this WAITS
+      # for "WipperSnapper Build CI" on the head SHA to finish (depends-on-build),
+      # then exports BUILD_RUN_ID for the fetch step.
+      - name: Resolve build run id
+        run: |
+          set -euo pipefail
+          case "${{ github.event_name }}" in
+            workflow_run)
+              echo "BUILD_RUN_ID=${{ github.event.workflow_run.id }}" >> "$GITHUB_ENV" ;;
+            workflow_dispatch)
+              echo "BUILD_RUN_ID=${{ github.event.inputs.build_run_id }}" >> "$GITHUB_ENV" ;;
+            pull_request)
+              SHA="${{ github.event.pull_request.head.sha }}"
+              echo "Waiting for 'WipperSnapper Build CI' for $SHA ..."
+              for i in $(seq 1 60); do
+                ROW=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "WipperSnapper Build CI" \
+                      --limit 50 --json databaseId,headSha,status,conclusion 2>/dev/null \
+                      | jq -c --arg sha "$SHA" 'map(select(.headSha==$sha)) | .[0] // empty' || echo "")
+                if [ -n "$ROW" ]; then
+                  ST=$(echo "$ROW" | jq -r .status); CC=$(echo "$ROW" | jq -r .conclusion)
+                  RID=$(echo "$ROW" | jq -r .databaseId)
+                  echo "  build run $RID: status=$ST conclusion=$CC (attempt $i)"
+                  if [ "$ST" = "completed" ]; then
+                    [ "$CC" = "success" ] || { echo "::error::WipperSnapper Build CI did not succeed ($CC)"; exit 1; }
+                    echo "BUILD_RUN_ID=$RID" >> "$GITHUB_ENV"; exit 0
+                  fi
+                else
+                  echo "  no build run yet for $SHA (attempt $i)"
+                fi
+                sleep 20
+              done
+              echo "::error::timed out waiting for WipperSnapper Build CI on $SHA"; exit 1 ;;
+          esac
 
       # The contract: low=release, high=this PR. Manual runs with a high_ref that
       # isn't this PR fall back to a custom run (handled out of band).
@@ -133,14 +173,18 @@ jobs:
           if-no-files-found: ignore
 
       - name: Comment results on the PR
-        if: always() && github.event_name == 'workflow_run'
+        if: always() && github.event_name != 'workflow_dispatch'
         env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_HEAD: ${{ github.event.workflow_run.head_branch }}
         run: |
           set -euo pipefail
-          PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$PR_HEAD" --json number --jq '.[0].number' || true)
+          PR="${PR_NUMBER:-}"
+          if [ -z "$PR" ] && [ -n "${PR_HEAD:-}" ]; then
+            PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$PR_HEAD" --json number --jq '.[0].number' || true)
+          fi
           if [ -n "${PR:-}" ] && [ -f hil-out/comment.md ]; then
             gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file hil-out/comment.md
           else
-            echo "No PR for head '$PR_HEAD' or no comment produced; skipping."
+            echo "No PR (number='$PR', head='${PR_HEAD:-}') or no comment produced; skipping."
           fi
