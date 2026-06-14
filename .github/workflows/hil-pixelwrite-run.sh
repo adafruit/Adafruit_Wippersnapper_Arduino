@@ -66,6 +66,7 @@ run_side() {  # side, target, device_id, fw_path -> echoes verdict (true|false|u
 }
 
 {
+  echo "<!-- hil-test-suite -->"
   echo "## 🔌 HIL test results"
   echo
   echo "v1 \`ws.signal.pixelWrite\` to an uninitialised strand (pin **D0**, colour **200**) — release should **crash+reboot**, the fix should **log + continue** (#926/#927)."
@@ -85,7 +86,8 @@ for T in $TARGETS; do
   lowbin=$(find "fw/low-$T"  -name '*combined.bin' | head -1)
   highbin=$(find "fw/high-$T" -name '*combined.bin' | head -1)
   if [ -z "$lowbin" ] || [ -z "$highbin" ]; then
-    echo "| \`$T\` | ${lowbin:+ok}${lowbin:-missing} | ${highbin:+ok}${highbin:-missing} | ⚠️ firmware missing |" >> hil-out/comment.md; continue
+    lo=$([ -n "$lowbin" ] && echo ok || echo missing); hi=$([ -n "$highbin" ] && echo ok || echo missing)
+    echo "| \`$T\` | $lo | $hi | ⚠️ firmware missing |" >> hil-out/comment.md; continue
   fi
   ran=1
   lv=$(run_side low "$T" "$dev" "$lowbin"); hv=$(run_side high "$T" "$dev" "$highbin")

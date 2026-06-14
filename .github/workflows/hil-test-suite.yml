@@ -145,16 +145,27 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p fw
+          # HIGH source: the build matrix uploads per-platform 'build-files-<plat>-zip'
+          # artifacts, then a merge-job combines them into ONE 'build-files' artifact
+          # (deleting the per-platform ones). So pull that single artifact once; it
+          # contains wippersnapper.<plat>.fatfs.<ver>.zip for every target.
+          if [ -n "${BUILD_RUN_ID:-}" ]; then
+            gh run download "$BUILD_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+              --name build-files --dir fw/high-all || echo "::warning::no 'build-files' artifact on run $BUILD_RUN_ID"
+          fi
           for T in $TARGETS; do
             # LOW: release fatfs zip (contains the combined.bin)
             gh release download "$LOW_REF" --repo "$GITHUB_REPOSITORY" \
-              --pattern "*${T}*fatfs*.zip" --dir "fw/low-$T" || { echo "::warning::no LOW fatfs zip for $T"; continue; }
-            unzip -o "fw/low-$T/"*.zip -d "fw/low-$T" >/dev/null
-            # HIGH: this PR's build artifact (build-files-<target>-zip) from the build run
-            if [ -n "${BUILD_RUN_ID:-}" ]; then
-              gh run download "$BUILD_RUN_ID" --repo "$GITHUB_REPOSITORY" \
-                --name "build-files-${T}-zip" --dir "fw/high-$T" || echo "::warning::no HIGH artifact for $T"
-              find "fw/high-$T" -name '*.zip' -exec unzip -o {} -d "fw/high-$T" \; >/dev/null || true
+              --pattern "*${T}*fatfs*.zip" --dir "fw/low-$T" || echo "::warning::no LOW fatfs zip for $T"
+            if ls "fw/low-$T/"*.zip >/dev/null 2>&1; then
+              unzip -o "fw/low-$T/"*.zip -d "fw/low-$T" >/dev/null
+            fi
+            # HIGH: this target's fatfs zip lives inside the merged build-files artifact.
+            HZ=$(find fw/high-all -name "wippersnapper.${T}.fatfs.*.zip" 2>/dev/null | head -1 || true)
+            if [ -n "$HZ" ]; then
+              unzip -o "$HZ" -d "fw/high-$T" >/dev/null
+            else
+              echo "::warning::no HIGH fatfs zip for $T inside build-files"
             fi
           done
           echo "Extracted combined.bins:"; find fw -name '*combined.bin' -printf '  %p\n' || true
@@ -188,7 +199,17 @@ jobs:
             PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$PR_HEAD" --json number --jq '.[0].number' || true)
           fi
           if [ -n "${PR:-}" ] && [ -f hil-out/comment.md ]; then
-            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file hil-out/comment.md
+            # Sticky: update our existing marker comment in place rather than piling
+            # a new comment on the PR each run.
+            CID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+                  --jq '.[] | select(.body | contains("<!-- hil-test-suite -->")) | .id' | head -1 || true)
+            if [ -n "${CID:-}" ]; then
+              gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$CID" -F body=@hil-out/comment.md >/dev/null
+              echo "updated sticky comment $CID on PR #$PR"
+            else
+              gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file hil-out/comment.md
+              echo "created comment on PR #$PR"
+            fi
           else
             echo "No PR (number='$PR', head='${PR_HEAD:-}') or no comment produced; skipping."
           fi
