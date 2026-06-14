@@ -70,6 +70,7 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'pull_request')
     runs-on: ubuntu-latest
+    timeout-minutes: 150   # generous: build wait (~95m) + flash/inject for 2 builds
     env:
       HIL_API_BASE: ${{ vars.HIL_API_BASE || 'http://tachyon-16ee27b8.ostrich-escalator.ts.net:8080' }}
       HIL_API_TOKEN: ${{ secrets.HIL_API_KEY_TYETH }}
@@ -92,25 +93,28 @@ jobs:
               echo "BUILD_RUN_ID=${{ github.event.inputs.build_run_id }}" >> "$GITHUB_ENV" ;;
             pull_request)
               SHA="${{ github.event.pull_request.head.sha }}"
-              echo "Waiting for 'WipperSnapper Build CI' for $SHA ..."
-              for i in $(seq 1 60); do
+              # The build matrix can take 30+ min (occasionally up to ~1.5 h), so
+              # wait generously: 190 polls x 30 s ≈ 95 min.
+              ATTEMPTS=190; INTERVAL=30
+              echo "Waiting up to ~$((ATTEMPTS*INTERVAL/60)) min for 'WipperSnapper Build CI' for $SHA ..."
+              for i in $(seq 1 $ATTEMPTS); do
                 ROW=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "WipperSnapper Build CI" \
                       --limit 50 --json databaseId,headSha,status,conclusion 2>/dev/null \
                       | jq -c --arg sha "$SHA" 'map(select(.headSha==$sha)) | .[0] // empty' || echo "")
                 if [ -n "$ROW" ]; then
                   ST=$(echo "$ROW" | jq -r .status); CC=$(echo "$ROW" | jq -r .conclusion)
                   RID=$(echo "$ROW" | jq -r .databaseId)
-                  echo "  build run $RID: status=$ST conclusion=$CC (attempt $i)"
+                  echo "  build run $RID: status=$ST conclusion=$CC ($((i*INTERVAL/60)) min elapsed)"
                   if [ "$ST" = "completed" ]; then
                     [ "$CC" = "success" ] || { echo "::error::WipperSnapper Build CI did not succeed ($CC)"; exit 1; }
                     echo "BUILD_RUN_ID=$RID" >> "$GITHUB_ENV"; exit 0
                   fi
                 else
-                  echo "  no build run yet for $SHA (attempt $i)"
+                  echo "  no build run yet for $SHA ($((i*INTERVAL/60)) min elapsed)"
                 fi
-                sleep 20
+                sleep $INTERVAL
               done
-              echo "::error::timed out waiting for WipperSnapper Build CI on $SHA"; exit 1 ;;
+              echo "::error::timed out (~$((ATTEMPTS*INTERVAL/60)) min) waiting for WipperSnapper Build CI on $SHA"; exit 1 ;;
           esac
 
       # The contract: low=release, high=this PR. Manual runs with a high_ref that
