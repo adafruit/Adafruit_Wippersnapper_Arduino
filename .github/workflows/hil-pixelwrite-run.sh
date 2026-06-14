@@ -28,6 +28,7 @@ jobreq() {  # side, target, device_id, fw_path -> stdout job json
         {type:"enter_bootloader"},
         {type:"erase",  before:"no_reset", after:"no_reset"},
         {type:"flash",  offset:"0x0", before:"no_reset", after:"no_reset"},
+        {type:"power_cycle"},
         {type:"write_secrets_msc"},
         {type:"power_cycle"},
         {type:"inject_pixelwrite", pin:"D0", color:200}
@@ -54,8 +55,9 @@ run_side() {  # side, target, device_id, fw_path -> echoes verdict (true|false|u
     if echo "$out" | grep -q 'PIXELWRITE_VERDICT rebooted=false'; then verdict=false; fi
     since=$(echo "$out" | jq -r '.next_since // .since // 0')
     state=$(echo "$out" | jq -r '.state // ""')
-    case "$state" in finished|failed|cancelled) break;; esac
+    case "$state" in finished|failed|cancelled|error|timeout) break;; esac
   done
+  echo "[$t/$side] terminal state: ${state:-unknown}" >&2
   # Pull captured assets as proof.
   for aid in $(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" | jq -r '.assets[]?.id'); do
     fn=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" | jq -r ".assets[]|select(.id==\"$aid\").filename")

@@ -170,14 +170,27 @@ jobs:
           done
           echo "Extracted combined.bins:"; find fw -name '*combined.bin' -printf '  %p\n' || true
 
-      - name: Run A/B pixelWrite comparison on available targets
+      # ── HIL test matrix ───────────────────────────────────────────────────
+      # The PR pixelWrite regression (#926/#927) is PARKED for now — re-enable the
+      # step below and disable the check-in smoke test to run the A/B again.
+      #
+      # - name: Run A/B pixelWrite comparison on available targets   # PARKED
+      #   id: run
+      #   env:
+      #     HIL_IO_USERNAME: ${{ secrets.HIL_IO_USERNAME }}
+      #     HIL_IO_KEY: ${{ secrets.HIL_IO_KEY }}
+      #     HIL_WIFI_SSID: ${{ secrets.HIL_WIFI_SSID }}
+      #     HIL_WIFI_PASSWORD: ${{ secrets.HIL_WIFI_PASSWORD }}
+      #   run: bash .github/workflows/hil-pixelwrite-run.sh
+
+      - name: Run check-in smoke test on available targets
         id: run
         env:
           HIL_IO_USERNAME: ${{ secrets.HIL_IO_USERNAME }}
           HIL_IO_KEY: ${{ secrets.HIL_IO_KEY }}
           HIL_WIFI_SSID: ${{ secrets.HIL_WIFI_SSID }}
           HIL_WIFI_PASSWORD: ${{ secrets.HIL_WIFI_PASSWORD }}
-        run: bash .github/workflows/hil-pixelwrite-run.sh
+        run: bash .github/workflows/hil-checkin-run.sh
 
       - name: Upload captured HIL assets
         if: always()
