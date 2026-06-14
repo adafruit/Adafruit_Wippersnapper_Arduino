@@ -13,10 +13,14 @@
 # board(s) the controller reports available — today only qtpy_esp32s3_n4r2; the
 # rest of the bench is marked offline, skipped, and listed in the comment.
 #
-# Required repo secrets:  TAILSCALE_AUTHKEY_TYETH, HIL_API_TOKEN
+# Required repo secrets:  TAILSCALE_AUTHKEY_TYETH, HIL_API_KEY_TYETH
 #                         (+ HIL_IO_USERNAME/HIL_IO_KEY/HIL_WIFI_SSID/HIL_WIFI_PASSWORD)
 # Optional repo vars:     HIL_API_BASE (default below), HIL_LOW_REF (release tag),
 #                         HIL_TARGETS (space-separated build targets; default qtpy)
+#
+# NOTE: the broker host:port the device's secrets.json points at is supplied by
+# the CONTROLLER — the write_secrets_msc stage fills io_url/io_port from the
+# per-session protomq it launches — so CI never passes a protomq address.
 name: HIL test suite
 
 on:
@@ -53,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HIL_API_BASE: ${{ vars.HIL_API_BASE || 'http://tachyon-16ee27b8.ostrich-escalator.ts.net:8080' }}
-      HIL_API_TOKEN: ${{ secrets.HIL_API_TOKEN }}
+      HIL_API_TOKEN: ${{ secrets.HIL_API_KEY_TYETH }}
       LOW_REF: ${{ github.event.inputs.low_ref || vars.HIL_LOW_REF || '1.0.0-beta.127' }}
       TARGETS: ${{ vars.HIL_TARGETS || 'qtpy_esp32s3_n4r2' }}
       BUILD_RUN_ID: ${{ github.event.workflow_run.id }}
