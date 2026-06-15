@@ -69,19 +69,15 @@ out=$(wait_for_target_available qtpy 2>/dev/null); rc=$?
 check "budget-exceeded: return code" 3 "$rc"
 check "budget-exceeded: status starts timeout" "timeout host rebooting" "$out"
 
-# 5) classifier: clean finish is never transient (even with a scary events file)
-echo "No route to host" > ev.log
-is_host_offline_failure ev.log finished; check "classifier: finished not transient" 1 "$?"
+# 5) infra-error classifier: a clean finish is never an infra error (real verdict)
+is_infra_error finished; check "infra: finished not infra" 1 "$?"
+is_infra_error cancelled; check "infra: cancelled not infra" 1 "$?"
 
-# 6) classifier: errored + host-offline signature => transient (retry)
-echo "stage enter_bootloader: No route to host" > ev.log
-is_host_offline_failure ev.log error; check "classifier: no-route transient" 0 "$?"
-echo "device d-1 unavailable: host USB stack wedged — reboot required, back ~300s" > ev.log
-is_host_offline_failure ev.log error; check "classifier: unavailable-gate transient" 0 "$?"
-
-# 7) classifier: errored on a real failure (no host signature) => NOT transient
-echo "PIXELWRITE_VERDICT rebooted=false" > ev.log
-is_host_offline_failure ev.log error; check "classifier: real failure not transient" 1 "$?"
+# 6) infra-error classifier: error/timeout/failed (and empty) => infra error (retry)
+is_infra_error error;   check "infra: error is infra" 0 "$?"
+is_infra_error timeout; check "infra: timeout is infra" 0 "$?"
+is_infra_error failed;  check "infra: failed is infra" 0 "$?"
+is_infra_error "";      check "infra: empty is infra" 0 "$?"
 
 echo "---- $PASS passed, $FAILC failed ----"
 [ "$FAILC" -eq 0 ]

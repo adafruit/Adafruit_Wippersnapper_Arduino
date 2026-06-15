@@ -65,6 +65,14 @@ run_side() {  # side, target, device_id, fw_path -> sets RS_VERDICT (true|false|
     state=$(echo "$out" | jq -r '.state // ""')
     case "$state" in finished|failed|cancelled|error|timeout) break;; esac
   done
+  # Drain trailing events: the error reason (e.g. "No route to host") often lands
+  # AFTER the state→terminal event, so the loop above breaks before capturing it.
+  out=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/wait?since=${since}&timeout=2" 2>/dev/null) || out=""
+  if [ -n "$out" ]; then
+    echo "$out" | jq -r '.events[]?|.payload.msg // empty' 2>/dev/null | tee -a "hil-out/${t}-${side}.events.log" >&2
+    echo "$out" | grep -q 'PIXELWRITE_VERDICT rebooted=true'  && verdict=true
+    echo "$out" | grep -q 'PIXELWRITE_VERDICT rebooted=false' && verdict=false
+  fi
   echo "[$t/$side] terminal state: ${state:-unknown}" >&2
   # Pull ONLY the captured log assets (serial/protomq/flash) — skip the firmware bin.
   curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" \
@@ -89,9 +97,8 @@ run_side_resilient() {  # side, target, fw_path
   if [ "$wrc" -ne 0 ]; then RSR_VERDICT="skip:$(echo "$status" | cut -d' ' -f2-)"; return "$wrc"; fi
   dev=$(echo "$status" | awk '{print $2}')
   run_side "$side" "$t" "$dev" "$fw"; RSR_VERDICT="$RS_VERDICT"
-  if [ "$RSR_VERDICT" != "true" ] && [ "$RSR_VERDICT" != "false" ] \
-     && is_host_offline_failure "hil-out/${t}-${side}.events.log" "$RS_STATE"; then
-    echo "::warning::[$t/$side] host-offline signature (state=$RS_STATE) — waiting for host + retrying once" >&2
+  if [ "$RSR_VERDICT" != "true" ] && [ "$RSR_VERDICT" != "false" ] && is_infra_error "$RS_STATE"; then
+    echo "::warning::[$t/$side] infra error (state=${RS_STATE:-none}) — waiting for host + retrying once" >&2
     status=$(wait_for_target_available "$t"); wrc=$?
     if [ "$wrc" -eq 0 ]; then
       dev=$(echo "$status" | awk '{print $2}')

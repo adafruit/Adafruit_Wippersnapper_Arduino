@@ -80,15 +80,14 @@ wait_for_target_available() {  # target -> status line; return code per above
   done
 }
 
-# Classify a finished job as a transient host-offline failure (vs a real verdict
-# or a genuine logic failure). True (return 0) when the job did NOT run to a clean
-# finish AND its captured events carry a host-offline / device-unavailable / wedge
-# signature — i.e. the host went away mid-job (or was rejected by the get_adapter
-# gate) rather than producing a verdict. The caller treats this as "wait + retry".
-is_host_offline_failure() {  # events_file, terminal_state -> 0 if transient
-  local ef="$1" state="$2"
-  # A clean finish produced a real result — never a transient retry.
-  case "$state" in finished|cancelled) return 1;; esac
-  [ -f "$ef" ] || return 1
-  grep -qiE 'no route to host|timed out|timeout|connection refused|connection (closed|reset)|ssh.*(timeout|closed|reset|unreachable)|device .* unavailable|reboot required|host (usb )?(stack )?wedged|host rebooting|blocked by lease' "$ef"
+# True (return 0) when a job ended in an INFRA/harness error state — error,
+# timeout, or failed — i.e. it never produced a real verdict (a real
+# firmware-behaviour verdict comes out as state=finished). The driver retries on
+# this regardless of whether a host-offline signature made it into the events log,
+# because the error reason often lands AFTER the state→terminal event (and is
+# sometimes empty), so signature-matching alone misses it (run #10: pixelWrite
+# LOW errored with an empty reason, HIGH with "No route to host" that the loop
+# broke before capturing). A wait_for_target_available precedes the re-submit.
+is_infra_error() {  # terminal_state -> 0 if an infra/harness error (no real verdict)
+  case "$1" in error|timeout|failed|"") return 0;; *) return 1;; esac
 }

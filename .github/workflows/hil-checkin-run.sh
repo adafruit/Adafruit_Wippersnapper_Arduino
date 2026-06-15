@@ -66,6 +66,16 @@ run_target() {  # target, device_id, fw_path -> sets RT_VERDICT (true|false|unkn
     state=$(echo "$out" | jq -r '.state // ""')
     case "$state" in finished|failed|cancelled|error|timeout) break;; esac
   done
+  # Drain trailing events: the error reason (e.g. "No route to host") often lands
+  # AFTER the state→terminal event, so the loop above breaks before capturing it.
+  # One more short fetch flushes it into the events log (for the retry classifier
+  # + the artifact) and catches a verdict that arrived in the same final batch.
+  out=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/wait?since=${since}&timeout=2" 2>/dev/null) || out=""
+  if [ -n "$out" ]; then
+    echo "$out" | jq -r '.events[]?|.payload.msg // empty' 2>/dev/null | tee -a "hil-out/${t}-checkin.events.log" >&2
+    echo "$out" | grep -q 'CHECKIN_VERDICT ok=true'  && checkin=true
+    echo "$out" | grep -q 'CHECKIN_VERDICT ok=false' && checkin=false
+  fi
   echo "[$t/checkin] terminal state: ${state:-unknown}" >&2
   # Pull ONLY the captured log assets (serial/protomq/flash) — skip the firmware bin.
   curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" \
@@ -123,12 +133,11 @@ for T in $TARGETS; do
   fi
   ran=1; note=""
   run_target "$T" "$dev" "$highbin"; cv="$RT_VERDICT"
-  # Reactive retry: a job that errored with a host-offline signature (host wedged
-  # mid-job) — not a real ok=true/false — gets the host waited out + ONE re-run,
-  # so even the test that triggered the wedge runs to a real verdict.
-  if [ "$cv" != "true" ] && [ "$cv" != "false" ] \
-     && is_host_offline_failure "hil-out/${T}-checkin.events.log" "$RT_STATE"; then
-    echo "::warning::[$T/checkin] host-offline signature (state=$RT_STATE) — waiting for host + retrying once" >&2
+  # Reactive retry: a job that ended in an INFRA error (state error/timeout/failed)
+  # — not a real ok=true/false — gets the host waited out + ONE re-run, so even the
+  # test that triggered a wedge/host-reboot runs to a real verdict.
+  if [ "$cv" != "true" ] && [ "$cv" != "false" ] && is_infra_error "$RT_STATE"; then
+    echo "::warning::[$T/checkin] infra error (state=${RT_STATE:-none}) — waiting for host + retrying once" >&2
     status=$(wait_for_target_available "$T"); wrc=$?
     if [ "$wrc" -eq 0 ]; then
       dev=$(echo "$status" | awk '{print $2}')
