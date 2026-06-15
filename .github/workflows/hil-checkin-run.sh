@@ -88,10 +88,12 @@ run_target() {  # target, device_id, fw_path -> sets RT_VERDICT (true|false|unkn
   RT_VERDICT="$checkin"; RT_STATE="$state"
 }
 
-# Evidence the check-in verdict rests on — the device connecting to the broker
-# (protomq) and completing registration/config (serial). proof_window quotes the
-# serial/protomq log around it. append_proof itself comes from hil-lib.sh.
-CHECKIN_EVIDENCE_RE='CHECKIN_VERDICT|connected \(io-|Registration and configuration|configured successfully|MQTT PING: SUCCESS|Hardware configured'
+# Evidence the check-in verdict rests on — the REGISTRATION handshake, which is what
+# actually proves check-in (not the bare TCP connect): the device publishes its
+# version/description, the broker replies with the checkinResponse (pin counts /
+# reference voltage), then RegistrationComplete. proof_window anchors the protomq
+# window there; the serial markers cover the device side. (append_proof: hil-lib.sh)
+CHECKIN_EVIDENCE_RE='CHECKIN_VERDICT|RegistrationComplete|CreateDescriptionResponse|Auto-Responding to checkin|totalGpioPins|GOT Registration Response|Registration and configuration complete'
 
 {
   echo
