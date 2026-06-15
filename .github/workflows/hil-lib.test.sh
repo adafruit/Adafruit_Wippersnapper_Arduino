@@ -3,7 +3,9 @@
 # sleep so the wait/poll/classify logic runs deterministically with no controller
 # and no real waiting. Run: bash .github/workflows/hil-lib.test.sh
 set -uo pipefail
-HERE="${BASH_SOURCE[0]%/*}"
+# Resolve to an ABSOLUTE dir before cd'ing away (CI invokes us with a relative
+# path, so a relative source would break once cwd changes to the tmp dir).
+HERE="$(cd "${BASH_SOURCE[0]%/*}" && pwd)"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 cd "$TMP"
 
