@@ -113,22 +113,11 @@ run_side_resilient() {  # side, target, fw_path
   return 0
 }
 
-# Append an inline serial.log excerpt (proof) for a target/side to the comment.
-append_proof() {  # target, side
-  local t="$1" side="$2" sl
-  sl=$(ls "hil-out/${t}-${side}-serial.log" 2>/dev/null | head -1)
-  [ -z "$sl" ] && sl=$(ls "hil-out/${t}-${side}-flash.log" 2>/dev/null | head -1)
-  [ -z "$sl" ] && return 0
-  {
-    echo
-    echo "<details><summary>📜 \`$t\` ${side} — $(basename "$sl") (tail)</summary>"
-    echo
-    echo '```'
-    tail -n 30 "$sl"
-    echo '```'
-    echo "</details>"
-  } >> hil-out/comment.md
-}
+# Evidence the pixelWrite verdict rests on — the device reset/reboot after the
+# crash (LOW) or the graceful "strand not found" + continued run (HIGH), plus the
+# broker-side pixel signal. proof_window quotes the serial/protomq log around it.
+PIXEL_EVIDENCE_RE='PIXELWRITE_VERDICT|Pixel strand|pixelWrite|rst:0x|boot:0x[0-9a-f]|ets [JFMASOND]|signals/broker/pixel|rebooted|Registration and configuration'
+# append_proof is provided by hil-lib.sh (windowed serial+protomq sections).
 
 {
   echo
@@ -159,14 +148,14 @@ for T in $TARGETS; do
   run_side_resilient high "$T" "$highbin"; rc=$?
   if [ "$rc" -ne 0 ]; then
     echo "| \`$T\` | rebooted=${lv} | — | ⏭️ HIGH skipped (${RSR_VERDICT#skip:}) |" >> hil-out/comment.md
-    [ "$rc" -eq 3 ] && fail=1; append_proof "$T" low; continue
+    [ "$rc" -eq 3 ] && fail=1; append_proof "$T" low "$PIXEL_EVIDENCE_RE"; continue
   fi
   hv="$RSR_VERDICT"; hnote="$RSR_NOTE"
   note=""; [ -n "$lnote" ] && note="${note} (low: $lnote)"; [ -n "$hnote" ] && note="${note} (high: $hnote)"
   pass="❌"; if [ "$lv" = "true" ] && [ "$hv" = "false" ]; then pass="✅"; else fail=1; fi
   echo "| \`$T\` | rebooted=${lv} | rebooted=${hv} | ${pass}${note} |" >> hil-out/comment.md
-  append_proof "$T" low
-  append_proof "$T" high
+  append_proof "$T" low "$PIXEL_EVIDENCE_RE"
+  append_proof "$T" high "$PIXEL_EVIDENCE_RE"
 done
 
 {

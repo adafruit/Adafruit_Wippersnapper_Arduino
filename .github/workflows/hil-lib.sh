@@ -95,3 +95,48 @@ wait_for_target_available() {  # target -> status line; return code per above
 is_infra_error() {  # terminal_state -> 0 if an infra/harness error (no real verdict)
   case "$1" in error|timeout|failed|"") return 0;; *) return 1;; esac
 }
+
+# Lines of context shown before/after the matched test phrase in a proof window.
+HIL_PROOF_BEFORE="${HIL_PROOF_BEFORE:-24}"
+HIL_PROOF_AFTER="${HIL_PROOF_AFTER:-6}"
+
+# Print the evidence WINDOW from a log: the lines leading up to and just after the
+# LAST line matching <regex> (the detection point) — so the quote actually shows the
+# expected data, not a blind tail. Returns 0 if matched, 1 if it fell back to tail.
+proof_window() {  # file, regex
+  local f="$1" re="$2" ln start
+  ln=$(grep -nE "$re" "$f" 2>/dev/null | tail -1 | cut -d: -f1)
+  if [ -n "$ln" ]; then
+    start=$((ln - HIL_PROOF_BEFORE)); [ "$start" -lt 1 ] && start=1
+    sed -n "${start},$((ln + HIL_PROOF_AFTER))p" "$f"
+    return 0
+  fi
+  tail -n 25 "$f"
+  return 1
+}
+
+# Append per-(target,test) proof to the comment: a SEPARATE collapsible section for
+# serial.log AND protomq.log, each windowed around <evidence_regex> (the test
+# phrase), plus a one-line index of the downloadable per-log artifacts. A log that
+# wasn't captured is called out explicitly (not silently dropped).
+#   append_proof <target> <test-label> <evidence_regex>
+append_proof() {
+  local t="$1" label="$2" re="$3" type f win note
+  local run_url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-}/actions/runs/${GITHUB_RUN_ID:-}"
+  for type in serial protomq; do
+    f="hil-out/${t}-${label}-${type}.log"
+    if [ ! -s "$f" ]; then
+      printf '\n> ⚠️ `%s` %s — `%s.log` not captured\n' "$t" "$label" "$type" >> hil-out/comment.md
+      continue
+    fi
+    if win=$(proof_window "$f" "$re"); then note="✓ around the detected test phrase"; else note="⚠️ test phrase not found — tail shown"; fi
+    {
+      printf '\n<details><summary>📜 `%s` %s · %s.log (%s)</summary>\n\n' "$t" "$label" "$type" "$note"
+      echo '```'; printf '%s\n' "$win"; echo '```'
+      echo "</details>"
+    } >> hil-out/comment.md
+  done
+  # Per-log artifact index (each log is uploaded as its own artifact — see below).
+  printf '\n<sub>logs for `%s/%s`: serial / protomq / flash — in the per-log [Artifacts](%s#artifacts)</sub>\n' \
+    "$t" "$label" "$run_url" >> hil-out/comment.md
+}

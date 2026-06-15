@@ -86,5 +86,17 @@ out=$(wait_for_target_available qtpy 2>/dev/null); rc=$?
 check "multi-dut: return code" 0 "$rc"
 check "multi-dut: picks the AVAILABLE device" "available d-up" "$out"
 
+# 9) proof_window: quotes a window around the LAST match (up to + just after), not a tail
+printf 'l1\nl2\nl3 boot\nl4\nl5 connected (io-x)\nl6 after\nl7\nl8\n' > "$TMP/log"
+out=$(HIL_PROOF_BEFORE=1 HIL_PROOF_AFTER=1 proof_window "$TMP/log" 'connected \(io-'); rc=$?
+check "proof_window: matched return code" 0 "$rc"
+check "proof_window: window is [match-1 .. match+1]" "l4
+l5 connected (io-x)
+l6 after" "$out"
+
+# 10) proof_window: no match → tail fallback (rc 1)
+out=$(proof_window "$TMP/log" 'NOPE_NO_SUCH'); rc=$?
+check "proof_window: unmatched return code (tail fallback)" 1 "$rc"
+
 echo "---- $PASS passed, $FAILC failed ----"
 [ "$FAILC" -eq 0 ]

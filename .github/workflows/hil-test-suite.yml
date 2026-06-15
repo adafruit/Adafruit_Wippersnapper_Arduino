@@ -220,7 +220,39 @@ jobs:
           HIL_WIFI_PASSWORD: ${{ secrets.HIL_WIFI_PASSWORD }}
         run: bash .github/workflows/hil-pixelwrite-run.sh
 
-      - name: Upload captured HIL assets
+      # Per-log artifacts — each log type is its own download entry in the run's
+      # Artifacts list (the PR comment links here). Files inside are named
+      # <target>-<test>-<type>.log so a specific test/target log is easy to find.
+      - name: Upload serial logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-serial-logs
+          path: hil-out/*-serial.log
+          if-no-files-found: ignore
+      - name: Upload protomq logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-protomq-logs
+          path: hil-out/*-protomq.log
+          if-no-files-found: ignore
+      - name: Upload flash logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-flash-logs
+          path: hil-out/*-flash.log
+          if-no-files-found: ignore
+      - name: Upload events logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-events-logs
+          path: hil-out/*.events.log
+          if-no-files-found: ignore
+      # Full bundle (comment.md + every log) as a one-stop fallback.
+      - name: Upload all HIL assets
         if: always()
         uses: actions/upload-artifact@v4
         with:

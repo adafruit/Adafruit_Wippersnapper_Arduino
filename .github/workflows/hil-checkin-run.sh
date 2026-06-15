@@ -88,22 +88,10 @@ run_target() {  # target, device_id, fw_path -> sets RT_VERDICT (true|false|unkn
   RT_VERDICT="$checkin"; RT_STATE="$state"
 }
 
-# Append an inline serial.log excerpt (proof) for a target/side to the comment.
-append_proof() {  # target, side
-  local t="$1" side="$2" sl
-  sl=$(ls "hil-out/${t}-${side}-serial.log" 2>/dev/null | head -1)
-  [ -z "$sl" ] && sl=$(ls "hil-out/${t}-${side}-flash.log" 2>/dev/null | head -1)
-  [ -z "$sl" ] && return 0
-  {
-    echo
-    echo "<details><summary>📜 \`$t\` ${side} — $(basename "$sl") (tail)</summary>"
-    echo
-    echo '```'
-    tail -n 30 "$sl"
-    echo '```'
-    echo "</details>"
-  } >> hil-out/comment.md
-}
+# Evidence the check-in verdict rests on — the device connecting to the broker
+# (protomq) and completing registration/config (serial). proof_window quotes the
+# serial/protomq log around it. append_proof itself comes from hil-lib.sh.
+CHECKIN_EVIDENCE_RE='CHECKIN_VERDICT|connected \(io-|Registration and configuration|configured successfully|MQTT PING: SUCCESS|Hardware configured'
 
 {
   echo
@@ -148,7 +136,7 @@ for T in $TARGETS; do
   done
   pass="❌"; if [ "$cv" = "true" ]; then pass="✅"; else fail=1; fi
   echo "| \`$T\` | flashed | ok=${cv} ${pass}${note} |" >> hil-out/comment.md
-  append_proof "$T" checkin
+  append_proof "$T" checkin "$CHECKIN_EVIDENCE_RE"
 done
 
 {
