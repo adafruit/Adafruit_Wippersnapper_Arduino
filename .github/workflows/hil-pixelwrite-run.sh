@@ -11,6 +11,8 @@ set -uo pipefail
 
 API="${HIL_API_BASE:?}"; TOK="${HIL_API_TOKEN:?}"
 AUTH=(-H "Authorization: Bearer ${TOK}")
+# Shared host-reboot-tolerance helpers (wait_for_target_available, is_host_offline_failure).
+source "${BASH_SOURCE[0]%/*}/hil-lib.sh"
 mkdir -p hil-out   # append our section to the shared summary (workflow owns the marker/header)
 fail=0; ran=0
 
@@ -38,9 +40,11 @@ jobreq() {  # side, target, device_id, fw_path -> stdout job json
   }'
 }
 
-run_side() {  # side, target, device_id, fw_path -> echoes verdict (true|false|unknown)
+run_side() {  # side, target, device_id, fw_path -> sets RS_VERDICT (true|false|unknown) + RS_STATE
   local side="$1" t="$2" dev="$3" fw="$4"
   local fid path jid
+  RS_VERDICT="unknown"; RS_STATE=""
+  : > "hil-out/${t}-${side}.events.log"   # fresh per attempt (so the retry classifier sees only this run)
   path=$(curl -fsS "${AUTH[@]}" -X POST --data-binary "@${fw}" \
       "${API}/v1/firmware?filename=$(basename "$fw")" | jq -r '.path') || return 1
   jid=$(jobreq "$side" "$t" "$dev" "$path" | curl -fsS "${AUTH[@]}" -X POST \
@@ -70,7 +74,31 @@ run_side() {  # side, target, device_id, fw_path -> echoes verdict (true|false|u
           -o "hil-out/${t}-${side}-${fn}" || true
       done
   echo "::endgroup::" >&2
-  echo "$verdict"
+  RS_VERDICT="$verdict"; RS_STATE="$state"
+}
+
+# Run one side with DUT-host-reboot tolerance: wait for the target (sleep out a
+# reboot, bounded), run it, and if the job errored with a host-offline signature
+# rather than a real verdict, wait the host out + re-run ONCE. Sets RSR_VERDICT
+# (true|false|unknown, or "skip:<reason>" when not run) and RSR_NOTE. Returns 0
+# when the side ran, 2 on a permanent skip, 3 if the host never came back.
+run_side_resilient() {  # side, target, fw_path
+  local side="$1" t="$2" fw="$3" status dev wrc
+  RSR_VERDICT="unknown"; RSR_NOTE=""
+  status=$(wait_for_target_available "$t"); wrc=$?
+  if [ "$wrc" -ne 0 ]; then RSR_VERDICT="skip:$(echo "$status" | cut -d' ' -f2-)"; return "$wrc"; fi
+  dev=$(echo "$status" | awk '{print $2}')
+  run_side "$side" "$t" "$dev" "$fw"; RSR_VERDICT="$RS_VERDICT"
+  if [ "$RSR_VERDICT" != "true" ] && [ "$RSR_VERDICT" != "false" ] \
+     && is_host_offline_failure "hil-out/${t}-${side}.events.log" "$RS_STATE"; then
+    echo "::warning::[$t/$side] host-offline signature (state=$RS_STATE) — waiting for host + retrying once" >&2
+    status=$(wait_for_target_available "$t"); wrc=$?
+    if [ "$wrc" -eq 0 ]; then
+      dev=$(echo "$status" | awk '{print $2}')
+      run_side "$side" "$t" "$dev" "$fw"; RSR_VERDICT="$RS_VERDICT"; RSR_NOTE="host rebooted — retried"
+    fi
+  fi
+  return 0
 }
 
 # Append an inline serial.log excerpt (proof) for a target/side to the comment.
@@ -101,23 +129,30 @@ append_proof() {  # target, side
 } >> hil-out/comment.md
 
 for T in $TARGETS; do
-  rec=$(jq -c --arg t "$T" '.targets[]|select(.target==$t)' targets.json | head -1)
-  if [ -z "$rec" ]; then echo "| \`$T\` | — | — | ⚠️ no controller entry |" >> hil-out/comment.md; continue; fi
-  avail=$(echo "$rec" | jq -r '.available'); dev=$(echo "$rec" | jq -r '.device_id')
-  kind=$(echo "$rec" | jq -r '.kind // ""'); reason=$(echo "$rec" | jq -r '.reason // ""')
-  if [ "$avail" != "true" ]; then
-    echo "| \`$T\` | — | — | ⏭️ skipped (${kind}: ${reason}) |" >> hil-out/comment.md; continue
-  fi
   lowbin=$(find "fw/low-$T"  -name '*combined.bin' | head -1)
   highbin=$(find "fw/high-$T" -name '*combined.bin' | head -1)
   if [ -z "$lowbin" ] || [ -z "$highbin" ]; then
     lo=$([ -n "$lowbin" ] && echo ok || echo missing); hi=$([ -n "$highbin" ] && echo ok || echo missing)
     echo "| \`$T\` | $lo | $hi | ⚠️ firmware missing |" >> hil-out/comment.md; continue
   fi
-  ran=1
-  lv=$(run_side low "$T" "$dev" "$lowbin"); hv=$(run_side high "$T" "$dev" "$highbin")
+  # LOW side (release) — wait out a host reboot before submitting + retry once on
+  # a host-offline failure. A permanent outage / past-budget down skips the target.
+  run_side_resilient low "$T" "$lowbin"; rc=$?
+  if [ "$rc" -ne 0 ]; then
+    echo "| \`$T\` | — | — | ⏭️ skipped (${RSR_VERDICT#skip:}) |" >> hil-out/comment.md
+    [ "$rc" -eq 3 ] && fail=1; continue
+  fi
+  ran=1; lv="$RSR_VERDICT"; lnote="$RSR_NOTE"
+  # HIGH side (this PR) — same tolerance.
+  run_side_resilient high "$T" "$highbin"; rc=$?
+  if [ "$rc" -ne 0 ]; then
+    echo "| \`$T\` | rebooted=${lv} | — | ⏭️ HIGH skipped (${RSR_VERDICT#skip:}) |" >> hil-out/comment.md
+    [ "$rc" -eq 3 ] && fail=1; append_proof "$T" low; continue
+  fi
+  hv="$RSR_VERDICT"; hnote="$RSR_NOTE"
+  note=""; [ -n "$lnote" ] && note="${note} (low: $lnote)"; [ -n "$hnote" ] && note="${note} (high: $hnote)"
   pass="❌"; if [ "$lv" = "true" ] && [ "$hv" = "false" ]; then pass="✅"; else fail=1; fi
-  echo "| \`$T\` | rebooted=${lv} | rebooted=${hv} | ${pass} |" >> hil-out/comment.md
+  echo "| \`$T\` | rebooted=${lv} | rebooted=${hv} | ${pass}${note} |" >> hil-out/comment.md
   append_proof "$T" low
   append_proof "$T" high
 done

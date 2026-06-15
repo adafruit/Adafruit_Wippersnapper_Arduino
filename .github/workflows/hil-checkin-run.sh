@@ -11,6 +11,8 @@ set -uo pipefail
 
 API="${HIL_API_BASE:?}"; TOK="${HIL_API_TOKEN:?}"
 AUTH=(-H "Authorization: Bearer ${TOK}")
+# Shared host-reboot-tolerance helpers (wait_for_target_available, is_host_offline_failure).
+source "${BASH_SOURCE[0]%/*}/hil-lib.sh"
 mkdir -p hil-out   # append our section to the shared summary (workflow owns the marker/header)
 fail=0; ran=0
 
@@ -38,9 +40,11 @@ jobreq() {  # target, device_id, fw_path -> stdout job json
   }'
 }
 
-run_target() {  # target, device_id, fw_path -> echoes checkin (true|false|unknown)
+run_target() {  # target, device_id, fw_path -> sets RT_VERDICT (true|false|unknown) + RT_STATE
   local t="$1" dev="$2" fw="$3"
   local path jid since=0 state="" checkin="unknown" out
+  RT_VERDICT="unknown"; RT_STATE=""
+  : > "hil-out/${t}-checkin.events.log"   # fresh per attempt (so the retry classifier sees only this run)
   path=$(curl -fsS "${AUTH[@]}" -X POST --data-binary "@${fw}" \
       "${API}/v1/firmware?filename=$(basename "$fw")" | jq -r '.path') || return 1
   jid=$(jobreq "$t" "$dev" "$path" | curl -fsS "${AUTH[@]}" -X POST \
@@ -71,7 +75,7 @@ run_target() {  # target, device_id, fw_path -> echoes checkin (true|false|unkno
           -o "hil-out/${t}-checkin-${fn}" || true
       done
   echo "::endgroup::" >&2
-  echo "$checkin"
+  RT_VERDICT="$checkin"; RT_STATE="$state"
 }
 
 # Append an inline serial.log excerpt (proof) for a target/side to the comment.
@@ -102,21 +106,37 @@ append_proof() {  # target, side
 } >> hil-out/comment.md
 
 for T in $TARGETS; do
-  rec=$(jq -c --arg t "$T" '.targets[]|select(.target==$t)' targets.json | head -1)
-  if [ -z "$rec" ]; then echo "| \`$T\` | — | ⚠️ no controller entry |" >> hil-out/comment.md; continue; fi
-  avail=$(echo "$rec" | jq -r '.available'); dev=$(echo "$rec" | jq -r '.device_id')
-  kind=$(echo "$rec" | jq -r '.kind // ""'); reason=$(echo "$rec" | jq -r '.reason // ""')
-  if [ "$avail" != "true" ]; then
-    echo "| \`$T\` | — | ⏭️ skipped (${kind}: ${reason}) |" >> hil-out/comment.md; continue
-  fi
   highbin=$(find "fw/high-$T" -name '*combined.bin' | head -1)
   if [ -z "$highbin" ]; then
     echo "| \`$T\` | missing | ⚠️ firmware missing |" >> hil-out/comment.md; continue
   fi
-  ran=1
-  cv=$(run_target "$T" "$dev" "$highbin")
+  # Wait out a DUT-host reboot BEFORE submitting (the controller advertises
+  # retry_after on a wedge/auto-reboot). Skip only on a permanent outage; a host
+  # still down past the wait budget fails the run for that target.
+  status=$(wait_for_target_available "$T"); wrc=$?
+  dev=$(echo "$status" | awk '{print $2}')
+  if [ "$wrc" -ne 0 ]; then
+    why=$(echo "$status" | cut -d' ' -f2-)
+    echo "| \`$T\` | — | ⏭️ skipped (${why}) |" >> hil-out/comment.md
+    [ "$wrc" -eq 3 ] && fail=1   # host never came back within budget — not a clean skip
+    continue
+  fi
+  ran=1; note=""
+  run_target "$T" "$dev" "$highbin"; cv="$RT_VERDICT"
+  # Reactive retry: a job that errored with a host-offline signature (host wedged
+  # mid-job) — not a real ok=true/false — gets the host waited out + ONE re-run,
+  # so even the test that triggered the wedge runs to a real verdict.
+  if [ "$cv" != "true" ] && [ "$cv" != "false" ] \
+     && is_host_offline_failure "hil-out/${T}-checkin.events.log" "$RT_STATE"; then
+    echo "::warning::[$T/checkin] host-offline signature (state=$RT_STATE) — waiting for host + retrying once" >&2
+    status=$(wait_for_target_available "$T"); wrc=$?
+    if [ "$wrc" -eq 0 ]; then
+      dev=$(echo "$status" | awk '{print $2}')
+      run_target "$T" "$dev" "$highbin"; cv="$RT_VERDICT"; note=" (host rebooted — retried)"
+    fi
+  fi
   pass="❌"; if [ "$cv" = "true" ]; then pass="✅"; else fail=1; fi
-  echo "| \`$T\` | flashed | ok=${cv} ${pass} |" >> hil-out/comment.md
+  echo "| \`$T\` | flashed | ok=${cv} ${pass}${note} |" >> hil-out/comment.md
   append_proof "$T" checkin
 done
 

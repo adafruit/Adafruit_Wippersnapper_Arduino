@@ -80,6 +80,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Fast, hardware-free gate: unit-test the host-reboot-tolerance helpers
+      # (wait_for_target_available / is_host_offline_failure) before the long
+      # build-wait so a broken driver helper fails in seconds, not after ~95 min.
+      - name: Unit-test HIL driver helpers
+        run: bash .github/workflows/hil-lib.test.sh
+
       # Resolve which build's artifacts are HIGH, per trigger. For a PR this WAITS
       # for "WipperSnapper Build CI" on the head SHA to finish (depends-on-build),
       # then exports BUILD_RUN_ID for the fetch step.
@@ -134,6 +140,10 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY_TYETH }}
           args: --hostname=gitlab-${{ github.run_id }} --accept-routes
 
+      # Initial availability snapshot (informational). Each driver RE-POLLS
+      # /v1/targets via wait_for_target_available before submitting every job, so a
+      # DUT host that wedges/reboots mid-suite is waited out (retry_after) rather
+      # than hard-failing the remaining tests — this snapshot is just for the log.
       - name: Query controller target availability
         id: avail
         run: |
