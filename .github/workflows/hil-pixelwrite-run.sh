@@ -85,26 +85,31 @@ run_side() {  # side, target, device_id, fw_path -> sets RS_VERDICT (true|false|
   RS_VERDICT="$verdict"; RS_STATE="$state"
 }
 
-# Run one side with DUT-host-reboot tolerance: wait for the target (sleep out a
-# reboot, bounded), run it, and if the job errored with a host-offline signature
-# rather than a real verdict, wait the host out + re-run ONCE. Sets RSR_VERDICT
-# (true|false|unknown, or "skip:<reason>" when not run) and RSR_NOTE. Returns 0
-# when the side ran, 2 on a permanent skip, 3 if the host never came back.
+# Run one side with DUT-host-reboot tolerance: wait for the target, run it, and on
+# an infra error (no real verdict) wait the host out + re-run — up to
+# HIL_TEST_ATTEMPTS total tries (default 4). One retry isn't enough when the host
+# reboot-LOOPS faster than a test completes (a single retry can itself overlap the
+# next reboot); retrying until a stable window appears (or the attempts run out)
+# is what rides through. Sets RSR_VERDICT (true|false|unknown, or "skip:<reason>")
+# and RSR_NOTE. Returns 0 when the side ran, 2 permanent skip, 3 host never back.
 run_side_resilient() {  # side, target, fw_path
-  local side="$1" t="$2" fw="$3" status dev wrc
+  local side="$1" t="$2" fw="$3" status dev wrc attempt=1
+  local max="${HIL_TEST_ATTEMPTS:-4}"
   RSR_VERDICT="unknown"; RSR_NOTE=""
   status=$(wait_for_target_available "$t"); wrc=$?
   if [ "$wrc" -ne 0 ]; then RSR_VERDICT="skip:$(echo "$status" | cut -d' ' -f2-)"; return "$wrc"; fi
   dev=$(echo "$status" | awk '{print $2}')
   run_side "$side" "$t" "$dev" "$fw"; RSR_VERDICT="$RS_VERDICT"
-  if [ "$RSR_VERDICT" != "true" ] && [ "$RSR_VERDICT" != "false" ] && is_infra_error "$RS_STATE"; then
-    echo "::warning::[$t/$side] infra error (state=${RS_STATE:-none}) — waiting for host + retrying once" >&2
+  while [ "$RSR_VERDICT" != "true" ] && [ "$RSR_VERDICT" != "false" ] \
+        && is_infra_error "$RS_STATE" && [ "$attempt" -lt "$max" ]; do
+    echo "::warning::[$t/$side] infra error (state=${RS_STATE:-none}) — waiting for host + retry $attempt/$((max-1))" >&2
     status=$(wait_for_target_available "$t"); wrc=$?
-    if [ "$wrc" -eq 0 ]; then
-      dev=$(echo "$status" | awk '{print $2}')
-      run_side "$side" "$t" "$dev" "$fw"; RSR_VERDICT="$RS_VERDICT"; RSR_NOTE="host rebooted — retried"
-    fi
-  fi
+    if [ "$wrc" -ne 0 ]; then RSR_NOTE="host down — gave up after $attempt retry(s)"; break; fi
+    dev=$(echo "$status" | awk '{print $2}')
+    run_side "$side" "$t" "$dev" "$fw"; RSR_VERDICT="$RS_VERDICT"
+    RSR_NOTE="host rebooted — retried (x$attempt)"
+    attempt=$((attempt + 1))
+  done
   return 0
 }
 

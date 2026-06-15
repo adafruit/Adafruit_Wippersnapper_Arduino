@@ -131,19 +131,21 @@ for T in $TARGETS; do
     [ "$wrc" -eq 3 ] && fail=1   # host never came back within budget — not a clean skip
     continue
   fi
-  ran=1; note=""
+  ran=1; note=""; attempt=1; max="${HIL_TEST_ATTEMPTS:-4}"
   run_target "$T" "$dev" "$highbin"; cv="$RT_VERDICT"
-  # Reactive retry: a job that ended in an INFRA error (state error/timeout/failed)
-  # — not a real ok=true/false — gets the host waited out + ONE re-run, so even the
-  # test that triggered a wedge/host-reboot runs to a real verdict.
-  if [ "$cv" != "true" ] && [ "$cv" != "false" ] && is_infra_error "$RT_STATE"; then
-    echo "::warning::[$T/checkin] infra error (state=${RT_STATE:-none}) — waiting for host + retrying once" >&2
+  # Reactive retry on an INFRA error (state error/timeout/failed — no real verdict):
+  # wait the host out + re-run, up to HIL_TEST_ATTEMPTS total. One retry isn't enough
+  # when the host reboot-loops faster than a test completes — keep trying until a
+  # stable window appears or attempts run out.
+  while [ "$cv" != "true" ] && [ "$cv" != "false" ] && is_infra_error "$RT_STATE" \
+        && [ "$attempt" -lt "$max" ]; do
+    echo "::warning::[$T/checkin] infra error (state=${RT_STATE:-none}) — waiting for host + retry $attempt/$((max-1))" >&2
     status=$(wait_for_target_available "$T"); wrc=$?
-    if [ "$wrc" -eq 0 ]; then
-      dev=$(echo "$status" | awk '{print $2}')
-      run_target "$T" "$dev" "$highbin"; cv="$RT_VERDICT"; note=" (host rebooted — retried)"
-    fi
-  fi
+    if [ "$wrc" -ne 0 ]; then note=" (host down — gave up after $attempt retry(s))"; break; fi
+    dev=$(echo "$status" | awk '{print $2}')
+    run_target "$T" "$dev" "$highbin"; cv="$RT_VERDICT"; note=" (host rebooted — retried x$attempt)"
+    attempt=$((attempt + 1))
+  done
   pass="❌"; if [ "$cv" = "true" ]; then pass="✅"; else fail=1; fi
   echo "| \`$T\` | flashed | ok=${cv} ${pass}${note} |" >> hil-out/comment.md
   append_proof "$T" checkin
