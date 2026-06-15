@@ -30,7 +30,11 @@ HIL_WAIT_POLL_S="${HIL_WAIT_POLL_S:-15}"
 # (empty if the controller has no entry for it). Returns non-zero on a fetch error.
 _hil_fetch_target_rec() {  # target -> stdout record json (or empty)
   curl -fsS "${AUTH[@]}" "${API}/v1/targets" > targets.json 2>/dev/null || return 1
-  jq -c --arg t "$1" '.targets[]|select(.target==$t)' targets.json | head -1
+  # Prefer an AVAILABLE device when several DUTs share this build_target (e.g. the
+  # same chip on two hosts) — pick the first available, else the first of any (so a
+  # genuine outage/skip is still reported). Lets a 2nd DUT on another host serve the
+  # target while the first is down for maintenance.
+  jq -c --arg t "$1" '[.targets[]|select(.target==$t)] | (map(select(.available)) + .)[0] // empty' targets.json
 }
 
 # Wait until <target> is available, or decide to skip it. Re-polls /v1/targets;

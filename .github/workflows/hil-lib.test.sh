@@ -79,5 +79,12 @@ is_infra_error timeout; check "infra: timeout is infra" 0 "$?"
 is_infra_error failed;  check "infra: failed is infra" 0 "$?"
 is_infra_error "";      check "infra: empty is infra" 0 "$?"
 
+# 8) multi-DUT: two devices share a build_target; the first is down → pick the available one
+_two='{"targets":[{"target":"qtpy","device_id":"d-down","available":false,"status":"unavailable","kind":"temporary","reason":"maintenance","retry_after":null},{"target":"qtpy","device_id":"d-up","available":true,"status":"available","kind":null,"reason":null,"retry_after":null}]}'
+NOW=1000; echo 0 > "$MOCK_IFILE"; MOCK_BODIES=("$_two")
+out=$(wait_for_target_available qtpy 2>/dev/null); rc=$?
+check "multi-dut: return code" 0 "$rc"
+check "multi-dut: picks the AVAILABLE device" "available d-up" "$out"
+
 echo "---- $PASS passed, $FAILC failed ----"
 [ "$FAILC" -eq 0 ]
