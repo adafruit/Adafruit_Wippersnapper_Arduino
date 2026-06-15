@@ -48,26 +48,47 @@ run_target() {  # target, device_id, fw_path -> echoes checkin (true|false|unkno
   echo "::group::[$t/checkin] job $jid" >&2
   # Poll on a TIME budget, not an iteration count: firmware-bench floods serial
   # events so each /wait returns instantly — a fixed loop count burns out long
-  # before the ~6-8min flash→secrets→checkin completes. Break as soon as the
-  # verdict appears, else keep going until the job is terminal or ~15min.
+  # before the ~6-8min flash→secrets→checkin completes. Poll until the job is
+  # TERMINAL (not just until the verdict): firmware-bench registers the
+  # serial/protomq/flash log assets at teardown, so downloading earlier would
+  # miss them and grab only the firmware bin.
   local deadline=$(( $(date +%s) + 900 ))
   while [ "$(date +%s)" -lt "$deadline" ]; do
     out=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/wait?since=${since}&timeout=10") || break
     echo "$out" | jq -r '.events[]?|.payload.msg // empty' 2>/dev/null | tee -a "hil-out/${t}-checkin.events.log" >&2
     if echo "$out" | grep -q 'CHECKIN_VERDICT ok=true';  then checkin=true; fi
     if echo "$out" | grep -q 'CHECKIN_VERDICT ok=false'; then checkin=false; fi
-    [ "$checkin" != unknown ] && break
     since=$(echo "$out" | jq -r '.next_since // .since // 0')
     state=$(echo "$out" | jq -r '.state // ""')
     case "$state" in finished|failed|cancelled|error|timeout) break;; esac
   done
   echo "[$t/checkin] terminal state: ${state:-unknown}" >&2
-  for aid in $(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" | jq -r '.assets[]?.id'); do
-    fn=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" | jq -r ".assets[]|select(.id==\"$aid\").filename")
-    curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets/${aid}/download" -o "hil-out/${t}-checkin-${fn}" || true
-  done
+  # Pull ONLY the captured log assets (serial/protomq/flash) — skip the firmware bin.
+  curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" \
+    | jq -r '.assets[]? | select(.kind=="log") | "\(.id) \(.filename)"' \
+    | while read -r aid fn; do
+        [ -n "$aid" ] && curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets/${aid}/download" \
+          -o "hil-out/${t}-checkin-${fn}" || true
+      done
   echo "::endgroup::" >&2
   echo "$checkin"
+}
+
+# Append an inline serial.log excerpt (proof) for a target/side to the comment.
+append_proof() {  # target, side
+  local t="$1" side="$2" sl
+  sl=$(ls "hil-out/${t}-${side}-serial.log" 2>/dev/null | head -1)
+  [ -z "$sl" ] && sl=$(ls "hil-out/${t}-${side}-flash.log" 2>/dev/null | head -1)
+  [ -z "$sl" ] && return 0
+  {
+    echo
+    echo "<details><summary>📜 \`$t\` ${side} — $(basename "$sl") (tail)</summary>"
+    echo
+    echo '```'
+    tail -n 30 "$sl"
+    echo '```'
+    echo "</details>"
+  } >> hil-out/comment.md
 }
 
 {
@@ -96,6 +117,7 @@ for T in $TARGETS; do
   cv=$(run_target "$T" "$dev" "$highbin")
   pass="❌"; if [ "$cv" = "true" ]; then pass="✅"; else fail=1; fi
   echo "| \`$T\` | flashed | ok=${cv} ${pass} |" >> hil-out/comment.md
+  append_proof "$T" checkin
 done
 
 {

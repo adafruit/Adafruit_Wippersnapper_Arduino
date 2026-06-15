@@ -172,19 +172,20 @@ jobs:
 
       # ── HIL test array ────────────────────────────────────────────────────
       # Each test is its own driver script; it appends a section (+ per-test
-      # assets) to the shared hil-out/comment.md, which the workflow owns (the
-      # marker + header are written once here, the sticky comment posts it all).
+      # assets + an inline serial.log excerpt as proof) to the shared
+      # hil-out/comment.md, which the workflow owns (header written once here).
+      # A NEW comment is posted per run (not sticky) so each run is trackable.
       # Tests run with if:always() so one failing test still lets the others run
       # and report; the job still fails if any test fails. Add a test by adding a
       # driver + a step here.
       - name: Init PR summary
         run: |
           mkdir -p hil-out
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           {
-            echo "<!-- hil-test-suite -->"
-            echo "## 🔌 HIL test results"
+            echo "## 🔌 HIL test results — run [#${GITHUB_RUN_NUMBER}](${RUN_URL})"
             echo
-            echo "<sub>Driven by usbip-hil-controller over Tailscale; only bench-available targets run (others skipped + listed with reason). Per-test proof (serial.log / protomq.log / flash.log) attached as the \`hil-assets\` artifact. 🤖</sub>"
+            echo "commit \`${GITHUB_SHA:0:7}\` · $(date -u '+%Y-%m-%d %H:%M:%SZ') · full logs (serial.log / protomq.log / flash.log) in the **[\`hil-assets\` artifact](${RUN_URL}#artifacts)**"
           } > hil-out/comment.md
 
       # Test 1 — default gate: prove the end-to-end path (flash → secrets → checkin).
@@ -229,17 +230,10 @@ jobs:
             PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$PR_HEAD" --json number --jq '.[0].number' || true)
           fi
           if [ -n "${PR:-}" ] && [ -f hil-out/comment.md ]; then
-            # Sticky: update our existing marker comment in place rather than piling
-            # a new comment on the PR each run.
-            CID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
-                  --jq '.[] | select(.body | contains("<!-- hil-test-suite -->")) | .id' | head -1 || true)
-            if [ -n "${CID:-}" ]; then
-              gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$CID" -F body=@hil-out/comment.md >/dev/null
-              echo "updated sticky comment $CID on PR #$PR"
-            else
-              gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file hil-out/comment.md
-              echo "created comment on PR #$PR"
-            fi
+            # A NEW comment per run (not sticky) — each run is independently
+            # trackable; the header carries the run number/commit/link.
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file hil-out/comment.md
+            echo "posted new comment on PR #$PR"
           else
             echo "No PR (number='$PR', head='${PR_HEAD:-}') or no comment produced; skipping."
           fi

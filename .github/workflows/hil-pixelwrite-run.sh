@@ -48,27 +48,46 @@ run_side() {  # side, target, device_id, fw_path -> echoes verdict (true|false|u
   echo "::group::[$t/$side] job $jid" >&2
   local since=0 state="" verdict="unknown" out
   # Time-bounded poll (not an iteration count): firmware-bench floods serial
-  # events so each /wait returns instantly, exhausting a fixed loop before the
-  # ~6-8min pipeline + inject completes. Break as soon as the verdict appears.
+  # events so each /wait returns instantly, exhausting a fixed loop. Poll until
+  # the job is TERMINAL (not just the verdict): the serial/protomq/flash log
+  # assets are registered at teardown, so downloading earlier misses them.
   local deadline=$(( $(date +%s) + 900 ))
   while [ "$(date +%s)" -lt "$deadline" ]; do
     out=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/wait?since=${since}&timeout=10") || break
     echo "$out" | jq -r '.events[]?|.payload.msg // empty' 2>/dev/null | tee -a "hil-out/${t}-${side}.events.log" >&2
     if echo "$out" | grep -q 'PIXELWRITE_VERDICT rebooted=true'; then verdict=true; fi
     if echo "$out" | grep -q 'PIXELWRITE_VERDICT rebooted=false'; then verdict=false; fi
-    [ "$verdict" != unknown ] && break
     since=$(echo "$out" | jq -r '.next_since // .since // 0')
     state=$(echo "$out" | jq -r '.state // ""')
     case "$state" in finished|failed|cancelled|error|timeout) break;; esac
   done
   echo "[$t/$side] terminal state: ${state:-unknown}" >&2
-  # Pull captured assets as proof.
-  for aid in $(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" | jq -r '.assets[]?.id'); do
-    fn=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" | jq -r ".assets[]|select(.id==\"$aid\").filename")
-    curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets/${aid}/download" -o "hil-out/${t}-${side}-${fn}" || true
-  done
+  # Pull ONLY the captured log assets (serial/protomq/flash) — skip the firmware bin.
+  curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" \
+    | jq -r '.assets[]? | select(.kind=="log") | "\(.id) \(.filename)"' \
+    | while read -r aid fn; do
+        [ -n "$aid" ] && curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets/${aid}/download" \
+          -o "hil-out/${t}-${side}-${fn}" || true
+      done
   echo "::endgroup::" >&2
   echo "$verdict"
+}
+
+# Append an inline serial.log excerpt (proof) for a target/side to the comment.
+append_proof() {  # target, side
+  local t="$1" side="$2" sl
+  sl=$(ls "hil-out/${t}-${side}-serial.log" 2>/dev/null | head -1)
+  [ -z "$sl" ] && sl=$(ls "hil-out/${t}-${side}-flash.log" 2>/dev/null | head -1)
+  [ -z "$sl" ] && return 0
+  {
+    echo
+    echo "<details><summary>📜 \`$t\` ${side} — $(basename "$sl") (tail)</summary>"
+    echo
+    echo '```'
+    tail -n 30 "$sl"
+    echo '```'
+    echo "</details>"
+  } >> hil-out/comment.md
 }
 
 {
@@ -99,6 +118,8 @@ for T in $TARGETS; do
   lv=$(run_side low "$T" "$dev" "$lowbin"); hv=$(run_side high "$T" "$dev" "$highbin")
   pass="❌"; if [ "$lv" = "true" ] && [ "$hv" = "false" ]; then pass="✅"; else fail=1; fi
   echo "| \`$T\` | rebooted=${lv} | rebooted=${hv} | ${pass} |" >> hil-out/comment.md
+  append_proof "$T" low
+  append_proof "$T" high
 done
 
 {
