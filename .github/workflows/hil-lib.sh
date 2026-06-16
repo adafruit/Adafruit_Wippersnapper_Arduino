@@ -96,47 +96,97 @@ is_infra_error() {  # terminal_state -> 0 if an infra/harness error (no real ver
   case "$1" in error|timeout|failed|"") return 0;; *) return 1;; esac
 }
 
-# Lines of context shown before/after the matched test phrase in a proof window.
-HIL_PROOF_BEFORE="${HIL_PROOF_BEFORE:-24}"
+# Context shown around the matched test phrase in a proof window.
+#   HIL_PROOF_BEFORE: lines BEFORE the phrase. -1 (the default) = from boot — show the
+#     whole device/broker story up to the phrase, not just a fixed slice. N>=0 = N lines.
+#   HIL_PROOF_AFTER:  lines after the phrase ("just after" the detection point).
+HIL_PROOF_BEFORE="${HIL_PROOF_BEFORE:--1}"
 HIL_PROOF_AFTER="${HIL_PROOF_AFTER:-6}"
 
 # Print the evidence WINDOW from a log: the lines leading up to and just after the
 # LAST line matching <regex> (the detection point) — so the quote actually shows the
-# expected data, not a blind tail. Returns 0 if matched, 1 if it fell back to tail.
+# expected data, not a blind tail. HIL_PROOF_BEFORE<0 → from boot (line 1). Records the
+# window's time span in PW_TS_START/PW_TS_END (leading UTC-ms timestamps of its first/
+# last lines) so the OTHER log can be aligned to the SAME wall-clock span. Returns 0 if
+# matched, 1 if it fell back to a tail.
 proof_window() {  # file, regex
-  local f="$1" re="$2" ln start
+  local f="$1" re="$2" ln start end
+  PW_TS_START=""; PW_TS_END=""
   ln=$(grep -nE "$re" "$f" 2>/dev/null | tail -1 | cut -d: -f1)
   if [ -n "$ln" ]; then
-    start=$((ln - HIL_PROOF_BEFORE)); [ "$start" -lt 1 ] && start=1
-    sed -n "${start},$((ln + HIL_PROOF_AFTER))p" "$f"
+    if [ "${HIL_PROOF_BEFORE}" -lt 0 ]; then start=1
+    else start=$((ln - HIL_PROOF_BEFORE)); [ "$start" -lt 1 ] && start=1; fi
+    end=$((ln + HIL_PROOF_AFTER))
+    PW_TS_START=$(sed -n "${start}p" "$f" | awk '{print $1}')
+    PW_TS_END=$(sed -n "${end}p" "$f" | awk '{print $1}')
+    [ -z "$PW_TS_END" ] && PW_TS_END=$(awk 'END{print $1}' "$f")   # window ran past EOF
+    sed -n "${start},${end}p" "$f"
     return 0
   fi
   tail -n 25 "$f"
   return 1
 }
 
+# Print only the lines of <file> whose leading UTC-ms timestamp falls in [ts_a, ts_b].
+# serial/protomq/flash logs share ONE clock (record() stamps every line), and fixed-
+# width ISO-8601 UTC timestamps sort lexicographically = chronologically, so a plain
+# string compare on field 1 selects the wall-clock window. This is what makes the
+# protomq quote LINE UP with the serial quote instead of drifting (a fixed line count
+# spans wildly different durations in a chatty broker log vs a sparse serial log).
+time_window() {  # file, ts_a, ts_b
+  local f="$1" a="$2" b="$3"
+  [ -z "$a" ] || [ -z "$b" ] && { tail -n 25 "$f"; return 1; }
+  awk -v a="$a" -v b="$b" '$1 >= a && $1 <= b' "$f"
+}
+
+_proof_section() {  # target, label, type, note, window
+  {
+    printf '\n<details><summary>📜 `%s` %s · %s.log (%s)</summary>\n\n' "$1" "$2" "$3" "$4"
+    echo '```'; printf '%s\n' "$5"; echo '```'
+    echo "</details>"
+  } >> hil-out/comment.md
+}
+
 # Append per-(target,test) proof to the comment: a SEPARATE collapsible section for
-# serial.log AND protomq.log, each windowed around <evidence_regex> (the test
-# phrase), plus a one-line index of the downloadable per-log artifacts. A log that
-# wasn't captured is called out explicitly (not silently dropped).
+# serial.log AND protomq.log + a one-line index of the per-log artifacts. The SERIAL
+# section is the device-side reference (from boot by default); the PROTOMQ section is
+# windowed to the SAME wall-clock span as the serial quote (shared UTC-ms clock) so the
+# broker handshake lines up with the serial events instead of drifting to a different
+# minute. A log that wasn't captured is called out explicitly (not silently dropped).
 #   append_proof <target> <test-label> <evidence_regex>
 append_proof() {
-  local t="$1" label="$2" re="$3" type f win note
+  local t="$1" label="$2" re="$3" win note
   local run_url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-}/actions/runs/${GITHUB_RUN_ID:-}"
-  for type in serial protomq; do
-    f="hil-out/${t}-${label}-${type}.log"
-    if [ ! -s "$f" ]; then
-      printf '\n> ⚠️ `%s` %s — `%s.log` not captured\n' "$t" "$label" "$type" >> hil-out/comment.md
-      continue
+  local sfile="hil-out/${t}-${label}-serial.log" pfile="hil-out/${t}-${label}-protomq.log"
+  local ts_a="" ts_b=""
+
+  # SERIAL — the device side, and the time reference the protomq quote aligns to.
+  if [ -s "$sfile" ]; then
+    if win=$(proof_window "$sfile" "$re"); then
+      if [ "${HIL_PROOF_BEFORE}" -lt 0 ]; then note="✓ from boot to just after the detected test phrase"
+      else note="✓ around the detected test phrase"; fi
+    else note="⚠️ test phrase not found — tail shown"; fi
+    ts_a="$PW_TS_START"; ts_b="$PW_TS_END"
+    _proof_section "$t" "$label" serial "$note" "$win"
+  else
+    printf '\n> ⚠️ `%s` %s — `serial.log` not captured\n' "$t" "$label" >> hil-out/comment.md
+  fi
+
+  # PROTOMQ — aligned to the serial window's wall-clock span. Falls back to its own
+  # evidence window only if serial gave us no anchor (serial absent / phrase not found).
+  if [ -s "$pfile" ]; then
+    if [ -n "$ts_a" ] && [ -n "$ts_b" ]; then
+      win=$(time_window "$pfile" "$ts_a" "$ts_b")
+      if [ -n "$win" ]; then note="⏱ aligned to the serial window (${ts_a} … ${ts_b})"
+      else win=$(proof_window "$pfile" "$re"); note="⚠️ no broker traffic in the serial window — evidence window shown"; fi
+    else
+      if win=$(proof_window "$pfile" "$re"); then note="✓ around the detected test phrase"; else note="⚠️ test phrase not found — tail shown"; fi
     fi
-    if win=$(proof_window "$f" "$re"); then note="✓ around the detected test phrase"; else note="⚠️ test phrase not found — tail shown"; fi
-    {
-      printf '\n<details><summary>📜 `%s` %s · %s.log (%s)</summary>\n\n' "$t" "$label" "$type" "$note"
-      echo '```'; printf '%s\n' "$win"; echo '```'
-      echo "</details>"
-    } >> hil-out/comment.md
-  done
-  # Per-log artifact index (each log is uploaded as its own artifact — see below).
+    _proof_section "$t" "$label" protomq "$note" "$win"
+  else
+    printf '\n> ⚠️ `%s` %s — `protomq.log` not captured\n' "$t" "$label" >> hil-out/comment.md
+  fi
+
   printf '\n<sub>logs for `%s/%s`: serial / protomq / flash — in the per-log [Artifacts](%s#artifacts)</sub>\n' \
     "$t" "$label" "$run_url" >> hil-out/comment.md
 }

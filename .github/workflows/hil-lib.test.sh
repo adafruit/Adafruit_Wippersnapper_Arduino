@@ -98,5 +98,28 @@ l6 after" "$out"
 out=$(proof_window "$TMP/log" 'NOPE_NO_SUCH'); rc=$?
 check "proof_window: unmatched return code (tail fallback)" 1 "$rc"
 
+# 11) proof_window: HIL_PROOF_BEFORE=-1 → from boot (line 1) up to match+after
+out=$(HIL_PROOF_BEFORE=-1 HIL_PROOF_AFTER=1 proof_window "$TMP/log" 'connected \(io-')
+check "proof_window: -1 starts at boot" "l1
+l2
+l3 boot
+l4
+l5 connected (io-x)
+l6 after" "$out"
+
+# 12) proof_window: records the window's time span in PW_TS_START/PW_TS_END
+printf '%s a\n%s PHRASE\n%s b\n' \
+  '2026-01-01T00:00:01.000+00:00' '2026-01-01T00:00:02.000+00:00' '2026-01-01T00:00:03.000+00:00' > "$TMP/tslog"
+HIL_PROOF_BEFORE=1 HIL_PROOF_AFTER=1 proof_window "$TMP/tslog" 'PHRASE' >/dev/null
+check "proof_window: PW_TS_START is the window's first line ts" "2026-01-01T00:00:01.000+00:00" "$PW_TS_START"
+check "proof_window: PW_TS_END is the window's last line ts"   "2026-01-01T00:00:03.000+00:00" "$PW_TS_END"
+
+# 13) time_window: keep only lines whose leading UTC-ms timestamp is within [a,b]
+#     (this is what aligns the protomq quote to the serial window — no line-count drift)
+printf '%s early\n%s mid\n%s late\n' \
+  '2026-01-01T00:00:01.000+00:00' '2026-01-01T00:00:05.000+00:00' '2026-01-01T00:00:09.000+00:00' > "$TMP/tw"
+out=$(time_window "$TMP/tw" '2026-01-01T00:00:02.000+00:00' '2026-01-01T00:00:06.000+00:00')
+check "time_window: keeps only the in-range line" "2026-01-01T00:00:05.000+00:00 mid" "$out"
+
 echo "---- $PASS passed, $FAILC failed ----"
 [ "$FAILC" -eq 0 ]
