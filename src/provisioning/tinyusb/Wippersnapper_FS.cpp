@@ -45,6 +45,12 @@ Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
 // ESP32-S2 uses same flash device that stores code.
 // Therefore there is no need to specify the SPI and SS
 Adafruit_FlashTransport_ESP32 flashTransport;
+// The FAT user partition lives on the same on-chip flash as the ESP32
+// bootloader, partition table and NVS - so we can validate those known-good
+// structures to tell a blank/corrupt filesystem apart from unstable
+// (brownout) flash reads. See flashSafeToFormat().
+#define WS_USE_ESP32_INTERNAL_FLASH 1
+#include <esp_flash.h>
 #elif defined(ARDUINO_ARCH_RP2040)
 // RP2040 use same flash device that store code.
 // Therefore there is no need to specify the SPI and SS
@@ -89,6 +95,84 @@ bool setVolumeLabel() {
 
 /**************************************************************************/
 /*!
+    @brief    Decides whether it is safe to (re)create the filesystem after a
+              mount failure, i.e. whether the failure looks like a genuinely
+              blank/corrupt FAT user partition (safe to format) rather than a
+              flash chip whose reads are momentarily unstable due to a voltage
+              sag / brownout (must NOT be formatted - that would erase the
+              user's data on recovery). A brownout is frequently NOT reported
+              as a brownout reset reason, so we cannot rely on the reset
+              reason alone before doing something destructive.
+
+              On the ESP32 the FAT partition shares the on-chip flash with the
+              bootloader, partition table (0x8000) and NVS (0x9000), so those
+              known-good structures are validated directly. Every other
+              FAT-path board (external QSPI/SPI flash on SAMD51, or the on-chip
+              flash on RP2040/RP2350) has no such off-filesystem structure, so
+              the FAT volume's own boot sector is inspected instead - it may
+              only be formatted if it reads back genuinely erased (all 0xFF).
+    @returns  True if a (re)format is safe, False if the flash is unreadable /
+              unstable / not genuinely blank, in which case it must NOT be
+              formatted.
+*/
+/**************************************************************************/
+bool flashSafeToFormat() {
+#ifdef WS_USE_ESP32_INTERNAL_FLASH
+  uint8_t buf[2];
+
+  // Partition table @ 0x8000 - the first entry must begin with the ESP-IDF
+  // partition magic 0x50AA (stored little-endian: 0xAA, 0x50).
+  if (esp_flash_read(esp_flash_default_chip, buf, 0x8000, sizeof(buf)) !=
+      ESP_OK)
+    return false;
+  if (buf[0] != 0xAA || buf[1] != 0x50)
+    return false;
+
+  // NVS partition @ 0x9000 - the first page header state must be a valid NVS
+  // page state: UNINITIALIZED 0xFFFFFFFF / ACTIVE 0xFFFFFFFE / FULL
+  // 0xFFFFFFFC / FREEING 0xFFFFFFF8. The high byte is always 0xFF; the low
+  // byte distinguishes the state. Random garbage from a browning-out SPI bus
+  // is very unlikely to match this.
+  if (esp_flash_read(esp_flash_default_chip, buf, 0x9000, sizeof(buf)) !=
+      ESP_OK)
+    return false;
+  if (buf[1] != 0xFF ||
+      (buf[0] != 0xFF && buf[0] != 0xFE && buf[0] != 0xFC && buf[0] != 0xF8))
+    return false;
+
+  return true;
+#else
+  // External/QSPI flash (SAMD51: PyPortal, Metro M4 AirLift, Titano) or the
+  // RP2040/RP2350 on-chip flash: there is no off-filesystem structure to
+  // validate, so inspect the FAT volume's own boot sector. SPIFlash reads are
+  // relative to the filesystem on every transport, so offset 0 is the boot
+  // sector.
+
+  // First confirm a real flash chip is responding - a dead/disconnected SPI
+  // bus often floats high and reads back as all 0xFF, which would otherwise be
+  // mistaken for a genuinely-erased (blank) chip.
+  uint32_t jedecID = flash.getJEDECID();
+  if (jedecID == 0 || jedecID == 0xFFFFFF)
+    return false;
+
+  // A (re)format is only appropriate when the boot sector is genuinely erased
+  // (all 0xFF). Any other unmountable content is treated as possible
+  // voltage/brownout corruption and must NOT be erased.
+  uint8_t sector[256];
+  for (uint32_t addr = 0; addr < 512; addr += sizeof(sector)) {
+    if (flash.readBuffer(addr, sector, sizeof(sector)) != sizeof(sector))
+      return false; // could not read the volume -> unsafe to format
+    for (uint32_t i = 0; i < sizeof(sector); i++) {
+      if (sector[i] != 0xFF)
+        return false; // non-erased content -> not blank -> refuse to format
+    }
+  }
+  return true; // boot sector is fully erased -> genuinely blank -> safe
+#endif
+}
+
+/**************************************************************************/
+/*!
     @brief    Initializes USB-MSC and the QSPI flash filesystem.
 */
 /**************************************************************************/
@@ -106,20 +190,31 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // Wait for detach
   delay(500);
 
-  // If a filesystem does not already exist - attempt to initialize a new
-  // filesystem
+  // Attempt to mount the existing filesystem WITHOUT formatting.
   if (!initFilesystem()) {
-    if (WS.brownOutCausedReset) {
-      // try once more for good measure
-      delay(10); // let power stablise after failure
-      if (!initFilesystem()) {
-        // no lights, save power as we're probably on a low battery
-        fsHalt("Brownout detected. Couldn't initialise filesystem.");
+    // Mount failed. A battery sag / brownout can momentarily corrupt SPI
+    // flash reads - often WITHOUT being reported as a brownout reset - so
+    // give the power rail a moment to settle and retry before doing anything
+    // destructive.
+    delay(50); // let power stabilise after failure
+    if (!initFilesystem()) {
+      // Still failing. Only (re)format if flashSafeToFormat() proves the flash
+      // chip itself is healthy. This is independent of the reset reason (which
+      // frequently does NOT report a brownout): if the reads are unstable, a
+      // format would needlessly erase the user's data on recovery.
+      if (!flashSafeToFormat()) {
+        // Likely a voltage/brownout event. Keep USB and the status LED off to
+        // conserve a dying battery, and halt.
+        fsHalt("Flash reads unstable (possible brownout) - refusing to "
+               "format. Recharge/repower the board and reset.");
       }
-    } else if (!WS.brownOutCausedReset && !initFilesystem(true)) {
-      TinyUSBDevice.attach();
-      setStatusLEDColor(RED);
-      fsHalt("ERROR Initializing Filesystem");
+      // Flash is healthy: the FAT partition is genuinely blank or corrupt, so
+      // it is safe to create a new filesystem. [DESTRUCTIVE]
+      if (!initFilesystem(true)) {
+        TinyUSBDevice.attach();
+        setStatusLEDColor(RED);
+        fsHalt("ERROR Initializing Filesystem");
+      }
     }
   }
 
