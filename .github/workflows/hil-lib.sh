@@ -166,7 +166,11 @@ append_proof() {
       if [ "${HIL_PROOF_BEFORE}" -lt 0 ]; then note="✓ from boot to just after the detected test phrase"
       else note="✓ around the detected test phrase"; fi
     else note="⚠️ test phrase not found — tail shown"; fi
-    ts_a="$PW_TS_START"; ts_b="$PW_TS_END"
+    # Derive the window's time span from the CAPTURED text — proof_window ran in a
+    # subshell (command substitution), so its PW_TS_* globals don't reach us here.
+    # First/last stamped line's leading UTC-ms timestamp = the span protomq aligns to.
+    ts_a=$(printf '%s\n' "$win" | awk 'NF{print $1; exit}')
+    ts_b=$(printf '%s\n' "$win" | awk 'NF{ts=$1} END{print ts}')
     _proof_section "$t" "$label" serial "$note" "$win"
   else
     printf '\n> ⚠️ `%s` %s — `serial.log` not captured\n' "$t" "$label" >> hil-out/comment.md

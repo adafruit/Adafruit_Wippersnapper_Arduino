@@ -121,5 +121,20 @@ printf '%s early\n%s mid\n%s late\n' \
 out=$(time_window "$TMP/tw" '2026-01-01T00:00:02.000+00:00' '2026-01-01T00:00:06.000+00:00')
 check "time_window: keeps only the in-range line" "2026-01-01T00:00:05.000+00:00 mid" "$out"
 
+# 14) append_proof: completes under set -u (regression — PW_TS_* were set in a
+#     command-substitution SUBSHELL and didn't reach the caller) AND time-aligns the
+#     protomq quote to the serial window (in-window broker line in, out-of-window out).
+mkdir -p hil-out
+printf '%s boot\n%s connected (io-x)\n%s after\n' \
+  '2026-02-02T00:00:01.000+00:00' '2026-02-02T00:00:02.000+00:00' '2026-02-02T00:00:03.000+00:00' > hil-out/T-checkin-serial.log
+printf '%s broker early\n%s RESPONSE_OK\n%s broker late\n' \
+  '2026-02-02T00:00:00.500+00:00' '2026-02-02T00:00:02.500+00:00' '2026-02-02T00:00:09.000+00:00' > hil-out/T-checkin-protomq.log
+: > hil-out/comment.md
+( append_proof T checkin 'connected \(io-' ) >/dev/null 2>&1; rc=$?
+check "append_proof: completes under set -u (no unbound var)" 0 "$rc"
+grep -q 'aligned to the serial window' hil-out/comment.md; check "append_proof: protomq time-aligned" 0 "$?"
+grep -q 'RESPONSE_OK'  hil-out/comment.md; check "append_proof: in-window broker line quoted" 0 "$?"
+grep -q 'broker late'  hil-out/comment.md; check "append_proof: out-of-window broker line excluded" 1 "$?"
+
 echo "---- $PASS passed, $FAILC failed ----"
 [ "$FAILC" -eq 0 ]
