@@ -16,16 +16,27 @@
  */
 #include "ws_pixels.h"
 
-strand_s strands[MAX_PIXEL_STRANDS]{
-    nullptr,
-    nullptr,
-    wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
-    0,
-    0,
-    wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
-    -1,
-    -1,
-    -1}; ///< Contains all pixel strands used by WipperSnapper
+strand_s strands[MAX_PIXEL_STRANDS] = {0}; ///< Contains all pixel strands
+
+/**************************************************************************/
+/*!
+    @brief  Constructor
+*/
+/**************************************************************************/
+ws_pixels::ws_pixels() {
+  // Initialize all strands to default values
+  for (size_t i = 0; i < sizeof(strands) / sizeof(strands[0]); i++) {
+    strands[i] = {nullptr,
+                  nullptr,
+                  wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
+                  0,
+                  0,
+                  wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
+                  -1,
+                  -1,
+                  -1};
+  }
+}
 
 /**************************************************************************/
 /*!
@@ -400,7 +411,8 @@ uint32_t ws_pixels::getGammaCorrectedColor(uint32_t pixel_color,
 /**************************************************************************/
 void ws_pixels::fillStrand(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
-
+  WS_DEBUG_PRINT("Filling strand on ");
+  WS_DEBUG_PRINTLNVAR(pixelsWriteMsg->pixels_pin_data);
   // Get index of pixel strand
   int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
                                pixelsWriteMsg->pixels_type);

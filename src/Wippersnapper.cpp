@@ -61,6 +61,9 @@ Wippersnapper::Wippersnapper() {
   WS._pwmComponent = new ws_pwm();
 #endif
 
+  // Pixels
+  WS._pixelsComponent = new ws_pixels();
+
   // Servo
   WS._servoComponent = new ws_servo();
 
@@ -1329,7 +1332,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // Add a new strand
-    return WS._ws_pixelsComponent->addStrand(&msgPixelsCreateReq);
+    return WS._pixelsComponent->addStrand(&msgPixelsCreateReq);
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelsRequest_req_pixels_delete_tag) {
     WS_DEBUG_PRINTLN(
@@ -1348,7 +1351,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // delete strand
-    WS._ws_pixelsComponent->deleteStrand(&msgPixelsDeleteReq);
+    WS._pixelsComponent->deleteStrand(&msgPixelsDeleteReq);
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelsRequest_req_pixels_write_tag) {
     WS_DEBUG_PRINTLN(
@@ -1366,7 +1369,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // fill strand
-    WS._ws_pixelsComponent->fillStrand(&msgPixelsWritereq);
+    WS._pixelsComponent->fillStrand(&msgPixelsWritereq);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
     return false;
