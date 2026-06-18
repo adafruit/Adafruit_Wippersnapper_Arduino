@@ -117,10 +117,20 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvDs2484(i2c, addr, mux_channel, driver_name);
      }},
+    {"d6t1a",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvD6t1a(i2c, addr, mux_channel, driver_name);
+     }},
     {"ens160",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvEns160(i2c, addr, mux_channel, driver_name);
+     }},
+    {"hdc302x",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvHdc302x(i2c, addr, mux_channel, driver_name);
      }},
     {"hts221",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -132,10 +142,35 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvHtu21d(i2c, addr, mux_channel, driver_name);
      }},
+    {"htu31d",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvHtu31d(i2c, addr, mux_channel, driver_name);
+     }},
     {"ina219",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvIna219(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina228",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna228(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina237",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna237(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina238",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna238(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina260",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna260(i2c, addr, mux_channel, driver_name);
      }},
     {"lc709203f",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -156,6 +191,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvLps25hb(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lps28dfw",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLps28dfw(i2c, addr, mux_channel, driver_name);
      }},
     {"ltr329",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -186,6 +226,24 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvMcp9808(i2c, addr, mux_channel, driver_name);
+     }},
+    {"mlx90632b",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMLX90632(i2c, addr, mux_channel, driver_name);
+     }},
+    {"mlx90632d_med",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMLX90632(i2c, addr, mux_channel, driver_name);
+     }},
+    {"mlx90632d_ext",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       // Extended temperature range variant (vs. the default medical range)
+       drvMLX90632 *drv = new drvMLX90632(i2c, addr, mux_channel, driver_name);
+       drv->ConfigureAndPrintSensorInfo(true);
+       return drv;
      }},
     {"mpl115a2",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -231,6 +289,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvScd30(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sgp30",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSgp30(i2c, addr, mux_channel, driver_name);
      }},
     {"sgp40",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -287,6 +350,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvSen5x(i2c, addr, mux_channel, driver_name);
      }},
+    {"sen66",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen6x(i2c, addr, mux_channel, driver_name);
+     }},
     {"shtc3",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -326,6 +394,18 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvVncl4040(i2c, addr, mux_channel, driver_name);
+     }},
+    // Component id in Wippersnapper_Components is "vcnl4200"; the legacy
+    // misspelling ("vncl") is also registered to match existing sibling keys.
+    {"vcnl4200",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVncl4200(i2c, addr, mux_channel, driver_name);
+     }},
+    {"vncl4200",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVncl4200(i2c, addr, mux_channel, driver_name);
      }},
     {"vl53l0x",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
