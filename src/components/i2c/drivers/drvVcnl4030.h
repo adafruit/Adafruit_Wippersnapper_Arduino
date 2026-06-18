@@ -85,23 +85,6 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the VCNL4030 sensor data and caches the results.
-      @returns  True if the sensor was read successfully, False otherwise.
-  */
-  /*******************************************************************************/
-  bool ReadSensorData() {
-    unsigned long now = millis();
-    if (_lastRead != 0 && (now - _lastRead < 1000))
-      return true;
-
-    _cachedLight.light = _vcnl4030->readLux();
-    _cachedProximity.data[0] = (float)_vcnl4030->readProximity();
-    _lastRead = now;
-    return true;
-  }
-
-  /*******************************************************************************/
-  /*!
       @brief    Gets the VCNL4030's current light reading in lux.
       @param    lightEvent
                 Pointer to an Adafruit_Sensor event.
@@ -110,10 +93,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
-    if (!ReadSensorData())
-      return false;
-
-    *lightEvent = _cachedLight;
+    lightEvent->light = _vcnl4030->readLux();
     return true;
   }
 
@@ -127,18 +107,12 @@ public:
   */
   /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
-    if (!ReadSensorData())
-      return false;
-
-    *proximityEvent = _cachedProximity;
+    proximityEvent->data[0] = (float)_vcnl4030->readProximity();
     return true;
   }
 
 protected:
   Adafruit_VCNL4030 *_vcnl4030 = nullptr; ///< Pointer to VCNL4030 sensor object
-  unsigned long _lastRead = 0;            ///< Last sensor read time
-  sensors_event_t _cachedLight = {0};     ///< Cached light reading
-  sensors_event_t _cachedProximity = {0}; ///< Cached proximity reading
 };
 
 #endif // DRV_VCNL4030_H

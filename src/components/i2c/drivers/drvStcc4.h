@@ -84,10 +84,6 @@ public:
   */
   /*******************************************************************************/
   bool ReadSensorData() {
-    unsigned long now = millis();
-    if (_lastRead != 0 && now - _lastRead < 1000)
-      return true;
-
     uint16_t co2, status;
     float temperature, humidity;
 
@@ -97,7 +93,6 @@ public:
     _cachedCO2 = co2;
     _cachedTemperature = temperature;
     _cachedHumidity = humidity;
-    _lastRead = now;
     return true;
   }
 
@@ -111,9 +106,9 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData())
-      return false;
-
+    // Read all metrics together so temp/humidity/CO2 stay in sync; the member
+    // retains the last good sample if this pass had no new data ready.
+    ReadSensorData();
     tempEvent->temperature = _cachedTemperature;
     return true;
   }
@@ -128,9 +123,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!ReadSensorData())
-      return false;
-
+    ReadSensorData();
     humidEvent->relative_humidity = _cachedHumidity;
     return true;
   }
@@ -145,16 +138,13 @@ public:
   */
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
-    if (!ReadSensorData())
-      return false;
-
+    ReadSensorData();
     co2Event->CO2 = (float)_cachedCO2;
     return true;
   }
 
 protected:
   Adafruit_STCC4 *_stcc4 = nullptr; ///< STCC4 driver object
-  unsigned long _lastRead = 0uL;    ///< Last time the sensor was read
   float _cachedTemperature = 0.0f;  ///< Cached temperature reading
   float _cachedHumidity = 0.0f;     ///< Cached humidity reading
   uint16_t _cachedCO2 = 0;          ///< Cached CO2 reading in ppm

@@ -42,7 +42,6 @@ public:
     _mlx90632 = nullptr;
     _deviceTemp = NAN;
     _objectTemp = NAN;
-    _lastRead = 0;
   }
 
   /*******************************************************************************/
@@ -142,26 +141,14 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Checks if sensor was read within last 1s, or is the first read.
-      @returns  True if the sensor was recently read, False otherwise.
-  */
-  /*******************************************************************************/
-  bool HasBeenReadInLast200ms() {
-    return _lastRead != 0 && millis() - _lastRead < 200;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Reads the sensor.
-      @returns  True if the sensor was read successfully, False otherwise.
+      @brief    Reads ambient and object temperatures together when the sensor
+                has new data ready. Leaves the cached members untouched (last
+                good sample) when no new data is available this pass.
+      @returns  True if a fresh sample was read, False otherwise.
   */
   /*******************************************************************************/
   bool ReadSensorData() {
     bool result = false;
-    if (HasBeenReadInLast200ms()) {
-      WS_DEBUG_PRINTLN("Sensor was read recently, using cached data");
-      return true;
-    }
 
     // Check if we need to trigger a new measurement for step modes
     mlx90632_mode_t currentMode = _mlx90632->getMode();
@@ -184,7 +171,6 @@ public:
         return false;
       }
       result = true;
-      _lastRead = millis();
       // Reset new data flag after reading
       if (!_mlx90632->resetNewData()) {
         WS_DEBUG_PRINTLN("Failed to reset new data flag");
@@ -206,11 +192,13 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (ReadSensorData() && !isnan(_deviceTemp)) {
-      tempEvent->temperature = _deviceTemp;
-      return true;
-    }
-    return false; // sensor not read recently, return false
+    // Refresh both temps together; the member holds the last good sample if no
+    // new data was ready this pass.
+    ReadSensorData();
+    if (isnan(_deviceTemp))
+      return false;
+    tempEvent->temperature = _deviceTemp;
+    return true;
   }
 
   /*******************************************************************************/
@@ -223,17 +211,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventObjectTemp(sensors_event_t *tempEvent) {
-    if (ReadSensorData() && !isnan(_objectTemp)) {
-      tempEvent->temperature = _objectTemp;
-      return true;
-    }
-    return false; // sensor not read recently, return false
+    ReadSensorData();
+    if (isnan(_objectTemp))
+      return false;
+    tempEvent->temperature = _objectTemp;
+    return true;
   }
 
 protected:
-  double _deviceTemp; ///< Device temperature in Celsius
-  double _objectTemp; ///< Object temperature in Celsius
-  uint32_t _lastRead; ///< Last time the sensor was read in milliseconds
+  double _deviceTemp;           ///< Device temperature in Celsius
+  double _objectTemp;           ///< Object temperature in Celsius
   Adafruit_MLX90632 *_mlx90632; ///< Pointer to MLX90632 sensor object
 };
 

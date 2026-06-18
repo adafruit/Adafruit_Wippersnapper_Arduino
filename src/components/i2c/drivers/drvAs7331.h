@@ -100,36 +100,9 @@ public:
   */
   /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
-    if (!_readSensor())
-      return false;
-
-    rawEvent->data[0] = _cachedUVB;
-    return true;
-  }
-
-protected:
-  Adafruit_AS7331 *_as7331 = nullptr; ///< Pointer to AS7331 sensor object
-  unsigned long _lastRead = 0;        ///< Last sensor read time
-  float _cachedUVB = 0;               ///< Cached UVB reading in uW/cm2
-
-  /*******************************************************************************/
-  /*!
-      @brief    Reads all UV channels from the AS7331, caches UVB, and
-                prints UVA/UVB/UVC as debug output.
-      @returns  True if the sensor was read successfully, False otherwise.
-  */
-  /*******************************************************************************/
-  bool _readSensor() {
-    unsigned long now = millis();
-    if (_lastRead != 0 && (now - _lastRead < 1000))
-      return true;
-
     float uva, uvb, uvc;
     if (!_as7331->readAllUV_uWcm2(&uva, &uvb, &uvc))
       return false;
-
-    _cachedUVB = uvb;
-    _lastRead = now;
 
     WS_DEBUG_PRINT("AS7331 UVA: ");
     WS_DEBUG_PRINTVAR(uva);
@@ -138,8 +111,12 @@ protected:
     WS_DEBUG_PRINT(" UVC: ");
     WS_DEBUG_PRINTLNVAR(uvc);
 
+    rawEvent->data[0] = uvb;
     return true;
   }
+
+protected:
+  Adafruit_AS7331 *_as7331 = nullptr; ///< Pointer to AS7331 sensor object
 };
 
 #endif // DRV_AS7331_H

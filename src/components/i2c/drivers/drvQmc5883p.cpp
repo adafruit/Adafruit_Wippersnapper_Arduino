@@ -89,6 +89,13 @@ bool drvQmc5883p::getEventRaw(sensors_event_t *rawEvent) {
     return false;
   }
 
+  WS_DEBUG_PRINT("QMC5883P Gauss X: ");
+  WS_DEBUG_PRINTVAR(gx);
+  WS_DEBUG_PRINT(" Y: ");
+  WS_DEBUG_PRINTVAR(gy);
+  WS_DEBUG_PRINT(" Z: ");
+  WS_DEBUG_PRINTLNVAR(gz);
+
   // Report the magnitude of the magnetic field vector, in gauss.
   float magnitude_G = sqrtf(gx * gx + gy * gy + gz * gz);
   rawEvent->data[0] = magnitude_G;

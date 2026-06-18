@@ -22,7 +22,6 @@
 #include <VOCGasIndexAlgorithm.h>
 #include <Wire.h>
 
-#define SGP41_POLL_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
 #define SGP41_CONDITIONING_TICKS 10 ///< Recommended warmup cycles
 
 /**************************************************************************/
@@ -83,28 +82,26 @@ public:
     _vocIdx = 0;
     _noxIdx = 0;
     _conditioningTicks = 0;
-    _lastPollMs = millis() - SGP41_POLL_INTERVAL_MS;
     return true;
 
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
     //  - Humidity compensation: measureRawSignals(rh, tempC) from a paired
     //    RH/T sensor improves VOC/NOx accuracy (defaults to 50% RH, 25C).
     //  - Conditioning duration (number of warmup cycles before sampling).
-    //  - Sampling interval (the gas-index algorithm assumes ~1 Hz).
+    // NOTE: the Sensirion gas-index algorithm assumes ~1 Hz sampling. v2 has no
+    // background tick, so the raw signals are sampled and the algorithm is
+    // advanced on each read pass (at the device's configured period).
   }
 
   /*******************************************************************************/
   /*!
-      @brief  Samples the SGP41 at ~1 Hz and feeds the VOC/NOx gas-index
-              algorithms. Safe to call from each getEvent* method; the millis()
-              guard ensures the sensor is sampled at most once per second.
+      @brief  Samples the SGP41 raw VOC/NOx signals and advances the gas-index
+              algorithms. Called from each getEvent* method so all metrics
+              reflect the same sample.
   */
   /*******************************************************************************/
   void pollSensor() {
     if (!_sgp41)
-      return;
-    uint32_t now = millis();
-    if (now - _lastPollMs < SGP41_POLL_INTERVAL_MS)
       return;
 
     uint16_t srawVoc = 0;
@@ -126,7 +123,6 @@ public:
       _vocIdx = _vocAlgorithm.process((int32_t)srawVoc);
       _noxIdx = _noxAlgorithm.process((int32_t)srawNox);
     }
-    _lastPollMs = now;
   }
 
   /*******************************************************************************/
@@ -190,7 +186,6 @@ protected:
   VOCGasIndexAlgorithm _vocAlgorithm; ///< VOC gas index state machine
   NOxGasIndexAlgorithm _noxAlgorithm; ///< NOx gas index state machine
   uint8_t _conditioningTicks = 0;     ///< Completed initial conditioning cycles
-  uint32_t _lastPollMs = 0; ///< Last poll timestamp to enforce cadence
 };
 
 #endif // DRV_SGP41_H

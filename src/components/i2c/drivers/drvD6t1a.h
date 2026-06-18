@@ -41,7 +41,6 @@ public:
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _deviceTemp = NAN;
     _objectTemp = NAN;
-    _lastRead = 0;
     _d6t1a = nullptr;
   }
 
@@ -59,31 +58,19 @@ public:
     return _d6t1a->begin(_address);
 
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
-    //  - The D6T-1A is a fixed-function single-element thermopile; the only
-    //    tunable behaviour is the host-side minimum re-read interval (200ms
-    //    here). If the library exposes emissivity or averaging, surface those.
+    //  - The D6T-1A is a fixed-function single-element thermopile; if the
+    //    library exposes emissivity or averaging, surface those.
   }
 
   /*!
-      @brief    Checks if sensor was read within last 200ms.
-      @returns  True if the sensor was recently read, False otherwise.
-  */
-  bool HasBeenReadInLast200ms() {
-    return _lastRead != 0 && (millis() - _lastRead < 200);
-  }
-
-  /*!
-      @brief    Reads the sensor.
+      @brief    Reads ambient and object temperatures in one transaction so
+                both metrics reflect the same sample.
       @returns  True if the sensor was read successfully, False otherwise.
   */
   bool ReadSensorData() {
-    if (HasBeenReadInLast200ms())
-      return true;
-
     _d6t1a->read();
     _deviceTemp = (float)_d6t1a->ambientTempC();
     _objectTemp = (float)_d6t1a->objectTempC(0, 0);
-    _lastRead = millis();
     return true;
   }
 
@@ -118,10 +105,9 @@ public:
   }
 
 protected:
-  float _deviceTemp;  ///< Device temperature in Celsius
-  float _objectTemp;  ///< Object temperature in Celsius
-  uint32_t _lastRead; ///< Last time the sensor was read in milliseconds
-  OmronD6T *_d6t1a;   ///< D6T1A object
+  float _deviceTemp; ///< Device temperature in Celsius
+  float _objectTemp; ///< Object temperature in Celsius
+  OmronD6T *_d6t1a;  ///< D6T1A object
 };
 
 #endif // DRV_D6T1A_H

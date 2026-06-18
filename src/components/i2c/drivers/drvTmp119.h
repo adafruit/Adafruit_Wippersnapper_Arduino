@@ -83,32 +83,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!_readSensor())
-      return false;
-    *tempEvent = _cachedTemp;
-    return true;
+    return _tmp119->getEvent(tempEvent);
   }
 
 protected:
   Adafruit_TMP119 *_tmp119 = nullptr; ///< TMP119 driver object
-  unsigned long _lastRead = 0;        ///< Last sensor read time in ms
-  sensors_event_t _cachedTemp = {0};  ///< Cached temperature event
-
-  /*******************************************************************************/
-  /*!
-      @brief    Reads the TMP119 sensor data, caching the result so only
-                the first call per cycle performs the I2C transaction.
-      @returns  True if sensor data is available, False otherwise.
-  */
-  /*******************************************************************************/
-  bool _readSensor() {
-    if (_lastRead != 0 && millis() - _lastRead < 1000)
-      return true; // use cached value
-    if (!_tmp119->getEvent(&_cachedTemp))
-      return false;
-    _lastRead = millis();
-    return true;
-  }
 };
 
 #endif // DRV_TMP119_H

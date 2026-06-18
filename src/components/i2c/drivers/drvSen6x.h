@@ -57,7 +57,6 @@ public:
     _vocIndex = NAN;
     _noxIndex = NAN;
     _co2 = 0uL;
-    _lastRead = 0;
   }
 
   /*******************************************************************************/
@@ -93,57 +92,36 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Checks if sensor was read within last 1s, or is the first read.
-      @returns  True if the sensor was recently read, False otherwise.
-  */
-  bool HasBeenReadInLastSecond() {
-    return _lastRead != 0 && millis() - _lastRead < 1000;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Checks if the sensor is ready to be read
-      @returns  True if the sensor is ready, False otherwise.
+      @brief    Checks if the sensor has a new measurement ready.
+      @returns  True if a new measurement is ready, False otherwise.
   */
   /*******************************************************************************/
   bool IsSensorReady() {
     bool isDataReady = false;
     uint8_t padding = 0x0;
-    for (int i = 0; i < 2; i++) {
-      uint16_t error = _sen->getDataReady(padding, isDataReady);
-      if (error == 0 && isDataReady) {
-        return true;
-      }
-      delay(100);
-    }
-    return false;
+    return (_sen->getDataReady(padding, isDataReady) == 0) && isDataReady;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the sensor.
-      @returns  True if the sensor was read successfully, False otherwise.
+      @brief    Reads all SEN6X metrics in one transaction when new data is
+                ready, leaving the cached members untouched otherwise so every
+                metric in a read pass reflects the same sample.
+      @returns  True once a successful read has populated the cached values,
+                False before the first successful read.
   */
   /*******************************************************************************/
   bool ReadSensorData() {
-    // dont read sensor more than once per second
-    if (HasBeenReadInLastSecond()) {
-      return true;
+    if (IsSensorReady()) {
+      uint16_t error = _sen->readMeasuredValues(
+          _massConcentrationPm1p0, _massConcentrationPm2p5,
+          _massConcentrationPm4p0, _massConcentrationPm10p0, _ambientHumidity,
+          _ambientTemperature, _vocIndex, _noxIndex, _co2);
+      if (error == 0) {
+        _haveData = true;
+      }
     }
-
-    if (!IsSensorReady()) {
-      return false;
-    }
-
-    uint16_t error = _sen->readMeasuredValues(
-        _massConcentrationPm1p0, _massConcentrationPm2p5,
-        _massConcentrationPm4p0, _massConcentrationPm10p0, _ambientHumidity,
-        _ambientTemperature, _vocIndex, _noxIndex, _co2);
-    if (error != 0) {
-      return false;
-    }
-    _lastRead = millis();
-    return true;
+    return _haveData;
   }
 
   /*******************************************************************************/
@@ -299,7 +277,7 @@ protected:
   float _vocIndex;                   ///< VOC index
   float _noxIndex;                   ///< NOx index
   uint16_t _co2;                     ///< CO2 value
-  unsigned long _lastRead;           ///< Last time the sensor was read
+  bool _haveData = false;            ///< True once a measurement has been read
 };
 
 #endif // DRV_SEN6X_H

@@ -78,27 +78,6 @@ public:
       WS_DEBUG_PRINTLN("Failed to set MAX44009 mode!");
       return false;
     }
-    _lastRead = 0; // ensure sensor is read on first update() call
-    return true;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Reads the MAX44009 sensor if not recently read.
-      @returns  True if the sensor was read successfully, False otherwise.
-  */
-  /*******************************************************************************/
-  bool _readSensor() {
-    unsigned long now = millis();
-    if (_lastRead != 0 && (now - _lastRead < 1000))
-      return true; // recently read, use cached value
-
-    float lux = _max44009->readLux();
-    if (isnan(lux))
-      return false;
-
-    _cachedLight.light = lux;
-    _lastRead = now;
     return true;
   }
 
@@ -112,16 +91,15 @@ public:
   */
   /*******************************************************************************/
   bool getEventLux(sensors_event_t *luxEvent) {
-    if (!_readSensor())
+    float lux = _max44009->readLux();
+    if (isnan(lux))
       return false;
-    *luxEvent = _cachedLight;
+    luxEvent->light = lux;
     return true;
   }
 
 protected:
   Adafruit_MAX44009 *_max44009 = nullptr; ///< Pointer to MAX44009 sensor object
-  unsigned long _lastRead = 0;            ///< Last sensor read time
-  sensors_event_t _cachedLight = {0};     ///< Cached light reading
 };
 
 #endif // DRV_MAX44009_H
