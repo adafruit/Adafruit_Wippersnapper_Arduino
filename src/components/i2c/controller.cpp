@@ -976,6 +976,11 @@ void I2cController::update(bool force) {
     if (sensor_count == 0)
       continue; // bail out if driver has no sensors enabled
 
+    // Per-driver background tick (non-blocking). Runs every loop iteration,
+    // independent of the device's publish period, for sensors that require a
+    // fixed internal sampling cadence (e.g. SGP gas-index ~1 Hz sampling).
+    drv->fastTick();
+
     if (drv->GetDidReadSend())
       continue; // bail out if driver has already read and sent data to IO
 

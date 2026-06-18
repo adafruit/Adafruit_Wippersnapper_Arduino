@@ -22,7 +22,8 @@
 #include <VOCGasIndexAlgorithm.h>
 #include <Wire.h>
 
-#define SGP41_CONDITIONING_TICKS 10 ///< Recommended warmup cycles
+#define SGP41_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
+#define SGP41_CONDITIONING_TICKS 10     ///< Recommended warmup cycles
 
 /**************************************************************************/
 /*!
@@ -82,27 +83,33 @@ public:
     _vocIdx = 0;
     _noxIdx = 0;
     _conditioningTicks = 0;
+    _lastFastMs = millis() - SGP41_FASTTICK_INTERVAL_MS;
     return true;
 
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
     //  - Humidity compensation: measureRawSignals(rh, tempC) from a paired
     //    RH/T sensor improves VOC/NOx accuracy (defaults to 50% RH, 25C).
     //  - Conditioning duration (number of warmup cycles before sampling).
-    // NOTE: the Sensirion gas-index algorithm assumes ~1 Hz sampling. v2 has no
-    // background tick, so the raw signals are sampled and the algorithm is
-    // advanced on each read pass (at the device's configured period).
   }
 
   /*******************************************************************************/
   /*!
-      @brief  Samples the SGP41 raw VOC/NOx signals and advances the gas-index
-              algorithms. Called from each getEvent* method so all metrics
-              reflect the same sample.
+      @brief  Background sampling for the SGP41. The Sensirion gas-index
+              algorithm and the initial conditioning require raw signals at a
+              fixed ~1 Hz cadence, independent of how often VOC/NOx/raw are
+              published, so the work is done here (called every loop) rather
+              than in the getEvent* handlers. Non-blocking; the millis() guard
+              enforces the 1 Hz cadence.
   */
   /*******************************************************************************/
-  void pollSensor() {
+  void fastTick() override {
     if (!_sgp41)
       return;
+
+    uint32_t now = millis();
+    if (now - _lastFastMs < SGP41_FASTTICK_INTERVAL_MS)
+      return;
+    _lastFastMs = now;
 
     uint16_t srawVoc = 0;
     uint16_t srawNox = 0;
@@ -127,7 +134,8 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the sensor's current raw unprocessed value.
+      @brief    Gets the sensor's current raw unprocessed value (cached from
+                the most recent fastTick() sample).
       @param    rawEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the raw value was obtained successfully, False
@@ -137,7 +145,6 @@ public:
   bool getEventRaw(sensors_event_t *rawEvent) {
     if (!_sgp41)
       return false;
-    pollSensor();
     rawEvent->data[0] = (float)_rawValue;
     return true;
   }
@@ -155,7 +162,6 @@ public:
     if (!_sgp41)
       return false;
     // Note: VOC algorithm learning period is ~60 seconds from startup.
-    pollSensor();
     vocIndexEvent->voc_index = _vocIdx;
     return true;
   }
@@ -173,7 +179,6 @@ public:
     if (!_sgp41)
       return false;
     // Note: NOx algorithm learning period is ~300 seconds from startup.
-    pollSensor();
     noxIndexEvent->nox_index = _noxIdx;
     return true;
   }
@@ -186,6 +191,7 @@ protected:
   VOCGasIndexAlgorithm _vocAlgorithm; ///< VOC gas index state machine
   NOxGasIndexAlgorithm _noxAlgorithm; ///< NOx gas index state machine
   uint8_t _conditioningTicks = 0;     ///< Completed initial conditioning cycles
+  uint32_t _lastFastMs = 0; ///< Last fastTick sample time (1 Hz guard)
 };
 
 #endif // DRV_SGP41_H

@@ -227,6 +227,17 @@ public:
   virtual bool configureDefaults() { return true; }
 
   /*!
+      @brief    Per-driver background tick, invoked once per controller update
+                (every main-loop iteration) regardless of the device's publish
+                period. Override in drivers that require a fixed internal
+                sampling cadence independent of how often their metrics are
+                published - e.g. the Sensirion SGP gas-index conditioning and
+                algorithms, which must be fed raw signals at ~1 Hz. Must be
+                non-blocking; gate the actual sampling with a millis() guard.
+  */
+  virtual void fastTick() {}
+
+  /*!
       @brief    Base implementation - Applies a gain setting to the driver.
                 Must override in driver.
       @param    gain
