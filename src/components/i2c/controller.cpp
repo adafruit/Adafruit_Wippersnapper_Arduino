@@ -72,6 +72,73 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvApds9999(i2c, addr, mux_channel, driver_name);
      }},
+    {"as5600",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvAs5600(i2c, addr, mux_channel, driver_name);
+     }},
+    {"as7331",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvAs7331(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bmp580",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp5xx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bmp581",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp5xx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bmp585",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp5xx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"max44009",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMax44009(i2c, addr, mux_channel, driver_name);
+     }},
+    {"qmc5883p",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvQmc5883p(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sgp41",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSgp41(i2c, addr, mux_channel, driver_name);
+     }},
+    {"spa06_003",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSpa06_003(i2c, addr, mux_channel, driver_name);
+     }},
+    {"stcc4",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvStcc4(i2c, addr, mux_channel, driver_name);
+     }},
+    {"tmp119",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvTmp119(i2c, addr, mux_channel, driver_name);
+     }},
+    // Component id in Wippersnapper_Components is "vcnl4030"; the legacy
+    // misspelling ("vncl") is also registered to match existing sibling keys.
+    {"vcnl4030",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVcnl4030(i2c, addr, mux_channel, driver_name);
+     }},
+    {"vncl4030",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVcnl4030(i2c, addr, mux_channel, driver_name);
+     }},
     {"bh1750",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {

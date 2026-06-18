@@ -1,36 +1,34 @@
 /*!
- * @file drvHtu31d.h
+ * @file drvTmp119.h
  *
- * Device driver for the HTU31D humidity and temperature sensor.
+ * Device driver for the TMP119 high-accuracy temperature sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) 2026 Tyeth Gundry for Adafruit Industries
+ * Copyright (c) Tyeth Gundry 2026 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
-
-#ifndef DRV_HTU31D_H
-#define DRV_HTU31D_H
+#ifndef DRV_TMP119_H
+#define DRV_TMP119_H
 
 #include "drvBase.h"
-#include <Adafruit_HTU31D.h>
+#include <Adafruit_TMP119.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the HTU31D humidity and
-            temperature sensor.
+    @brief  Class that provides a driver interface for the TMP119 sensor.
 */
 /**************************************************************************/
-class drvHtu31d : public drvBase {
+class drvTmp119 : public drvBase {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an HTU31D sensor.
+      @brief    Constructor for a TMP119 sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -41,7 +39,7 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvHtu31d(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+  drvTmp119(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
@@ -49,32 +47,35 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an HTU31D sensor.
+      @brief    Destructor for a TMP119 sensor.
   */
   /*******************************************************************************/
-  ~drvHtu31d() { delete _htu31d; }
+  ~drvTmp119() { delete _tmp119; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the HTU31D sensor and begins I2C.
+      @brief    Initializes the TMP119 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() override {
-    // attempt to initialize the HTU31D using the I2C interface
-    _htu31d = new Adafruit_HTU31D();
-    return _htu31d->begin(_address, _i2c);
-
-    // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
-    //  - On-chip heater: enableHeater(bool) drives off condensation / aids the
-    //    fast RH recovery test; users may want it toggleable.
-    //  - Measurement resolution: the HTU31D supports selectable temperature and
-    //    humidity oversampling (OSR) trading conversion time for resolution.
+    _tmp119 = new Adafruit_TMP119();
+    if (!_tmp119->begin((uint8_t)_address, _i2c))
+      return false;
+    // Explicit defaults so library changes don't alter WipperSnapper behavior.
+    // CUSTOM SETTINGS CANDIDATES (not yet exposed via the v2 properties API):
+    //  - Averaging (setAveragedSampleCount): trades noise for conversion time.
+    //  - Measurement mode (setMeasurementMode): continuous vs one-shot.
+    //  - Conversion cycle time, if exposed by the library.
+    if (!_tmp119->setMeasurementMode(TMP117_MODE_CONTINUOUS) ||
+        !_tmp119->setAveragedSampleCount(TMP117_AVERAGE_8X))
+      WS_DEBUG_PRINTLN("Failed to reconfigure TMP119 - continuing");
+    return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the HTU31D's current temperature, in degrees Celsius.
+      @brief    Gets the TMP119's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -82,24 +83,32 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    return _htu31d->getEvent(nullptr, tempEvent);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the HTU31D's current relative humidity, in percent.
-      @param    humidEvent
-                Pointer to an Adafruit_Sensor event.
-      @returns  True if the humidity was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    return _htu31d->getEvent(humidEvent, nullptr);
+    if (!_readSensor())
+      return false;
+    *tempEvent = _cachedTemp;
+    return true;
   }
 
 protected:
-  Adafruit_HTU31D *_htu31d; ///< Pointer to an HTU31D object
+  Adafruit_TMP119 *_tmp119 = nullptr; ///< TMP119 driver object
+  unsigned long _lastRead = 0;        ///< Last sensor read time in ms
+  sensors_event_t _cachedTemp = {0};  ///< Cached temperature event
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the TMP119 sensor data, caching the result so only
+                the first call per cycle performs the I2C transaction.
+      @returns  True if sensor data is available, False otherwise.
+  */
+  /*******************************************************************************/
+  bool _readSensor() {
+    if (_lastRead != 0 && millis() - _lastRead < 1000)
+      return true; // use cached value
+    if (!_tmp119->getEvent(&_cachedTemp))
+      return false;
+    _lastRead = millis();
+    return true;
+  }
 };
 
-#endif // DRV_HTU31D_H
+#endif // DRV_TMP119_H

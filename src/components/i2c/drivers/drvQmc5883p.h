@@ -1,7 +1,7 @@
 /*!
- * @file drvIna237.h
+ * @file drvQmc5883p.h
  *
- * Device driver for the INA237 High Precision DC Current and Voltage Monitor
+ * Driver wrapper for the Adafruit QMC5883P 3-axis magnetometer.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -12,31 +12,23 @@
  * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef DRV_INA237_H
-#define DRV_INA237_H
+#ifndef DRV_QMC5883P_H
+#define DRV_QMC5883P_H
 
 #include "drvBase.h"
 
-class Adafruit_INA237; ///< Forward declaration (lib header included in .cpp)
+class Adafruit_QMC5883P; // forward
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for a INA237 sensor.
-
-    CUSTOM SETTINGS CANDIDATES (currently hard-coded in begin(); not yet
-    exposed via the v2 properties API):
-     - Shunt resistance & max expected current (setShunt) — calibration,
-       depends on the physical shunt fitted to the board (0.015 ohm / 10 A
-       default here).
-     - ADC range (high vs low) for the shunt voltage.
-     - Averaging count and bus/shunt conversion times.
+    @brief  Class that provides a driver interface for a QMC5883P sensor.
 */
 /**************************************************************************/
-class drvIna237 : public drvBase {
+class drvQmc5883p : public drvBase {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a INA237 sensor.
+      @brief    Constructor for a QMC5883P sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -47,20 +39,20 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvIna237(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-            const char *driver_name)
+  drvQmc5883p(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {}
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an INA237 sensor.
+      @brief    Destructor for a QMC5883P sensor.
   */
   /*******************************************************************************/
-  ~drvIna237();
+  ~drvQmc5883p();
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the INA237 sensor and begins I2C.
+      @brief    Initializes the QMC5883P sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
@@ -68,28 +60,18 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a voltage sensor and converts the
-                reading into the expected SI unit.
-      @param    voltageEvent
-                voltage sensor reading, in volts.
+      @brief    Gets the QMC5883P's magnetic-field magnitude (gauss) as a raw
+                event.
+      @param    rawEvent
+                Pointer to the magnetometer sensor event.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventVoltage(sensors_event_t *voltageEvent);
-
-  /**
-   * @brief   Get the current sensor event.
-   *
-   * @param   currentEvent  Pointer to the current sensor event.
-   *
-   * @returns True if the sensor event was obtained successfully, False
-   * otherwise.
-   */
-  bool getEventCurrent(sensors_event_t *currentEvent);
+  bool getEventRaw(sensors_event_t *rawEvent);
 
 protected:
-  Adafruit_INA237 *_ina237 = nullptr; ///< Pointer to INA237 sensor object
+  Adafruit_QMC5883P *_qmc = nullptr; ///< Pointer to QMC5883P sensor object
 };
 
-#endif // DRV_INA237_H
+#endif // DRV_QMC5883P_H

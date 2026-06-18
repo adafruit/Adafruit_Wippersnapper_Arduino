@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Tyeth Gundry 2025 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2026 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
