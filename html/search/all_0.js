@@ -122,6 +122,8 @@ var searchData=
   ['_5flps3xhw',['_lps3xhw',['../class_wipper_snapper___i2_c___driver___l_p_s3_x_h_w.html#afd591f0b581ed1e0d399deb4dcd65297',1,'WipperSnapper_I2C_Driver_LPS3XHW']]],
   ['_5fltr329',['_LTR329',['../class_wipper_snapper___i2_c___driver___l_t_r329___l_t_r303.html#a29f66de6de4f9f8490117931869143cc',1,'WipperSnapper_I2C_Driver_LTR329_LTR303']]],
   ['_5fltr390',['_ltr390',['../class_wipper_snapper___i2_c___driver___l_t_r390.html#ab5b960a18449a170ed3ba7beb3154517',1,'WipperSnapper_I2C_Driver_LTR390']]],
+  ['_5fluxsensorperiod',['_luxSensorPeriod',['../class_wipper_snapper___i2_c___driver.html#adae0e9ffd1d8fe843e46dc76f285b7b5',1,'WipperSnapper_I2C_Driver']]],
+  ['_5fluxsensorperiodprv',['_luxSensorPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a6e1059be633173f3e30ae05d13e9c44e',1,'WipperSnapper_I2C_Driver']]],
   ['_5fmacaddr',['_macAddr',['../class_wippersnapper.html#a1c0144ecf93d8650ac79676f7775f48a',1,'Wippersnapper']]],
   ['_5fmassconcentrationpm10p0',['_massConcentrationPm10p0',['../class_wipper_snapper___i2_c___driver___s_e_n5_x.html#a969d7a5feddf7a83d6cb47a38427234e',1,'WipperSnapper_I2C_Driver_SEN5X::_massConcentrationPm10p0()'],['../class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a09ff3ab11103430e6d18574bdea8a8d5',1,'WipperSnapper_I2C_Driver_SEN6X::_massConcentrationPm10p0()']]],
   ['_5fmassconcentrationpm1p0',['_massConcentrationPm1p0',['../class_wipper_snapper___i2_c___driver___s_e_n5_x.html#a034e1956d76fa7da4e161dc4df1a863b',1,'WipperSnapper_I2C_Driver_SEN5X::_massConcentrationPm1p0()'],['../class_wipper_snapper___i2_c___driver___s_e_n6_x.html#acf87ed2f028ead1acc53df893aa04890',1,'WipperSnapper_I2C_Driver_SEN6X::_massConcentrationPm1p0()']]],
@@ -166,6 +168,7 @@ var searchData=
   ['_5fpin_5frst',['_pin_rst',['../classdisp_drv_base.html#a4e2b5cf6177078c82801903ef9a4f4d4',1,'dispDrvBase']]],
   ['_5fpin_5fsck',['_pin_sck',['../classdisp_drv_base.html#a138f9011e9f184f12abc6b8a4520bb45',1,'dispDrvBase']]],
   ['_5fpin_5fsram_5fcs',['_pin_sram_cs',['../classdisp_drv_base.html#af9cbb8a9ab8577dbee0256eff61fe2c2',1,'dispDrvBase']]],
+  ['_5fpixelscomponent',['_pixelsComponent',['../class_wippersnapper.html#aba3d3995cb17a18b8f5f2f202aa0e96d',1,'Wippersnapper']]],
   ['_5fpm100sensorperiod',['_PM100SensorPeriod',['../class_wipper_snapper___i2_c___driver.html#a6cc8417bd7488f67b40ab0cb7fa4ae2b',1,'WipperSnapper_I2C_Driver']]],
   ['_5fpm100sensorperiodprv',['_PM100SensorPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a24acc438f04269354675149cd192c107',1,'WipperSnapper_I2C_Driver']]],
   ['_5fpm10sensorperiod',['_PM10SensorPeriod',['../class_wipper_snapper___i2_c___driver.html#aa29eacb04d18af3a6e7d35db4a587efe',1,'WipperSnapper_I2C_Driver']]],
@@ -283,6 +286,5 @@ var searchData=
   ['_5fvoltageperiodprv',['_voltagePeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a2b3343936adcbad3ac36827b8d6e71ab',1,'WipperSnapper_I2C_Driver']]],
   ['_5fwidth',['_width',['../classdisp_drv_base.html#a57e9f1ca0d5dad77bab190aadad385ad',1,'dispDrvBase::_width()'],['../class_wipper_snapper___i2_c___driver___out___s_h1107.html#a5d1bc4347a16eb5e064e7c49e9cc10fb',1,'WipperSnapper_I2C_Driver_Out_SH1107::_width()'],['../class_wipper_snapper___i2_c___driver___out___ssd1306.html#a799c6a9f2eede0f74d193a0de800517f',1,'WipperSnapper_I2C_Driver_Out_Ssd1306::_width()']]],
   ['_5fwifi',['_wifi',['../class_wippersnapper___a_i_r_l_i_f_t.html#a583121d8e9177c59463b815ceac98ea6',1,'Wippersnapper_AIRLIFT']]],
-  ['_5fwifimulti',['_wifiMulti',['../class_wippersnapper___e_s_p32.html#a3bb14b42e597e2ac2a78df5fd32ea6c4',1,'Wippersnapper_ESP32']]],
-  ['_5fws_5fpixelscomponent',['_ws_pixelsComponent',['../class_wippersnapper.html#acba8bb65ab39d1adc9c40890dddad99f',1,'Wippersnapper']]]
+  ['_5fwifimulti',['_wifiMulti',['../class_wippersnapper___e_s_p32.html#a3bb14b42e597e2ac2a78df5fd32ea6c4',1,'Wippersnapper_ESP32']]]
 ];

@@ -214,7 +214,7 @@ var searchData=
   ['ws_5fmqtt_5fmax_5fpayload_5fsize',['WS_MQTT_MAX_PAYLOAD_SIZE',['../_wippersnapper_8h.html#a07b8444860c318fdff531a3d0c4f2e4a',1,'Wippersnapper.h']]],
   ['ws_5fmqtt_5fstatus_5ft',['ws_mqtt_status_t',['../_wippersnapper_8h.html#affb7a9544e077a98a37c67e2c344a9c0',1,'Wippersnapper.h']]],
   ['ws_5fnetworking_5fpico_2eh',['ws_networking_pico.h',['../ws__networking__pico_8h.html',1,'']]],
-  ['ws_5fpixels',['ws_pixels',['../classws__pixels.html',1,'']]],
+  ['ws_5fpixels',['ws_pixels',['../classws__pixels.html',1,'ws_pixels'],['../classws__pixels.html#a0e7436e3336654c7402c54c81d9eb5b2',1,'ws_pixels::ws_pixels()']]],
   ['ws_5fpixels_2ecpp',['ws_pixels.cpp',['../ws__pixels_8cpp.html',1,'']]],
   ['ws_5fpixels_2eh',['ws_pixels.h',['../ws__pixels_8h.html',1,'']]],
   ['ws_5fprinter',['WS_PRINTER',['../_wippersnapper_8h.html#ae04b6b322705e95cdf2d837493a55a57',1,'Wippersnapper.h']]],

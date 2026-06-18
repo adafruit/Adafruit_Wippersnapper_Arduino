@@ -93,6 +93,7 @@ var searchData=
   ['ws_5fds18x20',['ws_ds18x20',['../classws__ds18x20.html#a44519c52552bbcdd6ee1626c38d8e6b1',1,'ws_ds18x20']]],
   ['ws_5fledc',['ws_ledc',['../classws__ledc.html#a5a1ac51d7b656a9db6b24eab01a0d566',1,'ws_ledc']]],
   ['ws_5fledc_5fservo',['ws_ledc_servo',['../classws__ledc__servo.html#aeafb2c26604acb02d69ab5587bbeeec2',1,'ws_ledc_servo']]],
+  ['ws_5fpixels',['ws_pixels',['../classws__pixels.html#a0e7436e3336654c7402c54c81d9eb5b2',1,'ws_pixels']]],
   ['ws_5fpwm',['ws_pwm',['../classws__pwm.html#ad6c93fde45c9ff8fa7ceb4a0d7684b1f',1,'ws_pwm::ws_pwm()'],['../classws__pwm.html#a6bc625260a1dde1fbaf5a20f3cffaa55',1,'ws_pwm::ws_pwm(ws_ledc *ledcManager)']]],
   ['ws_5fuart_5fdrv',['ws_uart_drv',['../classws__uart__drv.html#a9421d5a66d2e5d32b82d477258025f9d',1,'ws_uart_drv']]],
   ['ws_5fuart_5fdrv_5fpm25aqi',['ws_uart_drv_pm25aqi',['../classws__uart__drv__pm25aqi.html#ae0c5df0732e0f01dae12c956f3bdef79',1,'ws_uart_drv_pm25aqi']]]

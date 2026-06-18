@@ -30,6 +30,7 @@ var searchData=
   ['setsensoreco2periodprv',['setSensorECO2PeriodPrv',['../class_wipper_snapper___i2_c___driver.html#ade65a675cd6ac6ad959dcb92060c791c',1,'WipperSnapper_I2C_Driver']]],
   ['setsensorgasresistanceperiodprv',['setSensorGasResistancePeriodPrv',['../class_wipper_snapper___i2_c___driver.html#ab32ef61c9d33065db61b7ea0c2d0701d',1,'WipperSnapper_I2C_Driver']]],
   ['setsensorlightperiodprv',['setSensorLightPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a613a2f41457c12223d22f38dd7f9785b',1,'WipperSnapper_I2C_Driver']]],
+  ['setsensorluxperiodprv',['setSensorLuxPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a817e6361c42f277e558ab1d798c9e574',1,'WipperSnapper_I2C_Driver']]],
   ['setsensornoxindexperiodprv',['setSensorNOxIndexPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#afa32d1178c088e5121de2e2feb4665e4',1,'WipperSnapper_I2C_Driver']]],
   ['setsensorobjecttempfperiodprv',['setSensorObjectTempFPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#ac113c9e0e03c2b85793c14a67d6c9336',1,'WipperSnapper_I2C_Driver']]],
   ['setsensorobjecttempperiodprv',['setSensorObjectTempPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a4a6d787a8c8cfae758f6d0aa29d62ae3',1,'WipperSnapper_I2C_Driver']]],

@@ -283,6 +283,18 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memitem:ae063acb623d277fab67e2a0efb8bb5ca"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ae063acb623d277fab67e2a0efb8bb5ca">getEventLight</a> (sensors_event_t *lightEvent)</td></tr>
 <tr class="memdesc:ae063acb623d277fab67e2a0efb8bb5ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a object light sensor and converts the reading into the expected SI unit.  <a href="#ae063acb623d277fab67e2a0efb8bb5ca">More...</a><br /></td></tr>
 <tr class="separator:ae063acb623d277fab67e2a0efb8bb5ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a452303dbacccb964b8e584881681ae4e"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a452303dbacccb964b8e584881681ae4e">getSensorLuxPeriod</a> ()</td></tr>
+<tr class="memdesc:a452303dbacccb964b8e584881681ae4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the object lux sensor's period, if set.  <a href="#a452303dbacccb964b8e584881681ae4e">More...</a><br /></td></tr>
+<tr class="separator:a452303dbacccb964b8e584881681ae4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a874078e52d0bb65d4accf536a0df7a70"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a874078e52d0bb65d4accf536a0df7a70">getSensorLuxPeriodPrv</a> ()</td></tr>
+<tr class="memdesc:a874078e52d0bb65d4accf536a0df7a70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the lux sensor was queried last.  <a href="#a874078e52d0bb65d4accf536a0df7a70">More...</a><br /></td></tr>
+<tr class="separator:a874078e52d0bb65d4accf536a0df7a70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a817e6361c42f277e558ab1d798c9e574"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a817e6361c42f277e558ab1d798c9e574">setSensorLuxPeriodPrv</a> (long period)</td></tr>
+<tr class="memdesc:a817e6361c42f277e558ab1d798c9e574"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the lux sensor was queried.  <a href="#a817e6361c42f277e558ab1d798c9e574">More...</a><br /></td></tr>
+<tr class="separator:a817e6361c42f277e558ab1d798c9e574"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a019ecf412b4823f039e6516eab80bb0a"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a019ecf412b4823f039e6516eab80bb0a">getEventLux</a> (sensors_event_t *luxEvent)</td></tr>
+<tr class="memdesc:a019ecf412b4823f039e6516eab80bb0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a object Light(lux) sensor and converts the reading into the expected SI unit.  <a href="#a019ecf412b4823f039e6516eab80bb0a">More...</a><br /></td></tr>
+<tr class="separator:a019ecf412b4823f039e6516eab80bb0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aafb4f314d6bdccc862fe3ba77c9cb533"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aafb4f314d6bdccc862fe3ba77c9cb533">getSensorPM10_STDPeriod</a> ()</td></tr>
 <tr class="memdesc:aafb4f314d6bdccc862fe3ba77c9cb533"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the object pm10 standard sensors' period, if set.  <a href="#aafb4f314d6bdccc862fe3ba77c9cb533">More...</a><br /></td></tr>
 <tr class="separator:aafb4f314d6bdccc862fe3ba77c9cb533"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -521,6 +533,12 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <tr class="memitem:a9c8b2b397c7e5b34e0e72e0d7c088f55"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a9c8b2b397c7e5b34e0e72e0d7c088f55">_lightSensorPeriodPrv</a></td></tr>
 <tr class="memdesc:a9c8b2b397c7e5b34e0e72e0d7c088f55"><td class="mdescLeft">&#160;</td><td class="mdescRight">read.  <a href="#a9c8b2b397c7e5b34e0e72e0d7c088f55">More...</a><br /></td></tr>
 <tr class="separator:a9c8b2b397c7e5b34e0e72e0d7c088f55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adae0e9ffd1d8fe843e46dc76f285b7b5"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#adae0e9ffd1d8fe843e46dc76f285b7b5">_luxSensorPeriod</a></td></tr>
+<tr class="memdesc:adae0e9ffd1d8fe843e46dc76f285b7b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time period between reading the lux sensor's value.  <a href="#adae0e9ffd1d8fe843e46dc76f285b7b5">More...</a><br /></td></tr>
+<tr class="separator:adae0e9ffd1d8fe843e46dc76f285b7b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e1059be633173f3e30ae05d13e9c44e"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a6e1059be633173f3e30ae05d13e9c44e">_luxSensorPeriodPrv</a> = (millis() - (24 * 60 * 60 * 1000))</td></tr>
+<tr class="memdesc:a6e1059be633173f3e30ae05d13e9c44e"><td class="mdescLeft">&#160;</td><td class="mdescRight">sensor was last read.  <a href="#a6e1059be633173f3e30ae05d13e9c44e">More...</a><br /></td></tr>
+<tr class="separator:a6e1059be633173f3e30ae05d13e9c44e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa29eacb04d18af3a6e7d35db4a587efe"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aa29eacb04d18af3a6e7d35db4a587efe">_PM10SensorPeriod</a></td></tr>
 <tr class="memdesc:aa29eacb04d18af3a6e7d35db4a587efe"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time period between reading the pm25 sensor's value.  <a href="#aa29eacb04d18af3a6e7d35db4a587efe">More...</a><br /></td></tr>
 <tr class="separator:aa29eacb04d18af3a6e7d35db4a587efe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1944,13 +1962,140 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Base implementation - Reads a object light sensor and converts the reading into the expected SI unit. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">lightEvent</td><td>Light sensor reading, in meters. </td></tr>
+    <tr><td class="paramname">lightEvent</td><td>Light sensor reading (raw). </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___a_p_d_s9999.html#a554c3d04ca5cd55508a13b44a7da8aa1">WipperSnapper_I2C_Driver_APDS9999</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_l6180_x.html#a955b0a138358c5928946477a5bca54fa">WipperSnapper_I2C_Driver_VL6180X</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___m_a_x44009.html#a6acc215722231f022c9e8125dd36ad9c">WipperSnapper_I2C_Driver_MAX44009</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_c_n_l4030.html#ae6dbea966783864465c608bdf625f87b">WipperSnapper_I2C_Driver_VCNL4030</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_c_n_l4040.html#a8f2e168de21efe4c9ab5f9e80f3e0f9a">WipperSnapper_I2C_Driver_VCNL4040</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_c_n_l4200.html#abf9139a9eef75a6cb5da77eef03f3c63">WipperSnapper_I2C_Driver_VCNL4200</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___l_t_r390.html#ac6199e7c82e98c9ec7d2be0ba61c0e43">WipperSnapper_I2C_Driver_LTR390</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___l_t_r329___l_t_r303.html#a5acce7e34dad300a23d4b3d92e7cbcb0">WipperSnapper_I2C_Driver_LTR329_LTR303</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___t_s_l2591.html#ab4330f001ca8576190cfd1b862153d40">WipperSnapper_I2C_Driver_TSL2591</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___b_h1750.html#ad5f06e9d1b78a1607598747151695564">WipperSnapper_I2C_Driver_BH1750</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_e_m_l7700.html#a822d7f5571b361c9ff2e078a093b4865">WipperSnapper_I2C_Driver_VEML7700</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___v_c_n_l4020.html#a841c18d25441ba48eb75f355b7de4d47">WipperSnapper_I2C_Driver_VCNL4020</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___a_p_d_s9999.html#a554c3d04ca5cd55508a13b44a7da8aa1">WipperSnapper_I2C_Driver_APDS9999</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_l6180_x.html#a955b0a138358c5928946477a5bca54fa">WipperSnapper_I2C_Driver_VL6180X</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_c_n_l4030.html#ae6dbea966783864465c608bdf625f87b">WipperSnapper_I2C_Driver_VCNL4030</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_c_n_l4040.html#a8f2e168de21efe4c9ab5f9e80f3e0f9a">WipperSnapper_I2C_Driver_VCNL4040</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_c_n_l4200.html#abf9139a9eef75a6cb5da77eef03f3c63">WipperSnapper_I2C_Driver_VCNL4200</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___l_t_r390.html#ac6199e7c82e98c9ec7d2be0ba61c0e43">WipperSnapper_I2C_Driver_LTR390</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___l_t_r329___l_t_r303.html#a5acce7e34dad300a23d4b3d92e7cbcb0">WipperSnapper_I2C_Driver_LTR329_LTR303</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___t_s_l2591.html#ab4330f001ca8576190cfd1b862153d40">WipperSnapper_I2C_Driver_TSL2591</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___b_h1750.html#ad5f06e9d1b78a1607598747151695564">WipperSnapper_I2C_Driver_BH1750</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___v_e_m_l7700.html#a822d7f5571b361c9ff2e078a093b4865">WipperSnapper_I2C_Driver_VEML7700</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___v_c_n_l4020.html#a841c18d25441ba48eb75f355b7de4d47">WipperSnapper_I2C_Driver_VCNL4020</a>.</p>
+
+</div>
+</div>
+<a id="a452303dbacccb964b8e584881681ae4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a452303dbacccb964b8e584881681ae4e">&#9670;&nbsp;</a></span>getSensorLuxPeriod()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::getSensorLuxPeriod </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Returns the object lux sensor's period, if set. </p>
+<dl class="section return"><dt>Returns</dt><dd>Time when the object lux sensor should be polled, in seconds. </dd></dl>
+
+</div>
+</div>
+<a id="a874078e52d0bb65d4accf536a0df7a70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a874078e52d0bb65d4accf536a0df7a70">&#9670;&nbsp;</a></span>getSensorLuxPeriodPrv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::getSensorLuxPeriodPrv </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Returns the previous time interval at which the lux sensor was queried last. </p>
+<dl class="section return"><dt>Returns</dt><dd>Time when the lux sensor was last queried, in seconds. </dd></dl>
+
+</div>
+</div>
+<a id="a817e6361c42f277e558ab1d798c9e574"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a817e6361c42f277e558ab1d798c9e574">&#9670;&nbsp;</a></span>setSensorLuxPeriodPrv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorLuxPeriodPrv </td>
+          <td>(</td>
+          <td class="paramtype">long&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets a timestamp for when the lux sensor was queried. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time when the lux sensor was queried last. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a019ecf412b4823f039e6516eab80bb0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a019ecf412b4823f039e6516eab80bb0a">&#9670;&nbsp;</a></span>getEventLux()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventLux </td>
+          <td>(</td>
+          <td class="paramtype">sensors_event_t *&#160;</td>
+          <td class="paramname"><em>luxEvent</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Reads a object Light(lux) sensor and converts the reading into the expected SI unit. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">luxEvent</td><td>Light sensor reading, in lux. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
+
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___m_a_x44009.html#a0ddf7ab2ee80089921e14f84cc396360">WipperSnapper_I2C_Driver_MAX44009</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___v_e_m_l7700.html#a61bd0f9bac587db00dca8e83db403c2f">WipperSnapper_I2C_Driver_VEML7700</a>.</p>
 
 </div>
 </div>
@@ -4104,6 +4249,55 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">       (millis() - (24 * 60 * 60 * 1000))</div></div><!-- fragment -->
 <p>read. </p>
 <p>The time when the light sensor was last </p>
+
+</div>
+</div>
+<a id="adae0e9ffd1d8fe843e46dc76f285b7b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adae0e9ffd1d8fe843e46dc76f285b7b5">&#9670;&nbsp;</a></span>_luxSensorPeriod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">long WipperSnapper_I2C_Driver::_luxSensorPeriod</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      0L</div></div><!-- fragment -->
+<p>The time period between reading the lux sensor's value. </p>
+
+</div>
+</div>
+<a id="a6e1059be633173f3e30ae05d13e9c44e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e1059be633173f3e30ae05d13e9c44e">&#9670;&nbsp;</a></span>_luxSensorPeriodPrv</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">long WipperSnapper_I2C_Driver::_luxSensorPeriodPrv = (millis() - (24 * 60 * 60 * 1000))</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>sensor was last read. </p>
+<p>The time when the lux </p>
 
 </div>
 </div>
