@@ -672,6 +672,19 @@ public:
   }
 
   /*!
+      @brief    Base implementation - Applies a sea-level pressure reference
+                (hPa) used to compute altitude from barometric pressure. The
+                value is sent directly (float), not an option index. Must
+                override in driver.
+      @param    sea_level_pressure
+                The reference sea-level pressure, in hPa, from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setSeaLevelPressure(const ws_config_Value &sea_level_pressure) {
+    return false;
+  }
+
+  /*!
       @brief    Gets a sensor's CO2 value.
       @param    co2Event
                 The CO2 value, in ppm.

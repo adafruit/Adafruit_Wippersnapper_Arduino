@@ -67,6 +67,7 @@ static const SettingHandler kSettingHandlers[] = {
     {"prox_led_current", &drvBase::setProxLedCurrent},
     {"prox_duty", &drvBase::setProxDuty},
     {"prox_integration_time", &drvBase::setProxIntegrationTime},
+    {"sea_level_pressure", &drvBase::setSeaLevelPressure},
 }; ///< Maps a broker-provided key to a setter function in the driver
 
 /*!
