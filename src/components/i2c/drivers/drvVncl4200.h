@@ -57,32 +57,205 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() {
+  bool begin() override {
     _vcnl4200 = new Adafruit_VCNL4200();
-    bool status = false;
-    // Attempt to initialize and configure VCNL4200
+    // Attempt to initialize transport
     if (!_vcnl4200->begin(_address, _i2c)) {
       return false;
     }
-    // CUSTOM SETTINGS CANDIDATES (currently hard-coded defaults below; not yet
-    // exposed via the v2 properties API):
-    //  - ALS integration time:
-    //  setALSIntegrationTime(VCNL4200_ALS_IT_50/100/200/400MS)
-    //    longer = more sensitive/higher lux resolution, slower update.
-    //  - Proximity LED current: setProxLEDCurrent(VCNL4200_LED_I_50..200MA)
-    //    higher = longer detection range, more power.
-    //  - Proximity duty cycle: setProxDuty(VCNL4200_PS_DUTY_1_40..1_1280).
-    //  - Proximity integration time:
-    //  setProxIntegrationTime(VCNL4200_PS_IT_1T..9T).
-    //  - Proximity high-definition (12-bit vs 16-bit): setProxHD(bool).
-    status = _vcnl4200->setALSshutdown(false);
-    status &= _vcnl4200->setProxShutdown(false);
-    status &= _vcnl4200->setProxHD(true); // 16bit instead of 12bit
-    status &= _vcnl4200->setALSIntegrationTime(VCNL4200_ALS_IT_400MS);
-    status &= _vcnl4200->setProxDuty(VCNL4200_PS_DUTY_1_160);
-    status &= _vcnl4200->setProxLEDCurrent(VCNL4200_LED_I_200MA);
-    status &= _vcnl4200->setProxIntegrationTime(VCNL4200_PS_IT_9T);
-    return status;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Configures the VCNL4200 sensor with default settings.
+      @returns  True if configured successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool configureDefaults() override {
+    return _vcnl4200->setALSshutdown(false) &&
+           _vcnl4200->setProxShutdown(false) &&
+           _vcnl4200->setProxHD(true) && // 16bit instead of 12bit
+           _vcnl4200->setALSIntegrationTime(VCNL4200_ALS_IT_400MS) &&
+           _vcnl4200->setProxDuty(VCNL4200_PS_DUTY_1_160) &&
+           _vcnl4200->setProxLEDCurrent(VCNL4200_LED_I_200MA) &&
+           _vcnl4200->setProxIntegrationTime(VCNL4200_PS_IT_9T);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the ALS integration time setting to the driver. Longer
+                integration times give higher lux resolution but slower updates.
+      @param    integration_time
+                The ALS integration time index from the broker
+                (0=50ms, 1=100ms, 2=200ms, 3=400ms).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setIntegrationTime(const ws_config_Value &integration_time) override {
+    if (integration_time.which_value != ws_config_Value_int_value_tag)
+      return false;
+    vcnl4200_als_it_t it;
+    switch (integration_time.value.int_value) {
+    case 0:
+      it = VCNL4200_ALS_IT_50MS;
+      break;
+    case 1:
+      it = VCNL4200_ALS_IT_100MS;
+      break;
+    case 2:
+      it = VCNL4200_ALS_IT_200MS;
+      break;
+    case 3:
+      it = VCNL4200_ALS_IT_400MS;
+      break;
+    default:
+      return false;
+    }
+    return _vcnl4200->setALSIntegrationTime(it);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the proximity LED current setting to the driver. Higher
+                current gives longer detection range at the cost of more power.
+      @param    prox_led_current
+                The proximity LED current index from the broker
+                (0=50mA, 1=75mA, 2=100mA, 3=120mA, 4=140mA, 5=160mA, 6=180mA,
+                7=200mA).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setProxLedCurrent(const ws_config_Value &prox_led_current) override {
+    if (prox_led_current.which_value != ws_config_Value_int_value_tag)
+      return false;
+    vcnl4200_led_i_t current;
+    switch (prox_led_current.value.int_value) {
+    case 0:
+      current = VCNL4200_LED_I_50MA;
+      break;
+    case 1:
+      current = VCNL4200_LED_I_75MA;
+      break;
+    case 2:
+      current = VCNL4200_LED_I_100MA;
+      break;
+    case 3:
+      current = VCNL4200_LED_I_120MA;
+      break;
+    case 4:
+      current = VCNL4200_LED_I_140MA;
+      break;
+    case 5:
+      current = VCNL4200_LED_I_160MA;
+      break;
+    case 6:
+      current = VCNL4200_LED_I_180MA;
+      break;
+    case 7:
+      current = VCNL4200_LED_I_200MA;
+      break;
+    default:
+      return false;
+    }
+    return _vcnl4200->setProxLEDCurrent(current);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the proximity duty cycle setting to the driver.
+      @param    prox_duty
+                The proximity duty cycle index from the broker
+                (0=1/160, 1=1/320, 2=1/640, 3=1/1280).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setProxDuty(const ws_config_Value &prox_duty) override {
+    if (prox_duty.which_value != ws_config_Value_int_value_tag)
+      return false;
+    vcnl4200_ps_duty_t duty;
+    switch (prox_duty.value.int_value) {
+    case 0:
+      duty = VCNL4200_PS_DUTY_1_160;
+      break;
+    case 1:
+      duty = VCNL4200_PS_DUTY_1_320;
+      break;
+    case 2:
+      duty = VCNL4200_PS_DUTY_1_640;
+      break;
+    case 3:
+      duty = VCNL4200_PS_DUTY_1_1280;
+      break;
+    default:
+      return false;
+    }
+    return _vcnl4200->setProxDuty(duty);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the proximity integration time setting to the driver.
+      @param    prox_integration_time
+                The proximity integration time index from the broker
+                (0=1T, 1=2T, 2=3T, 3=4T, 4=8T, 5=9T).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setProxIntegrationTime(
+      const ws_config_Value &prox_integration_time) override {
+    if (prox_integration_time.which_value != ws_config_Value_int_value_tag)
+      return false;
+    vcnl4200_ps_it_t it;
+    switch (prox_integration_time.value.int_value) {
+    case 0:
+      it = VCNL4200_PS_IT_1T;
+      break;
+    case 1:
+      it = VCNL4200_PS_IT_2T;
+      break;
+    case 2:
+      it = VCNL4200_PS_IT_3T;
+      break;
+    case 3:
+      it = VCNL4200_PS_IT_4T;
+      break;
+    case 4:
+      it = VCNL4200_PS_IT_8T;
+      break;
+    case 5:
+      it = VCNL4200_PS_IT_9T;
+      break;
+    default:
+      return false;
+    }
+    return _vcnl4200->setProxIntegrationTime(it);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the proximity resolution setting to the driver.
+      @param    prox_resolution
+                The proximity resolution index from the broker
+                (0=12-bit, 1=16-bit).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setProxResolution(const ws_config_Value &prox_resolution) override {
+    if (prox_resolution.which_value != ws_config_Value_int_value_tag)
+      return false;
+    bool high;
+    switch (prox_resolution.value.int_value) {
+    case 0:
+      high = false;
+      break;
+    case 1:
+      high = true;
+      break;
+    default:
+      return false;
+    }
+    return _vcnl4200->setProxHD(high);
   }
 
   /*******************************************************************************/

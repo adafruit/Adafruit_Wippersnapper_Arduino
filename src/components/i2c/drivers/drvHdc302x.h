@@ -66,20 +66,95 @@ public:
     if (!_hdc302x->begin(_address, _i2c))
       return false;
 
-    // set the HDC302X's data rate to 1 Hz lowest noise
-    _hdc302x->setAutoMode(EXIT_AUTO_MODE);
-    // discard first reading (It returned -45c for me once)
-    _hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
-                                              TRIGGERMODE_LP0);
+    // discard first reading (It returned -45c for me once); also serves as a
+    // comms sanity check
+    _hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity, _triggerMode);
     return true;
 
-    // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
-    //  - Auto-measurement rate: setAutoMode(...) selects 0.5/1/2/4/10 Hz
-    //    continuous conversion vs. on-demand (trades power for update rate).
-    //  - Measurement noise/precision: TRIGGERMODE_LP0..LP3 trade conversion
-    //    time for lower noise.
-    //  - On-chip heater: configurable heater power to clear condensation.
-    //  - Temp/RH offsets and threshold (ALERT) limits.
+    // Note: the auto-measurement RATE (setAutoMode 0.5/1/2/4/10 Hz) is
+    // intentionally NOT exposed as a setting because this driver uses
+    // on-demand reads.
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Configures the HDC302X sensor with default settings.
+      @returns  True if configured successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool configureDefaults() override {
+    // use on-demand reads (lowest noise) rather than continuous auto-mode
+    _hdc302x->setAutoMode(EXIT_AUTO_MODE);
+    _triggerMode = TRIGGERMODE_LP0;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the trigger (precision) mode setting to the driver.
+                The low-power trigger modes trade conversion time for lower
+                noise.
+      @param    mode
+                The trigger mode index from the broker
+                (0=LP0, 1=LP1, 2=LP2, 3=LP3).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setMode(const ws_config_Value &mode) override {
+    if (mode.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    switch (mode.value.int_value) {
+    case 0:
+      _triggerMode = TRIGGERMODE_LP0;
+      break;
+    case 1:
+      _triggerMode = TRIGGERMODE_LP1;
+      break;
+    case 2:
+      _triggerMode = TRIGGERMODE_LP2;
+      break;
+    case 3:
+      _triggerMode = TRIGGERMODE_LP3;
+      break;
+    default:
+      return false;
+    }
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the on-chip heater power setting to the driver. The
+                heater clears condensation from the sensor.
+      @param    heater
+                The heater index from the broker
+                (0=Off, 1=Quarter power, 2=Half power, 3=Full power).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setHeater(const ws_config_Value &heater) override {
+    if (heater.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    HDC302x_HeaterPower power;
+    switch (heater.value.int_value) {
+    case 0:
+      power = HEATER_OFF;
+      break;
+    case 1:
+      power = HEATER_QUARTER_POWER;
+      break;
+    case 2:
+      power = HEATER_HALF_POWER;
+      break;
+    case 3:
+      power = HEATER_FULL_POWER;
+      break;
+    default:
+      return false;
+    }
+    return _hdc302x->heaterEnable(power);
   }
 
   /*******************************************************************************/
@@ -102,7 +177,7 @@ public:
     }
 
     if (!_hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
-                                                   TRIGGERMODE_LP0)) {
+                                                   _triggerMode)) {
       WS_DEBUG_PRINTLN("Failed to read temperature and humidity.");
       return false;
     }
@@ -145,5 +220,7 @@ protected:
   Adafruit_HDC302x *_hdc302x; ///< Pointer to an HDC302X object
   double _temp = 0.0;     ///< Holds data for the HDC302X's temperature sensor
   double _humidity = 0.0; ///< Holds data for the HDC302X's humidity sensor
+  hdcTriggerMode_t _triggerMode =
+      TRIGGERMODE_LP0; ///< On-demand read trigger (precision) mode
 };
 #endif // DRV_HDC302X_H

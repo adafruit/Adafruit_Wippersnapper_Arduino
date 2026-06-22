@@ -65,11 +65,42 @@ public:
     _htu31d = new Adafruit_HTU31D();
     return _htu31d->begin(_address, _i2c);
 
-    // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
-    //  - On-chip heater: enableHeater(bool) drives off condensation / aids the
-    //    fast RH recovery test; users may want it toggleable.
-    //  - Measurement resolution: the HTU31D supports selectable temperature and
-    //    humidity oversampling (OSR) trading conversion time for resolution.
+    // Note: hardware measurement resolution (OSR) is not exposed by the
+    // Adafruit_HTU31D library, so it is not offered as a custom setting.
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Configures the HTU31D sensor with default settings.
+      @returns  True if configured successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool configureDefaults() override {
+    // explicit heater-off default
+    return _htu31d->enableHeater(false);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the on-chip heater setting to the driver. The heater
+                drives off condensation and aids the fast RH recovery test.
+      @param    heater
+                The heater index from the broker (0=Off, 1=On).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setHeater(const ws_config_Value &heater) override {
+    if (heater.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    switch (heater.value.int_value) {
+    case 0:
+      return _htu31d->enableHeater(false);
+    case 1:
+      return _htu31d->enableHeater(true);
+    default:
+      return false;
+    }
   }
 
   /*******************************************************************************/

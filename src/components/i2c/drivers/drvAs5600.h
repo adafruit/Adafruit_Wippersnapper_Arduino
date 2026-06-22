@@ -67,43 +67,274 @@ public:
       WS_DEBUG_PRINTLN("Failed to find AS5600 chip");
       return false;
     }
-
-    if (!configureSensor()) {
-      WS_DEBUG_PRINTLN("Failed to configure AS5600 sensor");
-      return false;
-    }
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Configures the AS5600 sensor.
+      @brief    Configures the AS5600 sensor with default settings.
       @returns  True if the sensor was configured successfully, False otherwise.
-
-      CUSTOM SETTINGS CANDIDATES (currently hard-coded defaults below; not yet
-      exposed via the v2 properties API):
-       - Output stage: setOutputStage(ANALOG_FULL / ANALOG_REDUCED / PWM).
-       - Angle range / zero: setZPosition / setMPosition / setMaxAngle to map a
-         partial rotation to the full output range.
-       - Power mode: setPowerMode(NOM / LPM1..3) trades response time for power.
-       - Filtering: setSlowFilter / setFastFilterThresh / setHysteresis to trade
-         noise for responsiveness.
   */
   /*******************************************************************************/
-  bool configureSensor() {
-    return _as5600->enableWatchdog(false) &&
-           // Normal (high) power mode
-           _as5600->setPowerMode(AS5600_POWER_MODE_NOM) &&
-           // No Hysteresis
-           _as5600->setHysteresis(AS5600_HYSTERESIS_OFF) &&
-           // analog output (0-VCC for 0-360 degrees)
-           _as5600->setOutputStage(AS5600_OUTPUT_STAGE_ANALOG_FULL) &&
-           // setup filters
-           _as5600->setSlowFilter(AS5600_SLOW_FILTER_16X) &&
-           _as5600->setFastFilterThresh(AS5600_FAST_FILTER_THRESH_SLOW_ONLY) &&
-           // Reset position settings to defaults
-           _as5600->setZPosition(0) && _as5600->setMPosition(4095) &&
-           _as5600->setMaxAngle(4095);
+  bool configureDefaults() override {
+    bool ok = true;
+    ok = ok && _as5600->enableWatchdog(false);
+    // Normal (high) power mode
+    ok = ok && _as5600->setPowerMode(AS5600_POWER_MODE_NOM);
+    // No Hysteresis
+    ok = ok && _as5600->setHysteresis(AS5600_HYSTERESIS_OFF);
+    // analog output (0-VCC for 0-360 degrees)
+    ok = ok && _as5600->setOutputStage(AS5600_OUTPUT_STAGE_ANALOG_FULL);
+    // setup filters
+    ok = ok && _as5600->setSlowFilter(AS5600_SLOW_FILTER_16X);
+    ok =
+        ok && _as5600->setFastFilterThresh(AS5600_FAST_FILTER_THRESH_SLOW_ONLY);
+    // Reset position settings to defaults
+    ok = ok && _as5600->setZPosition(0);
+    ok = ok && _as5600->setMPosition(4095);
+    ok = ok && _as5600->setMaxAngle(4095);
+    return ok;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the output stage setting to the driver. The output stage
+                selects how the angle is presented on the OUT pin.
+      @param    output_stage
+                The output stage index from the broker
+                (0=Analog Full 0-100%, 1=Analog Reduced 10-90%, 2=Digital PWM).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setOutputStage(const ws_config_Value &output_stage) override {
+    if (output_stage.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    as5600_output_stage_t stage;
+    switch (output_stage.value.int_value) {
+    case 0:
+      stage = AS5600_OUTPUT_STAGE_ANALOG_FULL;
+      break;
+    case 1:
+      stage = AS5600_OUTPUT_STAGE_ANALOG_REDUCED;
+      break;
+    case 2:
+      stage = AS5600_OUTPUT_STAGE_DIGITAL_PWM;
+      break;
+    default:
+      return false;
+    }
+    return _as5600->setOutputStage(stage);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the power mode setting to the driver. Lower power modes
+                trade response time for reduced current draw.
+      @param    power_mode
+                The power mode index from the broker
+                (0=Normal, 1=Low Power 1, 2=Low Power 2, 3=Low Power 3).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setPowerMode(const ws_config_Value &power_mode) override {
+    if (power_mode.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    as5600_power_mode_t mode;
+    switch (power_mode.value.int_value) {
+    case 0:
+      mode = AS5600_POWER_MODE_NOM;
+      break;
+    case 1:
+      mode = AS5600_POWER_MODE_LPM1;
+      break;
+    case 2:
+      mode = AS5600_POWER_MODE_LPM2;
+      break;
+    case 3:
+      mode = AS5600_POWER_MODE_LPM3;
+      break;
+    default:
+      return false;
+    }
+    return _as5600->setPowerMode(mode);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the slow (low-pass) filter setting to the driver. Higher
+                averaging reduces noise at the cost of responsiveness.
+      @param    slow_filter
+                The slow filter index from the broker
+                (0=16x, 1=8x, 2=4x, 3=2x).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setSlowFilter(const ws_config_Value &slow_filter) override {
+    if (slow_filter.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    as5600_slow_filter_t filter;
+    switch (slow_filter.value.int_value) {
+    case 0:
+      filter = AS5600_SLOW_FILTER_16X;
+      break;
+    case 1:
+      filter = AS5600_SLOW_FILTER_8X;
+      break;
+    case 2:
+      filter = AS5600_SLOW_FILTER_4X;
+      break;
+    case 3:
+      filter = AS5600_SLOW_FILTER_2X;
+      break;
+    default:
+      return false;
+    }
+    return _as5600->setSlowFilter(filter);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the fast filter threshold setting to the driver. The
+     fast filter kicks in when the angle change exceeds this threshold.
+      @param    fast_filter_threshold
+                The fast filter threshold index from the broker
+                (0=Slow Filter Only, 1=6 LSB, 2=7 LSB, 3=9 LSB, 4=18 LSB,
+                5=21 LSB, 6=24 LSB, 7=10 LSB).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setFastFilterThreshold(
+      const ws_config_Value &fast_filter_threshold) override {
+    if (fast_filter_threshold.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    as5600_fast_filter_thresh_t thresh;
+    switch (fast_filter_threshold.value.int_value) {
+    case 0:
+      thresh = AS5600_FAST_FILTER_THRESH_SLOW_ONLY;
+      break;
+    case 1:
+      thresh = AS5600_FAST_FILTER_THRESH_6LSB;
+      break;
+    case 2:
+      thresh = AS5600_FAST_FILTER_THRESH_7LSB;
+      break;
+    case 3:
+      thresh = AS5600_FAST_FILTER_THRESH_9LSB;
+      break;
+    case 4:
+      thresh = AS5600_FAST_FILTER_THRESH_18LSB;
+      break;
+    case 5:
+      thresh = AS5600_FAST_FILTER_THRESH_21LSB;
+      break;
+    case 6:
+      thresh = AS5600_FAST_FILTER_THRESH_24LSB;
+      break;
+    case 7:
+      thresh = AS5600_FAST_FILTER_THRESH_10LSB;
+      break;
+    default:
+      return false;
+    }
+    return _as5600->setFastFilterThresh(thresh);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the hysteresis setting to the driver. Hysteresis reduces
+                output jitter when the magnet is stationary.
+      @param    hysteresis
+                The hysteresis index from the broker
+                (0=Off, 1=1 LSB, 2=2 LSB, 3=3 LSB).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setHysteresis(const ws_config_Value &hysteresis) override {
+    if (hysteresis.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    as5600_hysteresis_t hyst;
+    switch (hysteresis.value.int_value) {
+    case 0:
+      hyst = AS5600_HYSTERESIS_OFF;
+      break;
+    case 1:
+      hyst = AS5600_HYSTERESIS_1LSB;
+      break;
+    case 2:
+      hyst = AS5600_HYSTERESIS_2LSB;
+      break;
+    case 3:
+      hyst = AS5600_HYSTERESIS_3LSB;
+      break;
+    default:
+      return false;
+    }
+    return _as5600->setHysteresis(hyst);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the zero (start) position to the driver. Sets the raw
+                angle (0..4095) that maps to the start of the output range.
+      @param    z_position
+                The zero position from the broker (valid range 0..4095).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setZPosition(const ws_config_Value &z_position) override {
+    if (z_position.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = z_position.value.int_value;
+    if (val < 0 || val > 4095) {
+      return false;
+    }
+    return _as5600->setZPosition((uint16_t)val);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the maximum (stop) position to the driver. Sets the raw
+                angle (0..4095) that maps to the end of the output range.
+      @param    m_position
+                The maximum position from the broker (valid range 0..4095).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setMPosition(const ws_config_Value &m_position) override {
+    if (m_position.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = m_position.value.int_value;
+    if (val < 0 || val > 4095) {
+      return false;
+    }
+    return _as5600->setMPosition((uint16_t)val);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the maximum angle to the driver. Sets the angular span
+                (0..4095) mapped across the full output range.
+      @param    max_angle
+                The maximum angle from the broker (valid range 0..4095).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setMaxAngle(const ws_config_Value &max_angle) override {
+    if (max_angle.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = max_angle.value.int_value;
+    if (val < 0 || val > 4095) {
+      return false;
+    }
+    return _as5600->setMaxAngle((uint16_t)val);
   }
 
   /*******************************************************************************/

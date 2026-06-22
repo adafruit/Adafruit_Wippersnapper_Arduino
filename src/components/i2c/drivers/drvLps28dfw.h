@@ -60,35 +60,164 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() {
+  bool begin() override {
     _lps28 = new Adafruit_LPS28();
     // attempt to initialize LPS28DFW
     if (!_lps28->begin(_i2c, _address))
       return false;
 
-    // CUSTOM SETTINGS CANDIDATES (currently hard-coded defaults below; not yet
-    // exposed via the v2 properties API):
-    //  - Data rate: setDataRate(LPS28_ODR_ONESHOT / 1..200 Hz) trades update
-    //    rate for power.
-    //  - Averaging: setAveraging(LPS28_AVG_4..512) trades noise for conversion
-    //    time.
-    //  - Full-scale mode: setFullScaleMode(true) = 4060 hPa range, false =
-    //    1260 hPa (higher resolution for atmospheric use).
-    //  - Low-pass filter configuration (if exposed by the library).
-    if (!_lps28->setDataRate(LPS28_ODR_ONESHOT)) {
-      WS_DEBUG_PRINTLN("Failed to set data rate");
-      return false;
-    }
-    if (!_lps28->setAveraging(LPS28_AVG_512)) {
-      WS_DEBUG_PRINTLN("Failed to set averaging");
-      return false;
-    }
-    if (!_lps28->setFullScaleMode(true)) {
-      WS_DEBUG_PRINTLN("Failed to set 4060hPa max mode");
-      return false;
-    }
-
     return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Configures the LPS28DFW sensor with default settings.
+      @returns  True if configured successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool configureDefaults() override {
+    return _lps28->setDataRate(LPS28_ODR_ONESHOT) &&
+           _lps28->setAveraging(LPS28_AVG_512) &&
+           _lps28->setFullScaleMode(true);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the output data rate (ODR) setting to the driver. The
+                ODR selects the sensor's sampling frequency, in Hz.
+      @param    output_data_rate
+                The output data rate index from the broker
+                (0=One-shot, 1=1Hz, 2=4Hz, 3=10Hz, 4=25Hz, 5=50Hz, 6=75Hz,
+                7=100Hz, 8=200Hz).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setOutputDataRate(const ws_config_Value &output_data_rate) override {
+    if (output_data_rate.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    lps28_odr_t odr;
+    switch (output_data_rate.value.int_value) {
+    case 0:
+      odr = LPS28_ODR_ONESHOT;
+      break;
+    case 1:
+      odr = LPS28_ODR_1_HZ;
+      break;
+    case 2:
+      odr = LPS28_ODR_4_HZ;
+      break;
+    case 3:
+      odr = LPS28_ODR_10_HZ;
+      break;
+    case 4:
+      odr = LPS28_ODR_25_HZ;
+      break;
+    case 5:
+      odr = LPS28_ODR_50_HZ;
+      break;
+    case 6:
+      odr = LPS28_ODR_75_HZ;
+      break;
+    case 7:
+      odr = LPS28_ODR_100_HZ;
+      break;
+    case 8:
+      odr = LPS28_ODR_200_HZ;
+      break;
+    default:
+      return false;
+    }
+    return _lps28->setDataRate(odr);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the averaged-samples setting to the driver. Averaging
+                trades noise for conversion time.
+      @param    averaged_samples
+                The averaging index from the broker
+                (0=4, 1=8, 2=16, 3=32, 4=64, 5=128, 6=512 samples).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setAveragedSamples(const ws_config_Value &averaged_samples) override {
+    if (averaged_samples.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    lps28_avg_t avg;
+    switch (averaged_samples.value.int_value) {
+    case 0:
+      avg = LPS28_AVG_4;
+      break;
+    case 1:
+      avg = LPS28_AVG_8;
+      break;
+    case 2:
+      avg = LPS28_AVG_16;
+      break;
+    case 3:
+      avg = LPS28_AVG_32;
+      break;
+    case 4:
+      avg = LPS28_AVG_64;
+      break;
+    case 5:
+      avg = LPS28_AVG_128;
+      break;
+    case 6:
+      avg = LPS28_AVG_512;
+      break;
+    default:
+      return false;
+    }
+    return _lps28->setAveraging(avg);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the full-scale pressure range setting to the driver.
+      @param    range
+                The range index from the broker
+                (0=1260 hPa higher resolution, 1=4060 hPa wider range).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setRange(const ws_config_Value &range) override {
+    if (range.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    switch (range.value.int_value) {
+    case 0:
+      return _lps28->setFullScaleMode(false);
+    case 1:
+      return _lps28->setFullScaleMode(true);
+    default:
+      return false;
+    }
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the low-pass filter setting to the driver.
+      @param    filter
+                The filter index from the broker
+                (0=Off, 1=On / ODR divided by 9).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setFilter(const ws_config_Value &filter) override {
+    if (filter.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    switch (filter.value.int_value) {
+    case 0:
+      return _lps28->setLowPassODR9(false);
+    case 1:
+      return _lps28->setLowPassODR9(true);
+    default:
+      return false;
+    }
   }
 
   /*******************************************************************************/

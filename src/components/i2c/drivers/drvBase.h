@@ -489,6 +489,189 @@ public:
   virtual bool setRange(const ws_config_Value &range) { return false; }
 
   /*!
+      @brief    Base implementation - Applies a bus/voltage ADC conversion
+                time setting to the driver. Must override in driver.
+      @param    voltage_conversion_time
+                The voltage conversion time index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setVoltageConversionTime(const ws_config_Value &voltage_conversion_time) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a shunt/current ADC conversion
+                time setting to the driver. Must override in driver.
+      @param    current_conversion_time
+                The current conversion time index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setCurrentConversionTime(const ws_config_Value &current_conversion_time) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an ADC range setting to the
+                driver (e.g. high vs low shunt-voltage range). Must override
+                in driver.
+      @param    adc_range
+                The ADC range index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setAdcRange(const ws_config_Value &adc_range) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a shunt resistance (ohms)
+                calibration value to the driver. Must override in driver.
+      @param    shunt_resistance
+                The shunt resistance, in ohms, from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setShuntResistance(const ws_config_Value &shunt_resistance) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a maximum expected current
+                (amps) calibration value to the driver. Must override in
+                driver.
+      @param    max_current
+                The maximum expected current, in amps, from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMaxCurrent(const ws_config_Value &max_current) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an on-chip heater setting to the
+                driver. Must override in driver.
+      @param    heater
+                The heater setting index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setHeater(const ws_config_Value &heater) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies an internal clock frequency
+                setting to the driver. Must override in driver.
+      @param    clock_frequency
+                The clock frequency index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setClockFrequency(const ws_config_Value &clock_frequency) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an output stage setting to the
+                driver (e.g. analog vs PWM output). Must override in driver.
+      @param    output_stage
+                The output stage index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setOutputStage(const ws_config_Value &output_stage) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a slow (moving-average) filter
+                setting to the driver. Must override in driver.
+      @param    slow_filter
+                The slow filter index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setSlowFilter(const ws_config_Value &slow_filter) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a fast-filter threshold setting
+                to the driver. Must override in driver.
+      @param    fast_filter_threshold
+                The fast filter threshold index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setFastFilterThreshold(const ws_config_Value &fast_filter_threshold) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a hysteresis setting to the
+                driver. Must override in driver.
+      @param    hysteresis
+                The hysteresis index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setHysteresis(const ws_config_Value &hysteresis) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a start (zero) position to the
+                driver, mapping the start of a partial rotation. Must override
+                in driver.
+      @param    z_position
+                The zero position raw value from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setZPosition(const ws_config_Value &z_position) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a stop (maximum) position to the
+                driver, mapping the end of a partial rotation. Must override
+                in driver.
+      @param    m_position
+                The maximum position raw value from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMPosition(const ws_config_Value &m_position) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a maximum angle setting to the
+                driver. Must override in driver.
+      @param    max_angle
+                The maximum angle raw value from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMaxAngle(const ws_config_Value &max_angle) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a proximity LED current setting
+                to the driver. Must override in driver.
+      @param    prox_led_current
+                The proximity LED current index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setProxLedCurrent(const ws_config_Value &prox_led_current) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a proximity duty-cycle setting
+                to the driver. Must override in driver.
+      @param    prox_duty
+                The proximity duty-cycle index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setProxDuty(const ws_config_Value &prox_duty) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a proximity integration time
+                setting to the driver. Must override in driver.
+      @param    prox_integration_time
+                The proximity integration time index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setProxIntegrationTime(const ws_config_Value &prox_integration_time) {
+    return false;
+  }
+
+  /*!
       @brief    Gets a sensor's CO2 value.
       @param    co2Event
                 The CO2 value, in ppm.

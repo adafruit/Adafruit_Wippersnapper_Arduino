@@ -50,6 +50,23 @@ static const SettingHandler kSettingHandlers[] = {
     {"oversample_ratio", &drvBase::setOverSampleRatio},
     {"downsample_ratio", &drvBase::setDownSampleRatio},
     {"range", &drvBase::setRange},
+    {"voltage_conversion_time", &drvBase::setVoltageConversionTime},
+    {"current_conversion_time", &drvBase::setCurrentConversionTime},
+    {"adc_range", &drvBase::setAdcRange},
+    {"shunt_resistance", &drvBase::setShuntResistance},
+    {"max_current", &drvBase::setMaxCurrent},
+    {"heater", &drvBase::setHeater},
+    {"clock_frequency", &drvBase::setClockFrequency},
+    {"output_stage", &drvBase::setOutputStage},
+    {"slow_filter", &drvBase::setSlowFilter},
+    {"fast_filter_threshold", &drvBase::setFastFilterThreshold},
+    {"hysteresis", &drvBase::setHysteresis},
+    {"z_position", &drvBase::setZPosition},
+    {"m_position", &drvBase::setMPosition},
+    {"max_angle", &drvBase::setMaxAngle},
+    {"prox_led_current", &drvBase::setProxLedCurrent},
+    {"prox_duty", &drvBase::setProxDuty},
+    {"prox_integration_time", &drvBase::setProxIntegrationTime},
 }; ///< Maps a broker-provided key to a setter function in the driver
 
 /*!

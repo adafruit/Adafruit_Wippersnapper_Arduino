@@ -67,6 +67,65 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Configures the INA260 sensor with default settings.
+      @returns  True if configured successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool configureDefaults() override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the averaging count setting to the driver. Higher counts
+                average more samples, trading update rate for lower noise.
+      @param    averaged_samples
+                The averaging count index from the broker
+                (0=1, 1=4, 2=16, 3=64, 4=128, 5=256, 6=512, 7=1024).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setAveragedSamples(const ws_config_Value &averaged_samples) override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the bus voltage ADC conversion time setting to the
+                driver.
+      @param    voltage_conversion_time
+                The voltage conversion time index from the broker
+                (0=140us, 1=204us, 2=332us, 3=588us, 4=1.1ms, 5=2.116ms,
+                6=4.156ms, 7=8.244ms).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setVoltageConversionTime(
+      const ws_config_Value &voltage_conversion_time) override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the shunt/current ADC conversion time setting to the
+                driver.
+      @param    current_conversion_time
+                The current conversion time index from the broker
+                (0=140us, 1=204us, 2=332us, 3=588us, 4=1.1ms, 5=2.116ms,
+                6=4.156ms, 7=8.244ms).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setCurrentConversionTime(
+      const ws_config_Value &current_conversion_time) override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the measurement mode setting to the driver.
+      @param    mode
+                The measurement mode index from the broker
+                (0=Shutdown, 1=Triggered, 2=Continuous).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setMode(const ws_config_Value &mode) override;
+
+  /*******************************************************************************/
+  /*!
       @brief    Reads a voltage sensor and converts the
                 reading into the expected SI unit.
       @param    voltageEvent
