@@ -60,6 +60,69 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Configures the QMC5883P sensor with default settings.
+      @returns  True if configured successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool configureDefaults() override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the operating mode setting to the driver.
+      @param    mode
+                The mode index from the broker
+                (0=Suspend, 1=Normal, 2=Single, 3=Continuous).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setMode(const ws_config_Value &mode) override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the output data rate (ODR) setting to the driver.
+      @param    output_data_rate
+                The output data rate index from the broker
+                (0=10Hz, 1=50Hz, 2=100Hz, 3=200Hz).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setOutputDataRate(const ws_config_Value &output_data_rate) override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the over-sample ratio (OSR) setting to the driver.
+      @param    oversample_ratio
+                The over-sample ratio index from the broker
+                (0=8, 1=4, 2=2, 3=1).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setOverSampleRatio(const ws_config_Value &oversample_ratio) override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the down-sample ratio (DSR) setting to the driver.
+      @param    downsample_ratio
+                The down-sample ratio index from the broker
+                (0=1, 1=2, 2=4, 3=8).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setDownSampleRatio(const ws_config_Value &downsample_ratio) override;
+
+  /*******************************************************************************/
+  /*!
+      @brief    Applies the full-scale field range setting to the driver.
+      @param    range
+                The range index from the broker
+                (0=±30 Gauss, 1=±12 Gauss, 2=±8 Gauss, 3=±2 Gauss).
+      @returns  True if applied successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool setRange(const ws_config_Value &range) override;
+
+  /*******************************************************************************/
+  /*!
       @brief    Gets the QMC5883P's magnetic-field magnitude (gauss) as a raw
                 event.
       @param    rawEvent

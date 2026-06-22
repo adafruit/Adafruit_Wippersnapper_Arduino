@@ -46,6 +46,10 @@ static const SettingHandler kSettingHandlers[] = {
     {"filter", &drvBase::setFilter},
     {"standby", &drvBase::setStandby},
     {"calibration", &drvBase::setCalibration},
+    {"power_mode", &drvBase::setPowerMode},
+    {"oversample_ratio", &drvBase::setOverSampleRatio},
+    {"downsample_ratio", &drvBase::setDownSampleRatio},
+    {"range", &drvBase::setRange},
 }; ///< Maps a broker-provided key to a setter function in the driver
 
 /*!

@@ -448,6 +448,47 @@ public:
   }
 
   /*!
+      @brief    Base implementation - Applies a power mode setting to the
+                driver. Selects the sensor's power/measurement state (e.g.
+                standby, normal, forced, continuous). Must override in driver.
+      @param    power_mode
+                The power mode index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setPowerMode(const ws_config_Value &power_mode) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies an over-sample ratio (OSR)
+                setting to the driver. Must override in driver.
+      @param    oversample_ratio
+                The over-sample ratio index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setOverSampleRatio(const ws_config_Value &oversample_ratio) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a down-sample ratio (DSR)
+                setting to the driver. Must override in driver.
+      @param    downsample_ratio
+                The down-sample ratio index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setDownSampleRatio(const ws_config_Value &downsample_ratio) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a full-scale range setting to
+                the driver. Must override in driver.
+      @param    range
+                The range index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setRange(const ws_config_Value &range) { return false; }
+
+  /*!
       @brief    Gets a sensor's CO2 value.
       @param    co2Event
                 The CO2 value, in ppm.
