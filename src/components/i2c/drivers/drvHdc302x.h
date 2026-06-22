@@ -68,12 +68,13 @@ public:
 
     // discard first reading (It returned -45c for me once); also serves as a
     // comms sanity check
-    _hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity, _triggerMode);
+    _hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
+                                              TRIGGERMODE_LP0);
     return true;
 
-    // Note: the auto-measurement RATE (setAutoMode 0.5/1/2/4/10 Hz) is
-    // intentionally NOT exposed as a setting because this driver uses
-    // on-demand reads.
+    // Note: measurement mode/rate is intentionally NOT exposed as a setting -
+    // auto-mode is disabled and the driver does a single-shot read per the
+    // user's chosen polling period (like most sensors).
   }
 
   /*******************************************************************************/
@@ -83,43 +84,8 @@ public:
   */
   /*******************************************************************************/
   bool configureDefaults() override {
-    // use on-demand reads (lowest noise) rather than continuous auto-mode
+    // use on-demand single-shot reads rather than continuous auto-mode
     _hdc302x->setAutoMode(EXIT_AUTO_MODE);
-    _triggerMode = TRIGGERMODE_LP0;
-    return true;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Applies the trigger (precision) mode setting to the driver.
-                The low-power trigger modes trade conversion time for lower
-                noise.
-      @param    mode
-                The trigger mode index from the broker
-                (0=LP0, 1=LP1, 2=LP2, 3=LP3).
-      @returns  True if applied successfully, False otherwise.
-  */
-  /*******************************************************************************/
-  bool setMode(const ws_config_Value &mode) override {
-    if (mode.which_value != ws_config_Value_int_value_tag) {
-      return false;
-    }
-    switch (mode.value.int_value) {
-    case 0:
-      _triggerMode = TRIGGERMODE_LP0;
-      break;
-    case 1:
-      _triggerMode = TRIGGERMODE_LP1;
-      break;
-    case 2:
-      _triggerMode = TRIGGERMODE_LP2;
-      break;
-    case 3:
-      _triggerMode = TRIGGERMODE_LP3;
-      break;
-    default:
-      return false;
-    }
     return true;
   }
 
@@ -177,7 +143,7 @@ public:
     }
 
     if (!_hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
-                                                   _triggerMode)) {
+                                                   TRIGGERMODE_LP0)) {
       WS_DEBUG_PRINTLN("Failed to read temperature and humidity.");
       return false;
     }
@@ -220,7 +186,5 @@ protected:
   Adafruit_HDC302x *_hdc302x; ///< Pointer to an HDC302X object
   double _temp = 0.0;     ///< Holds data for the HDC302X's temperature sensor
   double _humidity = 0.0; ///< Holds data for the HDC302X's humidity sensor
-  hdcTriggerMode_t _triggerMode =
-      TRIGGERMODE_LP0; ///< On-demand read trigger (precision) mode
 };
 #endif // DRV_HDC302X_H
