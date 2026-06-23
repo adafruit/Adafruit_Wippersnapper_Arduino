@@ -68,5 +68,5 @@ public:
   void publishAddStrandResponse(bool is_success, char *pixels_pin_data);
   uint32_t getGammaCorrectedColor(uint32_t pixel_color, strand_s strand);
 };
-extern Wippersnapper WS;
+
 #endif // WS_PIXELS

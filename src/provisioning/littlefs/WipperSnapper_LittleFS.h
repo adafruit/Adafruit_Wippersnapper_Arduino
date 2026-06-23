@@ -36,5 +36,4 @@ public:
   void fsHalt(String msg);
 };
 
-extern Wippersnapper WS;
 #endif // WIPPERSNAPPER_LITTLEFS_H
