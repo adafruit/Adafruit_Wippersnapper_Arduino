@@ -81,13 +81,15 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
   WS_DEBUG_PRINTLNVAR(addMsg->panel);
 
   switch (addMsg->interface_type.which_descriptor) {
-  // DSI + i8080 todo
+  // DSI todo
   case ws_display_InterfaceDescriptor_spi_tft_tag:
     return beginSpiTft(addMsg);
   case ws_display_InterfaceDescriptor_spi_epd_tag:
     return beginSpiEpd(addMsg);
   case ws_display_InterfaceDescriptor_ttl_rgb666_tag:
     return beginTtlRgb666(addMsg);
+  case ws_display_InterfaceDescriptor_i8080_tag:
+    return beginI8080(addMsg);
   case ws_display_InterfaceDescriptor_i2c_tag:
     return beginI2cDisplay(addMsg);
   default:
@@ -522,6 +524,106 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   return true;
 #else
   WS_DEBUG_PRINTLN("[display] ERROR: TTL RGB666 not supported on this board!");
+  return false;
+#endif
+}
+
+// ---------------------------------------------------------------------------
+// i8080 8-bit parallel TFT initialization (LilyGo T-Display-S3, etc.)
+// ---------------------------------------------------------------------------
+/*!
+    @brief  Initializes an ST7789 TFT driven over an i8080 8-bit parallel bus.
+    @param  msg  The Display Add message with i8080 interface and config.
+    @return True on success, False on failure or when unsupported on this
+            board.
+*/
+bool DisplayHardware::beginI8080(ws_display_Add *msg) {
+#if defined(ESP32) && defined(CONFIG_IDF_TARGET_ESP32S3)
+  ws_display_I8080PinDescriptor *i8080 = &msg->interface_type.descriptor.i8080;
+
+  int16_t dc = parsePin(i8080->pin_dc);
+  int16_t cs = parsePin(i8080->pin_cs);
+  int16_t rst = parsePin(i8080->pin_rst);
+  int16_t d[8] = {parsePin(i8080->pin_d0), parsePin(i8080->pin_d1),
+                  parsePin(i8080->pin_d2), parsePin(i8080->pin_d3),
+                  parsePin(i8080->pin_d4), parsePin(i8080->pin_d5),
+                  parsePin(i8080->pin_d6), parsePin(i8080->pin_d7)};
+
+  // WR/RD strobes are board-fixed and not carried in the Add message; source
+  // them (plus panel power/backlight) from board macros set in ws_boards.h.
+#if defined(I8080_WR)
+  int16_t wr = I8080_WR;
+#else
+  int16_t wr = -1;
+#endif
+#if defined(I8080_RD)
+  int16_t rd = I8080_RD;
+#else
+  int16_t rd = -1;
+#endif
+
+  if (dc < 0 || cs < 0 || wr < 0) {
+    publishAndLogError(F("[display] ERROR: Invalid i8080 control pins!"));
+    return false;
+  }
+  for (int i = 0; i < 8; i++) {
+    if (d[i] < 0) {
+      publishAndLogError(F("[display] ERROR: Invalid i8080 data pin!"));
+      return false;
+    }
+  }
+
+  if (strcmp(msg->driver, "ST7789") != 0) {
+    WS_DEBUG_PRINT("[display] ERROR: Unsupported i8080 driver: ");
+    WS_DEBUG_PRINTLNVAR(msg->driver);
+    return false;
+  }
+
+  if (msg->which_config != ws_display_Add_config_display_tag) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Expected display config for i8080!");
+    return false;
+  }
+  ws_display_DisplayProperties *config = &msg->config.config_display;
+
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
+
+  dispDrvSt7789I8080 *drv = new dispDrvSt7789I8080(
+      dc, cs, wr, rd, d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], rst);
+  _drvDisp = drv;
+  if (!_drvDisp) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate i8080 driver!");
+    return false;
+  }
+
+#if defined(I8080_BACKLIGHT)
+  _drvDisp->setBacklightPin(I8080_BACKLIGHT);
+#endif
+#if defined(I8080_POWER_ON)
+  drv->setPowerPin(I8080_POWER_ON);
+#endif
+
+  _drvDisp->setWidth(config->width);
+  _drvDisp->setHeight(config->height);
+  _drvDisp->setRotation(config->rotation);
+  if (config->text_size > 0)
+    _drvDisp->setTextSize(config->text_size);
+
+  if (!_drvDisp->begin()) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin i8080 driver!");
+    delete _drvDisp;
+    _drvDisp = nullptr;
+    return false;
+  }
+
+  WS_DEBUG_PRINTLN("[display] i8080 ST7789 initialized successfully!");
+  return true;
+#else
+  WS_DEBUG_PRINTLN(
+      "[display] ERROR: i8080 parallel displays are only supported on "
+      "ESP32-S3!");
   return false;
 #endif
 }
