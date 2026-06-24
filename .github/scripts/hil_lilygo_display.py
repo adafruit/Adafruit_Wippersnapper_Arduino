@@ -33,6 +33,27 @@ import time
 import urllib.request
 
 
+def _varint(n: int) -> bytes:
+    out = bytearray()
+    while True:
+        b = n & 0x7F
+        n >>= 7
+        out.append(b | (0x80 if n else 0))
+        if not n:
+            return bytes(out)
+
+
+def _lenfield(field: int, payload: bytes) -> bytes:
+    return _varint((field << 3) | 2) + _varint(len(payload)) + payload
+
+
+def display_write_signal(name: str, message: str) -> bytes:
+    """ws.signal.BrokerToDevice(display=36) -> ws.display.B2D(write=3)
+    -> ws.display.Write{name=1, message=3}."""
+    write = _lenfield(1, name.encode()) + _lenfield(3, message.encode())
+    return _lenfield(36, _lenfield(3, write))
+
+
 def _req(method: str, url: str, token: str, body: bytes | None = None,
          ctype: str = "application/json", timeout: float = 60.0):
     req = urllib.request.Request(url, data=body, method=method)
@@ -50,8 +71,10 @@ def main() -> int:
     ap.add_argument("--uid", default="")
     ap.add_argument("--camera-url", default="http://rpi-hil006:8080/")
     ap.add_argument("--roi", default="1280,730,235,195,2304,1296")
-    ap.add_argument("--exposure-us", type=int, default=3500)
+    ap.add_argument("--exposure-us", type=int, default=6000)
     ap.add_argument("--gain", type=float, default=1.0)
+    ap.add_argument("--message",
+                    default="LilyGo T-Display-S3\nWipperSnapper v2\ni8080 ST7789\nHIL camera proof OK")
     ap.add_argument("--out-dir", default="hil-out")
     ap.add_argument("--window-minutes", type=int, default=10)
     ap.add_argument("--deadline-s", type=int, default=900)
@@ -85,10 +108,13 @@ def main() -> int:
     cap = {"type": "capture_display", "camera_url": args.camera_url,
            "exposure_us": args.exposure_us, "gain": args.gain,
            "roi": roi, "out": "/tmp/hil-display-capture.jpg"}
-    inject = {"type": "inject_protobuf", "kind": "display_add_i8080", "settle_s": 8,
+    inject = {"type": "inject_protobuf", "kind": "display_add_i8080", "settle_s": 5,
               "params": display_params}
+    write = {"type": "inject_protobuf", "settle_s": 5,
+             "payload_hex": display_write_signal("tft-19-i8080", args.message).hex()}
     if args.uid:
         inject["uid"] = args.uid
+        write["uid"] = args.uid
     job = {
         "target": {"device": {"id": args.device}, "pool": "public"},
         "script": "firmware-bench",
@@ -105,6 +131,7 @@ def main() -> int:
                 {"type": "power_cycle"},
                 {"type": "verify_checkin", "checkin_timeout_s": 150, "proto": "auto", "soft": True},
                 inject,
+                write,
                 cap,
             ],
         },
