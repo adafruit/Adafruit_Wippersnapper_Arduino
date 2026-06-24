@@ -70,9 +70,9 @@ def main() -> int:
     ap.add_argument("--device", default="mcu-lilygo-tdisplay-s3-hil006")
     ap.add_argument("--uid", default="")
     ap.add_argument("--camera-url", default="http://rpi-hil006:8080/")
-    ap.add_argument("--roi", default="1280,730,235,195,2304,1296")
-    ap.add_argument("--exposure-us", type=int, default=6000)
-    ap.add_argument("--gain", type=float, default=1.0)
+    ap.add_argument("--roi", default="1270,770,235,135,2304,1296")
+    ap.add_argument("--exposure-us", type=int, default=32000)
+    ap.add_argument("--gain", type=float, default=3.0)
     ap.add_argument("--message",
                     default="LilyGo T-Display-S3\nWipperSnapper v2\ni8080 ST7789\nHIL camera proof OK")
     ap.add_argument("--out-dir", default="hil-out")
