@@ -1,0 +1,86 @@
+# HIL test: LilyGo T-Display-S3 on-board i8080 ST7789 display, with camera proof.
+#
+# Builds the WipperSnapper app, merges it with the official tinyuf2 bootloader
+# (so the FATFS provisioning volume behaves), submits a firmware-bench job to the
+# usbip-hil-controller, and downloads the camera proof + logs as artifacts.
+#
+# The job (proven by hand): enter_bootloader -> erase -> flash @0x0 -> power_cycle
+# -> write_secrets_msc -> power_cycle -> verify_checkin(proto=auto, v2-aware)
+# -> inject_protobuf(display_add_i8080 via /api/echo) -> capture_display
+# (autofocus + manual exposure + ROI crop -> job asset).
+#
+# Requires repo secrets HIL_API_BASE + HIL_API_TOKEN (and optionally WIFI_SSID/
+# WIFI_PASSWORD/IO_USERNAME/IO_KEY). The HIL job runs on a runner that can reach
+# the controller (a LAN IP) — use a self-hosted bench runner, or expose the API.
+name: HIL LilyGo T-Display-S3 (camera proof)
+
+on:
+  workflow_dispatch:
+    inputs:
+      uid:
+        description: "WS device uid for the display-Add topic (boardId+macUID)"
+        required: false
+        default: "lilygo-t-display-s321621634"
+
+jobs:
+  hil-display:
+    name: 🖥️ flash + checkin + i8080 display + camera
+    runs-on: ubuntu-latest   # switch to [self-hosted, hil] if the controller is LAN-only
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install PlatformIO + esptool
+        run: pip install --quiet platformio esptool
+
+      - name: Build WipperSnapper app (lilygo_t_display_s3)
+        run: pio run -e lilygo_t_display_s3
+
+      - name: Fetch latest tinyuf2 for the board
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view --repo adafruit/tinyuf2 --json tagName -q .tagName)
+          echo "tinyuf2 $tag"
+          mkdir -p tuf2 && cd tuf2
+          gh release download "$tag" --repo adafruit/tinyuf2 \
+            --pattern "tinyuf2-lilygo_tdisplay_s3-*.zip"
+          unzip -o tinyuf2-lilygo_tdisplay_s3-*.zip
+
+      - name: Merge tinyuf2 bootloader + boot_app0 + WS app -> combined.bin
+        run: |
+          APP=.pio/build/lilygo_t_display_s3/firmware.bin
+          BOOT_APP0=$(find ~/.platformio/packages/framework-arduinoespressif32 \
+            -name boot_app0.bin | head -1)
+          python -m esptool --chip esp32s3 merge_bin -o combined.bin \
+            --flash_mode dio --flash_freq 80m --flash_size 16MB \
+            0x0      tuf2/bootloader.bin \
+            0x8000   tuf2/partition-table.bin \
+            0xe000   "$BOOT_APP0" \
+            0x10000  "$APP" \
+            0x410000 tuf2/tinyuf2.bin
+          ls -l combined.bin
+
+      - name: Run HIL display test + pull camera proof
+        env:
+          HIL_API_BASE: ${{ secrets.HIL_API_BASE }}
+          HIL_API_TOKEN: ${{ secrets.HIL_API_TOKEN }}
+          WIFI_SSID: ${{ secrets.WIFI_SSID }}
+          WIFI_PASSWORD: ${{ secrets.WIFI_PASSWORD }}
+          IO_USERNAME: ${{ secrets.IO_USERNAME }}
+          IO_KEY: ${{ secrets.IO_KEY }}
+        run: |
+          python3 .github/scripts/hil_lilygo_display.py \
+            --combined combined.bin \
+            --uid "${{ github.event.inputs.uid }}" \
+            --out-dir hil-out
+
+      - name: Upload camera proof + logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lilygo-tdisplay-s3-hil-proof
+          path: hil-out/**
