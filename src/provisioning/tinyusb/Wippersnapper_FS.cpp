@@ -143,7 +143,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   if (_is_secrets_file_empty) {
     writeToBootOut(
         "Please edit the secrets.json file. Then, reset your board.\n");
-    fsHalt("The settings.json file on the WIPPER drive contains default "
+    fsHalt("The secrets.json file on the WIPPER drive contains default "
            "values\n. Using a text editor, edit it to reflect your Adafruit IO "
            "and WiFi credentials. Then, reset the board.");
   }
