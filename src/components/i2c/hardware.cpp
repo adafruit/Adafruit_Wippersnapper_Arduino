@@ -96,12 +96,15 @@ bool I2cHardware::begin() {
 // NOTE: Each platform has a slightly different bus initialization routine
 #ifdef ARDUINO_ARCH_ESP32
   _bus = new TwoWire(_instance);
-  _bus->setPins(_sda, _scl); // TODO: This is possibly not required due to ctor
+  // setPins IS required for a secondary bus (Wire1) so the peripheral binds the
+  // requested SDA/SCL before begin().
+  _bus->setPins(_sda, _scl);
   if (!_bus->begin(_sda, _scl)) {
     _bus_init = false;
     return false;
   }
-  _bus->setClock(50000);
+  _bus->setClock(
+      100000); // 100 kHz standard mode (50 kHz failed to detect devices)
 #elif defined(ARDUINO_ARCH_ESP8266)
   // NOTE: Wire on ESP8266 has only one instance
   _bus = new TwoWire();

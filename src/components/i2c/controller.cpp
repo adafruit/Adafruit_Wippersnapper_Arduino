@@ -565,6 +565,43 @@ size_t I2cController::GetDecodedSettingsCount() {
 /******************************************************************************/
 
 /*!
+    @brief  Decode a single length-delimited sub-message out of a ws_i2c_B2D
+            envelope by its field tag, WITHOUT decoding through the B2D oneof.
+    @details  ws_i2c_B2D is a nanopb STATIC oneof: when pb_decode encounters a
+              payload field it zero-inits the union member first, which wipes
+   any decode callbacks pre-set on that member (the bug that silently made I2C
+   Probe scans return 0 address-spaces and Add drop its settings). Hand-reading
+   the wanted field and decoding a STANDALONE message keeps caller-installed
+   callbacks intact.
+    @param    stream    The B2D envelope stream.
+    @param    want_tag  The B2D payload field tag (e.g. ws_i2c_B2D_probe_tag).
+    @param    fields    The sub-message's nanopb field descriptor.
+    @param    dest      The sub-message struct to decode into (callbacks
+   pre-set).
+    @returns  True if the field was found and decoded, False otherwise.
+*/
+static bool decodeI2cB2DMember(pb_istream_t *stream, uint32_t want_tag,
+                               const pb_msgdesc_t *fields, void *dest) {
+  pb_wire_type_t wire_type;
+  uint32_t tag;
+  bool eof = false;
+  while (pb_decode_tag(stream, &wire_type, &tag, &eof) && !eof) {
+    if (tag == want_tag && wire_type == PB_WT_STRING) {
+      pb_istream_t substream;
+      if (!pb_make_string_substream(stream, &substream))
+        return false;
+      bool ok = ws_pb_decode(&substream, fields, dest);
+      if (!pb_close_string_substream(stream, &substream))
+        return false;
+      return ok;
+    }
+    if (!pb_skip_field(stream, wire_type))
+      return false;
+  }
+  return false;
+}
+
+/*!
     @brief  Routes messages using the i2c.proto API to the
             appropriate controller functions.
     @param  stream
@@ -594,17 +631,17 @@ bool I2cController::Router(pb_istream_t *stream) {
     res = Handle_Probe(&saved_stream);
     break;
   case ws_i2c_B2D_add_tag: {
-    // Re-decode from saved stream with settings callbacks wired up,
-    // same pattern as Handle_Probe.
-    ws_i2c_B2D b2d_add = ws_i2c_B2D_init_zero;
-    _i2c_model->SetupAddDecodeCallbacks(&b2d_add.payload.add);
-    if (!ws_pb_decode(&saved_stream, ws_i2c_B2D_fields, &b2d_add)) {
+    // Decode the Add sub-message DIRECTLY (not via the B2D oneof) so its
+    // settings decode callback survives — see decodeI2cB2DMember.
+    ws_i2c_Add add = ws_i2c_Add_init_zero;
+    _i2c_model->SetupAddDecodeCallbacks(&add);
+    if (!decodeI2cB2DMember(&saved_stream, ws_i2c_B2D_add_tag,
+                            ws_i2c_Add_fields, &add)) {
       Ws.error_handler->publishComponentError(
-          b2d_add.payload.add.descriptor,
-          "Failed to decode I2C add message settings!");
+          add.descriptor, "Failed to decode I2C add message settings!");
       return false;
     }
-    res = Handle_Add(&b2d_add.payload.add);
+    res = Handle_Add(&add);
     break;
   }
   case ws_i2c_B2D_remove_tag:
@@ -783,13 +820,14 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
     @returns  True if probe completed and results published, False otherwise.
 */
 bool I2cController::Handle_Probe(pb_istream_t *stream) {
-  // Decode B2D with probe callbacks — safe to write to the probe union
-  // member here because we know the payload IS a probe.
-  ws_i2c_B2D b2d = ws_i2c_B2D_init_zero;
-  _i2c_model->SetupProbeDecodeCallbacks(&b2d.payload.probe);
-  if (!ws_pb_decode(stream, ws_i2c_B2D_fields, &b2d)) {
-    Ws.error_handler->publishComponentError(ws_i2c_Descriptor{},
-                                            "Failed to decode Probe message!");
+  // Decode the Probe sub-message DIRECTLY (not via the ws_i2c_B2D oneof) so its
+  // address_spaces/addresses decode callbacks survive — see decodeI2cB2DMember.
+  ws_i2c_Probe probe = ws_i2c_Probe_init_zero;
+  _i2c_model->SetupProbeDecodeCallbacks(&probe);
+  if (!decodeI2cB2DMember(stream, ws_i2c_B2D_probe_tag, ws_i2c_Probe_fields,
+                          &probe)) {
+    Ws.error_handler->publishComponentError(
+        ws_i2c_Descriptor{}, "Failed to decode I2C Probe message!");
     return false;
   }
 
@@ -1213,7 +1251,15 @@ I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl,
   WS_DEBUG_PRINT("SDA Pin: ");
   WS_DEBUG_PRINTLNVAR(pin_sda);
 
-  I2cHardware *new_bus = new I2cHardware(pin_sda, pin_scl);
+  // On boards whose STEMMA QT / Qwiic connector is wired to the secondary I2C
+  // peripheral (Wire1), ws_boards.h defines I2C_STEMMA_WIRE1. Use bus instance
+  // 1 so probes/devices reach the STEMMA bus instead of the (empty) primary
+  // Wire.
+  uint8_t instance = 0;
+#ifdef I2C_STEMMA_WIRE1
+  instance = 1;
+#endif
+  I2cHardware *new_bus = new I2cHardware(pin_sda, pin_scl, instance);
   if (!new_bus->begin()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
     delete new_bus;
