@@ -31,6 +31,7 @@
     defined(ARDUINO_XIAO_ESP32S3) || defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
 
 #include "Wippersnapper_FS.h"
+#include "Wippersnapper_FS_format_policy.h"
 #include "print_dependencies.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -238,46 +239,50 @@ Wippersnapper_FS::Wippersnapper_FS() {
     delay(50); // let power stabilise after failure
     if (!initFilesystem()) {
       // Still unmountable. Decide - very carefully - whether to (re)format.
+      // The gating order lives in decideFsAction() (pure + unit-tested):
+      //   - previously provisioned  -> NEVER format (corruption/brownout)
+      //   - genuine first boot      -> format only if the flash is healthy and
+      //                                the volume is genuinely blank.
+      bool provisioned = wasFilesystemProvisioned();
+      // Only probe the flash when a format is actually on the table - on a
+      // provisioned board we already know we must not format, so we skip the
+      // reads to conserve a possibly-dying battery.
+      bool safeToFormat = provisioned ? false : isFlashSafeToFormat();
 
-      // PRIMARY GATE: has this board ever had a working filesystem? If so, an
-      // unmountable FAT now is brownout/corruption, NEVER a blank factory chip.
-      // Formatting would erase the user's secrets.json, so we must not do it -
-      // regardless of what the flash-health probe says. Once the battery has
-      // recovered enough to boot, the flash reads fine again, so a health probe
-      // alone cannot tell "blank from the factory" apart from "corrupted by a
-      // brownout"; this persistent marker can.
-      if (wasFilesystemProvisioned()) {
+      switch (decideFsAction(/*mounted=*/false, provisioned, safeToFormat)) {
+      case WsFsAction::HaltProvisionedBrownout:
         // Keep USB and the status LED off to conserve a dying battery, halt.
         fsHalt("Filesystem unreadable but this board was previously "
                "provisioned - likely a brownout. Recharge and reset; refusing "
                "to reformat to protect your secrets.json.");
-      }
-
-      // SECONDARY GATE: genuine first boot (no marker). Only create a new FS if
-      // the flash chip is healthy AND the volume reads back genuinely blank, so
-      // a board corrupted before it was ever marked is still protected.
-      if (!isFlashSafeToFormat()) {
-        // Likely a voltage/brownout event. Keep USB and the status LED off to
-        // conserve a dying battery, and halt.
+        break;
+      case WsFsAction::HaltUnsafeToFormat:
+        // Likely a voltage/brownout event on a never-provisioned board. Keep
+        // USB and the status LED off to conserve a dying battery, and halt.
         fsHalt("Flash reads unstable (possible brownout) - refusing to "
                "format. Recharge/repower the board and reset.");
-      }
-
-      // Flash is healthy and genuinely blank: safe to create a new filesystem.
-      // [DESTRUCTIVE]
-      if (!initFilesystem(true)) {
-        TinyUSBDevice.attach();
-        setStatusLEDColor(RED);
-        fsHalt("ERROR Initializing Filesystem");
-      }
-
-      // Re-validate the flash chip responds after the (destructive) format - a
-      // format that "succeeded" against a flaky chip would otherwise go
-      // unnoticed.
-      uint32_t postFormatJedecID = flash.getJEDECID();
-      if (postFormatJedecID == 0 || postFormatJedecID == 0xFFFFFF) {
-        fsHalt("Flash unreadable immediately after format - aborting. "
-               "Recharge/repower the board and reset.");
+        break;
+      case WsFsAction::Format:
+        // Flash is healthy and genuinely blank: safe to create a new
+        // filesystem. [DESTRUCTIVE]
+        if (!initFilesystem(true)) {
+          TinyUSBDevice.attach();
+          setStatusLEDColor(RED);
+          fsHalt("ERROR Initializing Filesystem");
+        }
+        // Re-validate the flash chip responds after the (destructive) format -
+        // a format that "succeeded" against a flaky chip would otherwise go
+        // unnoticed.
+        {
+          uint32_t postFormatJedecID = flash.getJEDECID();
+          if (postFormatJedecID == 0 || postFormatJedecID == 0xFFFFFF) {
+            fsHalt("Flash unreadable immediately after format - aborting. "
+                   "Recharge/repower the board and reset.");
+          }
+        }
+        break;
+      case WsFsAction::Mounted:
+        break; // unreachable: mount already failed above
       }
     }
   }
