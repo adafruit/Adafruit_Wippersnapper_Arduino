@@ -1,0 +1,40 @@
+{
+  "_comment": "LilyGo T-Display-S3 i8080 ST7789 display proof. Generic example spec for hil_display_test.py — flash + v2 checkin + display Add + Write + tuned camera capture. To extend into a fuller test, add component_add / more display_write / capture steps to the sequence.",
+  "device": "mcu-lilygo-tdisplay-s3-hil006",
+  "uid": "lilygo-t-display-s321621634",
+  "camera_url": "http://rpi-hil006:8080/",
+  "window_minutes": 12,
+  "sequence": [
+    {
+      "step": "display_add",
+      "interface": "i8080",
+      "name": "tft-19-i8080",
+      "driver": "ST7789",
+      "data_pins": ["D39", "D40", "D41", "D42", "D45", "D46", "D47", "D48"],
+      "cs": "D6",
+      "dc": "D7",
+      "rst": "D5",
+      "width": 320,
+      "height": 170,
+      "rotation": 1,
+      "text_size": 2,
+      "status_bar": true,
+      "settle_s": 5
+    },
+    {
+      "step": "display_write",
+      "name": "tft-19-i8080",
+      "message": "LilyGo T-Display-S3\nWipperSnapper v2\ni8080 ST7789\nHIL camera proof OK",
+      "settle_s": 5
+    },
+    {
+      "step": "capture",
+      "exposure_us": 32000,
+      "gain": 3.0,
+      "roi": [1270, 770, 235, 135, 2304, 1296],
+      "focus_lock": true,
+      "white_balance": true,
+      "out": "/tmp/hil-display-capture.jpg"
+    }
+  ]
+}
