@@ -22,6 +22,17 @@
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
 
+#ifdef ARDUINO_ARCH_ESP32
+// On the ESP32 the FAT user partition shares the on-chip flash with the
+// bootloader, partition table and NVS. We use the partition API to validate a
+// known-good, never-FAT-touched structure (NVS) when deciding whether the flash
+// is safe to (re)format, and NVS itself to persist a "this board was previously
+// provisioned" marker that survives both a brownout and a FAT format. See
+// isFlashSafeToFormat() and wasFilesystemProvisioned() in Wippersnapper_FS.cpp.
+#include <Preferences.h>
+#include <esp_partition.h>
+#endif
+
 #include "Wippersnapper.h"
 
 // forward decl.

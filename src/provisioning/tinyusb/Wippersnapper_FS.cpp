@@ -45,12 +45,6 @@ Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
 // ESP32-S2 uses same flash device that stores code.
 // Therefore there is no need to specify the SPI and SS
 Adafruit_FlashTransport_ESP32 flashTransport;
-// The FAT user partition lives on the same on-chip flash as the ESP32
-// bootloader, partition table and NVS - so we can validate those known-good
-// structures to tell a blank/corrupt filesystem apart from unstable
-// (brownout) flash reads. See flashSafeToFormat().
-#define WS_USE_ESP32_INTERNAL_FLASH 1
-#include <esp_flash.h>
 #elif defined(ARDUINO_ARCH_RP2040)
 // RP2040 use same flash device that store code.
 // Therefore there is no need to specify the SPI and SS
@@ -93,71 +87,114 @@ bool setVolumeLabel() {
   return true;
 }
 
+#ifdef ARDUINO_ARCH_ESP32
+// NVS namespace + key for the "this board has had a working filesystem"
+// marker. NVS lives in its own flash partition (untouched by f_mkfs) and is
+// engineered to survive power loss, so it is the one place a "was provisioned"
+// fact reliably outlives both a brownout and a FAT format.
+static const char *kWSFsNvsNamespace = "ws_fs";
+static const char *kWSFsProvisionedKey = "fs_ok";
+#endif
+
+/**************************************************************************/
+/*!
+    @brief    Returns whether this board has ever had a working filesystem
+              mounted (i.e. it was previously provisioned). On the ESP32 this
+              is persisted in NVS, which survives both a brownout and a FAT
+              format; other platforms have no equivalent off-filesystem store,
+              so this always returns false there and the blank-volume check in
+              isFlashSafeToFormat() is relied on instead.
+    @returns  True if a working filesystem has previously been seen on this
+              board, False otherwise (or if the marker can't be read).
+*/
+/**************************************************************************/
+static bool wasFilesystemProvisioned() {
+#ifdef ARDUINO_ARCH_ESP32
+  Preferences prefs;
+  if (!prefs.begin(kWSFsNvsNamespace, /*readOnly=*/true))
+    return false; // namespace doesn't exist yet -> never provisioned
+  bool provisioned = prefs.getBool(kWSFsProvisionedKey, false);
+  prefs.end();
+  return provisioned;
+#else
+  return false;
+#endif
+}
+
+/**************************************************************************/
+/*!
+    @brief    Records (once) that this board has a working filesystem, so a
+              later mount failure caused by a brownout is never mistaken for a
+              blank factory chip and silently reformatted. No-op on platforms
+              without NVS.
+*/
+/**************************************************************************/
+static void markFilesystemProvisioned() {
+#ifdef ARDUINO_ARCH_ESP32
+  Preferences prefs;
+  if (!prefs.begin(kWSFsNvsNamespace, /*readOnly=*/false))
+    return;
+  if (!prefs.getBool(kWSFsProvisionedKey, false))
+    prefs.putBool(kWSFsProvisionedKey, true);
+  prefs.end();
+#endif
+}
+
 /**************************************************************************/
 /*!
     @brief    Decides whether it is safe to (re)create the filesystem after a
               mount failure, i.e. whether the failure looks like a genuinely
-              blank/corrupt FAT user partition (safe to format) rather than a
-              flash chip whose reads are momentarily unstable due to a voltage
-              sag / brownout (must NOT be formatted - that would erase the
-              user's data on recovery). A brownout is frequently NOT reported
-              as a brownout reset reason, so we cannot rely on the reset
-              reason alone before doing something destructive.
+              blank FAT user partition (safe to format) rather than a flash
+              chip whose reads are momentarily unstable due to a voltage sag /
+              brownout, or a volume holding data that simply won't mount (must
+              NOT be formatted - that would erase the user's data on recovery).
+              A brownout is frequently NOT reported as a brownout reset reason,
+              so we cannot rely on the reset reason alone before doing
+              something destructive.
 
-              On the ESP32 the FAT partition shares the on-chip flash with the
-              bootloader, partition table (0x8000) and NVS (0x9000), so those
-              known-good structures are validated directly. Every other
-              FAT-path board (external QSPI/SPI flash on SAMD51, or the on-chip
-              flash on RP2040/RP2350) has no such off-filesystem structure, so
-              the FAT volume's own boot sector is inspected instead - it may
-              only be formatted if it reads back genuinely erased (all 0xFF).
+              This is the secondary gate, only consulted on a genuine first
+              boot (no NVS "provisioned" marker - see wasFilesystemProvisioned).
+              It (a) confirms the flash chip is actually responding, (b) on the
+              ESP32 confirms a known-good off-filesystem structure (NVS, located
+              via the partition API rather than a hardcoded offset) reads back
+              sanely, and (c) on every platform requires the FAT volume's own
+              boot sector to read back genuinely erased (all 0xFF) before
+              allowing a format.
     @returns  True if a (re)format is safe, False if the flash is unreadable /
               unstable / not genuinely blank, in which case it must NOT be
               formatted.
 */
 /**************************************************************************/
-bool flashSafeToFormat() {
-#ifdef WS_USE_ESP32_INTERNAL_FLASH
-  uint8_t buf[2];
-
-  // Partition table @ 0x8000 - the first entry must begin with the ESP-IDF
-  // partition magic 0x50AA (stored little-endian: 0xAA, 0x50).
-  if (esp_flash_read(esp_flash_default_chip, buf, 0x8000, sizeof(buf)) !=
-      ESP_OK)
-    return false;
-  if (buf[0] != 0xAA || buf[1] != 0x50)
-    return false;
-
-  // NVS partition @ 0x9000 - the first page header state must be a valid NVS
-  // page state: UNINITIALIZED 0xFFFFFFFF / ACTIVE 0xFFFFFFFE / FULL
-  // 0xFFFFFFFC / FREEING 0xFFFFFFF8. The high byte is always 0xFF; the low
-  // byte distinguishes the state. Random garbage from a browning-out SPI bus
-  // is very unlikely to match this.
-  if (esp_flash_read(esp_flash_default_chip, buf, 0x9000, sizeof(buf)) !=
-      ESP_OK)
-    return false;
-  if (buf[1] != 0xFF ||
-      (buf[0] != 0xFF && buf[0] != 0xFE && buf[0] != 0xFC && buf[0] != 0xF8))
-    return false;
-
-  return true;
-#else
-  // External/QSPI flash (SAMD51: PyPortal, Metro M4 AirLift, Titano) or the
-  // RP2040/RP2350 on-chip flash: there is no off-filesystem structure to
-  // validate, so inspect the FAT volume's own boot sector. SPIFlash reads are
-  // relative to the filesystem on every transport, so offset 0 is the boot
-  // sector.
-
-  // First confirm a real flash chip is responding - a dead/disconnected SPI
-  // bus often floats high and reads back as all 0xFF, which would otherwise be
-  // mistaken for a genuinely-erased (blank) chip.
+bool isFlashSafeToFormat() {
+  // (a) Confirm a real flash chip is responding - a dead/disconnected or
+  // browning-out SPI bus often floats high and reads back as all 0xFF, which
+  // would otherwise be mistaken for a genuinely-erased (blank) chip.
   uint32_t jedecID = flash.getJEDECID();
   if (jedecID == 0 || jedecID == 0xFFFFFF)
     return false;
 
-  // A (re)format is only appropriate when the boot sector is genuinely erased
-  // (all 0xFF). Any other unmountable content is treated as possible
-  // voltage/brownout corruption and must NOT be erased.
+#ifdef ARDUINO_ARCH_ESP32
+  // (b) Locate the NVS partition via the partition API (no hardcoded offset)
+  // and confirm its first page header is a valid NVS page state: UNINITIALIZED
+  // 0xFFFFFFFF / ACTIVE 0xFFFFFFFE / FULL 0xFFFFFFFC / FREEING 0xFFFFFFF8. The
+  // high byte is always 0xFF; the low byte distinguishes the state. Garbage
+  // from a browning-out SPI bus is very unlikely to match this.
+  const esp_partition_t *nvs = esp_partition_find_first(
+      ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, NULL);
+  if (nvs == NULL)
+    return false; // can't locate NVS -> don't trust the flash -> don't format
+  uint8_t hdr[2];
+  if (esp_partition_read(nvs, 0, hdr, sizeof(hdr)) != ESP_OK)
+    return false;
+  if (hdr[1] != 0xFF ||
+      (hdr[0] != 0xFF && hdr[0] != 0xFE && hdr[0] != 0xFC && hdr[0] != 0xF8))
+    return false;
+#endif
+
+  // (c) A (re)format is only appropriate when the FAT volume's boot sector is
+  // genuinely erased (all 0xFF). Any other unmountable content is treated as
+  // possible voltage/brownout corruption and must NOT be erased. SPIFlash
+  // reads are relative to the FAT partition, so offset 0 is the boot sector.
   uint8_t sector[256];
   for (uint32_t addr = 0; addr < 512; addr += sizeof(sector)) {
     if (flash.readBuffer(addr, sector, sizeof(sector)) != sizeof(sector))
@@ -167,8 +204,7 @@ bool flashSafeToFormat() {
         return false; // non-erased content -> not blank -> refuse to format
     }
   }
-  return true; // boot sector is fully erased -> genuinely blank -> safe
-#endif
+  return true; // chip healthy + boot sector fully erased -> safe to format
 }
 
 /**************************************************************************/
@@ -190,30 +226,58 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // Wait for detach
   delay(500);
 
-  // Attempt to mount the existing filesystem WITHOUT formatting.
+  // Attempt to mount the existing filesystem WITHOUT formatting. initFilesystem
+  // (with force_format=false) no longer creates a filesystem on a mount
+  // failure - it returns false and lets the gates below decide - so a
+  // brownout-corrupted FAT is never silently wiped.
   if (!initFilesystem()) {
-    // Mount failed. A battery sag / brownout can momentarily corrupt SPI
-    // flash reads - often WITHOUT being reported as a brownout reset - so
-    // give the power rail a moment to settle and retry before doing anything
+    // Mount failed. A battery sag / brownout can momentarily corrupt SPI flash
+    // reads - often WITHOUT being reported as a brownout reset - so give the
+    // power rail a moment to settle and retry before doing anything
     // destructive.
     delay(50); // let power stabilise after failure
     if (!initFilesystem()) {
-      // Still failing. Only (re)format if flashSafeToFormat() proves the flash
-      // chip itself is healthy. This is independent of the reset reason (which
-      // frequently does NOT report a brownout): if the reads are unstable, a
-      // format would needlessly erase the user's data on recovery.
-      if (!flashSafeToFormat()) {
+      // Still unmountable. Decide - very carefully - whether to (re)format.
+
+      // PRIMARY GATE: has this board ever had a working filesystem? If so, an
+      // unmountable FAT now is brownout/corruption, NEVER a blank factory chip.
+      // Formatting would erase the user's secrets.json, so we must not do it -
+      // regardless of what the flash-health probe says. Once the battery has
+      // recovered enough to boot, the flash reads fine again, so a health probe
+      // alone cannot tell "blank from the factory" apart from "corrupted by a
+      // brownout"; this persistent marker can.
+      if (wasFilesystemProvisioned()) {
+        // Keep USB and the status LED off to conserve a dying battery, halt.
+        fsHalt("Filesystem unreadable but this board was previously "
+               "provisioned - likely a brownout. Recharge and reset; refusing "
+               "to reformat to protect your secrets.json.");
+      }
+
+      // SECONDARY GATE: genuine first boot (no marker). Only create a new FS if
+      // the flash chip is healthy AND the volume reads back genuinely blank, so
+      // a board corrupted before it was ever marked is still protected.
+      if (!isFlashSafeToFormat()) {
         // Likely a voltage/brownout event. Keep USB and the status LED off to
         // conserve a dying battery, and halt.
         fsHalt("Flash reads unstable (possible brownout) - refusing to "
                "format. Recharge/repower the board and reset.");
       }
-      // Flash is healthy: the FAT partition is genuinely blank or corrupt, so
-      // it is safe to create a new filesystem. [DESTRUCTIVE]
+
+      // Flash is healthy and genuinely blank: safe to create a new filesystem.
+      // [DESTRUCTIVE]
       if (!initFilesystem(true)) {
         TinyUSBDevice.attach();
         setStatusLEDColor(RED);
         fsHalt("ERROR Initializing Filesystem");
+      }
+
+      // Re-validate the flash chip responds after the (destructive) format - a
+      // format that "succeeded" against a flaky chip would otherwise go
+      // unnoticed.
+      uint32_t postFormatJedecID = flash.getJEDECID();
+      if (postFormatJedecID == 0 || postFormatJedecID == 0xFFFFFF) {
+        fsHalt("Flash unreadable immediately after format - aborting. "
+               "Recharge/repower the board and reset.");
       }
     }
   }
@@ -251,9 +315,19 @@ bool Wippersnapper_FS::initFilesystem(bool force_format) {
   if (!flash.begin())
     return false;
 
-  // Check if FS exists
-  if (force_format || !wipperFatFs.begin(&flash)) {
-    // No filesystem exists - create a new FS
+  // Try to mount the existing filesystem.
+  bool mounted = wipperFatFs.begin(&flash);
+
+  if (!mounted && !force_format) {
+    // Mount failed and the caller did NOT request a format. Do NOT create a
+    // filesystem here - that would erase a brownout-corrupted FAT and the
+    // user's secrets.json with it. Report the failure and let the caller (the
+    // constructor's guarded format path) decide whether a format is safe.
+    return false;
+  }
+
+  if (force_format || !mounted) {
+    // Create a new filesystem.
     // NOTE: THIS WILL ERASE ALL DATA ON THE FLASH
     if (!makeFilesystem())
       return false;
@@ -308,6 +382,16 @@ bool Wippersnapper_FS::initFilesystem(bool force_format) {
   if (!configFileExists()) {
     // Create new secrets.json file and halt
     createSecretsFile();
+  }
+
+  // We have a working, mountable filesystem that we did NOT just create this
+  // boot. Persist that fact so a future mount failure (e.g. a brownout
+  // corrupting the FAT) is recognised as corruption and never silently
+  // reformatted. On a fresh format this point is not reached: createSecretsFile
+  // above halts the board until the user edits secrets.json and resets, after
+  // which the next boot mounts the now-real FS and records the marker here.
+  if (!_freshFS) {
+    markFilesystemProvisioned();
   }
 
   return true;
