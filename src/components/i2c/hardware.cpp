@@ -14,6 +14,10 @@
  */
 #include "hardware.h"
 
+/// Standard-mode I2C clock for ESP32 buses. 100 kHz; a slower 50 kHz failed to
+/// detect some devices on the STEMMA bus during HIL testing.
+#define I2C_STD_CLOCK_HZ 100000
+
 /*!
     @brief  Default I2C bus hardware class constructor
 */
@@ -103,8 +107,7 @@ bool I2cHardware::begin() {
     _bus_init = false;
     return false;
   }
-  _bus->setClock(
-      100000); // 100 kHz standard mode (50 kHz failed to detect devices)
+  _bus->setClock(I2C_STD_CLOCK_HZ); // standard mode
 #elif defined(ARDUINO_ARCH_ESP8266)
   // NOTE: Wire on ESP8266 has only one instance
   _bus = new TwoWire();

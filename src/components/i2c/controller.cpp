@@ -574,23 +574,25 @@ size_t I2cController::GetDecodedSettingsCount() {
    the wanted field and decoding a STANDALONE message keeps caller-installed
    callbacks intact.
     @param    stream    The B2D envelope stream.
-    @param    want_tag  The B2D payload field tag (e.g. ws_i2c_B2D_probe_tag).
+    @param    member_tag_to_decode  The B2D payload field tag to read (e.g.
+   ws_i2c_B2D_probe_tag).
     @param    fields    The sub-message's nanopb field descriptor.
-    @param    dest      The sub-message struct to decode into (callbacks
-   pre-set).
+    @param    dest_msg  The standalone sub-message struct to decode into, with
+   its decode callbacks already installed by the caller.
     @returns  True if the field was found and decoded, False otherwise.
 */
-static bool decodeI2cB2DMember(pb_istream_t *stream, uint32_t want_tag,
-                               const pb_msgdesc_t *fields, void *dest) {
+static bool decodeI2cB2DMember(pb_istream_t *stream,
+                               uint32_t member_tag_to_decode,
+                               const pb_msgdesc_t *fields, void *dest_msg) {
   pb_wire_type_t wire_type;
   uint32_t tag;
   bool eof = false;
   while (pb_decode_tag(stream, &wire_type, &tag, &eof) && !eof) {
-    if (tag == want_tag && wire_type == PB_WT_STRING) {
+    if (tag == member_tag_to_decode && wire_type == PB_WT_STRING) {
       pb_istream_t substream;
       if (!pb_make_string_substream(stream, &substream))
         return false;
-      bool ok = ws_pb_decode(&substream, fields, dest);
+      bool ok = ws_pb_decode(&substream, fields, dest_msg);
       if (!pb_close_string_substream(stream, &substream))
         return false;
       return ok;
@@ -1251,15 +1253,15 @@ I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl,
   WS_DEBUG_PRINT("SDA Pin: ");
   WS_DEBUG_PRINTLNVAR(pin_sda);
 
+  uint8_t bus_instance = 0;
+#ifdef I2C_STEMMA_WIRE1
   // On boards whose STEMMA QT / Qwiic connector is wired to the secondary I2C
   // peripheral (Wire1), ws_boards.h defines I2C_STEMMA_WIRE1. Use bus instance
   // 1 so probes/devices reach the STEMMA bus instead of the (empty) primary
   // Wire.
-  uint8_t instance = 0;
-#ifdef I2C_STEMMA_WIRE1
-  instance = 1;
+  bus_instance = 1;
 #endif
-  I2cHardware *new_bus = new I2cHardware(pin_sda, pin_scl, instance);
+  I2cHardware *new_bus = new I2cHardware(pin_sda, pin_scl, bus_instance);
   if (!new_bus->begin()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
     delete new_bus;
