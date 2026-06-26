@@ -251,14 +251,21 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
       switch (decideFsAction(/*mounted=*/false, provisioned, safeToFormat)) {
       case WsFsAction::HaltProvisionedBrownout:
-        // Keep USB and the status LED off to conserve a dying battery, halt.
+        // Re-attach USB so the halt reason is visible over serial (CDC) and the
+        // board is not a silent black box. We deliberately do NOT bring up USB
+        // mass storage here: the FAT did not mount, so exposing it to the host
+        // could trigger a "repair/initialize" prompt that wipes the very
+        // secrets.json we are protecting. fsHalt() leaves the status LED solid
+        // as the on-device indicator.
+        TinyUSBDevice.attach();
         fsHalt("Filesystem unreadable but this board was previously "
                "provisioned - likely a brownout. Recharge and reset; refusing "
                "to reformat to protect your secrets.json.");
         break;
       case WsFsAction::HaltUnsafeToFormat:
-        // Likely a voltage/brownout event on a never-provisioned board. Keep
-        // USB and the status LED off to conserve a dying battery, and halt.
+        // Never-provisioned board whose flash looks unstable / not-blank.
+        // Surface the reason over serial (CDC) and halt without formatting.
+        TinyUSBDevice.attach();
         fsHalt("Flash reads unstable (possible brownout) - refusing to "
                "format. Recharge/repower the board and reset.");
         break;
