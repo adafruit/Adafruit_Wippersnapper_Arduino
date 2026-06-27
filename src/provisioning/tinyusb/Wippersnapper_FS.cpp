@@ -344,8 +344,9 @@ Wippersnapper_FS::Wippersnapper_FS() {
         // as the on-device indicator.
         TinyUSBDevice.attach();
         fsHalt("Filesystem unreadable but this board was previously "
-               "provisioned - likely a brownout. Recharge and reset; refusing "
-               "to reformat to protect your secrets.json.");
+               "provisioned - likely a brownout or power-loss recovery. "
+               "Recharge and reset; refusing to reformat to protect your "
+               "secrets.json.");
         break;
       case WsFsAction::HaltUnsafeToFormat:
         // Never-provisioned board whose flash looks unstable / not-blank.
