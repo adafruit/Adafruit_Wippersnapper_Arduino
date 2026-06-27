@@ -56,7 +56,13 @@ public:
   void fsHalt(String msg);
 
   void parseSecrets();
+
 private:
+#ifdef ARDUINO_ARCH_ESP32
+  bool restoreBootRegionIfBlank(); ///< Restore a power-loss-erased boot
+                                   ///< region (boot+FATs) from NVS backup.
+  void backupBootRegion();         ///< Snapshot the boot region into NVS.
+#endif
   bool _freshFS = false; /*!< True if filesystem was initialized by
                             WipperSnapper, False otherwise. */
 };
