@@ -95,6 +95,13 @@ bool setVolumeLabel() {
 // fact reliably outlives both a brownout and a FAT format.
 static const char *kWSFsNvsNamespace = "ws_fs";
 static const char *kWSFsProvisionedKey = "fs_ok";
+// Boot-reason diagnostics, persisted in the same NVS namespace (survives a
+// brownout and a FAT format). last_rst is updated every boot; fmt_rst/fmt_cnt
+// capture the reset reason in effect when a (re)format actually ran, so a
+// format that wiped data can be correlated with the reset that preceded it.
+static const char *kWSFsLastResetKey = "last_rst"; ///< reset code this boot
+static const char *kWSFsFormatResetKey = "fmt_rst"; ///< reset code at last format
+static const char *kWSFsFormatCountKey = "fmt_cnt"; ///< number of (re)formats
 #endif
 
 /**************************************************************************/
@@ -138,6 +145,79 @@ static void markFilesystemProvisioned() {
   if (!prefs.getBool(kWSFsProvisionedKey, false))
     prefs.putBool(kWSFsProvisionedKey, true);
   prefs.end();
+#endif
+}
+
+/**************************************************************************/
+/*!
+    @brief    Records the reset reason seen on this boot into NVS (last_rst),
+              so the actual boot reason is available for diagnosis even when the
+              board halts before the usual printDeviceInfo() reset-reason dump.
+              No-op on platforms without NVS / reset-reason support.
+*/
+/**************************************************************************/
+static void recordBootResetReason() {
+#ifdef ARDUINO_ARCH_ESP32
+  Preferences prefs;
+  if (!prefs.begin(kWSFsNvsNamespace, /*readOnly=*/false))
+    return;
+  prefs.putUChar(kWSFsLastResetKey, (uint8_t)getResetReasonCode(0));
+  prefs.end();
+#endif
+}
+
+/**************************************************************************/
+/*!
+    @brief    Records, into NVS, that a (re)format happened this boot and the
+              reset reason in effect when it ran (fmt_rst), plus a running count
+              (fmt_cnt). This is the "write the boot reason only after a format"
+              diagnostic: a format that erased data can later be correlated with
+              the reset that preceded it. No-op without NVS.
+*/
+/**************************************************************************/
+static void recordFormatEvent() {
+#ifdef ARDUINO_ARCH_ESP32
+  Preferences prefs;
+  if (!prefs.begin(kWSFsNvsNamespace, /*readOnly=*/false))
+    return;
+  prefs.putUChar(kWSFsFormatResetKey, (uint8_t)getResetReasonCode(0));
+  prefs.putUInt(kWSFsFormatCountKey, prefs.getUInt(kWSFsFormatCountKey, 0) + 1);
+  prefs.end();
+#endif
+}
+
+/**************************************************************************/
+/*!
+    @brief    Prints the persisted boot/format diagnostics (this boot's reset
+              reason, and - if any format has ever run - the count and the reset
+              reason at the last format) to the serial console. No-op without
+              NVS.
+*/
+/**************************************************************************/
+static void printFsDiagnostics() {
+#ifdef ARDUINO_ARCH_ESP32
+  Preferences prefs;
+  if (!prefs.begin(kWSFsNvsNamespace, /*readOnly=*/true))
+    return;
+  uint8_t lastRst = prefs.getUChar(kWSFsLastResetKey, 0);
+  uint8_t fmtRst = prefs.getUChar(kWSFsFormatResetKey, 0);
+  uint32_t fmtCnt = prefs.getUInt(kWSFsFormatCountKey, 0);
+  prefs.end();
+
+  WS_DEBUG_PRINT("[fs] boot reset reason: ");
+  WS_DEBUG_PRINTVAR((int)lastRst);
+  WS_DEBUG_PRINT(" (");
+  WS_DEBUG_PRINTVAR(getResetReasonStr(lastRst));
+  WS_DEBUG_PRINTLN(")");
+  if (fmtCnt > 0) {
+    WS_DEBUG_PRINT("[fs] filesystem (re)formats so far: ");
+    WS_DEBUG_PRINTLNVAR(fmtCnt);
+    WS_DEBUG_PRINT("[fs] reset reason at last format: ");
+    WS_DEBUG_PRINTVAR((int)fmtRst);
+    WS_DEBUG_PRINT(" (");
+    WS_DEBUG_PRINTVAR(getResetReasonStr(fmtRst));
+    WS_DEBUG_PRINTLN(")");
+  }
 #endif
 }
 
@@ -227,6 +307,11 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // Wait for detach
   delay(500);
 
+  // Persist this boot's reset reason early, before any mount/format decision,
+  // so the actual boot reason is recoverable for diagnosis even if we halt here
+  // (the usual printDeviceInfo() reset-reason dump runs later, in connect()).
+  recordBootResetReason();
+
   // Attempt to mount the existing filesystem WITHOUT formatting. initFilesystem
   // (with force_format=false) no longer creates a filesystem on a mount
   // failure - it returns false and lets the gates below decide - so a
@@ -287,12 +372,19 @@ Wippersnapper_FS::Wippersnapper_FS() {
                    "Recharge/repower the board and reset.");
           }
         }
+        // Persist that a (re)format ran this boot and the reset reason behind
+        // it, so a format that wiped data can be correlated with its cause.
+        recordFormatEvent();
         break;
       case WsFsAction::Mounted:
         break; // unreachable: mount already failed above
       }
     }
   }
+
+  // Report the persisted boot/format diagnostics (this boot's reset reason,
+  // and any prior format + the reset reason that preceded it).
+  printFsDiagnostics();
 
   // Initialize USB-MSD
   initUSBMSC();
@@ -743,9 +835,23 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt(String msg) {
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+#ifdef ARDUINO_ARCH_ESP32
+  // Capture the actual reset reason once, so the halt reports the observed boot
+  // reason (e.g. "12 (SW_CPU_RESET)") rather than only inferring "likely a
+  // brownout" - a brownout is frequently not reported as a brownout reset.
+  int rstCode = getResetReasonCode(0);
+  const char *rstStr = getResetReasonStr(rstCode);
+#endif
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
     WS_DEBUG_PRINTLN(msg.c_str());
+#ifdef ARDUINO_ARCH_ESP32
+    WS_DEBUG_PRINT("Boot/reset reason: ");
+    WS_DEBUG_PRINTVAR(rstCode);
+    WS_DEBUG_PRINT(" (");
+    WS_DEBUG_PRINTVAR(rstStr);
+    WS_DEBUG_PRINTLN(")");
+#endif
     delay(1000);
     yield();
   }

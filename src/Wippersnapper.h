@@ -167,7 +167,16 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-pr931.4" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-pr931.5" ///< WipperSnapper app. version (semver-formatted)
+
+#ifdef ARDUINO_ARCH_ESP32
+// Reset-reason helpers (defined in Wippersnapper.cpp). Exposed so the
+// filesystem layer can surface the actual boot/reset reason in its protective
+// halt and persist it to NVS for diagnosis, instead of only inferring "likely a
+// brownout".
+const char *getResetReasonStr(int reason); ///< Reset-reason code -> string
+int getResetReasonCode(int cpuCore = 0);   ///< rtc_get_reset_reason(cpuCore)
+#endif
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
