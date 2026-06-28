@@ -710,10 +710,37 @@ void Wippersnapper_FS::parseSecrets() {
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error == DeserializationError::EmptyInput) {
-    if (WS.brownOutCausedReset) {
+    // An empty/blank read of secrets.json on a previously-provisioned board is
+    // almost never a genuinely empty file - it is the same failed-flash-read a
+    // brownout produces (the SPI rail sags during power-loss recovery and bytes
+    // come back as 0x00/0xFF, so a perfectly intact file deserializes as
+    // EmptyInput). Recreating it from the template here REMOVES the user's real
+    // credentials - observed on hardware: a drained MagTag came up, read its
+    // intact secrets.json back empty, and this path replaced it with a
+    // placeholder, leaving the real file orphaned on flash.
+    //
+    // Gate the destructive recreate on the SAME persistent NVS provisioned
+    // marker #937 uses for the format decision - NOT on WS.brownOutCausedReset.
+    // The reset reason is unreliable as a safety gate: a brownout-corrupted
+    // read routinely surfaces on a boot that reports POWERON_RESET, not
+    // brownout (15), so the brownout flag is false exactly when we most need to
+    // protect. A provisioned board that suddenly reads empty must
+    // halt-and-protect, never recreate; only a board that has never had a
+    // working FS may bootstrap one.
+    if (wasFilesystemProvisioned()) {
+      writeToBootOut("ERROR: secrets.json read back empty on a provisioned "
+                     "board - refusing to recreate (likely a "
+                     "brownout/power-loss misread). Recharge and reset.\n");
+      fsHalt("ERROR: secrets.json read back empty on a previously-provisioned "
+             "board - refusing to recreate it and erase your credentials. This "
+             "is almost always a brownout/power-loss misread of an intact "
+             "file. Recharge and reset; edit secrets.json by hand only if it "
+             "persists.");
+    } else if (WS.brownOutCausedReset) {
       fsHalt("ERROR: Empty secrets.json file, can't recreate due to brownout - "
              "recharge or must be fixed manually.");
     } else {
+      // Never-provisioned board: genuinely bootstrapping a template is correct.
       // TODO: Can't serial print here, in next PR check we're not out of space
       WS_DEBUG_PRINTLN("ERROR: Empty secrets.json file, recreating...");
       secretsFile.close();
