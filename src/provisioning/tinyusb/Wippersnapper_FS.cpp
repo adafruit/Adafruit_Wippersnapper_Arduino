@@ -485,7 +485,32 @@ bool Wippersnapper_FS::initFilesystem(bool force_format) {
 
   // Check if secrets.json file already exists
   if (!configFileExists()) {
-    // Create new secrets.json file and halt
+    // configFileExists() returns false when secrets.json is absent OR when its
+    // first byte reads back 0x00/0xFF. That blank first byte is the same
+    // failed-flash-read a brownout produces (the SPI rail sags during
+    // power-loss recovery), so on a previously-provisioned board this is almost
+    // never a genuinely missing file - it is an intact secrets.json misread as
+    // empty. Recreating the template here would orphan the user's real
+    // credentials - observed on hardware: a drained MagTag mounted cleanly,
+    // peeked its intact secrets.json back blank, and this path replaced it with
+    // a placeholder, leaving the real file orphaned on flash.
+    //
+    // Gate the destructive recreate on the SAME persistent NVS provisioned
+    // marker parseSecrets() uses - NOT on WS.brownOutCausedReset, which
+    // routinely reports POWERON_RESET (not brownout) on a power-loss-recovery
+    // boot. A provisioned board that suddenly cannot read secrets.json must
+    // halt-and-protect; only a never-provisioned board may bootstrap one.
+    if (wasFilesystemProvisioned()) {
+      writeToBootOut("ERROR: secrets.json unreadable on a provisioned board - "
+                     "refusing to recreate (likely a brownout/power-loss "
+                     "misread). Recharge and reset.\n");
+      fsHalt("ERROR: secrets.json unreadable on a previously-provisioned board "
+             "- refusing to recreate it and erase your credentials. This is "
+             "almost always a brownout/power-loss misread of an intact file. "
+             "Recharge and reset; edit secrets.json by hand only if it "
+             "persists.");
+    }
+    // Never-provisioned board: genuinely bootstrapping a template is correct.
     createSecretsFile();
   }
 
