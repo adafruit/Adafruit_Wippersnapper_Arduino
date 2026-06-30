@@ -358,6 +358,11 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
 */
 void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("=> New B2D message!");
+  // Diagnostic: the on-wire payload length actually delivered by Adafruit_MQTT.
+  // If this is clamped near SUBSCRIPTIONDATALEN-1 (2047) or otherwise larger than
+  // the expected encoded message, the packet was truncated by the 2048 RX buffer.
+  WS_DEBUG_PRINT("=> B2D payload len: ");
+  WS_DEBUG_PRINTLNVAR(len);
   ws_signal_BrokerToDevice msg_signal = ws_signal_BrokerToDevice_init_default;
 
   // Configure the payload callback

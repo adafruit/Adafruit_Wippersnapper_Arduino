@@ -17,6 +17,10 @@
 DisplayController::DisplayController() {
   _num_displays = 0;
   _last_bar_update = 0;
+  _canvas_id = 0;
+  _canvas_chunk_total = 0;
+  _canvas_chunks_received = 0;
+  _canvas_total_size = 0;
 }
 
 DisplayController::~DisplayController() {
@@ -24,6 +28,23 @@ DisplayController::~DisplayController() {
     delete _displays[i];
   }
   _num_displays = 0;
+  resetCanvasReassembly();
+}
+
+/*!
+    @brief  Frees all buffered canvas chunk regions and zeroes the per-canvas
+            reassembly state. Does NOT touch _pending_chunk: that holds the
+            current message's just-decoded bytes and is owned by the decode
+            callback / Handle_Display_Write, which may call this mid-message
+            (e.g. on a new image id) before filing those bytes.
+*/
+void DisplayController::resetCanvasReassembly() {
+  // swap-with-empty releases the heap capacity, not just the size
+  std::vector<std::vector<uint8_t>>().swap(_canvas_chunks);
+  _canvas_id = 0;
+  _canvas_chunk_total = 0;
+  _canvas_chunks_received = 0;
+  _canvas_total_size = 0;
 }
 
 /*!
@@ -33,6 +54,10 @@ DisplayController::~DisplayController() {
     @return True if the message was successfully routed, False otherwise.
 */
 bool DisplayController::Router(pb_istream_t *stream) {
+  // Save the stream before decoding — the write case re-decodes with a
+  // chunk_data callback wired up, and ws_pb_decode consumes the stream.
+  pb_istream_t saved_stream = *stream;
+
   // B2D envelope carries the display name as a callback field
   ws_display_B2D b2d = ws_display_B2D_init_zero;
   if (!ws_pb_decode(stream, ws_display_B2D_fields, &b2d)) {
@@ -45,8 +70,28 @@ bool DisplayController::Router(pb_istream_t *stream) {
     return Handle_Display_Add(&b2d.payload.add);
   case ws_display_B2D_remove_tag:
     return Handle_Display_Remove(&b2d.payload.remove);
-  case ws_display_B2D_write_tag:
-    return Handle_Display_Write(&b2d.payload.write);
+  case ws_display_B2D_write_tag: {
+    // Re-decode from the saved stream with the Canvas chunk_data callback
+    // wired up; the first decode skipped chunk_data (no callback set).
+    //
+    // chunk_data lives inside the `write` oneof member. nanopb memsets a oneof
+    // submessage to zero the first time it sets which_payload (pb_decode.c
+    // ~L528), which would wipe our pre-set callback. Pre-setting which_payload
+    // AND decoding with PB_DECODE_NOINIT skips both the default-init (which
+    // would otherwise reset which_payload to 0) and that memset, so the
+    // callback survives. init_zero gives a clean struct since we skip init.
+    ws_display_B2D b2d_w = ws_display_B2D_init_zero;
+    b2d_w.which_payload = ws_display_B2D_write_tag;
+    b2d_w.payload.write.image.chunk_data.funcs.decode = cbDecodeCanvasChunk;
+    b2d_w.payload.write.image.chunk_data.arg = this;
+    if (!pb_decode_ex(&saved_stream, ws_display_B2D_fields, &b2d_w,
+                      PB_DECODE_NOINIT)) {
+      WS_DEBUG_PRINT("[display] ERROR: Failed to re-decode write w/ canvas: ");
+      WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(&saved_stream));
+      return false;
+    }
+    return Handle_Display_Write(&b2d_w.payload.write);
+  }
   default:
     WS_DEBUG_PRINTLN("[display] WARNING: Unsupported Display payload");
     return false;
@@ -327,11 +372,147 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
 }
 
 /*!
+    @brief  nanopb decode callback for Canvas.chunk_data. Captures one chunk's
+            raw bytes into the controller's pending-chunk holder; placement and
+            reassembly happen in Handle_Display_Write.
+    @param  stream  The nanopb input stream positioned at the chunk bytes.
+    @param  field   The chunk_data field descriptor (unused).
+    @param  arg     Pointer to the owning DisplayController (set in Router).
+    @return True on success, False on allocation/read failure.
+*/
+bool DisplayController::cbDecodeCanvasChunk(pb_istream_t *stream,
+                                            const pb_field_t *field,
+                                            void **arg) {
+  (void)field;
+  DisplayController *self = (DisplayController *)*arg;
+  size_t len = stream->bytes_left;
+
+  // Drop any uncommitted pending bytes (e.g. malformed prior message)
+  self->_pending_chunk.clear();
+  if (len == 0)
+    return true;
+
+  self->_pending_chunk.resize(len);
+  if (!pb_read(stream, (pb_byte_t *)self->_pending_chunk.data(), len)) {
+    self->_pending_chunk.clear();
+    return false;
+  }
+  return true;
+}
+
+/*!
     @brief  Handles a request to write to a display.
     @param  msg  The Display Write message.
     @return True if successful, False otherwise.
 */
 bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
+
+  // Canvas image support: accumulate chunked BMP bytes across Write messages.
+  if (msg->has_image) {
+    uint32_t canvas_id = msg->image.id;
+    uint32_t canvas_checksum = msg->image.checksum;
+    uint32_t canvas_total_size = msg->image.total_size;
+    uint32_t canvas_chunk_id = msg->image.chunk_id;
+    uint32_t canvas_chunk_total = msg->image.chunk_total;
+    WS_DEBUG_PRINT("[display] Canvas ID: ");
+    WS_DEBUG_PRINTVAR(canvas_id);
+    WS_DEBUG_PRINT(", Checksum: ");
+    WS_DEBUG_PRINTVAR(canvas_checksum);
+    WS_DEBUG_PRINT(", Total Size: ");
+    WS_DEBUG_PRINTVAR(canvas_total_size);
+    WS_DEBUG_PRINT(", Chunk ID: ");
+    WS_DEBUG_PRINTVAR(canvas_chunk_id);
+    WS_DEBUG_PRINT(", Chunk Total: ");
+    WS_DEBUG_PRINTVAR(canvas_chunk_total);
+    WS_DEBUG_PRINT(", Chunk Bytes: ");
+    WS_DEBUG_PRINTLNVAR((uint32_t)_pending_chunk.size());
+
+    // The decode callback must have captured this chunk's bytes.
+    if (_pending_chunk.empty()) {
+      WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk_data missing/empty");
+      resetCanvasReassembly();
+      return false;
+    }
+
+    // Bounds: chunk_id is 1-based (1..chunk_total), total within our cap.
+    if (canvas_chunk_total == 0 ||
+        canvas_chunk_total > MAX_CANVAS_CHUNKS || canvas_chunk_id < 1 ||
+        canvas_chunk_id > canvas_chunk_total) {
+      WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id/total out of range");
+      resetCanvasReassembly();
+      return false;
+    }
+
+    // New image (different id, or none in progress) -> start fresh and size the
+    // slot vector to the expected chunk count.
+    if (_canvas_id == 0 || canvas_id != _canvas_id) {
+      resetCanvasReassembly();
+      _canvas_id = canvas_id;
+      _canvas_chunk_total = canvas_chunk_total;
+      _canvas_total_size = canvas_total_size;
+      _canvas_chunks.resize(canvas_chunk_total);
+    }
+
+    // File the captured bytes into the slot for this chunk (out-of-order safe).
+    uint32_t idx = canvas_chunk_id - 1;
+    if (idx >= _canvas_chunks.size()) {
+      // Sender changed chunk_total mid-stream for the same id; bail out.
+      WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id exceeds buffer");
+      resetCanvasReassembly();
+      return false;
+    }
+    if (_canvas_chunks[idx].empty()) {
+      _canvas_chunks_received++;
+    }
+    // Duplicate/re-sent chunk replaces the slot; move avoids copying the bytes.
+    _canvas_chunks[idx] = std::move(_pending_chunk);
+    _pending_chunk.clear(); // move leaves it unspecified; reset for next message
+
+    // Wait for more chunks unless every distinct slot is now filled.
+    if (_canvas_chunks_received < _canvas_chunk_total) {
+      return true;
+    }
+
+    WS_DEBUG_PRINT("[display] Building BMP from chunks received: ");
+    WS_DEBUG_PRINTVAR(_canvas_chunks_received);
+    WS_DEBUG_PRINT(" / ");
+    WS_DEBUG_PRINTLNVAR(_canvas_chunk_total);
+
+    // Complete: concatenate every region in chunk_id order into one buffer.
+    // The expected size is carried in the Canvas, so reserve it up front
+    // (one allocation, no growth) instead of summing the chunk lengths.
+    std::vector<uint8_t> bmp;
+    bmp.reserve(_canvas_total_size);
+    for (uint32_t i = 0; i < _canvas_chunk_total; i++) {
+      bmp.insert(bmp.end(), _canvas_chunks[i].begin(), _canvas_chunks[i].end());
+    }
+
+    WS_DEBUG_PRINT("[display] Canvas assembled, BMP size: ");
+    WS_DEBUG_PRINTVAR((uint32_t)bmp.size());
+    WS_DEBUG_PRINT(", expected total_size: ");
+    WS_DEBUG_PRINTLNVAR(_canvas_total_size);
+
+    // Integrity check: assembled bytes should match the advertised total_size.
+    if (bmp.size() != _canvas_total_size) {
+      WS_DEBUG_PRINTLN("[display] ERROR: Canvas size mismatch, discarding");
+      resetCanvasReassembly();
+      return false;
+    }
+
+    // Dump the assembled BMP bytes to serial as hex.
+    WS_DEBUG_PRINTLN("[display] BMP bytes:");
+    for (size_t i = 0; i < bmp.size(); i++) {
+      WS_DEBUG_PRINTHEX(bmp[i]);
+      WS_DEBUG_PRINT(" ");
+    }
+    WS_DEBUG_PRINTLN("");
+
+    // TODO: verify image.checksum, parse the 1bpp BMP header (w/h/stride), and
+    // draw to the target display. Out of scope for this spike.
+    resetCanvasReassembly();
+    return true;
+  }
+
   if (!msg || !msg->name) {
     WS_DEBUG_PRINTLN("[display] ERROR: Invalid display write request!");
     return false;
