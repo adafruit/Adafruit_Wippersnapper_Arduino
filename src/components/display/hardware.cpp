@@ -688,6 +688,24 @@ bool DisplayHardware::write(ws_display_Write *msg) {
 }
 
 /*!
+    @brief  Draws an assembled canvas (raw .BMP file bytes) to the display.
+    @param  bmp  Pointer to the complete BMP file bytes.
+    @param  len  Length of the BMP buffer, in bytes.
+    @return True if drawn, False otherwise.
+*/
+bool DisplayHardware::drawCanvas(const uint8_t *bmp, size_t len) {
+  if (!_drvDisp) {
+    publishAndLogError(F("[display] ERROR: No display driver initialized!"));
+    return false;
+  }
+  if (!bmp || len == 0) {
+    publishAndLogError(F("[display] ERROR: Empty canvas buffer!"));
+    return false;
+  }
+  return _drvDisp->drawCanvas(bmp, len);
+}
+
+/*!
     @brief  Publishes an error related to this display hardware back to the
             broker.
     @param  error   The error message to publish.

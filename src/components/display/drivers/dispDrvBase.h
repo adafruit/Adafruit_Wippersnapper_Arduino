@@ -91,6 +91,14 @@ public:
   virtual void writeMessage(const char *message) = 0;
 
   /*!
+      @brief  Draws a canvas (raw .BMP file bytes) to the display.
+      @param  bmp  Pointer to the complete BMP file bytes.
+      @param  len  Length of the BMP buffer, in bytes.
+      @return True if drawn, False if unsupported by this driver.
+  */
+  virtual bool drawCanvas(const uint8_t *bmp, size_t len) { return false; }
+
+  /*!
       @brief  Sets the display width in pixels.
       @param  w  Width in pixels.
   */

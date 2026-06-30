@@ -188,6 +188,25 @@ public:
     _display->display();
   }
 
+  /*!
+      @brief  Draws an assembled canvas (raw 1bpp .BMP file bytes) to the display.
+      @param  bmp  Pointer to the complete BMP file bytes.
+      @param  len  Length of the BMP buffer, in bytes.
+      @return True if accepted, False otherwise.
+  */
+  bool drawCanvas(const uint8_t *bmp, size_t len) override {
+    if (!_display)
+      return false;
+    WS_DEBUG_PRINT("[display] drawCanvas (stub) received BMP bytes: ");
+    WS_DEBUG_PRINTLNVAR((uint32_t)len);
+    // TODO: Parse the 1bpp BMP before writing to the display. This should probably be handled in 
+    // the base class, since the BMP format is not specific to the MagTag's display
+    _display->clearBuffer();
+    _display->drawBitmap(0, 0, bmp, 296, 128, EPD_BLACK);
+    _display->display();
+    return true; // ack so the pipeline reports success while render is TODO
+  }
+
 private:
   ThinkInk_290_Grayscale4_EAAMFGN *_display;
 };

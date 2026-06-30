@@ -407,7 +407,7 @@ bool DisplayController::cbDecodeCanvasChunk(pb_istream_t *stream,
 */
 bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
 
-  // Canvas image support: accumulate chunked BMP bytes across Write messages.
+  // Adafruit Canvas/Marquee Feature Spike
   if (msg->has_image) {
     uint32_t canvas_id = msg->image.id;
     uint32_t canvas_checksum = msg->image.checksum;
@@ -427,14 +427,13 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
     WS_DEBUG_PRINT(", Chunk Bytes: ");
     WS_DEBUG_PRINTLNVAR((uint32_t)_pending_chunk.size());
 
-    // The decode callback must have captured this chunk's bytes.
+    // Did the decode callback actually decode any bytes into the chunk?
     if (_pending_chunk.empty()) {
       WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk_data missing/empty");
       resetCanvasReassembly();
       return false;
     }
 
-    // Bounds: chunk_id is 1-based (1..chunk_total), total within our cap.
     if (canvas_chunk_total == 0 ||
         canvas_chunk_total > MAX_CANVAS_CHUNKS || canvas_chunk_id < 1 ||
         canvas_chunk_id > canvas_chunk_total) {
@@ -443,8 +442,7 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
       return false;
     }
 
-    // New image (different id, or none in progress) -> start fresh and size the
-    // slot vector to the expected chunk count.
+    // New image id detected
     if (_canvas_id == 0 || canvas_id != _canvas_id) {
       resetCanvasReassembly();
       _canvas_id = canvas_id;
@@ -453,10 +451,9 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
       _canvas_chunks.resize(canvas_chunk_total);
     }
 
-    // File the captured bytes into the slot for this chunk (out-of-order safe).
+    // Apply correct index
     uint32_t idx = canvas_chunk_id - 1;
     if (idx >= _canvas_chunks.size()) {
-      // Sender changed chunk_total mid-stream for the same id; bail out.
       WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id exceeds buffer");
       resetCanvasReassembly();
       return false;
@@ -464,11 +461,11 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
     if (_canvas_chunks[idx].empty()) {
       _canvas_chunks_received++;
     }
-    // Duplicate/re-sent chunk replaces the slot; move avoids copying the bytes.
+    // avoid copying bytes 2x
     _canvas_chunks[idx] = std::move(_pending_chunk);
-    _pending_chunk.clear(); // move leaves it unspecified; reset for next message
+    _pending_chunk.clear();
 
-    // Wait for more chunks unless every distinct slot is now filled.
+    // Wait for more chunks
     if (_canvas_chunks_received < _canvas_chunk_total) {
       return true;
     }
@@ -478,9 +475,7 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
     WS_DEBUG_PRINT(" / ");
     WS_DEBUG_PRINTLNVAR(_canvas_chunk_total);
 
-    // Complete: concatenate every region in chunk_id order into one buffer.
-    // The expected size is carried in the Canvas, so reserve it up front
-    // (one allocation, no growth) instead of summing the chunk lengths.
+    // Concatenate every region in chunk_id order into one buffer.
     std::vector<uint8_t> bmp;
     bmp.reserve(_canvas_total_size);
     for (uint32_t i = 0; i < _canvas_chunk_total; i++) {
@@ -492,25 +487,30 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
     WS_DEBUG_PRINT(", expected total_size: ");
     WS_DEBUG_PRINTLNVAR(_canvas_total_size);
 
-    // Integrity check: assembled bytes should match the advertised total_size.
     if (bmp.size() != _canvas_total_size) {
       WS_DEBUG_PRINTLN("[display] ERROR: Canvas size mismatch, discarding");
       resetCanvasReassembly();
       return false;
     }
 
-    // Dump the assembled BMP bytes to serial as hex.
-    WS_DEBUG_PRINTLN("[display] BMP bytes:");
-    for (size_t i = 0; i < bmp.size(); i++) {
-      WS_DEBUG_PRINTHEX(bmp[i]);
-      WS_DEBUG_PRINT(" ");
+    // TODO: Refactor this in, we already call below...
+    // Hand the assembled BMP to the target display's driver.
+    int8_t disp_idx = findDisplayIndexByName(msg->name);
+    if (disp_idx < 0) {
+      WS_DEBUG_PRINT("[display] ERROR: Display (");
+      WS_DEBUG_PRINTVAR(msg->name);
+      WS_DEBUG_PRINTLN(") not found for canvas!");
+      if (msg->has_descriptor) {
+        PublishDisplayComponentError(msg->descriptor,
+                                     "Display not found for canvas write");
+      }
+      resetCanvasReassembly();
+      return false;
     }
-    WS_DEBUG_PRINTLN("");
 
-    // TODO: verify image.checksum, parse the 1bpp BMP header (w/h/stride), and
-    // draw to the target display. Out of scope for this spike.
-    resetCanvasReassembly();
-    return true;
+    bool did_draw = _displays[disp_idx]->drawCanvas(bmp.data(), bmp.size());
+    resetCanvasReassembly(); // frees the per-chunk regions now that bmp is built
+    return did_draw;
   }
 
   if (!msg || !msg->name) {
