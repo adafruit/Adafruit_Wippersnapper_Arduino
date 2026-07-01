@@ -1,0 +1,32 @@
+name: Native unit tests
+
+# Host-compiled, hardware-free unit tests for pure decision logic (e.g. the
+# filesystem (re)format policy). These exercise behaviour that the board build
+# matrix cannot: a compile proves the firmware links, not that the gating logic
+# is correct. Runs in seconds with no toolchain download.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  native-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build & run native tests
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tests=(test/native/*.cpp)
+          if [ ${#tests[@]} -eq 0 ]; then
+            echo "No native tests found under test/native/"; exit 1
+          fi
+          for t in "${tests[@]}"; do
+            echo "==== $t ===="
+            c++ -std=c++17 -Wall -Wextra -I src/provisioning/tinyusb \
+              "$t" -o /tmp/native_test
+            /tmp/native_test
+          done
