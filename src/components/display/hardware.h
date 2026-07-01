@@ -46,6 +46,7 @@ public:
   bool begin(ws_display_Add *addMsg);
   bool write(ws_display_Write *msg);
   bool drawCanvas(const uint8_t *bmp, size_t len);
+  bool drawMarqueeEPD(const uint8_t *bmp, size_t len);
   const char *getName();
   ws_display_Add getAddMsg();
   void showSplash();

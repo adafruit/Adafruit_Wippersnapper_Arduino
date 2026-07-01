@@ -195,7 +195,7 @@ public:
       @param  len  Length of the BMP buffer, in bytes.
       @return True if accepted, False otherwise.
   */
-  bool drawCanvas(const uint8_t *bmp, size_t len) override {
+  virtual bool drawMarqueeEPD(int32_t bmp_height, int32_t bmp_height_abs, uint32_t bmp_width, uint32_t bmp_offset, uint32_t bmp_stride, bool do_invert) override {
     if (!_display)
       return false;
     // TODO: Parse the 1bpp BMP before writing to the display. This should
@@ -205,35 +205,11 @@ public:
       WS_DEBUG_PRINTLN("[display] ERROR: BMP too small to contain BMP header!");
       return false;
     }
-    // First, get the data offset from the header bytes.
-    uint32_t bmp_offset = (uint32_t)bmp[10] | ((uint32_t)bmp[11] << 8) |
-                          ((uint32_t)bmp[12] << 16) | ((uint32_t)bmp[13] << 24);
-    // Calculate bitmap width and height from the offsets
-    uint32_t bmp_width = (uint32_t)bmp[18] | ((uint32_t)bmp[19] << 8) |
-                         ((uint32_t)bmp[20] << 16) | ((uint32_t)bmp[21] << 24);
-    int32_t bmp_height =
-        (int32_t)((uint32_t)bmp[22] | ((uint32_t)bmp[23] << 8) |
-                  ((uint32_t)bmp[24] << 16) | ((uint32_t)bmp[25] << 24));
+ 
     if (bmp_width != (uint32_t)_width) {
       WS_DEBUG_PRINT("[display] ERROR: BMP width does not match display width");
       return false;
     }
-    // Calculate the absolute height for stride math
-    int32_t bmp_height_abs = bmp_height;
-    // Do we need to flip the BMP across the X-Axis?
-    if (bmp_height_abs < 0)
-      bmp_height_abs = -bmp_height_abs;
-    // Next, calculate the stride
-    uint32_t bpp = 1; // bits per pixel, TODO: put this as an argument into a
-                      // helper function
-    uint32_t bmp_stride = ((bmp_width * bpp + 31) / 32) * 4;
-    uint32_t adafruit_gfx_stride = (bmp_width + 7) / 8;
-
-    // Calculate the pallete offset and check if we need to invert
-    uint32_t palette_offset = 14 + (uint32_t)bmp[14];
-    bool do_invert = false;
-    if (palette_offset < len)
-      do_invert = bmp[palette_offset] < 0x80;
 
     // Blit it out to the frame buffer, row by row
     _display->clearBuffer();
