@@ -86,6 +86,8 @@ public:
       delete _bus;
       _bus = nullptr;
     }
+    // TODO: once the backlight routes through the digitalio/pwm controllers
+    // (see begin()), release it there instead of driving the pin directly.
     if (_pin_bl >= 0)
       digitalWrite(_pin_bl, LOW);
     if (_pin_power >= 0)
@@ -147,7 +149,13 @@ public:
     _display->setTextWrap(false);
     _display->setTextSize(_text_sz);
 
-    // Turn on backlight
+    // Turn on backlight.
+    // TODO: route the backlight through the digitalio/pwm controllers instead
+    // of raw digitalWrite, so it is runtime-controllable (on/off + PWM
+    // brightness) from the broker. The v2 proto already carries the hook:
+    // ws_display_Add.backlight (ws_display_BacklightConfig, a oneof of
+    // ws_digitalio_Add / ws_pwm_Add) — wire that config into the respective
+    // controller and have this driver stop owning the pin.
     if (_pin_bl >= 0) {
       pinMode(_pin_bl, OUTPUT);
       digitalWrite(_pin_bl, HIGH);
