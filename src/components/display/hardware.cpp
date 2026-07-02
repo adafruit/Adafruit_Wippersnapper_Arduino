@@ -549,18 +549,10 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
                   parsePin(i8080->pin_d4), parsePin(i8080->pin_d5),
                   parsePin(i8080->pin_d6), parsePin(i8080->pin_d7)};
 
-  // WR/RD strobes are board-fixed and not carried in the Add message; source
-  // them (plus panel power/backlight) from board macros set in ws_boards.h.
-#if defined(I8080_WR)
-  int16_t wr = I8080_WR;
-#else
-  int16_t wr = -1;
-#endif
-#if defined(I8080_RD)
-  int16_t rd = I8080_RD;
-#else
-  int16_t rd = -1;
-#endif
+  // WR/RD strobes come from the Add message like every other display pin —
+  // no board-hardcoded pins. RD is optional (-1 when not wired).
+  int16_t wr = parsePin(i8080->pin_wr);
+  int16_t rd = parsePin(i8080->pin_rd);
 
   if (dc < 0 || cs < 0 || wr < 0) {
     publishAndLogError(F("[display] ERROR: Invalid i8080 control pins!"));
@@ -598,12 +590,24 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
     return false;
   }
 
-#if defined(I8080_BACKLIGHT)
-  _drvDisp->setBacklightPin(I8080_BACKLIGHT);
-#endif
-#if defined(I8080_POWER_ON)
-  drv->setPowerPin(I8080_POWER_ON);
-#endif
+  // Backlight comes from the Add's shared BacklightConfig (digitalio or pwm
+  // pin). TODO: route it through the digitalio/pwm controllers so it stays
+  // runtime-controllable; for now the driver drives the pin directly.
+  if (msg->has_backlight) {
+    int16_t bl = -1;
+    if (msg->backlight.which_backlight_add ==
+        ws_display_BacklightConfig_backlight_digital_tag)
+      bl = parsePin(msg->backlight.backlight_add.backlight_digital.pin_name);
+    else if (msg->backlight.which_backlight_add ==
+             ws_display_BacklightConfig_backlight_pwm_tag)
+      bl = parsePin(msg->backlight.backlight_add.backlight_pwm.pin);
+    if (bl >= 0)
+      _drvDisp->setBacklightPin(bl);
+  }
+  // Optional panel power-enable pin (driven high before init).
+  int16_t power = parsePin(msg->pin_power);
+  if (power >= 0)
+    drv->setPowerPin(power);
 
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);

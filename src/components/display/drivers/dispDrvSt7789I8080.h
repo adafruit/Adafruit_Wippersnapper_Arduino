@@ -4,10 +4,12 @@
  * Driver for ST7789-based TFT displays driven over an Intel 8080 (i8080)
  * 8-bit parallel bus, via Arduino_GFX (V2).
  *
- * Targets the LilyGo T-Display-S3 (1.9" 170x320 IPS, ESP32-S3). The ST7789
- * controller has 240x320 of RAM; the 170-wide panel is centred on the column
- * axis (column offset 35, row offset 0) and runs inverted (IPS). Panel power
- * (LCD_POWER_ON) and backlight (LCD_BL) are board-fixed and enabled here.
+ * Targets the LilyGo T-Display-S3 (1.9" 170x320 IPS, ESP32-S3), but carries no
+ * hardcoded panel geometry: width/height/rotation come from the Add message's
+ * DisplayProperties, and every pin (data bus, cs/dc/rst/wr/rd, backlight,
+ * panel power) comes from the protobuf. The only fixed numbers are the ST7789
+ * silicon's 240x320 RAM extent, used to centre a smaller panel (e.g. the
+ * 170-wide LilyGo lands at column offset 35) — panels run inverted (IPS).
  *
  * Reference (offsets / inversion): CircuitPython lilygo_tdisplay_s3 board.c
  * https://github.com/adafruit/circuitpython/blob/main/ports/espressif/boards/lilygo_tdisplay_s3/board.c

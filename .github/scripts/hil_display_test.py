@@ -96,6 +96,7 @@ def _display_add_stage(step: dict, uid: str) -> dict:
                 "supply a controller 'kind' or 'payload_hex'")
     params = {k: step[k] for k in (
         "name", "driver", "data_pins", "cs", "dc", "rst", "sck", "mosi",
+        "wr", "rd", "backlight", "power",
         "width", "height", "rotation", "text_size", "status_bar") if k in step}
     stage["kind"] = kind
     stage["params"] = params

@@ -249,13 +249,10 @@
 #define USE_TINYUSB
 #define USE_PSRAM     ///< Board has PSRAM, use it for dynamic memory allocation
 #define BOOT_BUTTON 0 ///< BUTTON_1 (GPIO0) is the boot button
-// On-board ST7789 (170x320) driven over an 8-bit i8080 parallel bus.
-// WR/RD are not carried in the display Add proto, so the i8080 driver sources
-// them (plus panel power/backlight) from these board macros.
-#define I8080_WR LCD_WR             ///< i8080 write-strobe pin (GPIO8)
-#define I8080_RD LCD_RD             ///< i8080 read-strobe pin (GPIO9)
-#define I8080_POWER_ON LCD_POWER_ON ///< Panel power-enable pin (GPIO15)
-#define I8080_BACKLIGHT LCD_BL      ///< Backlight pin (GPIO38)
+// The on-board ST7789 (170x320, 8-bit i8080 parallel) is fully described by
+// the ws.display.Add protobuf: data/cs/dc/rst/wr/rd via I8080PinDescriptor,
+// backlight via Add.backlight (BacklightConfig), panel power via
+// Add.pin_power — no board-hardcoded display pins here.
 #else
 #warning "Board type not identified within ws_boards.h!"
 #endif
