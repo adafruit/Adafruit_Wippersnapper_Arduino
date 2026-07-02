@@ -38,7 +38,7 @@ static bool encode_string_callback(pb_ostream_t *stream,
 /*!
     @brief  ErrorHandler constructor
 */
-ErrorHandler::ErrorHandler() { _d2b_msg = ws_error_D2B_init_zero; }
+ErrorHandler::ErrorHandler() { memset(&_d2b_msg, 0, sizeof(_d2b_msg)); }
 
 /*!
     @brief  ErrorHandler destructor
@@ -137,7 +137,7 @@ bool ErrorHandler::HandleThrottle(const ws_error_ThrottleError &throttle) {
 */
 bool ErrorHandler::publishComponentError(const char *pin,
                                          const char *error_msg) {
-  _d2b_msg = ws_error_D2B_init_zero;
+  memset(&_d2b_msg, 0, sizeof(_d2b_msg));
   _d2b_msg.which_payload = ws_error_D2B_component_tag;
 
   ws_error_ComponentError *comp = &_d2b_msg.payload.component;
@@ -165,7 +165,7 @@ bool ErrorHandler::publishComponentError(ws_i2c_Descriptor i2c,
   WS_DEBUG_PRINT(": ");
   WS_DEBUG_PRINTLNVAR(error_msg);
 
-  _d2b_msg = ws_error_D2B_init_zero;
+  memset(&_d2b_msg, 0, sizeof(_d2b_msg));
   _d2b_msg.which_payload = ws_error_D2B_component_tag;
 
   ws_error_ComponentError *comp = &_d2b_msg.payload.component;
@@ -192,7 +192,7 @@ bool ErrorHandler::publishComponentError(ws_spi_Descriptor spi,
   WS_DEBUG_PRINT(": ");
   WS_DEBUG_PRINTLNVAR(error_msg);
 
-  _d2b_msg = ws_error_D2B_init_zero;
+  memset(&_d2b_msg, 0, sizeof(_d2b_msg));
   _d2b_msg.which_payload = ws_error_D2B_component_tag;
 
   ws_error_ComponentError *comp = &_d2b_msg.payload.component;
@@ -214,7 +214,7 @@ bool ErrorHandler::publishComponentError(ws_spi_Descriptor spi,
 */
 bool ErrorHandler::publishComponentError(ws_uart_Descriptor uart,
                                          const char *error_msg) {
-  _d2b_msg = ws_error_D2B_init_zero;
+  memset(&_d2b_msg, 0, sizeof(_d2b_msg));
   _d2b_msg.which_payload = ws_error_D2B_component_tag;
 
   ws_error_ComponentError *comp = &_d2b_msg.payload.component;

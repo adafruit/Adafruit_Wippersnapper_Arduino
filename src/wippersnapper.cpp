@@ -734,7 +734,6 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
 
   // Initialize DeviceToBroker message
   memset(msg, 0, sizeof(ws_signal_DeviceToBroker));
-  *msg = ws_signal_DeviceToBroker_init_zero;
 
   // Fill generic signal payload with the payload from the args.
   switch (which_payload) {
