@@ -748,8 +748,8 @@ bool DisplayHardware::drawMarqueeEPD(const uint8_t *bmp, size_t len) {
   if (palette_offset < len)
     do_invert = bmp[palette_offset] < 0x80;
 
-  return _drvDisp->drawMarqueeEPD(bmp_height, bmp_height_abs, bmp_width,
-                                  bmp_offset, bmp_stride, do_invert);
+  return _drvDisp->drawMarqueeEPD(bmp, len, bmp_height, bmp_height_abs,
+                                  bmp_width, bmp_offset, bmp_stride, do_invert);
 }
 
 /*!

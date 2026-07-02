@@ -195,7 +195,7 @@ public:
       @param  len  Length of the BMP buffer, in bytes.
       @return True if accepted, False otherwise.
   */
-  virtual bool drawMarqueeEPD(int32_t bmp_height, int32_t bmp_height_abs, uint32_t bmp_width, uint32_t bmp_offset, uint32_t bmp_stride, bool do_invert) override {
+  virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len, int32_t bmp_height, int32_t bmp_height_abs, uint32_t bmp_width, uint32_t bmp_offset, uint32_t bmp_stride, bool do_invert) override {
     if (!_display)
       return false;
     // TODO: Parse the 1bpp BMP before writing to the display. This should

@@ -99,7 +99,7 @@ public:
   virtual bool drawCanvas(const uint8_t *bmp, size_t len) { return false; }
 
 
-  virtual bool drawMarqueeEPD(int32_t bmp_height, int32_t bmp_height_abs, uint32_t bmp_width, uint32_t bmp_offset, uint32_t bmp_stride, bool do_invert) {
+  virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len, int32_t bmp_height, int32_t bmp_height_abs, uint32_t bmp_width, uint32_t bmp_offset, uint32_t bmp_stride, bool do_invert) {
     return false;
   }
 

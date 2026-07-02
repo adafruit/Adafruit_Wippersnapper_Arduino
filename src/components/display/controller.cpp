@@ -508,7 +508,8 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
       return false;
     }
 
-    bool did_draw = _displays[disp_idx]->drawCanvas(bmp.data(), bmp.size());
+    // bool did_draw = _displays[disp_idx]->drawCanvas(bmp.data(), bmp.size());
+    bool did_draw = _displays[disp_idx]->drawMarqueeEPD(bmp.data(), bmp.size());
     resetCanvasReassembly(); // frees the per-chunk regions now that bmp is built
     return did_draw;
   }
