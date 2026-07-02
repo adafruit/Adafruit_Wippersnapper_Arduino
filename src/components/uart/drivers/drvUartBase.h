@@ -16,6 +16,7 @@
 #ifndef DRV_UART_BASE_H
 #define DRV_UART_BASE_H
 #include "../hardware.h"
+#include "helpers/ws_helper_pins.h"
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <protos/sensor.pb.h>
@@ -33,17 +34,17 @@ public:
                 Pointer to a HardwareSerial instance.
       @param    driver_name
                 The name of the driver.
-      @param    port_num
-                The port number for the UART device corresponding to the Serial
-     instance.
+      @param    port_name
+                The name of the RX pin for the UART device corresponding to
+     the Serial instance.
   */
   drvUartBase(HardwareSerial *hw_serial, const char *driver_name,
-              uint32_t port_num) {
+              const char *port_name) {
     _hw_serial = hw_serial;
     _is_software_serial = false;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
-    _port_num = port_num;
+    SetPortName(port_name);
     _did_read_send = false;
   }
 
@@ -54,16 +55,17 @@ public:
                 Pointer to a SoftwareSerial instance.
       @param    driver_name
                 The name of the driver.
-      @param    port_num
-                The port number for the UART device corresponding to the Serial
+      @param    port_name
+                The name of the RX pin for the UART device corresponding to
+     the Serial instance.
   */
   drvUartBase(SoftwareSerial *sw_serial, const char *driver_name,
-              uint32_t port_num) {
+              const char *port_name) {
     _sw_serial = sw_serial;
     _is_software_serial = true;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
-    _port_num = port_num;
+    SetPortName(port_name);
     _did_read_send = false;
   }
 #endif // HAS_SW_SERIAL
@@ -89,10 +91,16 @@ public:
   void SetDidReadSend(bool did_read_send) { _did_read_send = did_read_send; }
 
   /*!
-      @brief    Gets the name of the UART driver.
-      @returns  The name of the UART driver.
+      @brief    Gets the port number for the UART device.
+      @returns  The port number, resolved from the RX pin name.
   */
   uint32_t GetPortNum() const { return _port_num; }
+
+  /*!
+      @brief    Gets the name of the RX pin for the UART device.
+      @returns  The RX pin name.
+  */
+  const char *GetPortName() const { return _port_name; }
 
   /*!
       @brief    Gets the name of the UART driver.
@@ -297,7 +305,21 @@ protected:
   SoftwareSerial *_sw_serial; ///< Pointer to a SoftwareSerial instance
 #endif                        // HAS_SW_SERIAL
   char _name[32];             ///< The device's name
-  uint32_t _port_num = 0;     ///< The port number for the UART device
+  char _port_name[32] = {0};  ///< The RX pin name for the UART device
+  uint32_t _port_num = 0;     ///< The port number for the UART device, resolved
+                              ///< from the RX pin name
+
+  /*!
+      @brief    Stores the RX pin name and resolves it to a port number.
+      @param    port_name
+                The name of the RX pin for the UART device.
+  */
+  void SetPortName(const char *port_name) {
+    strncpy(_port_name, port_name, sizeof(_port_name) - 1);
+    _port_name[sizeof(_port_name) - 1] = '\0';
+    if (!WsPinNameToNum(_port_name, _port_num))
+      _port_num = 0;
+  }
   bool _is_software_serial =
       false; ///< Indicates if this driver uses SoftwareSerial
   // Sensor API - UART INPUT

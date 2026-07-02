@@ -38,7 +38,7 @@ public:
   bool EncodeUartInputEvent();
   ws_uart_Event *GetUartInputEventMsg();
   void ClearUartInputEventMsg();
-  void ConfigureUartInputEventMsg(uint32_t pin_rx);
+  void ConfigureUartInputEventMsg(const char *pin_rx);
 
 private:
   ws_uart_Add _msg_UartAdd;          ///< ws_uart_Add message

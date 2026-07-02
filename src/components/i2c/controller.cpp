@@ -576,8 +576,9 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
     return false;
   }
 
-  // Store the bus pins on the driver so we can query it
-  drv->SetPins(bus->getSCL(), bus->getSDA());
+  // Store the bus pin names on the driver so we can query it
+  drv->SetPins(descriptor.address_space.pin_scl,
+               descriptor.address_space.pin_sda);
 
   // Configure sensor driver settings
   drv->EnableSensorReads(msg->types, msg->types_count);
@@ -728,8 +729,8 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
                                             "I2c address required for remove");
     return false;
   }
-  if (msg->descriptor.address_space.pin_scl == 0 ||
-      msg->descriptor.address_space.pin_sda == 0) {
+  if (msg->descriptor.address_space.pin_scl[0] == '\0' ||
+      msg->descriptor.address_space.pin_sda[0] == '\0') {
     Ws.error_handler->publishComponentError(msg->descriptor,
                                             "SCL/SDA required for remove");
     return false;
@@ -746,9 +747,7 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
   // Removing the MUX itself — tear down all devices on it first
   if (msg->descriptor.address == msg->descriptor.address_space.mux_address) {
     for (uint8_t ch = 0; ch < bus->GetMuxMaxChannels(); ch++) {
-      ws_i2c_AddressSpace mux_space = {};
-      mux_space.pin_scl = msg->descriptor.address_space.pin_scl;
-      mux_space.pin_sda = msg->descriptor.address_space.pin_sda;
+      ws_i2c_AddressSpace mux_space = msg->descriptor.address_space;
       mux_space.mux_address = msg->descriptor.address;
       mux_space.mux_channel = ch;
       ws_i2c_AddressSpaceResult result = {};
@@ -929,16 +928,17 @@ void I2cController::ResetFlags() {
 /******************************************************************************/
 
 /*!
-    @brief  Finds or creates an I2C bus by SCL/SDA pins, validates it,
+    @brief  Finds or creates an I2C bus by SCL/SDA pin names, validates it,
             and returns the underlying TwoWire instance.
     @param  pin_scl
-            The SCL pin number.
+            The SCL pin name, e.g. "D22", "SCL".
     @param  pin_sda
-            The SDA pin number.
+            The SDA pin name, e.g. "D21", "SDA".
     @returns  Pointer to the TwoWire bus, or nullptr if the bus could not
               be found/created or failed validation.
 */
-TwoWire *I2cController::GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda) {
+TwoWire *I2cController::GetOrCreateI2cBus(const char *pin_scl,
+                                          const char *pin_sda) {
   I2cHardware *bus = findOrCreateBus(pin_scl, pin_sda);
   if (bus == nullptr) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus!");
@@ -1034,22 +1034,31 @@ TwoWire *I2cController::GetI2cBusByIndex(size_t index) {
 /******************************************************************************/
 
 /*!
-    @brief    Finds an existing I2C bus by SCL/SDA pins, or creates a new one.
+    @brief    Finds an existing I2C bus by SCL/SDA pin names, or creates a
+              new one. Pin names are resolved to pin numbers before
+              comparison, so "SCL" and its pin number match the same bus.
     @param    pin_scl
-              The SCL pin number.
+              The SCL pin name, e.g. "D22", "SCL".
     @param    pin_sda
-              The SDA pin number.
+              The SDA pin name, e.g. "D21", "SDA".
     @returns  Pointer to the I2cHardware bus, or nullptr if initialization
               failed.
 */
-I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl,
-                                            uint32_t pin_sda) {
+I2cHardware *I2cController::findOrCreateBus(const char *pin_scl,
+                                            const char *pin_sda) {
+  // Resolve the pin names to pin numbers
+  uint32_t scl_num, sda_num;
+  if (!WsPinNameToNum(pin_scl, scl_num) || !WsPinNameToNum(pin_sda, sda_num)) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Invalid SCL/SDA pin name!");
+    return nullptr;
+  }
+
   // Search existing buses
   for (I2cHardware *bus : _i2c_buses) {
     if (bus == nullptr)
       continue;
-    if (pin_scl == (uint32_t)bus->getSCL() &&
-        pin_sda == (uint32_t)bus->getSDA()) {
+    if (scl_num == (uint32_t)bus->getSCL() &&
+        sda_num == (uint32_t)bus->getSDA()) {
       return bus;
     }
   }
@@ -1061,7 +1070,7 @@ I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl,
   WS_DEBUG_PRINT("SDA Pin: ");
   WS_DEBUG_PRINTLNVAR(pin_sda);
 
-  I2cHardware *new_bus = new I2cHardware(pin_sda, pin_scl);
+  I2cHardware *new_bus = new I2cHardware(sda_num, scl_num);
   if (!new_bus->begin()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
     delete new_bus;
@@ -1085,19 +1094,22 @@ bool I2cController::IsBusStatusOK(I2cHardware *bus) {
 }
 
 /*!
-    @brief  Returns a pointer to the I2C bus by SCL/SDA pins
+    @brief  Returns a pointer to the I2C bus by SCL/SDA pin names
     @param  pin_scl
-            The SCL pin number.
+            The SCL pin name, e.g. "D22", "SCL".
     @param  pin_sda
-            The SDA pin number.
+            The SDA pin name, e.g. "D21", "SDA".
     @returns  Pointer to the TwoWire bus, or nullptr if the bus doesn't exist.
 */
-TwoWire *I2cController::GetI2cBus(uint32_t pin_scl, uint32_t pin_sda) {
+TwoWire *I2cController::GetI2cBus(const char *pin_scl, const char *pin_sda) {
+  uint32_t scl_num, sda_num;
+  if (!WsPinNameToNum(pin_scl, scl_num) || !WsPinNameToNum(pin_sda, sda_num))
+    return nullptr;
   for (I2cHardware *bus : _i2c_buses) {
     if (bus == nullptr)
       continue;
-    if (pin_scl == (uint32_t)bus->getSCL() &&
-        pin_sda == (uint32_t)bus->getSDA()) {
+    if (scl_num == (uint32_t)bus->getSCL() &&
+        sda_num == (uint32_t)bus->getSDA()) {
       return bus->GetBus();
     }
   }

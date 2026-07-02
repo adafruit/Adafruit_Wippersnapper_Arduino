@@ -90,7 +90,12 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   }
 
   // Have we already added this UART port?
-  uint32_t port = msg->descriptor.pin_rx;
+  uint32_t port;
+  if (!WsPinNameToNum(msg->descriptor.pin_rx, port)) {
+    Ws.error_handler->publishComponentError(msg->descriptor,
+                                            "Invalid RX pin name");
+    return false;
+  }
   for (UARTHardware *hw : _ports) {
     if (hw->getPortNum() == port) {
       Ws.error_handler->publishComponentError(msg->descriptor,
@@ -175,7 +180,12 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
 
   // Find the corresponding hardware instance for the UART port
-  uint32_t port_num = msg->descriptor.pin_rx;
+  uint32_t port_num;
+  if (!WsPinNameToNum(msg->descriptor.pin_rx, port_num)) {
+    Ws.error_handler->publishComponentError(msg->descriptor,
+                                            "Invalid RX pin name");
+    return false;
+  }
   for (std::vector<UARTHardware *>::iterator it = _ports.begin();
        it != _ports.end(); ++it) {
     if ((*it)->getPortNum() == port_num) {
@@ -249,7 +259,7 @@ void UARTController::update(bool force) {
 
     // Read the events from the drivers
     _uart_model->ClearUartInputEventMsg();
-    _uart_model->ConfigureUartInputEventMsg(drv->GetPortNum());
+    _uart_model->ConfigureUartInputEventMsg(drv->GetPortName());
     for (size_t i = 0; i < num_sensors; i++) {
       // Attempt to read from the driver
       sensors_event_t event = {0};
