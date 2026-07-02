@@ -72,10 +72,14 @@ jobs:
           APP=.pio/build/lilygo_t_display_s3/firmware.bin
           BOOT_APP0=$(find ~/.platformio/packages/framework-arduinoespressif32 \
             -name boot_app0.bin | head -1)
+          # Partition table comes from THIS build (tinyuf2-partitions-16MB-noota
+          # via platformio.ini) — exact parity with the pio env and the CI fqbn
+          # (PartitionScheme=tinyuf2_noota), instead of the tinyuf2 release's
+          # with-OTA table. Same nvs/otadata/uf2/ffat offsets; single 4MB app.
           python -m esptool --chip esp32s3 merge_bin -o combined.bin \
             --flash_mode dio --flash_freq 80m --flash_size 16MB \
             0x0      tuf2/bootloader.bin \
-            0x8000   tuf2/partition-table.bin \
+            0x8000   .pio/build/lilygo_t_display_s3/partitions.bin \
             0xe000   "$BOOT_APP0" \
             0x10000  "$APP" \
             0x410000 tuf2/tinyuf2.bin

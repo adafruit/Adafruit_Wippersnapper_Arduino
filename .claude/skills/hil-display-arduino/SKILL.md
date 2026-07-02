@@ -19,10 +19,13 @@ means writing a spec, not editing the driver.
 
 1. **Build + merge firmware.** `pio run -e <board_env>` then merge with the
    board's tinyuf2 bootloader so the FATFS provisioning volume persists secrets:
-   `esptool merge_bin -o combined.bin 0x0 bootloader.bin 0x8000 partition-table.bin
-   0xe000 boot_app0.bin 0x10000 firmware.bin 0x410000 tinyuf2.bin`. The
-   `0xe000 boot_app0.bin` is essential — it marks ota_0 active so the board boots
-   WipperSnapper, not the tinyuf2 factory app. (See
+   `esptool merge_bin -o combined.bin 0x0 bootloader.bin
+   0x8000 .pio/build/<env>/partitions.bin 0xe000 boot_app0.bin
+   0x10000 firmware.bin 0x410000 tinyuf2.bin`. The partition table comes from
+   **this pio build** (e.g. `tinyuf2-partitions-16MB-noota.csv`) so the flashed
+   layout exactly matches the pio env + the CI fqbn's PartitionScheme; the
+   `0xe000 boot_app0.bin` is essential — it marks ota_0 active so the board
+   boots WipperSnapper, not the tinyuf2 factory app. (See
    [`.github/workflows/hil-lilygo-display.yml`](../../../.github/workflows/hil-lilygo-display.yml)
    for the exact build+merge steps.)
 2. **Write/choose a spec** under `.github/scripts/specs/`. See
