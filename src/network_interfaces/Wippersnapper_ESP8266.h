@@ -24,20 +24,13 @@
 #include "ESP8266WiFiMulti.h"
 #include "Wippersnapper.h"
 
-/* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
- * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is
- * important  - please switch to using the modern ESP32 (and related models)
- * instead of the ESP8266 to avoid updating the SSL fingerprint every year.
- *
- * The commented-out fingerprint below was last updated on 07/14/2025.
- *
- * If you've read through this and still want to use "Secure MQTT" with your
- * ESP8266 project, we've left the "WiFiClientSecure" lines commented out. To
- * use them, uncomment the commented out lines within this file and re-compile
- * the library.
+/* NOTE - As of 07/21/26, this library no longer supports "Secure MQTT"
+ * (TLS/SSL) on the ESP8266 due to new automatic certificate updates that
+ * require a new certificate every 199 days (or less) -
+ * https://forums.adafruit.com/viewtopic.php?t=224362 If you would like a secure
+ * Adafruit IO Arduino project, please switch to using the modern ESP32 (and
+ * related models) instead of the ESP8266.
  */
-// static const char *fingerprint PROGMEM =  "47 D2 CB 14 DF 38 97 59 C6 65 1A
-// 1F 3E 00 1E 53 CC A5 17 E0";
 
 extern Wippersnapper WS;
 
@@ -199,10 +192,6 @@ public:
   */
   /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
-    // Uncomment the following lines to use MQTT/SSL. You will need to
-    // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
-    // new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url,
-    // WS._config.io_port, clientID, WS._config.aio_user, WS._config.aio_key);
     if (WS._config.io_port == 8883)
       WS._config.io_port = 1883;
     WS._mqtt = new Adafruit_MQTT_Client(
