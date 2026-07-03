@@ -22,7 +22,6 @@
 #define WIRE Wire
 #endif
 
-
 /// Standard-mode I2C clock for ESP32 buses. 100 kHz; a slower 50 kHz failed to
 /// detect some devices on the STEMMA bus during HIL testing.
 #define I2C_STD_CLOCK_HZ 100000
