@@ -63,6 +63,7 @@ public:
     _height = _display->height();
     _width = _display->width();
     _display->clearBuffer();
+    _reader = new Adafruit_ImageReader_EPD(); // TODO: This probably doesn't need to be here, but there isnt a base class for thinkink w/marquee yet
     return true;
   }
 
@@ -195,42 +196,21 @@ public:
       @param  len  Length of the BMP buffer, in bytes.
       @return True if accepted, False otherwise.
   */
-  virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len, int32_t bmp_height, int32_t bmp_height_abs, uint32_t bmp_width, uint32_t bmp_offset, uint32_t bmp_stride, bool do_invert) override {
+  virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len) override {
+    // TODO: This probably doesn't need an override, but the base class doesn't have a default implementation yet.
     if (!_display)
       return false;
-    // TODO: Parse the 1bpp BMP before writing to the display. This should
-    // probably be handled in the base class, since the BMP format is not
-    // specific to the MagTag's display
-    if (len < 26) {
-      WS_DEBUG_PRINTLN("[display] ERROR: BMP too small to contain BMP header!");
-      return false;
-    }
- 
-    if (bmp_width != (uint32_t)_width) {
-      WS_DEBUG_PRINT("[display] ERROR: BMP width does not match display width");
-      return false;
-    }
-
-    // Blit it out to the frame buffer, row by row
     _display->clearBuffer();
-    for (int32_t y = 0; y < bmp_height_abs; y++) {
-      int32_t src_row;
-      if (bmp_height > 0)
-        src_row = (bmp_height_abs - 1) - y;
-      else
-        src_row = y;
-      const uint8_t *rowptr = bmp + bmp_offset + (size_t)src_row * bmp_stride;
-      if (do_invert)
-        _display->drawBitmap(0, y, rowptr, _width, 1, EPD_WHITE, EPD_BLACK);
-      else
-        _display->drawBitmap(0, y, rowptr, _width, 1, EPD_BLACK, EPD_WHITE);
-    }
+    ImageReturnCode rc = _reader->drawBMP(bmp, len, *_display, 0, 0);
+    if (rc != IMAGE_SUCCESS)
+      return false;
     _display->display();
     return true;
   }
 
 private:
   ThinkInk_290_Grayscale4_EAAMFGN *_display;
+  Adafruit_ImageReader_EPD *_reader;
 };
 
 #endif // WS_DRV_THINKINK_GRAYSCALE4_EAAMFGN_H

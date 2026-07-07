@@ -18,6 +18,7 @@
 #include "../assets/icons.h"
 #include "../assets/splash.h"
 #include "Adafruit_ThinkInk.h"
+#include "Adafruit_ImageReader_EPD.h"
 #include "wippersnapper.h"
 
 /*! @brief Shared status bar constants for EPD drivers. */
@@ -99,7 +100,7 @@ public:
   virtual bool drawCanvas(const uint8_t *bmp, size_t len) { return false; }
 
 
-  virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len, int32_t bmp_height, int32_t bmp_height_abs, uint32_t bmp_width, uint32_t bmp_offset, uint32_t bmp_stride, bool do_invert) {
+  virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len) {
     return false;
   }
 
