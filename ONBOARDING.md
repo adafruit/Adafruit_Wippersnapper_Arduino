@@ -27,6 +27,27 @@ Work Type Breakdown:
 - [ ] Skill Creator — for creating and iterating on custom skills
 - [ ] Clangd LSP — C++ language server for better code intelligence
 
+## Testing on real hardware (HIL) & ProtoMQ
+
+In tests WipperSnapper talks to **ProtoMQ**, a local MQTT broker + HTTP control
+API that stands in for Adafruit IO — it's how the hardware-in-the-loop (HIL)
+bench flashes a board, drives it, and captures camera proof.
+
+- **ProtoMQ** — https://github.com/adafruit/protomq — the broker. Its README
+  documents the **HTTP control API**: `POST /api/echo` (publish a protobuf to a
+  device now), `/api/autoresponse` (auto-reply to a device message),
+  `/api/scripts/*` (playback scripts), plus the `<user>/ws-b2d/<uid>` ↔ `ws-d2b`
+  device topic scheme.
+- **Drive it from Python** — `ProtoMQClient` / `ProtoMQCommandClient` in
+  WipperSnapper-Python (`src/ProtoMQ/README.md`): `.echo()`, `.add_autoresponse()`,
+  and raw MQTT pub/sub.
+- **HIL platform skills** (flash → drive → assert → camera proof) live canonically
+  at https://github.com/Gundry-Consultancy/sbc-mcu-dut-controller `.agent/skills`
+  (start with `hil-job-api`); firmware-facing copies are being added here too
+  (e.g. `hil-display-arduino`).
+- **Worked example** — a live Adafruit IO → chunked-image `Canvas` bridge lives at
+  `examples/aio-canvas-bridge/` in ProtoMQ.
+
 ## Team Tips
 
 1. **Always read the Adafruit learn guide first.** Don't assume which library a sensor uses based on sub-component chip names. A board with a known chip onboard may have a dedicated wrapper library with a completely different name and API. The research chain is: product page → learn guide (`.md?view=all`) → library name from the Arduino section.
