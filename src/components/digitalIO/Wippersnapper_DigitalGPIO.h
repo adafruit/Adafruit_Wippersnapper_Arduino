@@ -50,6 +50,20 @@ public:
 
   int digitalReadSvc(int pinName);
   void digitalWriteSvc(uint8_t pinName, int pinValue);
+#if defined(ARDUINO_ARDUINO_NESSO_N1)
+  // void
+  // initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction
+  // direction,
+  //                ExpanderPin pinName, float period,
+  //                wippersnapper_pin_v1_ConfigurePinRequest_Pull pull);
+  // void
+  // deinitDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction
+  // direction,
+  //                  ExpanderPin pinName);
+
+  int digitalReadSvc(ExpanderPin pinName);
+  void digitalWriteSvc(ExpanderPin pinName, int pinValue);
+#endif
   void processDigitalInputs();
 
   digitalInputPin *_digital_input_pins; /*!< Array of gpio pin objects */

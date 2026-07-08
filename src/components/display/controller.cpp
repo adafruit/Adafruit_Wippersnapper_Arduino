@@ -174,7 +174,16 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     // Note: For now, battery is always 100% as we don't have a way to read it
     // yet.
     WS_DEBUG_PRINTLN("[display] Updating status bar...");
+#if defined(ARDUINO_ARDUINO_NESSO_N1)
+    WS_DEBUG_PRINTLN("[display] Reading battery details...");
+    WS_DEBUG_PRINT(battery.getVoltage());
+    WS_DEBUG_PRINT("V, ");
+    WS_DEBUG_PRINT(battery.getChargeLevel());
+    WS_DEBUG_PRINTLN("%");
+    hw_instance->updateStatusBar(rssi, battery.getChargeLevel(), is_connected);
+#else
     hw_instance->updateStatusBar(rssi, 100, is_connected);
+#endif
     WS.runNetFSM();
   }
 }
