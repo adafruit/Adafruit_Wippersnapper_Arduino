@@ -887,7 +887,8 @@ void I2cController::update(bool force) {
       // Online: wrap the device event in the i2c D2B envelope and publish it to
       // IO (mirrors publishProbed()'s D2B publish path).
       if (!_i2c_model->EncodeI2cDeviceEventD2B() ||
-          !Ws.PublishD2b(ws_signal_DeviceToBroker_i2c_tag, _i2c_model->GetI2cD2B())) {
+          !Ws.PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
+                         _i2c_model->GetI2cD2B())) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish the I2cDeviceEvent!");
       }
     } else {
