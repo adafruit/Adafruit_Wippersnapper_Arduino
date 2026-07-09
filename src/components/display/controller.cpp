@@ -17,7 +17,7 @@
 DisplayController::DisplayController() {
   _num_displays = 0;
   _last_bar_update = 0;
-  _canvas_id = 0;
+  _current_canvas_checksum = 0;
   _canvas_chunk_total = 0;
   _canvas_chunks_received = 0;
   _canvas_total_size = 0;
@@ -41,7 +41,7 @@ DisplayController::~DisplayController() {
 void DisplayController::resetCanvasReassembly() {
   // swap-with-empty releases the heap capacity, not just the size
   std::vector<std::vector<uint8_t>>().swap(_canvas_chunks);
-  _canvas_id = 0;
+  _current_canvas_checksum = 0;
   _canvas_chunk_total = 0;
   _canvas_chunks_received = 0;
   _canvas_total_size = 0;
@@ -409,14 +409,11 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
 
   // Adafruit Canvas/Marquee Feature Spike
   if (msg->has_image) {
-    uint32_t canvas_id = msg->image.id;
     uint32_t canvas_checksum = msg->image.checksum;
-    uint32_t canvas_total_size = msg->image.total_size;
+    uint32_t canvas_total_size = msg->image.size;
     uint32_t canvas_chunk_id = msg->image.chunk_id;
     uint32_t canvas_chunk_total = msg->image.chunk_total;
-    WS_DEBUG_PRINT("[display] Canvas ID: ");
-    WS_DEBUG_PRINTVAR(canvas_id);
-    WS_DEBUG_PRINT(", Checksum: ");
+    WS_DEBUG_PRINT("[display] Canvas Checksum: ");
     WS_DEBUG_PRINTVAR(canvas_checksum);
     WS_DEBUG_PRINT(", Total Size: ");
     WS_DEBUG_PRINTVAR(canvas_total_size);
@@ -443,9 +440,9 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
     }
 
     // New image id detected
-    if (_canvas_id == 0 || canvas_id != _canvas_id) {
+    if (canvas_checksum != _current_canvas_checksum) {
       resetCanvasReassembly();
-      _canvas_id = canvas_id;
+      _current_canvas_checksum = canvas_checksum;
       _canvas_chunk_total = canvas_chunk_total;
       _canvas_total_size = canvas_total_size;
       _canvas_chunks.resize(canvas_chunk_total);

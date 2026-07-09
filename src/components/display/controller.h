@@ -19,7 +19,7 @@
 #include <vector>
 
 #define MAX_DISPLAYS 4        ///< Maximum number of displays
-#define MAX_CANVAS_CHUNKS 256 ///< Sanity cap on chunks per reassembled canvas
+#define MAX_CANVAS_CHUNKS 1024 ///< Sanity cap on chunks per reassembled canvas
 
 class wippersnapper;   ///< Forward declaration
 class DisplayHardware; ///< Forward declaration
@@ -53,7 +53,7 @@ private:
                                   const pb_field_t *field, void **arg);
   void resetCanvasReassembly(); ///< Frees regions + pending, zeroes state
 
-  uint32_t _canvas_id;              ///< id of canvas being reassembled (0 = none)
+  uint32_t _current_canvas_checksum;              ///< id of canvas being reassembled (0 = none)
   uint32_t _canvas_chunk_total;     ///< expected total chunk count
   uint32_t _canvas_chunks_received; ///< distinct slots filled so far
   uint32_t _canvas_total_size;      ///< expected assembled bitmap size, in bytes
