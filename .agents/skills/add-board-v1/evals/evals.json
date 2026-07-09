@@ -1,0 +1,35 @@
+{
+  "skill_name": "add_board_v1",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add the Adafruit QT Py ESP32-C6 to WipperSnapper. It has WiFi 6, 4MB flash, no PSRAM, and a NeoPixel. The Feather ESP32-C6 is already supported and should be a good reference.",
+      "expected_output": "Adds a new entry in Wippersnapper_Boards.h with BOARD_ID qtpy-esp32c6 and USE_LITTLEFS, creates a new platformio.ini environment extending common:esp32 with littlefs filesystem, identifies that no network interface changes are needed since ESP32-C6 uses ARDUINO_ARCH_ESP32, adds the board to the build-esp32 CI matrix with 0x0 bootloader offset, and creates a Wippersnapper_Boards definition.json with esptool chip esp32c6.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want to port WipperSnapper to the Adafruit Feather RP2040. It has a CYW43 WiFi chip like the Pico W. Can you walk me through what's needed?",
+      "expected_output": "Identifies that the Feather RP2040 would use the common:arduinopico platform and ws_networking_pico network interface (since it has CYW43 WiFi like Pico W), USE_TINYUSB for provisioning, and would need entries in Wippersnapper_Boards.h, platformio.ini, CI build-rp2040 matrix, and a Wippersnapper_Boards definition.json.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Can WipperSnapper support the Adafruit Metro ESP32-S3? I think it might already be there.",
+      "expected_output": "Identifies that the Metro ESP32-S3 is already fully supported — it has an entry in platformio.ini (env:adafruit_metro_esp32s3), a block in Wippersnapper_Boards.h (BOARD_ID metroesp32s3), and is in the CI build matrix. No changes needed.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Add support for the Adafruit Feather ESP32-S3 with 2MB PSRAM and TFT to wippersnapper. It has an ST7789 display and a NeoPixel.",
+      "expected_output": "Identifies that this board is already supported as env:adafruit_feather_esp32s3_tft with BOARD_ID feather-esp32s3-tft in Wippersnapper_Boards.h. Informs the user no changes are needed.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "I have a third-party ESP32-S3 board with built-in WiFi and 8MB flash. How do I add it to WipperSnapper?",
+      "expected_output": "Walks through the full process: research the board's Arduino define and PlatformIO board ID, add an entry to Wippersnapper_Boards.h with USE_TINYUSB (since ESP32-S3 has native USB), create a platformio.ini environment extending common:esp32 with tinyuf2-partitions-8MB.csv, add to build-esp32sx CI matrix, and create a Wippersnapper_Boards definition.json. Notes that non-Adafruit boards are supported but the product/documentation URLs should point to the manufacturer.",
+      "files": []
+    }
+  ]
+}
