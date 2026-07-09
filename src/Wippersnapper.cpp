@@ -618,7 +618,9 @@ bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream,
     return true;
   }
 
+  pauseStatusLEDPWM();
   WS._i2cPort0->initI2CDevice(&msgI2CDeviceInitRequest);
+  resumeStatusLEDPWM();
 
   // Fill device's address and the initialization status
   // TODO: The filling should be done within the method though?
@@ -691,7 +693,9 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // Scan I2C bus
+    pauseStatusLEDPWM();
     scanResp = WS._i2cPort0->scanAddresses();
+    resumeStatusLEDPWM();
 
     // Fill I2CResponse
     msgi2cResponse.which_payload =
@@ -760,7 +764,9 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // Initialize I2C device
+    pauseStatusLEDPWM();
     WS._i2cPort0->initI2CDevice(&msgI2CDeviceInitRequest);
+    resumeStatusLEDPWM();
 
     // Fill device's address and bus status
     msgi2cResponse.payload.resp_i2c_device_init.i2c_device_address =
@@ -2925,8 +2931,11 @@ ws_status_t Wippersnapper::run() {
   WS.feedWDT();
 
   // Process I2C sensor events
-  if (WS._isI2CPort0Init)
+  if (WS._isI2CPort0Init) {
+    pauseStatusLEDPWM();
     WS._i2cPort0->update();
+    resumeStatusLEDPWM();
+  }
   WS.feedWDT();
 
   // Process DS18x20 sensor events
