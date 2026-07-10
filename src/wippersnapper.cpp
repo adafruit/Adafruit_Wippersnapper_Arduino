@@ -45,8 +45,8 @@ wippersnapper::wippersnapper()
       _expander_controller(nullptr), _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
       _pixels_controller(nullptr), _pwm_controller(nullptr),
-      _servo_controller(nullptr), _telemetry_controller(nullptr),
-      _wdt(nullptr), _device_uidV2(nullptr), _mqtt_client_id(nullptr) {
+      _servo_controller(nullptr), _telemetry_controller(nullptr), _wdt(nullptr),
+      _device_uidV2(nullptr), _mqtt_client_id(nullptr) {
   // Initialize WDT wrapper
   _wdt = new ws_wdt();
 

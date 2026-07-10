@@ -40,6 +40,7 @@ public:
   void ResetFlags();
 
 private:
+  bool PublishTelemetry();
   TelemetryModel *_telemetry_model; ///< telemetry model
   std::vector<TelemetryHardware *> _telemetry_metrics;
 };

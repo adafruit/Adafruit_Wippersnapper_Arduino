@@ -139,6 +139,24 @@ bool TelemetryController::Handle_TelemetryRemove(ws_telemetry_Remove *msg) {
 }
 
 /*!
+    @brief  Encodes and publishes the telemetry model's current Event to the
+            broker.
+    @return True if the Event was encoded and published, False otherwise.
+*/
+bool TelemetryController::PublishTelemetry() {
+  if (!_telemetry_model->EncodeEvent()) {
+    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to encode telemetry Event");
+    return false;
+  }
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_telemetry_tag,
+                     _telemetry_model->GetD2B())) {
+    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to publish telemetry Event");
+    return false;
+  }
+  return true;
+}
+
+/*!
     @brief  Update/polling loop for the telemetry controller.
     @param  force
             If true, forces a report on all metrics regardless of period.
@@ -148,15 +166,9 @@ void TelemetryController::update(bool force) {
   if (_telemetry_metrics.empty())
     return;
 
-  // Telemetry is a network concept - if we're offline there's nowhere to
-  // report to, so mark everything complete so sleep-mode readiness isn't
-  // blocked and bail out.
-  if (Ws._sdCardV2->isModeOffline()) {
-    for (size_t i = 0; i < _telemetry_metrics.size(); i++) {
-      _telemetry_metrics[i]->did_read_send = true;
-    }
-    return;
-  }
+  // When online we publish to the broker; when running offline we log the
+  // reading to the SD card instead.
+  bool is_offline = Ws._sdCardV2->isModeOffline();
 
   for (size_t i = 0; i < _telemetry_metrics.size(); i++) {
     TelemetryHardware &metric = *(_telemetry_metrics[i]);
@@ -177,35 +189,43 @@ void TelemetryController::update(bool force) {
       continue;
     }
 
-    // Build the telemetry Event for this metric
-    _telemetry_model->InitEventMsg(metric.GetName());
+    // Read the metric and deliver it (publish online, or log to SD offline).
+    bool delivered = false;
     switch (metric.GetKind()) {
-    case TELEMETRY_KIND_RSSI:
-      _telemetry_model->SetValueFloat(ws_sensor_Type_T_RAW,
-                                      (float)metric.ReadRSSI());
+    case TELEMETRY_KIND_RSSI: {
+      float value = (float)metric.ReadRSSI();
+      if (is_offline) {
+        delivered = Ws._sdCardV2->LogTelemetryEventToSD(metric.GetName(), value,
+                                                        ws_sensor_Type_T_RAW);
+      } else {
+        _telemetry_model->InitEventMsg(metric.GetName());
+        _telemetry_model->SetValueFloat(ws_sensor_Type_T_RAW, value);
+        delivered = PublishTelemetry();
+      }
       break;
-    case TELEMETRY_KIND_BOOT_REASON:
-      _telemetry_model->SetValueString(ws_sensor_Type_T_BYTES,
-                                       metric.ReadBootReason());
+    }
+    case TELEMETRY_KIND_BOOT_REASON: {
+      const char *value = metric.ReadBootReason();
+      if (is_offline) {
+        delivered =
+            Ws._sdCardV2->LogTelemetryEventToSD(metric.GetName(), value);
+      } else {
+        _telemetry_model->InitEventMsg(metric.GetName());
+        _telemetry_model->SetValueString(ws_sensor_Type_T_BYTES, value);
+        delivered = PublishTelemetry();
+      }
       break;
+    }
     default:
-      // Shouldn't happen - unknown metrics are never registered
+      // Shouldn't happen - unknown metrics are rejected at Handle_TelemetryAdd,
+      // but log it here in case one ever slips through.
+      WS_DEBUG_PRINT("[telemetry] WARNING: No reader for metric: ");
+      WS_DEBUG_PRINTLNVAR(metric.GetName());
       metric.did_read_send = true;
       continue;
     }
 
-    // Verify the message encodes before publishing
-    if (!_telemetry_model->EncodeEvent()) {
-      WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to encode telemetry Event");
-      metric.did_read_send = false;
-      continue;
-    }
-
-    WS_DEBUG_PRINT("[telemetry] Publishing metric: ");
-    WS_DEBUG_PRINTLNVAR(metric.GetName());
-    if (!Ws.PublishD2b(ws_signal_DeviceToBroker_telemetry_tag,
-                       _telemetry_model->GetD2B())) {
-      WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to publish telemetry Event");
+    if (!delivered) {
       metric.did_read_send = false;
       continue;
     }

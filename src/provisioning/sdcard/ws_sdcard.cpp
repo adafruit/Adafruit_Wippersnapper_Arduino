@@ -1370,6 +1370,46 @@ bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_Event *msg_device_event) {
   return true;
 }
 
+/*!
+    @brief  Logs a telemetry metric with a numeric value to the SD card.
+    @param  name
+            The telemetry metric's name (e.g. "rssi").
+    @param  value
+            The metric's value.
+    @param  read_type
+            The metric's SensorType.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+bool ws_sdcard::LogTelemetryEventToSD(const char *name, float value,
+                                      ws_sensor_Type read_type) {
+  if (IsBatteryLow())
+    return true;
+  JsonDocument doc;
+  doc["timestamp"] = GetTimestamp();
+  doc["telemetry"] = name;
+  doc["value"] = value;
+  doc["si_unit"] = SensorTypeToSIUnit(read_type);
+  return LogJSONDoc(doc);
+}
+
+/*!
+    @brief  Logs a telemetry metric with a string value to the SD card.
+    @param  name
+            The telemetry metric's name (e.g. "boot_reason").
+    @param  value
+            The metric's string value.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+bool ws_sdcard::LogTelemetryEventToSD(const char *name, const char *value) {
+  if (IsBatteryLow())
+    return true;
+  JsonDocument doc;
+  doc["timestamp"] = GetTimestamp();
+  doc["telemetry"] = name;
+  doc["value"] = value;
+  return LogJSONDoc(doc);
+}
+
 #ifdef OFFLINE_MODE_DEBUG
 /*!
     @brief  Waits for a valid JSON string to be received via the hardware's
