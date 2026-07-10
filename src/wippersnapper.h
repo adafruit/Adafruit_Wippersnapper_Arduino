@@ -140,6 +140,7 @@
 #include "components/sensor/model.h"
 #include "components/servo/controller.h"
 #include "components/sleep/controller.h"
+#include "components/telemetry/controller.h"
 #include "components/uart/controller.h"
 
 #include "provisioning/ConfigJson.h"
@@ -187,6 +188,7 @@ class PWMController;
 class ServoController;
 class UARTController;
 class SleepController;
+class TelemetryController;
 
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
@@ -283,6 +285,8 @@ public:
   ServoController *_servo_controller =
       nullptr;                                ///< Instance of Servo controller
   UARTController *_uart_controller = nullptr; ///< Instance of UART controller
+  TelemetryController *_telemetry_controller =
+      nullptr; ///< Instance of Telemetry controller
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   SleepController *_sleep_controller =
       nullptr; ///< Instance of sleep controller

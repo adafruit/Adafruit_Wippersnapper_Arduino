@@ -45,8 +45,8 @@ wippersnapper::wippersnapper()
       _expander_controller(nullptr), _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
       _pixels_controller(nullptr), _pwm_controller(nullptr),
-      _servo_controller(nullptr), _wdt(nullptr), _device_uidV2(nullptr),
-      _mqtt_client_id(nullptr) {
+      _servo_controller(nullptr), _telemetry_controller(nullptr),
+      _wdt(nullptr), _device_uidV2(nullptr), _mqtt_client_id(nullptr) {
   // Initialize WDT wrapper
   _wdt = new ws_wdt();
 
@@ -65,6 +65,7 @@ wippersnapper::wippersnapper()
   _pixels_controller = new PixelsController();
   _pwm_controller = new PWMController();
   _servo_controller = new ServoController();
+  _telemetry_controller = new TelemetryController();
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   _sleep_controller = new SleepController();
 #endif
@@ -89,6 +90,7 @@ wippersnapper::~wippersnapper() {
   delete this->_pixels_controller;
   delete this->_pwm_controller;
   delete this->_servo_controller;
+  delete this->_telemetry_controller;
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   delete this->_sleep_controller;
 #endif
@@ -338,6 +340,8 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     return Ws._expander_controller->Router(stream);
   case ws_signal_BrokerToDevice_gps_tag:
     return Ws._gps_controller->Router(stream);
+  case ws_signal_BrokerToDevice_telemetry_tag:
+    return Ws._telemetry_controller->Router(stream);
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   case ws_signal_BrokerToDevice_sleep_tag:
     return Ws._sleep_controller->Router(stream);
@@ -770,6 +774,10 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     msg->which_payload = ws_signal_DeviceToBroker_gps_tag;
     msg->payload.gps = *(ws_gps_D2B *)payload;
     break;
+  case ws_signal_DeviceToBroker_telemetry_tag:
+    msg->which_payload = ws_signal_DeviceToBroker_telemetry_tag;
+    msg->payload.telemetry = *(ws_telemetry_D2B *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     free(msg);
@@ -1091,6 +1099,9 @@ void wippersnapper::loop() {
   // Process GPS controller events
   Ws._gps_controller->update();
 
+  // Process telemetry (RSSI, boot reason, etc.) events
+  Ws._telemetry_controller->update();
+
   // Update display status bars
   Ws._display_controller->update(getRSSI(), Ws._mqttV2->connected());
 }
@@ -1150,6 +1161,11 @@ void wippersnapper::loopSleep() {
 
   if (!Ws._gps_controller->UpdateComplete()) {
     Ws._gps_controller->update(true);
+    all_controllers_complete = false;
+  }
+
+  if (!Ws._telemetry_controller->UpdateComplete()) {
+    Ws._telemetry_controller->update(true);
     all_controllers_complete = false;
   }
 
@@ -1216,6 +1232,7 @@ void wippersnapper::ResetAllControllerFlags() {
   Ws._i2c_controller->ResetFlags();
   Ws._uart_controller->ResetFlags();
   Ws._gps_controller->ResetFlags();
+  Ws._telemetry_controller->ResetFlags();
 }
 
 #endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
