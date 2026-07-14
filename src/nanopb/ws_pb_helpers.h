@@ -24,5 +24,9 @@ bool ws_pb_decode(pb_istream_t *stream, const pb_msgdesc_t *fields,
 
 bool ws_pb_encode(pb_ostream_t *stream, const pb_msgdesc_t *fields,
                          const void *src_struct);
-                         
+
+bool ws_pb_decode_oneof_submsg(pb_istream_t *stream, uint32_t field_tag,
+                               const pb_msgdesc_t *submsg_fields,
+                               void *dest_struct);
+
 #endif // WS_PB_ENCODE_H

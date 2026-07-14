@@ -637,11 +637,16 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
     @returns  True if probe completed and results published, False otherwise.
 */
 bool I2cController::Handle_Probe(pb_istream_t *stream) {
-  // Decode B2D with probe callbacks — safe to write to the probe union
-  // member here because we know the payload IS a probe.
-  ws_i2c_B2D b2d = ws_i2c_B2D_init_zero;
-  _i2c_model->SetupProbeDecodeCallbacks(&b2d.payload.probe);
-  if (!ws_pb_decode(stream, ws_i2c_B2D_fields, &b2d)) {
+  // address_spaces/addresses are nanopb *callback* fields inside the ws_i2c_B2D
+  // `payload` oneof. nanopb zeroes the oneof member when it first sets the union
+  // tag, wiping callbacks pre-set on b2d.payload.probe — so decoding the whole
+  // B2D silently drops the repeated fields (0 address spaces, empty scan, no
+  // error). Decode the Probe as a standalone submessage instead, where the
+  // callbacks survive.
+  ws_i2c_Probe probe = ws_i2c_Probe_init_zero;
+  _i2c_model->SetupProbeDecodeCallbacks(&probe);
+  if (!ws_pb_decode_oneof_submsg(stream, ws_i2c_B2D_probe_tag,
+                                 ws_i2c_Probe_fields, &probe)) {
     Ws.error_handler->publishComponentError(ws_i2c_Descriptor{},
                                             "Failed to decode Probe message!");
     return false;
@@ -649,6 +654,9 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
 
   ws_i2c_AddressSpace *spaces = _i2c_model->GetProbeAddressSpaces();
   size_t spaces_count = _i2c_model->GetProbeAddressSpacesCount();
+  // (A) debug: confirms the repeated address_spaces callback actually populated
+  WS_DEBUG_PRINT("[i2c] Probe decoded, address spaces=");
+  WS_DEBUG_PRINTLNVAR(spaces_count);
   uint32_t *addresses = _i2c_model->GetProbeAddresses();
   size_t addresses_count = _i2c_model->GetProbeAddressesCount();
 
