@@ -48,7 +48,7 @@ public:
       _display = nullptr;
     }
     if (_pin_bl >= 0)
-      digitalWrite(_pin_bl, LOW);
+      digitalWrite(_pin_bl, _bl_active_low ? HIGH : LOW);
   }
 
   /*!
@@ -61,22 +61,22 @@ public:
     if (!_display)
       return false;
 
-    // INITR_MINI160x80 targets the 0.96" 160x80 IPS panel (col offset 24).
-    // Many of these IPS panels also require inverted colours; if the display
-    // shows negative colours on hardware, switch to INITR_MINI160x80_PLUGIN
-    // (or drop the invertDisplay call).
-    _display->initR(INITR_MINI160x80);
-    _display->invertDisplay(true);
+    // INITR_MINI160x80_PLUGIN matches the LilyGO 0.96" 160x80 panel:
+    // BGR, inverted, column offset 26 / row offset 1 (== LilyGo's
+    // GREENTAB160x80 config). This variant handles the inversion internally,
+    // so no explicit invertDisplay() call is needed. If a different 160x80
+    // panel renders negative colours, toggle invertDisplay().
+    _display->initR(INITR_MINI160x80_PLUGIN);
     _display->setRotation(_rotation);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
     _display->setTextWrap(false);
     _display->setTextSize(_text_sz);
 
-    // Turn on backlight
+    // Turn on backlight (honor active-low panels, e.g. LilyGO T-Dongle C5)
     if (_pin_bl >= 0) {
       pinMode(_pin_bl, OUTPUT);
-      digitalWrite(_pin_bl, HIGH);
+      digitalWrite(_pin_bl, _bl_active_low ? LOW : HIGH);
       WS_DEBUG_PRINTLN("[display] Backlight ON");
     }
 
