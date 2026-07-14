@@ -172,9 +172,10 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   _drvDisp->setBacklightPin(TFT_BACKLIGHT);
 #endif
 
-  // Backlight pin from the display Add proto (shared BacklightConfig). Overrides
-  // any board-level TFT_BACKLITE/TFT_BACKLIGHT define when present, so boards
-  // without a hardcoded backlight define (e.g. LilyGO T-Dongle C5) still work.
+  // Backlight pin from the display Add proto (shared BacklightConfig).
+  // Overrides any board-level TFT_BACKLITE/TFT_BACKLIGHT define when present,
+  // so boards without a hardcoded backlight define (e.g. LilyGO T-Dongle C5)
+  // still work.
   if (msg->has_backlight) {
     int16_t bl_pin = -1;
     bool bl_active_low = false;
@@ -183,7 +184,8 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
       bl_pin =
           parsePin(msg->backlight.backlight_add.backlight_digital.pin_name);
       // Active-low backlight (e.g. LilyGO T-Dongle C5 drives LCD_BL LOW = on)
-      bl_active_low = msg->backlight.backlight_add.backlight_digital.is_inverted;
+      bl_active_low =
+          msg->backlight.backlight_add.backlight_digital.is_inverted;
     } else if (msg->backlight.which_backlight_add ==
                ws_display_BacklightConfig_backlight_pwm_tag) {
       bl_pin = parsePin(msg->backlight.backlight_add.backlight_pwm.pin);
