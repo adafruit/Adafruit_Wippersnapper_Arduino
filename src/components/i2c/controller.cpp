@@ -447,17 +447,18 @@ bool I2cController::Router(pb_istream_t *stream) {
     res = Handle_Probe(&saved_stream);
     break;
   case ws_i2c_B2D_add_tag: {
-    // Re-decode from saved stream with settings callbacks wired up,
-    // same pattern as Handle_Probe.
-    ws_i2c_B2D b2d_add = ws_i2c_B2D_init_zero;
-    _i2c_model->SetupAddDecodeCallbacks(&b2d_add.payload.add);
-    if (!ws_pb_decode(&saved_stream, ws_i2c_B2D_fields, &b2d_add)) {
+    // Decode the Add as a standalone submessage so the settings-map decode
+    // callback survives — nanopb zeroes the oneof member, wiping callbacks
+    // pre-set on b2d.payload.add (same issue fixed in Handle_Probe).
+    ws_i2c_Add add = ws_i2c_Add_init_zero;
+    _i2c_model->SetupAddDecodeCallbacks(&add);
+    if (!ws_pb_decode_oneof_submsg(&saved_stream, ws_i2c_B2D_add_tag,
+                                   ws_i2c_Add_fields, &add)) {
       Ws.error_handler->publishComponentError(
-          b2d_add.payload.add.descriptor,
-          "Failed to decode I2C add message settings!");
+          add.descriptor, "Failed to decode I2C add message settings!");
       return false;
     }
-    res = Handle_Add(&b2d_add.payload.add);
+    res = Handle_Add(&add);
     break;
   }
   case ws_i2c_B2D_remove_tag:
