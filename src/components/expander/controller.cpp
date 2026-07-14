@@ -45,15 +45,18 @@ bool ExpanderController::Router(pb_istream_t *stream) {
   bool res = false;
   switch (b2d.which_payload) {
   case ws_expander_B2D_add_tag: {
-    // Re-decode from saved stream with settings callbacks on cfg_i2c
-    ws_expander_B2D b2d_add = ws_expander_B2D_init_zero;
-    Ws._i2c_controller->SetupAddDecodeCallbacks(&b2d_add.payload.add.cfg_i2c);
-    if (!ws_pb_decode(&saved_stream, ws_expander_B2D_fields, &b2d_add)) {
+    // Decode the Add as a standalone submessage so the nested i2c cfg's
+    // settings callback survives — nanopb zeroes the oneof member, wiping
+    // callbacks pre-set on b2d.payload.add.cfg_i2c (same issue as i2c).
+    ws_expander_Add add = ws_expander_Add_init_zero;
+    Ws._i2c_controller->SetupAddDecodeCallbacks(&add.cfg_i2c);
+    if (!ws_pb_decode_oneof_submsg(&saved_stream, ws_expander_B2D_add_tag,
+                                   ws_expander_Add_fields, &add)) {
       WS_DEBUG_PRINTLN(
-          "[expander] ERROR: Failed to re-decode add with settings");
+          "[expander] ERROR: Failed to decode add with settings");
       return false;
     }
-    res = Handle_Add(&b2d_add.payload.add);
+    res = Handle_Add(&add);
     break;
   }
   case ws_expander_B2D_remove_tag:
