@@ -117,7 +117,10 @@ public:
       @note   Move backlight pin into proto Add message instead of board
               defines.
   */
-  void setBacklightPin(int16_t pin) { _pin_bl = pin; }
+  void setBacklightPin(int16_t pin, bool active_low = false) {
+    _pin_bl = pin;
+    _bl_active_low = active_low;
+  }
 
   /*! @brief Shows the display splash screen, if supported. */
   virtual void showSplash() {}
@@ -202,7 +205,8 @@ protected:
   int16_t _pin_miso = -1;    ///< MISO pin (TFT only)
   int16_t _pin_sram_cs = -1; ///< SRAM Chip Select pin (EPD only)
   int16_t _pin_busy = -1;    ///< Busy pin (EPD only)
-  int16_t _pin_bl = -1;      ///< Backlight pin (-1 = not set)
+  int16_t _pin_bl = -1;        ///< Backlight pin (-1 = not set)
+  bool _bl_active_low = false;  ///< True if the backlight is active-low
   uint8_t _text_sz = 1;      ///< Text size multiplier
   int16_t _width;            ///< Display width
   int16_t _height;           ///< Display height

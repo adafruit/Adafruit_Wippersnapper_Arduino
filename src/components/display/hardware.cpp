@@ -177,16 +177,19 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   // without a hardcoded backlight define (e.g. LilyGO T-Dongle C5) still work.
   if (msg->has_backlight) {
     int16_t bl_pin = -1;
+    bool bl_active_low = false;
     if (msg->backlight.which_backlight_add ==
         ws_display_BacklightConfig_backlight_digital_tag) {
       bl_pin =
           parsePin(msg->backlight.backlight_add.backlight_digital.pin_name);
+      // Active-low backlight (e.g. LilyGO T-Dongle C5 drives LCD_BL LOW = on)
+      bl_active_low = msg->backlight.backlight_add.backlight_digital.is_inverted;
     } else if (msg->backlight.which_backlight_add ==
                ws_display_BacklightConfig_backlight_pwm_tag) {
       bl_pin = parsePin(msg->backlight.backlight_add.backlight_pwm.pin);
     }
     if (bl_pin >= 0) {
-      _drvDisp->setBacklightPin(bl_pin);
+      _drvDisp->setBacklightPin(bl_pin, bl_active_low);
     }
   }
 
