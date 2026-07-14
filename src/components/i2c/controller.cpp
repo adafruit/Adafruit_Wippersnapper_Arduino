@@ -639,10 +639,10 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
 */
 bool I2cController::Handle_Probe(pb_istream_t *stream) {
   // address_spaces/addresses are nanopb *callback* fields inside the ws_i2c_B2D
-  // `payload` oneof. nanopb zeroes the oneof member when it first sets the union
-  // tag, wiping callbacks pre-set on b2d.payload.probe — so decoding the whole
-  // B2D silently drops the repeated fields (0 address spaces, empty scan, no
-  // error). Decode the Probe as a standalone submessage instead, where the
+  // `payload` oneof. nanopb zeroes the oneof member when it first sets the
+  // union tag, wiping callbacks pre-set on b2d.payload.probe — so decoding the
+  // whole B2D silently drops the repeated fields (0 address spaces, empty scan,
+  // no error). Decode the Probe as a standalone submessage instead, where the
   // callbacks survive.
   ws_i2c_Probe probe = ws_i2c_Probe_init_zero;
   _i2c_model->SetupProbeDecodeCallbacks(&probe);

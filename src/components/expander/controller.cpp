@@ -52,8 +52,7 @@ bool ExpanderController::Router(pb_istream_t *stream) {
     Ws._i2c_controller->SetupAddDecodeCallbacks(&add.cfg_i2c);
     if (!ws_pb_decode_oneof_submsg(&saved_stream, ws_expander_B2D_add_tag,
                                    ws_expander_Add_fields, &add)) {
-      WS_DEBUG_PRINTLN(
-          "[expander] ERROR: Failed to decode add with settings");
+      WS_DEBUG_PRINTLN("[expander] ERROR: Failed to decode add with settings");
       return false;
     }
     res = Handle_Add(&add);
