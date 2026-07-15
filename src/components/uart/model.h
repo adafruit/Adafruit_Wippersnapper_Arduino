@@ -37,6 +37,7 @@ public:
   bool AddUartInputEvent(sensors_event_t &event, ws_sensor_Type sensor_type);
   bool EncodeUartInputEvent();
   ws_uart_Event *GetUartInputEventMsg();
+  ws_uart_D2B *GetUartD2B();
   void ClearUartInputEventMsg();
   void ConfigureUartInputEventMsg(const char *pin_rx);
 
@@ -46,5 +47,6 @@ private:
   ws_uart_Write _msg_UartWrite;      ///< ws_uart_Write message
   ws_uart_Write _msg_UartWritten;    ///< ws_uart_Written message
   ws_uart_Event _msg_UartInputEvent; ///< ws_uart_Event message
+  ws_uart_D2B _msg_d2b;              ///< ws_uart_D2B envelope for publishing
 };
 #endif // WS_UART_MODEL_H

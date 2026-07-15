@@ -141,15 +141,20 @@ bool UARTModel::AddUartInputEvent(sensors_event_t &event,
     @return True if the message was encoded successfully, False otherwise.
 */
 bool UARTModel::EncodeUartInputEvent() {
+  // Wrap the Event into the D2B envelope that gets published (PublishD2b
+  // expects a ws_uart_D2B for the uart payload).
+  _msg_d2b.which_payload = ws_uart_D2B_event_tag;
+  _msg_d2b.payload.event = _msg_UartInputEvent;
+
   // Calculate the size of the encoded message
   size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_uart_Event_fields, &_msg_UartInputEvent))
+  if (!pb_get_encoded_size(&sz_msg, ws_uart_D2B_fields, &_msg_d2b))
     return false;
 
   // Attempt to encode the message into a buffer
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_uart_Event_fields, &_msg_UartInputEvent);
+  return pb_encode(&msg_stream, ws_uart_D2B_fields, &_msg_d2b);
 }
 
 /*!
@@ -159,3 +164,9 @@ bool UARTModel::EncodeUartInputEvent() {
 ws_uart_Event *UARTModel::GetUartInputEventMsg() {
   return &_msg_UartInputEvent;
 }
+
+/*!
+    @brief  Gets a pointer to the ws_uart_D2B envelope for publishing.
+    @return Pointer to the ws_uart_D2B message.
+*/
+ws_uart_D2B *UARTModel::GetUartD2B() { return &_msg_d2b; }
