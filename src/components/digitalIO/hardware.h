@@ -27,7 +27,8 @@ class DigitalIOHardware {
 public:
   DigitalIOHardware(uint8_t pin_name, ws_digitalio_Direction direction,
                     ws_digitalio_SampleMode sample_mode, bool initial_value,
-                    ulong period, ExpanderHardware *expander_drv);
+                    ulong period, ExpanderHardware *expander_drv,
+                    bool is_inverted = false);
   ~DigitalIOHardware();
 
   // Pin operations
@@ -60,6 +61,8 @@ private:
   ws_digitalio_SampleMode _sample_mode;
   bool _value;
   bool _prv_value;
+  bool _first_read; ///< True until the first CheckEvent() read seeds _prv_value
+  bool _is_inverted; ///< True if the pin's logic is active-low (inverted)
   ulong _period;
   ulong _prv_time;
   bool _did_read_send;

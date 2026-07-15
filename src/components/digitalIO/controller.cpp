@@ -168,7 +168,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   // Initialize a new digital pin instance
   DigitalIOHardware *new_pin = new DigitalIOHardware(
       pin_num, msg->gpio_direction, msg->sample_mode, initial_value,
-      (ulong)(msg->period * 1000.0f), expander_drv);
+      (ulong)(msg->period * 1000.0f), expander_drv, msg->is_inverted);
 
   // Add the pin to the controller's list of pins
   if (msg->gpio_direction == ws_digitalio_Direction_D_INPUT ||
