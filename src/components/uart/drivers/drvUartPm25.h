@@ -148,6 +148,57 @@ public:
     return true;
   }
 
+  /*!
+      @brief    Gets the PM25 sensor's PM1.0 ENV reading.
+      @param    pm10EnvEvent
+                  Adafruit Sensor event for environmental PM1.0
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  bool getEventPM10_ENV(sensors_event_t *pm10EnvEvent) {
+    PM25_AQI_Data data;
+    if (!_pm25->read(&data)) {
+      WS_DEBUG_PRINTLN("Failed to read PM10ENV data");
+      return false; // couldn't read data
+    }
+    pm10EnvEvent->pm10_env = (float)data.pm10_env;
+    return true;
+  }
+
+  /*!
+      @brief    Gets the PM25 sensor's PM2.5 ENV reading.
+      @param    pm25EnvEvent
+                  Adafruit Sensor event for environmental PM2.5
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  bool getEventPM25_ENV(sensors_event_t *pm25EnvEvent) {
+    PM25_AQI_Data data;
+    if (!_pm25->read(&data)) {
+      WS_DEBUG_PRINTLN("Failed to read PM25ENV data");
+      return false; // couldn't read data
+    }
+    pm25EnvEvent->pm25_env = (float)data.pm25_env;
+    return true;
+  }
+
+  /*!
+      @brief    Gets the PM25 sensor's PM10.0 ENV reading.
+      @param    pm100EnvEvent
+                  Adafruit Sensor event for environmental PM10.0
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  bool getEventPM100_ENV(sensors_event_t *pm100EnvEvent) {
+    PM25_AQI_Data data;
+    if (!_pm25->read(&data)) {
+      WS_DEBUG_PRINTLN("Failed to read PM100ENV data");
+      return false; // couldn't read data
+    }
+    pm100EnvEvent->pm100_env = (float)data.pm100_env;
+    return true;
+  }
+
 protected:
   Adafruit_PM25AQI *_pm25 = nullptr; ///< Instance of the Adafruit_PM25AQI class
 };

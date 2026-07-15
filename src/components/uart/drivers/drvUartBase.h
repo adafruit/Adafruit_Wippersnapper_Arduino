@@ -226,6 +226,38 @@ public:
   }
 
   /*!
+      @brief    Base implementation - Reads a object pm10 env. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm10EnvEvent
+                pm10 env. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventPM10_ENV(sensors_event_t *pm10EnvEvent) { return false; }
+
+  /*!
+      @brief    Base implementation - Reads a object pm25 env. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm25EnvEvent
+                pm25 env. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventPM25_ENV(sensors_event_t *pm25EnvEvent) { return false; }
+
+  /*!
+      @brief    Base implementation - Reads a object pm100 env. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm100EnvEvent
+                pm100 env. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventPM100_ENV(sensors_event_t *pm100EnvEvent) {
+    return false;
+  }
+
+  /*!
       @brief    Base implementation - Reads an ambient temperature sensor (°C).
                 Expects value to return in the proper SI unit.
       @param    tempEvent
@@ -285,6 +317,18 @@ public:
       {ws_sensor_Type_T_PM100_STD,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM100_STD(event);
+       }},
+      {ws_sensor_Type_T_PM10_ENV,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM10_ENV(event);
+       }},
+      {ws_sensor_Type_T_PM25_ENV,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM25_ENV(event);
+       }},
+      {ws_sensor_Type_T_PM100_ENV,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM100_ENV(event);
        }},
       {ws_sensor_Type_T_AMBIENT_TEMPERATURE_FAHRENHEIT,
        [this](sensors_event_t *event) -> bool {
