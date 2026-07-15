@@ -289,7 +289,7 @@ void UARTController::update(bool force) {
         drv->SetDidReadSend(true); // For now, assume success in offline mode
       } else {
         // In online mode, publish to Adafruit IO
-        if (!Ws.PublishD2b(ws_signal_BrokerToDevice_uart_tag,
+        if (!Ws.PublishD2b(ws_signal_DeviceToBroker_uart_tag,
                            _uart_model->GetUartInputEventMsg())) {
           WS_DEBUG_PRINTLN(
               "[uart] ERROR: Unable to publish UartInputEvent to IO!");
