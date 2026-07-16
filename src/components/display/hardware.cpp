@@ -318,8 +318,7 @@ bool DisplayHardware::detect_uc8253(ws_display_EpdSpiDescriptor *config) {
 */
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (!msg->has_interface_type) {
-    WS_DEBUG_PRINTLN(
-        "[display] ERROR: No interface type specified for SPI EPD!");
+    // TODO: Kick out to the error handler instead of printing
     return false;
   }
   ws_display_EpdSpiDescriptor *spi_epd_config =
@@ -375,19 +374,20 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   // Reject explicit non-default SPI pins from the payload.
   if ((mosi >= 0 && mosi != MOSI) || (sck >= 0 && sck != SCK) ||
       (miso >= 0 && miso != MISO)) {
-    // TODO: report back to broker so user and team sees this!
+    // TODO: Kick out to the error handler instead of printing
     WS_DEBUG_PRINTLN(
         "[display] ERROR: SPI EPD only supports default MOSI/SCK/MISO pins!");
     return false;
   }
 
   if (spi_pin_config->bus != 0) {
-    // TODO: report back to broker so user and team sees this!
+    // TODO: Kick out to the error handler instead of printing
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
 
   if (msg->which_config != ws_display_Add_config_epd_tag) {
+    // TODO: Kick out to the error handler instead of printing
     WS_DEBUG_PRINTLN("[display] ERROR: Expected EPD config for SPI EPD!");
     return false;
   }
@@ -395,65 +395,43 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 
   // Parse EPD mode
   if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED) {
+    // TODO: Kick out to the error handler instead of printing
     WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
     return false;
   }
 
+  // Tear down any existing driver before creating a new one
   if (_drvDisp) {
     delete _drvDisp;
     _drvDisp = nullptr;
   }
 
-  // MagTag hardware auto-detection (requires SPI probing)
-  const char *driver = msg->driver;
+  // MagTag hardware auto-detection (requires SPI probing): the attached panel
+  // varies by production batch, so probe the bus and resolve to a panel key.
   if (strncmp(_name, "eink-magtag", sizeof("eink-magtag") - 1) == 0 &&
-      strlen(driver) == 0) {
+      strlen(msg->panel) == 0) {
     if (EpdBitBangReadRegister(0x71, spi_epd_config) == 0xFF) {
-      driver = "SSD1680";
+      strncpy(msg->panel, "29-gray-EAAMFGN", sizeof(msg->panel) - 1); // SSD1680
     } else {
-      driver = "ILI0373";
+      strncpy(msg->panel, "29-gray-T5", sizeof(msg->panel) - 1); // ILI0373
     }
-    WS_DEBUG_PRINT("[display] MagTag auto-detected driver: ");
-    WS_DEBUG_PRINTLNVAR(driver);
+    msg->panel[sizeof(msg->panel) - 1] = '\0';
+    WS_DEBUG_PRINT("[display] MagTag auto-detected panel: ");
+    WS_DEBUG_PRINTLNVAR(msg->panel);
   }
 
-  // Create driver based on driver string (component-name resolution
-  // already done by controller)
-  if (strcmp(driver, "SSD1680") == 0) {
-    _drvDisp = new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "ILI0373") == 0) {
-    _drvDisp = new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "SSD1683") == 0) {
-    _drvDisp = new dispDrvThinkInkGrayscale4MFGN(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "UC8179") == 0) {
-    _drvDisp = new dispDrvThinkInkMonoAAAMFGN(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "UC8253") == 0) {
-    _drvDisp = new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "UC8151") == 0) {
-    _drvDisp = new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
-  } else {
-    WS_DEBUG_PRINT("[display] ERROR: Unsupported EPD driver: ");
-    WS_DEBUG_PRINTLNVAR(driver);
-    return false;
-  }
-
+  // Attempt to create EPD driver instance
+  _drvDisp = new drvDispThinkInk((char *)msg->panel, config->mode, dc, rst, cs, sram_cs, busy);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate EPD driver!");
     return false;
   }
-
-  thinkinkmode_t epd_mode;
-  if (config->mode == ws_display_EPDMode_EPD_MODE_GRAYSCALE4)
-    epd_mode = THINKINK_GRAYSCALE4;
-  else
-    epd_mode = THINKINK_MONO;
-
   _drvDisp->setWidth(config->properties.width);
   _drvDisp->setHeight(config->properties.height);
   if (config->properties.text_size > 0)
     _drvDisp->setTextSize(config->properties.text_size);
 
-  if (!_drvDisp->begin(epd_mode)) {
+  if (!_drvDisp->begin()) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin EPD driver!");
     delete _drvDisp;
     _drvDisp = nullptr;

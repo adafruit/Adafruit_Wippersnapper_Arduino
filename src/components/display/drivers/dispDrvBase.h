@@ -85,6 +85,7 @@ public:
   */
   virtual bool begin(thinkinkmode_t mode, bool reset = true) { return false; }
 
+
   /*!
       @brief  Writes a message to the display.
       @param  message      Message text to render.
