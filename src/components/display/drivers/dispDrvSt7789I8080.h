@@ -92,25 +92,38 @@ public:
     // (see begin()), release it there instead of driving the pin directly.
     if (_pin_bl >= 0)
       digitalWrite(_pin_bl, LOW);
+    // Release the owned power rail (display Remove/replace deletes the driver,
+    // so the panel powers down with it). Pass-through pins never reach here.
     if (_pin_power >= 0)
-      digitalWrite(_pin_power, LOW);
+      digitalWrite(_pin_power, _power_active_high ? LOW : HIGH);
   }
 
   /*!
-      @brief  Sets the panel power-enable pin, driven HIGH during begin().
-      @param  pin  Pin number (-1 to disable).
+      @brief  Gives the driver OWNERSHIP of the panel power-enable rail: it is
+              driven to its enable level during begin() and released (driven to
+              its disable level) in the destructor — i.e. on display Remove or
+              replace. Only call this when no other component owns the pin; a
+              pin already driven by the digitalio controller is passed through
+              upstream instead (see DisplayHardware::beginI8080).
+      @param  pin          Pin number (-1 to disable).
+      @param  active_high  True (default) when HIGH enables the panel;
+                           false for inverted (active-low) power rails.
   */
-  void setPowerPin(int16_t pin) { _pin_power = pin; }
+  void setPowerPin(int16_t pin, bool active_high = true) {
+    _pin_power = pin;
+    _power_active_high = active_high;
+  }
 
   /*!
       @brief  Initializes the i8080 ST7789 TFT display.
       @return True if initialization succeeded, False otherwise.
   */
   bool begin() override {
-    // Enable panel power rail before touching the bus.
+    // Enable the panel power rail (owned by this driver) before touching the
+    // bus; released again in the destructor.
     if (_pin_power >= 0) {
       pinMode(_pin_power, OUTPUT);
-      digitalWrite(_pin_power, HIGH);
+      digitalWrite(_pin_power, _power_active_high ? HIGH : LOW);
     }
 
     _bus = new Arduino_ESP32LCD8(_pin_dc, _pin_cs, _pin_wr, _pin_rd,
@@ -315,7 +328,8 @@ private:
   Arduino_GFX *_display; ///< ST7789 display via Arduino_GFX
   int16_t _pin_wr;       ///< Write-strobe pin
   int16_t _pin_rd;       ///< Read-strobe pin
-  int16_t _pin_power;    ///< Panel power-enable pin (-1 = not set)
+  int16_t _pin_power;    ///< Owned panel power-enable pin (-1 = not set)
+  bool _power_active_high = true; ///< Enable level of the owned power rail
   int16_t _data_pins[8]; ///< D0..D7 data bus pins
 };
 

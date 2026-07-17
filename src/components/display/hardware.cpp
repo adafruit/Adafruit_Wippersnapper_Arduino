@@ -606,12 +606,38 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
   }
   // Optional prerequisite digital output — a panel power-enable rail —
   // carried as a full ws.digitalio.Add so it composes like any other pin
-  // (direction/inversion/initial write). The driver drives it high before
-  // init; is_inverted panels are a future extension (none known yet).
+  // (direction/inversion/initial write).
+  //
+  // Ownership rules: if the pin is already registered with the digitalio
+  // controller (added by the user as a component), the display must not
+  // claim, drive, or release it — pass through only when it is already an
+  // OUTPUT driving the panel's enable level, else fail the Add. Otherwise
+  // the DISPLAY owns the rail: the driver drives it to the enable level
+  // before init and releases it in its destructor (display Remove/replace).
   if (msg->has_power) {
     int16_t power = parsePin(msg->power.pin_name);
-    if (power >= 0)
-      drv->setPowerPin(power);
+    if (power >= 0) {
+      bool enable_level = !msg->power.is_inverted;
+      ws_digitalio_Direction dir;
+      bool value;
+      if (Ws.digital_io_controller->QueryPinState((uint8_t)power, &dir,
+                                                  &value)) {
+        if (dir == ws_digitalio_Direction_D_OUTPUT && value == enable_level) {
+          WS_DEBUG_PRINTLN("[display] Power-enable pin already driven by "
+                           "digitalio at the enable level - passing through "
+                           "(display does not take ownership)");
+        } else {
+          publishAndLogError(
+              F("[display] ERROR: Power-enable pin unavailable - already in "
+                "use with an incompatible direction or level!"));
+          delete _drvDisp;
+          _drvDisp = nullptr;
+          return false;
+        }
+      } else {
+        drv->setPowerPin(power, enable_level);
+      }
+    }
   }
 
   _drvDisp->setWidth(config->width);
