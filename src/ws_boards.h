@@ -250,9 +250,10 @@
 #define USE_PSRAM     ///< Board has PSRAM, use it for dynamic memory allocation
 #define BOOT_BUTTON 0 ///< BUTTON_1 (GPIO0) is the boot button
 // The on-board ST7789 (170x320, 8-bit i8080 parallel) is fully described by
-// the ws.display.Add protobuf: data/cs/dc/rst/wr/rd via I8080PinDescriptor,
-// backlight via Add.backlight (BacklightConfig), panel power via
-// Add.pin_power — no board-hardcoded display pins here.
+// the ws.display.Add protobuf: data/cs/dc/rst/write/read via
+// I8080PinDescriptor, backlight via Add.backlight (BacklightConfig), and the
+// panel power-enable rail via Add.power (a prerequisite ws.digitalio.Add) —
+// no board-hardcoded display pins here.
 #else
 #warning "Board type not identified within ws_boards.h!"
 #endif

@@ -551,8 +551,8 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
 
   // WR/RD strobes come from the Add message like every other display pin —
   // no board-hardcoded pins. RD is optional (-1 when not wired).
-  int16_t wr = parsePin(i8080->pin_wr);
-  int16_t rd = parsePin(i8080->pin_rd);
+  int16_t wr = parsePin(i8080->pin_write);
+  int16_t rd = parsePin(i8080->pin_read);
 
   if (dc < 0 || cs < 0 || wr < 0) {
     publishAndLogError(F("[display] ERROR: Invalid i8080 control pins!"));
@@ -604,10 +604,15 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
     if (bl >= 0)
       _drvDisp->setBacklightPin(bl);
   }
-  // Optional panel power-enable pin (driven high before init).
-  int16_t power = parsePin(msg->pin_power);
-  if (power >= 0)
-    drv->setPowerPin(power);
+  // Optional prerequisite digital output — a panel power-enable rail —
+  // carried as a full ws.digitalio.Add so it composes like any other pin
+  // (direction/inversion/initial write). The driver drives it high before
+  // init; is_inverted panels are a future extension (none known yet).
+  if (msg->has_power) {
+    int16_t power = parsePin(msg->power.pin_name);
+    if (power >= 0)
+      drv->setPowerPin(power);
+  }
 
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);

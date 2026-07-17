@@ -123,8 +123,8 @@ typedef struct _ws_display_I8080PinDescriptor {
     char pin_cs[6]; /* * Pin for chip select */
     char pin_dc[6]; /* * Pin for data/command */
     char pin_rst[6]; /* * Pin for reset */
-    char pin_wr[6]; /* * Pin for the write strobe */
-    char pin_rd[6]; /* * Pin for the read strobe (empty if not wired/used) */
+    char pin_write[6]; /* * Pin for the write strobe */
+    char pin_read[6]; /* * Pin for the read strobe (empty if not wired/used) */
 } ws_display_I8080PinDescriptor;
 
 /* *
@@ -213,7 +213,10 @@ typedef struct _ws_display_Add {
     ws_display_Write write; /* * Optional initial write for a display, used during check-in. */
     bool has_backlight;
     ws_display_BacklightConfig backlight; /* * Optional backlight configuration (shared across display types). */
-    char pin_power[6]; /* * Optional panel power-enable pin, driven high before init (empty if none). */
+    bool has_power;
+    ws_digitalio_Add power; /* * Optional prerequisite digital output (e.g. a panel power-enable
+rail on boards like the LilyGo T-Display-S3), configured before
+display init. Supports is_inverted + an initial write. */
 } ws_display_Add;
 
 /* *
@@ -277,7 +280,7 @@ extern "C" {
 #define ws_display_DsiInterfaceDescriptor_init_default {0, ""}
 #define ws_display_BacklightConfig_init_default  {0, {ws_digitalio_Add_init_default}}
 #define ws_display_InterfaceDescriptor_init_default {0, {ws_display_EpdSpiDescriptor_init_default}}
-#define ws_display_Add_init_default              {"", _ws_display_DisplayClass_MIN, "", "", false, ws_display_InterfaceDescriptor_init_default, 0, {ws_display_EPDConfig_init_default}, false, ws_display_Write_init_default, false, ws_display_BacklightConfig_init_default, ""}
+#define ws_display_Add_init_default              {"", _ws_display_DisplayClass_MIN, "", "", false, ws_display_InterfaceDescriptor_init_default, 0, {ws_display_EPDConfig_init_default}, false, ws_display_Write_init_default, false, ws_display_BacklightConfig_init_default, false, ws_digitalio_Add_init_default}
 #define ws_display_Remove_init_default           {"", false, ws_display_InterfaceDescriptor_init_default}
 #define ws_display_Write_init_default            {"", false, ws_display_InterfaceDescriptor_init_default, ""}
 #define ws_display_B2D_init_zero                 {0, {ws_display_Add_init_zero}}
@@ -292,7 +295,7 @@ extern "C" {
 #define ws_display_DsiInterfaceDescriptor_init_zero {0, ""}
 #define ws_display_BacklightConfig_init_zero     {0, {ws_digitalio_Add_init_zero}}
 #define ws_display_InterfaceDescriptor_init_zero {0, {ws_display_EpdSpiDescriptor_init_zero}}
-#define ws_display_Add_init_zero                 {"", _ws_display_DisplayClass_MIN, "", "", false, ws_display_InterfaceDescriptor_init_zero, 0, {ws_display_EPDConfig_init_zero}, false, ws_display_Write_init_zero, false, ws_display_BacklightConfig_init_zero, ""}
+#define ws_display_Add_init_zero                 {"", _ws_display_DisplayClass_MIN, "", "", false, ws_display_InterfaceDescriptor_init_zero, 0, {ws_display_EPDConfig_init_zero}, false, ws_display_Write_init_zero, false, ws_display_BacklightConfig_init_zero, false, ws_digitalio_Add_init_zero}
 #define ws_display_Remove_init_zero              {"", false, ws_display_InterfaceDescriptor_init_zero}
 #define ws_display_Write_init_zero               {"", false, ws_display_InterfaceDescriptor_init_zero, ""}
 
@@ -336,8 +339,8 @@ extern "C" {
 #define ws_display_I8080PinDescriptor_pin_cs_tag 9
 #define ws_display_I8080PinDescriptor_pin_dc_tag 10
 #define ws_display_I8080PinDescriptor_pin_rst_tag 11
-#define ws_display_I8080PinDescriptor_pin_wr_tag 12
-#define ws_display_I8080PinDescriptor_pin_rd_tag 13
+#define ws_display_I8080PinDescriptor_pin_write_tag 12
+#define ws_display_I8080PinDescriptor_pin_read_tag 13
 #define ws_display_DsiInterfaceDescriptor_bus_tag 1
 #define ws_display_DsiInterfaceDescriptor_pin_rst_tag 2
 #define ws_display_BacklightConfig_backlight_digital_tag 1
@@ -364,7 +367,7 @@ extern "C" {
 #define ws_display_Add_config_display_tag        9
 #define ws_display_Add_write_tag                 10
 #define ws_display_Add_backlight_tag             11
-#define ws_display_Add_pin_power_tag             12
+#define ws_display_Add_power_tag                 12
 #define ws_display_B2D_add_tag                   1
 #define ws_display_B2D_remove_tag                2
 #define ws_display_B2D_write_tag                 3
@@ -451,8 +454,8 @@ X(a, STATIC,   SINGULAR, STRING,   pin_d7,            8) \
 X(a, STATIC,   SINGULAR, STRING,   pin_cs,            9) \
 X(a, STATIC,   SINGULAR, STRING,   pin_dc,           10) \
 X(a, STATIC,   SINGULAR, STRING,   pin_rst,          11) \
-X(a, STATIC,   SINGULAR, STRING,   pin_wr,           12) \
-X(a, STATIC,   SINGULAR, STRING,   pin_rd,           13)
+X(a, STATIC,   SINGULAR, STRING,   pin_write,        12) \
+X(a, STATIC,   SINGULAR, STRING,   pin_read,         13)
 #define ws_display_I8080PinDescriptor_CALLBACK NULL
 #define ws_display_I8080PinDescriptor_DEFAULT NULL
 
@@ -498,7 +501,7 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (config,config_char_lcd,config.config_char_lc
 X(a, STATIC,   ONEOF,    MESSAGE,  (config,config_display,config.config_display),   9) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  write,            10) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  backlight,        11) \
-X(a, STATIC,   SINGULAR, STRING,   pin_power,        12)
+X(a, STATIC,   OPTIONAL, MESSAGE,  power,            12)
 #define ws_display_Add_CALLBACK NULL
 #define ws_display_Add_DEFAULT NULL
 #define ws_display_Add_interface_type_MSGTYPE ws_display_InterfaceDescriptor
@@ -508,6 +511,7 @@ X(a, STATIC,   SINGULAR, STRING,   pin_power,        12)
 #define ws_display_Add_config_config_display_MSGTYPE ws_display_DisplayProperties
 #define ws_display_Add_write_MSGTYPE ws_display_Write
 #define ws_display_Add_backlight_MSGTYPE ws_display_BacklightConfig
+#define ws_display_Add_power_MSGTYPE ws_digitalio_Add
 
 #define ws_display_Remove_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   name,              1) \
@@ -558,17 +562,16 @@ extern const pb_msgdesc_t ws_display_Write_msg;
 #define ws_display_Write_fields &ws_display_Write_msg
 
 /* Maximum encoded size of messages (where known) */
-#if defined(ws_digitalio_Add_size)
-union ws_display_B2D_payload_size_union {char f1[(1488 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union))]; char f0[1189];};
+#if defined(ws_digitalio_Add_size) && defined(ws_digitalio_Add_size)
+union ws_display_B2D_payload_size_union {char f1[(1487 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union) + ws_digitalio_Add_size)]; char f0[1189];};
 #endif
 #if defined(ws_digitalio_Add_size)
 union ws_display_BacklightConfig_backlight_add_size_union {char f1[(6 + ws_digitalio_Add_size)]; char f0[73];};
 #endif
-#if defined(ws_digitalio_Add_size)
+#if defined(ws_digitalio_Add_size) && defined(ws_digitalio_Add_size)
 #define WS_DISPLAY_DISPLAY_PB_H_MAX_SIZE         ws_display_Add_size
-#define ws_display_Add_size                      (1482 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union))
+#define ws_display_Add_size                      (1481 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union) + ws_digitalio_Add_size)
 #define ws_display_B2D_size                      (0 + sizeof(union ws_display_B2D_payload_size_union))
-#define ws_display_BacklightConfig_size          (0 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union))
 #endif
 #define ws_display_CharLcdConfig_size            12
 #define ws_display_DisplayProperties_size        46
@@ -582,6 +585,9 @@ union ws_display_BacklightConfig_backlight_add_size_union {char f1[(6 + ws_digit
 #define ws_display_TftSpiDescriptor_size         55
 #define ws_display_TtlRgb666PinDescriptor_size   63
 #define ws_display_Write_size                    1186
+#if defined(ws_digitalio_Add_size)
+#define ws_display_BacklightConfig_size          (0 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union))
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
