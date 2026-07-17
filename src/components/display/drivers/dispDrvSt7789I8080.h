@@ -330,7 +330,7 @@ private:
   int16_t _pin_rd;       ///< Read-strobe pin
   int16_t _pin_power;    ///< Owned panel power-enable pin (-1 = not set)
   bool _power_active_high = true; ///< Enable level of the owned power rail
-  int16_t _data_pins[8]; ///< D0..D7 data bus pins
+  int16_t _data_pins[8];          ///< D0..D7 data bus pins
 };
 
 #endif // ESP32 && CONFIG_IDF_TARGET_ESP32S3
