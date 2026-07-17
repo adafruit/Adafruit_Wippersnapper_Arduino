@@ -25,8 +25,13 @@ UARTHardware::UARTHardware(const ws_uart_SerialConfig &config,
   _config = config;
   _pin_rx = 0;
   _pin_tx = 0;
-  _pins_valid =
-      WsPinNameToNum(pin_rx, _pin_rx) && WsPinNameToNum(pin_tx, _pin_tx);
+  int32_t rx_num = WsPinNameToNum(pin_rx);
+  int32_t tx_num = WsPinNameToNum(pin_tx);
+  _pins_valid = (rx_num != WS_PIN_INVALID) && (tx_num != WS_PIN_INVALID);
+  if (_pins_valid) {
+    _pin_rx = (uint32_t)rx_num;
+    _pin_tx = (uint32_t)tx_num;
+  }
 }
 
 /*!

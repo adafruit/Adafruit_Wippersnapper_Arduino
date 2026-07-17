@@ -90,8 +90,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   }
 
   // Have we already added this UART port?
-  uint32_t port;
-  if (!WsPinNameToNum(msg->descriptor.pin_rx, port)) {
+  int32_t port = WsPinNameToNum(msg->descriptor.pin_rx);
+  if (port == WS_PIN_INVALID) {
     Ws.error_handler->publishComponentError(msg->descriptor,
                                             "Invalid RX pin name");
     return false;
@@ -180,8 +180,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
 
   // Find the corresponding hardware instance for the UART port
-  uint32_t port_num;
-  if (!WsPinNameToNum(msg->descriptor.pin_rx, port_num)) {
+  int32_t port_num = WsPinNameToNum(msg->descriptor.pin_rx);
+  if (port_num == WS_PIN_INVALID) {
     Ws.error_handler->publishComponentError(msg->descriptor,
                                             "Invalid RX pin name");
     return false;
@@ -193,7 +193,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
       for (std::vector<drvUartBase *>::iterator driver_it =
                _uart_drivers.begin();
            driver_it != _uart_drivers.end(); ++driver_it) {
-        if ((*driver_it)->GetPortNum() == port_num) {
+        if ((*driver_it)->GetPortNum() == (uint32_t)port_num) {
           // Driver found, remove it
           delete *driver_it;
           _uart_drivers.erase(driver_it);

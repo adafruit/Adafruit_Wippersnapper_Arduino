@@ -22,6 +22,13 @@
 #include <protos/sensor.pb.h>
 #include <protos/uart.pb.h>
 
+/*! Size of the device name buffer, exactly matches ws_uart_Add.name in
+    uart.pb.h */
+#define DRV_UART_NAME_LEN (sizeof(((ws_uart_Add *)0)->name))
+/*! Size of the pin name buffers, exactly matches ws_uart_Descriptor.pin_rx
+    in uart.pb.h */
+#define DRV_UART_PIN_NAME_LEN (sizeof(((ws_uart_Descriptor *)0)->pin_rx))
+
 /*!
     @brief  Base class for UART Drivers.
 */
@@ -346,12 +353,13 @@ public:
 protected:
   HardwareSerial *_hw_serial; ///< Pointer to a HardwareSerial instance
 #if HAS_SW_SERIAL
-  SoftwareSerial *_sw_serial; ///< Pointer to a SoftwareSerial instance
-#endif                        // HAS_SW_SERIAL
-  char _name[32];             ///< The device's name
-  char _port_name[32] = {0};  ///< The RX pin name for the UART device
-  uint32_t _port_num = 0;     ///< The port number for the UART device, resolved
-                              ///< from the RX pin name
+  SoftwareSerial *_sw_serial;    ///< Pointer to a SoftwareSerial instance
+#endif                           // HAS_SW_SERIAL
+  char _name[DRV_UART_NAME_LEN]; ///< The device's name
+  char _port_name[DRV_UART_PIN_NAME_LEN] = {
+      0};                 ///< The RX pin name for the UART device
+  uint32_t _port_num = 0; ///< The port number for the UART device, resolved
+                          ///< from the RX pin name
 
   /*!
       @brief    Stores the RX pin name and resolves it to a port number.
@@ -361,8 +369,8 @@ protected:
   void SetPortName(const char *port_name) {
     strncpy(_port_name, port_name, sizeof(_port_name) - 1);
     _port_name[sizeof(_port_name) - 1] = '\0';
-    if (!WsPinNameToNum(_port_name, _port_num))
-      _port_num = 0;
+    int32_t port_num = WsPinNameToNum(_port_name);
+    _port_num = (port_num == WS_PIN_INVALID) ? 0 : (uint32_t)port_num;
   }
   bool _is_software_serial =
       false; ///< Indicates if this driver uses SoftwareSerial
