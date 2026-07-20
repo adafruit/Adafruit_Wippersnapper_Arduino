@@ -20,6 +20,9 @@
 
 #define MAX_DISPLAYS 4        ///< Maximum number of displays
 #define MAX_CANVAS_CHUNKS 1024 ///< Sanity cap on chunks per reassembled canvas
+#define MAX_FEED_HISTORY_STORAGE 512
+#define MAX_CANVAS_SIZE                                                         \
+  (MAX_FEED_HISTORY_STORAGE * 1024) ///< Sanity cap on the reserve() for a reassembled BMP
 
 class wippersnapper;   ///< Forward declaration
 class DisplayHardware; ///< Forward declaration

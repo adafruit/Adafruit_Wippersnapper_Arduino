@@ -101,6 +101,12 @@ public:
   virtual bool drawCanvas(const uint8_t *bmp, size_t len) { return false; }
 
 
+  /*!
+      @brief  Draws a marquee canvas (raw .BMP file bytes) to the display.
+      @param  bmp  Pointer to the complete BMP file bytes.
+      @param  len  Length of the BMP buffer, in bytes.
+      @return True if drawn, False if unsupported by this driver.
+  */
   virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len) {
     return false;
   }

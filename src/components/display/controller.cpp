@@ -474,7 +474,7 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
 
     // Concatenate every region in chunk_id order into one buffer.
     std::vector<uint8_t> bmp;
-    bmp.reserve(_canvas_total_size);
+    bmp.reserve(std::min<size_t>(_canvas_total_size, MAX_CANVAS_SIZE));
     for (uint32_t i = 0; i < _canvas_chunk_total; i++) {
       bmp.insert(bmp.end(), _canvas_chunks[i].begin(), _canvas_chunks[i].end());
     }
