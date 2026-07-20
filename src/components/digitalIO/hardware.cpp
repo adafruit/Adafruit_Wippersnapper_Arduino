@@ -22,15 +22,18 @@
     @param  initial_value The pin's initial value.
     @param  period        The pin's period in milliseconds.
     @param  expander_drv  Pointer to expander driver, or nullptr.
+    @param  is_inverted   True if the pin's logic is active-low (inverted).
 */
 DigitalIOHardware::DigitalIOHardware(uint8_t pin_name,
                                      ws_digitalio_Direction direction,
                                      ws_digitalio_SampleMode sample_mode,
                                      bool initial_value, ulong period,
-                                     ExpanderHardware *expander_drv)
+                                     ExpanderHardware *expander_drv,
+                                     bool is_inverted)
     : _name(pin_name), _direction(direction), _sample_mode(sample_mode),
-      _value(initial_value), _prv_value(initial_value), _period(period),
-      _prv_time(0), _did_read_send(false), _expander_drv(expander_drv) {
+      _value(initial_value), _prv_value(initial_value), _first_read(true),
+      _is_inverted(is_inverted), _period(period), _prv_time(0),
+      _did_read_send(false), _expander_drv(expander_drv) {
   SetMode();
 }
 
@@ -63,16 +66,19 @@ bool DigitalIOHardware::SetMode() {
   bool has_expander = (_expander_drv != nullptr);
 
   if (_direction == ws_digitalio_Direction_D_OUTPUT) {
+    // _value is the logical value; drive the electrical level (inverted for
+    // active-low pins).
+    bool electrical = _is_inverted ? !_value : _value;
     if (!has_expander) {
       pinMode(_name, OUTPUT);
-      digitalWrite(_name, _value ? HIGH : LOW);
+      digitalWrite(_name, electrical ? HIGH : LOW);
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
-      if (!_value)
+      if (!electrical)
         digitalWrite(_name, !0);
 #endif
     } else {
       _expander_drv->pinMode(_name, OUTPUT);
-      _expander_drv->digitalWrite(_name, _value ? HIGH : LOW);
+      _expander_drv->digitalWrite(_name, electrical ? HIGH : LOW);
     }
   } else if (_direction == ws_digitalio_Direction_D_INPUT) {
     if (!has_expander) {
@@ -102,10 +108,13 @@ void DigitalIOHardware::Write(bool value) {
 
   bool has_expander = (_expander_drv != nullptr);
 
+  // value is the logical value; drive the electrical level (inverted for
+  // active-low pins).
+  bool electrical = _is_inverted ? !value : value;
   if (!has_expander) {
-    digitalWrite(_name, value ? HIGH : LOW);
+    digitalWrite(_name, electrical ? HIGH : LOW);
   } else {
-    _expander_drv->digitalWrite(_name, value ? HIGH : LOW);
+    _expander_drv->digitalWrite(_name, electrical ? HIGH : LOW);
   }
   _value = value;
 }
@@ -118,11 +127,10 @@ void DigitalIOHardware::Write(bool value) {
 bool DigitalIOHardware::ReadValue() {
   bool has_expander = (_expander_drv != nullptr);
 
-  if (!has_expander) {
-    _value = digitalRead(_name);
-  } else {
-    _value = _expander_drv->digitalRead(_name);
-  }
+  bool raw =
+      has_expander ? _expander_drv->digitalRead(_name) : digitalRead(_name);
+  // Report the logical value (inverted for active-low pins).
+  _value = _is_inverted ? !raw : raw;
   return _value;
 }
 
@@ -132,6 +140,15 @@ bool DigitalIOHardware::ReadValue() {
 */
 bool DigitalIOHardware::CheckEvent() {
   ReadValue();
+
+  // First read after add: _prv_value was only a guess (initial_value), so we
+  // cannot infer a real transition. Seed the baseline from this read and report
+  // it as the pin's initial state rather than comparing against the guess.
+  if (_first_read) {
+    _first_read = false;
+    _prv_value = _value;
+    return true;
+  }
 
   // Has the value changed since the last time we checked?
   if (_value == _prv_value)

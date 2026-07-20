@@ -1,0 +1,62 @@
+%% Marquee-mode operation of src/components/display/drivers/dispDrvThinkInk.h
+flowchart TD
+    subgraph INIT["begin() — one-time setup"]
+        B0["createEPD()"] --> B1{"panel in<br/>adafruitEPDFactory?"}
+        B1 -- no --> BF["return false"]
+        B1 -- yes --> B2["factory lambda:<br/>new ThinkInk_&lt;panel&gt;(dc,rst,cs,sram_cs,busy)<br/>d-&gt;begin(thinkink_mode)"]
+        B2 --> B3["_display set<br/>setTextSize / setTextColor(EPD_BLACK)<br/>setTextWrap(false)<br/>_height/_width cached<br/>clearBuffer()"]
+        B3 --> B4["_reader = new Adafruit_ImageReader_EPD()"]
+    end
+
+    subgraph CLOUD["Adafruit IO -> device"]
+        C0["ws_display_Write msg<br/>(has_image = true)"]
+    end
+
+    subgraph CTRL["DisplayController::Handle_Display_Write() — controller.cpp"]
+        D0["read image.checksum / size<br/>chunk_id / chunk_total"] --> D1{"_pending_chunk<br/>empty?"}
+        D1 -- yes --> DERR1["resetCanvasReassembly()<br/>return false"]
+        D1 -- no --> D2{"chunk id/total<br/>in range?"}
+        D2 -- no --> DERR2["resetCanvasReassembly()<br/>return false"]
+        D2 -- yes --> D3{"new checksum?"}
+        D3 -- yes --> D4["resetCanvasReassembly()<br/>resize chunk buffer"]
+        D3 -- no --> D5
+        D4 --> D5["store chunk at id-1<br/>(std::move _pending_chunk)"]
+        D5 --> D6{"all chunks<br/>received?"}
+        D6 -- no --> DWAIT["return true<br/>(await next chunk)"]
+        D6 -- yes --> D7["concat chunks in order -> bmp vector"]
+        D7 --> D8{"bmp.size ==<br/>total_size?"}
+        D8 -- no --> DERR3["size mismatch<br/>discard, return false"]
+        D8 -- yes --> D9["findDisplayIndexByName(msg-&gt;name)"]
+        D9 --> D10{"display<br/>found?"}
+        D10 -- no --> DERR4["PublishDisplayComponentError<br/>return false"]
+        D10 -- yes --> D11["_displays[idx]-&gt;drawMarqueeEPD(bmp.data, bmp.size)"]
+    end
+
+    subgraph HW["DisplayHardware::drawMarqueeEPD() — hardware.cpp"]
+        H0{"_drvDisp set?"} -- no --> HERR1["publishAndLogError<br/>return false"]
+        H0 -- yes --> H1{"bmp non-null<br/>and len>0?"}
+        H1 -- no --> HERR2["publishAndLogError<br/>return false"]
+        H1 -- yes --> H2{"len >= 26?<br/>(BMP header)"}
+        H2 -- no --> HERR3["too small<br/>return false"]
+        H2 -- yes --> H3["_drvDisp-&gt;drawMarqueeEPD(bmp, len)"]
+    end
+
+    subgraph DRV["drvDispThinkInk::drawMarqueeEPD() — dispDrvThinkInk.h"]
+        R0{"_display set?"} -- no --> RERR["return false"]
+        R0 -- yes --> R1["_display-&gt;clearBuffer()"]
+        R1 --> R2["_reader-&gt;drawBMP(bmp, len, *_display, 0, 0)"]
+        R2 --> R3{"rc == IMAGE_SUCCESS?"}
+        R3 -- no --> RERR2["return false"]
+        R3 -- yes --> R4["_display-&gt;display()<br/>(EPD refresh)"]
+        R4 --> R5["return true"]
+    end
+
+    C0 --> D0
+    D11 --> H0
+    H3 --> R0
+    B4 -.->|"_display &amp; _reader ready"| R0
+
+    R5 --> D12["resetCanvasReassembly()<br/>return did_draw"]
+
+    classDef err fill:#ffdddd,stroke:#c00,color:#900;
+    class BF,DERR1,DERR2,DERR3,DERR4,HERR1,HERR2,HERR3,RERR,RERR2 err;

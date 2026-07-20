@@ -628,8 +628,30 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(JsonObject &component,
 
   msg_i2c_add.has_descriptor = true;
   msg_i2c_add.descriptor.has_address_space = true;
-  component["i2cBusScl"] = msg_i2c_add.descriptor.address_space.pin_scl;
-  component["i2cBusSda"] = msg_i2c_add.descriptor.address_space.pin_sda;
+  // Pin names may be strings ("D22", "SCL") or legacy pin numbers,
+  // defaulting to the board's standard I2C pins when not provided
+  JsonVariant bus_scl = component["i2cBusScl"];
+  JsonVariant bus_sda = component["i2cBusSda"];
+  char *pin_scl = msg_i2c_add.descriptor.address_space.pin_scl;
+  char *pin_sda = msg_i2c_add.descriptor.address_space.pin_sda;
+  size_t pin_scl_sz = sizeof(msg_i2c_add.descriptor.address_space.pin_scl);
+  size_t pin_sda_sz = sizeof(msg_i2c_add.descriptor.address_space.pin_sda);
+  if (bus_scl.is<const char *>()) {
+    strncpy(pin_scl, bus_scl.as<const char *>(), pin_scl_sz - 1);
+    pin_scl[pin_scl_sz - 1] = '\0';
+  } else if (bus_scl.is<int>()) {
+    snprintf(pin_scl, pin_scl_sz, "%d", bus_scl.as<int>());
+  } else {
+    strncpy(pin_scl, "SCL", pin_scl_sz);
+  }
+  if (bus_sda.is<const char *>()) {
+    strncpy(pin_sda, bus_sda.as<const char *>(), pin_sda_sz - 1);
+    pin_sda[pin_sda_sz - 1] = '\0';
+  } else if (bus_sda.is<int>()) {
+    snprintf(pin_sda, pin_sda_sz, "%d", bus_sda.as<int>());
+  } else {
+    strncpy(pin_sda, "SDA", pin_sda_sz);
+  }
 
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
   msg_i2c_add.descriptor.address = HexStrToInt(addr_device);

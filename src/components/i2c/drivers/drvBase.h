@@ -52,8 +52,8 @@ public:
     _i2c_mux_channel = mux_channel;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
-    _pin_scl = 0;
-    _pin_sda = 0;
+    _pin_scl[0] = '\0';
+    _pin_sda[0] = '\0';
     _did_read_send = false;
   }
 
@@ -88,28 +88,30 @@ public:
   void SetMuxAddress(uint32_t mux_address) { _i2c_mux_addr = mux_address; }
 
   /*!
-      @brief    Sets the I2C bus pins for this driver.
+      @brief    Sets the I2C bus pin names for this driver.
       @param    pin_scl
-                The SCL pin number.
+                The SCL pin name.
       @param    pin_sda
-                The SDA pin number.
+                The SDA pin name.
   */
-  void SetPins(uint32_t pin_scl, uint32_t pin_sda) {
-    _pin_scl = pin_scl;
-    _pin_sda = pin_sda;
+  void SetPins(const char *pin_scl, const char *pin_sda) {
+    strncpy(_pin_scl, pin_scl, sizeof(_pin_scl) - 1);
+    _pin_scl[sizeof(_pin_scl) - 1] = '\0';
+    strncpy(_pin_sda, pin_sda, sizeof(_pin_sda) - 1);
+    _pin_sda[sizeof(_pin_sda) - 1] = '\0';
   }
 
   /*!
-      @brief    Gets the SCL pin for this driver's I2C bus.
-      @returns  The SCL pin number.
+      @brief    Gets the SCL pin name for this driver's I2C bus.
+      @returns  The SCL pin name.
   */
-  uint32_t GetPinSCL() { return _pin_scl; }
+  const char *GetPinSCL() { return _pin_scl; }
 
   /*!
-      @brief    Gets the SDA pin for this driver's I2C bus.
-      @returns  The SDA pin number.
+      @brief    Gets the SDA pin name for this driver's I2C bus.
+      @returns  The SDA pin name.
   */
-  uint32_t GetPinSDA() { return _pin_sda; }
+  const char *GetPinSDA() { return _pin_sda; }
 
   /*!
       @brief    Gets the I2C MUX channel connected to the I2C device.
@@ -861,8 +863,8 @@ protected:
   uint32_t _i2c_mux_addr;    ///< The I2C MUX address, if applicable.
   uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
   char _name[15];            ///< The device's name.
-  uint32_t _pin_scl;         ///< The SCL pin number for this driver's bus.
-  uint32_t _pin_sda;         ///< The SDA pin number for this driver's bus.
+  char _pin_scl[32];         ///< The SCL pin name for this driver's bus.
+  char _pin_sda[32];         ///< The SDA pin name for this driver's bus.
   ulong _sensor_period;      ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;     ///< Number of sensors on the device.

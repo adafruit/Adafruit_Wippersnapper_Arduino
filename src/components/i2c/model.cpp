@@ -396,9 +396,9 @@ void I2cModel::ClearI2cDeviceEvent() {
 /*!
     @brief    Sets the I2cDeviceEvent message's device description.
     @param    pin_scl
-                The SCL pin number.
+                The SCL pin name.
     @param    pin_sda
-                The SDA pin number.
+                The SDA pin name.
     @param    addr_device
                 The device address.
     @param    addr_mux
@@ -406,15 +406,23 @@ void I2cModel::ClearI2cDeviceEvent() {
     @param    mux_channel
                 The MUX channel.
 */
-void I2cModel::SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
-                                                 uint32_t pin_sda,
+void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *pin_scl,
+                                                 const char *pin_sda,
                                                  uint32_t addr_device,
                                                  uint32_t addr_mux,
                                                  uint32_t mux_channel) {
   _msg_i2c_event.has_descriptor = true;
   _msg_i2c_event.descriptor.has_address_space = true;
-  _msg_i2c_event.descriptor.address_space.pin_scl = pin_scl;
-  _msg_i2c_event.descriptor.address_space.pin_sda = pin_sda;
+  strncpy(_msg_i2c_event.descriptor.address_space.pin_scl, pin_scl,
+          sizeof(_msg_i2c_event.descriptor.address_space.pin_scl) - 1);
+  _msg_i2c_event.descriptor.address_space
+      .pin_scl[sizeof(_msg_i2c_event.descriptor.address_space.pin_scl) - 1] =
+      '\0';
+  strncpy(_msg_i2c_event.descriptor.address_space.pin_sda, pin_sda,
+          sizeof(_msg_i2c_event.descriptor.address_space.pin_sda) - 1);
+  _msg_i2c_event.descriptor.address_space
+      .pin_sda[sizeof(_msg_i2c_event.descriptor.address_space.pin_sda) - 1] =
+      '\0';
   _msg_i2c_event.descriptor.address = addr_device;
   _msg_i2c_event.descriptor.address_space.mux_address = addr_mux;
   _msg_i2c_event.descriptor.address_space.mux_channel = mux_channel;

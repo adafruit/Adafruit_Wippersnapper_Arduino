@@ -738,8 +738,12 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   }
 
   // Initialize DeviceToBroker message
+  // NOTE: memset only - do not re-add `*msg =
+  // ws_signal_DeviceToBroker_init_zero;` ESP8266's GCC rejects braced-list
+  // re-assignment now that the initializer contains string-literal char-array
+  // members (the i2c/uart pin name fields). memset is bit-identical to
+  // init_zero for this all-static struct.
   memset(msg, 0, sizeof(ws_signal_DeviceToBroker));
-  *msg = ws_signal_DeviceToBroker_init_zero;
 
   // Fill generic signal payload with the payload from the args.
   switch (which_payload) {
