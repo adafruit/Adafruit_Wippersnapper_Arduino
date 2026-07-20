@@ -503,9 +503,9 @@ public:
     _height = _display->height();
     _width = _display->width();
     _display->clearBuffer();
-    // TODO: This probably doesn't need to be here, but there isnt a base class
-    // for thinkink w/marquee yet
     _reader = new Adafruit_ImageReader_EPD();
+    if (!_reader)
+      return false;
     return true;
   }
 
@@ -639,9 +639,7 @@ public:
       @return True if accepted, False otherwise.
   */
   virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len) override {
-    // TODO: This probably doesn't need an override, but the base class doesn't
-    // have a default implementation yet.
-    if (!_display)
+    if (!_display || !_reader)
       return false;
     _display->clearBuffer();
     ImageReturnCode rc = _reader->drawBMP(bmp, len, *_display, 0, 0);

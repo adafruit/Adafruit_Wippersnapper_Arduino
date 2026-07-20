@@ -498,16 +498,18 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
       WS_DEBUG_PRINTVAR(msg->name);
       WS_DEBUG_PRINTLN(") not found for canvas!");
       if (msg->has_descriptor) {
-        PublishDisplayComponentError(msg->descriptor,
-                                     "Display not found for canvas write");
+        PublishDisplayComponentError(msg->descriptor,"Display not found for image write");
       }
       resetCanvasReassembly();
       return false;
     }
 
-    // bool did_draw = _displays[disp_idx]->drawCanvas(bmp.data(), bmp.size());
+    // Attempt to draw the assembled BMP to the display
     bool did_draw = _displays[disp_idx]->drawMarqueeEPD(bmp.data(), bmp.size());
     resetCanvasReassembly(); // frees the per-chunk regions now that bmp is built
+    if (! did_draw) {
+        PublishDisplayComponentError(msg->descriptor,"Failed to draw canvas to display");
+    }
     return did_draw;
   }
 
