@@ -13,6 +13,7 @@
  *
  */
 #include "controller.h"
+#include <memory>
 
 DisplayController::DisplayController() {
   _num_displays = 0;
@@ -54,22 +55,33 @@ void DisplayController::resetCanvasReassembly() {
     @return True if the message was successfully routed, False otherwise.
 */
 bool DisplayController::Router(pb_istream_t *stream) {
+  WS_DEBUG_PRINTLN("=> Routing Display message...");
   // Save the stream before decoding — the write case re-decodes with a
   // chunk_data callback wired up, and ws_pb_decode consumes the stream.
   pb_istream_t saved_stream = *stream;
+  WS_DEBUG_PRINTLN("=> Saved stream for re-decode if needed...");
 
-  // B2D envelope carries the display name as a callback field
-  ws_display_B2D b2d = ws_display_B2D_init_zero;
-  if (!ws_pb_decode(stream, ws_display_B2D_fields, &b2d)) {
+  // ws_display_B2D is large (~1.4KB — its union embeds Write.message[1024]).
+  // Router runs nested inside the outer signal pb_decode (via the cb_payload
+  // callback), so keeping this struct on the stack risks overflowing the
+  // loopTask stack. Heap-allocate it; unique_ptr frees it on every return.
+  std::unique_ptr<ws_display_B2D> b2d(new ws_display_B2D);
+  *b2d = ws_display_B2D_init_zero;
+  WS_DEBUG_PRINTLN("=> Decoding Display B2D envelope...");
+  if (!ws_pb_decode(stream, ws_display_B2D_fields, b2d.get())) {
     WS_DEBUG_PRINTLN("[display] ERROR: Unable to decode Display B2D envelope");
     return false;
   }
 
-  switch (b2d.which_payload) {
+  WS_DEBUG_PRINT("[display] Decoded B2D envelope with payload tag: ");
+  WS_DEBUG_PRINTLNVAR(b2d->which_payload);
+
+  switch (b2d->which_payload) {
   case ws_display_B2D_add_tag:
-    return Handle_Display_Add(&b2d.payload.add);
+    WS_DEBUG_PRINTLN("[display] Routing Display Add message...");
+    return Handle_Display_Add(&b2d->payload.add);
   case ws_display_B2D_remove_tag:
-    return Handle_Display_Remove(&b2d.payload.remove);
+    return Handle_Display_Remove(&b2d->payload.remove);
   case ws_display_B2D_write_tag: {
     // Re-decode from the saved stream with the Canvas chunk_data callback
     // wired up; the first decode skipped chunk_data (no callback set).
@@ -80,17 +92,18 @@ bool DisplayController::Router(pb_istream_t *stream) {
     // AND decoding with PB_DECODE_NOINIT skips both the default-init (which
     // would otherwise reset which_payload to 0) and that memset, so the
     // callback survives. init_zero gives a clean struct since we skip init.
-    ws_display_B2D b2d_w = ws_display_B2D_init_zero;
-    b2d_w.which_payload = ws_display_B2D_write_tag;
-    b2d_w.payload.write.image.chunk_data.funcs.decode = cbDecodeCanvasChunk;
-    b2d_w.payload.write.image.chunk_data.arg = this;
-    if (!pb_decode_ex(&saved_stream, ws_display_B2D_fields, &b2d_w,
+    std::unique_ptr<ws_display_B2D> b2d_w(new ws_display_B2D);
+    *b2d_w = ws_display_B2D_init_zero;
+    b2d_w->which_payload = ws_display_B2D_write_tag;
+    b2d_w->payload.write.image.chunk_data.funcs.decode = cbDecodeCanvasChunk;
+    b2d_w->payload.write.image.chunk_data.arg = this;
+    if (!pb_decode_ex(&saved_stream, ws_display_B2D_fields, b2d_w.get(),
                       PB_DECODE_NOINIT)) {
       WS_DEBUG_PRINT("[display] ERROR: Failed to re-decode write w/ canvas: ");
       WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(&saved_stream));
       return false;
     }
-    return Handle_Display_Write(&b2d_w.payload.write);
+    return Handle_Display_Write(&b2d_w->payload.write);
   }
   default:
     WS_DEBUG_PRINTLN("[display] WARNING: Unsupported Display payload");
