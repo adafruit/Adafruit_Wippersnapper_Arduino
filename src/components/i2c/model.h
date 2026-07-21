@@ -67,6 +67,7 @@ public:
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
   bool EncodeI2cDeviceEvent();
+  bool EncodeI2cDeviceEventD2B();
   // Getters
   ws_i2c_Remove *GetI2cDeviceRemoveMsg();
   ws_i2c_Add *GetI2cDeviceAddOrReplaceMsg();

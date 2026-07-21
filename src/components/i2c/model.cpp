@@ -462,6 +462,24 @@ bool I2cModel::EncodeI2cDeviceEvent() {
 }
 
 /*!
+    @brief    Wraps the current I2cDeviceEvent in the ws_i2c_D2B envelope so it
+              can be published to IO online (parallel to EncodeProbed()).
+    @returns  True if the wrapped D2B message is encodable, False otherwise.
+*/
+bool I2cModel::EncodeI2cDeviceEventD2B() {
+  memset(&_msg_i2c_d2b, 0, sizeof(_msg_i2c_d2b));
+  _msg_i2c_d2b.which_payload = ws_i2c_D2B_event_tag;
+  _msg_i2c_d2b.payload.event = _msg_i2c_event;
+
+  // Verify we can get the encoded size before handing it to PublishD2b.
+  size_t sz_msg;
+  if (!pb_get_encoded_size(&sz_msg, ws_i2c_D2B_fields, &_msg_i2c_d2b))
+    return false;
+
+  return true;
+}
+
+/*!
     @brief    Returns a pointer to the I2cDeviceEvent message.
     @returns  Pointer to the I2cDeviceEvent message.
 */
