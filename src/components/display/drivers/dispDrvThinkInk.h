@@ -518,7 +518,7 @@ public:
     // TODO: Only enable this for MONO displays, and only if the splash image is
     // available for the resolution.
     //_display->drawBitmap(0, 0, epd_bitmap_ws_logo_296128, 296, 128,
-    //EPD_BLACK); _display->display();
+    // EPD_BLACK); _display->display();
   }
 
   /*!
@@ -644,23 +644,15 @@ public:
       @return True if accepted, False otherwise.
   */
   virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len) override {
-    WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD");
-    if (!_display || !_reader) {
-      WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD - display or reader "
-                       "not initialized");
+    if (!_display || !_reader)
       return false;
-    }
-    WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD - clearing buffer");
     _display->clearBuffer();
-    WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD - drawing BMP");
+
+    // Draw the BMP to the display
     ImageReturnCode rc = _reader->drawBMP(bmp, len, *_display, 0, 0);
-    WS_DEBUG_PRINTLN(
-        "drvDispThinkInk::drawMarqueeEPD - BMP draw return code: " +
-        String(rc));
-    if (rc != IMAGE_SUCCESS) {
-      WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD - failed to draw BMP");
+    if (rc != IMAGE_SUCCESS)
       return false;
-    }
+
     _display->display();
     return true;
   }

@@ -349,27 +349,6 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (strlen(spi_pin_config->pin_cs) >= 2)
     cs = parsePin(spi_pin_config->pin_cs);
 
-#ifdef CORE_LOG_LEVEL
-#if CORE_LOG_LEVEL > 1
-  WS_DEBUG_PRINT("[display] SPI EPD pins - DC:");
-  WS_DEBUG_PRINTVAR(dc);
-  WS_DEBUG_PRINT(" RST:");
-  WS_DEBUG_PRINTVAR(rst);
-  WS_DEBUG_PRINT(" CS:");
-  WS_DEBUG_PRINTVAR(cs);
-  WS_DEBUG_PRINT(" MOSI:");
-  WS_DEBUG_PRINTVAR(mosi);
-  WS_DEBUG_PRINT(" SCK:");
-  WS_DEBUG_PRINTVAR(sck);
-  WS_DEBUG_PRINT(" MISO:");
-  WS_DEBUG_PRINTVAR(miso);
-  WS_DEBUG_PRINT(" SRAM_CS:");
-  WS_DEBUG_PRINTVAR(sram_cs);
-  WS_DEBUG_PRINT(" BUSY:");
-  WS_DEBUG_PRINTLNVAR(busy);
-#endif
-#endif
-
   // EPD drivers currently use the default hardware SPI bus/pins.
   // Reject explicit non-default SPI pins from the payload.
   if ((mosi >= 0 && mosi != MOSI) || (sck >= 0 && sck != SCK) ||

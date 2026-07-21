@@ -298,8 +298,9 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
     WS_DEBUG_PRINTLN("[display] Processing initial write...");
     // TODO: Unlike Router()'s write path, this call does NOT wire the
     // chunk_data decode callback (cbDecodeCanvasChunk), so _pending_chunk is
-    // empty here. An Add-bundled image write therefore fails handleCanvasWrite's
-    // empty-chunk check; only text writes are supported on this path today.
+    // empty here. An Add-bundled image write therefore fails
+    // handleCanvasWrite's empty-chunk check; only text writes are supported on
+    // this path today.
     // TODO: To support Add-bundled image writes, replicate Router()'s
     // pb_decode_ex + PB_DECODE_NOINIT callback wiring for msg->write.image.
     Handle_Display_Write(&msg->write);
@@ -459,7 +460,8 @@ bool DisplayController::handleTextWrite(ws_display_Write *msg) {
   WS_DEBUG_PRINT("[display] Writing to display: ");
   WS_DEBUG_PRINTLNVAR(msg->name);
 
-  int8_t idx = resolveDisplayOrPublishError(msg, "Display not found for write request");
+  int8_t idx =
+      resolveDisplayOrPublishError(msg, "Display not found for write request");
   if (idx < 0) {
     return false;
   }
@@ -519,7 +521,6 @@ bool DisplayController::ingestCanvasChunk(ws_display_Write *msg) {
   WS_DEBUG_PRINT(", Chunk Bytes: ");
   WS_DEBUG_PRINTLNVAR((uint32_t)_pending_chunk.size());
 
-
   // Validate the chunk metadata
   if (canvas_chunk_total == 0 || canvas_chunk_total > MAX_CANVAS_CHUNKS ||
       canvas_chunk_id < 1 || canvas_chunk_id > canvas_chunk_total) {
@@ -545,7 +546,8 @@ bool DisplayController::ingestCanvasChunk(ws_display_Write *msg) {
     return false;
   }
 
-  // First time we've seen this chunk id? Copy the bytes into the buffer for reassembly.
+  // First time we've seen this chunk id? Copy the bytes into the buffer for
+  // reassembly.
   if (_canvas_chunks[idx].empty())
     _canvas_chunks_received++;
   // Also let's avoid copying bytes 2x
@@ -587,6 +589,8 @@ bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
   int8_t disp_idx =
       resolveDisplayOrPublishError(msg, "Display not found for image write");
   if (disp_idx < 0) {
+    WS_DEBUG_PRINT("[display] ERROR: Display not found for image write: ");
+    WS_DEBUG_PRINTLNVAR(disp_idx);
     resetCanvasReassembly();
     return false;
   }
@@ -614,13 +618,15 @@ bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
 int8_t
 DisplayController::resolveDisplayOrPublishError(ws_display_Write *msg,
                                                 const char *errorMessage) {
-  if (!msg->has_descriptor) {
-    WS_DEBUG_PRINTLN("[display] WARNING: No descriptor in write message to "
-                     "publish error against");
-    return -1;
-  }
+  /*   if (!msg->has_descriptor) {
+      WS_DEBUG_PRINTLN("[display] WARNING: No descriptor in write message to "
+                       "publish error against");
+      return -1;
+    } */
 
   int8_t idx = findDisplayIndexByName(msg->name);
+  WS_DEBUG_PRINT("[display] Resolved display index for write: ");
+  WS_DEBUG_PRINTLNVAR(idx);
   if (idx < 0)
     PublishDisplayComponentError(msg->descriptor, errorMessage);
   return idx;
@@ -673,6 +679,8 @@ int8_t DisplayController::findDisplayIndexByName(const char *name) {
       WS_DEBUG_PRINTLNVAR(_displays[i]->getName());
     }
     if (_displays[i] && strcmp(_displays[i]->getName(), name) == 0) {
+      WS_DEBUG_PRINT("[display] Found display at index ");
+      WS_DEBUG_PRINTLNVAR(i);
       return i;
     }
   }
