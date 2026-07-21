@@ -503,17 +503,22 @@ public:
     _height = _display->height();
     _width = _display->width();
     _display->clearBuffer();
+    _display->display();
     _reader = new Adafruit_ImageReader_EPD();
-    if (!_reader)
+    if (!_reader) {
+      WS_DEBUG_PRINTLN("Failed to create Adafruit_ImageReader_EPD");
       return false;
+    }
     return true;
   }
 
   void showSplash() override {
     if (!_display)
       return;
-    _display->drawBitmap(0, 0, epd_bitmap_ws_logo_296128, 296, 128, EPD_BLACK);
-    _display->display();
+    // TODO: Only enable this for MONO displays, and only if the splash image is
+    // available for the resolution.
+    //_display->drawBitmap(0, 0, epd_bitmap_ws_logo_296128, 296, 128,
+    //EPD_BLACK); _display->display();
   }
 
   /*!
@@ -639,12 +644,23 @@ public:
       @return True if accepted, False otherwise.
   */
   virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len) override {
-    if (!_display || !_reader)
+    WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD");
+    if (!_display || !_reader) {
+      WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD - display or reader "
+                       "not initialized");
       return false;
+    }
+    WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD - clearing buffer");
     _display->clearBuffer();
+    WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD - drawing BMP");
     ImageReturnCode rc = _reader->drawBMP(bmp, len, *_display, 0, 0);
-    if (rc != IMAGE_SUCCESS)
+    WS_DEBUG_PRINTLN(
+        "drvDispThinkInk::drawMarqueeEPD - BMP draw return code: " +
+        String(rc));
+    if (rc != IMAGE_SUCCESS) {
+      WS_DEBUG_PRINTLN("drvDispThinkInk::drawMarqueeEPD - failed to draw BMP");
       return false;
+    }
     _display->display();
     return true;
   }

@@ -304,11 +304,14 @@ bool handleCheckinResponse(pb_istream_t *stream) {
 bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
                          void **arg) {
   (void)arg;
-
+  WS_DEBUG_PRINTLN("=> Routing BrokerToDevice message...");
   if (stream == nullptr || field == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: Null stream or field in routeBrokerToDevice");
     return false;
   }
+
+  WS_DEBUG_PRINT("=> Routing BrokerToDevice message with tag: ");
+  WS_DEBUG_PRINTLNVAR(field->tag);
 
   // Pass to class' router based on tag type
   switch (field->tag) {
@@ -359,14 +362,16 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
 void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("=> New B2D message!");
   // Diagnostic: the on-wire payload length actually delivered by Adafruit_MQTT.
-  // If this is clamped near SUBSCRIPTIONDATALEN-1 (2047) or otherwise larger than
-  // the expected encoded message, the packet was truncated by the 2048 RX buffer.
+  // If this is clamped near SUBSCRIPTIONDATALEN-1 (2047) or otherwise larger
+  // than the expected encoded message, the packet was truncated by the 2048 RX
+  // buffer.
   WS_DEBUG_PRINT("=> B2D payload len: ");
   WS_DEBUG_PRINTLNVAR(len);
   ws_signal_BrokerToDevice msg_signal = ws_signal_BrokerToDevice_init_default;
 
   // Configure the payload callback
   msg_signal.cb_payload.funcs.decode = routeBrokerToDevice;
+  WS_DEBUG_PRINTLN("=> Decoding B2D message...");
 
   // Decode message
   pb_istream_t istream = pb_istream_from_buffer((uint8_t *)data, len);

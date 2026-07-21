@@ -421,7 +421,8 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   }
 
   // Attempt to create EPD driver instance
-  _drvDisp = new drvDispThinkInk((char *)msg->panel, config->mode, dc, rst, cs, sram_cs, busy);
+  _drvDisp = new drvDispThinkInk((char *)msg->panel, config->mode, dc, rst, cs,
+                                 sram_cs, busy);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate EPD driver!");
     return false;
@@ -684,6 +685,8 @@ bool DisplayHardware::drawCanvas(const uint8_t *bmp, size_t len) {
 }
 
 bool DisplayHardware::drawMarqueeEPD(const uint8_t *bmp, size_t len) {
+  WS_DEBUG_PRINT("[display] Drawing marquee EPD, length: ");
+  WS_DEBUG_PRINTLNVAR(len);
 
   if (!_drvDisp) {
     publishAndLogError(F("[display] ERROR: No display driver initialized!"));
@@ -699,6 +702,7 @@ bool DisplayHardware::drawMarqueeEPD(const uint8_t *bmp, size_t len) {
     return false;
   }
 
+  WS_DEBUG_PRINT("[display] Drawing marquee in driver");
   return _drvDisp->drawMarqueeEPD(bmp, len);
 }
 

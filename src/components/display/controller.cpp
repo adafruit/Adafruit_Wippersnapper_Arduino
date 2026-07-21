@@ -13,7 +13,6 @@
  *
  */
 #include "controller.h"
-#include <memory>
 
 DisplayController::DisplayController() {
   _num_displays = 0;
@@ -64,24 +63,28 @@ bool DisplayController::Router(pb_istream_t *stream) {
   // ws_display_B2D is large (~1.4KB — its union embeds Write.message[1024]).
   // Router runs nested inside the outer signal pb_decode (via the cb_payload
   // callback), so keeping this struct on the stack risks overflowing the
-  // loopTask stack. Heap-allocate it; unique_ptr frees it on every return.
-  std::unique_ptr<ws_display_B2D> b2d(new ws_display_B2D);
+  // loopTask stack. Heap-allocate it and free it before every return.
+  ws_display_B2D *b2d = new ws_display_B2D;
   *b2d = ws_display_B2D_init_zero;
   WS_DEBUG_PRINTLN("=> Decoding Display B2D envelope...");
-  if (!ws_pb_decode(stream, ws_display_B2D_fields, b2d.get())) {
+  if (!ws_pb_decode(stream, ws_display_B2D_fields, b2d)) {
     WS_DEBUG_PRINTLN("[display] ERROR: Unable to decode Display B2D envelope");
+    delete b2d;
     return false;
   }
 
   WS_DEBUG_PRINT("[display] Decoded B2D envelope with payload tag: ");
   WS_DEBUG_PRINTLNVAR(b2d->which_payload);
 
+  bool status = false;
   switch (b2d->which_payload) {
   case ws_display_B2D_add_tag:
     WS_DEBUG_PRINTLN("[display] Routing Display Add message...");
-    return Handle_Display_Add(&b2d->payload.add);
+    status = Handle_Display_Add(&b2d->payload.add);
+    break;
   case ws_display_B2D_remove_tag:
-    return Handle_Display_Remove(&b2d->payload.remove);
+    status = Handle_Display_Remove(&b2d->payload.remove);
+    break;
   case ws_display_B2D_write_tag: {
     // Re-decode from the saved stream with the Canvas chunk_data callback
     // wired up; the first decode skipped chunk_data (no callback set).
@@ -92,23 +95,30 @@ bool DisplayController::Router(pb_istream_t *stream) {
     // AND decoding with PB_DECODE_NOINIT skips both the default-init (which
     // would otherwise reset which_payload to 0) and that memset, so the
     // callback survives. init_zero gives a clean struct since we skip init.
-    std::unique_ptr<ws_display_B2D> b2d_w(new ws_display_B2D);
+    ws_display_B2D *b2d_w = new ws_display_B2D;
     *b2d_w = ws_display_B2D_init_zero;
     b2d_w->which_payload = ws_display_B2D_write_tag;
     b2d_w->payload.write.image.chunk_data.funcs.decode = cbDecodeCanvasChunk;
     b2d_w->payload.write.image.chunk_data.arg = this;
-    if (!pb_decode_ex(&saved_stream, ws_display_B2D_fields, b2d_w.get(),
+    if (!pb_decode_ex(&saved_stream, ws_display_B2D_fields, b2d_w,
                       PB_DECODE_NOINIT)) {
       WS_DEBUG_PRINT("[display] ERROR: Failed to re-decode write w/ canvas: ");
       WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(&saved_stream));
+      delete b2d_w;
+      delete b2d;
       return false;
     }
-    return Handle_Display_Write(&b2d_w->payload.write);
+    status = Handle_Display_Write(&b2d_w->payload.write);
+    delete b2d_w;
+    break;
   }
   default:
     WS_DEBUG_PRINTLN("[display] WARNING: Unsupported Display payload");
-    return false;
+    break;
   }
+
+  delete b2d;
+  return status;
 }
 
 /*!
@@ -325,8 +335,8 @@ void DisplayController::PublishDisplayComponentError(
                                             error);
     break;
   default:
-    WS_DEBUG_PRINTLN(
-        "[display] WARNING: Unknown interface type in add request");
+    WS_DEBUG_PRINT("[display] WARNING: Unknown display interface");
+    WS_DEBUG_PRINTVAR(iface.which_descriptor);
     Ws.error_handler->publishComponentError("Unknown interface", error);
     break;
   }
@@ -444,9 +454,8 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
       return false;
     }
 
-    if (canvas_chunk_total == 0 ||
-        canvas_chunk_total > MAX_CANVAS_CHUNKS || canvas_chunk_id < 1 ||
-        canvas_chunk_id > canvas_chunk_total) {
+    if (canvas_chunk_total == 0 || canvas_chunk_total > MAX_CANVAS_CHUNKS ||
+        canvas_chunk_id < 1 || canvas_chunk_id > canvas_chunk_total) {
       WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id/total out of range");
       resetCanvasReassembly();
       return false;
@@ -505,23 +514,33 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
 
     // TODO: Refactor this in, we already call below...
     // Hand the assembled BMP to the target display's driver.
+    WS_DEBUG_PRINT("[display] Writing assembled BMP to display: ");
+    WS_DEBUG_PRINTLNVAR(msg->name);
     int8_t disp_idx = findDisplayIndexByName(msg->name);
     if (disp_idx < 0) {
+      if (msg->has_descriptor) {
+        WS_DEBUG_PRINTLN(
+            "[display] ERROR: Publishing component error for canvas write");
+        PublishDisplayComponentError(msg->descriptor,
+                                     "Display not found for image write");
+      }
       WS_DEBUG_PRINT("[display] ERROR: Display (");
       WS_DEBUG_PRINTVAR(msg->name);
-      WS_DEBUG_PRINTLN(") not found for canvas!");
-      if (msg->has_descriptor) {
-        PublishDisplayComponentError(msg->descriptor,"Display not found for image write");
-      }
+      WS_DEBUG_PRINTLN(") not found!");
       resetCanvasReassembly();
       return false;
     }
 
     // Attempt to draw the assembled BMP to the display
+    WS_DEBUG_PRINTLN("[display] Attempting to draw canvas to display...");
     bool did_draw = _displays[disp_idx]->drawMarqueeEPD(bmp.data(), bmp.size());
-    resetCanvasReassembly(); // frees the per-chunk regions now that bmp is built
-    if (! did_draw) {
-        PublishDisplayComponentError(msg->descriptor,"Failed to draw canvas to display");
+    WS_DEBUG_PRINT("[display] Draw result: ");
+    WS_DEBUG_PRINTLNVAR(did_draw);
+    resetCanvasReassembly(); // frees the per-chunk regions now that bmp is
+                             // built
+    if (!did_draw) {
+      PublishDisplayComponentError(msg->descriptor,
+                                   "Failed to draw canvas to display");
     }
     return did_draw;
   }
@@ -570,7 +589,12 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
   for (uint8_t i = 0; i < _num_displays; i++) {
     if (_displays[i]) {
       WS_DEBUG_PRINTLN("[display] Updating status bar...");
-      _displays[i]->updateStatusBar(rssi, battery_charge_level, is_connected);
+      // TODO: TRICOLOR and QUADCOLOR (not sure about grayscale) displays take a
+      // LONG time to refresh
+      // TODO: maybe kill this functionality if they are actively using Marquee,
+      //       and refresh the status bar along with the marquee?
+      // _displays[i]->updateStatusBar(rssi, battery_charge_level,
+      // is_connected);
     }
   }
 }
@@ -586,6 +610,13 @@ int8_t DisplayController::findDisplayIndexByName(const char *name) {
     return -1;
   }
   for (uint8_t i = 0; i < _num_displays; i++) {
+    // TODO: Remove, debug only print out the display names
+    if (_displays[i]) {
+      WS_DEBUG_PRINT("[display] Checking display at index ");
+      WS_DEBUG_PRINTVAR(i);
+      WS_DEBUG_PRINT(" with name: ");
+      WS_DEBUG_PRINTLNVAR(_displays[i]->getName());
+    }
     if (_displays[i] && strcmp(_displays[i]->getName(), name) == 0) {
       return i;
     }
