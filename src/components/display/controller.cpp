@@ -32,15 +32,17 @@ DisplayController::~DisplayController() {
 }
 
 /*!
-    @brief  Frees all buffered canvas chunk regions and zeroes the per-canvas
-            reassembly state. Does NOT touch _pending_chunk: that holds the
-            current message's just-decoded bytes and is owned by the decode
-            callback / Handle_Display_Write, which may call this mid-message
-            (e.g. on a new image id) before filing those bytes.
+    @brief  Frees all buffered canvas chunk regions and the assembled bitmap,
+            and zeroes the per-canvas reassembly state. Does NOT touch
+            _pending_chunk: that holds the current message's just-decoded bytes
+            and is owned by the decode callback / Handle_Display_Write, which
+            may call this mid-message (e.g. on a new image id) before filing
+            those bytes.
 */
 void DisplayController::resetCanvasReassembly() {
   // swap-with-empty releases the heap capacity, not just the size
   std::vector<std::vector<uint8_t>>().swap(_canvas_chunks);
+  std::vector<uint8_t>().swap(_bmp);
   _current_canvas_checksum = 0;
   _canvas_chunk_total = 0;
   _canvas_chunks_received = 0;
@@ -294,6 +296,12 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   // Handle optional initial write
   if (msg->has_write) {
     WS_DEBUG_PRINTLN("[display] Processing initial write...");
+    // TODO: Unlike Router()'s write path, this call does NOT wire the
+    // chunk_data decode callback (cbDecodeCanvasChunk), so _pending_chunk is
+    // empty here. An Add-bundled image write therefore fails handleCanvasWrite's
+    // empty-chunk check; only text writes are supported on this path today.
+    // TODO: To support Add-bundled image writes, replicate Router()'s
+    // pb_decode_ex + PB_DECODE_NOINIT callback wiring for msg->write.image.
     Handle_Display_Write(&msg->write);
   }
 
@@ -429,146 +437,193 @@ bool DisplayController::cbDecodeCanvasChunk(pb_istream_t *stream,
     @return True if successful, False otherwise.
 */
 bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
-
-  // Adafruit Canvas/Marquee Feature Spike
-  if (msg->has_image) {
-    uint32_t canvas_checksum = msg->image.checksum;
-    uint32_t canvas_total_size = msg->image.size;
-    uint32_t canvas_chunk_id = msg->image.chunk_id;
-    uint32_t canvas_chunk_total = msg->image.chunk_total;
-    WS_DEBUG_PRINT("[display] Canvas Checksum: ");
-    WS_DEBUG_PRINTVAR(canvas_checksum);
-    WS_DEBUG_PRINT(", Total Size: ");
-    WS_DEBUG_PRINTVAR(canvas_total_size);
-    WS_DEBUG_PRINT(", Chunk ID: ");
-    WS_DEBUG_PRINTVAR(canvas_chunk_id);
-    WS_DEBUG_PRINT(", Chunk Total: ");
-    WS_DEBUG_PRINTVAR(canvas_chunk_total);
-    WS_DEBUG_PRINT(", Chunk Bytes: ");
-    WS_DEBUG_PRINTLNVAR((uint32_t)_pending_chunk.size());
-
-    // Did the decode callback actually decode any bytes into the chunk?
-    if (_pending_chunk.empty()) {
-      WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk_data missing/empty");
-      resetCanvasReassembly();
-      return false;
-    }
-
-    if (canvas_chunk_total == 0 || canvas_chunk_total > MAX_CANVAS_CHUNKS ||
-        canvas_chunk_id < 1 || canvas_chunk_id > canvas_chunk_total) {
-      WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id/total out of range");
-      resetCanvasReassembly();
-      return false;
-    }
-
-    // New image id detected
-    if (canvas_checksum != _current_canvas_checksum) {
-      resetCanvasReassembly();
-      _current_canvas_checksum = canvas_checksum;
-      _canvas_chunk_total = canvas_chunk_total;
-      _canvas_total_size = canvas_total_size;
-      _canvas_chunks.resize(canvas_chunk_total);
-    }
-
-    // Apply correct index
-    uint32_t idx = canvas_chunk_id - 1;
-    if (idx >= _canvas_chunks.size()) {
-      WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id exceeds buffer");
-      resetCanvasReassembly();
-      return false;
-    }
-    if (_canvas_chunks[idx].empty()) {
-      _canvas_chunks_received++;
-    }
-    // avoid copying bytes 2x
-    _canvas_chunks[idx] = std::move(_pending_chunk);
-    _pending_chunk.clear();
-
-    // Wait for more chunks
-    if (_canvas_chunks_received < _canvas_chunk_total) {
-      return true;
-    }
-
-    WS_DEBUG_PRINT("[display] Building BMP from chunks received: ");
-    WS_DEBUG_PRINTVAR(_canvas_chunks_received);
-    WS_DEBUG_PRINT(" / ");
-    WS_DEBUG_PRINTLNVAR(_canvas_chunk_total);
-
-    // Concatenate every region in chunk_id order into one buffer.
-    std::vector<uint8_t> bmp;
-    bmp.reserve(std::min<size_t>(_canvas_total_size, MAX_CANVAS_SIZE));
-    for (uint32_t i = 0; i < _canvas_chunk_total; i++) {
-      bmp.insert(bmp.end(), _canvas_chunks[i].begin(), _canvas_chunks[i].end());
-    }
-
-    WS_DEBUG_PRINT("[display] Canvas assembled, BMP size: ");
-    WS_DEBUG_PRINTVAR((uint32_t)bmp.size());
-    WS_DEBUG_PRINT(", expected total_size: ");
-    WS_DEBUG_PRINTLNVAR(_canvas_total_size);
-
-    if (bmp.size() != _canvas_total_size) {
-      WS_DEBUG_PRINTLN("[display] ERROR: Canvas size mismatch, discarding");
-      resetCanvasReassembly();
-      return false;
-    }
-
-    // TODO: Refactor this in, we already call below...
-    // Hand the assembled BMP to the target display's driver.
-    WS_DEBUG_PRINT("[display] Writing assembled BMP to display: ");
-    WS_DEBUG_PRINTLNVAR(msg->name);
-    int8_t disp_idx = findDisplayIndexByName(msg->name);
-    if (disp_idx < 0) {
-      if (msg->has_descriptor) {
-        WS_DEBUG_PRINTLN(
-            "[display] ERROR: Publishing component error for canvas write");
-        PublishDisplayComponentError(msg->descriptor,
-                                     "Display not found for image write");
-      }
-      WS_DEBUG_PRINT("[display] ERROR: Display (");
-      WS_DEBUG_PRINTVAR(msg->name);
-      WS_DEBUG_PRINTLN(") not found!");
-      resetCanvasReassembly();
-      return false;
-    }
-
-    // Attempt to draw the assembled BMP to the display
-    WS_DEBUG_PRINTLN("[display] Attempting to draw canvas to display...");
-    bool did_draw = _displays[disp_idx]->drawMarqueeEPD(bmp.data(), bmp.size());
-    WS_DEBUG_PRINT("[display] Draw result: ");
-    WS_DEBUG_PRINTLNVAR(did_draw);
-    resetCanvasReassembly(); // frees the per-chunk regions now that bmp is
-                             // built
-    if (!did_draw) {
-      PublishDisplayComponentError(msg->descriptor,
-                                   "Failed to draw canvas to display");
-    }
-    return did_draw;
-  }
-
   if (!msg || !msg->name) {
     WS_DEBUG_PRINTLN("[display] ERROR: Invalid display write request!");
     return false;
   }
 
+  // Display Write can be either a text message or an "image" ("marquee")
+  if (msg->has_image) {
+    return handleCanvasWrite(msg);
+  } else {
+    return handleTextWrite(msg);
+  }
+}
+
+/*!
+    @brief  Renders a monospace text message to the target display.
+    @param  msg  The Display Write message (name + message text).
+    @return True if written, False otherwise.
+*/
+bool DisplayController::handleTextWrite(ws_display_Write *msg) {
   WS_DEBUG_PRINT("[display] Writing to display: ");
   WS_DEBUG_PRINTLNVAR(msg->name);
 
-  int8_t idx = findDisplayIndexByName(msg->name);
+  int8_t idx = resolveDisplayOrPublishError(msg, "Display not found for write request");
   if (idx < 0) {
-    WS_DEBUG_PRINT("[display] ERROR: Display (");
-    WS_DEBUG_PRINTVAR(msg->name);
-    WS_DEBUG_PRINTLN(") not found!");
-    if (msg->has_descriptor) {
-      PublishDisplayComponentError(msg->descriptor,
-                                   "Display not found for write request");
-    } else {
-      WS_DEBUG_PRINTLN("[display] WARNING: No descriptor in write message to "
-                       "publish error against");
-    }
     return false;
   }
 
   return _displays[idx]->write(msg);
+}
+
+/*!
+    @brief  Ingests one canvas chunk and, once every chunk has arrived,
+            reassembles the full BMP and draws it to the target display.
+    @param  msg  The Display Write message carrying the image chunk.
+    @return True if the chunk was accepted (or the canvas drawn), False on
+            error.
+*/
+bool DisplayController::handleCanvasWrite(ws_display_Write *msg) {
+  // Ingest this chunk of data, if we're not done ingesting the full canvas yet.
+  if (!ingestCanvasChunk(msg)) {
+    return false;
+  }
+
+  // Wait for more chunks before assembling.
+  if (_canvas_chunks_received < _canvas_chunk_total)
+    return true;
+
+  // All chunks received: assemble the full BMP and draw it to the display.
+  return drawCanvasToDisplay(msg);
+}
+
+/*!
+    @brief  Validates and files a single canvas chunk into the reassembly
+            buffer, tracking how many distinct chunks have arrived.
+    @param  msg  The Display Write message carrying the image chunk.
+    @return False on validation failure (reassembly state is reset before
+            returning), True if the chunk was accepted.
+*/
+bool DisplayController::ingestCanvasChunk(ws_display_Write *msg) {
+  // Did the decode callback actually decode any bytes into the chunk?
+  if (_pending_chunk.empty()) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk_data missing/empty");
+    resetCanvasReassembly();
+    return false;
+  }
+
+  // Split out the chunk metadata
+  uint32_t canvas_checksum = msg->image.checksum;
+  uint32_t canvas_total_size = msg->image.size;
+  uint32_t canvas_chunk_id = msg->image.chunk_id;
+  uint32_t canvas_chunk_total = msg->image.chunk_total;
+  WS_DEBUG_PRINT("[display] Canvas Checksum: ");
+  WS_DEBUG_PRINTVAR(canvas_checksum);
+  WS_DEBUG_PRINT(", Total Size: ");
+  WS_DEBUG_PRINTVAR(canvas_total_size);
+  WS_DEBUG_PRINT(", Chunk ID: ");
+  WS_DEBUG_PRINTVAR(canvas_chunk_id);
+  WS_DEBUG_PRINT(", Chunk Total: ");
+  WS_DEBUG_PRINTVAR(canvas_chunk_total);
+  WS_DEBUG_PRINT(", Chunk Bytes: ");
+  WS_DEBUG_PRINTLNVAR((uint32_t)_pending_chunk.size());
+
+
+  // Validate the chunk metadata
+  if (canvas_chunk_total == 0 || canvas_chunk_total > MAX_CANVAS_CHUNKS ||
+      canvas_chunk_id < 1 || canvas_chunk_id > canvas_chunk_total) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id/total out of range");
+    resetCanvasReassembly();
+    return false;
+  }
+
+  // New incoming image? Reset the reassembly state and start over.
+  if (canvas_checksum != _current_canvas_checksum) {
+    resetCanvasReassembly();
+    _current_canvas_checksum = canvas_checksum;
+    _canvas_chunk_total = canvas_chunk_total;
+    _canvas_total_size = canvas_total_size;
+    _canvas_chunks.resize(_canvas_chunk_total);
+  }
+
+  // Apply the chunk_data to the correct slot in the re-assembly buffer
+  uint32_t idx = canvas_chunk_id - 1;
+  if (idx >= _canvas_chunks.size()) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id exceeds buffer");
+    resetCanvasReassembly();
+    return false;
+  }
+
+  // First time we've seen this chunk id? Copy the bytes into the buffer for reassembly.
+  if (_canvas_chunks[idx].empty())
+    _canvas_chunks_received++;
+  // Also let's avoid copying bytes 2x
+  _canvas_chunks[idx] = std::move(_pending_chunk);
+  _pending_chunk.clear();
+
+  return true;
+}
+
+/*!
+    @brief  Concatenates every received chunk into the bitmap buffer (_bmp),
+            draws it to the named display, and clears the reassembly state
+            afterward.
+    @param  msg  The Display Write message (provides name + descriptor).
+    @return True if the display drew the bitmap, False otherwise.
+*/
+bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
+  // Concatenate every region in chunk_id order into _bmp and validate its
+  // total size. clear() first so a prior image's bytes never linger between
+  // reassemblies.
+  WS_DEBUG_PRINT("[display] Building BMP from chunks received: ");
+  WS_DEBUG_PRINTVAR(_canvas_chunks_received);
+  WS_DEBUG_PRINT(" / ");
+  WS_DEBUG_PRINTLNVAR(_canvas_chunk_total);
+  _bmp.clear();
+  _bmp.reserve(std::min<size_t>(_canvas_total_size, MAX_CANVAS_SIZE));
+  for (uint32_t i = 0; i < _canvas_chunk_total; i++) {
+    _bmp.insert(_bmp.end(), _canvas_chunks[i].begin(), _canvas_chunks[i].end());
+  }
+  if (_bmp.size() != _canvas_total_size) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Canvas size mismatch, discarding");
+    resetCanvasReassembly();
+    return false;
+  }
+
+  // Hand the assembled BMP to the target display's driver.
+  WS_DEBUG_PRINT("[display] Writing assembled BMP to display: ");
+  WS_DEBUG_PRINTLNVAR(msg->name);
+  int8_t disp_idx =
+      resolveDisplayOrPublishError(msg, "Display not found for image write");
+  if (disp_idx < 0) {
+    resetCanvasReassembly();
+    return false;
+  }
+
+  // Attempt to draw the assembled BMP to the display
+  WS_DEBUG_PRINTLN("[display] Attempting to draw canvas to display...");
+  bool did_draw = _displays[disp_idx]->drawMarqueeEPD(_bmp.data(), _bmp.size());
+  WS_DEBUG_PRINT("[display] Draw result: ");
+  WS_DEBUG_PRINTLNVAR(did_draw);
+  resetCanvasReassembly(); // frees the per-chunk regions now that bmp is built
+  if (!did_draw && msg->has_descriptor) {
+    PublishDisplayComponentError(msg->descriptor,
+                                 "Failed to draw canvas to display");
+  }
+  return did_draw;
+}
+
+/*!
+    @brief  Resolves the target display for a write request by name.
+    @param  msg  The Display Write message (provides name + descriptor).
+    @param  errorMessage  Error published when the display is not found.
+    @return The display index, or -1 if no matching display exists (in which
+            case a component error is published when a descriptor is present).
+*/
+int8_t
+DisplayController::resolveDisplayOrPublishError(ws_display_Write *msg,
+                                                const char *errorMessage) {
+  if (!msg->has_descriptor) {
+    WS_DEBUG_PRINTLN("[display] WARNING: No descriptor in write message to "
+                     "publish error against");
+    return -1;
+  }
+
+  int8_t idx = findDisplayIndexByName(msg->name);
+  if (idx < 0)
+    PublishDisplayComponentError(msg->descriptor, errorMessage);
+  return idx;
 }
 
 /*!

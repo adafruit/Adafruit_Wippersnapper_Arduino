@@ -51,6 +51,22 @@ private:
   bool removeExistingDisplayByName(const char *name);
   int8_t findDisplayIndexByName(const char *name);
 
+  // --- Display Write dispatch ---
+  bool handleTextWrite(ws_display_Write *msg);   ///< Text message write path
+  bool handleCanvasWrite(ws_display_Write *msg); ///< Chunked image write path
+  /// Resolves the target display index by name; on miss, publishes a
+  /// component error (when a descriptor is present) and returns -1.
+  int8_t resolveDisplayOrPublishError(ws_display_Write *msg,
+                                      const char *errorMessage);
+
+  // --- Canvas write stages (ingest -> assemble + draw) ---
+  /// Validates and files one chunk into the reassembly buffer. Returns false
+  /// (and resets reassembly state) on a bad chunk, true if it was accepted.
+  bool ingestCanvasChunk(ws_display_Write *msg);
+  /// Assembles _bmp from the received chunks, draws it to the named display,
+  /// and resets reassembly state.
+  bool drawCanvasToDisplay(ws_display_Write *msg);
+
   // --- Canvas chunk reassembly (single in-flight canvas) ---
   static bool cbDecodeCanvasChunk(pb_istream_t *stream,
                                   const pb_field_t *field, void **arg);
@@ -64,6 +80,7 @@ private:
       _canvas_chunks; ///< per-chunk byte regions, indexed by chunk_id - 1
   std::vector<uint8_t>
       _pending_chunk; ///< bytes captured by the most recent decode callback
+  std::vector<uint8_t> _bmp; ///< fully reassembled bitmap, built from _canvas_chunks
 };
 extern wippersnapper Ws; ///< Global V2 instance
 #endif                   // WS_DISPLAY_CONTROLLER_H
