@@ -80,8 +80,13 @@ Step kinds (each takes optional `settle_s`):
 
 The driver always prepends the flash/secrets/check-in prologue
 (`enter_bootloader → erase → flash → power_cycle → write_secrets_msc →
-power_cycle → verify_checkin`); set `"skip_flash": true` to re-use an
-already-flashed board.
+power_cycle → verify_checkin`). There is deliberately no skip-flash mode:
+firmware-bench only launches the per-session protomq broker alongside a
+secrets stage, and an already-flashed board's stored secrets point at the
+*previous* session's broker port — a no-flash job has no broker to check in
+to. To hold a lit panel for camera tuning, run the full spec without its
+`capture` step and a long `window_minutes`, submitting the job directly
+(the driver cancels-for-harvest once all verdicts land, which drops power).
 
 ## Camera proof gotchas (hard-won)
 

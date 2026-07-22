@@ -26,7 +26,7 @@ Step kinds (all optional ``settle_s`` seconds held after the stage):
   - ``capture``       Camera proof. Fields: exposure_us, gain, roi
                       [x,y,w,h,frame_w,frame_h], focus_lock, white_balance, out.
 
-Top-level spec fields: device, uid, camera_url, window_minutes, skip_flash,
+Top-level spec fields: device, uid, camera_url, window_minutes,
 secrets (names only — values come from env), sequence[]. CLI flags override the
 spec's device/uid/camera_url/window_minutes and supply the firmware path.
 
@@ -106,19 +106,23 @@ def _display_add_stage(step: dict, uid: str) -> dict:
 
 def build_stages(spec: dict, uid: str, camera_url: str, captures: list[str]) -> list[dict]:
     """Translate spec.sequence into controller firmware-bench stages, prefixed
-    with the standard flash/secrets/check-in prologue (unless skip_flash)."""
-    stages: list[dict] = []
-    if not spec.get("skip_flash"):
-        stages += [
-            {"type": "enter_bootloader"},
-            {"type": "erase", "before": "no_reset", "after": "no_reset"},
-            {"type": "flash", "offset": "0x0", "before": "no_reset", "after": "no_reset"},
-            {"type": "power_cycle"},
-            {"type": "write_secrets_msc"},
-            {"type": "power_cycle"},
-        ]
-    stages.append({"type": "verify_checkin", "checkin_timeout_s": 150,
-                   "proto": "auto", "soft": True})
+    with the standard flash/secrets/check-in prologue.
+
+    The prologue is NOT optional: firmware-bench only launches the per-session
+    protomq broker alongside a secrets stage, and the DUT's stored secrets
+    point at the previous session's broker port — a no-flash job has no broker
+    to check in to. (A former skip_flash option relied on exactly that and
+    never worked.)"""
+    stages: list[dict] = [
+        {"type": "enter_bootloader"},
+        {"type": "erase", "before": "no_reset", "after": "no_reset"},
+        {"type": "flash", "offset": "0x0", "before": "no_reset", "after": "no_reset"},
+        {"type": "power_cycle"},
+        {"type": "write_secrets_msc"},
+        {"type": "power_cycle"},
+        {"type": "verify_checkin", "checkin_timeout_s": 150,
+         "proto": "auto", "soft": True},
+    ]
 
     for i, step in enumerate(spec.get("sequence", [])):
         kind = step.get("step")
