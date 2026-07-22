@@ -44,6 +44,7 @@ import os
 import sys
 import time
 import urllib.request
+from datetime import datetime, timezone
 
 
 # --- protobuf wire helpers (varint / length-delimited) ----------------------
@@ -124,10 +125,16 @@ def build_stages(spec: dict, uid: str, camera_url: str, captures: list[str]) -> 
         if kind == "display_add":
             stages.append(_display_add_stage(step, uid))
         elif kind == "display_write":
+            # {timestamp} in the message becomes the job-build UTC time — a
+            # freshness stamp proving the capture shows THIS run's write, not
+            # a stale panel from an earlier flash.
+            message = step["message"].replace(
+                "{timestamp}",
+                datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"))
             stages.append({"type": "inject_protobuf", "uid": uid,
                            "settle_s": step.get("settle_s", 5),
                            "payload_hex": display_write_signal(
-                               step["name"], step["message"]).hex()})
+                               step["name"], message).hex()})
         elif kind in ("inject", "component_add"):
             stage = {"type": "inject_protobuf", "uid": uid,
                      "settle_s": step.get("settle_s", 5)}

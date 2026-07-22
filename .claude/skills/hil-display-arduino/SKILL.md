@@ -68,7 +68,10 @@ Step kinds (each takes optional `settle_s`):
   `display_add_i8080` builder; for SPI or others pass an explicit controller
   `kind` or a raw `payload_hex`.
 - **`display_write`** — `{name, message}`; the driver encodes the
-  `ws.signal` → `ws.display.Write` protobuf locally.
+  `ws.signal` → `ws.display.Write` protobuf locally. A `{timestamp}` token in
+  the message is replaced with the job-build UTC time (`YYYY-MM-DD HH:MM:SS
+  UTC`) — put it on its own line as a freshness stamp so the camera proof
+  provably shows *this* run's write, not a stale panel.
 - **`component_add`** / **`inject`** — any `ws.signal.BrokerToDevice`. Give a
   controller builder `kind` + `params` (e.g. add an I2C sensor between display
   writes for a fuller test, once a builder exists) **or** raw `payload_hex`.

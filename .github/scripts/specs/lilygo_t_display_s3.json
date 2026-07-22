@@ -28,7 +28,7 @@
     {
       "step": "display_write",
       "name": "tft-19-i8080",
-      "message": "LilyGo T-Display-S3\nWipperSnapper v2\ni8080 ST7789\nHIL camera proof OK",
+      "message": "LilyGo T-Display-S3\nWipperSnapper v2\ni8080 ST7789\nHIL camera proof OK\n{timestamp}",
       "settle_s": 5
     },
     {
