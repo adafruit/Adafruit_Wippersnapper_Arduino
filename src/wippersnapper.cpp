@@ -1057,16 +1057,15 @@ void wippersnapper::connect() {
 */
 void wippersnapper::run() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
-  if (!Ws._sleep_controller->isSleepEnabled()) {
-    while (true) {
-      loop();
-    }
-  } else {
-    // Feed TWDT and enter loopSleep()
-    Ws._wdt->feed();
-    while (true) {
-      loopSleep();
-    }
+  // Sleep mode may be enabled during runtime
+  while (!Ws._sleep_controller->isSleepEnabled()) {
+    loop();
+  }
+  // Sleep is enabled: feed the TWDT and hand control to the sleep-aware loop.
+  WS_DEBUG_PRINTLN("[app] Sleep enabled, entering loopSleep()");
+  Ws._wdt->feed();
+  while (true) {
+    loopSleep();
   }
 #else
   while (true) {

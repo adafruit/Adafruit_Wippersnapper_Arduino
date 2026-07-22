@@ -589,8 +589,6 @@ bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
   int8_t disp_idx =
       resolveDisplayOrPublishError(msg, "Display not found for image write");
   if (disp_idx < 0) {
-    WS_DEBUG_PRINT("[display] ERROR: Display not found for image write: ");
-    WS_DEBUG_PRINTLNVAR(disp_idx);
     resetCanvasReassembly();
     return false;
   }
@@ -600,7 +598,7 @@ bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
   bool did_draw = _displays[disp_idx]->drawMarqueeEPD(_bmp.data(), _bmp.size());
   WS_DEBUG_PRINT("[display] Draw result: ");
   WS_DEBUG_PRINTLNVAR(did_draw);
-  resetCanvasReassembly(); // frees the per-chunk regions now that bmp is built
+  resetCanvasReassembly();
   if (!did_draw && msg->has_descriptor) {
     PublishDisplayComponentError(msg->descriptor,
                                  "Failed to draw canvas to display");
@@ -618,15 +616,7 @@ bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
 int8_t
 DisplayController::resolveDisplayOrPublishError(ws_display_Write *msg,
                                                 const char *errorMessage) {
-  /*   if (!msg->has_descriptor) {
-      WS_DEBUG_PRINTLN("[display] WARNING: No descriptor in write message to "
-                       "publish error against");
-      return -1;
-    } */
-
   int8_t idx = findDisplayIndexByName(msg->name);
-  WS_DEBUG_PRINT("[display] Resolved display index for write: ");
-  WS_DEBUG_PRINTLNVAR(idx);
   if (idx < 0)
     PublishDisplayComponentError(msg->descriptor, errorMessage);
   return idx;
@@ -638,7 +628,7 @@ DisplayController::resolveDisplayOrPublishError(ws_display_Write *msg,
     @param  is_connected  Whether MQTT is currently connected.
 */
 void DisplayController::update(int32_t rssi, bool is_connected) {
-  if (_num_displays == 0)
+/*   if (_num_displays == 0)
     return;
 
   unsigned long now = millis();
@@ -657,7 +647,7 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
       // _displays[i]->updateStatusBar(rssi, battery_charge_level,
       // is_connected);
     }
-  }
+  } */
 }
 
 /*!
@@ -666,23 +656,12 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
     @return Index of the display, or -1 if not found.
 */
 int8_t DisplayController::findDisplayIndexByName(const char *name) {
-  if (!name) {
-    WS_DEBUG_PRINTLN("[display] ERROR: Null display name provided for search");
+  if (!name)
     return -1;
-  }
+
   for (uint8_t i = 0; i < _num_displays; i++) {
-    // TODO: Remove, debug only print out the display names
-    if (_displays[i]) {
-      WS_DEBUG_PRINT("[display] Checking display at index ");
-      WS_DEBUG_PRINTVAR(i);
-      WS_DEBUG_PRINT(" with name: ");
-      WS_DEBUG_PRINTLNVAR(_displays[i]->getName());
-    }
-    if (_displays[i] && strcmp(_displays[i]->getName(), name) == 0) {
-      WS_DEBUG_PRINT("[display] Found display at index ");
-      WS_DEBUG_PRINTLNVAR(i);
+    if (_displays[i] && strcmp(_displays[i]->getName(), name) == 0)
       return i;
-    }
   }
   return -1;
 }

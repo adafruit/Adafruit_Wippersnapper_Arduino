@@ -40,46 +40,34 @@ public:
   bool Handle_Display_Add(ws_display_Add *msg);
   bool Handle_Display_Remove(ws_display_Remove *msg);
   bool Handle_Display_Write(ws_display_Write *msg);
-  void PublishDisplayComponentError(ws_display_InterfaceDescriptor iface,
-                                    const char *error);
   void update(int32_t rssi, bool is_connected);
+
+  // Error handling
+  void PublishDisplayComponentError(ws_display_InterfaceDescriptor iface, const char *error);
+  int8_t resolveDisplayOrPublishError(ws_display_Write *msg, const char *errorMessage);
 
 private:
   DisplayHardware *_displays[MAX_DISPLAYS] = {nullptr};
   uint8_t _num_displays;
-  unsigned long _last_bar_update; ///< Timestamp of last status bar update
-  bool removeExistingDisplayByName(const char *name);
+  unsigned long _last_bar_update;
+
+  // General display management
   int8_t findDisplayIndexByName(const char *name);
+  bool removeExistingDisplayByName(const char *name);
 
-  // --- Display Write dispatch ---
-  bool handleTextWrite(ws_display_Write *msg);   ///< Text message write path
-  bool handleCanvasWrite(ws_display_Write *msg); ///< Chunked image write path
-  /// Resolves the target display index by name; on miss, publishes a
-  /// component error (when a descriptor is present) and returns -1.
-  int8_t resolveDisplayOrPublishError(ws_display_Write *msg,
-                                      const char *errorMessage);
-
-  // --- Canvas write stages (ingest -> assemble + draw) ---
-  /// Validates and files one chunk into the reassembly buffer. Returns false
-  /// (and resets reassembly state) on a bad chunk, true if it was accepted.
+  // Display write handling
+  bool handleTextWrite(ws_display_Write *msg);
+  bool handleCanvasWrite(ws_display_Write *msg);
   bool ingestCanvasChunk(ws_display_Write *msg);
-  /// Assembles _bmp from the received chunks, draws it to the named display,
-  /// and resets reassembly state.
+  static bool cbDecodeCanvasChunk(pb_istream_t *stream, const pb_field_t *field, void **arg);
   bool drawCanvasToDisplay(ws_display_Write *msg);
-
-  // --- Canvas chunk reassembly (single in-flight canvas) ---
-  static bool cbDecodeCanvasChunk(pb_istream_t *stream,
-                                  const pb_field_t *field, void **arg);
-  void resetCanvasReassembly(); ///< Frees regions + pending, zeroes state
-
-  uint32_t _current_canvas_checksum;              ///< id of canvas being reassembled (0 = none)
+  void resetCanvasReassembly();
+  uint32_t _current_canvas_checksum; ///< id of canvas being reassembled (0 = none)
   uint32_t _canvas_chunk_total;     ///< expected total chunk count
   uint32_t _canvas_chunks_received; ///< distinct slots filled so far
   uint32_t _canvas_total_size;      ///< expected assembled bitmap size, in bytes
-  std::vector<std::vector<uint8_t>>
-      _canvas_chunks; ///< per-chunk byte regions, indexed by chunk_id - 1
-  std::vector<uint8_t>
-      _pending_chunk; ///< bytes captured by the most recent decode callback
+  std::vector<std::vector<uint8_t>> _canvas_chunks; ///< per-chunk byte regions, indexed by chunk_id - 1
+  std::vector<uint8_t> _pending_chunk; ///< bytes captured by the most recent decode callback
   std::vector<uint8_t> _bmp; ///< fully reassembled bitmap, built from _canvas_chunks
 };
 extern wippersnapper Ws; ///< Global V2 instance
