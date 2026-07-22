@@ -352,6 +352,21 @@ ws_sleep_SleepMode SleepController::GetPrvSleepMode() {
 bool SleepController::isSleepEnabled() { return _sleep_enabled; }
 
 /*!
+    @brief  Publishes a Goodnight message to the broker.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool SleepController::publishMsgGoodnight() {
+  ws_sleep_D2B goodnight_d2b = ws_sleep_D2B_init_zero;
+  goodnight_d2b.which_payload = ws_sleep_D2B_goodnight_tag;
+  _sleep_model->EncodeSleepGoodnight(nullptr);
+  goodnight_d2b.payload.goodnight = *_sleep_model->GetSleepGoodnight();
+
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_sleep_tag, &goodnight_d2b))
+    return false;
+  return true;
+}
+
+/*!
     @brief  Enters the configured sleep mode.
 */
 void SleepController::StartSleep() {

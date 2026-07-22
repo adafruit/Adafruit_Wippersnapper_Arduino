@@ -784,6 +784,10 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     msg->which_payload = ws_signal_DeviceToBroker_gps_tag;
     msg->payload.gps = *(ws_gps_D2B *)payload;
     break;
+  case ws_signal_DeviceToBroker_sleep_tag:
+    msg->which_payload = ws_signal_DeviceToBroker_sleep_tag;
+    msg->payload.sleep = *(ws_sleep_D2B *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     free(msg);
@@ -1173,6 +1177,9 @@ void wippersnapper::loopSleep() {
     ResetAllControllerFlags();
     loop_start_time = 0;
     loop_timer_started = false;
+    // Publish the Goodnight message
+    if (!Ws._sleep_controller->publishMsgGoodnight())
+      WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message!");
     // Disconnect from MQTT broker before sleep to prevent issues with
     // connection state on wake
     Ws._mqttV2->disconnect();
@@ -1202,6 +1209,9 @@ void wippersnapper::loopSleep() {
     ResetAllControllerFlags();
     loop_start_time = 0;
     loop_timer_started = false;
+    // Publish the Goodnight message
+    if (!Ws._sleep_controller->publishMsgGoodnight())
+      WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message!");
     // Enter sleep
     WS_DEBUG_PRINTLN("[app] loopSleep() duration elapsed, entering sleep...");
     Ws._sleep_controller->StartSleep();
