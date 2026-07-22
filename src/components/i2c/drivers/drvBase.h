@@ -26,6 +26,13 @@
 struct DecodedSetting;    ///< Forward declaration
 #define NO_MUX_CH 0xFFFF; ///< No MUX channel specified
 
+/*! Size of the device name buffer, exactly matches ws_i2c_Add.name in
+    i2c.pb.h */
+#define DRV_BASE_NAME_LEN (sizeof(((ws_i2c_Add *)0)->name))
+/*! Size of the pin name buffers, exactly matches
+    ws_i2c_AddressSpace.pin_scl/pin_sda in i2c.pb.h */
+#define DRV_BASE_PIN_NAME_LEN (sizeof(((ws_i2c_AddressSpace *)0)->pin_scl))
+
 /*!
     @brief  Base class for I2C Drivers.
 */
@@ -858,16 +865,18 @@ public:
   ws_i2c_Add_TypesEntry _sensors[16]; ///< Keyed sensor types from broker.
 
 protected:
-  TwoWire *_i2c;             ///< Pointer to the TwoWire bus
-  uint16_t _address;         ///< The device's I2C address.
-  uint32_t _i2c_mux_addr;    ///< The I2C MUX address, if applicable.
-  uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
-  char _name[15];            ///< The device's name.
-  char _pin_scl[32];         ///< The SCL pin name for this driver's bus.
-  char _pin_sda[32];         ///< The SDA pin name for this driver's bus.
-  ulong _sensor_period;      ///< The sensor's period, in milliseconds.
-  ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
-  size_t _sensors_count;     ///< Number of sensors on the device.
+  TwoWire *_i2c;                        ///< Pointer to the TwoWire bus
+  uint16_t _address;                    ///< The device's I2C address.
+  uint32_t _i2c_mux_addr;               ///< The I2C MUX address, if applicable.
+  uint32_t _i2c_mux_channel;            ///< The I2C MUX channel, if applicable.
+  char _name[DRV_BASE_NAME_LEN];        ///< The device's name.
+  char _pin_scl[DRV_BASE_PIN_NAME_LEN]; ///< The SCL pin name for this
+                                        ///< driver's bus.
+  char _pin_sda[DRV_BASE_PIN_NAME_LEN]; ///< The SDA pin name for this
+                                        ///< driver's bus.
+  ulong _sensor_period;     ///< The sensor's period, in milliseconds.
+  ulong _sensor_period_prv; ///< The sensor's previous period, in milliseconds.
+  size_t _sensors_count;    ///< Number of sensors on the device.
   bool _did_read_send; ///< True if data was read and sent to IO successfully.
 };
 #endif // DRV_BASE_H

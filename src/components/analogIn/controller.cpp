@@ -131,8 +131,10 @@ AnalogInHardware *AnalogInController::GetPin(uint8_t pin_num,
 bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   WS_DEBUG_PRINTLN("[analogin] Handle_AnalogInAdd MESSAGE...");
   uint8_t pin_num = 0;
-  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
-    WS_DEBUG_PRINTLN("[analogin] ERROR: Malformed expander pin name!");
+  ExpanderHardware *expander_drv = nullptr;
+  if (!Ws._expander_controller->ResolvePinName(msg->pin_name, pin_num,
+                                               &expander_drv)) {
+    WS_DEBUG_PRINTLN("[analogin] ERROR: Unable to resolve pin name!");
     return false;
   }
 
@@ -147,17 +149,6 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
       msg->sample_mode != ws_analogin_SampleMode_SM_EVENT) {
     WS_DEBUG_PRINTLN("[analogin] ERROR: Invalid sample mode in message!");
     return false;
-  }
-
-  // Resolve the expander driver if this is an expander pin
-  ExpanderHardware *expander_drv = nullptr;
-  if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
-    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
-    if (!expander_drv) {
-      WS_DEBUG_PRINTLN("[analogin] ERROR: Expander not found for address!");
-      return false;
-    }
   }
 
   // If pin is being updated, remove the existing pin first
@@ -200,20 +191,11 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
 */
 bool AnalogInController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
   uint8_t pin_num = 0;
-  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
-    WS_DEBUG_PRINTLN("[analogin] ERROR: Malformed expander pin name!");
-    return false;
-  }
-
-  // Resolve the expander driver if this is an expander pin
   ExpanderHardware *expander_drv = nullptr;
-  if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
-    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
-    if (!expander_drv) {
-      WS_DEBUG_PRINTLN("[analogin] ERROR: Expander not found for address!");
-      return false;
-    }
+  if (!Ws._expander_controller->ResolvePinName(msg->pin_name, pin_num,
+                                               &expander_drv)) {
+    WS_DEBUG_PRINTLN("[analogin] ERROR: Unable to resolve pin name!");
+    return false;
   }
 
   if (!RemovePin(pin_num, expander_drv)) {

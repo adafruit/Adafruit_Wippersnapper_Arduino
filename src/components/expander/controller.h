@@ -41,6 +41,8 @@ public:
   bool Handle_Add(ws_expander_Add *msg);
   bool Handle_Remove(ws_expander_Remove *msg);
   ExpanderHardware *GetDriver(uint8_t addr);
+  bool ResolvePinName(const char *pin_name, uint8_t &pin_num,
+                      ExpanderHardware **expander_drv);
 
 private:
   bool AddExpander(const char *device_name, uint8_t i2c_addr, TwoWire *wire);

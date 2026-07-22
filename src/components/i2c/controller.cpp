@@ -1056,8 +1056,9 @@ TwoWire *I2cController::GetI2cBusByIndex(size_t index) {
 I2cHardware *I2cController::findOrCreateBus(const char *pin_scl,
                                             const char *pin_sda) {
   // Resolve the pin names to pin numbers
-  uint32_t scl_num, sda_num;
-  if (!WsPinNameToNum(pin_scl, scl_num) || !WsPinNameToNum(pin_sda, sda_num)) {
+  int32_t scl_num = WsPinNameToNum(pin_scl);
+  int32_t sda_num = WsPinNameToNum(pin_sda);
+  if (scl_num == WS_PIN_INVALID || sda_num == WS_PIN_INVALID) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Invalid SCL/SDA pin name!");
     return nullptr;
   }
@@ -1066,8 +1067,8 @@ I2cHardware *I2cController::findOrCreateBus(const char *pin_scl,
   for (I2cHardware *bus : _i2c_buses) {
     if (bus == nullptr)
       continue;
-    if (scl_num == (uint32_t)bus->getSCL() &&
-        sda_num == (uint32_t)bus->getSDA()) {
+    if (scl_num == (int32_t)bus->getSCL() &&
+        sda_num == (int32_t)bus->getSDA()) {
       return bus;
     }
   }
@@ -1111,14 +1112,15 @@ bool I2cController::IsBusStatusOK(I2cHardware *bus) {
     @returns  Pointer to the TwoWire bus, or nullptr if the bus doesn't exist.
 */
 TwoWire *I2cController::GetI2cBus(const char *pin_scl, const char *pin_sda) {
-  uint32_t scl_num, sda_num;
-  if (!WsPinNameToNum(pin_scl, scl_num) || !WsPinNameToNum(pin_sda, sda_num))
+  int32_t scl_num = WsPinNameToNum(pin_scl);
+  int32_t sda_num = WsPinNameToNum(pin_sda);
+  if (scl_num == WS_PIN_INVALID || sda_num == WS_PIN_INVALID)
     return nullptr;
   for (I2cHardware *bus : _i2c_buses) {
     if (bus == nullptr)
       continue;
-    if (scl_num == (uint32_t)bus->getSCL() &&
-        sda_num == (uint32_t)bus->getSDA()) {
+    if (scl_num == (int32_t)bus->getSCL() &&
+        sda_num == (int32_t)bus->getSDA()) {
       return bus->GetBus();
     }
   }

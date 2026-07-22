@@ -16,49 +16,81 @@
 #define WS_HELPER_PINS_H
 #include <Arduino.h>
 #include <ctype.h>
+#include <stdlib.h>
+
+#define WS_PIN_INVALID -1 ///< Returned when a pin name fails to resolve
+
+/*!
+    @brief  Parses an expander pin name ("EXP_0xNN_P") and returns the
+            expander's I2C address. Use this to detect expander pins and
+            to look up the owning driver, e.g. via
+            ExpanderController::GetDriver().
+    @param  pin_name
+            The pin name string to parse.
+    @returns The expander's I2C address, or WS_PIN_INVALID if the name is
+             not a well-formed expander pin name.
+*/
+inline int32_t WsPinNameToExpanderAddr(const char *pin_name) {
+  if (pin_name == nullptr || strncmp(pin_name, "EXP_", 4) != 0)
+    return WS_PIN_INVALID;
+  char *end = nullptr;
+  unsigned long addr = strtoul(pin_name + 4, &end, 16);
+  if (end == pin_name + 4 || *end != '_' || addr > 0x7F)
+    return WS_PIN_INVALID;
+  return (int32_t)addr;
+}
 
 /*!
     @brief  Resolves a pin name string to a pin number. Accepts numeric
-            strings ("22"), prefixed pin names ("D22", "A4", "GPIO22"), and
-            the board-defined I2C pin names ("SDA", "SCL", and "SDA1"/"SCL1"
-            on boards with a second hardware I2C port).
+            strings ("22"), prefixed pin names ("D22", "A4", "GPIO22"), the
+            board-defined I2C pin names ("SDA", "SCL", and "SDA1"/"SCL1"
+            on boards with a second hardware I2C port), and expander pin
+            names ("EXP_0x48_3"). For expander pins the returned number is
+            the pin (channel) index on that expander — e.g. channels 0-7
+            and spare GPIO 8-15 on a 16-channel driver — scoped to the
+            expander identified by WsPinNameToExpanderAddr(), not a native
+            MCU pin.
     @param  pin_name
             The pin name string to resolve.
-    @param  pin_num
-            Output: the resolved pin number.
-    @returns True if the pin name was resolved, False if the pin name is
-             NULL, empty, or contains no pin number.
+    @returns The resolved pin number, or WS_PIN_INVALID if the pin name is
+             NULL, empty, malformed, or contains no pin number.
 */
-inline bool WsPinNameToNum(const char *pin_name, uint32_t &pin_num) {
+inline int32_t WsPinNameToNum(const char *pin_name) {
   if (pin_name == nullptr || pin_name[0] == '\0')
-    return false;
+    return WS_PIN_INVALID;
+  // Expander pin names ("EXP_0xNN_P") resolve to the pin index on the
+  // expander at address 0xNN
+  if (strncmp(pin_name, "EXP_", 4) == 0) {
+    if (WsPinNameToExpanderAddr(pin_name) == WS_PIN_INVALID)
+      return WS_PIN_INVALID;
+    const char *pin_str = strchr(pin_name + 4, '_');
+    if (pin_str == nullptr || !isdigit((unsigned char)pin_str[1]))
+      return WS_PIN_INVALID;
+    return (int32_t)atoi(pin_str + 1);
+  }
   // Board-defined I2C pin names (CircuitPython/Blinka-style)
-  if (strcmp(pin_name, "SDA") == 0) {
-    pin_num = (uint32_t)SDA;
-    return true;
-  }
-  if (strcmp(pin_name, "SCL") == 0) {
-    pin_num = (uint32_t)SCL;
-    return true;
-  }
+  if (strcmp(pin_name, "SDA") == 0)
+    return (int32_t)SDA;
+  if (strcmp(pin_name, "SCL") == 0)
+    return (int32_t)SCL;
 #if defined(PIN_WIRE1_SDA) && defined(PIN_WIRE1_SCL)
-  if (strcmp(pin_name, "SDA1") == 0) {
-    pin_num = (uint32_t)PIN_WIRE1_SDA;
-    return true;
-  }
-  if (strcmp(pin_name, "SCL1") == 0) {
-    pin_num = (uint32_t)PIN_WIRE1_SCL;
-    return true;
-  }
+  if (strcmp(pin_name, "SDA1") == 0)
+    return (int32_t)PIN_WIRE1_SDA;
+  if (strcmp(pin_name, "SCL1") == 0)
+    return (int32_t)PIN_WIRE1_SCL;
+#elif defined(SDA1) && defined(SCL1)
+  if (strcmp(pin_name, "SDA1") == 0)
+    return (int32_t)SDA1;
+  if (strcmp(pin_name, "SCL1") == 0)
+    return (int32_t)SCL1;
 #endif
   // Skip a non-numeric prefix, e.g. "D22", "A4", "GPIO22"
   const char *numeric = pin_name;
   while (*numeric && !isdigit((unsigned char)*numeric))
     numeric++;
   if (*numeric == '\0')
-    return false;
-  pin_num = (uint32_t)atoi(numeric);
-  return true;
+    return WS_PIN_INVALID;
+  return (int32_t)atoi(numeric);
 }
 
 #endif // WS_HELPER_PINS_H

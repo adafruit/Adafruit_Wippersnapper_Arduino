@@ -132,6 +132,33 @@ ExpanderHardware *ExpanderController::GetDriver(uint8_t addr) {
   return nullptr;
 }
 
+/*!
+ * @brief Resolves a pin name to a pin number and, for expander pin names
+ *        ("EXP_0xNN_P"), the owning expander driver. Lets other components
+ *        (digitalio, analogio, pwm, ...) resolve a pin without knowing the
+ *        expander addressing scheme, analogous to
+ *        DigitalIOController::QueryPinState() for pin-in-use queries.
+ * @param pin_name     The pin name string, native ("D5", "A0") or expander
+ *                     ("EXP_0x48_3").
+ * @param pin_num      Out: the pin number — for expander pins this is the
+ *                     pin (channel) index on that expander.
+ * @param expander_drv Out: the owning expander driver, or nullptr for a
+ *                     native MCU pin.
+ * @return True if resolved, False if the pin name is malformed or no
+ *         expander is registered at the referenced address.
+ */
+bool ExpanderController::ResolvePinName(const char *pin_name, uint8_t &pin_num,
+                                        ExpanderHardware **expander_drv) {
+  *expander_drv = nullptr;
+  if (!ExpanderHardware::ParsePinNum(pin_name, pin_num))
+    return false;
+  int32_t addr = WsPinNameToExpanderAddr(pin_name);
+  if (addr == WS_PIN_INVALID)
+    return true; // Native MCU pin, no expander driver
+  *expander_drv = GetDriver((uint8_t)addr);
+  return *expander_drv != nullptr;
+}
+
 /// Pointer to an expander setter that applies one decoded setting value.
 typedef bool (ExpanderHardware::*ExpanderSetterFn)(const ws_config_Value &);
 
