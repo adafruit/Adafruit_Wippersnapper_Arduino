@@ -33,9 +33,9 @@
     },
     {
       "step": "capture",
-      "exposure_us": 16000,
+      "exposure_us": 32000,
       "gain": 2.0,
-      "roi": [1875, 415, 330, 150, 2304, 1296],
+      "roi": [915, 720, 340, 215, 2304, 1296],
       "focus_lock": true,
       "white_balance": true,
       "out": "/tmp/hil-display-capture.jpg"
