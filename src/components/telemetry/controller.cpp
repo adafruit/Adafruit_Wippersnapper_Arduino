@@ -67,44 +67,64 @@ bool TelemetryController::Router(pb_istream_t *stream) {
 }
 
 /*!
-    @brief  Handles a TelemetryAdd message from the broker. Creates (or
-            updates) a telemetry metric instance and starts reporting it.
-    @param  msg
-            The TelemetryAdd message.
-    @return True if the metric was successfully registered (or an unknown
-            metric name was gracefully ignored), False otherwise.
+    @brief  If a metric of the given type already exists, updates its period.
+    @param  type
+            The telemetry metric type.
+    @param  period
+            The new reporting interval, in seconds.
+    @return True if an existing metric was found and updated, False otherwise.
 */
-bool TelemetryController::Handle_TelemetryAdd(ws_telemetry_Add *msg) {
-  WS_DEBUG_PRINT("[telemetry] Handle_TelemetryAdd: ");
-  WS_DEBUG_PRINTLNVAR(msg->name);
-
-  // Validate the metric name
-  if (strlen(msg->name) == 0) {
-    Ws.error_handler->publishComponentError(msg->name,
-                                            "Empty telemetry metric name");
-    return false;
-  }
-
-  // If a metric with this name already exists, update its period instead of
-  // registering a duplicate.
+bool TelemetryController::updatePeriod(ws_telemetry_Type type, float period) {
   for (size_t i = 0; i < _telemetry_metrics.size(); i++) {
-    if (strcmp(_telemetry_metrics[i]->GetName(), msg->name) == 0) {
-      _telemetry_metrics[i]->SetPeriod(msg->period);
+    if (_telemetry_metrics[i]->GetType() == type) {
+      _telemetry_metrics[i]->SetPeriod(period);
       WS_DEBUG_PRINTLN("[telemetry] Updated existing metric's period");
       return true;
     }
   }
+  return false;
+}
 
-  TelemetryHardware *new_metric = new TelemetryHardware(msg->name, msg->period);
+/*!
+    @brief  Handles a TelemetryAdd message from the broker. Creates (or
+            updates) a telemetry metric instance and starts reporting it.
+    @param  msg
+            The TelemetryAdd message.
+    @return True if the metric was successfully registered (or an unsupported
+            metric type was gracefully ignored), False otherwise.
+*/
+bool TelemetryController::Handle_TelemetryAdd(ws_telemetry_Add *msg) {
+  WS_DEBUG_PRINT("[telemetry] Handle_TelemetryAdd: ");
+  WS_DEBUG_PRINTLNVAR(TelemetryTypeName(msg->type));
 
   // Gracefully ignore metrics this firmware doesn't know how to source, so a
-  // single unsupported metric doesn't abort the rest of the checkin.
-  if (new_metric->GetKind() == TELEMETRY_KIND_UNKNOWN) {
-    WS_DEBUG_PRINTLN("[telemetry] WARNING: Unknown telemetry metric, ignoring");
-    Ws.error_handler->publishComponentError(msg->name,
-                                            "Unknown telemetry metric");
-    delete new_metric;
+  // single unsupported metric doesn't abort the rest of the checkin. Checked
+  // before allocating the instance.
+  if (!TelemetryTypeIsSupported(msg->type)) {
+    WS_DEBUG_PRINTLN(
+        "[telemetry] WARNING: Unsupported telemetry metric, ignoring");
+    Ws.error_handler->publishComponentError(TelemetryTypeName(msg->type),
+                                            "Unsupported telemetry metric");
     return true;
+  }
+
+  // If a metric of this type already exists, update its period instead of
+  // registering a duplicate.
+  if (updatePeriod(msg->type, msg->period))
+    return true;
+
+  TelemetryHardware *new_metric = new TelemetryHardware(msg->type, msg->period);
+  if (new_metric == nullptr) {
+    Ws.error_handler->publishComponentError(
+        TelemetryTypeName(msg->type), "Failed to allocate telemetry metric");
+    return false;
+  }
+  // Confirm the instance was constructed for the requested metric.
+  if (new_metric->GetType() != msg->type) {
+    Ws.error_handler->publishComponentError(
+        TelemetryTypeName(msg->type), "Failed to create telemetry metric");
+    delete new_metric;
+    return false;
   }
 
   _telemetry_metrics.push_back(new_metric);
@@ -123,27 +143,64 @@ bool TelemetryController::Handle_TelemetryAdd(ws_telemetry_Add *msg) {
 */
 bool TelemetryController::Handle_TelemetryRemove(ws_telemetry_Remove *msg) {
   WS_DEBUG_PRINT("[telemetry] Handle_TelemetryRemove: ");
-  WS_DEBUG_PRINTLNVAR(msg->name);
+  WS_DEBUG_PRINTLNVAR(TelemetryTypeName(msg->type));
 
   for (size_t i = 0; i < _telemetry_metrics.size(); i++) {
-    if (strcmp(_telemetry_metrics[i]->GetName(), msg->name) == 0) {
+    if (_telemetry_metrics[i]->GetType() == msg->type) {
       delete _telemetry_metrics[i];
       _telemetry_metrics.erase(_telemetry_metrics.begin() + i);
       WS_DEBUG_PRINTLN("[telemetry] Removed!");
       return true;
     }
   }
-  Ws.error_handler->publishComponentError(msg->name, "Telemetry metric not "
-                                                     "found");
+  Ws.error_handler->publishComponentError(TelemetryTypeName(msg->type),
+                                          "Telemetry metric not found");
   return false;
 }
 
 /*!
-    @brief  Encodes and publishes the telemetry model's current Event to the
-            broker.
+    @brief  Fills the telemetry model with a float reading, then encodes and
+            publishes the Event to the broker.
+    @param  type
+            The telemetry metric type.
+    @param  value_type
+            The reading's SensorType.
+    @param  value
+            The reading to report.
     @return True if the Event was encoded and published, False otherwise.
 */
-bool TelemetryController::PublishTelemetry() {
+bool TelemetryController::Publish(ws_telemetry_Type type,
+                                  ws_sensor_Type value_type, float value) {
+  _telemetry_model->InitEventMsg(type);
+  _telemetry_model->SetValueFloat(value_type, value);
+  if (!_telemetry_model->EncodeEvent()) {
+    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to encode telemetry Event");
+    return false;
+  }
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_telemetry_tag,
+                     _telemetry_model->GetD2B())) {
+    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to publish telemetry Event");
+    return false;
+  }
+  return true;
+}
+
+/*!
+    @brief  Fills the telemetry model with a string reading, then encodes and
+            publishes the Event to the broker.
+    @param  type
+            The telemetry metric type.
+    @param  value_type
+            The reading's SensorType.
+    @param  value
+            The reading to report.
+    @return True if the Event was encoded and published, False otherwise.
+*/
+bool TelemetryController::Publish(ws_telemetry_Type type,
+                                  ws_sensor_Type value_type,
+                                  const char *value) {
+  _telemetry_model->InitEventMsg(type);
+  _telemetry_model->SetValueString(value_type, value);
   if (!_telemetry_model->EncodeEvent()) {
     WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to encode telemetry Event");
     return false;
@@ -166,10 +223,6 @@ void TelemetryController::update(bool force) {
   if (_telemetry_metrics.empty())
     return;
 
-  // When online we publish to the broker; when running offline we log the
-  // reading to the SD card instead.
-  bool is_offline = Ws._sdCardV2->isModeOffline();
-
   for (size_t i = 0; i < _telemetry_metrics.size(); i++) {
     TelemetryHardware &metric = *(_telemetry_metrics[i]);
 
@@ -189,36 +242,33 @@ void TelemetryController::update(bool force) {
       continue;
     }
 
-    // Read the metric and deliver it (publish online, or log to SD offline).
+    // Read the metric and deliver it: when online we publish to the broker;
+    // when running offline we log the reading to the SD card instead.
     bool delivered = false;
-    switch (metric.GetKind()) {
-    case TELEMETRY_KIND_RSSI: {
+    switch (metric.GetType()) {
+    case ws_telemetry_Type_TM_RSSI: {
       float value = (float)metric.ReadRSSI();
-      if (is_offline) {
+      if (Ws._sdCardV2->isModeOffline()) {
         delivered = Ws._sdCardV2->LogTelemetryEventToSD(metric.GetName(), value,
                                                         ws_sensor_Type_T_RAW);
       } else {
-        _telemetry_model->InitEventMsg(metric.GetName());
-        _telemetry_model->SetValueFloat(ws_sensor_Type_T_RAW, value);
-        delivered = PublishTelemetry();
+        delivered = Publish(metric.GetType(), ws_sensor_Type_T_RAW, value);
       }
       break;
     }
-    case TELEMETRY_KIND_BOOT_REASON: {
+    case ws_telemetry_Type_TM_BOOT_REASON: {
       const char *value = metric.ReadBootReason();
-      if (is_offline) {
+      if (Ws._sdCardV2->isModeOffline()) {
         delivered =
             Ws._sdCardV2->LogTelemetryEventToSD(metric.GetName(), value);
       } else {
-        _telemetry_model->InitEventMsg(metric.GetName());
-        _telemetry_model->SetValueString(ws_sensor_Type_T_BYTES, value);
-        delivered = PublishTelemetry();
+        delivered = Publish(metric.GetType(), ws_sensor_Type_T_BYTES, value);
       }
       break;
     }
     default:
-      // Shouldn't happen - unknown metrics are rejected at Handle_TelemetryAdd,
-      // but log it here in case one ever slips through.
+      // Shouldn't happen - unsupported metrics are rejected at
+      // Handle_TelemetryAdd, but log it here in case one ever slips through.
       WS_DEBUG_PRINT("[telemetry] WARNING: No reader for metric: ");
       WS_DEBUG_PRINTLNVAR(metric.GetName());
       metric.did_read_send = true;

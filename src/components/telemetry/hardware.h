@@ -17,14 +17,22 @@
 #include "wippersnapper.h"
 
 /*!
-    @brief  The metric a telemetry component instance reports. Resolved from
-            the instance's name (e.g. "rssi", "boot_reason").
+    @brief  Whether this firmware knows how to source the given telemetry
+            metric type (i.e. has a reader for it).
+    @param  type
+            The telemetry metric type from the broker.
+    @returns True if the metric is supported on this device, False otherwise.
 */
-typedef enum {
-  TELEMETRY_KIND_UNKNOWN = 0, ///< Unrecognized telemetry metric name
-  TELEMETRY_KIND_RSSI,        ///< WiFi signal strength (RSSI), in dBm
-  TELEMETRY_KIND_BOOT_REASON, ///< Reason for the last device reset/boot
-} TelemetryKind;
+bool TelemetryTypeIsSupported(ws_telemetry_Type type);
+
+/*!
+    @brief  Returns a short human-readable name for a telemetry metric type,
+            used for logging and offline SD-card entries.
+    @param  type
+            The telemetry metric type.
+    @returns A static, null-terminated name (e.g. "rssi", "boot_reason").
+*/
+const char *TelemetryTypeName(ws_telemetry_Type type);
 
 /*!
     @brief  Represents a single telemetry metric instance and provides the
@@ -32,10 +40,10 @@ typedef enum {
 */
 class TelemetryHardware {
 public:
-  TelemetryHardware(const char *name, float period);
+  TelemetryHardware(ws_telemetry_Type type, float period);
   ~TelemetryHardware();
+  ws_telemetry_Type GetType();
   const char *GetName();
-  TelemetryKind GetKind();
   void SetPeriod(float period);
   bool IsPeriodic();
   bool IsTimerExpired();
@@ -47,11 +55,10 @@ public:
   const char *ReadBootReason();
   bool did_read_send; ///< True if the last read was sent to IO, False otherwise
 private:
-  char _name[24];        ///< Telemetry component name (e.g. "rssi")
-  TelemetryKind _kind;   ///< Metric kind resolved from _name
-  float _period;         ///< Desired reporting interval, in milliseconds
-  float _prv_period;     ///< Last time the metric was reported, in milliseconds
+  ws_telemetry_Type _type; ///< The metric this instance reports
+  float _period;           ///< Desired reporting interval, in milliseconds
+  float _prv_period;       ///< Last time the metric was reported, in ms
   bool _reported_once;   ///< True once a report-once (period 0) metric has sent
-  char _boot_reason[96]; ///< Backing store for the assembled boot reason string
+  char _boot_reason[64]; ///< Backing store for the assembled boot reason string
 };
 #endif // WS_TELEMETRY_HARDWARE_H

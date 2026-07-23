@@ -94,16 +94,14 @@ ws_telemetry_Remove *TelemetryModel::GetTelemetryRemoveMsg() {
 
 /*!
     @brief  Initializes the telemetry D2B Event message for a metric.
-    @param  name
-            The telemetry component's name.
+    @param  type
+            The telemetry metric the Event reports.
 */
-void TelemetryModel::InitEventMsg(const char *name) {
+void TelemetryModel::InitEventMsg(ws_telemetry_Type type) {
   memset(&_msg_D2B, 0, sizeof(_msg_D2B));
   _str_value[0] = '\0';
   _msg_D2B.which_payload = ws_telemetry_D2B_event_tag;
-  strncpy(_msg_D2B.payload.event.name, name,
-          sizeof(_msg_D2B.payload.event.name) - 1);
-  _msg_D2B.payload.event.name[sizeof(_msg_D2B.payload.event.name) - 1] = '\0';
+  _msg_D2B.payload.event.type = type;
   _msg_D2B.payload.event.has_value = true;
 }
 

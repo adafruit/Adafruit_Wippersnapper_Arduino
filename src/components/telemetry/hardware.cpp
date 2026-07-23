@@ -108,29 +108,60 @@ static const char *samdResetReasonName() {
 #endif
 
 /*!
+    @brief  Whether this firmware knows how to source the given telemetry
+            metric type (i.e. has a reader for it).
+    @param  type
+            The telemetry metric type from the broker.
+    @returns True if the metric is supported on this device, False otherwise.
+*/
+bool TelemetryTypeIsSupported(ws_telemetry_Type type) {
+  switch (type) {
+  case ws_telemetry_Type_TM_RSSI:
+  case ws_telemetry_Type_TM_BOOT_REASON:
+    return true;
+  default:
+    // TM_BOOT_COUNT and TM_LATENCY_MS are defined in the API but not yet
+    // sourced by this firmware.
+    return false;
+  }
+}
+
+/*!
+    @brief  Returns a short human-readable name for a telemetry metric type,
+            used for logging and offline SD-card entries.
+    @param  type
+            The telemetry metric type.
+    @returns A static, null-terminated name (e.g. "rssi", "boot_reason").
+*/
+const char *TelemetryTypeName(ws_telemetry_Type type) {
+  switch (type) {
+  case ws_telemetry_Type_TM_RSSI:
+    return "rssi";
+  case ws_telemetry_Type_TM_BOOT_REASON:
+    return "boot_reason";
+  case ws_telemetry_Type_TM_BOOT_COUNT:
+    return "boot_count";
+  case ws_telemetry_Type_TM_LATENCY_MS:
+    return "latency_ms";
+  default:
+    return "unknown";
+  }
+}
+
+/*!
     @brief  TelemetryHardware constructor
-    @param  name
-            The telemetry component's name (e.g. "rssi", "boot_reason").
+    @param  type
+            The telemetry metric this instance reports.
     @param  period
             The reporting interval, in seconds. Use 0 to report only once
             at startup.
 */
-TelemetryHardware::TelemetryHardware(const char *name, float period) {
+TelemetryHardware::TelemetryHardware(ws_telemetry_Type type, float period) {
   did_read_send = false;
   _reported_once = false;
   _prv_period = 0;
-  strncpy(_name, name, sizeof(_name) - 1);
-  _name[sizeof(_name) - 1] = '\0';
+  _type = type;
   SetPeriod(period);
-
-  // Resolve the metric kind from the instance name
-  if (strcmp(_name, "rssi") == 0) {
-    _kind = TELEMETRY_KIND_RSSI;
-  } else if (strcmp(_name, "boot_reason") == 0) {
-    _kind = TELEMETRY_KIND_BOOT_REASON;
-  } else {
-    _kind = TELEMETRY_KIND_UNKNOWN;
-  }
 }
 
 /*!
@@ -139,16 +170,16 @@ TelemetryHardware::TelemetryHardware(const char *name, float period) {
 TelemetryHardware::~TelemetryHardware() {}
 
 /*!
-    @brief  Gets the telemetry component's name.
-    @returns The telemetry component's name.
+    @brief  Gets the telemetry metric this instance reports.
+    @returns The ws_telemetry_Type for this instance.
 */
-const char *TelemetryHardware::GetName() { return _name; }
+ws_telemetry_Type TelemetryHardware::GetType() { return _type; }
 
 /*!
-    @brief  Gets the metric kind resolved from the component's name.
-    @returns The TelemetryKind for this instance.
+    @brief  Gets a short human-readable name for this instance's metric.
+    @returns The metric's name (e.g. "rssi", "boot_reason").
 */
-TelemetryKind TelemetryHardware::GetKind() { return _kind; }
+const char *TelemetryHardware::GetName() { return TelemetryTypeName(_type); }
 
 /*!
     @brief  Sets the timer used to report the metric.
@@ -211,12 +242,19 @@ const char *TelemetryHardware::ReadBootReason() {
   _boot_reason[0] = '\0';
 #if defined(ARDUINO_ARCH_ESP32)
   // ESP32 exposes a reset reason per CPU core - report one CPU per line.
-  int num_cores = ESP.getChipCores();
+  // ESP.getChipCores() returns a uint8_t.
+  uint8_t num_cores = ESP.getChipCores();
   if (num_cores < 1)
     num_cores = 1;
-  for (int core = 0; core < num_cores; core++) {
-    char line[48];
-    snprintf(line, sizeof(line), "%sCPU%d: %s", (core == 0 ? "" : "\n"), core,
+  for (uint8_t core = 0; core < num_cores; core++) {
+    // Separate cores with a newline (no leading newline on the first core).
+    const char *separator = "\n";
+    if (core == 0)
+      separator = "";
+    // Longest line is "\nCPUn: RTCWDT_BROWN_OUT_RESET" (<32 chars
+    // w/terminator).
+    char line[32];
+    snprintf(line, sizeof(line), "%sCPU%u: %s", separator, core,
              espCoreResetReasonName((int)rtc_get_reset_reason(core)));
     strncat(_boot_reason, line,
             sizeof(_boot_reason) - strlen(_boot_reason) - 1);

@@ -40,7 +40,10 @@ public:
   void ResetFlags();
 
 private:
-  bool PublishTelemetry();
+  bool updatePeriod(ws_telemetry_Type type, float period);
+  bool Publish(ws_telemetry_Type type, ws_sensor_Type value_type, float value);
+  bool Publish(ws_telemetry_Type type, ws_sensor_Type value_type,
+               const char *value);
   TelemetryModel *_telemetry_model; ///< telemetry model
   std::vector<TelemetryHardware *> _telemetry_metrics;
 };

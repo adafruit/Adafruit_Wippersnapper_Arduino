@@ -31,7 +31,7 @@ public:
   bool DecodeTelemetryRemove(pb_istream_t *stream);
   ws_telemetry_Remove *GetTelemetryRemoveMsg();
   // TelemetryEvent Message API
-  void InitEventMsg(const char *name);
+  void InitEventMsg(ws_telemetry_Type type);
   void SetValueFloat(ws_sensor_Type type, float value);
   void SetValueString(ws_sensor_Type type, const char *value);
   bool EncodeEvent();
