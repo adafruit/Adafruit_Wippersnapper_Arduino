@@ -7,6 +7,11 @@ on:
   push:
     branches:
       - migrate-api-v2
+  pull_request:
+    # 'edited' covers PRs retargeted to migrate-api-v2 after opening
+    types: [opened, synchronize, reopened, edited]
+    branches:
+      - migrate-api-v2
 
 jobs:
   build-esp32sx:
@@ -146,6 +151,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: adafruit/Wippersnapper_Boards
+          ref: api-v2
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -598,6 +604,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: adafruit/Wippersnapper_Boards
+          ref: api-v2
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
