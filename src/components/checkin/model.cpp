@@ -172,9 +172,23 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   response->component_adds.i2c_adds.funcs.decode = &cbI2cAdds;
   response->component_adds.i2c_adds.arg = model;
 
+  response->component_adds.display_adds.funcs.decode = &cbDisplayAdds;
+  response->component_adds.display_adds.arg = model;
+
   // Return true WITHOUT consuming the stream - nanopb will continue
   // to decode the Response submessage with our callback now set up
   return true;
+}
+
+bool CheckinModel::cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+    WS_DEBUG_PRINTLN("[checkin] Decoding display add message from broker");
+    ws_display_Add add_msg = ws_display_Add_init_zero;
+    if (!pb_decode(stream, ws_display_Add_fields, &add_msg)) {
+        WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode display add");
+        return false;
+    }
+    WS_DEBUG_PRINTLN("[checkin] Decoded display add message, passing to DisplayController");
+    return Ws._display_controller->Handle_Display_Add(&add_msg);
 }
 
 /*!
