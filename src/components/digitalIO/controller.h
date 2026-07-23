@@ -39,6 +39,8 @@ public:
   bool UpdateComplete();
   void ResetFlags();
   void SetMaxDigitalPins(uint8_t max_digital_pins);
+  bool QueryPinState(uint8_t pin_num, ws_digitalio_Direction *direction,
+                     bool *value);
 
 private:
   bool EncodePublishPinEvent(DigitalIOHardware *pin);

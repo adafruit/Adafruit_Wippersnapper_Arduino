@@ -36,6 +36,7 @@ jobs:
             "qtpy_esp32s2",
             "feather_esp32s3_reverse_tft",
             "qtpy_esp32s3_n4r2",
+            "lilygo_t_display_s3",
           ]
     steps:
       - uses: actions/setup-python@v5

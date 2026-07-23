@@ -28,6 +28,7 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
     defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666) ||                              \
+    defined(ARDUINO_LILYGO_T_DISPLAY_S3) ||                                    \
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
@@ -142,7 +143,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   if (_is_secrets_file_empty) {
     writeToBootOut(
         "Please edit the secrets.json file. Then, reset your board.\n");
-    fsHalt("The settings.json file on the WIPPER drive contains default "
+    fsHalt("The secrets.json file on the WIPPER drive contains default "
            "values\n. Using a text editor, edit it to reflect your Adafruit IO "
            "and WiFi credentials. Then, reset the board.");
   }

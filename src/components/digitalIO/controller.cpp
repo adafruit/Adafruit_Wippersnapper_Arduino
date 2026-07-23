@@ -244,6 +244,29 @@ DigitalIOHardware *DigitalIOController::GetPin(uint8_t pin_num,
 }
 
 /*!
+    @brief  Reports whether a host-MCU pin is registered with this controller
+            and, if so, its configured direction and current value. Lets other
+            components (e.g. a display with a power-enable rail) detect
+            pin-in-use conflicts without taking ownership of the pin.
+    @param  pin_num    The pin's number.
+    @param  direction  Out (optional): the pin's configured direction.
+    @param  value      Out (optional): the pin's current value.
+    @return True if the pin is registered with this controller, else False.
+*/
+bool DigitalIOController::QueryPinState(uint8_t pin_num,
+                                        ws_digitalio_Direction *direction,
+                                        bool *value) {
+  DigitalIOHardware *pin = GetPin(pin_num, nullptr);
+  if (!pin)
+    return false;
+  if (direction)
+    *direction = pin->GetDirection();
+  if (value)
+    *value = pin->GetPinValue();
+  return true;
+}
+
+/*!
     @brief  Write a digital pin
     @param  msg
             Pointer to the DigitalIO write message.
