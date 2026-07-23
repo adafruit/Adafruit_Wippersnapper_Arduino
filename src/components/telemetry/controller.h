@@ -41,6 +41,7 @@ public:
 
 private:
   bool updatePeriod(ws_telemetry_Type type, float period);
+  bool encodeAndPublish();
   bool Publish(ws_telemetry_Type type, ws_sensor_Type value_type, float value);
   bool Publish(ws_telemetry_Type type, ws_sensor_Type value_type,
                const char *value);

@@ -101,8 +101,6 @@ bool TelemetryController::Handle_TelemetryAdd(ws_telemetry_Add *msg) {
   // single unsupported metric doesn't abort the rest of the checkin. Checked
   // before allocating the instance.
   if (!TelemetryTypeIsSupported(msg->type)) {
-    WS_DEBUG_PRINTLN(
-        "[telemetry] WARNING: Unsupported telemetry metric, ignoring");
     Ws.error_handler->publishComponentError(TelemetryTypeName(msg->type),
                                             "Unsupported telemetry metric");
     return true;
@@ -114,13 +112,9 @@ bool TelemetryController::Handle_TelemetryAdd(ws_telemetry_Add *msg) {
     return true;
 
   TelemetryHardware *new_metric = new TelemetryHardware(msg->type, msg->period);
-  if (new_metric == nullptr) {
-    Ws.error_handler->publishComponentError(
-        TelemetryTypeName(msg->type), "Failed to allocate telemetry metric");
-    return false;
-  }
-  // Confirm the instance was constructed for the requested metric.
-  if (new_metric->GetType() != msg->type) {
+  // Confirm the instance was allocated and constructed for the requested
+  // metric before tracking it.
+  if (new_metric == nullptr || new_metric->GetType() != msg->type) {
     Ws.error_handler->publishComponentError(
         TelemetryTypeName(msg->type), "Failed to create telemetry metric");
     delete new_metric;
@@ -159,6 +153,24 @@ bool TelemetryController::Handle_TelemetryRemove(ws_telemetry_Remove *msg) {
 }
 
 /*!
+    @brief  Encodes the telemetry model's current Event and publishes it to
+            the broker.
+    @return True if the Event was encoded and published, False otherwise.
+*/
+bool TelemetryController::encodeAndPublish() {
+  if (!_telemetry_model->EncodeEvent()) {
+    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to encode telemetry Event");
+    return false;
+  }
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_telemetry_tag,
+                     _telemetry_model->GetD2B())) {
+    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to publish telemetry Event");
+    return false;
+  }
+  return true;
+}
+
+/*!
     @brief  Fills the telemetry model with a float reading, then encodes and
             publishes the Event to the broker.
     @param  type
@@ -173,16 +185,7 @@ bool TelemetryController::Publish(ws_telemetry_Type type,
                                   ws_sensor_Type value_type, float value) {
   _telemetry_model->InitEventMsg(type);
   _telemetry_model->SetValueFloat(value_type, value);
-  if (!_telemetry_model->EncodeEvent()) {
-    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to encode telemetry Event");
-    return false;
-  }
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_telemetry_tag,
-                     _telemetry_model->GetD2B())) {
-    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to publish telemetry Event");
-    return false;
-  }
-  return true;
+  return encodeAndPublish();
 }
 
 /*!
@@ -201,16 +204,7 @@ bool TelemetryController::Publish(ws_telemetry_Type type,
                                   const char *value) {
   _telemetry_model->InitEventMsg(type);
   _telemetry_model->SetValueString(value_type, value);
-  if (!_telemetry_model->EncodeEvent()) {
-    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to encode telemetry Event");
-    return false;
-  }
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_telemetry_tag,
-                     _telemetry_model->GetD2B())) {
-    WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to publish telemetry Event");
-    return false;
-  }
-  return true;
+  return encodeAndPublish();
 }
 
 /*!
