@@ -8,6 +8,8 @@ on:
     branches:
       - migrate-api-v2
   pull_request:
+    # 'edited' covers PRs retargeted to migrate-api-v2 after opening
+    types: [opened, synchronize, reopened, edited]
     branches:
       - migrate-api-v2
 
