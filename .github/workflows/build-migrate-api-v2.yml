@@ -105,12 +105,6 @@ jobs:
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: Build for ESP32-SX
-        # TODO(adafruit/ci-arduino#227): generate_uf2() misroutes boards whose
-        # FQBN lacks the literal "esp32s3" (lilygo_t_display_s3) down the .hex
-        # path and crashes after a successful build/export. Tolerate the failure
-        # for that board so the exported binaries still feed the combined.bin
-        # steps below; remove once ci-arduino is fixed.
-        continue-on-error: ${{ matrix.arduino-platform == 'lilygo_t_display_s3' }}
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: list files (tree)
@@ -230,14 +224,9 @@ jobs:
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip
       - name: Rename UF2 build artifact to reflect the platform name
-        # TODO(adafruit/ci-arduino#227): no UF2 is produced for
-        # lilygo_t_display_s3 until ci-arduino's generate_uf2() is fixed.
-        continue-on-error: ${{ matrix.arduino-platform == 'lilygo_t_display_s3' }}
         run: |
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
       - name: Upload build artifact UF2 file
-        # TODO(adafruit/ci-arduino#227): see above.
-        continue-on-error: ${{ matrix.arduino-platform == 'lilygo_t_display_s3' }}
         uses: actions/upload-artifact@v4
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}-uf2
