@@ -272,7 +272,6 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response message");
     return false;
   }
-  Ws.NetworkFSM();
 
   // Configure sleep settings if enabled
   WS_DEBUG_PRINTLN("[app] Configuring sleep...");
@@ -281,7 +280,6 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   // Configure controller settings using Response
   WS_DEBUG_PRINTLN("[app] Configuring controllers...");
   Ws.CheckInModel->ConfigureControllers();
-  Ws.NetworkFSM();
 
   // Publish the complete response message to indicate the checkin
   // routine is done and the device is ready for use
@@ -1139,6 +1137,7 @@ void wippersnapper::loopSleep() {
 
   // Track completion of all controllers
   bool all_controllers_complete = true;
+  bool display_write_in_progress = Ws._display_controller->IsWriteInProgress();
 
   if (!Ws.digital_io_controller->UpdateComplete()) {
     Ws.digital_io_controller->update(true);
@@ -1171,7 +1170,7 @@ void wippersnapper::loopSleep() {
   }
 
   // Check if all controllers have completed their updates
-  if (all_controllers_complete) {
+  if (all_controllers_complete && !display_write_in_progress) {
     // Reset all flags and variables for use in the next loopsleep() cycle (if
     // light sleep)
     ResetAllControllerFlags();
@@ -1203,7 +1202,7 @@ void wippersnapper::loopSleep() {
 
   // Check if run duration timeout exceeded
   unsigned long run_duration_ms = Ws._sleep_controller->getRunDurationMs();
-  if (run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) {
+  if ((run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) && !display_write_in_progress) {
     // Reset all flags and variables for use in the next loopsleep() cycle (if
     // light sleep)
     ResetAllControllerFlags();

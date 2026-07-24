@@ -46,6 +46,8 @@ public:
   void PublishDisplayComponentError(ws_display_InterfaceDescriptor iface, const char *error);
   int8_t resolveDisplayOrPublishError(ws_display_Write *msg, const char *errorMessage);
 
+  bool IsWriteInProgress() { return _write_in_progress; }
+
 private:
   DisplayHardware *_displays[MAX_DISPLAYS] = {nullptr};
   uint8_t _num_displays;
@@ -69,6 +71,7 @@ private:
   std::vector<std::vector<uint8_t>> _canvas_chunks; ///< per-chunk byte regions, indexed by chunk_id - 1
   std::vector<uint8_t> _pending_chunk; ///< bytes captured by the most recent decode callback
   std::vector<uint8_t> _bmp; ///< fully reassembled bitmap, built from _canvas_chunks
+  bool _write_in_progress; ///< True if a write is currently being processed (gates loopSleep() sleep entry)
 };
 extern wippersnapper Ws; ///< Global V2 instance
 #endif                   // WS_DISPLAY_CONTROLLER_H

@@ -353,8 +353,11 @@ ws_sleep_SleepConfig *CheckinModel::GetSleepConfig() {
 void CheckinModel::configureSleep() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Process sleep configuration if present
+  WS_DEBUG_PRINT("[app] Is sleep Enabled? ");
+  WS_DEBUG_PRINTLN(IsSleepEnabled() ? "Yes" : "No");
   if (IsSleepEnabled()) {
     ws_sleep_SleepConfig *sleep_cfg = GetSleepConfig();
+    WS_DEBUG_PRINTLN("[app] Sleep is enabled in checkin response");
     if (sleep_cfg != nullptr) {
       WS_DEBUG_PRINTLN("[app] Processing sleep configuration from checkin");
       Ws._sleep_controller->handleSleepConfig(sleep_cfg, true);

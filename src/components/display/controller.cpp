@@ -21,6 +21,7 @@ DisplayController::DisplayController() {
   _canvas_chunk_total = 0;
   _canvas_chunks_received = 0;
   _canvas_total_size = 0;
+  _write_in_progress = false;
 }
 
 DisplayController::~DisplayController() {
@@ -29,6 +30,7 @@ DisplayController::~DisplayController() {
   }
   _num_displays = 0;
   resetCanvasReassembly();
+  _write_in_progress = false;
 }
 
 /*!
@@ -286,9 +288,11 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
         "Failed to initialize display hardware for add request");
     return false;
   }
+  Ws.NetworkFSM();
 
   // Show splash screen and status bar
   hw->initialise(Ws._configV2.aio_user);
+  Ws.NetworkFSM();
 
   _displays[_num_displays] = hw;
   _num_displays++;
@@ -305,6 +309,7 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
     // pb_decode_ex + PB_DECODE_NOINIT callback wiring for msg->write.image.
     Handle_Display_Write(&msg->write);
   }
+  Ws.NetworkFSM();
 
   WS_DEBUG_PRINT("[display] Display added successfully: ");
   WS_DEBUG_PRINTLNVAR(msg->name);
@@ -554,6 +559,9 @@ bool DisplayController::ingestCanvasChunk(ws_display_Write *msg) {
   _canvas_chunks[idx] = std::move(_pending_chunk);
   _pending_chunk.clear();
 
+  // Also, let's set the write_in_progress flag to gate loopSleep() entry until the write is done
+  _write_in_progress = true;
+
   return true;
 }
 
@@ -603,6 +611,9 @@ bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
     PublishDisplayComponentError(msg->descriptor,
                                  "Failed to draw canvas to display");
   }
+
+  // Un-set the write_in_progress flag to allow loopSleep() entry again
+  _write_in_progress = false;
   return did_draw;
 }
 
