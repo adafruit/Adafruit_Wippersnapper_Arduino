@@ -330,6 +330,8 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   }
   
   // Show splash screen and status bar
+  // TODO: This has been commented out for marquee EPDs, as the splash screen is not needed and the status bar is drawn by the broker.
+  // TODO: We may want to make this conditional based on display type in the future.
   //hw->initialise(Ws._configV2.aio_user);
 
   _displays[_num_displays] = hw;
@@ -705,7 +707,7 @@ bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
   // Attempt to draw the assembled BMP to the display
   WS_DEBUG_PRINTLN("[display] Attempting to draw canvas to display...");
   bool did_draw = _displays[disp_idx]->drawMarqueeEPD(_bmp.data(), _bmp.size());
-  WS_DEBUG_PRINT("[display] Draw result: ");
+  WS_DEBUG_PRINTLN("[display] Draw result: ");
   WS_DEBUG_PRINTLNVAR(did_draw);
   resetCanvasReassembly();
   if (!did_draw && msg->has_descriptor) {

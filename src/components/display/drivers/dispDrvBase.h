@@ -133,6 +133,13 @@ public:
   virtual void setTextSize(uint8_t s) { _text_sz = s; }
 
   /*!
+      @brief  Records whether the MCU cold-booted or resumed from a sleep
+              cycle. Must be called before begin() to take effect.
+      @param  cold  True on power-on/reset, False when waking from sleep.
+  */
+  void setColdBoot(bool cold) { _is_cold_boot = cold; }
+
+  /*!
       @brief  Sets the backlight control pin.
       @param  pin  Pin number for the backlight (-1 to disable).
       @note   Move backlight pin into proto Add message instead of board
@@ -228,6 +235,11 @@ protected:
   int16_t _width;            ///< Display width
   int16_t _height;           ///< Display height
   uint8_t _rotation;         ///< Display rotation (0-3)
+  bool _is_cold_boot = true; ///< True on power-on, False when resuming from a
+                             ///< sleep cycle. Lets EPD drivers skip refreshes
+                             ///< that only establish a state the panel already
+                             ///< holds across sleep. Defaults to True so an
+                             ///< un-wired caller keeps the previous behaviour.
 
   /*! @brief Cached status bar layout and state. */
   int _statusbar_icons_y;         ///< Y position of status bar icons

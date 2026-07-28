@@ -502,9 +502,15 @@ public:
     _display->setTextWrap(false);
     _height = _display->height();
     _width = _display->width();
+    // clearBuffer() is cheap even on SRAM (a bulk sram.erase(), not per-pixel),
+    // so always start from a known buffer state.
     _display->clearBuffer();
-    // We probably don't want to do this here, as it will cause a full refresh on every boot, which is slow!
-    // _display->display();
+    // Committing that clear to the panel costs a full ~15.8s refresh, so only
+    // pay it on a cold boot, where the panel may still be holding a stale image
+    // from before power was removed. Waking from sleep the panel already shows
+    // the last canvas, and the incoming write overwrites it wholesale.
+    if (_is_cold_boot)
+      _display->display();
     _reader = new Adafruit_ImageReader_EPD();
     if (!_reader) {
       WS_DEBUG_PRINTLN("Failed to create Adafruit_ImageReader_EPD");
@@ -650,11 +656,21 @@ public:
     _display->clearBuffer();
 
     // Draw the BMP to the display
+    uint32_t t_decode_start = millis();
     ImageReturnCode rc = _reader->drawBMP(bmp, len, *_display, 0, 0);
-    if (rc != IMAGE_SUCCESS)
+    uint32_t t_decode = millis() - t_decode_start;
+    if (rc != IMAGE_SUCCESS) {
+      WS_DEBUG_PRINT("[display] ERROR: drawBMP rc: ");
+      WS_DEBUG_PRINTLNVAR((int)rc);
       return false;
+    }
 
+    uint32_t t_refresh_start = millis();
     _display->display();
+    WS_DEBUG_PRINT("[display] decode ms: ");
+    WS_DEBUG_PRINTVAR(t_decode);
+    WS_DEBUG_PRINT(" refresh ms: ");
+    WS_DEBUG_PRINTLNVAR(millis() - t_refresh_start);
     return true;
   }
 

@@ -411,6 +411,20 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (config->properties.text_size > 0)
     _drvDisp->setTextSize(config->properties.text_size);
 
+  // Tell the driver whether this is a cold boot so begin() can skip the
+  // clear-to-white refresh (a full ~15.8s panel cycle) when resuming from
+  // sleep, where the panel already holds the last canvas. The sleep
+  // controller is built in the wippersnapper constructor, so its wake cause
+  // is already captured by the time a Display Add is handled.
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  if (Ws._sleep_controller != nullptr) {
+    bool woke_from_sleep = Ws._sleep_controller->DidWakeFromSleep();
+    _drvDisp->setColdBoot(!woke_from_sleep);
+    WS_DEBUG_PRINT("[display] Cold boot: ");
+    WS_DEBUG_PRINTLNVAR(!woke_from_sleep);
+  }
+#endif
+
   if (!_drvDisp->begin()) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin EPD driver!");
     delete _drvDisp;
