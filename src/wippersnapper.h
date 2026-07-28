@@ -157,12 +157,28 @@
 
 // Timeouts and intervals
 #define WS_BROKER_KEEPALIVE_MS                                                 \
-  11000 ///< Maximum time without a ping before broker disconnects (ms)
+  60000 ///< Maximum time without a ping before broker disconnects (ms). Set
+        ///< high enough that a long blocking display refresh (EPD add can
+        ///< block ~30s) doesn't outlast the broker's 1.5x-keepalive grace and
+        ///< get the connection dropped mid-operation.
 #define WS_DEVICE_PING_MS                                                      \
   5000 ///< Interval at which device sends ping to broker, in milliseconds
 #define WS_TIMEOUT_WDT 60000 ///< App WDT timeout, in milliseconds
 #define WS_MQTT_POLL_TIMEOUT_MS                                                \
   10 ///< MQTT polling (processPackets()) timeout, in milliseconds
+#define WS_MQTT_POLL_TIMEOUT_STREAMING_MS                                      \
+  500 ///< Per-packet MQTT read timeout used while a display canvas is streaming.
+      ///< Adafruit_MQTT treats this as an IDLE timeout that resets on every
+      ///< byte received, so it only elapses when the socket genuinely stalls
+      ///< mid-packet. WS_MQTT_POLL_TIMEOUT_MS (10ms) is far too short for a
+      ///< several-hundred-byte chunk packet: on expiry readPacket() returns a
+      ///< SHORT read and readFullPacket() leaves the unread remainder of that
+      ///< PUBLISH in the TCP stream, so every subsequent read is mis-framed and
+      ///< silently swallows whole packets until it happens to resync. That is
+      ///< what drops runs of canvas chunks.
+#define WS_MQTT_STREAMING_DRAIN_MAX_PACKETS                                    \
+  32 ///< Maximum packets drained per processMqttPackets() call while streaming,
+     ///< so a long canvas cannot starve the rest of the loop indefinitely.
 #define WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS                               \
   60000 ///< Default offline mode heartbeat interval, in milliseconds
 

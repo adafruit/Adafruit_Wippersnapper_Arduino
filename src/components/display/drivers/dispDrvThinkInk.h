@@ -503,7 +503,8 @@ public:
     _height = _display->height();
     _width = _display->width();
     _display->clearBuffer();
-    _display->display();
+    // We probably don't want to do this here, as it will cause a full refresh on every boot, which is slow!
+    // _display->display();
     _reader = new Adafruit_ImageReader_EPD();
     if (!_reader) {
       WS_DEBUG_PRINTLN("Failed to create Adafruit_ImageReader_EPD");

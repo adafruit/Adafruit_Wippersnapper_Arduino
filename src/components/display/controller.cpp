@@ -22,6 +22,9 @@ DisplayController::DisplayController() {
   _canvas_chunks_received = 0;
   _canvas_total_size = 0;
   _write_in_progress = false;
+  _write_complete_pending = false;
+  _awaiting_write = false;
+  _awaiting_write_since_ms = 0;
 }
 
 DisplayController::~DisplayController() {
@@ -49,6 +52,43 @@ void DisplayController::resetCanvasReassembly() {
   _canvas_chunk_total = 0;
   _canvas_chunks_received = 0;
   _canvas_total_size = 0;
+  // Clear only the active-stream flag. _awaiting_write is intentionally NOT
+  // cleared here: it tracks the wake-level intent ("a display was added, hold
+  // loopSleep() awake until its canvas fully assembles"), which must survive
+  // intermediate reassembly resets (truncation error, new-image restart) so a
+  // future re-fire can still complete the canvas. Only a successful draw clears
+  // it.
+  _write_in_progress = false;
+}
+
+/*!
+    @brief  While awaiting a display's canvas, gives up on the await if it
+            hasn't fully assembled within CANVAS_ASSEMBLY_TIMEOUT_MS. Clearing
+            _awaiting_write is what lets loopSleep() fall through to its
+            run-duration deadline and sleep; without it the device would stay
+            awake indefinitely waiting on a canvas the broker may never finish
+            sending. The partial reassembly state is discarded so the next
+            wake's broker re-transmit starts from a clean slate.
+*/
+void DisplayController::handleCanvasAssemblyTimeout() {
+  if (!_awaiting_write)
+    return;
+  if (millis() - _awaiting_write_since_ms < CANVAS_ASSEMBLY_TIMEOUT_MS)
+    return;
+
+  WS_DEBUG_PRINTLN("ERROR: CANVAS NOT FULLY ASSEMBLED");
+  WS_DEBUG_PRINT("[display] Abandoning canvas await after ");
+  WS_DEBUG_PRINTVAR((uint32_t)(millis() - _awaiting_write_since_ms));
+  WS_DEBUG_PRINT("ms; chunks received: ");
+  WS_DEBUG_PRINTVAR(_canvas_chunks_received);
+  WS_DEBUG_PRINT(" / ");
+  WS_DEBUG_PRINTLNVAR(_canvas_chunk_total);
+
+  // Release the sleep hold-off so loopSleep() can reach its run-duration
+  // deadline, and drop the partial canvas so a re-transmit isn't merged into it.
+  _awaiting_write = false;
+  _awaiting_write_since_ms = 0;
+  resetCanvasReassembly();
 }
 
 /*!
@@ -288,14 +328,20 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
         "Failed to initialize display hardware for add request");
     return false;
   }
-  Ws.NetworkFSM();
-
+  
   // Show splash screen and status bar
-  hw->initialise(Ws._configV2.aio_user);
-  Ws.NetworkFSM();
+  //hw->initialise(Ws._configV2.aio_user);
 
   _displays[_num_displays] = hw;
   _num_displays++;
+
+  // The broker pushes this display's content as a separate write every wake
+  // cycle, arriving after check-in completes. Mark that we're awaiting it so
+  // loopSleep() stays awake until the canvas is fully assembled and drawn
+  // (WriteComplete). A bundled write (below) or a streamed write clears this
+  // once drawn.
+  _awaiting_write = true;
+  _awaiting_write_since_ms = millis();
 
   // Handle optional initial write
   if (msg->has_write) {
@@ -309,7 +355,6 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
     // pb_decode_ex + PB_DECODE_NOINIT callback wiring for msg->write.image.
     Handle_Display_Write(&msg->write);
   }
-  Ws.NetworkFSM();
 
   WS_DEBUG_PRINT("[display] Display added successfully: ");
   WS_DEBUG_PRINTLNVAR(msg->name);
@@ -471,7 +516,12 @@ bool DisplayController::handleTextWrite(ws_display_Write *msg) {
     return false;
   }
 
-  return _displays[idx]->write(msg);
+  bool did_write = _displays[idx]->write(msg);
+  if (did_write) {
+    // Content for this wake has been drawn; release the sleep hold-off.
+    _awaiting_write = false;
+  }
+  return did_write;
 }
 
 /*!
@@ -492,7 +542,58 @@ bool DisplayController::handleCanvasWrite(ws_display_Write *msg) {
     return true;
 
   // All chunks received: assemble the full BMP and draw it to the display.
-  return drawCanvasToDisplay(msg);
+  bool did_draw = drawCanvasToDisplay(msg);
+  if (!did_draw) {
+    // The canvas did not make it onto the panel (size mismatch, unknown
+    // display, or a driver failure). Do NOT report WriteComplete — the broker
+    // must keep re-transmitting — and keep _awaiting_write set so loopSleep()
+    // does not sleep on a stale panel before a re-transmit arrives.
+    WS_DEBUG_PRINTLN("[display] Draw FAILED, withholding WriteComplete so the "
+                     "broker re-transmits");
+    return false;
+  }
+
+  // The blocking EPD refresh above can outlast the broker keepalive, so the MQTT
+  // connection is often already dead here (and we're nested inside the receive
+  // callback). Queue the WriteComplete D2B and let loop() publish it once
+  // NetworkFSM() has re-established the connection.
+  _write_complete_pending = true;
+  // Content for this wake has been drawn; release the sleep hold-off.
+  _awaiting_write = false;
+  WS_DEBUG_PRINTLN("[display] WriteComplete QUEUED (deferred to loop())");
+
+  return true;
+}
+
+/*!
+    @brief  Publishes a queued display WriteComplete D2B message, if one is
+            pending. Called from loop()/loopSleep() after networking has been
+            serviced, so the publish lands on a live connection rather than the
+            (often dead) socket left behind by a long blocking canvas draw. The
+            pending flag is only cleared on a successful publish, so a failed
+            attempt is retried on the next loop.
+    @return True if a pending message was published, False otherwise.
+*/
+bool DisplayController::publishPendingWriteComplete() {
+  if (!_write_complete_pending)
+    return false;
+
+  WS_DEBUG_PRINT("[display] Publishing pending WriteComplete D2B... MQTT "
+                 "connected: ");
+  WS_DEBUG_PRINTLNVAR(Ws._mqttV2->connected());
+
+  ws_display_D2B write_complete_d2b = ws_display_D2B_init_zero;
+  write_complete_d2b.which_payload = ws_display_D2B_write_complete_tag;
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_display_tag,
+                     &write_complete_d2b)) {
+    WS_DEBUG_PRINTLN(
+        "[display] WriteComplete publish FAILED, will retry next loop");
+    return false;
+  }
+
+  WS_DEBUG_PRINTLN("[display] WriteComplete PUBLISHED!");
+  _write_complete_pending = false;
+  return true;
 }
 
 /*!

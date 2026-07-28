@@ -23,6 +23,13 @@
 #define MAX_FEED_HISTORY_STORAGE 512
 #define MAX_CANVAS_SIZE                                                         \
   (MAX_FEED_HISTORY_STORAGE * 1024) ///< Sanity cap on the reserve() for a reassembled BMP
+#define CANVAS_ASSEMBLY_TIMEOUT_MS                                             \
+  300000 ///< While a display is awaiting its canvas, how long to hold
+        ///< loopSleep() awake for a complete assembly before giving up. Sized
+        ///< to cover the broker's re-transmit window (5 attempts, one per
+        ///< keepalive). On expiry the await is abandoned so loopSleep() can
+        ///< reach its run-duration deadline and sleep, rather than staying
+        ///< awake forever on battery.
 
 class wippersnapper;   ///< Forward declaration
 class DisplayHardware; ///< Forward declaration
@@ -47,6 +54,17 @@ public:
   int8_t resolveDisplayOrPublishError(ws_display_Write *msg, const char *errorMessage);
 
   bool IsWriteInProgress() { return _write_in_progress; }
+  bool IsAwaitingWrite() { return _awaiting_write; }
+  bool HasPendingWriteComplete() { return _write_complete_pending; }
+  /*!
+      @brief  True when canvas chunks are expected or mid-reassembly, so the
+              MQTT read loop should favour a long per-packet idle timeout over a
+              responsive poll. Derived from the existing flags - no new state.
+      @return True if a canvas write is in flight, False otherwise.
+  */
+  bool IsCanvasStreaming() { return _awaiting_write || _write_in_progress; }
+  void handleCanvasAssemblyTimeout();
+  bool publishPendingWriteComplete();
 
 private:
   DisplayHardware *_displays[MAX_DISPLAYS] = {nullptr};
@@ -72,6 +90,9 @@ private:
   std::vector<uint8_t> _pending_chunk; ///< bytes captured by the most recent decode callback
   std::vector<uint8_t> _bmp; ///< fully reassembled bitmap, built from _canvas_chunks
   bool _write_in_progress; ///< True if a write is currently being processed (gates loopSleep() sleep entry)
+  bool _write_complete_pending; ///< True if a WriteComplete D2B is queued to publish from loop() (deferred out of the receive callback)
+  bool _awaiting_write; ///< True from when a display is added until it draws a write this wake; keeps loopSleep() awake until the canvas is fully assembled (WriteComplete)
+  unsigned long _awaiting_write_since_ms; ///< millis() when the current await window began (or was last re-armed); drives the CANVAS_ASSEMBLY_TIMEOUT_MS log
 };
 extern wippersnapper Ws; ///< Global V2 instance
 #endif                   // WS_DISPLAY_CONTROLLER_H
