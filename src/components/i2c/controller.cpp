@@ -578,8 +578,16 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   }
 
   // Store the bus pin names on the driver so we can query it
-  drv->SetPins(descriptor.address_space.pin_scl,
-               descriptor.address_space.pin_sda);
+  if (!drv->SetPins(descriptor.address_space.pin_scl,
+                    descriptor.address_space.pin_sda)) {
+    Ws.error_handler->publishComponentError(descriptor,
+                                            "Invalid I2C bus pin name(s)!");
+    if (use_mux) {
+      bus->ClearMuxChannel();
+    }
+    delete drv;
+    return false;
+  }
 
   // Configure sensor driver settings
   drv->EnableSensorReads(msg->types, msg->types_count);
@@ -1055,10 +1063,9 @@ TwoWire *I2cController::GetI2cBusByIndex(size_t index) {
 */
 I2cHardware *I2cController::findOrCreateBus(const char *pin_scl,
                                             const char *pin_sda) {
-  // Resolve the pin names to pin numbers
-  int32_t scl_num = WsPinNameToNum(pin_scl);
-  int32_t sda_num = WsPinNameToNum(pin_sda);
-  if (scl_num == WS_PIN_INVALID || sda_num == WS_PIN_INVALID) {
+  // Validate the pin names and resolve them to pin numbers, once
+  WsPinName scl, sda;
+  if (!scl.Set(pin_scl) || !sda.Set(pin_sda)) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Invalid SCL/SDA pin name!");
     return nullptr;
   }
@@ -1067,8 +1074,8 @@ I2cHardware *I2cController::findOrCreateBus(const char *pin_scl,
   for (I2cHardware *bus : _i2c_buses) {
     if (bus == nullptr)
       continue;
-    if (scl_num == (int32_t)bus->getSCL() &&
-        sda_num == (int32_t)bus->getSDA()) {
+    if (scl.num == (int32_t)bus->getSCL() &&
+        sda.num == (int32_t)bus->getSDA()) {
       return bus;
     }
   }
@@ -1080,7 +1087,7 @@ I2cHardware *I2cController::findOrCreateBus(const char *pin_scl,
   WS_DEBUG_PRINT("SDA Pin: ");
   WS_DEBUG_PRINTLNVAR(pin_sda);
 
-  I2cHardware *new_bus = new I2cHardware(sda_num, scl_num);
+  I2cHardware *new_bus = new I2cHardware(sda.num, scl.num);
   if (!new_bus->begin()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
     delete new_bus;
@@ -1112,15 +1119,14 @@ bool I2cController::IsBusStatusOK(I2cHardware *bus) {
     @returns  Pointer to the TwoWire bus, or nullptr if the bus doesn't exist.
 */
 TwoWire *I2cController::GetI2cBus(const char *pin_scl, const char *pin_sda) {
-  int32_t scl_num = WsPinNameToNum(pin_scl);
-  int32_t sda_num = WsPinNameToNum(pin_sda);
-  if (scl_num == WS_PIN_INVALID || sda_num == WS_PIN_INVALID)
+  WsPinName scl, sda;
+  if (!scl.Set(pin_scl) || !sda.Set(pin_sda))
     return nullptr;
   for (I2cHardware *bus : _i2c_buses) {
     if (bus == nullptr)
       continue;
-    if (scl_num == (int32_t)bus->getSCL() &&
-        sda_num == (int32_t)bus->getSDA()) {
+    if (scl.num == (int32_t)bus->getSCL() &&
+        sda.num == (int32_t)bus->getSDA()) {
       return bus->GetBus();
     }
   }

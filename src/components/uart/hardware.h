@@ -55,8 +55,8 @@ private:
 #if HAS_SW_SERIAL
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance for this bus
 #endif                                 // HAS_SW_SERIAL
-  uint32_t _pin_rx;    ///< The RX pin number, resolved from the RX pin name
-  uint32_t _pin_tx;    ///< The TX pin number, resolved from the TX pin name
+  WsPinName _pin_rx;                   ///< The RX pin (name + resolved number)
+  WsPinName _pin_tx;                   ///< The TX pin (name + resolved number)
   bool _pins_valid;    ///< True if the RX/TX pin names resolved to pin numbers
   uint32_t _baud_rate; ///< The baud rate for this hardware instance
 };

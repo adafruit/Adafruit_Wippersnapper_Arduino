@@ -16,7 +16,6 @@
  */
 #ifndef WS_EXPANDER_HARDWARE_H
 #define WS_EXPANDER_HARDWARE_H
-#include "helpers/ws_helper_pins.h"
 #include <Arduino.h>
 #include <Wire.h>
 #include <protos/config.pb.h>
@@ -40,24 +39,9 @@ public:
        @return The I2C address. */
   uint8_t getAddress() const { return _i2c_addr; }
 
-  /*!  @brief  Parses pin number from a pin name string. Handles both
-               native ("A0", "D5") and expander ("EXP_0x48_0") formats —
-               for expander pins the parsed number is the pin (channel)
-               index on that expander (see WsPinNameToNum()).
-       @param  pin_name  The pin name string.
-       @param  pin_num   Output: the parsed pin number.
-       @return True if parsed successfully, false if malformed. */
-  static bool ParsePinNum(const char *pin_name, uint8_t &pin_num) {
-    int32_t num = WsPinNameToNum(pin_name);
-    if (num == WS_PIN_INVALID || num > 0xFF)
-      return false;
-    pin_num = (uint8_t)num;
-    return true;
-  }
-
   /*!  @brief  Formats an expander pin name into a buffer.
-               Inverse of ParsePinNum — builds "EXP_0xNN_P" from address and
-     pin.
+               Inverse of WsPinNameToNum()/WsPinNameToExpanderAddr() —
+               builds "EXP_0xNN_P" from address and pin.
        @param  buf       Output buffer (must be >= 16 bytes).
        @param  buf_size  Size of the output buffer.
        @param  addr      The I2C address of the expander.

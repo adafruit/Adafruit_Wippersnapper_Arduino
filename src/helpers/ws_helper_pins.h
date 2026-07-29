@@ -93,4 +93,38 @@ inline int32_t WsPinNameToNum(const char *pin_name) {
   return (int32_t)atoi(numeric);
 }
 
+/*!
+    @brief  A pin reference: pairs the broker-facing pin name string with
+            its resolved pin number, so the name is validated and resolved
+            exactly once and both representations travel together instead
+            of re-resolving the string at every use.
+*/
+struct WsPinName {
+  char name[32] = {0}; ///< Pin name string, sized to hold any pb pin-name
+                       ///< field (holders static_assert this against the
+                       ///< pb field sizes they mirror).
+  int32_t num = WS_PIN_INVALID; ///< Resolved pin number, or WS_PIN_INVALID.
+
+  /*!
+      @brief  Validates a pin name and resolves it to a pin number.
+      @param  pin_name
+              The pin name string to store and resolve.
+      @returns True if pin_name is non-null, fits the buffer without
+               truncation, and resolves to a pin number; False otherwise
+               (fields are reset to empty / WS_PIN_INVALID).
+  */
+  bool Set(const char *pin_name) {
+    name[0] = '\0';
+    num = WS_PIN_INVALID;
+    if (pin_name == nullptr)
+      return false;
+    if (strlen(pin_name) >= sizeof(name))
+      return false; // would truncate
+    strncpy(name, pin_name, sizeof(name) - 1);
+    name[sizeof(name) - 1] = '\0';
+    num = WsPinNameToNum(name);
+    return num != WS_PIN_INVALID;
+  }
+};
+
 #endif // WS_HELPER_PINS_H
