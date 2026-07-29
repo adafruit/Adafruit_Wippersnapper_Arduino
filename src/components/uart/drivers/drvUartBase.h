@@ -28,6 +28,8 @@
 /*! Size of the pin name buffers, exactly matches ws_uart_Descriptor.pin_rx
     in uart.pb.h */
 #define DRV_UART_PIN_NAME_LEN (sizeof(((ws_uart_Descriptor *)0)->pin_rx))
+static_assert(sizeof(WsPinName::name) >= DRV_UART_PIN_NAME_LEN,
+              "WsPinName.name must hold any ws_uart_Descriptor pin name");
 
 /*!
     @brief  Base class for UART Drivers.
@@ -99,15 +101,20 @@ public:
 
   /*!
       @brief    Gets the port number for the UART device.
-      @returns  The port number, resolved from the RX pin name.
+      @returns  The port number, resolved from the RX pin name, or 0 if
+                the pin name did not resolve.
   */
-  uint32_t GetPortNum() const { return _port_num; }
+  uint32_t GetPortNum() const {
+    if (_port.num == WS_PIN_INVALID)
+      return 0;
+    return (uint32_t)_port.num;
+  }
 
   /*!
       @brief    Gets the name of the RX pin for the UART device.
       @returns  The RX pin name.
   */
-  const char *GetPortName() const { return _port_name; }
+  const char *GetPortName() const { return _port.name; }
 
   /*!
       @brief    Gets the name of the UART driver.
@@ -356,22 +363,18 @@ protected:
   SoftwareSerial *_sw_serial;    ///< Pointer to a SoftwareSerial instance
 #endif                           // HAS_SW_SERIAL
   char _name[DRV_UART_NAME_LEN]; ///< The device's name
-  char _port_name[DRV_UART_PIN_NAME_LEN] = {
-      0};                 ///< The RX pin name for the UART device
-  uint32_t _port_num = 0; ///< The port number for the UART device, resolved
-                          ///< from the RX pin name
+  WsPinName _port; ///< The RX pin (name + resolved port number) for the
+                   ///< UART device
 
   /*!
-      @brief    Stores the RX pin name and resolves it to a port number.
+      @brief    Validates and stores the RX pin name, resolving it to a
+                port number.
       @param    port_name
                 The name of the RX pin for the UART device.
+      @returns  True if the name is non-null, fits without truncation, and
+                resolves to a pin number; False otherwise.
   */
-  void SetPortName(const char *port_name) {
-    strncpy(_port_name, port_name, sizeof(_port_name) - 1);
-    _port_name[sizeof(_port_name) - 1] = '\0';
-    int32_t port_num = WsPinNameToNum(_port_name);
-    _port_num = (port_num == WS_PIN_INVALID) ? 0 : (uint32_t)port_num;
-  }
+  bool SetPortName(const char *port_name) { return _port.Set(port_name); }
   bool _is_software_serial =
       false; ///< Indicates if this driver uses SoftwareSerial
   // Sensor API - UART INPUT
