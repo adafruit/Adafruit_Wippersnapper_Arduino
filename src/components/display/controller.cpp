@@ -25,6 +25,7 @@ DisplayController::DisplayController() {
   _write_complete_pending = false;
   _awaiting_write = false;
   _awaiting_write_since_ms = 0;
+  _last_canvas_activity_ms = 0;
 }
 
 DisplayController::~DisplayController() {
@@ -85,7 +86,8 @@ void DisplayController::handleCanvasAssemblyTimeout() {
   WS_DEBUG_PRINTLNVAR(_canvas_chunk_total);
 
   // Release the sleep hold-off so loopSleep() can reach its run-duration
-  // deadline, and drop the partial canvas so a re-transmit isn't merged into it.
+  // deadline, and drop the partial canvas so a re-transmit isn't merged into
+  // it.
   _awaiting_write = false;
   _awaiting_write_since_ms = 0;
   resetCanvasReassembly();
@@ -328,11 +330,13 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
         "Failed to initialize display hardware for add request");
     return false;
   }
-  
+
   // Show splash screen and status bar
-  // TODO: This has been commented out for marquee EPDs, as the splash screen is not needed and the status bar is drawn by the broker.
-  // TODO: We may want to make this conditional based on display type in the future.
-  //hw->initialise(Ws._configV2.aio_user);
+  // TODO: This has been commented out for marquee EPDs, as the splash screen is
+  // not needed and the status bar is drawn by the broker.
+  // TODO: We may want to make this conditional based on display type in the
+  // future.
+  // hw->initialise(Ws._configV2.aio_user);
 
   _displays[_num_displays] = hw;
   _num_displays++;
@@ -344,6 +348,11 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   // once drawn.
   _awaiting_write = true;
   _awaiting_write_since_ms = millis();
+  // Arm the long per-packet MQTT idle timeout for the first chunk, which has no
+  // reassembly state yet to imply a stream is running. Bounded by
+  // CANVAS_STREAM_IDLE_MS so a canvas that never arrives stops slowing the
+  // loop.
+  _last_canvas_activity_ms = millis();
 
   // Handle optional initial write
   if (msg->has_write) {
@@ -555,10 +564,10 @@ bool DisplayController::handleCanvasWrite(ws_display_Write *msg) {
     return false;
   }
 
-  // The blocking EPD refresh above can outlast the broker keepalive, so the MQTT
-  // connection is often already dead here (and we're nested inside the receive
-  // callback). Queue the WriteComplete D2B and let loop() publish it once
-  // NetworkFSM() has re-established the connection.
+  // The blocking EPD refresh above can outlast the broker keepalive, so the
+  // MQTT connection is often already dead here (and we're nested inside the
+  // receive callback). Queue the WriteComplete D2B and let loop() publish it
+  // once NetworkFSM() has re-established the connection.
   _write_complete_pending = true;
   // Content for this wake has been drawn; release the sleep hold-off.
   _awaiting_write = false;
@@ -662,8 +671,13 @@ bool DisplayController::ingestCanvasChunk(ws_display_Write *msg) {
   _canvas_chunks[idx] = std::move(_pending_chunk);
   _pending_chunk.clear();
 
-  // Also, let's set the write_in_progress flag to gate loopSleep() entry until the write is done
+  // Also, let's set the write_in_progress flag to gate loopSleep() entry until
+  // the write is done
   _write_in_progress = true;
+
+  // Re-arm the long per-packet MQTT idle timeout: chunks are actively arriving,
+  // so the next read should get the wide allowance rather than the short poll.
+  _last_canvas_activity_ms = millis();
 
   return true;
 }
@@ -742,26 +756,28 @@ DisplayController::resolveDisplayOrPublishError(ws_display_Write *msg,
     @param  is_connected  Whether MQTT is currently connected.
 */
 void DisplayController::update(int32_t rssi, bool is_connected) {
-/*   if (_num_displays == 0)
-    return;
+  /*   if (_num_displays == 0)
+      return;
 
-  unsigned long now = millis();
-  if (now - _last_bar_update < ONE_MINUTE_IN_MS)
-    return;
-  _last_bar_update = now;
-  // TODO: Get actual battery level if available
-  uint8_t battery_charge_level = 100;
-  for (uint8_t i = 0; i < _num_displays; i++) {
-    if (_displays[i]) {
-      WS_DEBUG_PRINTLN("[display] Updating status bar...");
-      // TODO: TRICOLOR and QUADCOLOR (not sure about grayscale) displays take a
-      // LONG time to refresh
-      // TODO: maybe kill this functionality if they are actively using Marquee,
-      //       and refresh the status bar along with the marquee?
-      // _displays[i]->updateStatusBar(rssi, battery_charge_level,
-      // is_connected);
-    }
-  } */
+    unsigned long now = millis();
+    if (now - _last_bar_update < ONE_MINUTE_IN_MS)
+      return;
+    _last_bar_update = now;
+    // TODO: Get actual battery level if available
+    uint8_t battery_charge_level = 100;
+    for (uint8_t i = 0; i < _num_displays; i++) {
+      if (_displays[i]) {
+        WS_DEBUG_PRINTLN("[display] Updating status bar...");
+        // TODO: TRICOLOR and QUADCOLOR (not sure about grayscale) displays take
+    a
+        // LONG time to refresh
+        // TODO: maybe kill this functionality if they are actively using
+    Marquee,
+        //       and refresh the status bar along with the marquee?
+        // _displays[i]->updateStatusBar(rssi, battery_charge_level,
+        // is_connected);
+      }
+    } */
 }
 
 /*!

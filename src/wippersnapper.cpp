@@ -890,37 +890,15 @@ void wippersnapper::blinkOfflineHeartbeat() {
             connectivity.
 */
 void wippersnapper::ProcessPackets() {
-  // NetworkFSM(); // NOTE: Removed for now, causes error with virtual
-  // _connect() method when caused with Ws object in another file.
   Ws._wdt->feed();
+  // NOTE: If the broker is streaming an image to a display, we need a longer
+  // timeout to allow the entire image to be recieved. Otherwise, we can use the
+  // default timeout.
+  int16_t timeout_ms = WS_MQTT_POLL_TIMEOUT_MS;
+  if (Ws._display_controller->IsCanvasStreaming())
+    timeout_ms = WS_MQTT_POLL_TIMEOUT_STREAMING_MS;
 
-  // Fast path: nothing large is in flight, poll briefly so the rest of the loop
-  // stays responsive.
-  if (!Ws._display_controller->IsCanvasStreaming()) {
-    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
-    return;
-  }
-
-  // A display canvas is streaming. Drain packets one at a time so that EVERY
-  // read gets the full WS_MQTT_POLL_TIMEOUT_STREAMING_MS idle allowance.
-  //
-  // processPackets() deliberately is NOT used here: it spends a single budget
-  // across every read it makes (readSubscription(timeout - elapsed)), so the
-  // last read inside its window gets a near-zero allowance. That read
-  // short-reads mid-payload, and Adafruit_MQTT's readFullPacket() leaves the
-  // unread remainder of that PUBLISH sitting in the TCP stream - so every
-  // following read is mis-framed and silently swallows whole packets until it
-  // happens to resync. That is what drops runs of canvas chunks.
-  for (uint8_t i = 0; i < WS_MQTT_STREAMING_DRAIN_MAX_PACKETS; i++) {
-    Adafruit_MQTT_Subscribe *sub =
-        Ws._mqttV2->readSubscription(WS_MQTT_POLL_TIMEOUT_STREAMING_MS);
-    if (sub == nullptr)
-      break;
-    // Dispatches the buffered callback (cbBrokerToDevice), exactly as
-    // processPackets() would.
-    Ws._mqttV2->processSubscriptionPacket(sub);
-    Ws._wdt->feed();
-  }
+  Ws._mqttV2->processPackets(timeout_ms);
 }
 
 /*!
@@ -1155,8 +1133,8 @@ void wippersnapper::loop() {
    a global timer for run duration and entrypoints for sleep management.
 */
 void wippersnapper::loopSleep() {
-  // NOTE: It is assumed that loopSleep() will eventually lead to sleep entry,
-  // whether by global timestamp expiry or component-driven sleep readiness.
+  // NOTE: loopSleep() will eventually lead to sleep entry, either by
+  // component-driven sleep readiness or by global timestamp expiration.
 
   // Track when the loop started for run duration timeout
   static unsigned long loop_start_time = 0;
@@ -1174,24 +1152,15 @@ void wippersnapper::loopSleep() {
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
     ProcessPackets();
-    // Re-service networking before publishing: processPackets() above may have
-    // run a multi-second blocking display refresh inside the receive callback,
-    // leaving the socket dead. Without this, the first WriteComplete attempt is
-    // guaranteed to fail.
     NetworkFSM();
     pingBrokerV2();
     // Publish any WriteComplete deferred out of the receive callback, before we
     // consider dropping into sleep.
+    // TOdO MONDAY: Idk if this is truly required.
     Ws._display_controller->publishPendingWriteComplete();
   }
 
-  // A display was added this wake: hold loopSleep() awake until its canvas is
-  // fully assembled and drawn (WriteComplete). We must NOT sleep with an
-  // incomplete canvas. Networking above still runs each iteration, so chunks
-  // continue to be received while we wait. If assembly hasn't finished within
-  // CANVAS_ASSEMBLY_TIMEOUT_MS the await is abandoned, which lets us fall
-  // through to the run-duration deadline below rather than staying awake
-  // forever on battery.
+  // Keep loopSleep() awake until the image is fully streamed and rendered.
   if (Ws._display_controller->IsAwaitingWrite()) {
     Ws._display_controller->handleCanvasAssemblyTimeout();
     return;
@@ -1231,27 +1200,14 @@ void wippersnapper::loopSleep() {
     all_controllers_complete = false;
   }
 
-  // A drawn canvas still owes the broker a WriteComplete. Hold sleep entry
-  // until it is actually published: deep sleep would drop the queued flag with
-  // RAM, so the broker would never learn the write landed and would re-transmit
-  // the same canvas on every wake. The run-duration deadline below bounds this
-  // hold, so a permanently-failing publish cannot pin us awake.
-  bool write_complete_pending =
-      Ws._display_controller->HasPendingWriteComplete();
-
   // Check if all controllers have completed their updates
+  // NOTE: If a display write is in progress, we must wait for it to finish
+  // before sleeping!
   if (all_controllers_complete && !display_write_in_progress &&
-      !write_complete_pending) {
-    // Publish the Goodnight message BEFORE any state is torn down. The broker
-    // needs it to know this was an intentional departure rather than a dropped
-    // connection, so a failure must NOT be followed by sleep: return instead and
-    // let the next iteration's NetworkFSM() re-establish the connection and
-    // retry.
-    //
-    // NOTE: the loop timer is deliberately left running on this path. Resetting
-    // it here would restart the run-duration window on every failed attempt, so
-    // the deadline below could never fire and a permanently-failing publish
-    // would keep the device awake forever.
+      !Ws._display_controller->HasPendingWriteComplete()) {
+    // Attempt to publish the Goodnight message before sleeping.
+    // NOTE: If it fails, we hold off on sleeping and retry in the next
+    // loopSleep() cycle.
     if (!Ws._sleep_controller->publishMsgGoodnight()) {
       WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, holding off "
                        "sleep to retry...");
@@ -1284,11 +1240,10 @@ void wippersnapper::loopSleep() {
     return;
   }
 
-  // Check if run duration timeout exceeded. This is a HARD deadline: it must
-  // sleep even if a display write is "in progress". drawMarqueeEPD() is a
-  // blocking call, so we can never actually be mid-refresh at this point — the
-  // flag here only ever reflects a stalled reassembly wait, which the deadline
-  // is meant to abandon.
+  // Wait until the run duration has elapsed before entering sleep, even if all
+  // controllers have completed their updates. This ensures that the device
+  // does not sleep too quickly and allows for any pending updates to be
+  // processed before sleeping.
   unsigned long run_duration_ms = Ws._sleep_controller->getRunDurationMs();
   if (run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) {
     // Reset all flags and variables for use in the next loopsleep() cycle (if
@@ -1296,21 +1251,12 @@ void wippersnapper::loopSleep() {
     ResetAllControllerFlags();
     loop_start_time = 0;
     loop_timer_started = false;
-    // Last chance to hand the broker a WriteComplete it is still waiting on.
-    // Deep sleep drops the queued flag with RAM, so if this fails the broker
-    // will re-transmit the canvas on the next wake.
-    if (Ws._display_controller->HasPendingWriteComplete()) {
-      WS_DEBUG_PRINTLN("[app] Deadline reached with WriteComplete still "
-                       "pending, attempting final publish...");
-      Ws._display_controller->publishPendingWriteComplete();
-    }
-    // Publish the Goodnight message. Unlike the all-complete path above, a
-    // failure here is NOT retried: this is the hard deadline, and staying awake
-    // past it to chase an unreachable broker would drain the battery. The broker
-    // will see an unannounced disconnect.
+
+    // Publish the Goodnight message, hard deadline
     if (!Ws._sleep_controller->publishMsgGoodnight())
       WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, sleeping "
                        "anyway (deadline reached)!");
+
     // Enter sleep
     WS_DEBUG_PRINTLN("[app] loopSleep() duration elapsed, entering sleep...");
     Ws._sleep_controller->StartSleep();
