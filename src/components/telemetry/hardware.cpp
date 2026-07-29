@@ -120,7 +120,7 @@ bool TelemetryTypeIsSupported(ws_telemetry_Type type) {
   case ws_telemetry_Type_TM_BOOT_REASON:
     return true;
   default:
-    // TM_BOOT_COUNT and TM_LATENCY_MS are defined in the API but not yet
+    // TM_BOOT_COUNT and TM_LATENCY are defined in the API but not yet
     // sourced by this firmware.
     return false;
   }
@@ -141,8 +141,8 @@ const char *TelemetryTypeName(ws_telemetry_Type type) {
     return "boot_reason";
   case ws_telemetry_Type_TM_BOOT_COUNT:
     return "boot_count";
-  case ws_telemetry_Type_TM_LATENCY_MS:
-    return "latency_ms";
+  case ws_telemetry_Type_TM_LATENCY:
+    return "latency";
   default:
     return "unknown";
   }
