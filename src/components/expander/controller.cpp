@@ -134,29 +134,42 @@ ExpanderHardware *ExpanderController::GetDriver(uint8_t addr) {
 
 /*!
  * @brief Resolves a pin name to a pin number and, for expander pin names
- *        ("EXP_0xNN_P"), the owning expander driver. Lets other components
- *        (digitalio, analogio, pwm, ...) resolve a pin without knowing the
- *        expander addressing scheme, analogous to
- *        DigitalIOController::QueryPinState() for pin-in-use queries.
+ *        ("EXP_0xNN_P"), the owning expander driver. Handles BOTH pin
+ *        domains so callers (digitalio, analogio, pwm, ...) need a single
+ *        call and no knowledge of the expander addressing scheme: a native
+ *        name ("D5", "A0") resolves successfully with expander_drv left
+ *        nullptr, an expander name must reference a registered expander.
+ *        Analogous to DigitalIOController::QueryPinState() for pin-in-use
+ *        queries.
  * @param pin_name     The pin name string, native ("D5", "A0") or expander
  *                     ("EXP_0x48_3").
  * @param pin_num      Out: the pin number — for expander pins this is the
  *                     pin (channel) index on that expander.
  * @param expander_drv Out: the owning expander driver, or nullptr for a
  *                     native MCU pin.
- * @return True if resolved, False if the pin name is malformed or no
- *         expander is registered at the referenced address.
+ * @return True if resolved. False if the pin name is malformed, out of
+ *         range, or names an expander address with no registered driver.
  */
 bool ExpanderController::ResolvePinName(const char *pin_name, uint8_t &pin_num,
                                         ExpanderHardware **expander_drv) {
-  *expander_drv = nullptr;
-  if (!ExpanderHardware::ParsePinNum(pin_name, pin_num))
+  *expander_drv = nullptr; // Only set for expander-backed pins
+
+  int32_t pin = WsPinNameToNum(pin_name);
+  if (pin == WS_PIN_INVALID || pin > 0xFF)
     return false;
-  int32_t addr = WsPinNameToExpanderAddr(pin_name);
-  if (addr == WS_PIN_INVALID)
-    return true; // Native MCU pin, no expander driver
-  *expander_drv = GetDriver((uint8_t)addr);
-  return *expander_drv != nullptr;
+
+  // Expander pin name? The expander at that address must be registered.
+  if (strncmp(pin_name, "EXP_", 4) == 0) {
+    int32_t addr = WsPinNameToExpanderAddr(pin_name);
+    if (addr == WS_PIN_INVALID)
+      return false;
+    *expander_drv = GetDriver((uint8_t)addr);
+    if (*expander_drv == nullptr)
+      return false;
+  }
+
+  pin_num = (uint8_t)pin;
+  return true;
 }
 
 /// Pointer to an expander setter that applies one decoded setting value.
