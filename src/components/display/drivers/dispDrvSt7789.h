@@ -236,6 +236,22 @@ public:
     }
   }
 
+  /*!
+      @brief  Draws a marquee canvas (raw .BMP file bytes) to the panel.
+      @param  bmp  Pointer to the complete BMP file bytes.
+      @param  len  Length of the BMP buffer, in bytes.
+      @return True if drawn, False otherwise.
+  */
+  bool drawMarqueeEPD(const uint8_t *bmp, size_t len) override {
+    if (!_display)
+      return false;
+    uint32_t t_start = millis();
+    bool ok = drawMarqueeBmpToTft(*_display, bmp, len);
+    WS_DEBUG_PRINT("[display] marquee TFT blit ms: ");
+    WS_DEBUG_PRINTLNVAR(millis() - t_start);
+    return ok;
+  }
+
 private:
   Adafruit_ST7789 *_display;
 };

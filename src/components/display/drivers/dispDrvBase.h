@@ -168,6 +168,145 @@ public:
 
 protected:
   /*!
+      @brief  Blits an in-memory BMP onto an SPI TFT panel, top-left aligned.
+
+              The EPD path uses Adafruit_ImageReader_EPD's in-memory drawBMP()
+              overload, but Adafruit_ImageReader only exposes a *filesystem*
+              drawBMP() for TFTs — there is no in-memory equivalent to call.
+              This decodes the uncompressed BMP3 that the marquee backend emits
+              (ImageMagick `-compress none BMP3:`) and pushes it a row at a
+              time, so any Adafruit_SPITFT-derived panel can render a canvas.
+
+              Handles 1/4/8-bpp palette-indexed and 24-bpp truecolor BI_RGB
+              bitmaps, bottom-up or top-down, and clips anything larger than
+              the panel. The buffer arrives over the network, so every read is
+              bounds-checked against len.
+
+      @param  tft  Target panel.
+      @param  bmp  Pointer to the complete BMP file bytes.
+      @param  len  Length of the BMP buffer, in bytes.
+      @return True if the bitmap was drawn, False if it was malformed or in an
+              unsupported encoding.
+  */
+  bool drawMarqueeBmpToTft(Adafruit_SPITFT &tft, const uint8_t *bmp,
+                           size_t len) {
+    // -- Header (14-byte BITMAPFILEHEADER + 40-byte BITMAPINFOHEADER) --------
+    if (bmp == nullptr || len < 54 || bmp[0] != 'B' || bmp[1] != 'M') {
+      WS_DEBUG_PRINTLN("[display] ERROR: Not a BMP!");
+      return false;
+    }
+    auto rd16 = [&](size_t o) -> uint16_t {
+      return (uint16_t)bmp[o] | ((uint16_t)bmp[o + 1] << 8);
+    };
+    auto rd32 = [&](size_t o) -> uint32_t {
+      return (uint32_t)bmp[o] | ((uint32_t)bmp[o + 1] << 8) |
+             ((uint32_t)bmp[o + 2] << 16) | ((uint32_t)bmp[o + 3] << 24);
+    };
+
+    uint32_t data_off = rd32(10);
+    uint32_t hdr_size = rd32(14);
+    int32_t bmp_w = (int32_t)rd32(18);
+    int32_t bmp_h = (int32_t)rd32(22);
+    uint16_t bpp = rd16(28);
+    uint32_t compression = rd32(30);
+    uint32_t colors_used = rd32(46);
+
+    if (compression != 0) { // BI_RGB only
+      WS_DEBUG_PRINT("[display] ERROR: Compressed BMP unsupported, type: ");
+      WS_DEBUG_PRINTLNVAR(compression);
+      return false;
+    }
+    if (bpp != 1 && bpp != 4 && bpp != 8 && bpp != 24) {
+      WS_DEBUG_PRINT("[display] ERROR: Unsupported BMP bpp: ");
+      WS_DEBUG_PRINTLNVAR(bpp);
+      return false;
+    }
+    // A negative height means the rows are stored top-down.
+    bool top_down = (bmp_h < 0);
+    uint32_t height = (uint32_t)(top_down ? -(int64_t)bmp_h : bmp_h);
+    if (bmp_w <= 0 || height == 0 || data_off >= len) {
+      WS_DEBUG_PRINTLN("[display] ERROR: Bad BMP dimensions!");
+      return false;
+    }
+    uint32_t width = (uint32_t)bmp_w;
+
+    // -- Palette (BGRA quads, immediately after the info header) -------------
+    uint16_t palette[256];
+    uint32_t n_colors = 0;
+    if (bpp <= 8) {
+      n_colors = colors_used ? colors_used : (1UL << bpp);
+      if (n_colors > 256)
+        n_colors = 256;
+      size_t pal_off = 14 + hdr_size;
+      if (pal_off + (size_t)n_colors * 4 > len) {
+        WS_DEBUG_PRINTLN("[display] ERROR: BMP palette truncated!");
+        return false;
+      }
+      for (uint32_t i = 0; i < n_colors; i++) {
+        uint8_t b = bmp[pal_off + i * 4 + 0];
+        uint8_t g = bmp[pal_off + i * 4 + 1];
+        uint8_t r = bmp[pal_off + i * 4 + 2];
+        palette[i] = (uint16_t)(((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3));
+      }
+    }
+
+    // Rows are padded out to a 4-byte boundary.
+    uint32_t row_stride = (((uint32_t)width * bpp + 31) / 32) * 4;
+
+    // Clip to whatever the panel can actually show.
+    int16_t draw_w = (int16_t)min((uint32_t)tft.width(), width);
+    int16_t draw_h = (int16_t)min((uint32_t)tft.height(), height);
+    if (draw_w <= 0 || draw_h <= 0)
+      return false;
+
+    uint16_t *row_px = (uint16_t *)malloc((size_t)draw_w * sizeof(uint16_t));
+    if (row_px == nullptr) {
+      WS_DEBUG_PRINTLN("[display] ERROR: Out of memory for canvas row!");
+      return false;
+    }
+
+    tft.startWrite();
+    for (int16_t y = 0; y < draw_h; y++) {
+      // Bottom-up bitmaps store the last row first.
+      uint32_t src_row = top_down ? (uint32_t)y : (height - 1 - (uint32_t)y);
+      size_t row_off = (size_t)data_off + (size_t)src_row * row_stride;
+      if (row_off + row_stride > len) {
+        // Truncated payload: stop early rather than read past the buffer.
+        WS_DEBUG_PRINTLN("[display] WARNING: BMP rows truncated!");
+        break;
+      }
+      const uint8_t *src = bmp + row_off;
+      for (int16_t x = 0; x < draw_w; x++) {
+        uint16_t color;
+        if (bpp == 24) {
+          const uint8_t *px = src + (size_t)x * 3;
+          color = (uint16_t)(((px[2] & 0xF8) << 8) | ((px[1] & 0xFC) << 3) |
+                             (px[0] >> 3));
+        } else {
+          uint32_t idx;
+          if (bpp == 8) {
+            idx = src[x];
+          } else if (bpp == 4) {
+            uint8_t byte = src[x >> 1];
+            idx = (x & 1) ? (byte & 0x0F) : (byte >> 4);
+          } else { // 1bpp, MSB first
+            uint8_t byte = src[x >> 3];
+            idx = (byte >> (7 - (x & 7))) & 0x01;
+          }
+          color = (idx < n_colors) ? palette[idx] : 0;
+        }
+        row_px[x] = color;
+      }
+      // Window must be set before the pixels for each row.
+      tft.setAddrWindow(0, y, (uint16_t)draw_w, 1);
+      tft.writePixels(row_px, (uint32_t)draw_w, true, false);
+    }
+    tft.endWrite();
+    free(row_px);
+    return true;
+  }
+
+  /*!
       @brief  Parses a display-write token at the given index.
       @param  message       Input message buffer.
       @param  msg_size      Message length.
