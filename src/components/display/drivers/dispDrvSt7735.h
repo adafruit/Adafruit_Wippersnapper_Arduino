@@ -1,7 +1,7 @@
 /*!
- * @file src/components/display/drivers/dispDrvSt7789.h
+ * @file src/components/display/drivers/dispDrvSt7735.h
  *
- * Driver for ST7789-based TFT displays (V2).
+ * Driver for ST7735-based TFT displays (V2).
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -12,24 +12,24 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_DISP_DRV_ST7789_H
-#define WS_DISP_DRV_ST7789_H
+#ifndef WS_DISP_DRV_ST7735_H
+#define WS_DISP_DRV_ST7735_H
 
 #include "dispDrvBase.h"
-#include <Adafruit_ST7789.h>
+#include <Adafruit_ST7735.h>
 
-#define ST7789_STATUSBAR_HEIGHT 20      ///< Status bar height in pixels
-#define ST7789_STATUSBAR_ICON_SZ 16     ///< Status bar icon size in pixels
-#define ST7789_STATUSBAR_ICON_SPACING 4 ///< Spacing between icons
-#define ST7789_STATUSBAR_ICON_MARGIN 5  ///< Margin from edge of display
+#define ST7735_STATUSBAR_HEIGHT 20      ///< Status bar height in pixels
+#define ST7735_STATUSBAR_ICON_SZ 16     ///< Status bar icon size in pixels
+#define ST7735_STATUSBAR_ICON_SPACING 4 ///< Spacing between icons
+#define ST7735_STATUSBAR_ICON_MARGIN 5  ///< Margin from edge of display
 
 /*!
-    @brief  Driver for ST7789-based TFT displays.
+    @brief  Driver for ST7735-based TFT displays (e.g. 0.96" 160x80 IPS).
 */
-class dispDrvSt7789 : public dispDrvBase {
+class dispDrvSt7735 : public dispDrvBase {
 public:
   /*!
-      @brief  Constructor for the ST7789 TFT driver.
+      @brief  Constructor for the ST7735 TFT driver.
       @param  cs    Chip Select pin.
       @param  dc    Data/Command pin.
       @param  mosi  MOSI pin.
@@ -37,11 +37,11 @@ public:
       @param  rst   Reset pin (-1 if not used).
       @param  miso  MISO pin (-1 if not used).
   */
-  dispDrvSt7789(int16_t cs, int16_t dc, int16_t mosi, int16_t sck,
+  dispDrvSt7735(int16_t cs, int16_t dc, int16_t mosi, int16_t sck,
                 int16_t rst = -1, int16_t miso = -1)
       : dispDrvBase(cs, dc, mosi, sck, rst, miso), _display(nullptr) {}
 
-  ~dispDrvSt7789() {
+  ~dispDrvSt7735() {
     if (_display) {
       _display->fillScreen(ST77XX_BLACK);
       delete _display;
@@ -52,49 +52,36 @@ public:
   }
 
   /*!
-      @brief  Initializes the ST7789 TFT display.
+      @brief  Initializes the ST7735 TFT display.
       @return True if initialization succeeded, False otherwise.
   */
   bool begin() override {
     _display =
-        new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_mosi, _pin_sck, _pin_rst);
+        new Adafruit_ST7735(_pin_cs, _pin_dc, _pin_mosi, _pin_sck, _pin_rst);
     if (!_display)
       return false;
 
-    // init() expects native (portrait) dimensions — smaller value first
-    uint16_t native_w = min(_width, _height);
-    uint16_t native_h = max(_width, _height);
-    _display->init(native_w, native_h);
+    // INITR_MINI160x80_PLUGIN matches the LilyGO 0.96" 160x80 panel:
+    // BGR, inverted, column offset 26 / row offset 1 (== LilyGo's
+    // GREENTAB160x80 config). This variant handles the inversion internally,
+    // so no explicit invertDisplay() call is needed. If a different 160x80
+    // panel renders negative colours, toggle invertDisplay().
+    _display->initR(INITR_MINI160x80_PLUGIN);
     _display->setRotation(_rotation);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
     _display->setTextWrap(false);
     _display->setTextSize(_text_sz);
 
-    // Turn on backlight (honor active-low panels)
+    // Turn on backlight (honor active-low panels, e.g. LilyGO T-Dongle C5)
     if (_pin_bl >= 0) {
       pinMode(_pin_bl, OUTPUT);
       digitalWrite(_pin_bl, _bl_active_low ? LOW : HIGH);
       WS_DEBUG_PRINTLN("[display] Backlight ON");
     }
 
-    WS_DEBUG_PRINTLN("[display] ST7789 initialized");
+    WS_DEBUG_PRINTLN("[display] ST7735 initialized");
     return true;
-  }
-
-  void showSplash() override {
-    if (!_display)
-      return;
-
-    if (_width == 240 && _height == 240) {
-      _display->drawBitmap(0, 0, tft_bmp_logo_240240, 240, 240, ST77XX_WHITE);
-    } else if (_width == 135 && _height == 240) {
-      _display->drawBitmap(0, 0, tft_bmp_logo_240135, 240, 135, ST77XX_WHITE);
-    } else {
-      return; // Unsupported resolution, skip splash
-    }
-
-    delay(500);
   }
 
   /*!
@@ -109,7 +96,7 @@ public:
     _display->fillScreen(ST77XX_BLACK);
 
     // Draw white status bar at top
-    _display->fillRect(0, 0, _display->width(), ST7789_STATUSBAR_HEIGHT,
+    _display->fillRect(0, 0, _display->width(), ST7735_STATUSBAR_HEIGHT,
                        ST77XX_WHITE);
 
     // Draw username on left side
@@ -120,26 +107,26 @@ public:
 
     // Calculate icon positions (right-aligned), centered vertically
     _statusbar_icons_y =
-        (ST7789_STATUSBAR_HEIGHT - ST7789_STATUSBAR_ICON_SZ) / 2;
-    _statusbar_icon_battery_x = _display->width() - ST7789_STATUSBAR_ICON_SZ -
-                                ST7789_STATUSBAR_ICON_MARGIN;
+        (ST7735_STATUSBAR_HEIGHT - ST7735_STATUSBAR_ICON_SZ) / 2;
+    _statusbar_icon_battery_x = _display->width() - ST7735_STATUSBAR_ICON_SZ -
+                                ST7735_STATUSBAR_ICON_MARGIN;
     _statusbar_icon_wifi_x = _statusbar_icon_battery_x -
-                             ST7789_STATUSBAR_ICON_SZ -
-                             ST7789_STATUSBAR_ICON_SPACING;
+                             ST7735_STATUSBAR_ICON_SZ -
+                             ST7735_STATUSBAR_ICON_SPACING;
     _statusbar_icon_cloud_x = _statusbar_icon_wifi_x -
-                              ST7789_STATUSBAR_ICON_SZ -
-                              ST7789_STATUSBAR_ICON_SPACING;
+                              ST7735_STATUSBAR_ICON_SZ -
+                              ST7735_STATUSBAR_ICON_SPACING;
 
     // Draw icons
     _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                         epd_bmp_cloud_online, ST7789_STATUSBAR_ICON_SZ,
-                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+                         epd_bmp_cloud_online, ST7735_STATUSBAR_ICON_SZ,
+                         ST7735_STATUSBAR_ICON_SZ, ST77XX_BLACK);
     _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                         epd_bmp_wifi_full, ST7789_STATUSBAR_ICON_SZ,
-                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+                         epd_bmp_wifi_full, ST7735_STATUSBAR_ICON_SZ,
+                         ST7735_STATUSBAR_ICON_SZ, ST77XX_BLACK);
     _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
-                         epd_bmp_bat_full, ST7789_STATUSBAR_ICON_SZ,
-                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+                         epd_bmp_bat_full, ST7735_STATUSBAR_ICON_SZ,
+                         ST7735_STATUSBAR_ICON_SZ, ST77XX_BLACK);
 
     // Reset text color and size for main text area
     _display->setTextColor(ST77XX_WHITE);
@@ -164,16 +151,16 @@ public:
 
     if (update_mqtt) {
       _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                         ST7735_STATUSBAR_ICON_SZ, ST7735_STATUSBAR_ICON_SZ,
                          ST77XX_WHITE);
       if (mqtt_status) {
         _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                             epd_bmp_cloud_online, ST7789_STATUSBAR_ICON_SZ,
-                             ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+                             epd_bmp_cloud_online, ST7735_STATUSBAR_ICON_SZ,
+                             ST7735_STATUSBAR_ICON_SZ, ST77XX_BLACK);
       } else {
         _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                             epd_bmp_cloud_offline, ST7789_STATUSBAR_ICON_SZ,
-                             ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+                             epd_bmp_cloud_offline, ST7735_STATUSBAR_ICON_SZ,
+                             ST7735_STATUSBAR_ICON_SZ, ST77XX_BLACK);
       }
       _statusbar_mqtt_connected = mqtt_status;
     }
@@ -188,11 +175,11 @@ public:
         wifi_icon = epd_bmp_wifi_weak;
       }
       _display->fillRect(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                         ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                         ST7735_STATUSBAR_ICON_SZ, ST7735_STATUSBAR_ICON_SZ,
                          ST77XX_WHITE);
       _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                           wifi_icon, ST7789_STATUSBAR_ICON_SZ,
-                           ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+                           wifi_icon, ST7735_STATUSBAR_ICON_SZ,
+                           ST7735_STATUSBAR_ICON_SZ, ST77XX_BLACK);
       _statusbar_rssi = rssi;
     }
   }
@@ -203,11 +190,11 @@ public:
 
     // Reserve the status-bar strip only when one is enabled; otherwise clear
     // and write from the very top of the panel.
-    const int16_t bar_h = _status_bar ? ST7789_STATUSBAR_HEIGHT : 0;
+    const int16_t bar_h = _status_bar ? ST7735_STATUSBAR_HEIGHT : 0;
     _display->fillRect(0, bar_h, _display->width(), _display->height() - bar_h,
                        ST77XX_BLACK);
 
-    int16_t y_idx = _status_bar ? (ST7789_STATUSBAR_HEIGHT + 5) : 0;
+    int16_t y_idx = _status_bar ? (ST7735_STATUSBAR_HEIGHT + 5) : 0;
     int16_t line_height = 8 * _text_sz;
 
     _display->setTextSize(_text_sz);
@@ -254,7 +241,7 @@ public:
   }
 
 private:
-  Adafruit_ST7789 *_display;
+  Adafruit_ST7735 *_display;
 };
 
-#endif // WS_DISP_DRV_ST7789_H
+#endif // WS_DISP_DRV_ST7735_H

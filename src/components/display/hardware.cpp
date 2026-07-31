@@ -153,6 +153,8 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
 
   if (strcmp(msg->driver, "ST7789") == 0) {
     _drvDisp = new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
+  } else if (strcmp(msg->driver, "ST7735") == 0) {
+    _drvDisp = new dispDrvSt7735(cs, dc, mosi, sck, rst, miso);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported TFT driver: ");
     WS_DEBUG_PRINTLNVAR(msg->driver);
@@ -170,9 +172,33 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   _drvDisp->setBacklightPin(TFT_BACKLIGHT);
 #endif
 
+  // Backlight pin from the display Add proto (shared BacklightConfig).
+  // Overrides any board-level TFT_BACKLITE/TFT_BACKLIGHT define when present,
+  // so boards without a hardcoded backlight define (e.g. LilyGO T-Dongle C5)
+  // still work.
+  if (msg->has_backlight) {
+    int16_t bl_pin = -1;
+    bool bl_active_low = false;
+    if (msg->backlight.which_backlight_add ==
+        ws_display_BacklightConfig_backlight_digital_tag) {
+      bl_pin =
+          parsePin(msg->backlight.backlight_add.backlight_digital.pin_name);
+      // Active-low backlight (e.g. LilyGO T-Dongle C5 drives LCD_BL LOW = on)
+      bl_active_low =
+          msg->backlight.backlight_add.backlight_digital.is_inverted;
+    } else if (msg->backlight.which_backlight_add ==
+               ws_display_BacklightConfig_backlight_pwm_tag) {
+      bl_pin = parsePin(msg->backlight.backlight_add.backlight_pwm.pin);
+    }
+    if (bl_pin >= 0) {
+      _drvDisp->setBacklightPin(bl_pin, bl_active_low);
+    }
+  }
+
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
   _drvDisp->setRotation(config->rotation);
+  _drvDisp->setStatusBar(config->status_bar);
   if (config->text_size > 0) {
     _drvDisp->setTextSize(config->text_size);
   }
