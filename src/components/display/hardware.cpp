@@ -198,6 +198,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
   _drvDisp->setRotation(config->rotation);
+  _drvDisp->setStatusBar(config->status_bar);
   if (config->text_size > 0) {
     _drvDisp->setTextSize(config->text_size);
   }

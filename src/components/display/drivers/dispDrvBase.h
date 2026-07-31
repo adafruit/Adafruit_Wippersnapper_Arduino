@@ -133,6 +133,21 @@ public:
   virtual void setTextSize(uint8_t s) { _text_sz = s; }
 
   /*!
+      @brief  Enables or disables the status bar, from
+              DisplayProperties.status_bar. When disabled, drivers write
+              messages from the very top of the panel instead of reserving a
+              strip for the bar.
+      @param  enabled  True to reserve/draw a status bar, False for full-screen.
+  */
+  void setStatusBar(bool enabled) { _status_bar = enabled; }
+
+  /*!
+      @brief  Returns whether the status bar is enabled for this display.
+      @return True if the status bar is enabled.
+  */
+  bool hasStatusBar() const { return _status_bar; }
+
+  /*!
       @brief  Records whether the MCU cold-booted or resumed from a sleep
               cycle. Must be called before begin() to take effect.
       @param  cold  True on power-on/reset, False when waking from sleep.
@@ -379,6 +394,7 @@ protected:
   int16_t _width;              ///< Display width
   int16_t _height;             ///< Display height
   uint8_t _rotation;           ///< Display rotation (0-3)
+  bool _status_bar = false;    ///< True when a status bar is reserved/drawn
   bool _is_cold_boot = true;   ///< True on power-on, False when resuming from a
                                ///< sleep cycle. Lets EPD drivers skip refreshes
                                ///< that only establish a state the panel
