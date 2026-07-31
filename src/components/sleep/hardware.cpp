@@ -166,7 +166,7 @@ void SleepHardware::CalculateSleepDuration() {
   struct timeval now;
   gettimeofday(&now, NULL);
   _sleep_time = (now.tv_sec - sleep_enter_time.tv_sec) +
-                (now.tv_usec - sleep_enter_time.tv_usec) / TEN_SECONDS_IN_US;
+                (now.tv_usec - sleep_enter_time.tv_usec) / ONE_SECOND_IN_US;
 
   // Update sleep cycle count
   sleep_cycles += 1;

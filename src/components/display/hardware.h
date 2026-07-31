@@ -28,12 +28,7 @@
 #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
 #include "drivers/dispDrvRgb666.h"
 #endif
-#include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
-#include "drivers/dispDrvThinkInkGrayscale4MFGN.h"
-#include "drivers/dispDrvThinkInkGrayscale4T5.h"
-#include "drivers/dispDrvThinkInkMonoAAAMFGN.h"
-#include "drivers/dispDrvThinkInkMonoBAAMFGN.h"
-#include "drivers/dispDrvThinkInkMonoM06.h"
+#include "drivers/dispDrvThinkInk.h"
 
 /*!
     @brief  High-level wrapper that owns the active display driver and routes
@@ -46,6 +41,8 @@ public:
   ~DisplayHardware();
   bool begin(ws_display_Add *addMsg);
   bool write(ws_display_Write *msg);
+  bool drawCanvas(const uint8_t *bmp, size_t len);
+  bool drawMarqueeEPD(const uint8_t *bmp, size_t len);
   const char *getName();
   ws_display_Add getAddMsg();
   void showSplash();

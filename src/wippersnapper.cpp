@@ -272,7 +272,6 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response message");
     return false;
   }
-  Ws.NetworkFSM();
 
   // Configure sleep settings if enabled
   WS_DEBUG_PRINTLN("[app] Configuring sleep...");
@@ -281,7 +280,6 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   // Configure controller settings using Response
   WS_DEBUG_PRINTLN("[app] Configuring controllers...");
   Ws.CheckInModel->ConfigureControllers();
-  Ws.NetworkFSM();
 
   // Publish the complete response message to indicate the checkin
   // routine is done and the device is ready for use
@@ -304,11 +302,14 @@ bool handleCheckinResponse(pb_istream_t *stream) {
 bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
                          void **arg) {
   (void)arg;
-
+  WS_DEBUG_PRINTLN("=> Routing BrokerToDevice message...");
   if (stream == nullptr || field == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: Null stream or field in routeBrokerToDevice");
     return false;
   }
+
+  WS_DEBUG_PRINT("=> Routing BrokerToDevice message with tag: ");
+  WS_DEBUG_PRINTLNVAR(field->tag);
 
   // Pass to class' router based on tag type
   switch (field->tag) {
@@ -358,10 +359,17 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
 */
 void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("=> New B2D message!");
+  // Diagnostic: the on-wire payload length actually delivered by Adafruit_MQTT.
+  // If this is clamped near SUBSCRIPTIONDATALEN-1 (2047) or otherwise larger
+  // than the expected encoded message, the packet was truncated by the 2048 RX
+  // buffer.
+  WS_DEBUG_PRINT("=> B2D payload len: ");
+  WS_DEBUG_PRINTLNVAR(len);
   ws_signal_BrokerToDevice msg_signal = ws_signal_BrokerToDevice_init_default;
 
   // Configure the payload callback
   msg_signal.cb_payload.funcs.decode = routeBrokerToDevice;
+  WS_DEBUG_PRINTLN("=> Decoding B2D message...");
 
   // Decode message
   pb_istream_t istream = pb_istream_from_buffer((uint8_t *)data, len);
@@ -774,6 +782,14 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     msg->which_payload = ws_signal_DeviceToBroker_gps_tag;
     msg->payload.gps = *(ws_gps_D2B *)payload;
     break;
+  case ws_signal_DeviceToBroker_sleep_tag:
+    msg->which_payload = ws_signal_DeviceToBroker_sleep_tag;
+    msg->payload.sleep = *(ws_sleep_D2B *)payload;
+    break;
+  case ws_signal_DeviceToBroker_display_tag:
+    msg->which_payload = ws_signal_DeviceToBroker_display_tag;
+    msg->payload.display = *(ws_display_D2B *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     free(msg);
@@ -800,10 +816,13 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     return false;
   }
 
+  // Run the network fsm one more time before publishing
+  NetworkFSM();
+
   // Attempt to publish the signal message to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
   if (!Ws._mqttV2->publish(Ws._topicD2b, msgBuf, szMessageBuf, 1)) {
-    WS_DEBUG_PRINTLN("ERROR: Failedf to publish d2b message to broker!");
+    WS_DEBUG_PRINTLN("ERROR: Failed to publish d2b message to broker!");
     free(msg);
     return false;
   }
@@ -871,11 +890,15 @@ void wippersnapper::blinkOfflineHeartbeat() {
             connectivity.
 */
 void wippersnapper::ProcessPackets() {
-  // NetworkFSM(); // NOTE: Removed for now, causes error with virtual
-  // _connect() method when caused with Ws object in another file.
   Ws._wdt->feed();
-  // Process all incoming packets from wippersnapper MQTT Broker
-  Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
+  // NOTE: If the broker is streaming an image to a display, we need a longer
+  // timeout to allow the entire image to be recieved. Otherwise, we can use the
+  // default timeout.
+  int16_t timeout_ms = WS_MQTT_POLL_TIMEOUT_MS;
+  if (Ws._display_controller->IsCanvasStreaming())
+    timeout_ms = WS_MQTT_POLL_TIMEOUT_STREAMING_MS;
+
+  Ws._mqttV2->processPackets(timeout_ms);
 }
 
 /*!
@@ -1047,16 +1070,15 @@ void wippersnapper::connect() {
 */
 void wippersnapper::run() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
-  if (!Ws._sleep_controller->isSleepEnabled()) {
-    while (true) {
-      loop();
-    }
-  } else {
-    // Feed TWDT and enter loopSleep()
-    Ws._wdt->feed();
-    while (true) {
-      loopSleep();
-    }
+  // Sleep mode may be enabled during runtime
+  while (!Ws._sleep_controller->isSleepEnabled()) {
+    loop();
+  }
+  // Sleep is enabled: feed the TWDT and hand control to the sleep-aware loop.
+  WS_DEBUG_PRINTLN("[app] Sleep enabled, entering loopSleep()");
+  Ws._wdt->feed();
+  while (true) {
+    loopSleep();
   }
 #else
   while (true) {
@@ -1072,7 +1094,13 @@ void wippersnapper::loop() {
     NetworkFSM();
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
-    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
+    ProcessPackets();
+    // Handle networking functions
+    NetworkFSM();
+    pingBrokerV2();
+    // Publish any WriteComplete deferred out of the receive callback, now that
+    // the connection has been (re)established above.
+    Ws._display_controller->publishPendingWriteComplete();
   } else {
     blinkOfflineHeartbeat();
   }
@@ -1105,8 +1133,8 @@ void wippersnapper::loop() {
    a global timer for run duration and entrypoints for sleep management.
 */
 void wippersnapper::loopSleep() {
-  // NOTE: It is assumed that loopSleep() will eventually lead to sleep entry,
-  // whether by global timestamp expiry or component-driven sleep readiness.
+  // NOTE: loopSleep() will eventually lead to sleep entry, either by
+  // component-driven sleep readiness or by global timestamp expiration.
 
   // Track when the loop started for run duration timeout
   static unsigned long loop_start_time = 0;
@@ -1116,16 +1144,31 @@ void wippersnapper::loopSleep() {
     loop_timer_started = true;
   }
 
+  Ws._wdt->feed();
+
   if (!Ws._sdCardV2->isModeOffline()) {
     // Handle networking functions
     NetworkFSM();
     pingBrokerV2();
     // Process all incoming packets from wippersnapper MQTT Broker
-    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
+    ProcessPackets();
+    NetworkFSM();
+    pingBrokerV2();
+    // Publish any WriteComplete deferred out of the receive callback, before we
+    // consider dropping into sleep.
+    // TOdO MONDAY: Idk if this is truly required.
+    Ws._display_controller->publishPendingWriteComplete();
+  }
+
+  // Keep loopSleep() awake until the image is fully streamed and rendered.
+  if (Ws._display_controller->IsAwaitingWrite()) {
+    Ws._display_controller->handleCanvasAssemblyTimeout();
+    return;
   }
 
   // Track completion of all controllers
   bool all_controllers_complete = true;
+  bool display_write_in_progress = Ws._display_controller->IsWriteInProgress();
 
   if (!Ws.digital_io_controller->UpdateComplete()) {
     Ws.digital_io_controller->update(true);
@@ -1158,7 +1201,19 @@ void wippersnapper::loopSleep() {
   }
 
   // Check if all controllers have completed their updates
-  if (all_controllers_complete) {
+  // NOTE: If a display write is in progress, we must wait for it to finish
+  // before sleeping!
+  if (all_controllers_complete && !display_write_in_progress &&
+      !Ws._display_controller->HasPendingWriteComplete()) {
+    // Attempt to publish the Goodnight message before sleeping.
+    // NOTE: If it fails, we hold off on sleeping and retry in the next
+    // loopSleep() cycle.
+    if (!Ws._sleep_controller->publishMsgGoodnight()) {
+      WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, holding off "
+                       "sleep to retry...");
+      return;
+    }
+
     // Reset all flags and variables for use in the next loopsleep() cycle (if
     // light sleep)
     ResetAllControllerFlags();
@@ -1185,7 +1240,10 @@ void wippersnapper::loopSleep() {
     return;
   }
 
-  // Check if run duration timeout exceeded
+  // Wait until the run duration has elapsed before entering sleep, even if all
+  // controllers have completed their updates. This ensures that the device
+  // does not sleep too quickly and allows for any pending updates to be
+  // processed before sleeping.
   unsigned long run_duration_ms = Ws._sleep_controller->getRunDurationMs();
   if (run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) {
     // Reset all flags and variables for use in the next loopsleep() cycle (if
@@ -1193,6 +1251,12 @@ void wippersnapper::loopSleep() {
     ResetAllControllerFlags();
     loop_start_time = 0;
     loop_timer_started = false;
+
+    // Publish the Goodnight message, hard deadline
+    if (!Ws._sleep_controller->publishMsgGoodnight())
+      WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, sleeping "
+                       "anyway (deadline reached)!");
+
     // Enter sleep
     WS_DEBUG_PRINTLN("[app] loopSleep() duration elapsed, entering sleep...");
     Ws._sleep_controller->StartSleep();

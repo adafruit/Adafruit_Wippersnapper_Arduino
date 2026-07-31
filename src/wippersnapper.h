@@ -40,7 +40,9 @@
 #ifdef ARDUINO_ARCH_ESP8266
 // ESP8266: Use F() macro to store string literals in Flash (PROGMEM)
 #define WS_DEBUG_PRINT(x)                                                      \
-  { WS_PRINTER.print(F(x)); } /**< Print debug message to serial (Flash) */
+  {                                                                            \
+    WS_PRINTER.print(F(x));                                                    \
+  } /**< Print debug message to serial (Flash) */
 #define WS_DEBUG_PRINTLN(x)                                                    \
   {                                                                            \
     WS_PRINTER.println(F(x));                                                  \
@@ -49,7 +51,9 @@
 #else
 // Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+  } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {                                                                            \
     WS_PRINTER.println(__VA_ARGS__);                                           \
@@ -59,23 +63,34 @@
 
 // Variable printing macros - use for non-string-literal arguments
 #define WS_DEBUG_PRINTVAR(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__); } /**< Print variable to serial */
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+  } /**< Print variable to serial */
 #define WS_DEBUG_PRINTLNVAR(...)                                               \
-  { WS_PRINTER.println(__VA_ARGS__); } /**< Print variable with newline */
+  {                                                                            \
+    WS_PRINTER.println(__VA_ARGS__);                                           \
+  } /**< Print variable with newline */
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } /**< Print in hexadecimal */
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
+  } /**< Print in hexadecimal */
 
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} /**< Debug print disabled */
+  {                                                                            \
+  } /**< Debug print disabled */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} /**< Debug println disabled */
+  {                                                                            \
+  } /**< Debug println disabled */
 #define WS_DEBUG_PRINTVAR(...)                                                 \
-  {} /**< Debug print variable disabled */
+  {                                                                            \
+  } /**< Debug print variable disabled */
 #define WS_DEBUG_PRINTLNVAR(...)                                               \
-  {} /**< Debug println variable disabled */
+  {                                                                            \
+  } /**< Debug println variable disabled */
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  {} /**< Debug print hex disabled */
+  {                                                                            \
+  } /**< Debug print hex disabled */
 #endif
 
 /*!
@@ -157,12 +172,15 @@
 
 // Timeouts and intervals
 #define WS_BROKER_KEEPALIVE_MS                                                 \
-  11000 ///< Maximum time without a ping before broker disconnects (ms)
+  60000 ///< Maximum time without a ping before broker disconnects (ms).
 #define WS_DEVICE_PING_MS                                                      \
   5000 ///< Interval at which device sends ping to broker, in milliseconds
 #define WS_TIMEOUT_WDT 60000 ///< App WDT timeout, in milliseconds
 #define WS_MQTT_POLL_TIMEOUT_MS                                                \
-  10 ///< MQTT polling (processPackets()) timeout, in milliseconds
+  10 ///< Default MQTT polling (processPackets()) timeout, in milliseconds
+#define WS_MQTT_POLL_TIMEOUT_STREAMING_MS                                      \
+  500 ///< Per-packet MQTT read timeout used while a display canvas is
+      ///< streaming.
 #define WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS                               \
   60000 ///< Default offline mode heartbeat interval, in milliseconds
 

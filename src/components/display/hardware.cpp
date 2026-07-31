@@ -343,8 +343,7 @@ bool DisplayHardware::detect_uc8253(ws_display_EpdSpiDescriptor *config) {
 */
 bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (!msg->has_interface_type) {
-    WS_DEBUG_PRINTLN(
-        "[display] ERROR: No interface type specified for SPI EPD!");
+    // TODO: Kick out to the error handler instead of printing
     return false;
   }
   ws_display_EpdSpiDescriptor *spi_epd_config =
@@ -375,44 +374,24 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (strlen(spi_pin_config->pin_cs) >= 2)
     cs = parsePin(spi_pin_config->pin_cs);
 
-#ifdef CORE_LOG_LEVEL
-#if CORE_LOG_LEVEL > 1
-  WS_DEBUG_PRINT("[display] SPI EPD pins - DC:");
-  WS_DEBUG_PRINTVAR(dc);
-  WS_DEBUG_PRINT(" RST:");
-  WS_DEBUG_PRINTVAR(rst);
-  WS_DEBUG_PRINT(" CS:");
-  WS_DEBUG_PRINTVAR(cs);
-  WS_DEBUG_PRINT(" MOSI:");
-  WS_DEBUG_PRINTVAR(mosi);
-  WS_DEBUG_PRINT(" SCK:");
-  WS_DEBUG_PRINTVAR(sck);
-  WS_DEBUG_PRINT(" MISO:");
-  WS_DEBUG_PRINTVAR(miso);
-  WS_DEBUG_PRINT(" SRAM_CS:");
-  WS_DEBUG_PRINTVAR(sram_cs);
-  WS_DEBUG_PRINT(" BUSY:");
-  WS_DEBUG_PRINTLNVAR(busy);
-#endif
-#endif
-
   // EPD drivers currently use the default hardware SPI bus/pins.
   // Reject explicit non-default SPI pins from the payload.
   if ((mosi >= 0 && mosi != MOSI) || (sck >= 0 && sck != SCK) ||
       (miso >= 0 && miso != MISO)) {
-    // TODO: report back to broker so user and team sees this!
+    // TODO: Kick out to the error handler instead of printing
     WS_DEBUG_PRINTLN(
         "[display] ERROR: SPI EPD only supports default MOSI/SCK/MISO pins!");
     return false;
   }
 
   if (spi_pin_config->bus != 0) {
-    // TODO: report back to broker so user and team sees this!
+    // TODO: Kick out to the error handler instead of printing
     WS_DEBUG_PRINTLN("[display] ERROR: Non-default SPI bus not supported!");
     return false;
   }
 
   if (msg->which_config != ws_display_Add_config_epd_tag) {
+    // TODO: Kick out to the error handler instead of printing
     WS_DEBUG_PRINTLN("[display] ERROR: Expected EPD config for SPI EPD!");
     return false;
   }
@@ -420,65 +399,58 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 
   // Parse EPD mode
   if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED) {
+    // TODO: Kick out to the error handler instead of printing
     WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
     return false;
   }
 
+  // Tear down any existing driver before creating a new one
   if (_drvDisp) {
     delete _drvDisp;
     _drvDisp = nullptr;
   }
 
-  // MagTag hardware auto-detection (requires SPI probing)
-  const char *driver = msg->driver;
+  // MagTag hardware auto-detection (requires SPI probing): the attached panel
+  // varies by production batch, so probe the bus and resolve to a panel key.
   if (strncmp(_name, "eink-magtag", sizeof("eink-magtag") - 1) == 0 &&
-      strlen(driver) == 0) {
+      strlen(msg->panel) == 0) {
     if (EpdBitBangReadRegister(0x71, spi_epd_config) == 0xFF) {
-      driver = "SSD1680";
+      strncpy(msg->panel, "29-gray-EAAMFGN", sizeof(msg->panel) - 1); // SSD1680
     } else {
-      driver = "ILI0373";
+      strncpy(msg->panel, "29-gray-T5", sizeof(msg->panel) - 1); // ILI0373
     }
-    WS_DEBUG_PRINT("[display] MagTag auto-detected driver: ");
-    WS_DEBUG_PRINTLNVAR(driver);
+    msg->panel[sizeof(msg->panel) - 1] = '\0';
+    WS_DEBUG_PRINT("[display] MagTag auto-detected panel: ");
+    WS_DEBUG_PRINTLNVAR(msg->panel);
   }
 
-  // Create driver based on driver string (component-name resolution
-  // already done by controller)
-  if (strcmp(driver, "SSD1680") == 0) {
-    _drvDisp = new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "ILI0373") == 0) {
-    _drvDisp = new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "SSD1683") == 0) {
-    _drvDisp = new dispDrvThinkInkGrayscale4MFGN(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "UC8179") == 0) {
-    _drvDisp = new dispDrvThinkInkMonoAAAMFGN(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "UC8253") == 0) {
-    _drvDisp = new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "UC8151") == 0) {
-    _drvDisp = new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
-  } else {
-    WS_DEBUG_PRINT("[display] ERROR: Unsupported EPD driver: ");
-    WS_DEBUG_PRINTLNVAR(driver);
-    return false;
-  }
-
+  // Attempt to create EPD driver instance
+  _drvDisp = new drvDispThinkInk((char *)msg->panel, config->mode, dc, rst, cs,
+                                 sram_cs, busy);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate EPD driver!");
     return false;
   }
-
-  thinkinkmode_t epd_mode;
-  if (config->mode == ws_display_EPDMode_EPD_MODE_GRAYSCALE4)
-    epd_mode = THINKINK_GRAYSCALE4;
-  else
-    epd_mode = THINKINK_MONO;
-
   _drvDisp->setWidth(config->properties.width);
   _drvDisp->setHeight(config->properties.height);
   if (config->properties.text_size > 0)
     _drvDisp->setTextSize(config->properties.text_size);
 
-  if (!_drvDisp->begin(epd_mode)) {
+  // Tell the driver whether this is a cold boot so begin() can skip the
+  // clear-to-white refresh (a full ~15.8s panel cycle) when resuming from
+  // sleep, where the panel already holds the last canvas. The sleep
+  // controller is built in the wippersnapper constructor, so its wake cause
+  // is already captured by the time a Display Add is handled.
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  if (Ws._sleep_controller != nullptr) {
+    bool woke_from_sleep = Ws._sleep_controller->DidWakeFromSleep();
+    _drvDisp->setColdBoot(!woke_from_sleep);
+    WS_DEBUG_PRINT("[display] Cold boot: ");
+    WS_DEBUG_PRINTLNVAR(!woke_from_sleep);
+  }
+#endif
+
+  if (!_drvDisp->begin()) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin EPD driver!");
     delete _drvDisp;
     _drvDisp = nullptr;
@@ -710,6 +682,46 @@ bool DisplayHardware::write(ws_display_Write *msg) {
   WS_DEBUG_PRINTLNVAR(msg->message);
   _drvDisp->writeMessage(msg->message);
   return true;
+}
+
+/*!
+    @brief  Draws an assembled canvas (raw .BMP file bytes) to the display.
+    @param  bmp  Pointer to the complete BMP file bytes.
+    @param  len  Length of the BMP buffer, in bytes.
+    @return True if drawn, False otherwise.
+*/
+bool DisplayHardware::drawCanvas(const uint8_t *bmp, size_t len) {
+  if (!_drvDisp) {
+    publishAndLogError(F("[display] ERROR: No display driver initialized!"));
+    return false;
+  }
+  if (!bmp || len == 0) {
+    publishAndLogError(F("[display] ERROR: Empty canvas buffer!"));
+    return false;
+  }
+  return _drvDisp->drawCanvas(bmp, len);
+}
+
+bool DisplayHardware::drawMarqueeEPD(const uint8_t *bmp, size_t len) {
+  WS_DEBUG_PRINT("[display] Drawing marquee EPD, length: ");
+  WS_DEBUG_PRINTLNVAR(len);
+
+  if (!_drvDisp) {
+    publishAndLogError(F("[display] ERROR: No display driver initialized!"));
+    return false;
+  }
+  if (!bmp || len == 0) {
+    publishAndLogError(F("[display] ERROR: Empty canvas buffer!"));
+    return false;
+  }
+
+  if (len < 26) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Marquee BMP too small!");
+    return false;
+  }
+
+  WS_DEBUG_PRINT("[display] Drawing marquee in driver");
+  return _drvDisp->drawMarqueeEPD(bmp, len);
 }
 
 /*!
