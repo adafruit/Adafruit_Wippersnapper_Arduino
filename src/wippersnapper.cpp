@@ -895,7 +895,7 @@ void wippersnapper::ProcessPackets() {
   // timeout to allow the entire image to be recieved. Otherwise, we can use the
   // default timeout.
   int16_t timeout_ms = WS_MQTT_POLL_TIMEOUT_MS;
-  if (Ws._display_controller->IsCanvasStreaming())
+  if (Ws._display_controller->isImageStreaming())
     timeout_ms = WS_MQTT_POLL_TIMEOUT_STREAMING_MS;
 
   Ws._mqttV2->processPackets(timeout_ms);
@@ -1160,15 +1160,8 @@ void wippersnapper::loopSleep() {
     Ws._display_controller->publishPendingWriteComplete();
   }
 
-  // Keep loopSleep() awake until the image is fully streamed and rendered.
-  if (Ws._display_controller->IsAwaitingWrite()) {
-    Ws._display_controller->handleCanvasAssemblyTimeout();
-    return;
-  }
-
   // Track completion of all controllers
   bool all_controllers_complete = true;
-  bool display_write_in_progress = Ws._display_controller->IsWriteInProgress();
 
   if (!Ws.digital_io_controller->UpdateComplete()) {
     Ws.digital_io_controller->update(true);
@@ -1200,11 +1193,16 @@ void wippersnapper::loopSleep() {
     all_controllers_complete = false;
   }
 
+  // A marquee canvas that is expected, in flight, mid-draw, or drawn but not
+  // yet acked keeps the display incomplete, holding off sleep the same way any
+  // other controller does. There is no update() to drive here: the canvas is
+  // pushed by the broker and ingested from the MQTT receive callback.
+  if (!Ws._display_controller->UpdateComplete()) {
+    all_controllers_complete = false;
+  }
+
   // Check if all controllers have completed their updates
-  // NOTE: If a display write is in progress, we must wait for it to finish
-  // before sleeping!
-  if (all_controllers_complete && !display_write_in_progress &&
-      !Ws._display_controller->HasPendingWriteComplete()) {
+  if (all_controllers_complete) {
     // Attempt to publish the Goodnight message before sleeping.
     // NOTE: If it fails, we hold off on sleeping and retry in the next
     // loopSleep() cycle.
@@ -1284,6 +1282,7 @@ void wippersnapper::ResetAllControllerFlags() {
   Ws._i2c_controller->ResetFlags();
   Ws._uart_controller->ResetFlags();
   Ws._gps_controller->ResetFlags();
+  Ws._display_controller->ResetFlags();
 }
 
 #endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350

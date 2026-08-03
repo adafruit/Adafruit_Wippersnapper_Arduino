@@ -411,7 +411,8 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (config->properties.text_size > 0)
     _drvDisp->setTextSize(config->properties.text_size);
 
-  // If this is not a cold boot, and the device is waking from sleep, tell the driver to skip the panel refresh since it already holds an image.
+  // If this is not a cold boot, and the device is waking from sleep, tell the
+  // driver to skip the panel refresh since it already holds an image.
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   if (Ws._sleep_controller != nullptr) {
     bool woke_from_sleep = Ws._sleep_controller->DidWakeFromSleep();

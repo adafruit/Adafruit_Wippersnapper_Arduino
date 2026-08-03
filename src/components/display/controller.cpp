@@ -17,15 +17,12 @@
 DisplayController::DisplayController() {
   _num_displays = 0;
   _last_bar_update = 0;
-  _current_canvas_checksum = 0;
-  _canvas_chunk_total = 0;
-  _canvas_chunks_received = 0;
-  _canvas_total_size = 0;
-  _write_in_progress = false;
-  _write_complete_pending = false;
-  _awaiting_write = false;
-  _awaiting_write_since_ms = 0;
-  _last_canvas_activity_ms = 0;
+  _canvas_checksum = 0;
+  _image_chunk_total = 0;
+  _image_chunks_received = 0;
+  _expected_image_size = 0;
+  _marquee_state = marquee_state_t::IDLE;
+  _prv_image_activity = 0;
 }
 
 DisplayController::~DisplayController() {
@@ -33,8 +30,7 @@ DisplayController::~DisplayController() {
     delete _displays[i];
   }
   _num_displays = 0;
-  resetCanvasReassembly();
-  _write_in_progress = false;
+  resetImage();
 }
 
 /*!
@@ -45,52 +41,14 @@ DisplayController::~DisplayController() {
             may call this mid-message (e.g. on a new image id) before filing
             those bytes.
 */
-void DisplayController::resetCanvasReassembly() {
+void DisplayController::resetImage() {
   // swap-with-empty releases the heap capacity, not just the size
-  std::vector<std::vector<uint8_t>>().swap(_canvas_chunks);
+  std::vector<std::vector<uint8_t>>().swap(_image_chunks);
   std::vector<uint8_t>().swap(_bmp);
-  _current_canvas_checksum = 0;
-  _canvas_chunk_total = 0;
-  _canvas_chunks_received = 0;
-  _canvas_total_size = 0;
-  // Clear only the active-stream flag. _awaiting_write is intentionally NOT
-  // cleared here: it tracks the wake-level intent ("a display was added, hold
-  // loopSleep() awake until its canvas fully assembles"), which must survive
-  // intermediate reassembly resets (truncation error, new-image restart) so a
-  // future re-fire can still complete the canvas. Only a successful draw clears
-  // it.
-  _write_in_progress = false;
-}
-
-/*!
-    @brief  While awaiting a display's canvas, gives up on the await if it
-            hasn't fully assembled within CANVAS_ASSEMBLY_TIMEOUT_MS. Clearing
-            _awaiting_write is what lets loopSleep() fall through to its
-            run-duration deadline and sleep; without it the device would stay
-            awake indefinitely waiting on a canvas the broker may never finish
-            sending. The partial reassembly state is discarded so the next
-            wake's broker re-transmit starts from a clean slate.
-*/
-void DisplayController::handleCanvasAssemblyTimeout() {
-  if (!_awaiting_write)
-    return;
-  if (millis() - _awaiting_write_since_ms < CANVAS_ASSEMBLY_TIMEOUT_MS)
-    return;
-
-  WS_DEBUG_PRINTLN("ERROR: CANVAS NOT FULLY ASSEMBLED");
-  WS_DEBUG_PRINT("[display] Abandoning canvas await after ");
-  WS_DEBUG_PRINTVAR((uint32_t)(millis() - _awaiting_write_since_ms));
-  WS_DEBUG_PRINT("ms; chunks received: ");
-  WS_DEBUG_PRINTVAR(_canvas_chunks_received);
-  WS_DEBUG_PRINT(" / ");
-  WS_DEBUG_PRINTLNVAR(_canvas_chunk_total);
-
-  // Release the sleep hold-off so loopSleep() can reach its run-duration
-  // deadline, and drop the partial canvas so a re-transmit isn't merged into
-  // it.
-  _awaiting_write = false;
-  _awaiting_write_since_ms = 0;
-  resetCanvasReassembly();
+  _canvas_checksum = 0;
+  _image_chunk_total = 0;
+  _image_chunks_received = 0;
+  _expected_image_size = 0;
 }
 
 /*!
@@ -144,7 +102,7 @@ bool DisplayController::Router(pb_istream_t *stream) {
     ws_display_B2D *b2d_w = new ws_display_B2D;
     *b2d_w = ws_display_B2D_init_zero;
     b2d_w->which_payload = ws_display_B2D_write_tag;
-    b2d_w->payload.write.image.chunk_data.funcs.decode = cbDecodeCanvasChunk;
+    b2d_w->payload.write.image.chunk_data.funcs.decode = cbDecodeImageChunk;
     b2d_w->payload.write.image.chunk_data.arg = this;
     if (!pb_decode_ex(&saved_stream, ws_display_B2D_fields, b2d_w,
                       PB_DECODE_NOINIT)) {
@@ -341,26 +299,21 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   _displays[_num_displays] = hw;
   _num_displays++;
 
-  // The broker pushes this display's content as a separate write every wake
-  // cycle, arriving after check-in completes. Mark that we're awaiting it so
-  // loopSleep() stays awake until the canvas is fully assembled and drawn
-  // (WriteComplete). A bundled write (below) or a streamed write clears this
-  // once drawn.
-  _awaiting_write = true;
-  _awaiting_write_since_ms = millis();
-  // Arm the long per-packet MQTT idle timeout for the first chunk, which has no
-  // reassembly state yet to imply a stream is running. Bounded by
-  // CANVAS_STREAM_IDLE_MS so a canvas that never arrives stops slowing the
-  // loop.
-  _last_canvas_activity_ms = millis();
+  // The broker pushes an EPD's content as a separate write every wake cycle,
+  // arriving after check-in completes.
+  if (msg->type == ws_display_DisplayClass_DISPLAY_CLASS_EPD) {
+    _marquee_state = marquee_state_t::AWAITING;
+    // Enable the best-effort idle timeout for the 1st chunk of a new image
+    _prv_image_activity = millis();
+  }
 
   // Handle optional initial write
   if (msg->has_write) {
     WS_DEBUG_PRINTLN("[display] Processing initial write...");
     // TODO: Unlike Router()'s write path, this call does NOT wire the
-    // chunk_data decode callback (cbDecodeCanvasChunk), so _pending_chunk is
+    // chunk_data decode callback (cbDecodeImageChunk), so _pending_chunk is
     // empty here. An Add-bundled image write therefore fails
-    // handleCanvasWrite's empty-chunk check; only text writes are supported on
+    // handleImageWrite's empty-chunk check; only text writes are supported on
     // this path today.
     // TODO: To support Add-bundled image writes, replicate Router()'s
     // pb_decode_ex + PB_DECODE_NOINIT callback wiring for msg->write.image.
@@ -461,6 +414,7 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
                        "publish error against");
     }
   }
+  _marquee_state = marquee_state_t::IDLE;
   return did_remove;
 }
 
@@ -473,9 +427,9 @@ bool DisplayController::Handle_Display_Remove(ws_display_Remove *msg) {
     @param  arg     Pointer to the owning DisplayController (set in Router).
     @return True on success, False on allocation/read failure.
 */
-bool DisplayController::cbDecodeCanvasChunk(pb_istream_t *stream,
-                                            const pb_field_t *field,
-                                            void **arg) {
+bool DisplayController::cbDecodeImageChunk(pb_istream_t *stream,
+                                           const pb_field_t *field,
+                                           void **arg) {
   (void)field;
   DisplayController *self = (DisplayController *)*arg;
   size_t len = stream->bytes_left;
@@ -506,7 +460,7 @@ bool DisplayController::Handle_Display_Write(ws_display_Write *msg) {
 
   // Display Write can be either a text message or an "image" ("marquee")
   if (msg->has_image) {
-    return handleCanvasWrite(msg);
+    return handleImageWrite(msg);
   } else {
     return handleTextWrite(msg);
   }
@@ -530,7 +484,7 @@ bool DisplayController::handleTextWrite(ws_display_Write *msg) {
   bool did_write = _displays[idx]->write(msg);
   if (did_write) {
     // Content for this wake has been drawn; release the sleep hold-off.
-    _awaiting_write = false;
+    _marquee_state = marquee_state_t::IDLE;
   }
   return did_write;
 }
@@ -542,23 +496,26 @@ bool DisplayController::handleTextWrite(ws_display_Write *msg) {
     @return True if the chunk was accepted (or the canvas drawn), False on
             error.
 */
-bool DisplayController::handleCanvasWrite(ws_display_Write *msg) {
+bool DisplayController::handleImageWrite(ws_display_Write *msg) {
   // Ingest this chunk of data, if we're not done ingesting the full canvas yet.
-  if (!ingestCanvasChunk(msg)) {
+  if (!processImageChunk(msg)) {
     return false;
   }
 
   // Wait for more chunks before assembling.
-  if (_canvas_chunks_received < _canvas_chunk_total)
+  if (_image_chunks_received < _image_chunk_total)
     return true;
 
   // All chunks received: assemble the full BMP and draw it to the display.
-  bool did_draw = drawCanvasToDisplay(msg);
+  _marquee_state = marquee_state_t::DRAWING;
+  bool did_draw = drawImage(msg);
   if (!did_draw) {
     // The canvas did not make it onto the panel (size mismatch, unknown
     // display, or a driver failure). Do NOT report WriteComplete — the broker
-    // must keep re-transmitting — and keep _awaiting_write set so loopSleep()
-    // does not sleep on a stale panel before a re-transmit arrives.
+    // must keep re-transmitting — and fall back to STREAMING so the display
+    // stays incomplete and loopSleep() does not sleep on a stale panel before
+    // a re-transmit arrives.
+    _marquee_state = marquee_state_t::STREAMING;
     WS_DEBUG_PRINTLN("[display] Draw FAILED, withholding WriteComplete so the "
                      "broker re-transmits");
     return false;
@@ -568,9 +525,7 @@ bool DisplayController::handleCanvasWrite(ws_display_Write *msg) {
   // MQTT connection is often already dead here (and we're nested inside the
   // receive callback). Queue the WriteComplete D2B and let loop() publish it
   // once NetworkFSM() has re-established the connection.
-  _write_complete_pending = true;
-  // Content for this wake has been drawn; release the sleep hold-off.
-  _awaiting_write = false;
+  _marquee_state = marquee_state_t::COMPLETE;
   WS_DEBUG_PRINTLN("[display] WriteComplete QUEUED (deferred to loop())");
 
   return true;
@@ -586,7 +541,7 @@ bool DisplayController::handleCanvasWrite(ws_display_Write *msg) {
     @return True if a pending message was published, False otherwise.
 */
 bool DisplayController::publishPendingWriteComplete() {
-  if (!_write_complete_pending)
+  if (_marquee_state != marquee_state_t::COMPLETE)
     return false;
 
   WS_DEBUG_PRINT("[display] Publishing pending WriteComplete D2B... MQTT "
@@ -603,7 +558,7 @@ bool DisplayController::publishPendingWriteComplete() {
   }
 
   WS_DEBUG_PRINTLN("[display] WriteComplete PUBLISHED!");
-  _write_complete_pending = false;
+  _marquee_state = marquee_state_t::IDLE;
   return true;
 }
 
@@ -614,11 +569,11 @@ bool DisplayController::publishPendingWriteComplete() {
     @return False on validation failure (reassembly state is reset before
             returning), True if the chunk was accepted.
 */
-bool DisplayController::ingestCanvasChunk(ws_display_Write *msg) {
+bool DisplayController::processImageChunk(ws_display_Write *msg) {
   // Did the decode callback actually decode any bytes into the chunk?
   if (_pending_chunk.empty()) {
     WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk_data missing/empty");
-    resetCanvasReassembly();
+    resetImage();
     return false;
   }
 
@@ -642,43 +597,40 @@ bool DisplayController::ingestCanvasChunk(ws_display_Write *msg) {
   if (canvas_chunk_total == 0 || canvas_chunk_total > MAX_CANVAS_CHUNKS ||
       canvas_chunk_id < 1 || canvas_chunk_id > canvas_chunk_total) {
     WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id/total out of range");
-    resetCanvasReassembly();
+    resetImage();
     return false;
   }
 
   // New incoming image? Reset the reassembly state and start over.
-  if (canvas_checksum != _current_canvas_checksum) {
-    resetCanvasReassembly();
-    _current_canvas_checksum = canvas_checksum;
-    _canvas_chunk_total = canvas_chunk_total;
-    _canvas_total_size = canvas_total_size;
-    _canvas_chunks.resize(_canvas_chunk_total);
+  if (canvas_checksum != _canvas_checksum) {
+    resetImage();
+    _canvas_checksum = canvas_checksum;
+    _image_chunk_total = canvas_chunk_total;
+    _expected_image_size = canvas_total_size;
+    _image_chunks.resize(_image_chunk_total);
   }
 
   // Apply the chunk_data to the correct slot in the re-assembly buffer
   uint32_t idx = canvas_chunk_id - 1;
-  if (idx >= _canvas_chunks.size()) {
+  if (idx >= _image_chunks.size()) {
     WS_DEBUG_PRINTLN("[display] ERROR: Canvas chunk id exceeds buffer");
-    resetCanvasReassembly();
+    resetImage();
     return false;
   }
 
   // First time we've seen this chunk id? Copy the bytes into the buffer for
   // reassembly.
-  if (_canvas_chunks[idx].empty())
-    _canvas_chunks_received++;
+  if (_image_chunks[idx].empty())
+    _image_chunks_received++;
   // Also let's avoid copying bytes 2x
-  _canvas_chunks[idx] = std::move(_pending_chunk);
+  _image_chunks[idx] = std::move(_pending_chunk);
   _pending_chunk.clear();
-
-  // Also, let's set the write_in_progress flag to gate loopSleep() entry until
-  // the write is done
-  _write_in_progress = true;
 
   // Re-arm the long per-packet MQTT idle timeout: chunks are actively arriving,
   // so the next read should get the wide allowance rather than the short poll.
-  _last_canvas_activity_ms = millis();
+  _prv_image_activity = millis();
 
+  _marquee_state = marquee_state_t::STREAMING;
   return true;
 }
 
@@ -689,22 +641,22 @@ bool DisplayController::ingestCanvasChunk(ws_display_Write *msg) {
     @param  msg  The Display Write message (provides name + descriptor).
     @return True if the display drew the bitmap, False otherwise.
 */
-bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
+bool DisplayController::drawImage(ws_display_Write *msg) {
   // Concatenate every region in chunk_id order into _bmp and validate its
   // total size. clear() first so a prior image's bytes never linger between
   // reassemblies.
   WS_DEBUG_PRINT("[display] Building BMP from chunks received: ");
-  WS_DEBUG_PRINTVAR(_canvas_chunks_received);
+  WS_DEBUG_PRINTVAR(_image_chunks_received);
   WS_DEBUG_PRINT(" / ");
-  WS_DEBUG_PRINTLNVAR(_canvas_chunk_total);
+  WS_DEBUG_PRINTLNVAR(_image_chunk_total);
   _bmp.clear();
-  _bmp.reserve(std::min<size_t>(_canvas_total_size, MAX_CANVAS_SIZE));
-  for (uint32_t i = 0; i < _canvas_chunk_total; i++) {
-    _bmp.insert(_bmp.end(), _canvas_chunks[i].begin(), _canvas_chunks[i].end());
+  _bmp.reserve(std::min<size_t>(_expected_image_size, MAX_CANVAS_SIZE));
+  for (uint32_t i = 0; i < _image_chunk_total; i++) {
+    _bmp.insert(_bmp.end(), _image_chunks[i].begin(), _image_chunks[i].end());
   }
-  if (_bmp.size() != _canvas_total_size) {
+  if (_bmp.size() != _expected_image_size) {
     WS_DEBUG_PRINTLN("[display] ERROR: Canvas size mismatch, discarding");
-    resetCanvasReassembly();
+    resetImage();
     return false;
   }
 
@@ -714,7 +666,7 @@ bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
   int8_t disp_idx =
       resolveDisplayOrPublishError(msg, "Display not found for image write");
   if (disp_idx < 0) {
-    resetCanvasReassembly();
+    resetImage();
     return false;
   }
 
@@ -723,14 +675,12 @@ bool DisplayController::drawCanvasToDisplay(ws_display_Write *msg) {
   bool did_draw = _displays[disp_idx]->drawMarqueeEPD(_bmp.data(), _bmp.size());
   WS_DEBUG_PRINTLN("[display] Draw result: ");
   WS_DEBUG_PRINTLNVAR(did_draw);
-  resetCanvasReassembly();
+  resetImage();
   if (!did_draw && msg->has_descriptor) {
     PublishDisplayComponentError(msg->descriptor,
                                  "Failed to draw canvas to display");
   }
 
-  // Un-set the write_in_progress flag to allow loopSleep() entry again
-  _write_in_progress = false;
   return did_draw;
 }
 
@@ -794,4 +744,35 @@ int8_t DisplayController::findDisplayIndexByName(const char *name) {
       return i;
   }
   return -1;
+}
+
+/*!
+    @brief  Reports whether the display controller has any marquee work
+            outstanding, so loopSleep() can treat it like every other polled
+            controller. Every state other than IDLE means a canvas is expected,
+            in flight, mid-draw, or drawn-but-unacked.
+    @return True if there is nothing left to do this wake, False otherwise.
+*/
+bool DisplayController::UpdateComplete() {
+  return _marquee_state == marquee_state_t::IDLE;
+}
+
+/*!
+    @brief  Clears the marquee state for the next loopSleep() cycle. A queued
+            WriteComplete is dropped: the ack is contentless, and holding it
+            across a sleep would keep the display permanently incomplete when
+            the broker is unreachable.
+*/
+void DisplayController::ResetFlags() { _marquee_state = marquee_state_t::IDLE; }
+
+/*!
+    @brief  Whether image write packets are currently in-flight.
+    @return True if an image is currently being streamed to the display, False
+   otherwise.
+*/
+bool DisplayController::isImageStreaming() {
+  if (_marquee_state == marquee_state_t::IDLE ||
+      _marquee_state == marquee_state_t::COMPLETE)
+    return false;
+  return (millis() - _prv_image_activity) < CANVAS_STREAM_IDLE_MS;
 }
