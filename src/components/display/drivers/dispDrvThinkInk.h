@@ -509,7 +509,7 @@ public:
     // pay it on a cold boot, where the panel may still be holding a stale image
     // from before power was removed. Waking from sleep the panel already shows
     // the last canvas, and the incoming write overwrites it wholesale.
-    if (_is_cold_boot)
+    if (didBootFromSleep())
       _display->display();
     _reader = new Adafruit_ImageReader_EPD();
     if (!_reader) {

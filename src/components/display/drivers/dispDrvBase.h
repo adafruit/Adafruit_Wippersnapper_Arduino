@@ -135,9 +135,17 @@ public:
   /*!
       @brief  Records whether the MCU cold-booted or resumed from a sleep
               cycle. Must be called before begin() to take effect.
-      @param  cold  True on power-on/reset, False when waking from sleep.
+      @param  did_boot_from_sleep  True if the MCU cold-booted, False if resuming from
+              sleep.
   */
-  void setColdBoot(bool cold) { _is_cold_boot = cold; }
+  void didBootFromSleep(bool did_boot_from_sleep) { _did_boot_from_sleep = did_boot_from_sleep; }
+
+  /*!
+      @brief  Returns whether the MCU cold-booted or resumed from a sleep
+              cycle.
+      @return True if the MCU cold-booted, False if resuming from sleep.
+  */
+  bool didBootFromSleep() const { return _did_boot_from_sleep; }
 
   /*!
       @brief  Sets the backlight control pin.
@@ -235,11 +243,7 @@ protected:
   int16_t _width;            ///< Display width
   int16_t _height;           ///< Display height
   uint8_t _rotation;         ///< Display rotation (0-3)
-  bool _is_cold_boot = true; ///< True on power-on, False when resuming from a
-                             ///< sleep cycle. Lets EPD drivers skip refreshes
-                             ///< that only establish a state the panel already
-                             ///< holds across sleep. Defaults to True so an
-                             ///< un-wired caller keeps the previous behaviour.
+  bool _did_boot_from_sleep = true; ///< False when resuming from sleep
 
   /*! @brief Cached status bar layout and state. */
   int _statusbar_icons_y;         ///< Y position of status bar icons
