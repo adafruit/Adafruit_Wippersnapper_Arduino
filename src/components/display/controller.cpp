@@ -528,11 +528,9 @@ bool DisplayController::handleImageWrite(ws_display_Write *msg) {
     return false;
   }
 
-  // The blocking EPD refresh above can outlast the broker keepalive, so the
-  // MQTT connection is often already dead here (and we're nested inside the
-  // receive callback). Queue the WriteComplete D2B and let loop() publish it
-  // once NetworkFSM() has re-established the connection.
+  // Queue up the WriteComplete D2B message for the next loop() iteration
   _marquee_state = marquee_state_t::COMPLETE;
+  _prv_image_activity = millis();
   WS_DEBUG_PRINTLN("[display] WriteComplete QUEUED (deferred to loop())");
 
   return true;
