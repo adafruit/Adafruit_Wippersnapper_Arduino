@@ -102,6 +102,8 @@ private:
   uint32_t _canvas_checksum;   ///< id of canvas being reassembled (0 = none)
   uint32_t _image_chunk_total; ///< expected total chunk count
   uint32_t _image_chunks_received; ///< distinct slots filled so far
+  size_t _image_chunk_bytes;       ///< running sum of every filed chunk's size,
+                                   ///< in bytes; used to reserve _bmp exactly
   uint32_t _expected_image_size;   ///< expected assembled bitmap size, in bytes
   // TODO Tuesday: Do we need the std:: nomenclature here?
   std::vector<std::vector<uint8_t>>

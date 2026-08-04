@@ -25,6 +25,7 @@ DisplayController::DisplayController() {
   _canvas_checksum = 0;
   _image_chunk_total = 0;
   _image_chunks_received = 0;
+  _image_chunk_bytes = 0;
   _expected_image_size = 0;
   _marquee_state = marquee_state_t::IDLE;
   _prv_image_activity = 0;
@@ -53,6 +54,7 @@ void DisplayController::resetImage() {
   _canvas_checksum = 0;
   _image_chunk_total = 0;
   _image_chunks_received = 0;
+  _image_chunk_bytes = 0;
   _expected_image_size = 0;
 }
 
@@ -584,13 +586,13 @@ bool DisplayController::processImageChunk(ws_display_Write *msg) {
 
   // Split out the chunk metadata
   uint32_t canvas_checksum = msg->image.checksum;
-  uint32_t canvas_total_size = msg->image.size;
+  uint32_t sz_image = msg->image.size;
   uint32_t canvas_chunk_id = msg->image.chunk_id;
   uint32_t canvas_chunk_total = msg->image.chunk_total;
   WS_DEBUG_PRINT("[display] Canvas Checksum: ");
   WS_DEBUG_PRINTVAR(canvas_checksum);
   WS_DEBUG_PRINT(", Total Size: ");
-  WS_DEBUG_PRINTVAR(canvas_total_size);
+  WS_DEBUG_PRINTVAR(sz_image);
   WS_DEBUG_PRINT(", Chunk ID: ");
   WS_DEBUG_PRINTVAR(canvas_chunk_id);
   WS_DEBUG_PRINT(", Chunk Total: ");
@@ -606,12 +608,21 @@ bool DisplayController::processImageChunk(ws_display_Write *msg) {
     return false;
   }
 
+  // If the image is too large, gracefully bail out
+  if (sz_image == 0 ||
+      sz_image > (uint32_t)MAX_CANVAS_SIZE) {
+    WS_DEBUG_PRINT("[display] ERROR: Expected image size out of range: ");
+    WS_DEBUG_PRINTLNVAR(sz_image);
+    resetImage();
+    return false;
+  }
+
   // New incoming image? Reset the reassembly state and start over.
   if (canvas_checksum != _canvas_checksum) {
     resetImage();
     _canvas_checksum = canvas_checksum;
     _image_chunk_total = canvas_chunk_total;
-    _expected_image_size = canvas_total_size;
+    _expected_image_size = sz_image;
     _image_chunks.resize(_image_chunk_total);
   }
 
@@ -627,8 +638,10 @@ bool DisplayController::processImageChunk(ws_display_Write *msg) {
   // reassembly.
   if (_image_chunks[idx].empty())
     _image_chunks_received++;
+  _image_chunk_bytes -= _image_chunks[idx].size();
   // Also let's avoid copying bytes 2x
   _image_chunks[idx] = std::move(_pending_chunk);
+  _image_chunk_bytes += _image_chunks[idx].size();
   _pending_chunk.clear();
 
   // Re-arm the long per-packet MQTT idle timeout: chunks are actively arriving,
@@ -654,10 +667,20 @@ bool DisplayController::drawImage(ws_display_Write *msg) {
   WS_DEBUG_PRINTVAR(_image_chunks_received);
   WS_DEBUG_PRINT(" / ");
   WS_DEBUG_PRINTLNVAR(_image_chunk_total);
+  // Reserve what actually arrived, not the declared size: _image_chunk_bytes
+  // only counts bytes already held in _image_chunks, so this cannot ask for
+  // more than the heap has already given us, and it allocates once instead of
+  // letting insert() grow geometrically. A declared size that disagrees is
+  // caught by the mismatch check below.
   _bmp.clear();
-  _bmp.reserve(std::min<size_t>(_expected_image_size, MAX_CANVAS_SIZE));
+  _bmp.reserve(_image_chunk_bytes);
   for (uint32_t i = 0; i < _image_chunk_total; i++) {
     _bmp.insert(_bmp.end(), _image_chunks[i].begin(), _image_chunks[i].end());
+    // Release each chunk as it is consumed so the assembled bitmap and the
+    // chunk buffers do not both hold a full copy of the canvas at once. Every
+    // exit path below calls resetImage(), so these regions are not needed
+    // again. swap-with-empty releases the capacity, not just the size.
+    std::vector<uint8_t>().swap(_image_chunks[i]);
   }
   if (_bmp.size() != _expected_image_size) {
     WS_DEBUG_PRINTLN("[display] ERROR: Canvas size mismatch, discarding");
