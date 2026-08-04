@@ -135,15 +135,14 @@ public:
   /*!
       @brief  Records whether the MCU cold-booted or resumed from a sleep
               cycle. Must be called before begin() to take effect.
-      @param  did_boot_from_sleep  True if the MCU cold-booted, False if resuming from
-              sleep.
+      @param  did_boot_from_sleep  True if resuming from sleep, false if cold-booting.
   */
   void didBootFromSleep(bool did_boot_from_sleep) { _did_boot_from_sleep = did_boot_from_sleep; }
 
   /*!
       @brief  Returns whether the MCU cold-booted or resumed from a sleep
               cycle.
-      @return True if the MCU cold-booted, False if resuming from sleep.
+      @return True if resuming from sleep, False if the MCU cold-booted.
   */
   bool didBootFromSleep() const { return _did_boot_from_sleep; }
 

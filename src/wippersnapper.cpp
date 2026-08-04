@@ -816,9 +816,6 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     return false;
   }
 
-  // Run the network fsm one more time before publishing
-  NetworkFSM();
-
   // Attempt to publish the signal message to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
   if (!Ws._mqttV2->publish(Ws._topicD2b, msgBuf, szMessageBuf, 1)) {

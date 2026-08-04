@@ -460,7 +460,6 @@ public:
   ~drvDispThinkInk() {
     if (_display) {
       _display->clearBuffer();
-      _display->display();
       delete _display;
       _display = nullptr;
     }

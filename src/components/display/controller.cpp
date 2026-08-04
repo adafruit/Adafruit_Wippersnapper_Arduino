@@ -786,12 +786,12 @@ bool DisplayController::UpdateComplete() {
 }
 
 /*!
-    @brief  Clears the marquee state for the next loopSleep() cycle. A queued
-            WriteComplete is dropped: the ack is contentless, and holding it
-            across a sleep would keep the display permanently incomplete when
-            the broker is unreachable.
+    @brief  Clears the image's state for the next loopSleep() cycle.
 */
-void DisplayController::ResetFlags() { _marquee_state = marquee_state_t::IDLE; }
+void DisplayController::ResetFlags() {
+    resetImage();
+    _marquee_state = marquee_state_t::IDLE;
+}
 
 /*!
     @brief  Whether image write packets are currently in-flight.
