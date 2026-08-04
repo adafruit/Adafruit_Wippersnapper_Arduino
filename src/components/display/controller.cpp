@@ -15,6 +15,11 @@
 #include "controller.h"
 
 DisplayController::DisplayController() {
+  /*!
+    @brief  Initializes the ThinkInk panel factory table to avoid a stack
+    overflow.
+  */
+  drvDispThinkInk::getAdafruitEPDFactory();
   _num_displays = 0;
   _last_bar_update = 0;
   _canvas_checksum = 0;

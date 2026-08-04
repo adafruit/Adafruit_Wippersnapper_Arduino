@@ -908,7 +908,6 @@ void PrintDeviceInfo() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINT("Firmware Version: ");
   WS_DEBUG_PRINTLNVAR(WS_VERSION);
-  WS_DEBUG_PRINTLN("API: Version 2");
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLNVAR(BOARD_ID);
   WS_DEBUG_PRINT("Adafruit.io User: ");

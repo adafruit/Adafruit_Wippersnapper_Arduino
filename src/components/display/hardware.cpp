@@ -415,8 +415,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   // driver to skip the panel refresh since it already holds an image.
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   if (Ws._sleep_controller != nullptr) {
-    bool woke_from_sleep = Ws._sleep_controller->DidWakeFromSleep();
-    _drvDisp->didBootFromSleep(woke_from_sleep);
+    _drvDisp->didBootFromSleep(Ws._sleep_controller->DidWakeFromSleep());
   }
 #endif
 

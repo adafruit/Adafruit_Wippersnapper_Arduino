@@ -78,10 +78,14 @@ public:
   bool publishPendingWriteComplete();
 
 private:
-  DisplayHardware *_displays[MAX_DISPLAYS] = {nullptr}; ///< Display hardware instances
-  uint8_t _num_displays; ///< Number of displays currently managed by the controller
-  unsigned long _last_bar_update; ///< Last time the status bar was updated, in millis()
-  marquee_state_t _marquee_state; ///< Tracks the marquee canvas's lifecycle for the controller
+  DisplayHardware *_displays[MAX_DISPLAYS] = {
+      nullptr}; ///< Display hardware instances
+  uint8_t
+      _num_displays; ///< Number of displays currently managed by the controller
+  unsigned long
+      _last_bar_update; ///< Last time the status bar was updated, in millis()
+  marquee_state_t _marquee_state; ///< Tracks the marquee canvas's lifecycle for
+                                  ///< the controller
 
   // General display management
   int8_t findDisplayIndexByName(const char *name);
@@ -92,26 +96,27 @@ private:
   bool handleImageWrite(ws_display_Write *msg);
   bool processImageChunk(ws_display_Write *msg);
   static bool cbDecodeImageChunk(pb_istream_t *stream, const pb_field_t *field,
-                                  void **arg);
+                                 void **arg);
   bool drawImage(ws_display_Write *msg);
   void resetImage();
-  uint32_t
-      _canvas_checksum; ///< id of canvas being reassembled (0 = none)
+  uint32_t _canvas_checksum;   ///< id of canvas being reassembled (0 = none)
   uint32_t _image_chunk_total; ///< expected total chunk count
   uint32_t _image_chunks_received; ///< distinct slots filled so far
-  uint32_t _expected_image_size; ///< expected assembled bitmap size, in bytes
+  uint32_t _expected_image_size;   ///< expected assembled bitmap size, in bytes
   // TODO Tuesday: Do we need the std:: nomenclature here?
-  std::vector<std::vector<uint8_t>> _image_chunks; ///< Holds the reconstructed canvas chunks for reassembly into a full bitmap
+  std::vector<std::vector<uint8_t>>
+      _image_chunks; ///< Holds the reconstructed canvas chunks for reassembly
+                     ///< into a full bitmap
   std::vector<uint8_t>
       _pending_chunk; ///< bytes captured by the most recent decode callback
   std::vector<uint8_t>
       _bmp; ///< fully reassembled bitmap, built from _image_chunks
   unsigned long
       _prv_image_activity; ///< millis() of the most recent canvas activity
-                                ///< (a display Add, or an ingested chunk);
-                                ///< re-armed per chunk so isImageStreaming()
-                                ///< tracks a live stream rather than the whole
-                                ///< time a canvas is outstanding
+                           ///< (a display Add, or an ingested chunk);
+                           ///< re-armed per chunk so isImageStreaming()
+                           ///< tracks a live stream rather than the whole
+                           ///< time a canvas is outstanding
 };
 extern wippersnapper Ws; ///< Global V2 instance
 #endif                   // WS_DISPLAY_CONTROLLER_H

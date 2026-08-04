@@ -26,7 +26,8 @@ public:
       int16_t, int16_t, int16_t, int16_t, int16_t, thinkinkmode_t)>;
 
   /*!
-      @brief  ThinkInk-compatible panel identifier -> Adafruit_EPD factory table.
+      @brief  ThinkInk-compatible panel identifier -> Adafruit_EPD factory
+     table.
       @return A reference to the factory map.
   */
   static const std::map<std::string, FnCreateAdafruit_EPD> &
@@ -515,14 +516,10 @@ public:
     _display->setTextWrap(false);
     _height = _display->height();
     _width = _display->width();
-    // clearBuffer() is cheap even on SRAM (a bulk sram.erase(), not per-pixel),
-    // so always start from a known buffer state.
     _display->clearBuffer();
-    // Committing that clear to the panel costs a full ~15.8s refresh, so only
-    // pay it on a cold boot, where the panel may still be holding a stale image
-    // from before power was removed. Waking from sleep the panel already shows
-    // the last canvas, and the incoming write overwrites it wholesale.
-    if (didBootFromSleep())
+    // Only fully refresh/clear the EPD on a cold-boot, not when it wakes from
+    // sleep
+    if (!didBootFromSleep())
       _display->display();
     _reader = new Adafruit_ImageReader_EPD();
     if (!_reader) {

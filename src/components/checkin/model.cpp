@@ -180,15 +180,22 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   return true;
 }
 
-bool CheckinModel::cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-    WS_DEBUG_PRINTLN("[checkin] Decoding display add message from broker");
-    ws_display_Add add_msg = ws_display_Add_init_zero;
-    if (!pb_decode(stream, ws_display_Add_fields, &add_msg)) {
-        WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode display add");
-        return false;
-    }
-    WS_DEBUG_PRINTLN("[checkin] Decoded display add message, passing to DisplayController");
-    return Ws._display_controller->Handle_Display_Add(&add_msg);
+bool CheckinModel::cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
+                                 void **arg) {
+  WS_DEBUG_PRINTLN("[checkin] Decoding display add message from broker");
+  // Heap-allocate the display_add message (~1.7K) and free it
+  ws_display_Add *add_msg = new ws_display_Add;
+  *add_msg = ws_display_Add_init_zero;
+  if (!pb_decode(stream, ws_display_Add_fields, add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode display add");
+    delete add_msg;
+    return false;
+  }
+  WS_DEBUG_PRINTLN(
+      "[checkin] Decoded display add message, passing to DisplayController");
+  bool did_add = Ws._display_controller->Handle_Display_Add(add_msg);
+  delete add_msg;
+  return did_add;
 }
 
 /*!
