@@ -370,7 +370,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"42-tricolor-MFGNR",
+            {"420-tricolor-MFGNR",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_420_Tricolor_MFGNR *d =
@@ -378,7 +378,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"42-tricolor-RW",
+            {"420-tricolor-RW",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_420_Tricolor_RW *d =
@@ -386,7 +386,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"42-tricolor-Z21",
+            {"420-tricolor-Z21",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_420_Tricolor_Z21 *d =
@@ -403,7 +403,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"75-tricolor-AABMFGNR",
+            {"750-tricolor-AABMFGNR",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_750_Tricolor_AABMFGNR *d =
