@@ -46,8 +46,7 @@ enum class marquee_state_t {
   IDLE,      ///< No marquee work outstanding
   AWAITING,  ///< Display added; the broker's canvas write has not started
   STREAMING, ///< Canvas chunks are arriving
-  DRAWING,   ///< All chunks in; reassembling and drawing to the panel
-  COMPLETE   ///< Drawn, but the WriteComplete D2B is not yet published
+  DRAWING    ///< All chunks in; reassembling and drawing to the panel
 };
 
 /*!
@@ -75,7 +74,6 @@ public:
 
   // Marquee helpers
   bool isImageStreaming();
-  bool publishPendingWriteComplete();
 
 private:
   DisplayHardware *_displays[MAX_DISPLAYS] = {
@@ -98,6 +96,7 @@ private:
   static bool cbDecodeImageChunk(pb_istream_t *stream, const pb_field_t *field,
                                  void **arg);
   bool drawImage(ws_display_Write *msg);
+  bool publishWriteComplete();
   void resetImage();
   uint32_t _canvas_checksum;   ///< id of canvas being reassembled (0 = none)
   uint32_t _image_chunk_total; ///< expected total chunk count

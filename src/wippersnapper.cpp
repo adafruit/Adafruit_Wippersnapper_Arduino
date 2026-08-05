@@ -359,10 +359,6 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
 */
 void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("=> New B2D message!");
-  // Diagnostic: the on-wire payload length actually delivered by Adafruit_MQTT.
-  // If this is clamped near SUBSCRIPTIONDATALEN-1 (2047) or otherwise larger
-  // than the expected encoded message, the packet was truncated by the 2048 RX
-  // buffer.
   WS_DEBUG_PRINT("=> B2D payload len: ");
   WS_DEBUG_PRINTLNVAR(len);
   ws_signal_BrokerToDevice msg_signal = ws_signal_BrokerToDevice_init_default;
@@ -888,14 +884,44 @@ void wippersnapper::blinkOfflineHeartbeat() {
 */
 void wippersnapper::ProcessPackets() {
   Ws._wdt->feed();
-  // NOTE: If the broker is streaming an image to a display, we need a longer
-  // timeout to allow the entire image to be recieved. Otherwise, we can use the
-  // default timeout.
-  int16_t timeout_ms = WS_MQTT_POLL_TIMEOUT_MS;
-  if (Ws._display_controller->isImageStreaming())
-    timeout_ms = WS_MQTT_POLL_TIMEOUT_STREAMING_MS;
 
-  Ws._mqttV2->processPackets(timeout_ms);
+  // Are we waiting on a large inbound message (i.e: a checkin response message,
+  // display image message)?
+  bool is_large_message =
+      (Ws.CheckInModel != nullptr && !Ws.CheckInModel->GotResponse()) ||
+      Ws._display_controller->isImageStreaming();
+
+  // We don't have a large message pending, use Adafruit_MQTT::processPackets()
+  // with a short timeout
+  if (!is_large_message) {
+    Ws._mqttV2->processPackets(WS_MQTT_POLL_TIMEOUT_MS);
+    return;
+  }
+
+  // We have a large message pending, so drain incoming packets for a longer
+  // period of time
+  unsigned long window_start = millis();
+  while (millis() - window_start < WS_MQTT_PROCESS_WINDOW_MS) {
+    // Re-evaluate each iteration, in case the large message has been fully
+    // processed
+    is_large_message =
+        (Ws.CheckInModel != nullptr && !Ws.CheckInModel->GotResponse()) ||
+        Ws._display_controller->isImageStreaming();
+    if (!is_large_message)
+      break;
+
+    // Replaces processPackets by manually reading the subscription packet with
+    // a larger timeout
+    Adafruit_MQTT_Subscribe *sub =
+        Ws._mqttV2->readSubscription(WS_MQTT_POLL_TIMEOUT_STREAMING_MS);
+    // Continue to drain the incoming packets until we get a subscription packet
+    // or a timeout
+    if (sub == nullptr)
+      break;
+    // Process the subscription packet and feed the watchdog timer
+    Ws._mqttV2->processSubscriptionPacket(sub);
+    Ws._wdt->feed();
+  }
 }
 
 /*!
@@ -1043,9 +1069,8 @@ void wippersnapper::connect() {
   // NOTE: If we do not receive a response within a certain time frame,
   // the WDT will reset the device and try again
   while (!Ws.CheckInModel->GotResponse()) {
-    Ws._mqttV2->processPackets(
-        WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
-    pingBrokerV2();               // Keep MQTT connection alive
+    ProcessPackets();
+    pingBrokerV2(); // Keep MQTT connection alive
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
@@ -1094,9 +1119,6 @@ void wippersnapper::loop() {
     // Handle networking functions
     NetworkFSM();
     pingBrokerV2();
-    // Publish any WriteComplete deferred out of the receive callback, now that
-    // the connection has been (re)established above.
-    Ws._display_controller->publishPendingWriteComplete();
   } else {
     blinkOfflineHeartbeat();
   }
@@ -1150,10 +1172,6 @@ void wippersnapper::loopSleep() {
     ProcessPackets();
     NetworkFSM();
     pingBrokerV2();
-    // Publish any WriteComplete deferred out of the receive callback, before we
-    // consider dropping into sleep.
-    // TOdO MONDAY: Idk if this is truly required.
-    Ws._display_controller->publishPendingWriteComplete();
   }
 
   // Track completion of all controllers
@@ -1189,10 +1207,11 @@ void wippersnapper::loopSleep() {
     all_controllers_complete = false;
   }
 
-  // A marquee canvas that is expected, in flight, mid-draw, or drawn but not
-  // yet acked keeps the display incomplete, holding off sleep the same way any
-  // other controller does. There is no update() to drive here: the canvas is
-  // pushed by the broker and ingested from the MQTT receive callback.
+  // A marquee canvas that is expected, in flight, or mid-draw keeps the display
+  // incomplete, holding off sleep the same way any other controller does. There
+  // is no update() to drive here: the canvas is pushed by the broker and
+  // ingested from the MQTT receive callback, which is also where the
+  // WriteComplete ack is now published from.
   if (!Ws._display_controller->UpdateComplete()) {
     all_controllers_complete = false;
   }

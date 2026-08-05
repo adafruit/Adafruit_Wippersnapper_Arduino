@@ -97,15 +97,8 @@ bool DisplayController::Router(pb_istream_t *stream) {
     status = Handle_Display_Remove(&b2d->payload.remove);
     break;
   case ws_display_B2D_write_tag: {
-    // Re-decode from the saved stream with the Canvas chunk_data callback
-    // wired up; the first decode skipped chunk_data (no callback set).
-    //
-    // chunk_data lives inside the `write` oneof member. nanopb memsets a oneof
-    // submessage to zero the first time it sets which_payload (pb_decode.c
-    // ~L528), which would wipe our pre-set callback. Pre-setting which_payload
-    // AND decoding with PB_DECODE_NOINIT skips both the default-init (which
-    // would otherwise reset which_payload to 0) and that memset, so the
-    // callback survives. init_zero gives a clean struct since we skip init.
+    // Re-decode from the saved stream with the image write callback present
+    delete b2d; // Not required for the re-decode, avoids extra heap usage
     ws_display_B2D *b2d_w = new ws_display_B2D;
     *b2d_w = ws_display_B2D_init_zero;
     b2d_w->which_payload = ws_display_B2D_write_tag;
@@ -116,7 +109,7 @@ bool DisplayController::Router(pb_istream_t *stream) {
       WS_DEBUG_PRINT("[display] ERROR: Failed to re-decode write w/ canvas: ");
       WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(&saved_stream));
       delete b2d_w;
-      delete b2d;
+      // delete b2d;
       return false;
     }
     status = Handle_Display_Write(&b2d_w->payload.write);
@@ -518,7 +511,7 @@ bool DisplayController::handleImageWrite(ws_display_Write *msg) {
   bool did_draw = drawImage(msg);
   if (!did_draw) {
     // The canvas did not make it onto the panel (size mismatch, unknown
-    // display, or a driver failure). Do NOT report WriteComplete — the broker
+    // display, or a driver failure). Do NOT send WriteComplete — the broker
     // must keep re-transmitting — and fall back to STREAMING so the display
     // stays incomplete and loopSleep() does not sleep on a stale panel before
     // a re-transmit arrives.
@@ -528,28 +521,27 @@ bool DisplayController::handleImageWrite(ws_display_Write *msg) {
     return false;
   }
 
-  // Queue up the WriteComplete D2B message for the next loop() iteration
-  _marquee_state = marquee_state_t::COMPLETE;
+  // Publish the WriteComplete D2B message to tell the broker that the panel
+  // fully received the canvas.
   _prv_image_activity = millis();
-  WS_DEBUG_PRINTLN("[display] WriteComplete QUEUED (deferred to loop())");
+  if (!publishWriteComplete()) {
+    WS_DEBUG_PRINTLN("[display] Inline WriteComplete publish FAILED");
+  }
+  _marquee_state = marquee_state_t::IDLE;
 
   return true;
 }
 
 /*!
-    @brief  Publishes a queued display WriteComplete D2B message, if one is
-            pending. Called from loop()/loopSleep() after networking has been
-            serviced, so the publish lands on a live connection rather than the
-            (often dead) socket left behind by a long blocking canvas draw. The
-            pending flag is only cleared on a successful publish, so a failed
-            attempt is retried on the next loop.
-    @return True if a pending message was published, False otherwise.
+    @brief  Publishes the display WriteComplete D2B message, telling the broker
+            that the panel fully received the canvas.
+    @return True if the message was published, False otherwise.
 */
-bool DisplayController::publishPendingWriteComplete() {
-  if (_marquee_state != marquee_state_t::COMPLETE)
+bool DisplayController::publishWriteComplete() {
+  if (Ws._sdCardV2->isModeOffline() || Ws._mqttV2 == nullptr)
     return false;
 
-  WS_DEBUG_PRINT("[display] Publishing pending WriteComplete D2B... MQTT "
+  WS_DEBUG_PRINT("[display] Publishing WriteComplete D2B... MQTT "
                  "connected: ");
   WS_DEBUG_PRINTLNVAR(Ws._mqttV2->connected());
 
@@ -557,13 +549,11 @@ bool DisplayController::publishPendingWriteComplete() {
   write_complete_d2b.which_payload = ws_display_D2B_write_complete_tag;
   if (!Ws.PublishD2b(ws_signal_DeviceToBroker_display_tag,
                      &write_complete_d2b)) {
-    WS_DEBUG_PRINTLN(
-        "[display] WriteComplete publish FAILED, will retry next loop");
+    WS_DEBUG_PRINTLN("[display] WriteComplete publish FAILED");
     return false;
   }
 
   WS_DEBUG_PRINTLN("[display] WriteComplete PUBLISHED!");
-  _marquee_state = marquee_state_t::IDLE;
   return true;
 }
 
@@ -607,8 +597,7 @@ bool DisplayController::processImageChunk(ws_display_Write *msg) {
   }
 
   // If the image is too large, gracefully bail out
-  if (sz_image == 0 ||
-      sz_image > (uint32_t)MAX_CANVAS_SIZE) {
+  if (sz_image == 0 || sz_image > (uint32_t)MAX_CANVAS_SIZE) {
     WS_DEBUG_PRINT("[display] ERROR: Expected image size out of range: ");
     WS_DEBUG_PRINTLNVAR(sz_image);
     resetImage();
@@ -776,7 +765,7 @@ int8_t DisplayController::findDisplayIndexByName(const char *name) {
     @brief  Reports whether the display controller has any marquee work
             outstanding, so loopSleep() can treat it like every other polled
             controller. Every state other than IDLE means a canvas is expected,
-            in flight, mid-draw, or drawn-but-unacked.
+            in flight, or mid-draw.
     @return True if there is nothing left to do this wake, False otherwise.
 */
 bool DisplayController::UpdateComplete() {
@@ -787,8 +776,8 @@ bool DisplayController::UpdateComplete() {
     @brief  Clears the image's state for the next loopSleep() cycle.
 */
 void DisplayController::ResetFlags() {
-    resetImage();
-    _marquee_state = marquee_state_t::IDLE;
+  resetImage();
+  _marquee_state = marquee_state_t::IDLE;
 }
 
 /*!
@@ -797,8 +786,7 @@ void DisplayController::ResetFlags() {
    otherwise.
 */
 bool DisplayController::isImageStreaming() {
-  if (_marquee_state == marquee_state_t::IDLE ||
-      _marquee_state == marquee_state_t::COMPLETE)
+  if (_marquee_state == marquee_state_t::IDLE)
     return false;
   return (millis() - _prv_image_activity) < CANVAS_STREAM_IDLE_MS;
 }

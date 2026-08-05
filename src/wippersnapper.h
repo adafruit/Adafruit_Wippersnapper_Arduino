@@ -181,6 +181,8 @@
 #define WS_MQTT_POLL_TIMEOUT_STREAMING_MS                                      \
   500 ///< Per-packet MQTT read timeout used while a display canvas is
       ///< streaming.
+#define WS_MQTT_PROCESS_WINDOW_MS                                              \
+  2000 ///< Upper bound on how long ProcessPackets() keeps draining
 #define WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS                               \
   60000 ///< Default offline mode heartbeat interval, in milliseconds
 
