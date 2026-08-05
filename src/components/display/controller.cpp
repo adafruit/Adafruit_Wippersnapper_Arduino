@@ -98,7 +98,10 @@ bool DisplayController::Router(pb_istream_t *stream) {
     break;
   case ws_display_B2D_write_tag: {
     // Re-decode from the saved stream with the image write callback present
-    delete b2d; // Not required for the re-decode, avoids extra heap usage
+    // b2d is not required for the re-decode, the following avoids extra heap usage
+    delete b2d;
+    b2d = nullptr;
+    // Allocate a new b2d for the re-decode
     ws_display_B2D *b2d_w = new ws_display_B2D;
     *b2d_w = ws_display_B2D_init_zero;
     b2d_w->which_payload = ws_display_B2D_write_tag;
