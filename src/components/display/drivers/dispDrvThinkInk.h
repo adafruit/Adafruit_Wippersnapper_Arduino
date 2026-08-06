@@ -100,7 +100,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"29-mono-BN",
+            {"290-mono-BN",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_290_Mono_BN *d =
@@ -108,7 +108,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"29-mono-M06",
+            {"290-mono-M06",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_290_Mono_M06 *d =
@@ -116,7 +116,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"37-mono-BAAMFGN",
+            {"370-mono-BAAMFGN",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_370_Mono_BAAMFGN *d =
@@ -124,7 +124,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"42-mono-BN",
+            {"420-mono-BN",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_420_Mono_BN *d =
@@ -132,7 +132,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"42-mono-M06",
+            {"420-mono-M06",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_420_Mono_M06 *d =
@@ -148,7 +148,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"75-mono-AAAMFGN",
+            {"750-mono-AAAMFGN",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_750_Mono_AAAMFGN *d =
@@ -197,7 +197,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"27-gray-W3",
+            {"270-gray-W3",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_270_Grayscale4_W3 *d =
@@ -205,7 +205,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"29-gray-EAAMFGN",
+            {"290-gray-EAAMFGN",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_290_Grayscale4_EAAMFGN *d =
@@ -214,7 +214,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"29-gray-FPC7519",
+            {"290-gray-FPC7519",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_290_Grayscale4_FPC7519 *d =
@@ -223,7 +223,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"29-gray-T5",
+            {"290-gray-T5",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_290_Grayscale4_T5 *d =
@@ -231,7 +231,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"42-gray-MFGN",
+            {"420-gray-MFGN",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_420_Grayscale4_MFGN *d =
@@ -239,7 +239,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"42-gray-T2",
+            {"420-gray-T2",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_420_Grayscale4_T2 *d =
@@ -255,7 +255,6 @@ public:
                d->begin(mode);
                return d;
              }},
-
             // Tricolor
             {"154-tricolor-RW",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
@@ -313,7 +312,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"27-tricolor-C44",
+            {"270-tricolor-C44",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_270_Tricolor_C44 *d =
@@ -321,7 +320,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"27-tricolor-Z70",
+            {"270-tricolor-Z70",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_270_Tricolor_Z70 *d =
@@ -329,7 +328,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"29-tricolor-RH",
+            {"290-tricolor-RH",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_290_Tricolor_RH *d =
@@ -337,7 +336,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"29-tricolor-Z10",
+            {"290-tricolor-Z10",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_290_Tricolor_Z10 *d =
@@ -345,7 +344,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"29-tricolor-Z13",
+            {"290-tricolor-Z13",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_290_Tricolor_Z13 *d =
@@ -353,7 +352,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"29-tricolor-Z94",
+            {"290-tricolor-Z94",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_290_Tricolor_Z94 *d =
@@ -361,7 +360,7 @@ public:
                d->begin(mode);
                return d;
              }},
-            {"37-tricolor-BABMFGNR",
+            {"370-tricolor-BABMFGNR",
              [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
                 int16_t busy, thinkinkmode_t mode) -> Adafruit_EPD * {
                ThinkInk_370_Tricolor_BABMFGNR *d =
@@ -477,27 +476,61 @@ public:
   bool createEPD() {
     // Map the ws_display mode to the THINKINK driver mode
     thinkinkmode_t thinkink_mode = THINKINK_MONO;
-    if (_mode == ws_display_EPDMode_EPD_MODE_TRICOLOR)
+    const char *mode_name = "THINKINK_MONO";
+    if (_mode == ws_display_EPDMode_EPD_MODE_TRICOLOR) {
       thinkink_mode = THINKINK_TRICOLOR;
-    else if (_mode == ws_display_EPDMode_EPD_MODE_GRAYSCALE4)
+      mode_name = "THINKINK_TRICOLOR";
+    } else if (_mode == ws_display_EPDMode_EPD_MODE_GRAYSCALE4) {
       thinkink_mode = THINKINK_GRAYSCALE4;
-    else if (_mode == ws_display_EPDMode_EPD_MODE_MONO_PARTIAL)
+      mode_name = "THINKINK_GRAYSCALE4";
+    } else if (_mode == ws_display_EPDMode_EPD_MODE_MONO_PARTIAL) {
       thinkink_mode = THINKINK_MONO_PARTIAL;
-    else if (_mode == ws_display_EPDMode_EPD_MODE_QUADCOLOR)
+      mode_name = "THINKINK_MONO_PARTIAL";
+    } else if (_mode == ws_display_EPDMode_EPD_MODE_QUADCOLOR) {
       thinkink_mode = THINKINK_QUADCOLOR;
+      mode_name = "THINKINK_QUADCOLOR";
+    }
+
+    WS_DEBUG_PRINT("[display] Looking up EPD factory for panel: '");
+    WS_DEBUG_PRINTVAR(_panel);
+    WS_DEBUG_PRINTLN("'");
 
     // Look up the factory entry for the configured panel identifier
     const std::map<std::string, FnCreateAdafruit_EPD> &adafruitEPDFactory =
         getAdafruitEPDFactory();
     std::map<std::string, FnCreateAdafruit_EPD>::const_iterator it =
         adafruitEPDFactory.find(_panel);
-    if (it == adafruitEPDFactory.end())
+    if (it == adafruitEPDFactory.end()) {
+      WS_DEBUG_PRINT("[display] ERROR: No EPD factory found for panel: '");
+      WS_DEBUG_PRINTVAR(_panel);
+      WS_DEBUG_PRINTLN("'");
       return false;
+    }
+
+    WS_DEBUG_PRINT("[display] Selected EPD factory: '");
+    WS_DEBUG_PRINTVAR(it->first.c_str());
+    WS_DEBUG_PRINT("' mode: ");
+    WS_DEBUG_PRINTLNVAR(mode_name);
+    WS_DEBUG_PRINT("[display] EPD ctor args - DC:");
+    WS_DEBUG_PRINTVAR(_pin_dc);
+    WS_DEBUG_PRINT(" RST:");
+    WS_DEBUG_PRINTVAR(_pin_rst);
+    WS_DEBUG_PRINT(" CS:");
+    WS_DEBUG_PRINTVAR(_pin_cs);
+    WS_DEBUG_PRINT(" SRAM_CS:");
+    WS_DEBUG_PRINTVAR(_pin_sram_cs);
+    WS_DEBUG_PRINT(" BUSY:");
+    WS_DEBUG_PRINTVAR(_pin_busy);
+    WS_DEBUG_PRINT(" mode:");
+    WS_DEBUG_PRINTLNVAR((int)thinkink_mode);
+
     _display = it->second(_pin_dc, _pin_rst, _pin_cs, _pin_sram_cs, _pin_busy,
                           thinkink_mode);
 
-    if (!_display)
+    if (!_display) {
+      WS_DEBUG_PRINTLN("[display] ERROR: EPD factory returned nullptr!");
       return false;
+    }
     return true;
   }
 
