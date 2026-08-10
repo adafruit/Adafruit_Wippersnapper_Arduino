@@ -349,6 +349,23 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (strlen(spi_pin_config->pin_cs) >= 2)
     cs = parsePin(spi_pin_config->pin_cs);
 
+  WS_DEBUG_PRINT("[display] SPI EPD pins - CS:");
+  WS_DEBUG_PRINTVAR(cs);
+  WS_DEBUG_PRINT(" DC:");
+  WS_DEBUG_PRINTVAR(dc);
+  WS_DEBUG_PRINT(" RST:");
+  WS_DEBUG_PRINTVAR(rst);
+  WS_DEBUG_PRINT(" SRAM_CS:");
+  WS_DEBUG_PRINTVAR(sram_cs);
+  WS_DEBUG_PRINT(" BUSY:");
+  WS_DEBUG_PRINTVAR(busy);
+  WS_DEBUG_PRINT(" MOSI:");
+  WS_DEBUG_PRINTVAR(mosi);
+  WS_DEBUG_PRINT(" SCK:");
+  WS_DEBUG_PRINTVAR(sck);
+  WS_DEBUG_PRINT(" MISO:");
+  WS_DEBUG_PRINTLNVAR(miso);
+
   // EPD drivers currently use the default hardware SPI bus/pins.
   // Reject explicit non-default SPI pins from the payload.
   if ((mosi >= 0 && mosi != MOSI) || (sck >= 0 && sck != SCK) ||
@@ -408,6 +425,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   }
   _drvDisp->setWidth(config->properties.width);
   _drvDisp->setHeight(config->properties.height);
+  _drvDisp->setRotation(config->properties.rotation);
   if (config->properties.text_size > 0)
     _drvDisp->setTextSize(config->properties.text_size);
 
@@ -415,10 +433,13 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   // driver to skip the panel refresh since it already holds an image.
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   if (Ws._sleep_controller != nullptr) {
-    _drvDisp->didBootFromSleep(Ws._sleep_controller->DidWakeFromSleep());
+    bool woke_from_sleep = Ws._sleep_controller->DidWakeFromSleep();
+    _drvDisp->didBootFromSleep(woke_from_sleep);
+  } else {
+    WS_DEBUG_PRINTLN(
+        "[display] Woke from sleep: unknown (no sleep controller)");
   }
 #endif
-
   if (!_drvDisp->begin()) {
     WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin EPD driver!");
     delete _drvDisp;

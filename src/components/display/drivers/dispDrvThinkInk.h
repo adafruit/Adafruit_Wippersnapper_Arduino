@@ -18,7 +18,7 @@
 #include "dispDrvBase.h"
 
 /*!
-    @brief  Base Driver for ThinkInk EPD displays.
+    @brief  Driver for ThinkInk EPD displays.
 */
 class drvDispThinkInk : public dispDrvBase {
 public:
@@ -491,46 +491,20 @@ public:
       mode_name = "THINKINK_QUADCOLOR";
     }
 
-    WS_DEBUG_PRINT("[display] Looking up EPD factory for panel: '");
-    WS_DEBUG_PRINTVAR(_panel);
-    WS_DEBUG_PRINTLN("'");
-
     // Look up the factory entry for the configured panel identifier
     const std::map<std::string, FnCreateAdafruit_EPD> &adafruitEPDFactory =
         getAdafruitEPDFactory();
     std::map<std::string, FnCreateAdafruit_EPD>::const_iterator it =
         adafruitEPDFactory.find(_panel);
-    if (it == adafruitEPDFactory.end()) {
-      WS_DEBUG_PRINT("[display] ERROR: No EPD factory found for panel: '");
-      WS_DEBUG_PRINTVAR(_panel);
-      WS_DEBUG_PRINTLN("'");
+    if (it == adafruitEPDFactory.end())
       return false;
-    }
-
-    WS_DEBUG_PRINT("[display] Selected EPD factory: '");
-    WS_DEBUG_PRINTVAR(it->first.c_str());
-    WS_DEBUG_PRINT("' mode: ");
-    WS_DEBUG_PRINTLNVAR(mode_name);
-    WS_DEBUG_PRINT("[display] EPD ctor args - DC:");
-    WS_DEBUG_PRINTVAR(_pin_dc);
-    WS_DEBUG_PRINT(" RST:");
-    WS_DEBUG_PRINTVAR(_pin_rst);
-    WS_DEBUG_PRINT(" CS:");
-    WS_DEBUG_PRINTVAR(_pin_cs);
-    WS_DEBUG_PRINT(" SRAM_CS:");
-    WS_DEBUG_PRINTVAR(_pin_sram_cs);
-    WS_DEBUG_PRINT(" BUSY:");
-    WS_DEBUG_PRINTVAR(_pin_busy);
-    WS_DEBUG_PRINT(" mode:");
-    WS_DEBUG_PRINTLNVAR((int)thinkink_mode);
 
     _display = it->second(_pin_dc, _pin_rst, _pin_cs, _pin_sram_cs, _pin_busy,
                           thinkink_mode);
 
-    if (!_display) {
-      WS_DEBUG_PRINTLN("[display] ERROR: EPD factory returned nullptr!");
+    if (!_display)
       return false;
-    }
+
     return true;
   }
 
@@ -543,6 +517,7 @@ public:
     if (!createEPD())
       return false;
 
+    _display->setRotation(_rotation);
     _display->setTextSize(_text_sz);
     _display->setTextColor(EPD_BLACK);
     _display->setTextWrap(false);

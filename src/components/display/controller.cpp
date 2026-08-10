@@ -65,11 +65,9 @@ void DisplayController::resetImage() {
     @return True if the message was successfully routed, False otherwise.
 */
 bool DisplayController::Router(pb_istream_t *stream) {
-  WS_DEBUG_PRINTLN("=> Routing Display message...");
   // Save the stream before decoding — the write case re-decodes with a
   // chunk_data callback wired up, and ws_pb_decode consumes the stream.
   pb_istream_t saved_stream = *stream;
-  WS_DEBUG_PRINTLN("=> Saved stream for re-decode if needed...");
 
   // ws_display_B2D is large (~1.4KB — its union embeds Write.message[1024]).
   // Router runs nested inside the outer signal pb_decode (via the cb_payload
@@ -77,15 +75,11 @@ bool DisplayController::Router(pb_istream_t *stream) {
   // loopTask stack. Heap-allocate it and free it before every return.
   ws_display_B2D *b2d = new ws_display_B2D;
   *b2d = ws_display_B2D_init_zero;
-  WS_DEBUG_PRINTLN("=> Decoding Display B2D envelope...");
   if (!ws_pb_decode(stream, ws_display_B2D_fields, b2d)) {
     WS_DEBUG_PRINTLN("[display] ERROR: Unable to decode Display B2D envelope");
     delete b2d;
     return false;
   }
-
-  WS_DEBUG_PRINT("[display] Decoded B2D envelope with payload tag: ");
-  WS_DEBUG_PRINTLNVAR(b2d->which_payload);
 
   bool status = false;
   switch (b2d->which_payload) {
@@ -98,7 +92,8 @@ bool DisplayController::Router(pb_istream_t *stream) {
     break;
   case ws_display_B2D_write_tag: {
     // Re-decode from the saved stream with the image write callback present
-    // b2d is not required for the re-decode, the following avoids extra heap usage
+    // b2d is not required for the re-decode, the following avoids extra heap
+    // usage
     delete b2d;
     b2d = nullptr;
     // Allocate a new b2d for the re-decode
@@ -580,6 +575,7 @@ bool DisplayController::processImageChunk(ws_display_Write *msg) {
   uint32_t sz_image = msg->image.size;
   uint32_t canvas_chunk_id = msg->image.chunk_id;
   uint32_t canvas_chunk_total = msg->image.chunk_total;
+  /*
   WS_DEBUG_PRINT("[display] Canvas Checksum: ");
   WS_DEBUG_PRINTVAR(canvas_checksum);
   WS_DEBUG_PRINT(", Total Size: ");
@@ -590,6 +586,7 @@ bool DisplayController::processImageChunk(ws_display_Write *msg) {
   WS_DEBUG_PRINTVAR(canvas_chunk_total);
   WS_DEBUG_PRINT(", Chunk Bytes: ");
   WS_DEBUG_PRINTLNVAR((uint32_t)_pending_chunk.size());
+  */
 
   // Validate the chunk metadata
   if (canvas_chunk_total == 0 || canvas_chunk_total > MAX_CANVAS_CHUNKS ||

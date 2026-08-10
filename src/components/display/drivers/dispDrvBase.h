@@ -17,8 +17,8 @@
 
 #include "../assets/icons.h"
 #include "../assets/splash.h"
-#include "Adafruit_ThinkInk.h"
 #include "Adafruit_ImageReader_EPD.h"
+#include "Adafruit_ThinkInk.h"
 #include "wippersnapper.h"
 
 /*! @brief Shared status bar constants for EPD drivers. */
@@ -85,7 +85,6 @@ public:
   */
   virtual bool begin(thinkinkmode_t mode, bool reset = true) { return false; }
 
-
   /*!
       @brief  Writes a message to the display.
       @param  message      Message text to render.
@@ -100,16 +99,13 @@ public:
   */
   virtual bool drawCanvas(const uint8_t *bmp, size_t len) { return false; }
 
-
   /*!
       @brief  Draws a marquee canvas (raw .BMP file bytes) to the display.
       @param  bmp  Pointer to the complete BMP file bytes.
       @param  len  Length of the BMP buffer, in bytes.
       @return True if drawn, False if unsupported by this driver.
   */
-  virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len) {
-    return false;
-  }
+  virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len) { return false; }
 
   /*!
       @brief  Sets the display width in pixels.
@@ -135,9 +131,12 @@ public:
   /*!
       @brief  Records whether the MCU cold-booted or resumed from a sleep
               cycle. Must be called before begin() to take effect.
-      @param  did_boot_from_sleep  True if resuming from sleep, false if cold-booting.
+      @param  did_boot_from_sleep  True if resuming from sleep, false if
+     cold-booting.
   */
-  void didBootFromSleep(bool did_boot_from_sleep) { _did_boot_from_sleep = did_boot_from_sleep; }
+  void didBootFromSleep(bool did_boot_from_sleep) {
+    _did_boot_from_sleep = did_boot_from_sleep;
+  }
 
   /*!
       @brief  Returns whether the MCU cold-booted or resumed from a sleep
@@ -229,19 +228,19 @@ protected:
     return false;
   }
 
-  int16_t _pin_cs;           ///< Chip Select pin
-  int16_t _pin_dc;           ///< Data/Command pin
-  int16_t _pin_mosi = -1;    ///< MOSI pin (TFT only)
-  int16_t _pin_sck = -1;     ///< SCK pin (TFT only)
-  int16_t _pin_rst;          ///< Reset pin
-  int16_t _pin_miso = -1;    ///< MISO pin (TFT only)
-  int16_t _pin_sram_cs = -1; ///< SRAM Chip Select pin (EPD only)
-  int16_t _pin_busy = -1;    ///< Busy pin (EPD only)
-  int16_t _pin_bl = -1;      ///< Backlight pin (-1 = not set)
-  uint8_t _text_sz = 1;      ///< Text size multiplier
-  int16_t _width;            ///< Display width
-  int16_t _height;           ///< Display height
-  uint8_t _rotation;         ///< Display rotation (0-3)
+  int16_t _pin_cs;                  ///< Chip Select pin
+  int16_t _pin_dc;                  ///< Data/Command pin
+  int16_t _pin_mosi = -1;           ///< MOSI pin (TFT only)
+  int16_t _pin_sck = -1;            ///< SCK pin (TFT only)
+  int16_t _pin_rst;                 ///< Reset pin
+  int16_t _pin_miso = -1;           ///< MISO pin (TFT only)
+  int16_t _pin_sram_cs = -1;        ///< SRAM Chip Select pin (EPD only)
+  int16_t _pin_busy = -1;           ///< Busy pin (EPD only)
+  int16_t _pin_bl = -1;             ///< Backlight pin (-1 = not set)
+  uint8_t _text_sz = 1;             ///< Text size multiplier
+  int16_t _width;                   ///< Display width
+  int16_t _height;                  ///< Display height
+  uint8_t _rotation = 0;            ///< Display rotation (0-3)
   bool _did_boot_from_sleep = true; ///< False when resuming from sleep
 
   /*! @brief Cached status bar layout and state. */
