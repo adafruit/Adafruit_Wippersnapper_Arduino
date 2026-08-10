@@ -1216,74 +1216,54 @@ void wippersnapper::loopSleep() {
     all_controllers_complete = false;
   }
 
-  // Check if all controllers have completed their updates
-  if (all_controllers_complete) {
-    // Attempt to publish the Goodnight message before sleeping.
-    // NOTE: If it fails, we hold off on sleeping and retry in the next
-    // loopSleep() cycle.
-    if (!Ws._sleep_controller->publishMsgGoodnight()) {
+  // Has this wake cycle's loopSleep() duration expired? If it has, it's a hard-deadline and the MCU sleeps regardless of controller status
+  bool has_deadline_expired = false;
+  if (Ws._sleep_controller->getRunDurationMs() > 0 && (millis() - loop_start_time) >= Ws._sleep_controller->getRunDurationMs()) {
+    has_deadline_expired = true;
+  }
+
+  // Controllers haven't completed and the deadline hasn't expired, so hold off sleep and exec. loopSleep() again
+  if (!all_controllers_complete && !has_deadline_expired) {
+    return;
+  }
+
+  // Let's begin the sleep process. All controllers are complete or the deadline has expired, so we can enter sleep mode.
+  if (!Ws._sleep_controller->publishMsgGoodnight()) {
+    if (!has_deadline_expired) {
       WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, holding off "
                        "sleep to retry...");
       return;
     }
+    WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, sleeping "
+                     "anyway (deadline reached)!");
+  }
 
-    // Reset all flags and variables for use in the next loopsleep() cycle (if
-    // light sleep)
-    ResetAllControllerFlags();
-    loop_start_time = 0;
-    loop_timer_started = false;
-    // Disconnect from MQTT broker before sleep to prevent issues with
-    // connection state on wake
+  // Reset all flags and variables for use in the next loopsleep() (for light sleep mode)
+  ResetAllControllerFlags();
+  loop_start_time = 0;
+  loop_timer_started = false;
+
+  // Disconnect from MQTT Broker and WiFi before sleep to prevent issues with connection state on-wake
+  if (!Ws._sdCardV2->isModeOffline() && Ws._mqttV2 != nullptr)
     Ws._mqttV2->disconnect();
-    // Forcibly disconnect from WiFi network and turn off WiFi radio before
-    // sleep to save power and prevent issues with connection state on wake
-    disconnect(true);
-    // Enter sleep
+  disconnect(true);
+
+  // Enter sleep
+  if (all_controllers_complete) {
     WS_DEBUG_PRINTLN("[app] All components updated, entering sleep...");
-    Ws._sleep_controller->StartSleep();
-
-    // For light sleep, we woke up here
-    Ws._sleep_controller->WakeFromLightSleep();
-    // Reconnect WiFi/MQTT after light sleep wake
-    if (!Ws._sdCardV2->isModeOffline()) {
-      WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
-      NetworkFSM(true);
-    }
-    // For light sleep, this allows the next loopSleep() cycle to begin
-    return;
-  }
-
-  // Wait until the run duration has elapsed before entering sleep, even if all
-  // controllers have completed their updates. This ensures that the device
-  // does not sleep too quickly and allows for any pending updates to be
-  // processed before sleeping.
-  unsigned long run_duration_ms = Ws._sleep_controller->getRunDurationMs();
-  if (run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) {
-    // Reset all flags and variables for use in the next loopsleep() cycle (if
-    // light sleep)
-    ResetAllControllerFlags();
-    loop_start_time = 0;
-    loop_timer_started = false;
-
-    // Publish the Goodnight message, hard deadline
-    if (!Ws._sleep_controller->publishMsgGoodnight())
-      WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, sleeping "
-                       "anyway (deadline reached)!");
-
-    // Enter sleep
+  } else {
     WS_DEBUG_PRINTLN("[app] loopSleep() duration elapsed, entering sleep...");
-    Ws._sleep_controller->StartSleep();
-    // For light sleep, we woke up here
-    Ws._sleep_controller->WakeFromLightSleep();
-    // Reconnect WiFi/MQTT after light sleep wake (uses 'this' for proper
-    // virtual dispatch)
-    if (!Ws._sdCardV2->isModeOffline()) {
-      WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
-      NetworkFSM(true);
-    }
-    // For light sleep, this allows the next loopSleep() cycle to begin
-    return;
   }
+  Ws._sleep_controller->StartSleep();
+
+  // For light sleep, we woke up here
+  Ws._sleep_controller->WakeFromLightSleep();
+  // Reconnect WiFi/MQTT after light sleep wake
+  if (!Ws._sdCardV2->isModeOffline()) {
+    WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
+    NetworkFSM(true);
+  }
+  // For light sleep, this allows the next loopSleep() cycle to begin
 }
 
 /*!

@@ -356,6 +356,7 @@ bool SleepController::isSleepEnabled() { return _sleep_enabled; }
     @return True if the message was successfully published, False otherwise.
 */
 bool SleepController::publishMsgGoodnight() {
+
   ws_sleep_D2B goodnight_d2b = ws_sleep_D2B_init_zero;
   goodnight_d2b.which_payload = ws_sleep_D2B_goodnight_tag;
   _sleep_model->EncodeSleepGoodnight(nullptr);
