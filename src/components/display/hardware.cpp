@@ -407,9 +407,10 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   if (strncmp(_name, "eink-magtag", sizeof("eink-magtag") - 1) == 0 &&
       strlen(msg->panel) == 0) {
     if (EpdBitBangReadRegister(0x71, spi_epd_config) == 0xFF) {
-      strncpy(msg->panel, "29-gray-EAAMFGN", sizeof(msg->panel) - 1); // SSD1680
+      strncpy(msg->panel, "290-gray-EAAMFGN",
+              sizeof(msg->panel) - 1); // SSD1680
     } else {
-      strncpy(msg->panel, "29-gray-T5", sizeof(msg->panel) - 1); // ILI0373
+      strncpy(msg->panel, "290-gray-T5", sizeof(msg->panel) - 1); // ILI0373
     }
     msg->panel[sizeof(msg->panel) - 1] = '\0';
     WS_DEBUG_PRINT("[display] MagTag auto-detected panel: ");

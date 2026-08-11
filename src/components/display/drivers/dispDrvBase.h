@@ -236,20 +236,20 @@ protected:
     return false;
   }
 
-  int16_t _pin_cs;                  ///< Chip Select pin
-  int16_t _pin_dc;                  ///< Data/Command pin
-  int16_t _pin_mosi = -1;           ///< MOSI pin (TFT only)
-  int16_t _pin_sck = -1;            ///< SCK pin (TFT only)
-  int16_t _pin_rst;                 ///< Reset pin
-  int16_t _pin_miso = -1;           ///< MISO pin (TFT only)
-  int16_t _pin_sram_cs = -1;        ///< SRAM Chip Select pin (EPD only)
-  int16_t _pin_busy = -1;           ///< Busy pin (EPD only)
-  int16_t _pin_bl = -1;             ///< Backlight pin (-1 = not set)
-  uint8_t _text_sz = 1;             ///< Text size multiplier
-  int16_t _width;                   ///< Display width
-  int16_t _height;                  ///< Display height
-  uint8_t _rotation = 0;            ///< Display rotation (0-3)
-  bool _did_boot_from_sleep = true; ///< False when resuming from sleep
+  int16_t _pin_cs;                   ///< Chip Select pin
+  int16_t _pin_dc;                   ///< Data/Command pin
+  int16_t _pin_mosi = -1;            ///< MOSI pin (TFT only)
+  int16_t _pin_sck = -1;             ///< SCK pin (TFT only)
+  int16_t _pin_rst;                  ///< Reset pin
+  int16_t _pin_miso = -1;            ///< MISO pin (TFT only)
+  int16_t _pin_sram_cs = -1;         ///< SRAM Chip Select pin (EPD only)
+  int16_t _pin_busy = -1;            ///< Busy pin (EPD only)
+  int16_t _pin_bl = -1;              ///< Backlight pin (-1 = not set)
+  uint8_t _text_sz = 1;              ///< Text size multiplier
+  int16_t _width;                    ///< Display width
+  int16_t _height;                   ///< Display height
+  uint8_t _rotation = 0;             ///< Display rotation (0-3)
+  bool _did_boot_from_sleep = false; ///< True when resuming from sleep
 
   /*! @brief Cached status bar layout and state. */
   int _statusbar_icons_y;         ///< Y position of status bar icons

@@ -584,7 +584,7 @@ bool DisplayController::processImageChunk(ws_display_Write *msg) {
   }
 
   // New incoming image? Reset the reassembly state and start over.
-  if (canvas_checksum != _canvas_checksum) {
+  if (_image_chunks.empty() || canvas_checksum != _canvas_checksum) {
     resetImage();
     _canvas_checksum = canvas_checksum;
     _image_chunk_total = canvas_chunk_total;
@@ -704,7 +704,7 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
   // If the display is a "marquee/canvas" type, the broker is responsible for
   // drawing the status bar, so skip this.
   for (uint8_t i = 0; i < _num_displays; i++) {
-    if (_displays[i] && _displays[i]->isMarquee())
+    if (_displays[i]->isMarquee())
       return;
   }
 
