@@ -508,14 +508,13 @@ bool DisplayController::handleImageWrite(ws_display_Write *msg) {
   _marquee_state = marquee_state_t::DRAWING;
   bool did_draw = drawImage(msg);
   if (!did_draw) {
-    // The canvas did not make it onto the panel (size mismatch, unknown
-    // display, or a driver failure). Do NOT send WriteComplete — the broker
-    // must keep re-transmitting — and fall back to STREAMING so the display
-    // stays incomplete and loopSleep() does not sleep on a stale panel before
-    // a re-transmit arrives.
-    _marquee_state = marquee_state_t::STREAMING;
-    WS_DEBUG_PRINTLN("[display] Draw FAILED, withholding WriteComplete so the "
-                     "broker re-transmits");
+    // Exhausted all attempts to draw the image to the display.
+    if (msg->has_descriptor) {
+      PublishDisplayComponentError(msg->descriptor,
+                                   "Failed to draw canvas to display");
+    }
+    // Reset the reassembly state so the device can sleep
+    _marquee_state = marquee_state_t::IDLE;
     return false;
   }
 
@@ -641,10 +640,9 @@ bool DisplayController::processImageChunk(ws_display_Write *msg) {
 
 /*!
     @brief  Concatenates every received chunk into the bitmap buffer (_bmp),
-            draws it to the named display, and clears the reassembly state
-            afterward.
+            draws it to the named .
     @param  msg  The Display Write message (provides name + descriptor).
-    @return True if the display drew the bitmap, False otherwise.
+    @return True if the display drew the bitmap, False if draw attempts failed.
 */
 bool DisplayController::drawImage(ws_display_Write *msg) {
   // Concatenate every region in chunk_id order into _bmp and validate its
@@ -686,15 +684,14 @@ bool DisplayController::drawImage(ws_display_Write *msg) {
   }
 
   // Attempt to draw the assembled BMP to the display
-  WS_DEBUG_PRINTLN("[display] Attempting to draw canvas to display...");
-  bool did_draw = _displays[disp_idx]->drawMarqueeEPD(_bmp.data(), _bmp.size());
-  WS_DEBUG_PRINTLN("[display] Draw result: ");
-  WS_DEBUG_PRINTLNVAR(did_draw);
-  resetImage();
-  if (!did_draw && msg->has_descriptor) {
-    PublishDisplayComponentError(msg->descriptor,
-                                 "Failed to draw canvas to display");
+  bool did_draw = false;
+  for (uint8_t img_draw_attempts = 1;
+       img_draw_attempts <= MAX_CANVAS_DRAW_ATTEMPTS; img_draw_attempts++) {
+    did_draw = _displays[disp_idx]->drawMarqueeEPD(_bmp.data(), _bmp.size());
+    if (did_draw)
+      break;
   }
+  resetImage();
 
   return did_draw;
 }
