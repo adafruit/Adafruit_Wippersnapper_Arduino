@@ -693,6 +693,13 @@ bool DisplayHardware::drawCanvas(const uint8_t *bmp, size_t len) {
   return _drvDisp->drawCanvas(bmp, len);
 }
 
+/*!
+    @brief  Draws an assembled marquee canvas (raw .BMP file bytes) to the
+            display, if supported.
+    @param  bmp  Pointer to the complete BMP file bytes.
+    @param  len  Length of the BMP buffer, in bytes.
+    @return True if drawn, False otherwise.
+*/
 bool DisplayHardware::drawMarqueeEPD(const uint8_t *bmp, size_t len) {
   WS_DEBUG_PRINT("[display] Drawing marquee EPD, length: ");
   WS_DEBUG_PRINTLNVAR(len);

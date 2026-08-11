@@ -22,6 +22,10 @@
 */
 class drvDispThinkInk : public dispDrvBase {
 public:
+  /*!
+      @brief  Factory function that constructs and begins an Adafruit_EPD
+     panel.
+  */
   using FnCreateAdafruit_EPD = std::function<Adafruit_EPD *(
       int16_t, int16_t, int16_t, int16_t, int16_t, thinkinkmode_t)>;
 
