@@ -24,6 +24,9 @@ RTC_DATA_ATTR ws_sleep_SleepMode
                 ///< cycles
 RTC_DATA_ATTR static uint32_t sleep_cycles;
 RTC_DATA_ATTR static char log_filename_rtc[64];
+RTC_DATA_ATTR static ws_sleep_Ext0Config
+    ext0_config_rtc; ///< Last ext0 wakeup config that was successfully armed,
+                     ///< persists across sleep cycles
 /*!
     @brief  Sleep hardware constructor for ESP32x MCUs.
 */
@@ -333,8 +336,45 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
   }
 #endif
 
+  // Persist the ext0 config so HandleNetFSMFailure() can re-arm this same
+  // wakeup source after a network failure
+  strncpy(ext0_config_rtc.pin_name, pin_name,
+          sizeof(ext0_config_rtc.pin_name) - 1);
+  ext0_config_rtc.pin_name[sizeof(ext0_config_rtc.pin_name) - 1] = '\0';
+  ext0_config_rtc.level = pin_level;
+  ext0_config_rtc.pull = pin_pull;
+
   return true;
 }
+
+/*!
+    @brief  Retrieves the pin name from the last ext0 wakeup config that was
+            successfully armed, stored in RTC memory.
+    @return The stored ext0 pin name, or nullptr if ext0 was never configured.
+*/
+const char *SleepHardware::GetEspSleepExt0PinName() {
+  if (ext0_config_rtc.pin_name[0] == '\0') {
+    WS_DEBUG_PRINTLN("[sleep] No stored ext0 pin name found in RTC memory");
+    return nullptr;
+  }
+  WS_DEBUG_PRINT("[sleep] Retrieved ext0 pin name from RTC memory: ");
+  WS_DEBUG_PRINTLNVAR(ext0_config_rtc.pin_name);
+  return ext0_config_rtc.pin_name;
+}
+
+/*!
+    @brief  Retrieves the wakeup level from the last ext0 wakeup config that was
+            successfully armed, stored in RTC memory.
+    @return The stored ext0 wakeup level (True for HIGH, False for LOW).
+*/
+bool SleepHardware::GetEspSleepExt0Level() { return ext0_config_rtc.level; }
+
+/*!
+    @brief  Retrieves the pull resistor setting from the last ext0 wakeup config
+            that was successfully armed, stored in RTC memory.
+    @return The stored ext0 pull setting (True if enabled, False otherwise).
+*/
+bool SleepHardware::GetEspSleepExt0Pull() { return ext0_config_rtc.pull; }
 #endif // ARDUINO_ARCH_ESP32
 
 /*!

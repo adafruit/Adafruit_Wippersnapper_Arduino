@@ -457,9 +457,33 @@ void SleepController::HandleNetFSMFailure() {
   ws_sleep_SleepConfig msg_sleep_cfg = ws_sleep_SleepConfig_init_zero;
   // Set sleep mode to the last known sleep
   msg_sleep_cfg.mode = _sleep_hardware->GetSleepMode();
-  msg_sleep_cfg.which_config = ws_sleep_SleepConfig_timer_tag;
-  // Set the timer duration to the last known sleep duration, so we can re-enter sleep
-  msg_sleep_cfg.config.timer.duration = _sleep_hardware->GetSleepDurationSecs();
+
+  // Restore the last-known wakeup source. A stored ext0 pin name means sleep
+  // was configured for ext0, otherwise fall back to a timer wakeup.
+#ifdef ARDUINO_ARCH_ESP32
+  const char *ext0_pin_name = _sleep_hardware->GetEspSleepExt0PinName();
+#else
+  const char *ext0_pin_name = nullptr;
+#endif
+  if (ext0_pin_name != nullptr) {
+    // Set the ext0 pin, level, and pull to the last known ext0 configuration
+    msg_sleep_cfg.which_config = ws_sleep_SleepConfig_ext0_tag;
+    strncpy(msg_sleep_cfg.config.ext0.pin_name, ext0_pin_name,
+            sizeof(msg_sleep_cfg.config.ext0.pin_name) - 1);
+    msg_sleep_cfg.config.ext0
+        .pin_name[sizeof(msg_sleep_cfg.config.ext0.pin_name) - 1] = '\0';
+#ifdef ARDUINO_ARCH_ESP32
+    msg_sleep_cfg.config.ext0.level = _sleep_hardware->GetEspSleepExt0Level();
+    msg_sleep_cfg.config.ext0.pull = _sleep_hardware->GetEspSleepExt0Pull();
+#endif
+  } else {
+    msg_sleep_cfg.which_config = ws_sleep_SleepConfig_timer_tag;
+    // Set the timer duration to the last known sleep duration, so we can
+    // re-enter sleep
+    msg_sleep_cfg.config.timer.duration =
+        _sleep_hardware->GetSleepDurationSecs();
+  }
+
   // Configure sleep mode (sleep_enabled=true to re-enter sleep after FSM
   // failure)
   handleSleepConfig(&msg_sleep_cfg, true);
