@@ -1216,18 +1216,23 @@ void wippersnapper::loopSleep() {
     all_controllers_complete = false;
   }
 
-  // Has this wake cycle's loopSleep() duration expired? If it has, it's a hard-deadline and the MCU sleeps regardless of controller status
+  // Has this wake cycle's loopSleep() duration expired? If it has, it's a
+  // hard-deadline and the MCU sleeps regardless of controller status
   bool has_deadline_expired = false;
-  if (Ws._sleep_controller->getRunDurationMs() > 0 && (millis() - loop_start_time) >= Ws._sleep_controller->getRunDurationMs()) {
+  if (Ws._sleep_controller->getRunDurationMs() > 0 &&
+      (millis() - loop_start_time) >=
+          Ws._sleep_controller->getRunDurationMs()) {
     has_deadline_expired = true;
   }
 
-  // Controllers haven't completed and the deadline hasn't expired, so hold off sleep and exec. loopSleep() again
+  // Controllers haven't completed and the deadline hasn't expired, so hold off
+  // sleep and exec. loopSleep() again
   if (!all_controllers_complete && !has_deadline_expired) {
     return;
   }
 
-  // Let's begin the sleep process. All controllers are complete or the deadline has expired, so we can enter sleep mode.
+  // Let's begin the sleep process. All controllers are complete or the deadline
+  // has expired, so we can enter sleep mode.
   if (!Ws._sleep_controller->publishMsgGoodnight()) {
     if (!has_deadline_expired) {
       WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, holding off "
@@ -1238,12 +1243,14 @@ void wippersnapper::loopSleep() {
                      "anyway (deadline reached)!");
   }
 
-  // Reset all flags and variables for use in the next loopsleep() (for light sleep mode)
+  // Reset all flags and variables for use in the next loopsleep() (for light
+  // sleep mode)
   ResetAllControllerFlags();
   loop_start_time = 0;
   loop_timer_started = false;
 
-  // Disconnect from MQTT Broker and WiFi before sleep to prevent issues with connection state on-wake
+  // Disconnect from MQTT Broker and WiFi before sleep to prevent issues with
+  // connection state on-wake
   if (!Ws._sdCardV2->isModeOffline() && Ws._mqttV2 != nullptr)
     Ws._mqttV2->disconnect();
   disconnect(true);

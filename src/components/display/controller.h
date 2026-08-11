@@ -18,9 +18,12 @@
 #include "wippersnapper.h"
 #include <vector>
 
-#define MAX_DISPLAYS 4         ///< Maximum number of displays, NOTE: There can only be ONE marquee-capable display at a time
+#define MAX_DISPLAYS                                                           \
+  4 ///< Maximum number of displays, NOTE: There can only be ONE marquee-capable
+    ///< display at a time
 #define MAX_CANVAS_CHUNKS 1024 ///< Sanity cap on chunks per reassembled canvas
-#define MAX_CANVAS_DRAW_ATTEMPTS 3 ///< Maximum number of attempts to draw a reassembled canvas to a display
+#define MAX_CANVAS_DRAW_ATTEMPTS                                               \
+  3 ///< Maximum number of attempts to draw a reassembled canvas to a display
 #define MAX_FEED_HISTORY_STORAGE 512
 #define MAX_CANVAS_SIZE                                                        \
   (MAX_FEED_HISTORY_STORAGE *                                                  \
