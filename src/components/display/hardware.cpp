@@ -715,6 +715,18 @@ bool DisplayHardware::drawMarqueeEPD(const uint8_t *bmp, size_t len) {
 }
 
 /*!
+    @brief  Checks if the underlying display driver supports marquee mode.
+    @return True if marquee is supported, False otherwise.
+*/
+bool DisplayHardware::isMarquee() {
+  if (!_drvDisp) {
+    publishAndLogError(F("[display] ERROR: No display driver initialized!"));
+    return false;
+  }
+  return _drvDisp->isMarqueeEPD();
+}
+
+/*!
     @brief  Publishes an error related to this display hardware back to the
             broker.
     @param  error   The error message to publish.

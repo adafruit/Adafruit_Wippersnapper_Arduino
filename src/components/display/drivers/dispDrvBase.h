@@ -108,6 +108,14 @@ public:
   virtual bool drawMarqueeEPD(const uint8_t *bmp, size_t len) { return false; }
 
   /*!
+      @brief  Returns whether this display driver supports marquee/canvas EPD
+              drawing.
+      @return True if this driver supports marquee/canvas EPD drawing, False
+              otherwise.
+  */
+  virtual bool isMarqueeEPD() { return false; }
+
+  /*!
       @brief  Sets the display width in pixels.
       @param  w  Width in pixels.
   */

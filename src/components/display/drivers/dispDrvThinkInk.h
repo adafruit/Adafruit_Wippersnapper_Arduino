@@ -536,13 +536,14 @@ public:
     return true;
   }
 
-  void showSplash() override {
-    if (!_display)
-      return;
-    // TODO: Only enable this for MONO displays, and only if the splash image is
-    // available for the resolution.
-    //_display->drawBitmap(0, 0, epd_bitmap_ws_logo_296128, 296, 128,
-    // EPD_BLACK); _display->display();
+  /*!
+      @brief  Returns if the display using the Marquee features.
+      @return True if the display is using Marquee features, False otherwise.
+  */
+  bool isMarqueeEPD() override {
+    if (!_reader)
+      return false;
+    return true;
   }
 
   /*!

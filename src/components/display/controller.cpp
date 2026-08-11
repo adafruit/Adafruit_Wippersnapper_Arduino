@@ -288,11 +288,9 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   }
 
   // Show splash screen and status bar
-  // TODO: This has been commented out for marquee EPDs, as the splash screen is
-  // not needed and the status bar is drawn by the broker.
-  // TODO: We may want to make this conditional based on display type in the
-  // future.
-  // hw->initialise(Ws._configV2.aio_user);
+  if (!hw->isMarquee()) {
+    hw->initialise(Ws._configV2.aio_user);
+  }
 
   _displays[_num_displays] = hw;
   _num_displays++;
@@ -308,13 +306,7 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   // Handle optional initial write
   if (msg->has_write) {
     WS_DEBUG_PRINTLN("[display] Processing initial write...");
-    // TODO: Unlike Router()'s write path, this call does NOT wire the
-    // chunk_data decode callback (cbDecodeImageChunk), so _pending_chunk is
-    // empty here. An Add-bundled image write therefore fails
-    // handleImageWrite's empty-chunk check; only text writes are supported on
-    // this path today.
-    // TODO: To support Add-bundled image writes, replicate Router()'s
-    // pb_decode_ex + PB_DECODE_NOINIT callback wiring for msg->write.image.
+    // Only TEXT writes are supported on this path today, not images
     Handle_Display_Write(&msg->write);
   }
 
@@ -574,18 +566,6 @@ bool DisplayController::processImageChunk(ws_display_Write *msg) {
   uint32_t sz_image = msg->image.size;
   uint32_t canvas_chunk_id = msg->image.chunk_id;
   uint32_t canvas_chunk_total = msg->image.chunk_total;
-  /*
-  WS_DEBUG_PRINT("[display] Canvas Checksum: ");
-  WS_DEBUG_PRINTVAR(canvas_checksum);
-  WS_DEBUG_PRINT(", Total Size: ");
-  WS_DEBUG_PRINTVAR(sz_image);
-  WS_DEBUG_PRINT(", Chunk ID: ");
-  WS_DEBUG_PRINTVAR(canvas_chunk_id);
-  WS_DEBUG_PRINT(", Chunk Total: ");
-  WS_DEBUG_PRINTVAR(canvas_chunk_total);
-  WS_DEBUG_PRINT(", Chunk Bytes: ");
-  WS_DEBUG_PRINTLNVAR((uint32_t)_pending_chunk.size());
-  */
 
   // Validate the chunk metadata
   if (canvas_chunk_total == 0 || canvas_chunk_total > MAX_CANVAS_CHUNKS ||
@@ -718,28 +698,27 @@ DisplayController::resolveDisplayOrPublishError(ws_display_Write *msg,
     @param  is_connected  Whether MQTT is currently connected.
 */
 void DisplayController::update(int32_t rssi, bool is_connected) {
-  /*   if (_num_displays == 0)
-      return;
+  if (_num_displays == 0)
+    return;
 
-    unsigned long now = millis();
-    if (now - _last_bar_update < ONE_MINUTE_IN_MS)
+  // If the display is a "marquee/canvas" type, the broker is responsible for
+  // drawing the status bar, so skip this.
+  for (uint8_t i = 0; i < _num_displays; i++) {
+    if (_displays[i] && _displays[i]->isMarquee())
       return;
-    _last_bar_update = now;
-    // TODO: Get actual battery level if available
-    uint8_t battery_charge_level = 100;
-    for (uint8_t i = 0; i < _num_displays; i++) {
-      if (_displays[i]) {
-        WS_DEBUG_PRINTLN("[display] Updating status bar...");
-        // TODO: TRICOLOR and QUADCOLOR (not sure about grayscale) displays take
-    a
-        // LONG time to refresh
-        // TODO: maybe kill this functionality if they are actively using
-    Marquee,
-        //       and refresh the status bar along with the marquee?
-        // _displays[i]->updateStatusBar(rssi, battery_charge_level,
-        // is_connected);
-      }
-    } */
+  }
+
+  unsigned long now = millis();
+  if (now - _last_bar_update < ONE_MINUTE_IN_MS)
+    return;
+  _last_bar_update = now;
+  // TODO: Get actual battery level if available
+  uint8_t battery_charge_level = 100;
+  for (uint8_t i = 0; i < _num_displays; i++) {
+    if (_displays[i]) {
+      _displays[i]->updateStatusBar(rssi, battery_charge_level, is_connected);
+    }
+  }
 }
 
 /*!
