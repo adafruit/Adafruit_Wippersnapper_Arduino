@@ -24,7 +24,9 @@
 #define MAX_CANVAS_CHUNKS 1024 ///< Sanity cap on chunks per reassembled canvas
 #define MAX_CANVAS_DRAW_ATTEMPTS                                               \
   3 ///< Maximum number of attempts to draw a reassembled canvas to a display
-#define MAX_FEED_HISTORY_STORAGE 512 ///< Total number of bytes that an Adafruit IO feed (with NO history) can store
+#define MAX_FEED_HISTORY_STORAGE                                               \
+  512 ///< Total number of bytes that an Adafruit IO feed (with NO history) can
+      ///< store
 #define MAX_CANVAS_SIZE                                                        \
   (MAX_FEED_HISTORY_STORAGE *                                                  \
    1024) ///< Sanity cap on the reserve() for a reassembled BMP
