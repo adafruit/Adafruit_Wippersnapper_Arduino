@@ -18,7 +18,7 @@
 #include "dispDrvBase.h"
 
 /*!
-    @brief  Driver for ThinkInk EPD displays.
+@brief  Driver for ThinkInk EPD displays.
 */
 class drvDispThinkInk : public dispDrvBase {
 public:

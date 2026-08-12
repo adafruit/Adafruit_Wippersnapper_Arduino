@@ -185,7 +185,7 @@ bool CheckinModel::cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
   WS_DEBUG_PRINTLN("[checkin] Decoding display add message from broker");
   // Heap-allocate the display_add message (~1.7K) and free it
   ws_display_Add *add_msg = new ws_display_Add();
-  *add_msg = {}; // Zero init the struct (safe for ESP8266 and SAMD)
+  memset(add_msg, 0, sizeof(ws_display_Add));
   if (!pb_decode(stream, ws_display_Add_fields, add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode display add");
     delete add_msg;

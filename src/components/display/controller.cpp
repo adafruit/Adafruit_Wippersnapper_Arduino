@@ -74,7 +74,7 @@ bool DisplayController::Router(pb_istream_t *stream) {
   // callback), so keeping this struct on the stack risks overflowing the
   // loopTask stack. Heap-allocate it and free it before every return.
   ws_display_B2D *b2d = new ws_display_B2D;
-  *b2d = ws_display_B2D_init_zero;
+  memset(b2d, 0, sizeof(ws_display_B2D));
   if (!ws_pb_decode(stream, ws_display_B2D_fields, b2d)) {
     WS_DEBUG_PRINTLN("[display] ERROR: Unable to decode Display B2D envelope");
     delete b2d;
@@ -98,7 +98,7 @@ bool DisplayController::Router(pb_istream_t *stream) {
     b2d = nullptr;
     // Allocate a new b2d for the re-decode
     ws_display_B2D *b2d_w = new ws_display_B2D;
-    *b2d_w = ws_display_B2D_init_zero;
+    memset(b2d_w, 0, sizeof(ws_display_B2D));
     b2d_w->which_payload = ws_display_B2D_write_tag;
     b2d_w->payload.write.image.chunk_data.funcs.decode = cbDecodeImageChunk;
     b2d_w->payload.write.image.chunk_data.arg = this;
