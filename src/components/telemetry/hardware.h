@@ -58,8 +58,9 @@ private:
   ws_telemetry_Type _type; ///< The metric this instance reports
   float _period;           ///< Desired reporting interval, in milliseconds
   float _prv_period;       ///< Last time the metric was reported, in ms
-  bool _report_once;     ///< True if the metric should be reported only once
-  bool _has_reported_once;   ///< True once a report-once (period 0) metric has sent
+  bool _report_once;       ///< True if the metric should be reported only once
+  bool _has_reported_once; ///< True once a report-once (period 0) metric has
+                           ///< sent
   char _boot_reason[64]; ///< Backing store for the assembled boot reason string
 };
 #endif // WS_TELEMETRY_HARDWARE_H

@@ -118,8 +118,9 @@ bool TelemetryController::Handle_TelemetryAdd(ws_telemetry_Add *msg) {
   if (updatePeriod(msg->type, msg->period))
     return true;
 
-  TelemetryHardware *new_metric = new TelemetryHardware(msg->type, msg->period, msg->report_once);
-  
+  TelemetryHardware *new_metric =
+      new TelemetryHardware(msg->type, msg->period, msg->report_once);
+
   // Confirm the instance was allocated and constructed for the requested
   // metric before tracking it.
   if (new_metric == nullptr || new_metric->GetType() != msg->type) {

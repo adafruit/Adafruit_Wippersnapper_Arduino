@@ -156,7 +156,8 @@ const char *TelemetryTypeName(ws_telemetry_Type type) {
             The reporting interval, in seconds. Use 0 to report only once
             at startup.
 */
-TelemetryHardware::TelemetryHardware(ws_telemetry_Type type, float period, bool report_once) {
+TelemetryHardware::TelemetryHardware(ws_telemetry_Type type, float period,
+                                     bool report_once) {
   did_read_send = false;
   _has_reported_once = false;
   _prv_period = 0;
