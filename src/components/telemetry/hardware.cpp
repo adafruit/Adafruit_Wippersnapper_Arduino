@@ -223,7 +223,9 @@ bool TelemetryHardware::WasReported() { return _reported_once; }
             True to mark the metric as having been reported, False to reset
             it to unreported.
 */
-void TelemetryHardware::SetReported(bool reported) { _reported_once = reported; }
+void TelemetryHardware::SetReported(bool reported) {
+  _reported_once = reported;
+}
 
 /*!
     @brief  Reads the current WiFi signal strength (RSSI).
