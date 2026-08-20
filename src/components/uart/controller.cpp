@@ -94,7 +94,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   for (UARTHardware *hw : _ports) {
     if (hw->getPortNum() == port) {
       Ws->error_handler->publishComponentError(msg->descriptor,
-                                              "Port already in use");
+                                               "Port already in use");
       return false;
     }
   }
@@ -142,7 +142,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     break;
   default:
     Ws->error_handler->publishComponentError(msg->descriptor,
-                                            "Unsupported UART device config");
+                                             "Unsupported UART device config");
     delete uart_hardware;
     return false;
   }
@@ -153,8 +153,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 
   // Attempt to initialize the UART driver
   if (!uart_driver->begin()) {
-    Ws->error_handler->publishComponentError(msg->descriptor,
-                                            "Failed to initialize UART driver");
+    Ws->error_handler->publishComponentError(
+        msg->descriptor, "Failed to initialize UART driver");
     delete uart_driver;
     return false;
   }
@@ -203,7 +203,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
   }
 
   Ws->error_handler->publishComponentError(msg->descriptor,
-                                          "Port not found for removal");
+                                           "Port not found for removal");
   return false;
 }
 
@@ -215,7 +215,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
 */
 bool UARTController::Handle_UartWrite(ws_uart_Write *msg) {
   Ws->error_handler->publishComponentError(msg->descriptor,
-                                          "UartWrite not implemented.");
+                                           "UartWrite not implemented.");
   return false;
 }
 
@@ -280,7 +280,7 @@ void UARTController::update(bool force) {
       } else {
         // In online mode, publish to Adafruit IO
         if (!Ws->PublishD2b(ws_signal_BrokerToDevice_uart_tag,
-                           _uart_model->GetUartInputEventMsg())) {
+                            _uart_model->GetUartInputEventMsg())) {
           WS_DEBUG_PRINTLN(
               "[uart] ERROR: Unable to publish UartInputEvent to IO!");
           drv->SetDidReadSend(false);

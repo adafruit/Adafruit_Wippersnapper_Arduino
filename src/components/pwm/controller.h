@@ -43,5 +43,5 @@ private:
   PWMModel *_pwm_model;
   std::vector<PWMHardware *> _pins;
 };
-extern wippersnapper* Ws; ///< Wippersnapper V2 instance
-#endif                   // WS_PWM_CONTROLLER_H
+extern wippersnapper *Ws; ///< Wippersnapper V2 instance
+#endif                    // WS_PWM_CONTROLLER_H

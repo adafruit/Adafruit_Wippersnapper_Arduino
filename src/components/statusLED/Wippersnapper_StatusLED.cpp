@@ -16,7 +16,7 @@
 #include "Wippersnapper_StatusLED.h"
 #include "wippersnapper.h"
 
-extern wippersnapper* Ws;
+extern wippersnapper *Ws;
 #ifdef USE_STATUS_NEOPIXEL
 Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
     STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -115,7 +115,7 @@ void ReleaseStatusPixel() {
 #ifdef USE_STATUS_LED
   digitalWrite(STATUS_LED_PIN, 0); // turn off
   pinMode(STATUS_LED_PIN,
-          INPUT);             // "release" for use by setting to input (hi-z)
+          INPUT);              // "release" for use by setting to input (hi-z)
   Ws->lockStatusLEDV2 = false; // un-set global pin "lock" flag
 #endif
 }

@@ -166,5 +166,5 @@ public:
   */
   void SetDidReadSend(bool value) { _did_read_send = value; }
 };
-extern wippersnapper* Ws; ///< Wippersnapper V2 instance
-#endif                   // WS_GPS_HARDWARE_H
+extern wippersnapper *Ws; ///< Wippersnapper V2 instance
+#endif                    // WS_GPS_HARDWARE_H

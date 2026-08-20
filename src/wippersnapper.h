@@ -89,7 +89,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      Ws->_wdt->feed();                                                         \
+      Ws->_wdt->feed();                                                        \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -349,6 +349,6 @@ protected:
   char *_device_uidV2;     /*!< Unique device identifier  */
   char *_mqtt_client_id;   /*!< MQTT client ID with "io-wipper" prefix */
 };
-extern wippersnapper* Ws; ///< Global member variable for callbacks
+extern wippersnapper *Ws; ///< Global member variable for callbacks
 
 #endif // WIPPERSNAPPER_H

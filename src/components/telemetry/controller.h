@@ -48,5 +48,5 @@ private:
   TelemetryModel *_telemetry_model; ///< telemetry model
   std::vector<TelemetryHardware *> _telemetry_metrics;
 };
-extern wippersnapper* Ws; ///< Wippersnapper V2 instance
-#endif                   // WS_TELEMETRY_CONTROLLER_H
+extern wippersnapper *Ws; ///< Wippersnapper V2 instance
+#endif                    // WS_TELEMETRY_CONTROLLER_H

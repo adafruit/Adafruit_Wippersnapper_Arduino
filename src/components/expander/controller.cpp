@@ -154,7 +154,7 @@ static const ExpanderSettingHandler kExpanderSettingHandlers[] = {
 bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
   if (!msg->has_cfg_i2c) {
     Ws->error_handler->publishComponentError(ws_i2c_Descriptor{},
-                                            "No configuration provided!");
+                                             "No configuration provided!");
     return false;
   }
 
@@ -163,8 +163,8 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
 
   // Check if this expander has already been added
   if (GetDriver(addr) != nullptr) {
-    Ws->error_handler->publishComponentError(desc,
-                                            "Expander exists at this address!");
+    Ws->error_handler->publishComponentError(
+        desc, "Expander exists at this address!");
     return false;
   }
 
@@ -173,14 +173,14 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
       desc.address_space.pin_scl, desc.address_space.pin_sda);
   if (wire == nullptr) {
     Ws->error_handler->publishComponentError(desc,
-                                            "Failed to get/create I2C bus!");
+                                             "Failed to get/create I2C bus!");
     return false;
   }
 
   // Attempt to initialize the expander
   if (!AddExpander(msg->cfg_i2c.name, addr, wire)) {
     Ws->error_handler->publishComponentError(desc,
-                                            "Failed to initialize expander!");
+                                             "Failed to initialize expander!");
     return false;
   }
 
@@ -188,7 +188,8 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
   if (msg->cfg_i2c.has_settings) {
     ExpanderHardware *drv = GetDriver(addr);
     DecodedSetting *settings = Ws->_i2c_controller->GetDecodedSettings();
-    for (size_t i = 0; i < Ws->_i2c_controller->GetDecodedSettingsCount(); i++) {
+    for (size_t i = 0; i < Ws->_i2c_controller->GetDecodedSettingsCount();
+         i++) {
       if (!settings[i].has_value) {
         continue;
       }

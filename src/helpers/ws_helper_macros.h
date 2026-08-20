@@ -48,7 +48,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      Ws->_wdt->feed();                                                         \
+      Ws->_wdt->feed();                                                        \
       if (millis() < start) {                                                  \
         start = millis(); /* if rollover */                                    \
       }                                                                        \

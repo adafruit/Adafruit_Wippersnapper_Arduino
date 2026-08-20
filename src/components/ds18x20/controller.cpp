@@ -85,13 +85,13 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
   // If we receive no sensor types to configure, bail out
   if (msg->types_count == 0) {
     Ws->error_handler->publishComponentError(msg->onewire_pin,
-                                            "No sensor types provided");
+                                             "No sensor types provided");
     return false;
   }
   // Validate pin name exists and is in correct format (ex. D5, A1, etc.)
   if (strlen(msg->onewire_pin) < 2) {
     Ws->error_handler->publishComponentError(msg->onewire_pin,
-                                            "Invalid pin name");
+                                             "Invalid pin name");
     return false;
   }
 
@@ -128,7 +128,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
       new_dsx_driver->is_read_temp_f = true;
     } else {
       Ws->error_handler->publishComponentError(msg->onewire_pin,
-                                              "Unknown SensorType provided");
+                                               "Unknown SensorType provided");
       delete new_dsx_driver;
       return false;
     }
@@ -171,7 +171,7 @@ bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
   // Validate the pin name
   if (strlen(msg->onewire_pin) < 2) {
     Ws->error_handler->publishComponentError(msg->onewire_pin,
-                                            "Invalid pin name");
+                                             "Invalid pin name");
     return false;
   }
   uint8_t pin_name = atoi(msg->onewire_pin + 1);
@@ -186,7 +186,8 @@ bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
       return true;
     }
   }
-  Ws->error_handler->publishComponentError(msg->onewire_pin, "Sensor not found");
+  Ws->error_handler->publishComponentError(msg->onewire_pin,
+                                           "Sensor not found");
   return false;
 }
 
@@ -271,7 +272,7 @@ void DS18X20Controller::update(bool force) {
       // Publish the Ds18x20Event message to the broker
       WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
       if (!Ws->PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
-                         _DS18X20_model->GetDS18x20EventMsg())) {
+                          _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to publish Ds18x20Event message");
         temp_dsx_driver.did_read_send = false;
