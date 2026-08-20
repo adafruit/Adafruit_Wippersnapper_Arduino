@@ -620,7 +620,7 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
       bool enable_level = !msg->power.is_inverted;
       ws_digitalio_Direction dir;
       bool value;
-      if (Ws.digital_io_controller->QueryPinState((uint8_t)power, &dir,
+      if (Ws->digital_io_controller->QueryPinState((uint8_t)power, &dir,
                                                   &value)) {
         if (dir == ws_digitalio_Direction_D_OUTPUT && value == enable_level) {
           WS_DEBUG_PRINTLN("[display] Power-enable pin already driven by "
@@ -697,7 +697,7 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   WS_DEBUG_PRINT(" addr: 0x");
   WS_DEBUG_PRINTLNVAR(addr, HEX);
 
-  TwoWire *i2c = Ws._i2c_controller->GetOrCreateI2cBus(
+  TwoWire *i2c = Ws->_i2c_controller->GetOrCreateI2cBus(
       i2c_cfg->address_space.pin_scl, i2c_cfg->address_space.pin_sda);
   if (i2c == nullptr) {
     WS_DEBUG_PRINTLN("[display] ERROR: I2C bus not found for Display device!");
@@ -832,7 +832,7 @@ bool DisplayHardware::write(ws_display_Write *msg) {
 void DisplayHardware::publishAndLogError(const char *error) {
   WS_DEBUG_PRINTVAR(error);
   WS_DEBUG_PRINTLN("");
-  Ws._display_controller->PublishDisplayComponentError(
+  Ws->_display_controller->PublishDisplayComponentError(
       getAddMsg().interface_type, error);
 }
 
@@ -844,6 +844,6 @@ void DisplayHardware::publishAndLogError(const char *error) {
 void DisplayHardware::publishAndLogError(const __FlashStringHelper *error) {
   WS_DEBUG_PRINTVAR(error);
   WS_DEBUG_PRINTLN("");
-  Ws._display_controller->PublishDisplayComponentError(
+  Ws->_display_controller->PublishDisplayComponentError(
       getAddMsg().interface_type, (const char *)error);
 }

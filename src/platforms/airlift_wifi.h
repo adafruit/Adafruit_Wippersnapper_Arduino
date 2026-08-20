@@ -36,7 +36,7 @@
 
 #define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
 
-extern wippersnapper Ws; ///< Wippersnapper client instance
+extern wippersnapper* Ws; ///< Wippersnapper client instance
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
 */
@@ -47,6 +47,7 @@ public:
   @brief  Initializes the Adafruit IO class for AirLift devices.
   */
   airlift_wifi() : wippersnapper() {
+    Ws = this;
     _ssPin = SPIWIFI_SS;     // 10;
     _ackPin = SPIWIFI_ACK;   // 7;
     _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals
@@ -89,8 +90,8 @@ public:
             secrets.json provisioning file.
   */
   void set_ssid_pass() {
-    _ssid = Ws._configV2.network.ssid;
-    _pass = Ws._configV2.network.pass;
+    _ssid = Ws->_configV2.network.ssid;
+    _pass = Ws->_configV2.network.pass;
   }
 
   /*!
@@ -211,7 +212,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
-    memcpy(Ws._macAddrV2, mac, sizeof(mac));
+    memcpy(Ws->_macAddrV2, mac, sizeof(mac));
   }
 
   /*!
@@ -226,9 +227,9 @@ public:
           MQTT client identifier
   */
   void setupMQTTClient(const char *clientID) {
-    Ws._mqttV2 = new Adafruit_MQTT_Client(
-        _mqtt_client, Ws._configV2.aio_url, Ws._configV2.io_port, clientID,
-        Ws._configV2.aio_user, Ws._configV2.aio_key);
+    Ws->_mqttV2 = new Adafruit_MQTT_Client(
+        _mqtt_client, Ws->_configV2.aio_url, Ws->_configV2.io_port, clientID,
+        Ws->_configV2.aio_user, Ws->_configV2.aio_key);
   }
 
   /*!
@@ -280,16 +281,16 @@ protected:
       _wifi->end();
       delay(100);
       _wifi->begin();
-      Ws._wdt->feed();
+      Ws->_wdt->feed();
       // reset the esp32 if possible
       resetAirLift();
-      Ws._wdt->feed();
+      Ws->_wdt->feed();
 
       WS_DEBUG_PRINT("ESP32 booted, version: ");
       WS_PRINTER.flush();
       WS_DEBUG_PRINTLNVAR(WiFi.firmwareVersion());
       WS_PRINTER.flush();
-      Ws._wdt->feed();
+      Ws->_wdt->feed();
 
       // validate co-processor's firmware version
       if (!firmwareCheck()) {
@@ -300,7 +301,7 @@ protected:
       WS_DEBUG_PRINT("Connecting to ");
       WS_DEBUG_PRINTLNVAR(_ssid);
       WS_PRINTER.flush();
-      Ws._wdt->feed();
+      Ws->_wdt->feed();
       WiFi.begin(_ssid, _pass);
       _statusV2 = WS_NET_DISCONNECTED;
 

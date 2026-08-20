@@ -65,7 +65,7 @@ bool CheckinModel::Checkin(const char *hardware_uid,
 
   // Publish out
   WS_DEBUG_PRINT("[checkin] Publishing CheckinRequest");
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
+  if (!Ws->PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to publish CheckinRequest message!");
     return false;
@@ -120,11 +120,11 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
     @brief  Configures controllers limits based on board definition
 */
 void CheckinModel::ConfigureControllers() {
-  Ws.digital_io_controller->SetMaxDigitalPins(
+  Ws->digital_io_controller->SetMaxDigitalPins(
       _CheckinB2D.payload.response.total_gpio_pins);
-  Ws.analogin_controller->SetRefVoltage(
+  Ws->analogin_controller->SetRefVoltage(
       _CheckinB2D.payload.response.reference_voltage);
-  Ws.analogin_controller->SetMaxAnalogPins(
+  Ws->analogin_controller->SetMaxAnalogPins(
       _CheckinB2D.payload.response.total_analog_pins);
 }
 
@@ -191,7 +191,7 @@ bool CheckinModel::cbDigitalIOAdds(pb_istream_t *stream,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digitalio add");
     return false;
   }
-  return Ws.digital_io_controller->Handle_DigitalIO_Add(&add_msg);
+  return Ws->digital_io_controller->Handle_DigitalIO_Add(&add_msg);
 }
 
 /*!
@@ -208,7 +208,7 @@ bool CheckinModel::cbAnalogInAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analogin add");
     return false;
   }
-  return Ws.analogin_controller->Handle_AnalogInAdd(&add_msg);
+  return Ws->analogin_controller->Handle_AnalogInAdd(&add_msg);
 }
 
 /*!
@@ -225,7 +225,7 @@ bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode servo add");
     return false;
   }
-  return Ws._servo_controller->Handle_Servo_Add(&add_msg);
+  return Ws->_servo_controller->Handle_Servo_Add(&add_msg);
 }
 
 /*!
@@ -242,7 +242,7 @@ bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pwm add");
     return false;
   }
-  return Ws._pwm_controller->Handle_PWM_Add(&add_msg);
+  return Ws->_pwm_controller->Handle_PWM_Add(&add_msg);
 }
 
 /*!
@@ -259,7 +259,7 @@ bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pixels add");
     return false;
   }
-  return Ws._pixels_controller->Handle_Pixels_Add(&add_msg);
+  return Ws->_pixels_controller->Handle_Pixels_Add(&add_msg);
 }
 
 /*!
@@ -276,7 +276,7 @@ bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode ds18x20 add");
     return false;
   }
-  return Ws._ds18x20_controller->Handle_Ds18x20Add(&add_msg);
+  return Ws->_ds18x20_controller->Handle_Ds18x20Add(&add_msg);
 }
 
 /*!
@@ -293,7 +293,7 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode uart add");
     return false;
   }
-  return Ws._uart_controller->Handle_UartAdd(&add_msg);
+  return Ws->_uart_controller->Handle_UartAdd(&add_msg);
 }
 
 /*!
@@ -306,12 +306,12 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
 bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg) {
   ws_i2c_Add add_msg = ws_i2c_Add_init_zero;
-  Ws._i2c_controller->SetupAddDecodeCallbacks(&add_msg);
+  Ws->_i2c_controller->SetupAddDecodeCallbacks(&add_msg);
   if (!pb_decode(stream, ws_i2c_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode i2c add");
     return false;
   }
-  return Ws._i2c_controller->Handle_Add(&add_msg);
+  return Ws->_i2c_controller->Handle_Add(&add_msg);
 }
 
 /*!
@@ -343,7 +343,7 @@ void CheckinModel::configureSleep() {
     ws_sleep_SleepConfig *sleep_cfg = GetSleepConfig();
     if (sleep_cfg != nullptr) {
       WS_DEBUG_PRINTLN("[app] Processing sleep configuration from checkin");
-      Ws._sleep_controller->handleSleepConfig(sleep_cfg, true);
+      Ws->_sleep_controller->handleSleepConfig(sleep_cfg, true);
     }
   }
 #endif
@@ -385,7 +385,7 @@ bool CheckinModel::Complete() {
   }
 
   // Publish the message
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &completeMsg)) {
+  if (!Ws->PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &completeMsg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to publish Complete message!");
     return false;
   }

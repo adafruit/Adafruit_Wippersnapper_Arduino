@@ -19,9 +19,9 @@
 */
 ws_sdcard::ws_sdcard()
 #ifdef SD_USE_SPI_1
-    : _sd_spi_cfg(Ws.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
+    : _sd_spi_cfg(Ws->pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
 #else
-    : _sd_spi_cfg(Ws.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
+    : _sd_spi_cfg(Ws->pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
 #endif
   is_mode_offline = false;
   _use_test_data = false;
@@ -34,7 +34,7 @@ ws_sdcard::ws_sdcard()
 
   // delay(6000); // DEBUG ONLY: Wait for everything to settle
 
-  if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
+  if (Ws->pin_sd_cs == PIN_SD_CS_ERROR)
     return;
 
   if (!_sd.begin(_sd_spi_cfg)) {
@@ -115,7 +115,7 @@ bool ws_sdcard::IsBatteryLow() const { return _is_battery_low; }
    otherwise.
 */
 bool ws_sdcard::begin() {
-  if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
+  if (Ws->pin_sd_cs == PIN_SD_CS_ERROR)
     return false;
 
   // Restore SPI pins from input state
@@ -139,8 +139,8 @@ bool ws_sdcard::begin() {
               power draw.
 */
 void ws_sdcard::end() {
-  pinMode(Ws.pin_sd_cs, OUTPUT);
-  digitalWrite(Ws.pin_sd_cs, HIGH);
+  pinMode(Ws->pin_sd_cs, OUTPUT);
+  digitalWrite(Ws->pin_sd_cs, HIGH);
   // Close the SD card interface
   _sd.end();
   // Set SPI pins to input to avoid power draw
@@ -148,8 +148,8 @@ void ws_sdcard::end() {
   pinMode(MOSI, INPUT);
   pinMode(MISO, INPUT);
   // Keep CS high
-  pinMode(Ws.pin_sd_cs, OUTPUT);
-  digitalWrite(Ws.pin_sd_cs, HIGH);
+  pinMode(Ws->pin_sd_cs, OUTPUT);
+  digitalWrite(Ws->pin_sd_cs, HIGH);
 }
 
 void ws_sdcard::calculateFileLimits() {
@@ -182,8 +182,8 @@ bool ws_sdcard::InitDS1307() {
   _rtc_ds1307 = new RTC_DS1307();
 
   // Try each available I2C bus
-  for (size_t i = 0; i < Ws._i2c_controller->GetI2cBusCount(); i++) {
-    TwoWire *bus = Ws._i2c_controller->GetI2cBusByIndex(i);
+  for (size_t i = 0; i < Ws->_i2c_controller->GetI2cBusCount(); i++) {
+    TwoWire *bus = Ws->_i2c_controller->GetI2cBusByIndex(i);
     if (bus != nullptr && _rtc_ds1307->begin(bus)) {
       if (!_rtc_ds1307->isrunning())
         _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -206,8 +206,8 @@ bool ws_sdcard::InitDS3231() {
   _rtc_ds3231 = new RTC_DS3231();
 
   // Try each available I2C bus
-  for (size_t i = 0; i < Ws._i2c_controller->GetI2cBusCount(); i++) {
-    TwoWire *bus = Ws._i2c_controller->GetI2cBusByIndex(i);
+  for (size_t i = 0; i < Ws->_i2c_controller->GetI2cBusCount(); i++) {
+    TwoWire *bus = Ws->_i2c_controller->GetI2cBusByIndex(i);
     if (bus != nullptr && _rtc_ds3231->begin(bus)) {
       if (_rtc_ds3231->lostPower())
         _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -230,8 +230,8 @@ bool ws_sdcard::InitPCF8523() {
   _rtc_pcf8523 = new RTC_PCF8523();
 
   // Try each available I2C bus
-  for (size_t i = 0; i < Ws._i2c_controller->GetI2cBusCount(); i++) {
-    TwoWire *bus = Ws._i2c_controller->GetI2cBusByIndex(i);
+  for (size_t i = 0; i < Ws->_i2c_controller->GetI2cBusCount(); i++) {
+    TwoWire *bus = Ws->_i2c_controller->GetI2cBusByIndex(i);
     if (bus != nullptr && _rtc_pcf8523->begin(bus)) {
       if (!_rtc_pcf8523->initialized() || _rtc_pcf8523->lostPower()) {
         _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -257,9 +257,9 @@ bool ws_sdcard::InitSoftRTC() {
   _is_soft_rtc = true;
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Restore counter from RTC memory if waking from sleep
-  if (Ws._sleep_controller != nullptr &&
-      Ws._sleep_controller->DidWakeFromSleep()) {
-    _soft_rtc_counter = Ws._sleep_controller->GetSoftRtcCounter();
+  if (Ws->_sleep_controller != nullptr &&
+      Ws->_sleep_controller->DidWakeFromSleep()) {
+    _soft_rtc_counter = Ws->_sleep_controller->GetSoftRtcCounter();
     WS_DEBUG_PRINT("[SD] Restored soft RTC counter from sleep: ");
     WS_DEBUG_PRINTLNVAR(_soft_rtc_counter);
   } else {
@@ -324,11 +324,11 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
 */
 void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
   // Configure controllers
-  Ws.digital_io_controller->SetMaxDigitalPins(
+  Ws->digital_io_controller->SetMaxDigitalPins(
       exported_from_device["maxDigitalPins"] | 0);
-  Ws.analogin_controller->SetMaxAnalogPins(
+  Ws->analogin_controller->SetMaxAnalogPins(
       exported_from_device["maxAnalogPins"] | 0);
-  Ws.analogin_controller->SetRefVoltage(exported_from_device["refVoltage"] |
+  Ws->analogin_controller->SetRefVoltage(exported_from_device["refVoltage"] |
                                         0.0f);
   // Since `secrets.json` is unused in offline mode, use the status LED
   // brightness from here instead
@@ -703,7 +703,7 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
         "[SD] Runtime Error: Unable to encode D2B signal message!");
     return false;
   }
-  Ws._sharedConfigBuffers.push_back(std::move(tempBuf));
+  Ws->_sharedConfigBuffers.push_back(std::move(tempBuf));
   return true;
 }
 
@@ -727,8 +727,8 @@ bool ws_sdcard::CreateNewLogFile() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Check if we should restore a previous log file (waking from sleep)
   WS_DEBUG_PRINTLN("[SD] Checking for previous log file to restore...");
-  if (Ws._sleep_controller != nullptr) {
-    const char *prev_filename = Ws._sleep_controller->GetLogFilename();
+  if (Ws->_sleep_controller != nullptr) {
+    const char *prev_filename = Ws->_sleep_controller->GetLogFilename();
     if (prev_filename != nullptr && prev_filename[0] != '\0') {
       WS_DEBUG_PRINT("[SD] Found stored filename: ");
       WS_DEBUG_PRINTLNVAR(prev_filename);
@@ -790,8 +790,8 @@ bool ws_sdcard::CreateNewLogFile() {
 
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Store the new filename for persistence across sleep cycles
-  if (Ws._sleep_controller != nullptr) {
-    Ws._sleep_controller->SetLogFilename(_log_filename);
+  if (Ws->_sleep_controller != nullptr) {
+    Ws->_sleep_controller->SetLogFilename(_log_filename);
   }
 #endif
 
@@ -832,16 +832,16 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                                       int run_duration) {
   // Configure the sleep enter message using the model
   // Note: lock is always true for offline mode
-  Ws._sleep_controller->GetModel()->SetSleepEnterTimer(
+  Ws->_sleep_controller->GetModel()->SetSleepEnterTimer(
       true, sleep_config["mode"], run_duration, timer_config["duration"]);
 
-  Ws._sleep_controller->SetWakeEnablePin(sleep_config["wakeEnablePin"] | 255,
+  Ws->_sleep_controller->SetWakeEnablePin(sleep_config["wakeEnablePin"] | 255,
                                          sleep_config["wakeEnablePinPull"] | 0);
 
   // Pass the message directly to the sleep controller
   // Lock is always true for offline mode
-  return Ws._sleep_controller->handleSleepConfig(
-      Ws._sleep_controller->GetModel()->GetSleepConfig(), true);
+  return Ws->_sleep_controller->handleSleepConfig(
+      Ws->_sleep_controller->GetModel()->GetSleepConfig(), true);
 }
 
 /*!
@@ -860,14 +860,14 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
                                     int run_duration) {
   // Configure the sleep enter message using the model
   // Note: lock is always true for offline mode
-  Ws._sleep_controller->GetModel()->SetSleepEnterExt0(
+  Ws->_sleep_controller->GetModel()->SetSleepEnterExt0(
       true, sleep_config["mode"], run_duration, pin_config["name"],
       pin_config["level"], pin_config["pull"]);
 
   // Pass the message directly to the sleep controller
   // Lock is always true for offline mode
-  return Ws._sleep_controller->handleSleepConfig(
-      Ws._sleep_controller->GetModel()->GetSleepConfig(), true);
+  return Ws->_sleep_controller->handleSleepConfig(
+      Ws->_sleep_controller->GetModel()->GetSleepConfig(), true);
 }
 #endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
 
@@ -884,7 +884,7 @@ bool ws_sdcard::parseConfigFile() {
   // Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
-  doc = Ws._config_doc;
+  doc = Ws->_config_doc;
 #else
   // Use test data rather than data from the filesystem
   if (!_use_test_data) {

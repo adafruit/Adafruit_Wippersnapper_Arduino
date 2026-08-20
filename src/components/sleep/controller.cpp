@@ -170,9 +170,9 @@ void SleepController::WakeFromLightSleep() {
   }
 
   // Re-initialize SD card if it was previously initialized
-  if (Ws._sdCardV2->isModeOffline()) {
-    if (!Ws._sdCardV2->begin()) {
-      Ws.haltErrorV2(
+  if (Ws->_sdCardV2->isModeOffline()) {
+    if (!Ws->_sdCardV2->begin()) {
+      Ws->haltErrorV2(
           "[sleep] ERROR: Failed to re-initialize SD card after wake");
     }
     WS_DEBUG_PRINTLN("[sleep] SD card re-initialized successfully");
@@ -203,7 +203,7 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }
 #else
-    Ws._wdt->registerTimerWakeup(msg->config.timer.duration * 1000);
+    Ws->_wdt->registerTimerWakeup(msg->config.timer.duration * 1000);
     rc = true;
 #endif
 
@@ -227,7 +227,7 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
       pin_num = pin_num + 1;
     }
     uint gpio_pin = (uint)strtol(pin_num, nullptr, 10);
-    Ws._wdt->registerGPIOWakeup(gpio_pin, true, msg->config.ext0.level);
+    Ws->_wdt->registerGPIOWakeup(gpio_pin, true, msg->config.ext0.level);
     rc = true;
   }
 #endif
@@ -332,7 +332,7 @@ bool SleepController::DidWakeFromSleep() {
 #else
   // RP2350 doesn't track wake cause but does internally track if we slept or
   // not
-  woke_from_sleep = Ws._wdt->didWakeFromSleep();
+  woke_from_sleep = Ws->_wdt->didWakeFromSleep();
 #endif
   return woke_from_sleep;
 }
@@ -363,8 +363,8 @@ void SleepController::StartSleep() {
   _sleep_hardware->SetSleepEnterTime();
 
   // Store soft RTC counter to RTC memory before sleep
-  if (Ws._sdCardV2 != nullptr && Ws._sdCardV2->isRTCSoft()) {
-    uint32_t counter = Ws._sdCardV2->GetSoftRTCTime();
+  if (Ws->_sdCardV2 != nullptr && Ws->_sdCardV2->isRTCSoft()) {
+    uint32_t counter = Ws->_sdCardV2->GetSoftRTCTime();
     SetSoftRtcCounter(counter);
     WS_DEBUG_PRINT("[sleep] Stored soft RTC counter: ");
     WS_DEBUG_PRINTLNVAR(counter);
@@ -378,9 +378,9 @@ void SleepController::StartSleep() {
   }
 
   // Disable SD Card, if present
-  if (Ws._sdCardV2 != nullptr && Ws._sdCardV2->isSDCardInitialized()) {
+  if (Ws->_sdCardV2 != nullptr && Ws->_sdCardV2->isSDCardInitialized()) {
     WS_DEBUG_PRINTLN("[sleep] Disabling SD card before sleep...");
-    Ws._sdCardV2->end();
+    Ws->_sdCardV2->end();
   }
 
   ws_sleep_SleepMode sleep_mode = _sleep_hardware->GetSleepMode();
@@ -414,7 +414,7 @@ void SleepController::StartSleep() {
 #ifdef USE_STATUS_LED
     digitalWrite(STATUS_LED_PIN, LOW);
 #endif
-    Ws._wdt->startSleep();
+    Ws->_wdt->startSleep();
 #endif
   } else {
     WS_DEBUG_PRINTLN(
@@ -447,7 +447,7 @@ void SleepController::HandleNetFSMFailure() {
           ? ws_sleep_SleepConfig_timer_tag
           : ws_sleep_SleepConfig_ext0_tag;
 #else
-  msg_sleep_cfg.which_config = Ws._wdt->isSleepConfigTimer()
+  msg_sleep_cfg.which_config = Ws->_wdt->isSleepConfigTimer()
                                    ? ws_sleep_SleepConfig_timer_tag
                                    : ws_sleep_SleepConfig_ext0_tag;
 #endif
