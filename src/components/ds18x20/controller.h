@@ -43,5 +43,5 @@ private:
   std::vector<DS18X20Hardware *> _DS18X20_pins;
   int _num_drivers;
 };
-extern wippersnapper Ws; ///< Wippersnapper V2 instance
+extern wippersnapper* Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_DS18X20_CONTROLLER_H

@@ -176,7 +176,7 @@ typedef struct _ws_display_Write {
 
 /* *
  Add adds a new display or replaces an existing one.
- Used as ws.display.Add in i2c.proto for I2C-based displays.
+ Used as Ws->display.Add in i2c.proto for I2C-based displays.
 
  Known driver strings (migrated from DisplayDriver enum):
  EPD drivers: "SSD1680", "ILI0373", "UC8253", "UC8179", "UC8151", "SSD1683"

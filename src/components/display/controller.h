@@ -46,5 +46,5 @@ private:
   bool removeExistingDisplayByName(const char *name);
   int8_t findDisplayIndexByName(const char *name);
 };
-extern wippersnapper Ws; ///< Global V2 instance
+extern wippersnapper* Ws; ///< Global V2 instance
 #endif                   // WS_DISPLAY_CONTROLLER_H

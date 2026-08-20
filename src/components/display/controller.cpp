@@ -218,7 +218,7 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
   }
 
   // Show splash screen and status bar
-  hw->initialise(Ws._configV2.aio_user);
+  hw->initialise(Ws->_configV2.aio_user);
 
   _displays[_num_displays] = hw;
   _num_displays++;
@@ -244,32 +244,32 @@ void DisplayController::PublishDisplayComponentError(
     ws_display_InterfaceDescriptor iface, const char *error) {
   switch (iface.which_descriptor) {
   case ws_display_InterfaceDescriptor_spi_epd_tag:
-    Ws.error_handler->publishComponentError(iface.descriptor.spi_epd.spi,
+    Ws->error_handler->publishComponentError(iface.descriptor.spi_epd.spi,
                                             error);
     break;
   case ws_display_InterfaceDescriptor_spi_tft_tag:
-    Ws.error_handler->publishComponentError(iface.descriptor.spi_tft.spi,
+    Ws->error_handler->publishComponentError(iface.descriptor.spi_tft.spi,
                                             error);
     break;
   case ws_display_InterfaceDescriptor_i2c_tag:
-    Ws.error_handler->publishComponentError(iface.descriptor.i2c, error);
+    Ws->error_handler->publishComponentError(iface.descriptor.i2c, error);
     break;
   case ws_display_InterfaceDescriptor_ttl_rgb666_tag:
-    Ws.error_handler->publishComponentError(iface.descriptor.ttl_rgb666.pin_b0,
+    Ws->error_handler->publishComponentError(iface.descriptor.ttl_rgb666.pin_b0,
                                             error);
     break;
   case ws_display_InterfaceDescriptor_i8080_tag:
-    Ws.error_handler->publishComponentError(iface.descriptor.i8080.pin_d0,
+    Ws->error_handler->publishComponentError(iface.descriptor.i8080.pin_d0,
                                             error);
     break;
   case ws_display_InterfaceDescriptor_dsi_tag:
-    Ws.error_handler->publishComponentError(iface.descriptor.dsi.pin_rst,
+    Ws->error_handler->publishComponentError(iface.descriptor.dsi.pin_rst,
                                             error);
     break;
   default:
     WS_DEBUG_PRINTLN(
         "[display] WARNING: Unknown interface type in add request");
-    Ws.error_handler->publishComponentError("Unknown interface", error);
+    Ws->error_handler->publishComponentError("Unknown interface", error);
     break;
   }
 }

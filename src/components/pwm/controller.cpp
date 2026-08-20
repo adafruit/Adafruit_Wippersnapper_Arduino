@@ -73,7 +73,7 @@ bool PWMController::Router(pb_istream_t *stream) {
 bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   uint8_t pin = 0;
   if (!ExpanderHardware::ParsePinNum(msg->pin, pin)) {
-    Ws.error_handler->publishComponentError(msg->pin, "Malformed pin name");
+    Ws->error_handler->publishComponentError(msg->pin, "Malformed pin name");
     return false;
   }
 
@@ -81,9 +81,9 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
-      Ws.error_handler->publishComponentError(msg->pin, "Expander not found");
+      Ws->error_handler->publishComponentError(msg->pin, "Expander not found");
       return false;
     }
   }
@@ -97,7 +97,7 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   bool did_attach = new_pin->attach(pin, (uint32_t)msg->frequency,
                                     (uint32_t)msg->resolution, expander_drv);
   if (!did_attach) {
-    Ws.error_handler->publishComponentError(msg->pin, "Failed to attach pin");
+    Ws->error_handler->publishComponentError(msg->pin, "Failed to attach pin");
     delete new_pin;
   } else {
     _pins.push_back(new_pin);
@@ -116,7 +116,7 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
 bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
   uint8_t pin = 0;
   if (!ExpanderHardware::ParsePinNum(msg->pin, pin)) {
-    Ws.error_handler->publishComponentError(msg->pin, "Malformed pin name");
+    Ws->error_handler->publishComponentError(msg->pin, "Malformed pin name");
     return false;
   }
 
@@ -124,15 +124,15 @@ bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
-      Ws.error_handler->publishComponentError(msg->pin, "Expander not found");
+      Ws->error_handler->publishComponentError(msg->pin, "Expander not found");
       return false;
     }
   }
 
   if (!RemovePin(pin, expander_drv)) {
-    Ws.error_handler->publishComponentError(msg->pin, "Failed to find pin");
+    Ws->error_handler->publishComponentError(msg->pin, "Failed to find pin");
     return false;
   }
 
@@ -181,7 +181,7 @@ PWMHardware *PWMController::GetPin(uint8_t pin, ExpanderHardware *expander) {
 bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
   uint8_t pin = 0;
   if (!ExpanderHardware::ParsePinNum(msg->pin, pin)) {
-    Ws.error_handler->publishComponentError(msg->pin, "Malformed pin name");
+    Ws->error_handler->publishComponentError(msg->pin, "Malformed pin name");
     return false;
   }
 
@@ -189,21 +189,21 @@ bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
-      Ws.error_handler->publishComponentError(msg->pin, "Expander not found");
+      Ws->error_handler->publishComponentError(msg->pin, "Expander not found");
       return false;
     }
   }
 
   PWMHardware *hw = GetPin(pin, expander_drv);
   if (hw == nullptr) {
-    Ws.error_handler->publishComponentError(msg->pin, "Failed to find pin");
+    Ws->error_handler->publishComponentError(msg->pin, "Failed to find pin");
     return false;
   }
 
   if (!hw->write(msg)) {
-    Ws.error_handler->publishComponentError(msg->pin, "Failed to write to pin");
+    Ws->error_handler->publishComponentError(msg->pin, "Failed to write to pin");
     return false;
   }
 

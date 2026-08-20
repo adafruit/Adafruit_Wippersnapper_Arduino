@@ -47,7 +47,7 @@ bool ExpanderController::Router(pb_istream_t *stream) {
   case ws_expander_B2D_add_tag: {
     // Re-decode from saved stream with settings callbacks on cfg_i2c
     ws_expander_B2D b2d_add = ws_expander_B2D_init_zero;
-    Ws._i2c_controller->SetupAddDecodeCallbacks(&b2d_add.payload.add.cfg_i2c);
+    Ws->_i2c_controller->SetupAddDecodeCallbacks(&b2d_add.payload.add.cfg_i2c);
     if (!ws_pb_decode(&saved_stream, ws_expander_B2D_fields, &b2d_add)) {
       WS_DEBUG_PRINTLN(
           "[expander] ERROR: Failed to re-decode add with settings");
@@ -153,7 +153,7 @@ static const ExpanderSettingHandler kExpanderSettingHandlers[] = {
  */
 bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
   if (!msg->has_cfg_i2c) {
-    Ws.error_handler->publishComponentError(ws_i2c_Descriptor{},
+    Ws->error_handler->publishComponentError(ws_i2c_Descriptor{},
                                             "No configuration provided!");
     return false;
   }
@@ -163,23 +163,23 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
 
   // Check if this expander has already been added
   if (GetDriver(addr) != nullptr) {
-    Ws.error_handler->publishComponentError(desc,
+    Ws->error_handler->publishComponentError(desc,
                                             "Expander exists at this address!");
     return false;
   }
 
   // Get or create the I2C bus for the expander
-  TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(
+  TwoWire *wire = Ws->_i2c_controller->GetOrCreateI2cBus(
       desc.address_space.pin_scl, desc.address_space.pin_sda);
   if (wire == nullptr) {
-    Ws.error_handler->publishComponentError(desc,
+    Ws->error_handler->publishComponentError(desc,
                                             "Failed to get/create I2C bus!");
     return false;
   }
 
   // Attempt to initialize the expander
   if (!AddExpander(msg->cfg_i2c.name, addr, wire)) {
-    Ws.error_handler->publishComponentError(desc,
+    Ws->error_handler->publishComponentError(desc,
                                             "Failed to initialize expander!");
     return false;
   }
@@ -187,8 +187,8 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
   // Apply device-specific settings
   if (msg->cfg_i2c.has_settings) {
     ExpanderHardware *drv = GetDriver(addr);
-    DecodedSetting *settings = Ws._i2c_controller->GetDecodedSettings();
-    for (size_t i = 0; i < Ws._i2c_controller->GetDecodedSettingsCount(); i++) {
+    DecodedSetting *settings = Ws->_i2c_controller->GetDecodedSettings();
+    for (size_t i = 0; i < Ws->_i2c_controller->GetDecodedSettingsCount(); i++) {
       if (!settings[i].has_value) {
         continue;
       }
@@ -203,7 +203,7 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
           char err[64];
           snprintf(err, sizeof(err), "Failed to apply setting: %s",
                    settings[i].key);
-          Ws.error_handler->publishComponentError(desc, err);
+          Ws->error_handler->publishComponentError(desc, err);
         }
         break;
       }
@@ -211,7 +211,7 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
       if (!found) {
         char err[64];
         snprintf(err, sizeof(err), "Unknown setting key: %s", settings[i].key);
-        Ws.error_handler->publishComponentError(desc, err);
+        Ws->error_handler->publishComponentError(desc, err);
       }
     }
   }
@@ -225,7 +225,7 @@ bool ExpanderController::Handle_Add(ws_expander_Add *msg) {
  */
 bool ExpanderController::Handle_Remove(ws_expander_Remove *msg) {
   if (!msg->has_cfg_i2c) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         ws_i2c_Descriptor{}, "No I2C config provided in Remove!");
     return false;
   }
