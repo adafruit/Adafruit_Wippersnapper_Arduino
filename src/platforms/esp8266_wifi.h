@@ -58,7 +58,6 @@ public:
           Wireless Network password
   */
   esp8266_wifi() : wippersnapper() {
-    Ws = this;
     _ssid = 0;
     _pass = 0;
     _wifi_client = new WiFiClient;

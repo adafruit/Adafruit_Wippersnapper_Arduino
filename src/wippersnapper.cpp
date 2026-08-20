@@ -46,7 +46,20 @@ wippersnapper::wippersnapper()
       _i2c_controller(nullptr), _uart_controller(nullptr),
       _pixels_controller(nullptr), _pwm_controller(nullptr),
       _servo_controller(nullptr), _wdt(nullptr), _device_uidV2(nullptr),
-      _mqtt_client_id(nullptr) {
+      _mqtt_client_id(nullptr) {}
+
+/*!
+    @brief    Registers this instance as the global Ws pointer and
+              creates the model and controller classes. Called from
+              provision() so the object is fully constructed (platform
+              vtable in place) before Ws is published or any controller
+              exists.
+*/
+void wippersnapper::_init() {
+  if (Ws == this)
+    return; // already initialized
+  Ws = this;
+
   // Initialize WDT wrapper
   _wdt = new ws_wdt();
 
@@ -209,6 +222,9 @@ void wippersnapper::set_user_key() {
               configuration and Adafruit IO credentials.
 */
 void wippersnapper::provision() {
+  // Publish the global Ws pointer and create the controllers
+  _init();
+
   // Obtain device's MAC address
   getMacAddr();
 

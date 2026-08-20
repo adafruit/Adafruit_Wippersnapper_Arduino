@@ -47,7 +47,6 @@ public:
   @brief  Initializes the Adafruit IO class for AirLift devices.
   */
   airlift_wifi() : wippersnapper() {
-    Ws = this;
     _ssPin = SPIWIFI_SS;     // 10;
     _ackPin = SPIWIFI_ACK;   // 7;
     _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals
