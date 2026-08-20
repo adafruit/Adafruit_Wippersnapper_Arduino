@@ -38,7 +38,7 @@ public:
   /*!
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
-  pico_offline() : wippersnapper() { Ws = this; }
+  pico_offline() : wippersnapper() {}
 
   /*!
   @brief  Destructor

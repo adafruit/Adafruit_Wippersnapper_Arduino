@@ -318,6 +318,8 @@ public:
   JsonDocument _config_doc; ///< Storage for the config.json file
   uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
+  void _init();
+
   // Separate loop() functions, depending on power mode
   void loop();
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)

@@ -42,7 +42,6 @@ public:
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
   pico_wifi() : wippersnapper() {
-    Ws = this;
     _ssid = 0;
     _pass = 0;
   }

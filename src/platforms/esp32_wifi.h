@@ -39,7 +39,6 @@ public:
   @brief  Initializes the Adafruit IO class for ESP32 devices.
   */
   esp32_wifi() : wippersnapper() {
-    Ws = this;
     _ssid = 0;
     _pass = 0;
   }
@@ -62,7 +61,6 @@ public:
   esp32_wifi(const char *aioUsername, const char *aioKey, const char *netSSID,
              const char *netPass, const char *brokerURL, uint16_t brokerPort)
       : wippersnapper() {
-    Ws = this;
     _ssid = netSSID;
     _pass = netPass;
 
