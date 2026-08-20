@@ -51,6 +51,7 @@ public:
   @brief  Destructor
   */
   ~pico_wifi() {
+    disconnect();
     if (_mqtt_client_secure)
       delete _mqtt_client_secure;
     if (_mqtt_client_secure)

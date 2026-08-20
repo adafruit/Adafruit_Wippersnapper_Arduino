@@ -69,6 +69,7 @@ public:
   @brief  Destructor for the Adafruit IO AirLift class.
   */
   ~airlift_wifi() {
+    disconnect();
     if (_mqttV2)
       delete _mqttV2;
   }
