@@ -36,7 +36,7 @@
 
 #define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
 
-extern wippersnapper* Ws; ///< Wippersnapper client instance
+extern wippersnapper *Ws; ///< Wippersnapper client instance
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
 */

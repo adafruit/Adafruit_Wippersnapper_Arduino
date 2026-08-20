@@ -203,7 +203,8 @@ bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
   }
 
   if (!hw->write(msg)) {
-    Ws->error_handler->publishComponentError(msg->pin, "Failed to write to pin");
+    Ws->error_handler->publishComponentError(msg->pin,
+                                             "Failed to write to pin");
     return false;
   }
 

@@ -329,7 +329,7 @@ void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
   Ws->analogin_controller->SetMaxAnalogPins(
       exported_from_device["maxAnalogPins"] | 0);
   Ws->analogin_controller->SetRefVoltage(exported_from_device["refVoltage"] |
-                                        0.0f);
+                                         0.0f);
   // Since `secrets.json` is unused in offline mode, use the status LED
   // brightness from here instead
   setStatusLEDBrightness(exported_from_device["statusLEDBrightness"] | 0.3f);
@@ -814,7 +814,8 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
       true, sleep_config["mode"], run_duration, timer_config["duration"]);
 
   Ws->_sleep_controller->SetWakeEnablePin(sleep_config["wakeEnablePin"] | 255,
-                                         sleep_config["wakeEnablePinPull"] | 0);
+                                          sleep_config["wakeEnablePinPull"] |
+                                              0);
 
   // Pass the message directly to the sleep controller
   // Lock is always true for offline mode

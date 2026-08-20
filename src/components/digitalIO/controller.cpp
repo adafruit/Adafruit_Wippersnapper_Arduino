@@ -123,24 +123,24 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   // Validate all fields of the digital pin add message before adding the pin
   if (msg->gpio_direction == ws_digitalio_Direction_D_UNSPECIFIED) {
     Ws->error_handler->publishComponentError(msg->pin_name,
-                                            "Invalid GPIO direction");
+                                             "Invalid GPIO direction");
     return false;
   }
   if (msg->sample_mode == ws_digitalio_SampleMode_SM_UNSPECIFIED) {
     Ws->error_handler->publishComponentError(msg->pin_name,
-                                            "Invalid sample mode");
+                                             "Invalid sample mode");
     return false;
   }
   if (msg->sample_mode == ws_digitalio_SampleMode_SM_TIMER &&
       msg->period <= 0) {
     Ws->error_handler->publishComponentError(msg->pin_name,
-                                            "Invalid period for timer mode");
+                                             "Invalid period for timer mode");
     return false;
   }
 
   if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
     Ws->error_handler->publishComponentError(msg->pin_name,
-                                            "Malformed pin name");
+                                             "Malformed pin name");
     return false;
   }
 
@@ -151,7 +151,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
       Ws->error_handler->publishComponentError(msg->pin_name,
-                                              "Expander not found");
+                                               "Expander not found");
       return false;
     }
   }
@@ -213,7 +213,7 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
 
   if (!RemovePin(pin_num, expander_drv)) {
     Ws->error_handler->publishComponentError(msg->pin_name,
-                                            "Failed to find pin");
+                                             "Failed to find pin");
     return false;
   }
 
@@ -253,7 +253,7 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   uint8_t pin_num = 0;
   if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
     Ws->error_handler->publishComponentError(msg->pin_name,
-                                            "Malformed pin name");
+                                             "Malformed pin name");
     return false;
   }
 
@@ -264,7 +264,7 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
     expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
       Ws->error_handler->publishComponentError(msg->pin_name,
-                                              "Expander not found");
+                                               "Expander not found");
       return false;
     }
   }
@@ -272,7 +272,7 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   DigitalIOHardware *pin = GetPin(pin_num, expander_drv);
   if (!pin) {
     Ws->error_handler->publishComponentError(msg->pin_name,
-                                            "Failed to find pin");
+                                             "Failed to find pin");
     return false;
   }
 
@@ -331,7 +331,7 @@ bool DigitalIOController::EncodePublishPinEvent(DigitalIOHardware *pin) {
     }
 
     if (!Ws->PublishD2b(ws_signal_DeviceToBroker_digitalio_tag,
-                       _dio_model->GetDigitalIOD2B())) {
+                        _dio_model->GetDigitalIOD2B())) {
       WS_DEBUG_PRINTLN("[dio] ERROR: Unable to publish event message, "
                        "moving onto the next pin!");
       return false;
@@ -339,7 +339,7 @@ bool DigitalIOController::EncodePublishPinEvent(DigitalIOHardware *pin) {
     WS_DEBUG_PRINTLN("[dio] Published!")
   } else {
     if (!Ws->_sdCardV2->LogGPIOSensorEventToSD(pin_num, pin_value,
-                                              ws_sensor_Type_T_BOOLEAN))
+                                               ws_sensor_Type_T_BOOLEAN))
       return false;
   }
 

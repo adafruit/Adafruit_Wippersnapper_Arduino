@@ -27,7 +27,7 @@
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
-extern wippersnapper* Ws; ///< Wippersnapper client instance
+extern wippersnapper *Ws; ///< Wippersnapper client instance
 
 /*!
     @brief  Class for using the ESP32 network interface.
@@ -71,7 +71,8 @@ public:
     strncpy(Ws->_configV2.network.pass, _pass,
             sizeof(Ws->_configV2.network.pass));
     strncpy(Ws->_configV2.aio_key, aioKey, sizeof(Ws->_configV2.aio_key));
-    strncpy(Ws->_configV2.aio_user, aioUsername, sizeof(Ws->_configV2.aio_user));
+    strncpy(Ws->_configV2.aio_user, aioUsername,
+            sizeof(Ws->_configV2.aio_user));
     strncpy(Ws->_configV2.aio_url, brokerURL, sizeof(Ws->_configV2.aio_url));
     Ws->_configV2.io_port = brokerPort;
   }
