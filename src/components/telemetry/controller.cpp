@@ -79,6 +79,10 @@ bool TelemetryController::updatePeriod(ws_telemetry_Type type, float period) {
     if (_telemetry_metrics[i]->GetType() == type) {
       _telemetry_metrics[i]->SetPeriod(period);
       WS_DEBUG_PRINTLN("[telemetry] Updated existing metric's period");
+      if (!_telemetry_metrics[i]->IsPeriodic()) {
+        // Reset the reported state to allow a report-once metric to published
+        _telemetry_metrics[i]->SetReported(false); 
+      }
       return true;
     }
   }

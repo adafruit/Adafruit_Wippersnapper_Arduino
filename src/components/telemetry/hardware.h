@@ -49,7 +49,7 @@ public:
   bool IsTimerExpired();
   void MarkPolled();
   bool WasReported();
-  void SetReported();
+  void SetReported(bool reported = true);
   // Metric reads
   int32_t ReadRSSI();
   const char *ReadBootReason();
