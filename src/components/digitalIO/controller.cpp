@@ -122,24 +122,24 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
 
   // Validate all fields of the digital pin add message before adding the pin
   if (msg->gpio_direction == ws_digitalio_Direction_D_UNSPECIFIED) {
-    Ws.error_handler->publishComponentError(msg->pin_name,
+    Ws->error_handler->publishComponentError(msg->pin_name,
                                             "Invalid GPIO direction");
     return false;
   }
   if (msg->sample_mode == ws_digitalio_SampleMode_SM_UNSPECIFIED) {
-    Ws.error_handler->publishComponentError(msg->pin_name,
+    Ws->error_handler->publishComponentError(msg->pin_name,
                                             "Invalid sample mode");
     return false;
   }
   if (msg->sample_mode == ws_digitalio_SampleMode_SM_TIMER &&
       msg->period <= 0) {
-    Ws.error_handler->publishComponentError(msg->pin_name,
+    Ws->error_handler->publishComponentError(msg->pin_name,
                                             "Invalid period for timer mode");
     return false;
   }
 
   if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
-    Ws.error_handler->publishComponentError(msg->pin_name,
+    Ws->error_handler->publishComponentError(msg->pin_name,
                                             "Malformed pin name");
     return false;
   }
@@ -148,9 +148,9 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
-      Ws.error_handler->publishComponentError(msg->pin_name,
+      Ws->error_handler->publishComponentError(msg->pin_name,
                                               "Expander not found");
       return false;
     }
@@ -204,7 +204,7 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
       WS_DEBUG_PRINTLN("[dio] ERROR: Expander not found for address!");
       return false;
@@ -212,7 +212,7 @@ bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
   }
 
   if (!RemovePin(pin_num, expander_drv)) {
-    Ws.error_handler->publishComponentError(msg->pin_name,
+    Ws->error_handler->publishComponentError(msg->pin_name,
                                             "Failed to find pin");
     return false;
   }
@@ -252,7 +252,7 @@ DigitalIOHardware *DigitalIOController::GetPin(uint8_t pin_num,
 bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   uint8_t pin_num = 0;
   if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
-    Ws.error_handler->publishComponentError(msg->pin_name,
+    Ws->error_handler->publishComponentError(msg->pin_name,
                                             "Malformed pin name");
     return false;
   }
@@ -261,9 +261,9 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
-      Ws.error_handler->publishComponentError(msg->pin_name,
+      Ws->error_handler->publishComponentError(msg->pin_name,
                                               "Expander not found");
       return false;
     }
@@ -271,20 +271,20 @@ bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
 
   DigitalIOHardware *pin = GetPin(pin_num, expander_drv);
   if (!pin) {
-    Ws.error_handler->publishComponentError(msg->pin_name,
+    Ws->error_handler->publishComponentError(msg->pin_name,
                                             "Failed to find pin");
     return false;
   }
 
   if (pin->GetDirection() != ws_digitalio_Direction_D_OUTPUT) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         msg->pin_name, "Requested pin is not a digital output pin");
     return false;
   }
 
   // Ensure the value type to write is boolean
   if (msg->value.which_value != ws_sensor_Event_bool_value_tag) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         msg->pin_name,
         "Invalid value type for digital write, expected boolean");
     return false;
@@ -319,7 +319,7 @@ bool DigitalIOController::EncodePublishPinEvent(DigitalIOHardware *pin) {
     snprintf(c_pin_name, sizeof(c_pin_name), "D%d", pin_num);
   }
 
-  if (!Ws._sdCardV2->isModeOffline()) {
+  if (!Ws->_sdCardV2->isModeOffline()) {
     WS_DEBUG_PRINT("[dio] Publish Event: ");
     WS_DEBUG_PRINTVAR(c_pin_name);
     WS_DEBUG_PRINT(" | value: ");
@@ -330,7 +330,7 @@ bool DigitalIOController::EncodePublishPinEvent(DigitalIOHardware *pin) {
       return false;
     }
 
-    if (!Ws.PublishD2b(ws_signal_DeviceToBroker_digitalio_tag,
+    if (!Ws->PublishD2b(ws_signal_DeviceToBroker_digitalio_tag,
                        _dio_model->GetDigitalIOD2B())) {
       WS_DEBUG_PRINTLN("[dio] ERROR: Unable to publish event message, "
                        "moving onto the next pin!");
@@ -338,7 +338,7 @@ bool DigitalIOController::EncodePublishPinEvent(DigitalIOHardware *pin) {
     }
     WS_DEBUG_PRINTLN("[dio] Published!")
   } else {
-    if (!Ws._sdCardV2->LogGPIOSensorEventToSD(pin_num, pin_value,
+    if (!Ws->_sdCardV2->LogGPIOSensorEventToSD(pin_num, pin_value,
                                               ws_sensor_Type_T_BOOLEAN))
       return false;
   }

@@ -16,11 +16,11 @@
 typedef enum _ws_telemetry_Type {
     ws_telemetry_Type_TM_UNSPECIFIED = 0, /* * Unspecified telemetry metric, error. */
     /* Boot / reset metrics (1-9). */
-    ws_telemetry_Type_TM_BOOT_REASON = 1, /* * Reset / boot reason string (ws.sensor.Event.bytes_value, T_BYTES). */
-    ws_telemetry_Type_TM_BOOT_COUNT = 2, /* * Number of boots since first power-on (ws.sensor.Event.float_value, T_RAW). */
+    ws_telemetry_Type_TM_BOOT_REASON = 1, /* * Reset / boot reason string (Ws->sensor.Event.bytes_value, T_BYTES). */
+    ws_telemetry_Type_TM_BOOT_COUNT = 2, /* * Number of boots since first power-on (Ws->sensor.Event.float_value, T_RAW). */
     /* Connectivity / latency metrics (10-19). */
-    ws_telemetry_Type_TM_RSSI = 10, /* * Wi-Fi signal strength, in dBm (ws.sensor.Event.float_value, T_RAW). */
-    ws_telemetry_Type_TM_LATENCY = 11 /* * Broker round-trip latency, in ms (ws.sensor.Event.float_value, T_RAW). */
+    ws_telemetry_Type_TM_RSSI = 10, /* * Wi-Fi signal strength, in dBm (Ws->sensor.Event.float_value, T_RAW). */
+    ws_telemetry_Type_TM_LATENCY = 11 /* * Broker round-trip latency, in ms (Ws->sensor.Event.float_value, T_RAW). */
 } ws_telemetry_Type;
 
 /* Struct definitions */
