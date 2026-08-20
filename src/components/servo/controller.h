@@ -50,4 +50,4 @@ private:
   ServoHardware *_servo_hardware[MAX_SERVOS] = {nullptr};
   int _active_servo_pins; ///< Number of active servo pins
 };
-#endif                   // WS_SERVO_CONTROLLER_H
+#endif // WS_SERVO_CONTROLLER_H

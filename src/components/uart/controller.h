@@ -50,4 +50,4 @@ private:
   std::vector<drvUartBase *>
       _uart_drivers; ///< Vector of UART device drivers (eg: PM2.5, etc.)
 };
-#endif                   // WS_UART_CONTROLLER_H
+#endif // WS_UART_CONTROLLER_H

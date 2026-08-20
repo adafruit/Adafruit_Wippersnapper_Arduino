@@ -43,4 +43,4 @@ private:
   std::vector<DS18X20Hardware *> _DS18X20_pins;
   int _num_drivers;
 };
-#endif                   // WS_DS18X20_CONTROLLER_H
+#endif // WS_DS18X20_CONTROLLER_H

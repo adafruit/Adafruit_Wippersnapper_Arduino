@@ -50,4 +50,4 @@ private:
   std::vector<DigitalIOHardware *> _pins_output;
   DigitalIOModel *_dio_model;
 };
-#endif                   // WS_DIGITALIO_CONTROLLER_H
+#endif // WS_DIGITALIO_CONTROLLER_H

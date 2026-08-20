@@ -117,4 +117,4 @@ private:
       _i2c_buses;                      ///< Vector of ptrs to I2C hardware buses
   std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C drivers
 };
-#endif                   // WS_I2C_CONTROLLER_H
+#endif // WS_I2C_CONTROLLER_H

@@ -54,4 +54,4 @@ private:
   float _mcu_ref_voltage; ///< MCU/board reference voltage, used for native pins
                           ///< (expander pins use their own message ref_voltage)
 };
-#endif                   // WS_ANALOGIN_CONTROLLER_H
+#endif // WS_ANALOGIN_CONTROLLER_H

@@ -38,4 +38,4 @@ private:
   bool publishD2B();
   ws_error_D2B _d2b_msg; ///< D2B message instance
 };
-#endif                   // WS_ERROR_HANDLER_H
+#endif // WS_ERROR_HANDLER_H

@@ -50,4 +50,4 @@ private:
   std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
   std::vector<UARTHardware *> _ports;      ///< UART hardware for GPS serial
 };
-#endif                   // WS_GPS_CONTROLLER_H
+#endif // WS_GPS_CONTROLLER_H

@@ -43,4 +43,4 @@ private:
   PWMModel *_pwm_model;
   std::vector<PWMHardware *> _pins;
 };
-#endif                   // WS_PWM_CONTROLLER_H
+#endif // WS_PWM_CONTROLLER_H

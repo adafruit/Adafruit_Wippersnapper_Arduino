@@ -46,4 +46,4 @@ private:
   bool removeExistingDisplayByName(const char *name);
   int8_t findDisplayIndexByName(const char *name);
 };
-#endif                   // WS_DISPLAY_CONTROLLER_H
+#endif // WS_DISPLAY_CONTROLLER_H

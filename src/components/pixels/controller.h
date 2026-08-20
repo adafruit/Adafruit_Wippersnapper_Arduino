@@ -47,4 +47,4 @@ private:
   uint8_t _num_strands;                       ///< Number of pixel strands
   uint16_t GetStrandIndex(uint16_t pin_data); // Returns 0xFF if not found
 };
-#endif                   // WS_PIXELS_CONTROLLER_H
+#endif // WS_PIXELS_CONTROLLER_H

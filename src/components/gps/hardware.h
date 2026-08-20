@@ -166,4 +166,4 @@ public:
   */
   void SetDidReadSend(bool value) { _did_read_send = value; }
 };
-#endif                   // WS_GPS_HARDWARE_H
+#endif // WS_GPS_HARDWARE_H
