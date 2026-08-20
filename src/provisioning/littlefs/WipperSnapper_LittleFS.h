@@ -33,5 +33,4 @@ public:
               ws_led_status_t status_state = WS_LED_STATUS_ERROR_RUNTIME);
   void GetSDCSPin();
 };
-extern wippersnapper Ws;
 #endif // WIPPERSNAPPER_LITTLEFS_H

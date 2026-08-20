@@ -30,7 +30,8 @@
 #include "Arduino.h"
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
-extern wippersnapper Ws;
+class pico_wifi;
+extern pico_wifi Ws;
 
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.

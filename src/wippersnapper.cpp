@@ -33,7 +33,17 @@
 
 #include "wippersnapper.h"
 
-wippersnapper Ws;
+// Define the global WS instance as the platform-specific derived class
+// This ensures virtual methods like _connect() route to the correct implementation
+#if (defined(IS_OFFLINE_MODE) && (IS_OFFLINE_MODE == 1)) || \
+    defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                 \
+    defined(ARDUINO_RASPBERRY_PI_PICO) ||                   \
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||   \
+    defined(ARDUINO_ADAFRUIT_METRO_RP2350)
+ws_adapter_offline Ws;
+#else
+ws_adapter_wifi Ws;
+#endif
 
 /*!
     @brief    wippersnapper constructor

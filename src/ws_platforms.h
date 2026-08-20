@@ -49,6 +49,7 @@ typedef ninafw_wifi ws_adapter_wifi;
     defined(ARDUINO_ADAFRUIT_METRO_RP2350)
 #include "platforms/pico_offline.h"
 typedef pico_offline ws_adapter_offline;
+#define IS_OFFLINE_MODE 1
 #else
 #warning "Platform not defined within ws_platforms.h!"
 #endif

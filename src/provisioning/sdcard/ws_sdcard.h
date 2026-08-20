@@ -138,5 +138,4 @@ private:
   bool _use_test_data;        ///< True if sample data is being used for testing
   bool _is_battery_low;       ///< True if battery < LOW_SD_WRITE_BATT_THRESH
 };
-extern wippersnapper Ws;
 #endif // WS_SDCARD_H

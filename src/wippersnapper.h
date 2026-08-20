@@ -345,6 +345,7 @@ protected:
   char *_device_uidV2;     /*!< Unique device identifier  */
   char *_mqtt_client_id;   /*!< MQTT client ID with "io-wipper" prefix */
 };
-extern wippersnapper Ws; ///< Global member variable for callbacks
+
+#include "ws_platforms.h" // Include the platform-specific Wippersnapper_WiFi typedef
 
 #endif // WIPPERSNAPPER_H

@@ -72,7 +72,6 @@ private:
   uint8_t _wake_enable_pin;       ///< Pin to check for wake enable
   uint8_t _wake_enable_pin_pull;  ///< Pull mode: 0=none, 1=pulldown, 2=pullup
 };
-extern wippersnapper Ws; ///< Wippersnapper V2 instance
 
 #endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
 #endif // WS_SLEEP_CONTROLLER_H

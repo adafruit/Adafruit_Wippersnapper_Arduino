@@ -61,5 +61,4 @@ private:
       ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;           ///< Flag indicating if response was received
 };
-extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_CHECKIN_H

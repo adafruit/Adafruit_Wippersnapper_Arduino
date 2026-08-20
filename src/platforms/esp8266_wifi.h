@@ -36,8 +36,8 @@
  */
 // static const char *fingerprint PROGMEM =  "4E C1 52 73 24 A8 36 D6 7A 4C 67
 // C7 91 0C 0A 22 B9 2D 5B CA";
-
-extern wippersnapper Ws;
+class esp8266_wifi;
+extern esp8266_wifi Ws;
 
 /*!
     @brief  Class for interacting with the Espressif ESP8266's network

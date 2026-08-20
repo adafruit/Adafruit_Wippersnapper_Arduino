@@ -50,5 +50,4 @@ private:
   std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
   std::vector<UARTHardware *> _ports;      ///< UART hardware for GPS serial
 };
-extern wippersnapper Ws; ///< Wippersnapper V2 instance
 #endif                   // WS_GPS_CONTROLLER_H
