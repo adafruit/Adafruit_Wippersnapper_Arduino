@@ -70,6 +70,7 @@ public:
   @brief  Destructor for the ESP8266's network iface.
   */
   ~esp8266_wifi() {
+    disconnect();
     if (_wifi_client)
       delete _wifi_client;
     if (_mqttV2)

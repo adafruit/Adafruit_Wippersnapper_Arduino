@@ -74,7 +74,7 @@ wippersnapper::wippersnapper()
     @brief    wippersnapper destructor
 */
 wippersnapper::~wippersnapper() {
-  disconnect();
+  // calling disconnect here is after the superclass dtor!!
   delete this->_wdt;
   delete this->sensor_model;
   delete this->error_handler;

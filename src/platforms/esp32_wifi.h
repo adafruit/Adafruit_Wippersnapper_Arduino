@@ -62,24 +62,24 @@ public:
   esp32_wifi(const char *aioUsername, const char *aioKey, const char *netSSID,
              const char *netPass, const char *brokerURL, uint16_t brokerPort)
       : wippersnapper() {
+    Ws = this;
     _ssid = netSSID;
     _pass = netPass;
 
     // Move credentials to the config struct
-    strncpy(Ws->_configV2.network.ssid, _ssid,
-            sizeof(Ws->_configV2.network.ssid));
-    strncpy(Ws->_configV2.network.pass, _pass,
-            sizeof(Ws->_configV2.network.pass));
-    strncpy(Ws->_configV2.aio_key, aioKey, sizeof(Ws->_configV2.aio_key));
-    strncpy(Ws->_configV2.aio_user, aioUsername, sizeof(Ws->_configV2.aio_user));
-    strncpy(Ws->_configV2.aio_url, brokerURL, sizeof(Ws->_configV2.aio_url));
-    Ws->_configV2.io_port = brokerPort;
+    strncpy(_configV2.network.ssid, _ssid, sizeof(_configV2.network.ssid));
+    strncpy(_configV2.network.pass, _pass, sizeof(_configV2.network.pass));
+    strncpy(_configV2.aio_key, aioKey, sizeof(_configV2.aio_key));
+    strncpy(_configV2.aio_user, aioUsername, sizeof(_configV2.aio_user));
+    strncpy(_configV2.aio_url, brokerURL, sizeof(_configV2.aio_url));
+    _configV2.io_port = brokerPort;
   }
 
   /*!
   @brief  Destructor for the Adafruit IO AirLift class.
   */
   ~esp32_wifi() {
+    disconnect();
     if (_mqtt_client_secure)
       delete _mqtt_client_secure;
     if (_mqtt_client_insecure)

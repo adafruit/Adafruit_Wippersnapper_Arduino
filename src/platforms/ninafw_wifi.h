@@ -61,6 +61,7 @@ public:
   @brief  Destructor for the Adafruit IO ublox class.
   */
   ~ninafw_wifi() {
+    disconnect();
     if (_mqtt)
       delete _mqtt;
   }
