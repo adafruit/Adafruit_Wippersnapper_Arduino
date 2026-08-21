@@ -155,6 +155,9 @@ const char *TelemetryTypeName(ws_telemetry_Type type) {
     @param  period
             The reporting interval, in seconds. Use 0 to report only once
             at startup.
+    @param  report_once
+            If true, the device will only report this metric once (via
+            Add() or updatePeriod(), i.e. at startup, or when requested).
 */
 TelemetryHardware::TelemetryHardware(ws_telemetry_Type type, float period,
                                      bool report_once) {
