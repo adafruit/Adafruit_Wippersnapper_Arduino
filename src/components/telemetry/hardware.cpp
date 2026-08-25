@@ -139,8 +139,6 @@ const char *TelemetryTypeName(ws_telemetry_Type type) {
     return "rssi";
   case ws_telemetry_Type_TM_BOOT_REASON:
     return "boot_reason";
-  case ws_telemetry_Type_TM_BOOT_COUNT:
-    return "boot_count";
   case ws_telemetry_Type_TM_LATENCY:
     return "latency";
   default:
