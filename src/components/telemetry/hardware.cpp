@@ -153,12 +153,17 @@ const char *TelemetryTypeName(ws_telemetry_Type type) {
     @param  period
             The reporting interval, in seconds. Use 0 to report only once
             at startup.
+    @param  report_once
+            If true, the device will only report this metric once (via
+            Add() or updatePeriod(), i.e. at startup, or when requested).
 */
-TelemetryHardware::TelemetryHardware(ws_telemetry_Type type, float period) {
+TelemetryHardware::TelemetryHardware(ws_telemetry_Type type, float period,
+                                     bool report_once) {
   did_read_send = false;
-  _reported_once = false;
+  _has_reported_once = false;
   _prv_period = 0;
   _type = type;
+  _report_once = report_once;
   SetPeriod(period);
 }
 
@@ -187,13 +192,15 @@ const char *TelemetryHardware::GetName() { return TelemetryTypeName(_type); }
 void TelemetryHardware::SetPeriod(float period) {
   _period = period * 1000; // Convert to milliseconds
   _prv_period = 0; // Reset the previous period whenever we set a new one
+  if (_report_once)
+    _has_reported_once = false; // Reset the reported-once flag if needed
 }
 
 /*!
     @brief  Whether the metric reports periodically or only once at startup.
     @returns True if the metric has a non-zero period, False otherwise.
 */
-bool TelemetryHardware::IsPeriodic() { return _period != 0; }
+bool TelemetryHardware::IsPeriodic() { return !_report_once; }
 
 /*!
     @brief  Obtains the current time in milliseconds and compares it to the
@@ -213,12 +220,12 @@ void TelemetryHardware::MarkPolled() { _prv_period = millis(); }
     @brief  Whether a report-once (period 0) metric has already been sent.
     @returns True if the metric has already reported once, False otherwise.
 */
-bool TelemetryHardware::WasReported() { return _reported_once; }
+bool TelemetryHardware::WasReported() { return _has_reported_once; }
 
 /*!
     @brief  Marks a report-once (period 0) metric as having been sent.
 */
-void TelemetryHardware::SetReported() { _reported_once = true; }
+void TelemetryHardware::SetReported() { _has_reported_once = true; }
 
 /*!
     @brief  Reads the current WiFi signal strength (RSSI).

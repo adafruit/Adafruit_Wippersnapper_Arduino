@@ -106,12 +106,21 @@ bool TelemetryController::Handle_TelemetryAdd(ws_telemetry_Add *msg) {
     return true;
   }
 
+  if ((msg->period == 0) && (msg->report_once == false)) {
+    Ws->error_handler->publishComponentError(
+        TelemetryTypeName(msg->type),
+        "Telemetry period must be >= 0, or report_once must be true");
+    return false;
+  }
+
   // If a metric of this type already exists, update its period instead of
   // registering a duplicate.
   if (updatePeriod(msg->type, msg->period))
     return true;
 
-  TelemetryHardware *new_metric = new TelemetryHardware(msg->type, msg->period);
+  TelemetryHardware *new_metric =
+      new TelemetryHardware(msg->type, msg->period, msg->report_once);
+
   // Confirm the instance was allocated and constructed for the requested
   // metric before tracking it.
   if (new_metric == nullptr || new_metric->GetType() != msg->type) {

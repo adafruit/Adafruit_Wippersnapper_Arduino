@@ -57,8 +57,8 @@ wippersnapper::wippersnapper()
 */
 void wippersnapper::_init() {
   if (Ws == this) {
-    WS_DEBUG_PRINTLN(
-        "Error: wippersnapper::_init() called, but Ws is already initialized - SHOULD NEVER HAPPEN!");
+    WS_DEBUG_PRINTLN("Error: wippersnapper::_init() called, but Ws is already "
+                     "initialized - SHOULD NEVER HAPPEN!");
     return; // already initialized
   }
   Ws = this;
