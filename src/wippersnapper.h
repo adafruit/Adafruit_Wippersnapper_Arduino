@@ -319,6 +319,7 @@ public:
   uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
   void _init();
+  void _requireInit(const char *method);
 
   // Separate loop() functions, depending on power mode
   void loop();

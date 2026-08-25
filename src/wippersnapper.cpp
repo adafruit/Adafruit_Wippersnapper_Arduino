@@ -56,8 +56,11 @@ wippersnapper::wippersnapper()
               exists.
 */
 void wippersnapper::_init() {
-  if (Ws == this)
+  if (Ws == this) {
+    WS_DEBUG_PRINTLN(
+        "Error: wippersnapper::_init() called, but Ws is already initialized - SHOULD NEVER HAPPEN!");
     return; // already initialized
+  }
   Ws = this;
 
   // Initialize WDT wrapper
@@ -82,6 +85,25 @@ void wippersnapper::_init() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   _sleep_controller = new SleepController();
 #endif
+}
+
+/*!
+    @brief    Verifies that provision() has been called on this instance
+              (i.e. this object is the published global Ws). If not, prints a
+              fatal error and hangs, since every other method depends on the
+              controllers and Ws pointer that provision() sets up.
+    @param    method  Name of the calling method, for the error message.
+*/
+void wippersnapper::_requireInit(const char *method) {
+  if (Ws == this)
+    return;
+  for (;;) {
+    WS_DEBUG_PRINT("[FATAL] wippersnapper::");
+    WS_DEBUG_PRINTVAR(method);
+    WS_DEBUG_PRINTLN("() called before provision(). Call provision() first, "
+                     "before any other Wippersnapper method.");
+    delay(ONE_SECOND_IN_MS);
+  }
 }
 
 /*!
@@ -114,7 +136,10 @@ wippersnapper::~wippersnapper() {
     @param    wifi_off  If true, turns off WiFi radio. If false, keeps WiFi
                         driver initialized for quick reconnection.
 */
-void wippersnapper::disconnect(bool wifi_off) { _disconnect(wifi_off); }
+void wippersnapper::disconnect(bool wifi_off) {
+  _requireInit(__func__);
+  _disconnect(wifi_off);
+}
 
 // Concrete class definition for abstract classes
 
@@ -143,6 +168,7 @@ void wippersnapper::_disconnect(bool wifi_off) {
               MAC address.
 */
 void wippersnapper::getMacAddr() {
+  _requireInit(__func__);
   WS_DEBUG_PRINTLN("wippersnapper::getMacAddr");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
@@ -163,6 +189,7 @@ int32_t wippersnapper::getRSSI() {
               A unique client identifier string.
 */
 void wippersnapper::setupMQTTClient(const char * /*clientID*/) {
+  _requireInit(__func__);
   WS_DEBUG_PRINTLN("wippersnapper::setupMQTTClient");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
@@ -172,6 +199,7 @@ void wippersnapper::setupMQTTClient(const char * /*clientID*/) {
     @returns  Network status as ws_status_t.
 */
 ws_status_t wippersnapper::networkStatus() {
+  _requireInit(__func__);
   WS_DEBUG_PRINTLN("wippersnapper::networkStatus");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return WS_IDLE;
@@ -186,6 +214,7 @@ ws_status_t wippersnapper::networkStatus() {
 */
 void wippersnapper::set_ssid_pass(const char * /*ssid*/,
                                   const char * /*ssidPassword*/) {
+  _requireInit(__func__);
   WS_DEBUG_PRINTLN("wippersnapper::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
@@ -195,6 +224,7 @@ void wippersnapper::set_ssid_pass(const char * /*ssid*/,
               secrets.json configuration file.
 */
 void wippersnapper::set_ssid_pass() {
+  _requireInit(__func__);
   WS_DEBUG_PRINTLN("wippersnapper::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
@@ -204,6 +234,7 @@ void wippersnapper::set_ssid_pass() {
 @returns True if `_network_ssid` is found, False otherwise.
 */
 bool wippersnapper::check_valid_ssid() {
+  _requireInit(__func__);
   WS_DEBUG_PRINTLN("wippersnapper::check_valid_ssid");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return false;
@@ -215,6 +246,7 @@ bool wippersnapper::check_valid_ssid() {
               not avaliable.
 */
 void wippersnapper::set_user_key() {
+  _requireInit(__func__);
   WS_DEBUG_PRINTLN("wippersnapper::set_user_key");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
@@ -416,6 +448,7 @@ void callDecodeB2D() {
               False otherwise.
 */
 bool wippersnapper::generateDeviceUID() {
+  _requireInit(__func__);
   // Generate device unique identifier
   // Set machine_name
   Ws->_boardIdV2 = BOARD_ID;
@@ -459,6 +492,7 @@ bool wippersnapper::generateDeviceUID() {
     @returns  Pointer to _mqtt_client_id, or NULL on failure.
 */
 char *wippersnapper::generateMQTTClientID() {
+  _requireInit(__func__);
   if (_device_uidV2 == NULL) {
     WS_DEBUG_PRINTLN("ERROR: Device UID not initialized");
     return NULL;
@@ -490,6 +524,7 @@ char *wippersnapper::generateMQTTClientID() {
                 False otherwise.
 */
 bool wippersnapper::generateWSTopics() {
+  _requireInit(__func__);
   // Calculate length for topic strings
   size_t lenSignalTopic = strlen(Ws->_configV2.aio_user) + WS_TOPIC_PREFIX_LEN +
                           strlen(_device_uidV2) + 1;
@@ -541,6 +576,7 @@ bool wippersnapper::generateWSTopics() {
               The error message to write to the serial and filesystem.
 */
 void wippersnapper::errorWriteHangV2(const char *error) {
+  _requireInit(__func__);
   // Print error
   WS_DEBUG_PRINTLNVAR(error);
 #ifdef USE_TINYUSB
@@ -566,6 +602,7 @@ void wippersnapper::errorWriteHangV2(const char *error) {
    failure mode for sleep mode.
 */
 void wippersnapper::NetworkFSM(bool initial_connect) {
+  _requireInit(__func__);
   Ws->_wdt->feed();
   // Initial state
   fsm_net_t fsmNetwork;
@@ -706,6 +743,7 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
 */
 void wippersnapper::haltErrorV2(const char *error,
                                 ws_led_status_t ledStatusColor, bool reboot) {
+  _requireInit(__func__);
   WS_DEBUG_PRINT("ERROR ");
   if (reboot) {
     WS_DEBUG_PRINT("[RESET]: ");
@@ -742,6 +780,7 @@ void wippersnapper::haltErrorV2(const char *error,
               False otherwise.
 */
 bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
+  _requireInit(__func__);
   WS_DEBUG_PRINTLN("=> Publishing DeviceToBroker signal message...");
 
   // Alloc memory on heap for the DeviceToBroker message
@@ -840,6 +879,7 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
             every STATUS_LED_KAT_BLINK_TIME milliseconds.
 */
 void wippersnapper::pingBrokerV2() {
+  _requireInit(__func__);
   Ws->_wdt->feed();
   // if it's past time to send the next ping
   if (millis() > (_prv_pingV2 + WS_DEVICE_PING_MS)) {
@@ -864,6 +904,7 @@ void wippersnapper::pingBrokerV2() {
             milliseconds to indicate that the device is still alive.
 */
 void wippersnapper::BlinkKATStatus() {
+  _requireInit(__func__);
   if (millis() > (_prvKATBlinkV2 + STATUS_LED_KAT_BLINK_TIME)) {
     statusLEDBlink(WS_LED_STATUS_HEARTBEAT);
     _prvKATBlinkV2 = millis();
@@ -891,6 +932,7 @@ void wippersnapper::blinkOfflineHeartbeat() {
             connectivity.
 */
 void wippersnapper::ProcessPackets() {
+  _requireInit(__func__);
   // NetworkFSM(); // NOTE: Removed for now, causes error with virtual
   // _connect() method when caused with Ws object in another file.
   Ws->_wdt->feed();
@@ -944,6 +986,7 @@ void PrintDeviceInfo() {
     @brief    Connects to Adafruit IO+ wippersnapper broker.
 */
 void wippersnapper::connect() {
+  _requireInit(__func__);
   delay(5 * ONE_SECOND_IN_MS); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON
                                // HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
@@ -1066,6 +1109,7 @@ void wippersnapper::connect() {
     @brief    Determines which loop() to call depending on the power mode.
 */
 void wippersnapper::run() {
+  _requireInit(__func__);
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   if (!Ws->_sleep_controller->isSleepEnabled()) {
     while (true) {
