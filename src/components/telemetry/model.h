@@ -16,6 +16,11 @@
 #define WS_TELEMETRY_MODEL_H
 #include "wippersnapper.h"
 
+/// Max total length of all CPUs' boot reasons, the largest string value
+/// this model carries. Keep in sync with the identical define in
+/// telemetry/hardware.h.
+#define BOOT_REASONS_LEN 96
+
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from telemetry.proto.
@@ -40,9 +45,10 @@ public:
 private:
   static bool encode_string_cb(pb_ostream_t *stream, const pb_field_t *field,
                                void *const *arg);
-  ws_telemetry_Add _msg_Add;       ///< Add message
-  ws_telemetry_Remove _msg_Remove; ///< Remove message
-  ws_telemetry_D2B _msg_D2B;       ///< D2B wrapper holding the Event
-  char _str_value[96]; ///< Backing store for a string value (bytes_value)
+  ws_telemetry_Add _msg_Add;         ///< Add message
+  ws_telemetry_Remove _msg_Remove;   ///< Remove message
+  ws_telemetry_D2B _msg_D2B;         ///< D2B wrapper holding the Event
+  char _str_value[BOOT_REASONS_LEN]; ///< Backing store for a string
+                                     ///< value (bytes_value)
 };
 #endif // WS_TELEMETRY_MODEL_H
