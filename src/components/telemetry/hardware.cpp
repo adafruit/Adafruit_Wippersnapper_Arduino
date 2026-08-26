@@ -256,10 +256,14 @@ const char *TelemetryHardware::ReadBootReason() {
     const char *separator = "\n";
     if (core == 0)
       separator = "";
-    // Longest line is "\nCPUn: RTCWDT_BROWN_OUT_RESET" (<32 chars
-    // w/terminator).
-    char line[32];
-    snprintf(line, sizeof(line), "%sCPU%u: %s", separator, core,
+    // A single-CPU part gets the full SINGLE_BOOT_REASON budget. When
+    // multi-core, cap each line so every CPU's reason fits within
+    // _boot_reason (i.e. 48 chars per line when dual-core).
+    char line[SINGLE_BOOT_REASON];
+    size_t max_line = sizeof(line);
+    if (num_cores > 1)
+      max_line = BOOT_REASONS_LEN / num_cores;
+    snprintf(line, max_line, "%sCPU%u: %s", separator, core,
              espCoreResetReasonName((int)rtc_get_reset_reason(core)));
     strncat(_boot_reason, line,
             sizeof(_boot_reason) - strlen(_boot_reason) - 1);

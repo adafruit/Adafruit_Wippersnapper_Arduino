@@ -16,6 +16,14 @@
 #define WS_TELEMETRY_HARDWARE_H
 #include "wippersnapper.h"
 
+/// Max length of one CPU's boot reason (the entire string on a
+/// single-CPU part). Longest line is "\nCPUn: RTCWDT_BROWN_OUT_RESET"
+#define SINGLE_BOOT_REASON 64
+/// Max total length of all CPUs' boot reasons, split evenly per CPU when
+/// multi-core. Keep in sync with the identical define in
+/// telemetry/model.h.
+#define BOOT_REASONS_LEN 96
+
 /*!
     @brief  Whether this firmware knows how to source the given telemetry
             metric type (i.e. has a reader for it).
@@ -61,6 +69,7 @@ private:
   bool _report_once;       ///< True if the metric should be reported only once
   bool _has_reported_once; ///< True once a report-once (period 0) metric has
                            ///< sent
-  char _boot_reason[64]; ///< Backing store for the assembled boot reason string
+  char _boot_reason[BOOT_REASONS_LEN]; ///< Backing store for the assembled boot
+                                       ///< reason string
 };
 #endif // WS_TELEMETRY_HARDWARE_H
