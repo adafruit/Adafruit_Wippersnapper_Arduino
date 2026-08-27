@@ -756,7 +756,9 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _veml7700->configureDriver(msgDeviceInitReq);
     drivers.push_back(_veml7700);
     WS_DEBUG_PRINTLN("VEML7700 Initialized Successfully!");
-  } else if (strcmp("scd40", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if ((strcmp("scd40", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("scd41", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("scd43", msgDeviceInitReq->i2c_device_name) == 0)) {
     _scd40 = new WipperSnapper_I2C_Driver_SCD4X(this->_i2c, i2cAddress);
     if (!_scd40->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize SCD4x!");
