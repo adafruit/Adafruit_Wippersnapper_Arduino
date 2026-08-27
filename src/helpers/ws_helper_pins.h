@@ -68,22 +68,6 @@ inline int32_t WsPinNameToNum(const char *pin_name) {
       return WS_PIN_INVALID;
     return (int32_t)atoi(pin_str + 1);
   }
-  // Board-defined I2C pin names (CircuitPython/Blinka-style)
-  if (strcmp(pin_name, "SDA") == 0)
-    return (int32_t)SDA;
-  if (strcmp(pin_name, "SCL") == 0)
-    return (int32_t)SCL;
-#if defined(PIN_WIRE1_SDA) && defined(PIN_WIRE1_SCL)
-  if (strcmp(pin_name, "SDA1") == 0)
-    return (int32_t)PIN_WIRE1_SDA;
-  if (strcmp(pin_name, "SCL1") == 0)
-    return (int32_t)PIN_WIRE1_SCL;
-#elif defined(SDA1) && defined(SCL1)
-  if (strcmp(pin_name, "SDA1") == 0)
-    return (int32_t)SDA1;
-  if (strcmp(pin_name, "SCL1") == 0)
-    return (int32_t)SCL1;
-#endif
   // Skip a non-numeric prefix, e.g. "D22", "A4", "GPIO22"
   const char *numeric = pin_name;
   while (*numeric && !isdigit((unsigned char)*numeric))
