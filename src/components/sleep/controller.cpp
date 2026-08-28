@@ -197,8 +197,8 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
   case ws_sleep_SleepConfig_timer_tag:
 // Configure timer-based wakeup source
 #ifdef ARDUINO_ARCH_ESP32
-    rc = _sleep_hardware->RegisterRTCTimerWakeup(msg->config.timer.duration *
-                                                 TEN_SECONDS_IN_US);
+    rc = _sleep_hardware->RegisterRTCTimerWakeup(
+        (uint64_t)msg->config.timer.duration * ONE_SECOND_IN_US);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }
@@ -352,6 +352,22 @@ ws_sleep_SleepMode SleepController::GetPrvSleepMode() {
 bool SleepController::isSleepEnabled() { return _sleep_enabled; }
 
 /*!
+    @brief  Publishes a Goodnight message to the broker.
+    @return True if the message was successfully published, False otherwise.
+*/
+bool SleepController::publishMsgGoodnight() {
+
+  ws_sleep_D2B goodnight_d2b = ws_sleep_D2B_init_zero;
+  goodnight_d2b.which_payload = ws_sleep_D2B_goodnight_tag;
+  _sleep_model->EncodeSleepGoodnight(nullptr);
+  goodnight_d2b.payload.goodnight = *_sleep_model->GetSleepGoodnight();
+
+  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_sleep_tag, &goodnight_d2b))
+    return false;
+  return true;
+}
+
+/*!
     @brief  Enters the configured sleep mode.
 */
 void SleepController::StartSleep() {
@@ -441,18 +457,33 @@ void SleepController::HandleNetFSMFailure() {
   ws_sleep_SleepConfig msg_sleep_cfg = ws_sleep_SleepConfig_init_zero;
   // Set sleep mode to the last known sleep
   msg_sleep_cfg.mode = _sleep_hardware->GetSleepMode();
+
+  // Restore the last-known wakeup source. A stored ext0 pin name means sleep
+  // was configured for ext0, otherwise fall back to a timer wakeup.
 #ifdef ARDUINO_ARCH_ESP32
-  msg_sleep_cfg.which_config =
-      _sleep_hardware->GetEspSleepSource() == ESP_SLEEP_WAKEUP_TIMER
-          ? ws_sleep_SleepConfig_timer_tag
-          : ws_sleep_SleepConfig_ext0_tag;
+  const char *ext0_pin_name = _sleep_hardware->GetEspSleepExt0PinName();
 #else
-  msg_sleep_cfg.which_config = Ws._wdt->isSleepConfigTimer()
-                                   ? ws_sleep_SleepConfig_timer_tag
-                                   : ws_sleep_SleepConfig_ext0_tag;
+  const char *ext0_pin_name = nullptr;
 #endif
-  // Get the previous sleep duration from RTC mem
-  msg_sleep_cfg.config.timer.duration = _sleep_hardware->GetSleepDurationSecs();
+  if (ext0_pin_name != nullptr) {
+    // Set the ext0 pin, level, and pull to the last known ext0 configuration
+    msg_sleep_cfg.which_config = ws_sleep_SleepConfig_ext0_tag;
+    strncpy(msg_sleep_cfg.config.ext0.pin_name, ext0_pin_name,
+            sizeof(msg_sleep_cfg.config.ext0.pin_name) - 1);
+    msg_sleep_cfg.config.ext0
+        .pin_name[sizeof(msg_sleep_cfg.config.ext0.pin_name) - 1] = '\0';
+#ifdef ARDUINO_ARCH_ESP32
+    msg_sleep_cfg.config.ext0.level = _sleep_hardware->GetEspSleepExt0Level();
+    msg_sleep_cfg.config.ext0.pull = _sleep_hardware->GetEspSleepExt0Pull();
+#endif
+  } else {
+    msg_sleep_cfg.which_config = ws_sleep_SleepConfig_timer_tag;
+    // Set the timer duration to the last known sleep duration, so we can
+    // re-enter sleep
+    msg_sleep_cfg.config.timer.duration =
+        _sleep_hardware->GetSleepDurationSecs();
+  }
+
   // Configure sleep mode (sleep_enabled=true to re-enter sleep after FSM
   // failure)
   handleSleepConfig(&msg_sleep_cfg, true);

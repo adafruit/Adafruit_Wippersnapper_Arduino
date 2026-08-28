@@ -53,6 +53,8 @@ private:
                          void **arg);
   static bool cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
                         void **arg);
+  static bool cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
+                            void **arg);
   bool IsSleepEnabled();
   ws_sleep_SleepConfig *GetSleepConfig();
   ws_checkin_B2D _CheckinB2D =
