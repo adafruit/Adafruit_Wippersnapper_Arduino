@@ -63,6 +63,11 @@ public:
     _stcc4 = new Adafruit_STCC4();
     if (!_stcc4->begin((uint8_t)_address, _i2c))
       return false;
+
+    // TODO: If device off / idle for long period or reading <3hrs perform 
+    // conditioning based off of last read time in RTC mem (cleared by hard reset).
+    // See datasheet section 3.4.9 - takes 22seconds to complete!
+
     // Enable continuous measurement mode for periodic reading
     if (!_stcc4->enableContinuousMeasurement(true))
       return false;
@@ -71,8 +76,11 @@ public:
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
     //  - Ambient pressure / RH-T compensation for accurate CO2 readings
     //    (setAmbientPressure / RHT compensation), from a paired sensor.
+    //    -- For adafruit STCC4 breakout it uses onboard SHT4x, but support others.
     //  - Automatic self-calibration (ASC) enable/disable.
+    //    -- Yes we want this option exposed!
     //  - Single-shot vs continuous measurement mode.
+    //    -- Continuous is default, but single-shot is available for sleep-mode.
   }
 
   /*******************************************************************************/
