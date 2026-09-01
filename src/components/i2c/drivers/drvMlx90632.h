@@ -247,8 +247,7 @@ public:
       // In step / sleep_step mode we should await the latest data
       int16_t refreshDelay = getRefreshDelay();
       int16_t now_ms = millis();
-      do
-      {
+      do {
         delay(10); // Short delay to avoid busy-waiting
       } while (!_mlx90632->isNewData() && (millis() - now_ms < refreshDelay));
     }
@@ -275,54 +274,61 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief Calculates the maximum wait time in milliseconds for a new measurement
-       to be ready based on the current mode and refresh rate.
+      @brief Calculates the maximum wait time in milliseconds for a new
+     measurement to be ready based on the current mode and refresh rate.
       @return The maximum wait time in milliseconds.
-      @note See Melexis Application Note "MLX90632 measurement modes" tables 10+11.
+      @note See Melexis App Note "MLX90632 measurement modes" tables 10+11.
   */
   /*******************************************************************************/
-  int16_t getRefreshDelay()
-  {
+  int16_t getRefreshDelay() {
     int16_t maxWaitTimeMs = 0;
     // In Normal step/continous mode (std/medical), Standard
     // rates are 1/2 of Burst rates (step/sleep_step), but
     // in Extended mode all times are same for Step/Continous
     mlx90632_mode_t mode = _mlx90632->getMode();
-    bool extended = (_mlx90632->getMeasurementSelect() == MLX90632_MEAS_EXTENDED_RANGE);
+    bool extended =
+        (_mlx90632->getMeasurementSelect() == MLX90632_MEAS_EXTENDED_RANGE);
 
-    switch (_mlx90632->getRefreshRate())
-    {
+    switch (_mlx90632->getRefreshRate()) {
     case MLX90632_REFRESH_0_5HZ:
-      maxWaitTimeMs = extended ?
-        6000 : mode == MLX90632_MODE_CONTINUOUS ? 2000 : 4000;
+      maxWaitTimeMs = extended                           ? 6000
+                      : mode == MLX90632_MODE_CONTINUOUS ? 2000
+                                                         : 4000;
       break;
     case MLX90632_REFRESH_1HZ:
-      maxWaitTimeMs = extended ?
-        3000 : mode == MLX90632_MODE_CONTINUOUS ? 1000 : 2000;
+      maxWaitTimeMs = extended                           ? 3000
+                      : mode == MLX90632_MODE_CONTINUOUS ? 1000
+                                                         : 2000;
       break;
     case MLX90632_REFRESH_2HZ:
-      maxWaitTimeMs = extended ?
-        1500 : mode == MLX90632_MODE_CONTINUOUS ? 500 : 1000;
+      maxWaitTimeMs = extended                           ? 1500
+                      : mode == MLX90632_MODE_CONTINUOUS ? 500
+                                                         : 1000;
       break;
     case MLX90632_REFRESH_4HZ:
-      maxWaitTimeMs = extended ?
-        750 : mode == MLX90632_MODE_CONTINUOUS ? 250 : 500;
+      maxWaitTimeMs = extended                           ? 750
+                      : mode == MLX90632_MODE_CONTINUOUS ? 250
+                                                         : 500;
       break;
     case MLX90632_REFRESH_8HZ:
-      maxWaitTimeMs = extended ?
-        375 : mode == MLX90632_MODE_CONTINUOUS ? 125 : 250;
+      maxWaitTimeMs = extended                           ? 375
+                      : mode == MLX90632_MODE_CONTINUOUS ? 125
+                                                         : 250;
       break;
     case MLX90632_REFRESH_16HZ:
-      maxWaitTimeMs = extended ?
-        200 : mode == MLX90632_MODE_CONTINUOUS ? 63 : 125;
+      maxWaitTimeMs = extended                           ? 200
+                      : mode == MLX90632_MODE_CONTINUOUS ? 63
+                                                         : 125;
       break;
     case MLX90632_REFRESH_32HZ:
-      maxWaitTimeMs = extended ?
-        100 : mode == MLX90632_MODE_CONTINUOUS ? 32 : 63;
+      maxWaitTimeMs = extended                           ? 100
+                      : mode == MLX90632_MODE_CONTINUOUS ? 32
+                                                         : 63;
       break;
     case MLX90632_REFRESH_64HZ:
-      maxWaitTimeMs = extended ?
-        50 : mode == MLX90632_MODE_CONTINUOUS ? 16 : 32;
+      maxWaitTimeMs = extended                           ? 50
+                      : mode == MLX90632_MODE_CONTINUOUS ? 16
+                                                         : 32;
       break;
     default:
       WS_DEBUG_PRINTLN("MLX90632: Unknown refresh rate");
