@@ -101,7 +101,7 @@ public:
   DecodedSetting *GetDecodedSettings();
   size_t GetDecodedSettingsCount();
   // Helpers //
-  TwoWire *GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda);
+  TwoWire *GetOrCreateI2cBus(const char *pin_scl, const char *pin_sda);
   bool InitMux(I2cHardware *bus, const char *name, uint32_t address);
   bool RemoveDriver(uint32_t address,
                     uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
@@ -109,9 +109,9 @@ public:
   TwoWire *GetI2cBusByIndex(size_t index);
 
 private:
-  I2cHardware *findOrCreateBus(uint32_t pin_scl, uint32_t pin_sda);
+  I2cHardware *findOrCreateBus(const char *pin_scl, const char *pin_sda);
   bool IsBusStatusOK(I2cHardware *bus);
-  TwoWire *GetI2cBus(uint32_t pin_scl, uint32_t pin_sda);
+  TwoWire *GetI2cBus(const char *pin_scl, const char *pin_sda);
   I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
   std::vector<I2cHardware *>
       _i2c_buses;                      ///< Vector of ptrs to I2C hardware buses

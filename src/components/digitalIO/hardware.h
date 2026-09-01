@@ -27,7 +27,8 @@ class DigitalIOHardware {
 public:
   DigitalIOHardware(uint8_t pin_name, ws_digitalio_Direction direction,
                     ws_digitalio_SampleMode sample_mode, bool initial_value,
-                    ulong period, ExpanderHardware *expander_drv);
+                    ulong period, ExpanderHardware *expander_drv,
+                    bool is_inverted = false);
   ~DigitalIOHardware();
 
   // Pin operations
@@ -52,6 +53,7 @@ public:
 
 private:
   bool SetMode();
+  uint8_t GetElectricalLevel(bool logical_value);
   bool IsPinTimerExpired(ulong cur_time);
   bool IsStatusLEDPin() const;
 
@@ -60,6 +62,12 @@ private:
   ws_digitalio_SampleMode _sample_mode;
   bool _value;
   bool _prv_value;
+  bool _first_read;  ///< True until CheckEvent() has read real hardware state.
+                     ///< _value/_prv_value are bools and can't encode "not yet
+                     ///< read" - until the first read they only hold the Add's
+                     ///< initial_value guess, which must not be compared
+                     ///< against as if it were an observed state.
+  bool _is_inverted; ///< True if the pin's logic is active-low (inverted)
   ulong _period;
   ulong _prv_time;
   bool _did_read_send;

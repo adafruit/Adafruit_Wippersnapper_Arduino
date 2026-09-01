@@ -17,14 +17,16 @@
 /*!
     @brief  Constructs a new UARTHardware object.
     @param  config   The configuration for the serial.
-    @param  pin_rx   The RX pin number.
-    @param  pin_tx   The TX pin number.
+    @param  pin_rx   The RX pin name, e.g. "D16".
+    @param  pin_tx   The TX pin name, e.g. "D17".
 */
-UARTHardware::UARTHardware(const ws_uart_SerialConfig &config, uint32_t pin_rx,
-                           uint32_t pin_tx) {
+UARTHardware::UARTHardware(const ws_uart_SerialConfig &config,
+                           const char *pin_rx, const char *pin_tx) {
   _config = config;
-  _pin_rx = pin_rx;
-  _pin_tx = pin_tx;
+  // Validate and resolve the pin names once; name + number travel together
+  bool rx_ok = _pin_rx.Set(pin_rx);
+  bool tx_ok = _pin_tx.Set(pin_tx);
+  _pins_valid = rx_ok && tx_ok;
 }
 
 /*!
@@ -119,8 +121,12 @@ uint16_t UARTHardware::UartPacketFormatToConfig(
  * @return True if the serial was successfully configured, False otherwise.
  */
 bool UARTHardware::ConfigureSerial() {
-  int8_t rx_pin = (int8_t)_pin_rx;
-  int8_t tx_pin = (int8_t)_pin_tx;
+  if (!_pins_valid) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Invalid RX/TX pin name!");
+    return false;
+  }
+  int8_t rx_pin = (int8_t)_pin_rx.num;
+  int8_t tx_pin = (int8_t)_pin_tx.num;
   uint16_t cfg = UartPacketFormatToConfig(_config.format);
 
   if (_config.use_sw_serial) {
@@ -198,7 +204,7 @@ bool UARTHardware::isSoftwareSerial() const {
  * @brief  Gets the bus number of the hardware instance.
  * @return The bus number of the hardware instance, or -1 if not set.
  */
-int UARTHardware::getPortNum() { return (int)_pin_rx; }
+int UARTHardware::getPortNum() { return (int)_pin_rx.num; }
 
 /*!
  * @brief  Gets the HardwareSerial instance for this port

@@ -39,26 +39,9 @@ public:
        @return The I2C address. */
   uint8_t getAddress() const { return _i2c_addr; }
 
-  /*!  @brief  Parses pin number from a pin name string. Handles both
-               native ("A0", "D5") and expander ("EXP_0x48_0") formats.
-       @param  pin_name  The pin name string.
-       @param  pin_num   Output: the parsed pin number.
-       @return True if parsed successfully, false if malformed. */
-  static bool ParsePinNum(const char *pin_name, uint8_t &pin_num) {
-    if (strncmp(pin_name, "EXP_", 4) == 0) {
-      const char *pin_str = strchr(pin_name + 4, '_');
-      if (!pin_str)
-        return false;
-      pin_num = atoi(pin_str + 1);
-    } else {
-      pin_num = atoi(pin_name + 1);
-    }
-    return true;
-  }
-
   /*!  @brief  Formats an expander pin name into a buffer.
-               Inverse of ParsePinNum — builds "EXP_0xNN_P" from address and
-     pin.
+               Inverse of WsPinNameToNum()/WsPinNameToExpanderAddr() —
+               builds "EXP_0xNN_P" from address and pin.
        @param  buf       Output buffer (must be >= 16 bytes).
        @param  buf_size  Size of the output buffer.
        @param  addr      The I2C address of the expander.

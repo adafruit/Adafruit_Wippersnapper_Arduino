@@ -138,22 +138,13 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
     return false;
   }
 
-  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
-    Ws.error_handler->publishComponentError(msg->pin_name,
-                                            "Malformed pin name");
-    return false;
-  }
-
-  // Resolve the expander driver if this is an expander pin
+  // Resolve the pin number and owning expander driver (if any)
   ExpanderHardware *expander_drv = nullptr;
-  if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
-    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
-    if (!expander_drv) {
-      Ws.error_handler->publishComponentError(msg->pin_name,
-                                              "Expander not found");
-      return false;
-    }
+  if (!Ws._expander_controller->ResolvePinName(msg->pin_name, pin_num,
+                                               &expander_drv)) {
+    Ws.error_handler->publishComponentError(msg->pin_name,
+                                            "Unable to resolve pin name");
+    return false;
   }
 
   // Remove existing pin if re-adding (destructor deinits hardware)
@@ -168,7 +159,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
   // Initialize a new digital pin instance
   DigitalIOHardware *new_pin = new DigitalIOHardware(
       pin_num, msg->gpio_direction, msg->sample_mode, initial_value,
-      (ulong)(msg->period * 1000.0f), expander_drv);
+      (ulong)(msg->period * 1000.0f), expander_drv, msg->is_inverted);
 
   // Add the pin to the controller's list of pins
   if (msg->gpio_direction == ws_digitalio_Direction_D_INPUT ||
@@ -195,20 +186,11 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
 */
 bool DigitalIOController::Handle_DigitalIO_Remove(ws_digitalio_Remove *msg) {
   uint8_t pin_num = 0;
-  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
-    WS_DEBUG_PRINTLN("[dio] ERROR: Malformed expander pin name!");
-    return false;
-  }
-
-  // Resolve the expander driver if this is an expander pin
   ExpanderHardware *expander_drv = nullptr;
-  if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
-    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
-    if (!expander_drv) {
-      WS_DEBUG_PRINTLN("[dio] ERROR: Expander not found for address!");
-      return false;
-    }
+  if (!Ws._expander_controller->ResolvePinName(msg->pin_name, pin_num,
+                                               &expander_drv)) {
+    WS_DEBUG_PRINTLN("[dio] ERROR: Unable to resolve pin name!");
+    return false;
   }
 
   if (!RemovePin(pin_num, expander_drv)) {
@@ -274,22 +256,12 @@ bool DigitalIOController::QueryPinState(uint8_t pin_num,
 */
 bool DigitalIOController::Handle_DigitalIO_Write(ws_digitalio_Write *msg) {
   uint8_t pin_num = 0;
-  if (!ExpanderHardware::ParsePinNum(msg->pin_name, pin_num)) {
-    Ws.error_handler->publishComponentError(msg->pin_name,
-                                            "Malformed pin name");
-    return false;
-  }
-
-  // Resolve the expander driver if this is an expander pin
   ExpanderHardware *expander_drv = nullptr;
-  if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
-    uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
-    if (!expander_drv) {
-      Ws.error_handler->publishComponentError(msg->pin_name,
-                                              "Expander not found");
-      return false;
-    }
+  if (!Ws._expander_controller->ResolvePinName(msg->pin_name, pin_num,
+                                               &expander_drv)) {
+    Ws.error_handler->publishComponentError(msg->pin_name,
+                                            "Unable to resolve pin name");
+    return false;
   }
 
   DigitalIOHardware *pin = GetPin(pin_num, expander_drv);
