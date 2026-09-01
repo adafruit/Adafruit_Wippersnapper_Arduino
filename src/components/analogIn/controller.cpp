@@ -153,7 +153,7 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
       WS_DEBUG_PRINTLN("[analogin] ERROR: Expander not found for address!");
       return false;
@@ -209,7 +209,7 @@ bool AnalogInController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (strncmp(msg->pin_name, "EXP_", 4) == 0) {
     uint8_t i2c_addr = (uint8_t)strtoul(msg->pin_name + 4, nullptr, 16);
-    expander_drv = Ws._expander_controller->GetDriver(i2c_addr);
+    expander_drv = Ws->_expander_controller->GetDriver(i2c_addr);
     if (!expander_drv) {
       WS_DEBUG_PRINTLN("[analogin] ERROR: Expander not found for address!");
       return false;
@@ -238,8 +238,8 @@ bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
   float value = pin->GetValue();
   ws_sensor_Type read_type = pin->GetReadMode();
 
-  if (Ws._sdCardV2->isModeOffline()) {
-    return Ws._sdCardV2->LogGPIOSensorEventToSD(pin_num, value, read_type);
+  if (Ws->_sdCardV2->isModeOffline()) {
+    return Ws->_sdCardV2->LogGPIOSensorEventToSD(pin_num, value, read_type);
   }
 
   // Format pin name: expander pins use "EXP_0xNN_P", native pins use "AN"
@@ -269,8 +269,8 @@ bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
 
   // Publish the AnalogIn message to the broker
   WS_DEBUG_PRINT("Publishing AnalogInEvent...");
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_analogin_tag,
-                     _analogin_model->GetAnalogInD2B())) {
+  if (!Ws->PublishD2b(ws_signal_DeviceToBroker_analogin_tag,
+                      _analogin_model->GetAnalogInD2B())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analogin voltage event message, "
                      "moving onto the next pin!");
     return false;

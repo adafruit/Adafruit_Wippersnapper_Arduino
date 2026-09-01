@@ -53,6 +53,8 @@ private:
                          void **arg);
   static bool cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
                         void **arg);
+  static bool cbTelemetryAdds(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg);
   bool IsSleepEnabled();
   ws_sleep_SleepConfig *GetSleepConfig();
   ws_checkin_B2D _CheckinB2D =
@@ -61,5 +63,5 @@ private:
       ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;           ///< Flag indicating if response was received
 };
-extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                   // WS_CHECKIN_H
+extern wippersnapper *Ws; ///< Wippersnapper V2 instance
+#endif                    // WS_CHECKIN_H

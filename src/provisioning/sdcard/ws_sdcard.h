@@ -70,6 +70,9 @@ public:
                               ws_sensor_Type read_type);
   bool LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg);
   bool LogI2cDeviceEvent(ws_i2c_Event *msg_device_event);
+  bool LogTelemetryEventToSD(const char *name, float value,
+                             ws_sensor_Type read_type);
+  bool LogTelemetryEventToSD(const char *name, const char *value);
   void SetBatteryPercent(float percent);
   bool IsBatteryLow() const;
   bool isRTCSoft() const;
@@ -138,5 +141,5 @@ private:
   bool _use_test_data;        ///< True if sample data is being used for testing
   bool _is_battery_low;       ///< True if battery < LOW_SD_WRITE_BATT_THRESH
 };
-extern wippersnapper Ws;
+extern wippersnapper *Ws;
 #endif // WS_SDCARD_H

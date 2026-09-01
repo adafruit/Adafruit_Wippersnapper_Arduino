@@ -84,7 +84,7 @@ bool UARTController::Router(pb_istream_t *stream) {
 */
 bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   if (!msg->has_cfg_serial && !msg->has_cfg_device) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         msg->descriptor, "Missing serial/device configuration");
     return false;
   }
@@ -93,8 +93,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   uint32_t port = msg->descriptor.pin_rx;
   for (UARTHardware *hw : _ports) {
     if (hw->getPortNum() == port) {
-      Ws.error_handler->publishComponentError(msg->descriptor,
-                                              "Port already in use");
+      Ws->error_handler->publishComponentError(msg->descriptor,
+                                               "Port already in use");
       return false;
     }
   }
@@ -104,7 +104,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   UARTHardware *uart_hardware = new UARTHardware(
       cfg_serial, msg->descriptor.pin_rx, msg->descriptor.pin_tx);
   if (!uart_hardware->ConfigureSerial()) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         msg->descriptor, "Failed to configure UART hardware");
     delete uart_hardware;
     return false;
@@ -120,7 +120,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   switch (msg->cfg_device.which_config) {
   case ws_uart_DeviceConfig_generic_input_tag:
     if (strcmp(msg->name, "us100") != 0) {
-      Ws.error_handler->publishComponentError(
+      Ws->error_handler->publishComponentError(
           msg->descriptor, "Unsupported generic input device");
       delete uart_hardware;
       return false;
@@ -141,8 +141,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     WS_DEBUG_PRINTLN("[uart] Added PM2.5 AQI device!");
     break;
   default:
-    Ws.error_handler->publishComponentError(msg->descriptor,
-                                            "Unsupported UART device config");
+    Ws->error_handler->publishComponentError(msg->descriptor,
+                                             "Unsupported UART device config");
     delete uart_hardware;
     return false;
   }
@@ -153,8 +153,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 
   // Attempt to initialize the UART driver
   if (!uart_driver->begin()) {
-    Ws.error_handler->publishComponentError(msg->descriptor,
-                                            "Failed to initialize UART driver");
+    Ws->error_handler->publishComponentError(
+        msg->descriptor, "Failed to initialize UART driver");
     delete uart_driver;
     return false;
   }
@@ -196,14 +196,14 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
         }
       }
       // Port found but no matching driver on it
-      Ws.error_handler->publishComponentError(
+      Ws->error_handler->publishComponentError(
           msg->descriptor, "No matching driver found on port");
       return false;
     }
   }
 
-  Ws.error_handler->publishComponentError(msg->descriptor,
-                                          "Port not found for removal");
+  Ws->error_handler->publishComponentError(msg->descriptor,
+                                           "Port not found for removal");
   return false;
 }
 
@@ -214,8 +214,8 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
     @return True if the message was handled successfully, False otherwise.
 */
 bool UARTController::Handle_UartWrite(ws_uart_Write *msg) {
-  Ws.error_handler->publishComponentError(msg->descriptor,
-                                          "UartWrite not implemented.");
+  Ws->error_handler->publishComponentError(msg->descriptor,
+                                           "UartWrite not implemented.");
   return false;
 }
 
@@ -265,11 +265,11 @@ void UARTController::update(bool force) {
     // Encode the UART input event message
     if (_uart_model->EncodeUartInputEvent()) {
       // Handle the UartInputEvent message
-      if (Ws._sdCardV2->isModeOffline()) {
+      if (Ws->_sdCardV2->isModeOffline()) {
         // TODO: This is UNIMPLEMENTED!
         // In offline mode, log to SD card
         /* if
-        (!Ws._sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
+        (!Ws->_sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
         { WS_DEBUG_PRINTLN("[uart] ERROR: Unable to log the UartInputEvent to
         SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE);
         drv->SetDidReadSend(false);
@@ -279,8 +279,8 @@ void UARTController::update(bool force) {
         drv->SetDidReadSend(true); // For now, assume success in offline mode
       } else {
         // In online mode, publish to Adafruit IO
-        if (!Ws.PublishD2b(ws_signal_BrokerToDevice_uart_tag,
-                           _uart_model->GetUartInputEventMsg())) {
+        if (!Ws->PublishD2b(ws_signal_BrokerToDevice_uart_tag,
+                            _uart_model->GetUartInputEventMsg())) {
           WS_DEBUG_PRINTLN(
               "[uart] ERROR: Unable to publish UartInputEvent to IO!");
           drv->SetDidReadSend(false);

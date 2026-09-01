@@ -89,7 +89,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      Ws._wdt->feed();                                                         \
+      Ws->_wdt->feed();                                                        \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -140,6 +140,7 @@
 #include "components/sensor/model.h"
 #include "components/servo/controller.h"
 #include "components/sleep/controller.h"
+#include "components/telemetry/controller.h"
 #include "components/uart/controller.h"
 
 #include "provisioning/ConfigJson.h"
@@ -187,6 +188,7 @@ class PWMController;
 class ServoController;
 class UARTController;
 class SleepController;
+class TelemetryController;
 
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
@@ -283,6 +285,8 @@ public:
   ServoController *_servo_controller =
       nullptr;                                ///< Instance of Servo controller
   UARTController *_uart_controller = nullptr; ///< Instance of UART controller
+  TelemetryController *_telemetry_controller =
+      nullptr; ///< Instance of Telemetry controller
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   SleepController *_sleep_controller =
       nullptr; ///< Instance of sleep controller
@@ -314,6 +318,9 @@ public:
   JsonDocument _config_doc; ///< Storage for the config.json file
   uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
+  void _init();
+  void _requireInit(const char *method);
+
   // Separate loop() functions, depending on power mode
   void loop();
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
@@ -345,6 +352,6 @@ protected:
   char *_device_uidV2;     /*!< Unique device identifier  */
   char *_mqtt_client_id;   /*!< MQTT client ID with "io-wipper" prefix */
 };
-extern wippersnapper Ws; ///< Global member variable for callbacks
+extern wippersnapper *Ws; ///< Global member variable for callbacks
 
 #endif // WIPPERSNAPPER_H
