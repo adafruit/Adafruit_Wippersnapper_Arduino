@@ -78,3 +78,6 @@ testplan.md
 logs/
 
 src/Wippersnapper_demo.ino.cpp
+
+# Locally checked-out nested repos (not submodules)
+repos/
