@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+# HIL check-in smoke test, called by hil-test-suite.yml.
+#
+# The lightweight default gate while the pixelWrite PR regression is parked:
+# for each AVAILABLE target, flash THIS PR's build, write secrets, power-cycle,
+# and assert the device checks in to the broker (CHECKIN_VERDICT ok=true). No
+# signal injection, no A/B — just proof the end-to-end path (flash → secrets →
+# WiFi → broker checkin) works on real hardware. Writes hil-out/comment.md and
+# pulls serial.log/protomq.log/flash.log as proof.
+set -uo pipefail
+
+API="${HIL_API_BASE:?}"; TOK="${HIL_API_TOKEN:?}"
+AUTH=(-H "Authorization: Bearer ${TOK}")
+# Shared host-reboot-tolerance helpers (wait_for_target_available, is_host_offline_failure).
+source "${BASH_SOURCE[0]%/*}/hil-lib.sh"
+mkdir -p hil-out   # append our section to the shared summary (workflow owns the marker/header)
+fail=0; ran=0
+
+jobreq() {  # target, device_id, fw_path -> stdout job json
+  jq -n --arg dev "$2" --arg path "$3" \
+    --arg u "${HIL_IO_USERNAME:-hil}" --arg k "${HIL_IO_KEY:-hil}" \
+    --arg ss "${HIL_WIFI_SSID:-free4all}" --arg pw "${HIL_WIFI_PASSWORD:-password}" '{
+    target: { device: { id: $dev }, pool: "public" },
+    script: "firmware-bench",
+    params: {
+      firmware: { path: $path, offset: "0x0" },
+      window_minutes: 3,
+      stages: [
+        {type:"enter_bootloader"},
+        {type:"erase",  before:"no_reset", after:"no_reset"},
+        {type:"flash",  offset:"0x0", before:"no_reset", after:"no_reset"},
+        {type:"power_cycle"},
+        {type:"write_secrets_msc"},
+        {type:"power_cycle"},
+        {type:"verify_checkin"}
+      ]
+    },
+    secrets: { IO_USERNAME:$u, IO_KEY:$k, WIFI_SSID:$ss, WIFI_PASSWORD:$pw },
+    timeouts: { total_s: 1200 }
+  }'
+}
+
+run_target() {  # target, device_id, fw_path -> sets RT_VERDICT (true|false|unknown) + RT_STATE
+  local t="$1" dev="$2" fw="$3"
+  local path jid since=0 state="" checkin="unknown" out
+  RT_VERDICT="unknown"; RT_STATE=""
+  : > "hil-out/${t}-checkin.events.log"   # fresh per attempt (so the retry classifier sees only this run)
+  path=$(curl -fsS "${AUTH[@]}" -X POST --data-binary "@${fw}" \
+      "${API}/v1/firmware?filename=$(basename "$fw")" | jq -r '.path') || return 1
+  jid=$(jobreq "$t" "$dev" "$path" | curl -fsS "${AUTH[@]}" -X POST \
+      -H 'Content-Type: application/json' --data @- "${API}/v1/jobs" | jq -r '.id') || return 1
+  echo "::group::[$t/checkin] job $jid" >&2
+  # Poll on a TIME budget, not an iteration count: firmware-bench floods serial
+  # events so each /wait returns instantly — a fixed loop count burns out long
+  # before the ~6-8min flash→secrets→checkin completes. Poll until the job is
+  # TERMINAL (not just until the verdict): firmware-bench registers the
+  # serial/protomq/flash log assets at teardown, so downloading earlier would
+  # miss them and grab only the firmware bin.
+  local deadline=$(( $(date +%s) + 900 ))
+  while [ "$(date +%s)" -lt "$deadline" ]; do
+    out=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/wait?since=${since}&timeout=10") || break
+    echo "$out" | jq -r '.events[]?|.payload.msg // empty' 2>/dev/null | tee -a "hil-out/${t}-checkin.events.log" >&2
+    if echo "$out" | grep -q 'CHECKIN_VERDICT ok=true';  then checkin=true; fi
+    if echo "$out" | grep -q 'CHECKIN_VERDICT ok=false'; then checkin=false; fi
+    since=$(echo "$out" | jq -r '.next_since // .since // 0')
+    state=$(echo "$out" | jq -r '.state // ""')
+    case "$state" in finished|failed|cancelled|error|timeout) break;; esac
+  done
+  # Drain trailing events: the error reason (e.g. "No route to host") often lands
+  # AFTER the state→terminal event, so the loop above breaks before capturing it.
+  # One more short fetch flushes it into the events log (for the retry classifier
+  # + the artifact) and catches a verdict that arrived in the same final batch.
+  out=$(curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/wait?since=${since}&timeout=2" 2>/dev/null) || out=""
+  if [ -n "$out" ]; then
+    echo "$out" | jq -r '.events[]?|.payload.msg // empty' 2>/dev/null | tee -a "hil-out/${t}-checkin.events.log" >&2
+    echo "$out" | grep -q 'CHECKIN_VERDICT ok=true'  && checkin=true
+    echo "$out" | grep -q 'CHECKIN_VERDICT ok=false' && checkin=false
+  fi
+  echo "[$t/checkin] terminal state: ${state:-unknown}" >&2
+  # Pull ONLY the captured log assets (serial/protomq/flash) — skip the firmware bin.
+  curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets" \
+    | jq -r '.assets[]? | select(.kind=="log") | "\(.id) \(.filename)"' \
+    | while read -r aid fn; do
+        [ -n "$aid" ] && curl -fsS "${AUTH[@]}" "${API}/v1/jobs/${jid}/assets/${aid}/download" \
+          -o "hil-out/${t}-checkin-${fn}" || true
+      done
+  echo "::endgroup::" >&2
+  RT_VERDICT="$checkin"; RT_STATE="$state"
+}
+
+# Evidence the check-in verdict rests on — the REGISTRATION handshake, which is what
+# actually proves check-in (not the bare TCP connect): the device publishes its
+# version/description, the broker replies with the checkinResponse (pin counts /
+# reference voltage), then RegistrationComplete. proof_window anchors the protomq
+# window there; the serial markers cover the device side. (append_proof: hil-lib.sh)
+CHECKIN_EVIDENCE_RE='CHECKIN_VERDICT|RegistrationComplete|CreateDescriptionResponse|Auto-Responding to checkin|totalGpioPins|GOT Registration Response|Registration and configuration complete'
+
+{
+  echo
+  echo "### ✅ Check-in smoke test"
+  echo
+  echo "Flash this PR's build → write secrets → power-cycle → assert the device checks in to the broker."
+  echo
+  echo "| target | this PR | check-in |"
+  echo "|---|---|---|"
+} >> hil-out/comment.md
+
+for T in $TARGETS; do
+  highbin=$(find "fw/high-$T" -name '*combined.bin' | head -1)
+  if [ -z "$highbin" ]; then
+    echo "| \`$T\` | missing | ⚠️ firmware missing |" >> hil-out/comment.md; continue
+  fi
+  # Wait out a DUT-host reboot BEFORE submitting (the controller advertises
+  # retry_after on a wedge/auto-reboot). Skip only on a permanent outage; a host
+  # still down past the wait budget fails the run for that target.
+  status=$(wait_for_target_available "$T"); wrc=$?
+  dev=$(echo "$status" | awk '{print $2}')
+  if [ "$wrc" -ne 0 ]; then
+    why=$(echo "$status" | cut -d' ' -f2-)
+    echo "| \`$T\` | — | ⏭️ skipped (${why}) |" >> hil-out/comment.md
+    [ "$wrc" -eq 3 ] && fail=1   # host never came back within budget — not a clean skip
+    continue
+  fi
+  ran=1; note=""; attempt=1; max="${HIL_TEST_ATTEMPTS:-4}"
+  run_target "$T" "$dev" "$highbin"; cv="$RT_VERDICT"
+  # Reactive retry on an INFRA error (state error/timeout/failed — no real verdict):
+  # wait the host out + re-run, up to HIL_TEST_ATTEMPTS total. One retry isn't enough
+  # when the host reboot-loops faster than a test completes — keep trying until a
+  # stable window appears or attempts run out.
+  while [ "$cv" != "true" ] && [ "$cv" != "false" ] && is_infra_error "$RT_STATE" \
+        && [ "$attempt" -lt "$max" ]; do
+    echo "::warning::[$T/checkin] infra error (state=${RT_STATE:-none}) — waiting for host + retry $attempt/$((max-1))" >&2
+    status=$(wait_for_target_available "$T"); wrc=$?
+    if [ "$wrc" -ne 0 ]; then note=" (host down — gave up after $attempt retry(s))"; break; fi
+    dev=$(echo "$status" | awk '{print $2}')
+    run_target "$T" "$dev" "$highbin"; cv="$RT_VERDICT"; note=" (host rebooted — retried x$attempt)"
+    attempt=$((attempt + 1))
+  done
+  pass="❌"; if [ "$cv" = "true" ]; then pass="✅"; else fail=1; fi
+  echo "| \`$T\` | flashed | ok=${cv} ${pass}${note} |" >> hil-out/comment.md
+  append_proof "$T" checkin "$CHECKIN_EVIDENCE_RE"
+done
+
+{
+  echo
+  echo "_Expected: \`ok=true\` (device flashed + configured + checked in)._"
+} >> hil-out/comment.md
+
+[ "$ran" = 1 ] || echo "No available targets ran (all skipped)."
+exit $fail
