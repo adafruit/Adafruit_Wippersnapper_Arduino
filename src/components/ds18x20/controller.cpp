@@ -84,14 +84,14 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
 
   // If we receive no sensor types to configure, bail out
   if (msg->types_count == 0) {
-    Ws.error_handler->publishComponentError(msg->onewire_pin,
-                                            "No sensor types provided");
+    Ws->error_handler->publishComponentError(msg->onewire_pin,
+                                             "No sensor types provided");
     return false;
   }
   // Validate pin name exists and is in correct format (ex. D5, A1, etc.)
   if (strlen(msg->onewire_pin) < 2) {
-    Ws.error_handler->publishComponentError(msg->onewire_pin,
-                                            "Invalid pin name");
+    Ws->error_handler->publishComponentError(msg->onewire_pin,
+                                             "Invalid pin name");
     return false;
   }
 
@@ -101,7 +101,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
   DS18X20Hardware *new_dsx_driver = new DS18X20Hardware(pin_name, _num_drivers);
   // Attempt to get the sensor's ID on the OneWire bus to show it's been init'd
   if (!new_dsx_driver->GetSensor()) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         msg->onewire_pin, "Unable to initialize sensor on OneWire bus");
     delete new_dsx_driver;
     return false;
@@ -127,8 +127,8 @@ bool DS18X20Controller::Handle_Ds18x20Add(ws_ds18x20_Add *msg) {
                ws_sensor_Type_T_OBJECT_TEMPERATURE_FAHRENHEIT) {
       new_dsx_driver->is_read_temp_f = true;
     } else {
-      Ws.error_handler->publishComponentError(msg->onewire_pin,
-                                              "Unknown SensorType provided");
+      Ws->error_handler->publishComponentError(msg->onewire_pin,
+                                               "Unknown SensorType provided");
       delete new_dsx_driver;
       return false;
     }
@@ -170,8 +170,8 @@ bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
 
   // Validate the pin name
   if (strlen(msg->onewire_pin) < 2) {
-    Ws.error_handler->publishComponentError(msg->onewire_pin,
-                                            "Invalid pin name");
+    Ws->error_handler->publishComponentError(msg->onewire_pin,
+                                             "Invalid pin name");
     return false;
   }
   uint8_t pin_name = atoi(msg->onewire_pin + 1);
@@ -186,7 +186,8 @@ bool DS18X20Controller::Handle_Ds18x20Remove(ws_ds18x20_Remove *msg) {
       return true;
     }
   }
-  Ws.error_handler->publishComponentError(msg->onewire_pin, "Sensor not found");
+  Ws->error_handler->publishComponentError(msg->onewire_pin,
+                                           "Sensor not found");
   return false;
 }
 
@@ -260,7 +261,7 @@ void DS18X20Controller::update(bool force) {
     ws_ds18x20_Event *event_msg = _DS18X20_model->GetDS18x20EventMsg();
     pb_size_t event_count = event_msg->events_count;
 
-    if (!Ws._sdCardV2->isModeOffline()) {
+    if (!Ws->_sdCardV2->isModeOffline()) {
       // Encode the Ds18x20Event message
       if (!_DS18X20_model->EncodeDs18x20Event()) {
         WS_DEBUG_PRINTLN(
@@ -270,8 +271,8 @@ void DS18X20Controller::update(bool force) {
       }
       // Publish the Ds18x20Event message to the broker
       WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
-      if (!Ws.PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
-                         _DS18X20_model->GetDS18x20EventMsg())) {
+      if (!Ws->PublishD2b(ws_signal_DeviceToBroker_ds18x20_tag,
+                          _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to publish Ds18x20Event message");
         temp_dsx_driver.did_read_send = false;
@@ -280,7 +281,7 @@ void DS18X20Controller::update(bool force) {
       WS_DEBUG_PRINTLN("Published!");
       temp_dsx_driver.did_read_send = true;
     } else {
-      if (!Ws._sdCardV2->LogDS18xSensorEventToSD(
+      if (!Ws->_sdCardV2->LogDS18xSensorEventToSD(
               _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to log DS18x20 event to SD card");

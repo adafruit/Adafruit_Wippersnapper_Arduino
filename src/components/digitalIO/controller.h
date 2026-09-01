@@ -48,5 +48,5 @@ private:
   std::vector<DigitalIOHardware *> _pins_output;
   DigitalIOModel *_dio_model;
 };
-extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                   // WS_DIGITALIO_CONTROLLER_H
+extern wippersnapper *Ws; ///< Wippersnapper V2 instance
+#endif                    // WS_DIGITALIO_CONTROLLER_H

@@ -231,7 +231,7 @@ void TelemetryHardware::SetReported() { _has_reported_once = true; }
     @brief  Reads the current WiFi signal strength (RSSI).
     @returns The RSSI, in dBm.
 */
-int32_t TelemetryHardware::ReadRSSI() { return Ws.getRSSI(); }
+int32_t TelemetryHardware::ReadRSSI() { return Ws->getRSSI(); }
 
 /*!
     @brief  Reads the reason for the last device reset/boot as a string.

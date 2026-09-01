@@ -101,13 +101,13 @@ bool TelemetryController::Handle_TelemetryAdd(ws_telemetry_Add *msg) {
   // single unsupported metric doesn't abort the rest of the checkin. Checked
   // before allocating the instance.
   if (!TelemetryTypeIsSupported(msg->type)) {
-    Ws.error_handler->publishComponentError(TelemetryTypeName(msg->type),
-                                            "Unsupported telemetry metric");
+    Ws->error_handler->publishComponentError(TelemetryTypeName(msg->type),
+                                             "Unsupported telemetry metric");
     return true;
   }
 
   if ((msg->period == 0) && (msg->report_once == false)) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         TelemetryTypeName(msg->type),
         "Telemetry period must be >= 0, or report_once must be true");
     return false;
@@ -124,7 +124,7 @@ bool TelemetryController::Handle_TelemetryAdd(ws_telemetry_Add *msg) {
   // Confirm the instance was allocated and constructed for the requested
   // metric before tracking it.
   if (new_metric == nullptr || new_metric->GetType() != msg->type) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         TelemetryTypeName(msg->type), "Failed to create telemetry metric");
     delete new_metric;
     return false;
@@ -156,8 +156,8 @@ bool TelemetryController::Handle_TelemetryRemove(ws_telemetry_Remove *msg) {
       return true;
     }
   }
-  Ws.error_handler->publishComponentError(TelemetryTypeName(msg->type),
-                                          "Telemetry metric not found");
+  Ws->error_handler->publishComponentError(TelemetryTypeName(msg->type),
+                                           "Telemetry metric not found");
   return false;
 }
 
@@ -171,8 +171,8 @@ bool TelemetryController::encodeAndPublish() {
     WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to encode telemetry Event");
     return false;
   }
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_telemetry_tag,
-                     _telemetry_model->GetD2B())) {
+  if (!Ws->PublishD2b(ws_signal_DeviceToBroker_telemetry_tag,
+                      _telemetry_model->GetD2B())) {
     WS_DEBUG_PRINTLN("[telemetry] ERROR: Failed to publish telemetry Event");
     return false;
   }
@@ -251,9 +251,9 @@ void TelemetryController::update(bool force) {
     switch (metric.GetType()) {
     case ws_telemetry_Type_TM_RSSI: {
       float value = (float)metric.ReadRSSI();
-      if (Ws._sdCardV2->isModeOffline()) {
-        delivered = Ws._sdCardV2->LogTelemetryEventToSD(metric.GetName(), value,
-                                                        ws_sensor_Type_T_RAW);
+      if (Ws->_sdCardV2->isModeOffline()) {
+        delivered = Ws->_sdCardV2->LogTelemetryEventToSD(
+            metric.GetName(), value, ws_sensor_Type_T_RAW);
       } else {
         delivered = Publish(metric.GetType(), ws_sensor_Type_T_RAW, value);
       }
@@ -261,9 +261,9 @@ void TelemetryController::update(bool force) {
     }
     case ws_telemetry_Type_TM_BOOT_REASON: {
       const char *value = metric.ReadBootReason();
-      if (Ws._sdCardV2->isModeOffline()) {
+      if (Ws->_sdCardV2->isModeOffline()) {
         delivered =
-            Ws._sdCardV2->LogTelemetryEventToSD(metric.GetName(), value);
+            Ws->_sdCardV2->LogTelemetryEventToSD(metric.GetName(), value);
       } else {
         delivered = Publish(metric.GetType(), ws_sensor_Type_T_BYTES, value);
       }

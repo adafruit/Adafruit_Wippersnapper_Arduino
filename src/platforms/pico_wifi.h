@@ -30,7 +30,7 @@
 #include "Arduino.h"
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
-extern wippersnapper Ws;
+extern wippersnapper *Ws;
 
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
@@ -50,6 +50,7 @@ public:
   @brief  Destructor
   */
   ~pico_wifi() {
+    disconnect();
     if (_mqtt_client_secure)
       delete _mqtt_client_secure;
     if (_mqtt_client_secure)
@@ -79,8 +80,8 @@ public:
   @brief  Sets the WiFi client's ssid and password.
   */
   void set_ssid_pass() {
-    _ssid = Ws._configV2.network.ssid;
-    _pass = Ws._configV2.network.pass;
+    _ssid = Ws->_configV2.network.ssid;
+    _pass = Ws->_configV2.network.pass;
   }
 
   /*!
@@ -110,12 +111,12 @@ public:
         WS_DEBUG_PRINTLNVAR(WiFi.RSSI(i));
         return true;
       }
-      if (Ws._isWiFiMultiV2) {
+      if (Ws->_isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(Ws._multiNetworksV2[j].ssid, WiFi.SSID(i)) == 0) {
+          if (strcmp(Ws->_multiNetworksV2[j].ssid, WiFi.SSID(i)) == 0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINTVAR(Ws._multiNetworksV2[j].ssid);
+            WS_DEBUG_PRINTVAR(Ws->_multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLNVAR(WiFi.RSSI(i));
             return true;
@@ -144,7 +145,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0};
     WiFi.macAddress(mac);
-    memcpy(Ws._macAddrV2, mac, sizeof(mac));
+    memcpy(Ws->_macAddrV2, mac, sizeof(mac));
   }
 
   /*!
@@ -159,21 +160,21 @@ public:
           MQTT client identifier
   */
   void setupMQTTClient(const char *clientID) {
-    if (strcmp(Ws._configV2.aio_url, "io.adafruit.com") == 0 ||
-        strcmp(Ws._configV2.aio_url, "io.adafruit.us") == 0) {
+    if (strcmp(Ws->_configV2.aio_url, "io.adafruit.com") == 0 ||
+        strcmp(Ws->_configV2.aio_url, "io.adafruit.us") == 0) {
       _mqtt_client_secure = new WiFiClientSecure();
       _mqtt_client_secure->setCACert(
-          strcmp(Ws._configV2.aio_url, "io.adafruit.com") == 0
+          strcmp(Ws->_configV2.aio_url, "io.adafruit.com") == 0
               ? _aio_root_ca_prod
               : _aio_root_ca_staging);
-      Ws._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_secure, Ws._configV2.aio_url, Ws._configV2.io_port,
-          clientID, Ws._configV2.aio_user, Ws._configV2.aio_key);
+      Ws->_mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_secure, Ws->_configV2.aio_url, Ws->_configV2.io_port,
+          clientID, Ws->_configV2.aio_user, Ws->_configV2.aio_key);
     } else {
       _mqtt_client_insecure = new WiFiClient();
-      Ws._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_insecure, Ws._configV2.aio_url, Ws._configV2.io_port,
-          clientID, Ws._configV2.aio_user, Ws._configV2.aio_key);
+      Ws->_mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_insecure, Ws->_configV2.aio_url, Ws->_configV2.io_port,
+          clientID, Ws->_configV2.aio_user, Ws->_configV2.aio_key);
     }
   }
 
@@ -275,33 +276,33 @@ protected:
       return;
 
     WiFi.mode(WIFI_STA);
-    Ws._wdt->feed();
+    Ws->_wdt->feed();
     WiFi.setTimeout(20 * ONE_SECOND_IN_MS);
-    Ws._wdt->feed();
+    Ws->_wdt->feed();
 
     if (strlen(_ssid) == 0) {
       _statusV2 = WS_SSID_INVALID;
     } else {
       _disconnect();
       delay(5 * ONE_SECOND_IN_MS);
-      Ws._wdt->feed();
-      if (Ws._isWiFiMultiV2) {
+      Ws->_wdt->feed();
+      if (Ws->_isWiFiMultiV2) {
         // multi network mode
         _wifiMulti.clearAPList();
         // add default network
         _wifiMulti.addAP(_ssid, _pass);
         // add array of alternative networks
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          _wifiMulti.addAP(Ws._multiNetworksV2[i].ssid,
-                           Ws._multiNetworksV2[i].pass);
+          _wifiMulti.addAP(Ws->_multiNetworksV2[i].ssid,
+                           Ws->_multiNetworksV2[i].pass);
         }
-        Ws._wdt->feed();
+        Ws->_wdt->feed();
         if (_wifiMulti.run(TEN_SECONDS_IN_MS) == WL_CONNECTED) {
-          Ws._wdt->feed();
+          Ws->_wdt->feed();
           _statusV2 = WS_NET_CONNECTED;
           return;
         }
-        Ws._wdt->feed();
+        Ws->_wdt->feed();
       } else {
         WiFi.begin(_ssid, _pass);
 
@@ -332,10 +333,10 @@ protected:
   */
   void _disconnect(bool wifi_off = true) {
     (void)wifi_off;
-    Ws._wdt->feed();
+    Ws->_wdt->feed();
     WiFi.disconnect();
     delay(5 * ONE_SECOND_IN_MS);
-    Ws._wdt->feed();
+    Ws->_wdt->feed();
   }
 };
 
