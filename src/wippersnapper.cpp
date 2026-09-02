@@ -906,6 +906,13 @@ void PrintDeviceInfo() {
   WS_DEBUG_PRINTLNVAR(BOARD_ID);
   WS_DEBUG_PRINT("Adafruit.io User: ");
   WS_DEBUG_PRINTLNVAR(Ws->_configV2.aio_user);
+  // Surface non-production broker details (mirrors v1's printDeviceInfo())
+  if (strncmp(Ws->_configV2.aio_url, "io.adafruit.com", 16) != 0) {
+    WS_DEBUG_PRINT("Adafruit.io URL: ");
+    WS_DEBUG_PRINTLNVAR(Ws->_configV2.aio_url);
+    WS_DEBUG_PRINT("Adafruit.io Port: ");
+    WS_DEBUG_PRINTLNVAR(Ws->_configV2.io_port);
+  }
   WS_DEBUG_PRINT("WiFi Network: ");
   WS_DEBUG_PRINTLNVAR(Ws->_configV2.network.ssid);
 
