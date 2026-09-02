@@ -996,7 +996,7 @@ void I2cController::BackoffDriverRead(drvBase *drv, const char *reason) {
   // Stamp PeriodPrv so the period check re-fires retry_in ms from now
   drv->SetSensorPeriodPrv(millis() + retry_in - drv->GetSensorPeriod());
   WS_DEBUG_PRINT("[i2c] Driver read failed (");
-  WS_DEBUG_PRINT(reason);
+  WS_DEBUG_PRINTVAR(reason);
   WS_DEBUG_PRINT("), retrying in ");
   WS_DEBUG_PRINTVAR(retry_in);
   WS_DEBUG_PRINTLN("ms");
