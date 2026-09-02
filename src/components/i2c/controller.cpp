@@ -981,6 +981,28 @@ bool I2cController::publishProbed() {
 /******************************************************************************/
 
 /*!
+    @brief    Schedules a retry for a driver whose read pass produced no
+              publishable data. Carries the v1 update() retry semantics
+              forward: a few quick retries (~1s apart), then wait out a full
+              period, instead of re-polling the device every loop iteration.
+    @param    drv
+              The I2C device driver that failed to read.
+    @param    reason
+              Short description of the failure, for the debug log.
+*/
+void I2cController::BackoffDriverRead(drvBase *drv, const char *reason) {
+  ulong retry_in =
+      drv->NoteReadFailure() ? ONE_SECOND_IN_MS : drv->GetSensorPeriod();
+  // Stamp PeriodPrv so the period check re-fires retry_in ms from now
+  drv->SetSensorPeriodPrv(millis() + retry_in - drv->GetSensorPeriod());
+  WS_DEBUG_PRINT("[i2c] Driver read failed (");
+  WS_DEBUG_PRINT(reason);
+  WS_DEBUG_PRINT("), retrying in ");
+  WS_DEBUG_PRINTVAR(retry_in);
+  WS_DEBUG_PRINTLN("ms");
+}
+
+/*!
     @brief    Handles polling, reading, and logger for i2c devices
               attached to the I2C controller.
     @param    force
@@ -1022,15 +1044,26 @@ void I2cController::update(bool force) {
       drv_bus->SelectMuxChannel(mux_channel);
     }
 
+    // Read the device once, up-front — drivers that override ReadSensorData()
+    // cache all metrics from one transaction so the getEvent accessors below
+    // stay in sync and cause no further bus traffic (base impl is a no-op).
+    if (!drv->ReadSensorData()) {
+      // No valid sample yet (sensor not ready, or the read failed)
+      BackoffDriverRead(drv, "no valid sample");
+      continue;
+    }
+
     // Read the driver's sensors
     _i2c_model->ClearI2cDeviceEvent();
-    bool read_succeeded = true;
+    size_t events_added = 0;
     for (size_t i = 0; i < sensor_count; i++) {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
       if (!drv->GetSensorEvent(drv->_sensors[i].value, &event)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to read sensor!");
-        read_succeeded = false;
+        // Metric unavailable this pass (e.g. still warming up) — publish the
+        // metrics that did read rather than dropping the whole device event.
+        WS_DEBUG_PRINT("[i2c] WARNING: Failed to read sensor type=");
+        WS_DEBUG_PRINTLNVAR(drv->_sensors[i].value);
         continue;
       }
 
@@ -1045,10 +1078,14 @@ void I2cController::update(bool force) {
 
       // Fill the I2cDeviceEvent's sensor_event array submsg.
       _i2c_model->AddI2cDeviceSensorEvent(event, drv->_sensors[i]);
+      events_added++;
     }
 
-    if (!read_succeeded)
+    if (events_added == 0) {
+      BackoffDriverRead(drv, "all sensor reads failed");
       continue;
+    }
+    drv->NoteReadSuccess();
 
     // Configure the DeviceEvent's DeviceDescription sub-msg
     _i2c_model->SetI2cDeviceEventDeviceDescripton(

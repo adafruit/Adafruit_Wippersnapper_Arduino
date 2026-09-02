@@ -228,12 +228,15 @@ public:
   /*!
       @brief    Reads ambient and object temperatures together when the sensor
                 has new data ready. Leaves the cached members untouched (last
-                good sample) when no new data is available this pass.
-      @returns  True if a fresh sample was read, False otherwise.
+                good sample) when no new data is available this pass, and
+                serves the cached sample if the last read was under one second
+                ago.
+      @returns  True if a valid sample is cached, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadSensorData() {
-    bool result = false;
+  bool ReadSensorData() override {
+    if (HasBeenReadInLastSecond())
+      return _have_data;
 
     // Check if we need to trigger a new measurement for step modes
     mlx90632_mode_t currentMode = _mlx90632->getMode();
@@ -242,7 +245,7 @@ public:
       // Trigger single measurement (SOC bit) for step modes
       if (!_mlx90632->startSingleMeasurement()) {
         WS_DEBUG_PRINTLN("Failed to start single measurement");
-        return false;
+        return _have_data;
       }
       // In step / sleep_step mode we should await the latest data
       int16_t refreshDelay = getRefreshDelay();
@@ -260,7 +263,8 @@ public:
         WS_DEBUG_PRINTLN("NaN (invalid cycle position)");
         return false;
       }
-      result = true;
+      _last_read = millis();
+      _have_data = true;
       // Reset new data flag after reading
       if (!_mlx90632->resetNewData()) {
         WS_DEBUG_PRINTLN("Failed to reset new data flag");
@@ -269,7 +273,7 @@ public:
       WS_DEBUG_PRINTLN("No new data available, skipping read");
     }
 
-    return result;
+    return _have_data;
   }
 
   /*******************************************************************************/
@@ -374,8 +378,8 @@ public:
   }
 
 protected:
-  double _deviceTemp;  ///< Device temperature in Celsius
-  double _objectTemp;  ///< Object temperature in Celsius
+  double _deviceTemp = NAN; ///< Device temperature in Celsius
+  double _objectTemp = NAN; ///< Object temperature in Celsius
   bool _extendedRange; ///< True for extended-range variant, false for medical
   Adafruit_MLX90632 *_mlx90632; ///< Pointer to MLX90632 sensor object
 };

@@ -64,9 +64,9 @@ public:
     if (!_stcc4->begin((uint8_t)_address, _i2c))
       return false;
 
-    // TODO: If device off / idle for long period or reading <3hrs perform 
-    // conditioning based off of last read time in RTC mem (cleared by hard reset).
-    // See datasheet section 3.4.9 - takes 22seconds to complete!
+    // TODO: If device off / idle for long period or reading <3hrs perform
+    // conditioning based off of last read time in RTC mem (cleared by hard
+    // reset). See datasheet section 3.4.9 - takes 22seconds to complete!
 
     // Enable continuous measurement mode for periodic reading
     if (!_stcc4->enableContinuousMeasurement(true))
@@ -76,7 +76,8 @@ public:
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
     //  - Ambient pressure / RH-T compensation for accurate CO2 readings
     //    (setAmbientPressure / RHT compensation), from a paired sensor.
-    //    -- For adafruit STCC4 breakout it uses onboard SHT4x, but support others.
+    //    -- For adafruit STCC4 breakout it uses onboard SHT4x, but support
+    //    others.
     //  - Automatic self-calibration (ASC) enable/disable.
     //    -- Yes we want this option exposed!
     //  - Single-shot vs continuous measurement mode.
@@ -85,23 +86,27 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads all sensor data from the STCC4, caching the results.
-                Only performs a new I2C read if the last read was more than
-                one second ago.
-      @returns  True if the sensor was read successfully, False otherwise.
+      @brief    Reads all sensor data from the STCC4 in one transaction,
+                caching the results so temp/humidity/CO2 stay in sync. Serves
+                the cached sample if the last read was under one second ago.
+      @returns  True if a valid sample is cached, False if no sample has been
+                read yet (or the read failed).
   */
   /*******************************************************************************/
-  bool ReadSensorData() {
+  bool ReadSensorData() override {
+    if (HasBeenReadInLastSecond())
+      return _have_data;
+
     uint16_t co2, status;
     float temperature, humidity;
-
-    if (!_stcc4->readMeasurement(&co2, &temperature, &humidity, &status))
-      return false;
-
-    _cachedCO2 = co2;
-    _cachedTemperature = temperature;
-    _cachedHumidity = humidity;
-    return true;
+    if (_stcc4->readMeasurement(&co2, &temperature, &humidity, &status)) {
+      _cachedCO2 = co2;
+      _cachedTemperature = temperature;
+      _cachedHumidity = humidity;
+      _last_read = millis();
+      _have_data = true;
+    }
+    return _have_data;
   }
 
   /*******************************************************************************/
@@ -114,9 +119,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // Read all metrics together so temp/humidity/CO2 stay in sync; the member
-    // retains the last good sample if this pass had no new data ready.
-    ReadSensorData();
+    if (!ReadSensorData())
+      return false;
     tempEvent->temperature = _cachedTemperature;
     return true;
   }
@@ -131,7 +135,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    ReadSensorData();
+    if (!ReadSensorData())
+      return false;
     humidEvent->relative_humidity = _cachedHumidity;
     return true;
   }
@@ -146,15 +151,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
-    ReadSensorData();
+    if (!ReadSensorData())
+      return false;
     co2Event->CO2 = (float)_cachedCO2;
     return true;
   }
 
 protected:
   Adafruit_STCC4 *_stcc4 = nullptr; ///< STCC4 driver object
-  float _cachedTemperature = 0.0f;  ///< Cached temperature reading
-  float _cachedHumidity = 0.0f;     ///< Cached humidity reading
+  float _cachedTemperature = NAN;   ///< Cached temperature reading
+  float _cachedHumidity = NAN;      ///< Cached humidity reading
   uint16_t _cachedCO2 = 0;          ///< Cached CO2 reading in ppm
 };
 

@@ -64,14 +64,22 @@ public:
 
   /*!
       @brief    Reads ambient and object temperatures in one transaction so
-                both metrics reflect the same sample.
-      @returns  True if the sensor was read successfully, False otherwise.
+                both metrics reflect the same sample. Serves the cached sample
+                if the last read was under one second ago.
+      @returns  True if a valid sample is cached, False otherwise.
   */
-  bool ReadSensorData() {
+  bool ReadSensorData() override {
+    if (HasBeenReadInLastSecond())
+      return _have_data;
+
     _d6t1a->read();
     _deviceTemp = (float)_d6t1a->ambientTempC();
     _objectTemp = (float)_d6t1a->objectTempC(0, 0);
-    return true;
+    if (!isnan(_deviceTemp) || !isnan(_objectTemp)) {
+      _last_read = millis();
+      _have_data = true;
+    }
+    return _have_data;
   }
 
   /*!
@@ -105,9 +113,9 @@ public:
   }
 
 protected:
-  float _deviceTemp; ///< Device temperature in Celsius
-  float _objectTemp; ///< Object temperature in Celsius
-  OmronD6T *_d6t1a;  ///< D6T1A object
+  float _deviceTemp = NAN;    ///< Device temperature in Celsius
+  float _objectTemp = NAN;    ///< Object temperature in Celsius
+  OmronD6T *_d6t1a = nullptr; ///< D6T1A object
 };
 
 #endif // DRV_D6T1A_H

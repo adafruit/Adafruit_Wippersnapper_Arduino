@@ -133,6 +133,7 @@ public:
 private:
   I2cHardware *findOrCreateBus(const char *pin_scl, const char *pin_sda);
   bool IsBusStatusOK(I2cHardware *bus);
+  void BackoffDriverRead(drvBase *drv, const char *reason);
   TwoWire *GetI2cBus(const char *pin_scl, const char *pin_sda);
   I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
   std::vector<I2cHardware *>

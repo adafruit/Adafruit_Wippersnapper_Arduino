@@ -106,22 +106,27 @@ public:
   /*!
       @brief    Reads all SEN6X metrics in one transaction when new data is
                 ready, leaving the cached members untouched otherwise so every
-                metric in a read pass reflects the same sample.
+                metric in a read pass reflects the same sample. Serves the
+                cached sample if the last read was under one second ago.
       @returns  True once a successful read has populated the cached values,
                 False before the first successful read.
   */
   /*******************************************************************************/
-  bool ReadSensorData() {
+  bool ReadSensorData() override {
+    if (HasBeenReadInLastSecond())
+      return _have_data;
+
     if (IsSensorReady()) {
       uint16_t error = _sen->readMeasuredValues(
           _massConcentrationPm1p0, _massConcentrationPm2p5,
           _massConcentrationPm4p0, _massConcentrationPm10p0, _ambientHumidity,
           _ambientTemperature, _vocIndex, _noxIndex, _co2);
       if (error == 0) {
-        _haveData = true;
+        _last_read = millis();
+        _have_data = true;
       }
     }
-    return _haveData;
+    return _have_data;
   }
 
   /*******************************************************************************/
@@ -277,7 +282,6 @@ protected:
   float _vocIndex;                   ///< VOC index
   float _noxIndex;                   ///< NOx index
   uint16_t _co2;                     ///< CO2 value
-  bool _haveData = false;            ///< True once a measurement has been read
 };
 
 #endif // DRV_SEN6X_H

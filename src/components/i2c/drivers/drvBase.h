@@ -36,6 +36,15 @@ struct DecodedSetting;    ///< Forward declaration
 static_assert(sizeof(WsPinName::name) >= DRV_BASE_PIN_NAME_LEN,
               "WsPinName.name must hold any ws_i2c_AddressSpace pin name");
 
+#ifndef ONE_SECOND_IN_MS
+#define ONE_SECOND_IN_MS 1000 ///< One second expressed in milliseconds
+#endif
+/*! Initial value for _sensor_period_prv: backdates the last-publish stamp so
+    a newly added device publishes its first reading on the next update() pass
+    instead of waiting out a full period. Name kept in sync with the v1 driver
+    base (src/components/i2c/drivers/WipperSnapper_I2C_Driver.h on main). */
+#define PERIOD_24HRS_AGO_MILLIS (millis() - (24 * 60 * 60 * 1000))
+
 /*!
     @brief  Base class for I2C Drivers.
 */
@@ -63,6 +72,9 @@ public:
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
     _did_read_send = false;
+    _sensor_period = 0;
+    _sensor_period_prv = PERIOD_24HRS_AGO_MILLIS;
+    _sensors_count = 0;
   }
 
   /*!
@@ -248,6 +260,55 @@ public:
                 non-blocking; gate the actual sampling with a millis() guard.
   */
   virtual void fastTick() {}
+
+  /*!
+      @brief    Reads the device's sensors in one transaction, caching the
+                results for the getEvent*() accessors. The controller calls
+                this once per elapsed period, before any getEvent*() call, so
+                every metric in a read pass reflects the same sample. Override
+                in drivers whose metrics come from one measurement (e.g.
+                Sensirion CO2/PM devices); the base implementation is a no-op
+                for drivers that read directly inside their getEvent*()
+                functions. Overrides should serve the cached sample when
+                HasBeenReadInLastSecond() is true rather than re-reading.
+      @returns  True if cached data is valid (a fresh read succeeded, or a
+                recent sample exists), False if no valid sample is available
+                yet (sensor not ready, or the read failed).
+  */
+  virtual bool ReadSensorData() { return true; }
+
+  /*!
+      @brief    Checks if the device was read within the last second, so a
+                ReadSensorData() override can serve one shared sample to all
+                metrics in a read pass (and to any direct getEvent*() calls).
+      @returns  True if the sensor was read less than one second ago, False
+                otherwise (including if it has never been read).
+  */
+  bool HasBeenReadInLastSecond() {
+    return _last_read != 0 && millis() - _last_read < ONE_SECOND_IN_MS;
+  }
+
+  /*!
+      @brief    Records a failed read pass. Mirrors the v1 update() retry
+                behavior: a few quick retries, then give up until the next
+                full period.
+      @returns  True if the driver should retry shortly, False if it has
+                exhausted its quick retries and should wait a full period.
+  */
+  bool NoteReadFailure() {
+    // 3 quick retries before backing off, matching v1's update() retry count
+    if (++_read_fails >= 3) {
+      _read_fails = 0;
+      return false;
+    }
+    return true;
+  }
+
+  /*!
+      @brief    Resets the consecutive read-failure counter after a
+                successful read/publish pass.
+  */
+  void NoteReadSuccess() { _read_fails = 0; }
 
   /*!
       @brief    Base implementation - Applies a gain setting to the driver.
@@ -1128,6 +1189,9 @@ protected:
   ulong _sensor_period;     ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv; ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;    ///< Number of sensors on the device.
-  bool _did_read_send; ///< True if data was read and sent to IO successfully.
+  bool _did_read_send;  ///< True if data was read and sent to IO successfully.
+  ulong _last_read = 0; ///< millis() timestamp of the last successful read.
+  bool _have_data = false; ///< True once a valid sample has been cached.
+  uint8_t _read_fails = 0; ///< Consecutive failed read passes (for backoff).
 };
 #endif // DRV_BASE_H

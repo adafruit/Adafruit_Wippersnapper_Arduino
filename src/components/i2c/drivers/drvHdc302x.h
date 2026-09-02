@@ -125,11 +125,16 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the HDC302X's temperature and humidity data.
-      @returns  True if the data was read successfully, False otherwise.
+      @brief    Reads the HDC302X's temperature and humidity in one on-demand
+                conversion so both metrics reflect the same sample. Serves the
+                cached sample if the last read was under one second ago.
+      @returns  True if a valid sample is cached, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadSensorData() {
+  bool ReadSensorData() override {
+    if (HasBeenReadInLastSecond())
+      return _have_data;
+
     uint16_t status = _hdc302x->readStatus();
     if (status & 0x0010) {
       WS_DEBUG_PRINTLN("Device Reset Detected");
@@ -145,8 +150,10 @@ public:
     if (!_hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
                                                    TRIGGERMODE_LP0)) {
       WS_DEBUG_PRINTLN("Failed to read temperature and humidity.");
-      return false;
+      return _have_data;
     }
+    _last_read = millis();
+    _have_data = true;
     return true;
   }
 
@@ -183,8 +190,8 @@ public:
   }
 
 protected:
-  Adafruit_HDC302x *_hdc302x; ///< Pointer to an HDC302X object
-  double _temp = 0.0;     ///< Holds data for the HDC302X's temperature sensor
-  double _humidity = 0.0; ///< Holds data for the HDC302X's humidity sensor
+  Adafruit_HDC302x *_hdc302x = nullptr; ///< Pointer to an HDC302X object
+  double _temp = NAN;     ///< Holds data for the HDC302X's temperature sensor
+  double _humidity = NAN; ///< Holds data for the HDC302X's humidity sensor
 };
 #endif // DRV_HDC302X_H
