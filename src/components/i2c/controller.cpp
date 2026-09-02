@@ -490,7 +490,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   if (msg == nullptr) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Nullptr in I2C add message!");
     Ws->error_handler->publishComponentError(ws_i2c_Descriptor{},
-                                            "No I2C add message provided!");
+                                             "No I2C add message provided!");
     return false;
   }
   if (strlen(msg->name) == 0) {
@@ -542,7 +542,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   // Validate pointer
   if (wire == nullptr) {
     Ws->error_handler->publishComponentError(descriptor,
-                                            "Failed to fetch TwoWire object!");
+                                             "Failed to fetch TwoWire object!");
     return false;
   }
 
@@ -564,7 +564,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
       bus->SelectMuxChannel(descriptor.address_space.mux_channel);
     } else {
       Ws->error_handler->publishComponentError(descriptor,
-                                              "No MUX found on bus!");
+                                               "No MUX found on bus!");
       return false;
     }
   }
@@ -575,7 +575,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
                                     descriptor.address_space.mux_channel);
   if (drv == nullptr) {
     Ws->error_handler->publishComponentError(descriptor,
-                                            "Failed to create driver!");
+                                             "Failed to create driver!");
     if (use_mux) {
       bus->ClearMuxChannel();
     }
@@ -586,7 +586,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   if (!drv->SetPins(descriptor.address_space.pin_scl,
                     descriptor.address_space.pin_sda)) {
     Ws->error_handler->publishComponentError(descriptor,
-                                            "Invalid I2C bus pin name(s)!");
+                                             "Invalid I2C bus pin name(s)!");
     if (use_mux) {
       bus->ClearMuxChannel();
     }
@@ -748,13 +748,13 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
   // Validate message
   if (msg->descriptor.address == 0) {
     Ws->error_handler->publishComponentError(msg->descriptor,
-                                            "I2c address required for remove");
+                                             "I2c address required for remove");
     return false;
   }
   if (msg->descriptor.address_space.pin_scl[0] == '\0' ||
       msg->descriptor.address_space.pin_sda[0] == '\0') {
     Ws->error_handler->publishComponentError(msg->descriptor,
-                                            "SCL/SDA required for remove");
+                                             "SCL/SDA required for remove");
     return false;
   }
 
@@ -821,7 +821,7 @@ bool I2cController::publishProbed() {
   }
 
   if (!Ws->PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
-                     _i2c_model->GetI2cD2B())) {
+                      _i2c_model->GetI2cD2B())) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish ws_i2c_Probed message!");
     return false;
   }

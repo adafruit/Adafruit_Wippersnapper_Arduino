@@ -621,7 +621,7 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
       ws_digitalio_Direction dir;
       bool value;
       if (Ws->digital_io_controller->QueryPinState((uint8_t)power, &dir,
-                                                  &value)) {
+                                                   &value)) {
         if (dir == ws_digitalio_Direction_D_OUTPUT && value == enable_level) {
           WS_DEBUG_PRINTLN("[display] Power-enable pin already driven by "
                            "digitalio at the enable level - passing through "

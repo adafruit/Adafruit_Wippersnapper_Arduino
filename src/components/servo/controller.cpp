@@ -85,8 +85,8 @@ bool ServoController::Router(pb_istream_t *stream) {
 bool ServoController::Handle_Servo_Add(ws_servo_Add *msg) {
   if (_active_servo_pins >= MAX_SERVOS) {
     WS_DEBUG_PRINTLN("[servo] Error: Maximum number of servos reached!");
-    Ws->error_handler->publishComponentError(msg->servo_pin,
-                                            "Maximum number of servos reached");
+    Ws->error_handler->publishComponentError(
+        msg->servo_pin, "Maximum number of servos reached");
     return false;
   }
 
@@ -98,7 +98,7 @@ bool ServoController::Handle_Servo_Add(ws_servo_Add *msg) {
                         (int)msg->max_pulse_width, (int)msg->freq);
   if (!_servo_hardware[_active_servo_pins]->ServoAttach()) {
     Ws->error_handler->publishComponentError(msg->servo_pin,
-                                            "Failed to attach servo");
+                                             "Failed to attach servo");
     delete _servo_hardware[_active_servo_pins];
     _servo_hardware[_active_servo_pins] = nullptr;
   }
@@ -122,7 +122,7 @@ bool ServoController::Handle_Servo_Write(ws_servo_Write *msg) {
   int servo_idx = GetServoIndex(pin);
   if (servo_idx == -1) {
     Ws->error_handler->publishComponentError(msg->servo_pin,
-                                            "Failed to find pin");
+                                             "Failed to find pin");
     return false;
   }
   // Write the pulse width to the servo
@@ -139,7 +139,7 @@ bool ServoController::Handle_Servo_Write(ws_servo_Write *msg) {
 bool ServoController::Handle_Servo_Remove(ws_servo_Remove *msg) {
   if (_active_servo_pins <= 0) {
     Ws->error_handler->publishComponentError(msg->servo_pin,
-                                            "No active servos to remove");
+                                             "No active servos to remove");
     return false;
   }
 
@@ -147,7 +147,7 @@ bool ServoController::Handle_Servo_Remove(ws_servo_Remove *msg) {
   int servo_idx = GetServoIndex(pin);
   if (servo_idx == -1) {
     Ws->error_handler->publishComponentError(msg->servo_pin,
-                                            "Failed to find pin");
+                                             "Failed to find pin");
     return false;
   }
 

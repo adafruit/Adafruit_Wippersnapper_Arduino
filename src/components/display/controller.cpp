@@ -245,26 +245,26 @@ void DisplayController::PublishDisplayComponentError(
   switch (iface.which_descriptor) {
   case ws_display_InterfaceDescriptor_spi_epd_tag:
     Ws->error_handler->publishComponentError(iface.descriptor.spi_epd.spi,
-                                            error);
+                                             error);
     break;
   case ws_display_InterfaceDescriptor_spi_tft_tag:
     Ws->error_handler->publishComponentError(iface.descriptor.spi_tft.spi,
-                                            error);
+                                             error);
     break;
   case ws_display_InterfaceDescriptor_i2c_tag:
     Ws->error_handler->publishComponentError(iface.descriptor.i2c, error);
     break;
   case ws_display_InterfaceDescriptor_ttl_rgb666_tag:
     Ws->error_handler->publishComponentError(iface.descriptor.ttl_rgb666.pin_b0,
-                                            error);
+                                             error);
     break;
   case ws_display_InterfaceDescriptor_i8080_tag:
     Ws->error_handler->publishComponentError(iface.descriptor.i8080.pin_d0,
-                                            error);
+                                             error);
     break;
   case ws_display_InterfaceDescriptor_dsi_tag:
     Ws->error_handler->publishComponentError(iface.descriptor.dsi.pin_rst,
-                                            error);
+                                             error);
     break;
   default:
     WS_DEBUG_PRINTLN(

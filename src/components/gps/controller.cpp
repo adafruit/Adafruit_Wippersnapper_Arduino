@@ -261,7 +261,7 @@ void GPSController::update(bool force) {
       } else {
         // Publish the GPSEvent to IO
         if (!Ws->PublishD2b(ws_signal_DeviceToBroker_gps_tag,
-                           _gps_model->GetGPSD2B())) {
+                            _gps_model->GetGPSD2B())) {
           WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
           drv->SetDidReadSend(false);
         } else {

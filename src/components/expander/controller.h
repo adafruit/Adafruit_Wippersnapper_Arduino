@@ -48,5 +48,5 @@ private:
   bool AddExpander(const char *device_name, uint8_t i2c_addr, TwoWire *wire);
   std::vector<ExpanderHardware *> _expanders; ///< Expander hardware instances
 };
-extern wippersnapper* Ws; ///< Wippersnapper V2 instance
-#endif                   // WS_EXPANDER_CONTROLLER_H
+extern wippersnapper *Ws; ///< Wippersnapper V2 instance
+#endif                    // WS_EXPANDER_CONTROLLER_H

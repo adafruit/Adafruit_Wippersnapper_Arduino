@@ -133,7 +133,7 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
-                                               &expander_drv)) {
+                                                &expander_drv)) {
     WS_DEBUG_PRINTLN("[analogin] ERROR: Unable to resolve pin name!");
     return false;
   }
@@ -252,7 +252,7 @@ bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
   // Publish the AnalogIn message to the broker
   WS_DEBUG_PRINT("Publishing AnalogInEvent...");
   if (!Ws->PublishD2b(ws_signal_DeviceToBroker_analogin_tag,
-                     _analogin_model->GetAnalogInD2B())) {
+                      _analogin_model->GetAnalogInD2B())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analogin voltage event message, "
                      "moving onto the next pin!");
     return false;

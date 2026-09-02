@@ -73,8 +73,7 @@ bool PWMController::Router(pb_istream_t *stream) {
 bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   uint8_t pin = 0;
   ExpanderHardware *expander_drv = nullptr;
-  if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin,
-                                                &expander_drv)) {
+  if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin, &expander_drv)) {
     Ws->error_handler->publishComponentError(msg->pin,
                                              "Unable to resolve pin name");
     return false;
@@ -108,8 +107,7 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
 bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
   uint8_t pin = 0;
   ExpanderHardware *expander_drv = nullptr;
-  if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin,
-                                                &expander_drv)) {
+  if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin, &expander_drv)) {
     Ws->error_handler->publishComponentError(msg->pin,
                                              "Unable to resolve pin name");
     return false;
@@ -165,8 +163,7 @@ PWMHardware *PWMController::GetPin(uint8_t pin, ExpanderHardware *expander) {
 bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
   uint8_t pin = 0;
   ExpanderHardware *expander_drv = nullptr;
-  if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin,
-                                                &expander_drv)) {
+  if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin, &expander_drv)) {
     Ws->error_handler->publishComponentError(msg->pin,
                                              "Unable to resolve pin name");
     return false;
@@ -179,7 +176,8 @@ bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
   }
 
   if (!hw->write(msg)) {
-    Ws->error_handler->publishComponentError(msg->pin, "Failed to write to pin");
+    Ws->error_handler->publishComponentError(msg->pin,
+                                             "Failed to write to pin");
     return false;
   }
 

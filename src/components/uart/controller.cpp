@@ -93,13 +93,13 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   int32_t port = WsPinNameToNum(msg->descriptor.pin_rx);
   if (port == WS_PIN_INVALID) {
     Ws->error_handler->publishComponentError(msg->descriptor,
-                                            "Invalid RX pin name");
+                                             "Invalid RX pin name");
     return false;
   }
   for (UARTHardware *hw : _ports) {
     if (hw->getPortNum() == port) {
       Ws->error_handler->publishComponentError(msg->descriptor,
-                                              "Port already in use");
+                                               "Port already in use");
       return false;
     }
   }
@@ -147,7 +147,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     break;
   default:
     Ws->error_handler->publishComponentError(msg->descriptor,
-                                            "Unsupported UART device config");
+                                             "Unsupported UART device config");
     delete uart_hardware;
     return false;
   }
@@ -158,8 +158,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 
   // Attempt to initialize the UART driver
   if (!uart_driver->begin()) {
-    Ws->error_handler->publishComponentError(msg->descriptor,
-                                            "Failed to initialize UART driver");
+    Ws->error_handler->publishComponentError(
+        msg->descriptor, "Failed to initialize UART driver");
     delete uart_driver;
     return false;
   }
@@ -183,7 +183,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
   int32_t port_num = WsPinNameToNum(msg->descriptor.pin_rx);
   if (port_num == WS_PIN_INVALID) {
     Ws->error_handler->publishComponentError(msg->descriptor,
-                                            "Invalid RX pin name");
+                                             "Invalid RX pin name");
     return false;
   }
   for (std::vector<UARTHardware *>::iterator it = _ports.begin();
@@ -213,7 +213,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
   }
 
   Ws->error_handler->publishComponentError(msg->descriptor,
-                                          "Port not found for removal");
+                                           "Port not found for removal");
   return false;
 }
 
@@ -225,7 +225,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
 */
 bool UARTController::Handle_UartWrite(ws_uart_Write *msg) {
   Ws->error_handler->publishComponentError(msg->descriptor,
-                                          "UartWrite not implemented.");
+                                           "UartWrite not implemented.");
   return false;
 }
 

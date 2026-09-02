@@ -19,8 +19,8 @@
 #include "Adafruit_TinyUSB.h"
 #include "SdFat_Adafruit_Fork.h"
 // using f_mkfs() for formatting
-#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
+#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 
 #include "wippersnapper.h"
 
@@ -66,5 +66,5 @@ public:
 private:
   bool _is_secrets_file_empty = false;
 };
-extern wippersnapper* Ws;
+extern wippersnapper *Ws;
 #endif // Wippersnapper_FS_V2_V2_H

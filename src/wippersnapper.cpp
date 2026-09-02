@@ -33,7 +33,7 @@
 
 #include "wippersnapper.h"
 
-wippersnapper* Ws;
+wippersnapper *Ws;
 
 /*!
     @brief    wippersnapper constructor
@@ -500,8 +500,8 @@ bool wippersnapper::generateWSTopics() {
   if (Ws->_topicB2d == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(Ws->_topicB2d, lenSignalTopic, "%s/ws-b2d/%s", Ws->_configV2.aio_user,
-           _device_uidV2);
+  snprintf(Ws->_topicB2d, lenSignalTopic, "%s/ws-b2d/%s",
+           Ws->_configV2.aio_user, _device_uidV2);
   // Subscribe to broker-to-device topic
   _subscribeB2d = new Adafruit_MQTT_Subscribe(Ws->_mqttV2, Ws->_topicB2d, 1);
   Ws->_mqttV2->subscribe(_subscribeB2d);
@@ -525,8 +525,8 @@ bool wippersnapper::generateWSTopics() {
   }
 
   // Build the broker-to-device topic
-  snprintf(Ws->_topicD2b, lenSignalTopic, "%s/ws-d2b/%s", Ws->_configV2.aio_user,
-           _device_uidV2);
+  snprintf(Ws->_topicD2b, lenSignalTopic, "%s/ws-d2b/%s",
+           Ws->_configV2.aio_user, _device_uidV2);
   return true;
 }
 
@@ -713,7 +713,7 @@ void wippersnapper::haltErrorV2(const char *error,
   for (;;) {
     if (!reboot) {
       Ws->_wdt->feed(); // Feed the WDT indefinitely to hold the WIPPER drive
-                       // open
+                        // open
     } else {
 // Let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266

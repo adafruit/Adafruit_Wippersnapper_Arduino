@@ -27,7 +27,7 @@
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
-extern wippersnapper* Ws; ///< Wippersnapper client instance
+extern wippersnapper *Ws; ///< Wippersnapper client instance
 
 /*!
     @brief  Class for using the ESP32 network interface.
