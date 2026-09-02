@@ -342,6 +342,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvPm25(i2c, addr, mux_channel, driver_name);
      }},
+    {"scd30",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvScd30(i2c, addr, mux_channel, driver_name);
+     }},
     {"scd40",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -352,10 +357,10 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvScd4x(i2c, addr, mux_channel, driver_name);
      }},
-    {"scd30",
+    {"scd43",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
-       return new drvScd30(i2c, addr, mux_channel, driver_name);
+       return new drvScd4x(i2c, addr, mux_channel, driver_name);
      }},
     {"sgp30",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -565,45 +570,6 @@ size_t I2cController::GetDecodedSettingsCount() {
 /******************************************************************************/
 
 /*!
-    @brief  Decode a single length-delimited sub-message out of a ws_i2c_B2D
-            envelope by its field tag, WITHOUT decoding through the B2D oneof.
-    @details  ws_i2c_B2D is a nanopb STATIC oneof: when pb_decode encounters a
-              payload field it zero-inits the union member first, which wipes
-   any decode callbacks pre-set on that member (the bug that silently made I2C
-   Probe scans return 0 address-spaces and Add drop its settings). Hand-reading
-   the wanted field and decoding a STANDALONE message keeps caller-installed
-   callbacks intact.
-    @param    stream    The B2D envelope stream.
-    @param    member_tag_to_decode  The B2D payload field tag to read (e.g.
-   ws_i2c_B2D_probe_tag).
-    @param    fields    The sub-message's nanopb field descriptor.
-    @param    dest_msg  The standalone sub-message struct to decode into, with
-   its decode callbacks already installed by the caller.
-    @returns  True if the field was found and decoded, False otherwise.
-*/
-static bool decodeI2cB2DMember(pb_istream_t *stream,
-                               uint32_t member_tag_to_decode,
-                               const pb_msgdesc_t *fields, void *dest_msg) {
-  pb_wire_type_t wire_type;
-  uint32_t tag;
-  bool eof = false;
-  while (pb_decode_tag(stream, &wire_type, &tag, &eof) && !eof) {
-    if (tag == member_tag_to_decode && wire_type == PB_WT_STRING) {
-      pb_istream_t substream;
-      if (!pb_make_string_substream(stream, &substream))
-        return false;
-      bool ok = ws_pb_decode(&substream, fields, dest_msg);
-      if (!pb_close_string_substream(stream, &substream))
-        return false;
-      return ok;
-    }
-    if (!pb_skip_field(stream, wire_type))
-      return false;
-  }
-  return false;
-}
-
-/*!
     @brief  Routes messages using the i2c.proto API to the
             appropriate controller functions.
     @param  stream
@@ -633,12 +599,13 @@ bool I2cController::Router(pb_istream_t *stream) {
     res = Handle_Probe(&saved_stream);
     break;
   case ws_i2c_B2D_add_tag: {
-    // Decode the Add sub-message DIRECTLY (not via the B2D oneof) so its
-    // settings decode callback survives — see decodeI2cB2DMember.
+    // Decode the Add as a standalone submessage so the settings-map decode
+    // callback survives — nanopb zeroes the oneof member, wiping callbacks
+    // pre-set on b2d.payload.add (same issue fixed in Handle_Probe).
     ws_i2c_Add add = ws_i2c_Add_init_zero;
     _i2c_model->SetupAddDecodeCallbacks(&add);
-    if (!decodeI2cB2DMember(&saved_stream, ws_i2c_B2D_add_tag,
-                            ws_i2c_Add_fields, &add)) {
+    if (!ws_pb_decode_oneof_submsg(&saved_stream, ws_i2c_B2D_add_tag,
+                                   ws_i2c_Add_fields, &add)) {
       Ws.error_handler->publishComponentError(
           add.descriptor, "Failed to decode I2C add message settings!");
       return false;
@@ -762,8 +729,17 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
     return false;
   }
 
-  // Store the bus pins on the driver so we can query it
-  drv->SetPins(bus->getSCL(), bus->getSDA());
+  // Store the bus pin names on the driver so we can query it
+  if (!drv->SetPins(descriptor.address_space.pin_scl,
+                    descriptor.address_space.pin_sda)) {
+    Ws.error_handler->publishComponentError(descriptor,
+                                            "Invalid I2C bus pin name(s)!");
+    if (use_mux) {
+      bus->ClearMuxChannel();
+    }
+    delete drv;
+    return false;
+  }
 
   // Configure sensor driver settings
   drv->EnableSensorReads(msg->types, msg->types_count);
@@ -822,19 +798,26 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
     @returns  True if probe completed and results published, False otherwise.
 */
 bool I2cController::Handle_Probe(pb_istream_t *stream) {
-  // Decode the Probe sub-message DIRECTLY (not via the ws_i2c_B2D oneof) so its
-  // address_spaces/addresses decode callbacks survive — see decodeI2cB2DMember.
+  // address_spaces/addresses are nanopb *callback* fields inside the ws_i2c_B2D
+  // `payload` oneof. nanopb zeroes the oneof member when it first sets the
+  // union tag, wiping callbacks pre-set on b2d.payload.probe — so decoding the
+  // whole B2D silently drops the repeated fields (0 address spaces, empty scan,
+  // no error). Decode the Probe as a standalone submessage instead, where the
+  // callbacks survive.
   ws_i2c_Probe probe = ws_i2c_Probe_init_zero;
   _i2c_model->SetupProbeDecodeCallbacks(&probe);
-  if (!decodeI2cB2DMember(stream, ws_i2c_B2D_probe_tag, ws_i2c_Probe_fields,
-                          &probe)) {
-    Ws.error_handler->publishComponentError(
-        ws_i2c_Descriptor{}, "Failed to decode I2C Probe message!");
+  if (!ws_pb_decode_oneof_submsg(stream, ws_i2c_B2D_probe_tag,
+                                 ws_i2c_Probe_fields, &probe)) {
+    Ws.error_handler->publishComponentError(ws_i2c_Descriptor{},
+                                            "Failed to decode Probe message!");
     return false;
   }
 
   ws_i2c_AddressSpace *spaces = _i2c_model->GetProbeAddressSpaces();
   size_t spaces_count = _i2c_model->GetProbeAddressSpacesCount();
+  // (A) debug: confirms the repeated address_spaces callback actually populated
+  WS_DEBUG_PRINT("[i2c] Probe decoded, address spaces=");
+  WS_DEBUG_PRINTLNVAR(spaces_count);
   uint32_t *addresses = _i2c_model->GetProbeAddresses();
   size_t addresses_count = _i2c_model->GetProbeAddressesCount();
 
@@ -915,8 +898,8 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
                                             "I2c address required for remove");
     return false;
   }
-  if (msg->descriptor.address_space.pin_scl == 0 ||
-      msg->descriptor.address_space.pin_sda == 0) {
+  if (msg->descriptor.address_space.pin_scl[0] == '\0' ||
+      msg->descriptor.address_space.pin_sda[0] == '\0') {
     Ws.error_handler->publishComponentError(msg->descriptor,
                                             "SCL/SDA required for remove");
     return false;
@@ -933,9 +916,7 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
   // Removing the MUX itself — tear down all devices on it first
   if (msg->descriptor.address == msg->descriptor.address_space.mux_address) {
     for (uint8_t ch = 0; ch < bus->GetMuxMaxChannels(); ch++) {
-      ws_i2c_AddressSpace mux_space = {};
-      mux_space.pin_scl = msg->descriptor.address_space.pin_scl;
-      mux_space.pin_sda = msg->descriptor.address_space.pin_sda;
+      ws_i2c_AddressSpace mux_space = msg->descriptor.address_space;
       mux_space.mux_address = msg->descriptor.address;
       mux_space.mux_channel = ch;
       ws_i2c_AddressSpaceResult result = {};
@@ -1076,7 +1057,13 @@ void I2cController::update(bool force) {
     _i2c_model->EncodeI2cDeviceEvent();
 
     if (!Ws._sdCardV2->isModeOffline()) {
-      // TODO: Implement online mode publishing
+      // Online: wrap the device event in the i2c D2B envelope and publish it to
+      // IO (mirrors publishProbed()'s D2B publish path).
+      if (!_i2c_model->EncodeI2cDeviceEventD2B() ||
+          !Ws.PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
+                         _i2c_model->GetI2cD2B())) {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish the I2cDeviceEvent!");
+      }
     } else {
       if (!Ws._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
         WS_DEBUG_PRINTLN(
@@ -1121,16 +1108,17 @@ void I2cController::ResetFlags() {
 /******************************************************************************/
 
 /*!
-    @brief  Finds or creates an I2C bus by SCL/SDA pins, validates it,
+    @brief  Finds or creates an I2C bus by SCL/SDA pin names, validates it,
             and returns the underlying TwoWire instance.
     @param  pin_scl
-            The SCL pin number.
+            The SCL pin name, e.g. "D22", "SCL".
     @param  pin_sda
-            The SDA pin number.
+            The SDA pin name, e.g. "D21", "SDA".
     @returns  Pointer to the TwoWire bus, or nullptr if the bus could not
               be found/created or failed validation.
 */
-TwoWire *I2cController::GetOrCreateI2cBus(uint32_t pin_scl, uint32_t pin_sda) {
+TwoWire *I2cController::GetOrCreateI2cBus(const char *pin_scl,
+                                          const char *pin_sda) {
   I2cHardware *bus = findOrCreateBus(pin_scl, pin_sda);
   if (bus == nullptr) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to find or create I2C bus!");
@@ -1226,22 +1214,31 @@ TwoWire *I2cController::GetI2cBusByIndex(size_t index) {
 /******************************************************************************/
 
 /*!
-    @brief    Finds an existing I2C bus by SCL/SDA pins, or creates a new one.
+    @brief    Finds an existing I2C bus by SCL/SDA pin names, or creates a
+              new one. Pin names are resolved to pin numbers before
+              comparison, so "SCL" and its pin number match the same bus.
     @param    pin_scl
-              The SCL pin number.
+              The SCL pin name, e.g. "D22", "SCL".
     @param    pin_sda
-              The SDA pin number.
+              The SDA pin name, e.g. "D21", "SDA".
     @returns  Pointer to the I2cHardware bus, or nullptr if initialization
               failed.
 */
-I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl,
-                                            uint32_t pin_sda) {
+I2cHardware *I2cController::findOrCreateBus(const char *pin_scl,
+                                            const char *pin_sda) {
+  // Validate the pin names and resolve them to pin numbers, once
+  WsPinName scl, sda;
+  if (!scl.Set(pin_scl) || !sda.Set(pin_sda)) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Invalid SCL/SDA pin name!");
+    return nullptr;
+  }
+
   // Search existing buses
   for (I2cHardware *bus : _i2c_buses) {
     if (bus == nullptr)
       continue;
-    if (pin_scl == (uint32_t)bus->getSCL() &&
-        pin_sda == (uint32_t)bus->getSDA()) {
+    if (scl.num == (int32_t)bus->getSCL() &&
+        sda.num == (int32_t)bus->getSDA()) {
       return bus;
     }
   }
@@ -1261,7 +1258,7 @@ I2cHardware *I2cController::findOrCreateBus(uint32_t pin_scl,
   // Wire.
   bus_instance = 1;
 #endif
-  I2cHardware *new_bus = new I2cHardware(pin_sda, pin_scl, bus_instance);
+  I2cHardware *new_bus = new I2cHardware(sda.num, scl.num, bus_instance);
   if (!new_bus->begin()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
     delete new_bus;
@@ -1285,19 +1282,22 @@ bool I2cController::IsBusStatusOK(I2cHardware *bus) {
 }
 
 /*!
-    @brief  Returns a pointer to the I2C bus by SCL/SDA pins
+    @brief  Returns a pointer to the I2C bus by SCL/SDA pin names
     @param  pin_scl
-            The SCL pin number.
+            The SCL pin name, e.g. "D22", "SCL".
     @param  pin_sda
-            The SDA pin number.
+            The SDA pin name, e.g. "D21", "SDA".
     @returns  Pointer to the TwoWire bus, or nullptr if the bus doesn't exist.
 */
-TwoWire *I2cController::GetI2cBus(uint32_t pin_scl, uint32_t pin_sda) {
+TwoWire *I2cController::GetI2cBus(const char *pin_scl, const char *pin_sda) {
+  WsPinName scl, sda;
+  if (!scl.Set(pin_scl) || !sda.Set(pin_sda))
+    return nullptr;
   for (I2cHardware *bus : _i2c_buses) {
     if (bus == nullptr)
       continue;
-    if (pin_scl == (uint32_t)bus->getSCL() &&
-        pin_sda == (uint32_t)bus->getSDA()) {
+    if (scl.num == (int32_t)bus->getSCL() &&
+        sda.num == (int32_t)bus->getSDA()) {
       return bus->GetBus();
     }
   }

@@ -90,7 +90,12 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   }
 
   // Have we already added this UART port?
-  uint32_t port = msg->descriptor.pin_rx;
+  int32_t port = WsPinNameToNum(msg->descriptor.pin_rx);
+  if (port == WS_PIN_INVALID) {
+    Ws.error_handler->publishComponentError(msg->descriptor,
+                                            "Invalid RX pin name");
+    return false;
+  }
   for (UARTHardware *hw : _ports) {
     if (hw->getPortNum() == port) {
       Ws.error_handler->publishComponentError(msg->descriptor,
@@ -175,7 +180,12 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
 
   // Find the corresponding hardware instance for the UART port
-  uint32_t port_num = msg->descriptor.pin_rx;
+  int32_t port_num = WsPinNameToNum(msg->descriptor.pin_rx);
+  if (port_num == WS_PIN_INVALID) {
+    Ws.error_handler->publishComponentError(msg->descriptor,
+                                            "Invalid RX pin name");
+    return false;
+  }
   for (std::vector<UARTHardware *>::iterator it = _ports.begin();
        it != _ports.end(); ++it) {
     if ((*it)->getPortNum() == port_num) {
@@ -183,7 +193,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
       for (std::vector<drvUartBase *>::iterator driver_it =
                _uart_drivers.begin();
            driver_it != _uart_drivers.end(); ++driver_it) {
-        if ((*driver_it)->GetPortNum() == port_num) {
+        if ((*driver_it)->GetPortNum() == (uint32_t)port_num) {
           // Driver found, remove it
           delete *driver_it;
           _uart_drivers.erase(driver_it);
@@ -249,7 +259,7 @@ void UARTController::update(bool force) {
 
     // Read the events from the drivers
     _uart_model->ClearUartInputEventMsg();
-    _uart_model->ConfigureUartInputEventMsg(drv->GetPortNum());
+    _uart_model->ConfigureUartInputEventMsg(drv->GetPortName());
     for (size_t i = 0; i < num_sensors; i++) {
       // Attempt to read from the driver
       sensors_event_t event = {0};
@@ -279,8 +289,8 @@ void UARTController::update(bool force) {
         drv->SetDidReadSend(true); // For now, assume success in offline mode
       } else {
         // In online mode, publish to Adafruit IO
-        if (!Ws.PublishD2b(ws_signal_BrokerToDevice_uart_tag,
-                           _uart_model->GetUartInputEventMsg())) {
+        if (!Ws.PublishD2b(ws_signal_DeviceToBroker_uart_tag,
+                           _uart_model->GetUartD2B())) {
           WS_DEBUG_PRINTLN(
               "[uart] ERROR: Unable to publish UartInputEvent to IO!");
           drv->SetDidReadSend(false);

@@ -16,10 +16,20 @@
 #ifndef DRV_UART_BASE_H
 #define DRV_UART_BASE_H
 #include "../hardware.h"
+#include "helpers/ws_helper_pins.h"
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <protos/sensor.pb.h>
 #include <protos/uart.pb.h>
+
+/*! Size of the device name buffer, exactly matches ws_uart_Add.name in
+    uart.pb.h */
+#define DRV_UART_NAME_LEN (sizeof(((ws_uart_Add *)0)->name))
+/*! Size of the pin name buffers, exactly matches ws_uart_Descriptor.pin_rx
+    in uart.pb.h */
+#define DRV_UART_PIN_NAME_LEN (sizeof(((ws_uart_Descriptor *)0)->pin_rx))
+static_assert(sizeof(WsPinName::name) >= DRV_UART_PIN_NAME_LEN,
+              "WsPinName.name must hold any ws_uart_Descriptor pin name");
 
 /*!
     @brief  Base class for UART Drivers.
@@ -33,17 +43,17 @@ public:
                 Pointer to a HardwareSerial instance.
       @param    driver_name
                 The name of the driver.
-      @param    port_num
-                The port number for the UART device corresponding to the Serial
-     instance.
+      @param    port_name
+                The name of the RX pin for the UART device corresponding to
+     the Serial instance.
   */
   drvUartBase(HardwareSerial *hw_serial, const char *driver_name,
-              uint32_t port_num) {
+              const char *port_name) {
     _hw_serial = hw_serial;
     _is_software_serial = false;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
-    _port_num = port_num;
+    SetPortName(port_name);
     _did_read_send = false;
   }
 
@@ -54,16 +64,17 @@ public:
                 Pointer to a SoftwareSerial instance.
       @param    driver_name
                 The name of the driver.
-      @param    port_num
-                The port number for the UART device corresponding to the Serial
+      @param    port_name
+                The name of the RX pin for the UART device corresponding to
+     the Serial instance.
   */
   drvUartBase(SoftwareSerial *sw_serial, const char *driver_name,
-              uint32_t port_num) {
+              const char *port_name) {
     _sw_serial = sw_serial;
     _is_software_serial = true;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
-    _port_num = port_num;
+    SetPortName(port_name);
     _did_read_send = false;
   }
 #endif // HAS_SW_SERIAL
@@ -89,10 +100,21 @@ public:
   void SetDidReadSend(bool did_read_send) { _did_read_send = did_read_send; }
 
   /*!
-      @brief    Gets the name of the UART driver.
-      @returns  The name of the UART driver.
+      @brief    Gets the port number for the UART device.
+      @returns  The port number, resolved from the RX pin name, or 0 if
+                the pin name did not resolve.
   */
-  uint32_t GetPortNum() const { return _port_num; }
+  uint32_t GetPortNum() const {
+    if (_port.num == WS_PIN_INVALID)
+      return 0;
+    return (uint32_t)_port.num;
+  }
+
+  /*!
+      @brief    Gets the name of the RX pin for the UART device.
+      @returns  The RX pin name.
+  */
+  const char *GetPortName() const { return _port.name; }
 
   /*!
       @brief    Gets the name of the UART driver.
@@ -218,6 +240,38 @@ public:
   }
 
   /*!
+      @brief    Base implementation - Reads a object pm10 env. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm10EnvEvent
+                pm10 env. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventPM10_ENV(sensors_event_t *pm10EnvEvent) { return false; }
+
+  /*!
+      @brief    Base implementation - Reads a object pm25 env. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm25EnvEvent
+                pm25 env. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventPM25_ENV(sensors_event_t *pm25EnvEvent) { return false; }
+
+  /*!
+      @brief    Base implementation - Reads a object pm100 env. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm100EnvEvent
+                pm100 env. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventPM100_ENV(sensors_event_t *pm100EnvEvent) {
+    return false;
+  }
+
+  /*!
       @brief    Base implementation - Reads an ambient temperature sensor (°C).
                 Expects value to return in the proper SI unit.
       @param    tempEvent
@@ -278,6 +332,18 @@ public:
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM100_STD(event);
        }},
+      {ws_sensor_Type_T_PM10_ENV,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM10_ENV(event);
+       }},
+      {ws_sensor_Type_T_PM25_ENV,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM25_ENV(event);
+       }},
+      {ws_sensor_Type_T_PM100_ENV,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM100_ENV(event);
+       }},
       {ws_sensor_Type_T_AMBIENT_TEMPERATURE_FAHRENHEIT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventAmbientTempF(event);
@@ -294,10 +360,21 @@ public:
 protected:
   HardwareSerial *_hw_serial; ///< Pointer to a HardwareSerial instance
 #if HAS_SW_SERIAL
-  SoftwareSerial *_sw_serial; ///< Pointer to a SoftwareSerial instance
-#endif                        // HAS_SW_SERIAL
-  char _name[32];             ///< The device's name
-  uint32_t _port_num = 0;     ///< The port number for the UART device
+  SoftwareSerial *_sw_serial;    ///< Pointer to a SoftwareSerial instance
+#endif                           // HAS_SW_SERIAL
+  char _name[DRV_UART_NAME_LEN]; ///< The device's name
+  WsPinName _port; ///< The RX pin (name + resolved port number) for the
+                   ///< UART device
+
+  /*!
+      @brief    Validates and stores the RX pin name, resolving it to a
+                port number.
+      @param    port_name
+                The name of the RX pin for the UART device.
+      @returns  True if the name is non-null, fits without truncation, and
+                resolves to a pin number; False otherwise.
+  */
+  bool SetPortName(const char *port_name) { return _port.Set(port_name); }
   bool _is_software_serial =
       false; ///< Indicates if this driver uses SoftwareSerial
   // Sensor API - UART INPUT

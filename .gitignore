@@ -48,7 +48,8 @@ COM*.txt
 venv/
 
 # Python artifacts
-tests/__pycache__/
+__pycache__/
+*.pyc
 
 # Platformio artifacts
 .pio/
@@ -76,5 +77,10 @@ testplan.md
 *.vcxproj.filters
 *.vcxproj.user
 logs/
+*.log
 
 src/Wippersnapper_demo.ino.cpp
+
+*.jpg
+*.png
+*.jpeg

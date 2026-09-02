@@ -45,15 +45,17 @@ bool ExpanderController::Router(pb_istream_t *stream) {
   bool res = false;
   switch (b2d.which_payload) {
   case ws_expander_B2D_add_tag: {
-    // Re-decode from saved stream with settings callbacks on cfg_i2c
-    ws_expander_B2D b2d_add = ws_expander_B2D_init_zero;
-    Ws._i2c_controller->SetupAddDecodeCallbacks(&b2d_add.payload.add.cfg_i2c);
-    if (!ws_pb_decode(&saved_stream, ws_expander_B2D_fields, &b2d_add)) {
-      WS_DEBUG_PRINTLN(
-          "[expander] ERROR: Failed to re-decode add with settings");
+    // Decode the Add as a standalone submessage so the nested i2c cfg's
+    // settings callback survives — nanopb zeroes the oneof member, wiping
+    // callbacks pre-set on b2d.payload.add.cfg_i2c (same issue as i2c).
+    ws_expander_Add add = ws_expander_Add_init_zero;
+    Ws._i2c_controller->SetupAddDecodeCallbacks(&add.cfg_i2c);
+    if (!ws_pb_decode_oneof_submsg(&saved_stream, ws_expander_B2D_add_tag,
+                                   ws_expander_Add_fields, &add)) {
+      WS_DEBUG_PRINTLN("[expander] ERROR: Failed to decode add with settings");
       return false;
     }
-    res = Handle_Add(&b2d_add.payload.add);
+    res = Handle_Add(&add);
     break;
   }
   case ws_expander_B2D_remove_tag:
@@ -128,6 +130,46 @@ ExpanderHardware *ExpanderController::GetDriver(uint8_t addr) {
       return drv;
   }
   return nullptr;
+}
+
+/*!
+ * @brief Resolves a pin name to a pin number and, for expander pin names
+ *        ("EXP_0xNN_P"), the owning expander driver. Handles BOTH pin
+ *        domains so callers (digitalio, analogio, pwm, ...) need a single
+ *        call and no knowledge of the expander addressing scheme: a native
+ *        name ("D5", "A0") resolves successfully with expander_drv left
+ *        nullptr, an expander name must reference a registered expander.
+ *        Analogous to DigitalIOController::QueryPinState() for pin-in-use
+ *        queries.
+ * @param pin_name     The pin name string, native ("D5", "A0") or expander
+ *                     ("EXP_0x48_3").
+ * @param pin_num      Out: the pin number — for expander pins this is the
+ *                     pin (channel) index on that expander.
+ * @param expander_drv Out: the owning expander driver, or nullptr for a
+ *                     native MCU pin.
+ * @return True if resolved. False if the pin name is malformed, out of
+ *         range, or names an expander address with no registered driver.
+ */
+bool ExpanderController::ResolvePinName(const char *pin_name, uint8_t &pin_num,
+                                        ExpanderHardware **expander_drv) {
+  *expander_drv = nullptr; // Only set for expander-backed pins
+
+  int32_t pin = WsPinNameToNum(pin_name);
+  if (pin == WS_PIN_INVALID || pin > 0xFF)
+    return false;
+
+  // Expander pin name? The expander at that address must be registered.
+  if (strncmp(pin_name, "EXP_", 4) == 0) {
+    int32_t addr = WsPinNameToExpanderAddr(pin_name);
+    if (addr == WS_PIN_INVALID)
+      return false;
+    *expander_drv = GetDriver((uint8_t)addr);
+    if (*expander_drv == nullptr)
+      return false;
+  }
+
+  pin_num = (uint8_t)pin;
+  return true;
 }
 
 /// Pointer to an expander setter that applies one decoded setting value.

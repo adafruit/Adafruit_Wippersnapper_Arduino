@@ -23,6 +23,7 @@
 #include "drivers/dispDrvSh1107.h"
 #include "drivers/dispDrvSsd1306.h"
 #include "drivers/dispDrvSt7789.h"
+#include "drivers/dispDrvSt7789I8080.h"
 #include "wippersnapper.h"
 #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
 #include "drivers/dispDrvRgb666.h"
@@ -67,6 +68,7 @@ protected:
   bool beginSpiTft(ws_display_Add *msg);
   bool beginSpiEpd(ws_display_Add *msg);
   bool beginTtlRgb666(ws_display_Add *msg);
+  bool beginI8080(ws_display_Add *msg);
   bool beginI2cDisplay(ws_display_Add *msg);
   static int16_t parsePin(const char *pinStr);
   static uint8_t EpdBitBangReadRegister(uint8_t cmd,

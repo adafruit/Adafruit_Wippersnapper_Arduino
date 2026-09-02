@@ -118,6 +118,7 @@
 
 // Wippersnapper API Helpers
 #include "components/statusLED/Wippersnapper_StatusLED.h"
+#include "helpers/ws_helper_pins.h"
 #include "helpers/ws_helper_status.h"
 #include "helpers/ws_wdt.h"
 #include "ws_boards.h"

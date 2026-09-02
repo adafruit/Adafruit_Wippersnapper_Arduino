@@ -396,9 +396,9 @@ void I2cModel::ClearI2cDeviceEvent() {
 /*!
     @brief    Sets the I2cDeviceEvent message's device description.
     @param    pin_scl
-                The SCL pin number.
+                The SCL pin name.
     @param    pin_sda
-                The SDA pin number.
+                The SDA pin name.
     @param    addr_device
                 The device address.
     @param    addr_mux
@@ -406,15 +406,23 @@ void I2cModel::ClearI2cDeviceEvent() {
     @param    mux_channel
                 The MUX channel.
 */
-void I2cModel::SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
-                                                 uint32_t pin_sda,
+void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *pin_scl,
+                                                 const char *pin_sda,
                                                  uint32_t addr_device,
                                                  uint32_t addr_mux,
                                                  uint32_t mux_channel) {
   _msg_i2c_event.has_descriptor = true;
   _msg_i2c_event.descriptor.has_address_space = true;
-  _msg_i2c_event.descriptor.address_space.pin_scl = pin_scl;
-  _msg_i2c_event.descriptor.address_space.pin_sda = pin_sda;
+  strncpy(_msg_i2c_event.descriptor.address_space.pin_scl, pin_scl,
+          sizeof(_msg_i2c_event.descriptor.address_space.pin_scl) - 1);
+  _msg_i2c_event.descriptor.address_space
+      .pin_scl[sizeof(_msg_i2c_event.descriptor.address_space.pin_scl) - 1] =
+      '\0';
+  strncpy(_msg_i2c_event.descriptor.address_space.pin_sda, pin_sda,
+          sizeof(_msg_i2c_event.descriptor.address_space.pin_sda) - 1);
+  _msg_i2c_event.descriptor.address_space
+      .pin_sda[sizeof(_msg_i2c_event.descriptor.address_space.pin_sda) - 1] =
+      '\0';
   _msg_i2c_event.descriptor.address = addr_device;
   _msg_i2c_event.descriptor.address_space.mux_address = addr_mux;
   _msg_i2c_event.descriptor.address_space.mux_channel = mux_channel;
@@ -459,6 +467,24 @@ bool I2cModel::EncodeI2cDeviceEvent() {
   uint8_t buf[sz_msg];
   pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
   return pb_encode(&msg_stream, ws_i2c_Event_fields, &_msg_i2c_event);
+}
+
+/*!
+    @brief    Wraps the current I2cDeviceEvent in the ws_i2c_D2B envelope so it
+              can be published to IO online (parallel to EncodeProbed()).
+    @returns  True if the wrapped D2B message is encodable, False otherwise.
+*/
+bool I2cModel::EncodeI2cDeviceEventD2B() {
+  memset(&_msg_i2c_d2b, 0, sizeof(_msg_i2c_d2b));
+  _msg_i2c_d2b.which_payload = ws_i2c_D2B_event_tag;
+  _msg_i2c_d2b.payload.event = _msg_i2c_event;
+
+  // Verify we can get the encoded size before handing it to PublishD2b.
+  size_t sz_msg;
+  if (!pb_get_encoded_size(&sz_msg, ws_i2c_D2B_fields, &_msg_i2c_d2b))
+    return false;
+
+  return true;
 }
 
 /*!

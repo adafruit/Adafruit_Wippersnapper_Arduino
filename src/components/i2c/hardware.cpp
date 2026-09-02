@@ -185,6 +185,14 @@ bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
     SelectMuxChannel(address_space->mux_channel);
   }
 
+  // A caller-supplied empty address list currently probes nothing (the
+  // "empty means scan all" proto semantic is not implemented here yet), which
+  // otherwise looks like a silent "found 0 devices". Make it visible.
+  if (addresses_count == 0) {
+    WS_DEBUG_PRINTLN("[i2c] WARNING: No addresses to probe — the address list "
+                     "is empty (broker must send explicit addresses to scan).");
+  }
+
   // Probe addresses
   for (size_t i = 0; i < addresses_count; i++) {
     uint8_t addr = (uint8_t)addresses[i];

@@ -81,13 +81,15 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
   WS_DEBUG_PRINTLNVAR(addMsg->panel);
 
   switch (addMsg->interface_type.which_descriptor) {
-  // DSI + i8080 todo
+  // DSI todo
   case ws_display_InterfaceDescriptor_spi_tft_tag:
     return beginSpiTft(addMsg);
   case ws_display_InterfaceDescriptor_spi_epd_tag:
     return beginSpiEpd(addMsg);
   case ws_display_InterfaceDescriptor_ttl_rgb666_tag:
     return beginTtlRgb666(addMsg);
+  case ws_display_InterfaceDescriptor_i8080_tag:
+    return beginI8080(addMsg);
   case ws_display_InterfaceDescriptor_i2c_tag:
     return beginI2cDisplay(addMsg);
   default:
@@ -522,6 +524,141 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   return true;
 #else
   WS_DEBUG_PRINTLN("[display] ERROR: TTL RGB666 not supported on this board!");
+  return false;
+#endif
+}
+
+// ---------------------------------------------------------------------------
+// i8080 8-bit parallel TFT initialization (LilyGo T-Display-S3, etc.)
+// ---------------------------------------------------------------------------
+/*!
+    @brief  Initializes an ST7789 TFT driven over an i8080 8-bit parallel bus.
+    @param  msg  The Display Add message with i8080 interface and config.
+    @return True on success, False on failure or when unsupported on this
+            board.
+*/
+bool DisplayHardware::beginI8080(ws_display_Add *msg) {
+#if defined(ESP32) && defined(CONFIG_IDF_TARGET_ESP32S3)
+  ws_display_I8080PinDescriptor *i8080 = &msg->interface_type.descriptor.i8080;
+
+  int16_t dc = parsePin(i8080->pin_dc);
+  int16_t cs = parsePin(i8080->pin_cs);
+  int16_t rst = parsePin(i8080->pin_rst);
+  int16_t d[8] = {parsePin(i8080->pin_d0), parsePin(i8080->pin_d1),
+                  parsePin(i8080->pin_d2), parsePin(i8080->pin_d3),
+                  parsePin(i8080->pin_d4), parsePin(i8080->pin_d5),
+                  parsePin(i8080->pin_d6), parsePin(i8080->pin_d7)};
+
+  // WR/RD strobes come from the Add message like every other display pin —
+  // no board-hardcoded pins. RD is optional (-1 when not wired).
+  int16_t wr = parsePin(i8080->pin_write);
+  int16_t rd = parsePin(i8080->pin_read);
+
+  if (dc < 0 || cs < 0 || wr < 0) {
+    publishAndLogError(F("[display] ERROR: Invalid i8080 control pins!"));
+    return false;
+  }
+  for (int i = 0; i < 8; i++) {
+    if (d[i] < 0) {
+      publishAndLogError(F("[display] ERROR: Invalid i8080 data pin!"));
+      return false;
+    }
+  }
+
+  if (strcmp(msg->driver, "ST7789") != 0) {
+    WS_DEBUG_PRINT("[display] ERROR: Unsupported i8080 driver: ");
+    WS_DEBUG_PRINTLNVAR(msg->driver);
+    return false;
+  }
+
+  if (msg->which_config != ws_display_Add_config_display_tag) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Expected display config for i8080!");
+    return false;
+  }
+  ws_display_DisplayProperties *config = &msg->config.config_display;
+
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
+
+  dispDrvSt7789I8080 *drv = new dispDrvSt7789I8080(
+      dc, cs, wr, rd, d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], rst);
+  _drvDisp = drv;
+  if (!_drvDisp) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to allocate i8080 driver!");
+    return false;
+  }
+
+  // Backlight comes from the Add's shared BacklightConfig (digitalio or pwm
+  // pin). TODO: route it through the digitalio/pwm controllers so it stays
+  // runtime-controllable; for now the driver drives the pin directly.
+  if (msg->has_backlight) {
+    int16_t bl = -1;
+    if (msg->backlight.which_backlight_add ==
+        ws_display_BacklightConfig_backlight_digital_tag)
+      bl = parsePin(msg->backlight.backlight_add.backlight_digital.pin_name);
+    else if (msg->backlight.which_backlight_add ==
+             ws_display_BacklightConfig_backlight_pwm_tag)
+      bl = parsePin(msg->backlight.backlight_add.backlight_pwm.pin);
+    if (bl >= 0)
+      _drvDisp->setBacklightPin(bl);
+  }
+  // Optional prerequisite digital output — a panel power-enable rail —
+  // carried as a full ws.digitalio.Add so it composes like any other pin
+  // (direction/inversion/initial write).
+  //
+  // Ownership rules: if the pin is already registered with the digitalio
+  // controller (added by the user as a component), the display must not
+  // claim, drive, or release it — pass through only when it is already an
+  // OUTPUT driving the panel's enable level, else fail the Add. Otherwise
+  // the DISPLAY owns the rail: the driver drives it to the enable level
+  // before init and releases it in its destructor (display Remove/replace).
+  if (msg->has_power) {
+    int16_t power = parsePin(msg->power.pin_name);
+    if (power >= 0) {
+      bool enable_level = !msg->power.is_inverted;
+      ws_digitalio_Direction dir;
+      bool value;
+      if (Ws.digital_io_controller->QueryPinState((uint8_t)power, &dir,
+                                                  &value)) {
+        if (dir == ws_digitalio_Direction_D_OUTPUT && value == enable_level) {
+          WS_DEBUG_PRINTLN("[display] Power-enable pin already driven by "
+                           "digitalio at the enable level - passing through "
+                           "(display does not take ownership)");
+        } else {
+          publishAndLogError(
+              F("[display] ERROR: Power-enable pin unavailable - already in "
+                "use with an incompatible direction or level!"));
+          delete _drvDisp;
+          _drvDisp = nullptr;
+          return false;
+        }
+      } else {
+        drv->setPowerPin(power, enable_level);
+      }
+    }
+  }
+
+  _drvDisp->setWidth(config->width);
+  _drvDisp->setHeight(config->height);
+  _drvDisp->setRotation(config->rotation);
+  if (config->text_size > 0)
+    _drvDisp->setTextSize(config->text_size);
+
+  if (!_drvDisp->begin()) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin i8080 driver!");
+    delete _drvDisp;
+    _drvDisp = nullptr;
+    return false;
+  }
+
+  WS_DEBUG_PRINTLN("[display] i8080 ST7789 initialized successfully!");
+  return true;
+#else
+  WS_DEBUG_PRINTLN(
+      "[display] ERROR: i8080 parallel displays are only supported on "
+      "ESP32-S3!");
   return false;
 #endif
 }
