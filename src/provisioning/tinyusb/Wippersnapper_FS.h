@@ -19,8 +19,10 @@
 #include "Adafruit_TinyUSB.h"
 #include "SdFat_Adafruit_Fork.h"
 // using f_mkfs() for formatting
+// clang-format off
+#include "fatfs/ff.h" // ff.h defines BYTE/DWORD etc. that diskio.h needs
 #include "fatfs/diskio.h"
-#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
+// clang-format on
 
 #include "wippersnapper.h"
 
