@@ -172,6 +172,9 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   response->component_adds.i2c_adds.funcs.decode = &cbI2cAdds;
   response->component_adds.i2c_adds.arg = model;
 
+  response->component_adds.telemetry_adds.funcs.decode = &cbTelemetryAdds;
+  response->component_adds.telemetry_adds.arg = model;
+
   // Return true WITHOUT consuming the stream - nanopb will continue
   // to decode the Response submessage with our callback now set up
   return true;
@@ -312,6 +315,23 @@ bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
     return false;
   }
   return Ws->_i2c_controller->Handle_Add(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding Telemetry Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbTelemetryAdds(pb_istream_t *stream,
+                                   const pb_field_t *field, void **arg) {
+  ws_telemetry_Add add_msg = ws_telemetry_Add_init_zero;
+  if (!pb_decode(stream, ws_telemetry_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode telemetry add");
+    return false;
+  }
+  return Ws->_telemetry_controller->Handle_TelemetryAdd(&add_msg);
 }
 
 /*!
