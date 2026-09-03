@@ -22,7 +22,10 @@
 #define WIRE Wire
 #endif
 
-#define I2C_WDT_TIMEOUT_MS 50
+/// Standard-mode I2C clock for ESP32 buses. 100 kHz; a slower 50 kHz failed to
+/// detect some devices on the STEMMA bus during HIL testing.
+#define I2C_STD_CLOCK_HZ 100000
+#define I2C_WDT_TIMEOUT_MS 50 ///< I2C timeout
 #define MAX_I2C_ADDRESSES 112 ///< 128 total 7-bit addresses minus 16 reserved
 
 /*!

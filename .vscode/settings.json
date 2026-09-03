@@ -23,6 +23,6 @@
     "cmake.configureOnOpen": false,
     "workbench.panel.defaultLocation": "right",
     "terminal.integrated.defaultLocation": "view",
-
-
+    "C_Cpp.formatting": "clangFormat",
+    "C_Cpp.clang_format_style": "{ BasedOnStyle: LLVM, IndentCaseLabels: false, ColumnLimit: 80, SpacesBeforeTrailingComments: 1, ReflowComments: true }"
 }

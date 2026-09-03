@@ -128,7 +128,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
-#define I2c_STEMMA_WIRE1
+#define I2C_STEMMA_WIRE1
 #define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM)
 #define BOARD_ID "qtpy-esp32s3"
@@ -136,7 +136,7 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
-#define I2c_STEMMA_WIRE1
+#define I2C_STEMMA_WIRE1
 #define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2)
 #define BOARD_ID "qtpy-esp32s3-n4r2"
@@ -145,7 +145,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
-#define I2c_STEMMA_WIRE1
+#define I2C_STEMMA_WIRE1
 #define BOOT_BUTTON 0
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3)
 #define BOARD_ID "qtpy-esp32c3"
@@ -190,7 +190,7 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
-#define I2c_STEMMA_WIRE1
+#define I2C_STEMMA_WIRE1
 #elif defined(ARDUINO_SAMD_NANO_33_IOT)
 #define BOARD_ID "nano-33-iot"
 #define USE_STATUS_LED
