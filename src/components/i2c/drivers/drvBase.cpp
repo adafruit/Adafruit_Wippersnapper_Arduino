@@ -82,7 +82,7 @@ bool drvBase::configure(DecodedSetting *settings, size_t count) {
     snprintf(msg, sizeof(msg), "Failed to apply default configuration");
     ws_i2c_Descriptor descriptor = ws_i2c_Descriptor_init_zero;
     descriptor.address = _address;
-    Ws.error_handler->publishComponentError(descriptor, msg);
+    Ws->error_handler->publishComponentError(descriptor, msg);
     return false;
   }
 
@@ -106,7 +106,7 @@ bool drvBase::configure(DecodedSetting *settings, size_t count) {
                  settings[i].key);
         ws_i2c_Descriptor descriptor = ws_i2c_Descriptor_init_zero;
         descriptor.address = _address;
-        Ws.error_handler->publishComponentError(descriptor, msg);
+        Ws->error_handler->publishComponentError(descriptor, msg);
         success = false;
       }
       found = true;
@@ -120,7 +120,7 @@ bool drvBase::configure(DecodedSetting *settings, size_t count) {
       snprintf(msg, sizeof(msg), "Unknown setting key: %s", settings[i].key);
       ws_i2c_Descriptor descriptor = ws_i2c_Descriptor_init_zero;
       descriptor.address = _address;
-      Ws.error_handler->publishComponentError(descriptor, msg);
+      Ws->error_handler->publishComponentError(descriptor, msg);
       success = false;
     }
   }

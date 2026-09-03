@@ -89,7 +89,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      Ws._wdt->feed();                                                         \
+      Ws->_wdt->feed();                                                        \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -141,6 +141,7 @@
 #include "components/sensor/model.h"
 #include "components/servo/controller.h"
 #include "components/sleep/controller.h"
+#include "components/telemetry/controller.h"
 #include "components/uart/controller.h"
 
 #include "provisioning/ConfigJson.h"
@@ -185,6 +186,7 @@ class GPSController;
 class I2cController;
 class PixelsController;
 class PWMController;
+class TelemetryController;
 class ServoController;
 class UARTController;
 class SleepController;
@@ -278,6 +280,8 @@ public:
       nullptr;                              ///< Instance of Expander controller
   GPSController *_gps_controller = nullptr; ///< Instance of GPS controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
+  TelemetryController *_telemetry_controller =
+      nullptr; ///< Instance of Telemetry controller
   PixelsController *_pixels_controller =
       nullptr;                              ///< Instance of Pixels controller
   PWMController *_pwm_controller = nullptr; ///< Instance of PWM controller
@@ -315,6 +319,8 @@ public:
   JsonDocument _config_doc; ///< Storage for the config.json file
   uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
+  void _init();
+
   // Separate loop() functions, depending on power mode
   void loop();
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
@@ -346,6 +352,6 @@ protected:
   char *_device_uidV2;     /*!< Unique device identifier  */
   char *_mqtt_client_id;   /*!< MQTT client ID with "io-wipper" prefix */
 };
-extern wippersnapper Ws; ///< Global member variable for callbacks
+extern wippersnapper *Ws; ///< Global member variable for callbacks
 
 #endif // WIPPERSNAPPER_H

@@ -44,7 +44,7 @@ static char log_filename_rtc[64] = {0};
     @brief  Sleep hardware constructor for RP2350.
 */
 SleepHardware::SleepHardware() {
-  _did_wake_from_sleep = Ws._wdt->didWakeFromSleep();
+  _did_wake_from_sleep = Ws->_wdt->didWakeFromSleep();
   CalculateSleepDuration();
   if (!_did_wake_from_sleep) {
     cnt_soft_rtc = 0;
@@ -175,7 +175,7 @@ void SleepHardware::CalculateSleepDuration() {
 #endif // !SOC_RTC_FAST_MEM_SUPPORTED
 #else
   // For chips without RTC memory, we rely on the WDT sleep duration tracking
-  _sleep_time = (int)(Ws._wdt->getSleepDuration() / 1000);
+  _sleep_time = (int)(Ws->_wdt->getSleepDuration() / 1000);
   sleep_cycles += 1;
 #endif // ARDUINO_ARCH_ESP32
 }

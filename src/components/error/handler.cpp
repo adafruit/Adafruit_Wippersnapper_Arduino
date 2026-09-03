@@ -90,11 +90,11 @@ bool ErrorHandler::Router(pb_istream_t *stream) {
 */
 bool ErrorHandler::HandleBan(const ws_error_BanError &ban) {
   WS_DEBUG_PRINTLN("[ERROR] Received IO Ban from broker");
-  if (!Ws._mqttV2->disconnect()) {
+  if (!Ws->_mqttV2->disconnect()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
 
-  Ws.haltErrorV2("IO MQTT Ban Error");
+  Ws->haltErrorV2("IO MQTT Ban Error");
   return true;
 }
 
@@ -125,8 +125,8 @@ bool ErrorHandler::HandleThrottle(const ws_error_ThrottleError &throttle) {
     delay(time_delay);
     time_elapsed += time_delay;
 
-    Ws._wdt->feed();
-    Ws._mqttV2->ping();
+    Ws->_wdt->feed();
+    Ws->_mqttV2->ping();
   }
 
   WS_DEBUG_PRINTLN("[ERROR] Throttle period ended. Resuming normal operation.");
@@ -241,5 +241,5 @@ bool ErrorHandler::publishComponentError(ws_uart_Descriptor uart,
     @return True if published successfully, False otherwise.
 */
 bool ErrorHandler::publishD2B() {
-  return Ws.PublishD2b(ws_signal_DeviceToBroker_error_tag, &_d2b_msg);
+  return Ws->PublishD2b(ws_signal_DeviceToBroker_error_tag, &_d2b_msg);
 }
