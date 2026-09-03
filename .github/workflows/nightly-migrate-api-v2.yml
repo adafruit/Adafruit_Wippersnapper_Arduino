@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: Brent Rubell for Adafruit Industries, 2026
+#
+# SPDX-License-Identifier: MIT
+#
+# Nightly asset build for the migrate-api-v2 (API v2) branch.
+#
+# GitHub only fires `schedule` crons from the workflow copy on the default
+# branch, and a scheduled run checks out the default branch's code. This
+# file therefore has to live on the default branch, and instead of building
+# directly it dispatches build-migrate-api-v2.yml on the migrate-api-v2 ref
+# so the v2 code is what gets built.
+name: Nightly build (migrate-api-v2 branch)
+
+on:
+  schedule:
+    # 06:00 UTC nightly (06:00 UK in winter, 07:00 during BST)
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  dispatch:
+    name: Dispatch v2 asset build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger build-migrate-api-v2.yml on migrate-api-v2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/actions/workflows/build-migrate-api-v2.yml/dispatches" \
+            -f ref=migrate-api-v2
