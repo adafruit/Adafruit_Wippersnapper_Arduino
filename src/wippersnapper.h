@@ -301,6 +301,7 @@ public:
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
   char sUIDV2[13];        /*!< Unique hardware identifier */
   const char *_boardIdV2; /*!< Adafruit IO+ board string */
+  const char *_airlift_version = "unknown"; /*!< AirLift Firmware version */
   Adafruit_MQTT *_mqttV2; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   // TODO: Audit this, does it need to be here?
