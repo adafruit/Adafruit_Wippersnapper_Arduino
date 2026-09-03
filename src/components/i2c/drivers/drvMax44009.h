@@ -171,17 +171,17 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets the MAX44009's current ambient light reading in lux.
-      @param    luxEvent
+      @param    lightEvent
                 Light sensor reading, in lux.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventLux(sensors_event_t *luxEvent) {
+  bool getEventLight(sensors_event_t *lightEvent) override {
     float lux = _max44009->readLux();
     if (isnan(lux))
       return false;
-    luxEvent->light = lux;
+    lightEvent->light = lux;
     return true;
   }
 
