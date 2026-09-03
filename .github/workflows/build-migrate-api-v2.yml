@@ -12,6 +12,11 @@ on:
     types: [opened, synchronize, reopened, edited]
     branches:
       - migrate-api-v2
+  # Manual runs, and the target for the nightly cron dispatcher
+  # (nightly-migrate-api-v2.yml, which must live on the default branch --
+  # GitHub only fires `schedule` crons from there, so it dispatches this
+  # workflow on the migrate-api-v2 ref instead).
+  workflow_dispatch:
 
 jobs:
   # Mirrors `build-esp32sx-esptool` in the v1 workflow (build-clang-doxy.yml on
