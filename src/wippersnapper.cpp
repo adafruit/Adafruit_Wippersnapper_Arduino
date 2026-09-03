@@ -187,7 +187,8 @@ bool wippersnapper::isWiFiAdapterInstance() {
   if (strcmp(connectionType(), "BASE") == 0) {
     WS_DEBUG_PRINTLN("Base class connectionType() should be overridden by adapter implementation!");
   } else {
-    WS_DEBUG_PRINTLN("Connection type: " + String(connectionType()));
+    WS_DEBUG_PRINT("Connection type: ");
+    WS_DEBUG_PRINTLNVAR(connectionType());
   }
   return strcmp(connectionType(), "WS-OFFLINE-PICO") != 0;
 }
