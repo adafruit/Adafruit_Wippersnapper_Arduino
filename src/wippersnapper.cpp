@@ -1020,7 +1020,7 @@ void wippersnapper::connect() {
   } else {
     // If SD init failed during provisioning and we're not offline,
     // we can only proceed if this instance supports networking.
-    if ((!Ws._sdCardV2 || !Ws._sdCardV2->isSDCardInitialized()) &&
+    if ((!Ws->_sdCardV2 || !Ws->_sdCardV2->isSDCardInitialized()) &&
         !isWiFiAdapterInstance()) {
       haltErrorV2("SD initialization failed, offline mode failure; cannot "
                   "fallback to online mode on a non-network adapter.\nCheck SD "
