@@ -307,19 +307,18 @@ protected:
         WiFi.begin(_ssid, _pass);
 
         // Use the macro to retry the status check until connected / timed out
-        int lastResult;
-        /*         RETRY_FUNCTION_UNTIL_TIMEOUT(
-                    []() -> int { return WiFi.status(); }, // Function call each
-           cycle int,                                   // return type
-                    lastResult, // return variable (unused here)
-                    [](int status) { return status == WL_CONNECTED; }, // check
-                    PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
-                    PICO_CONNECT_RETRY_DELAY_MS); // interval between retries */
+        int lastResult = WL_DISCONNECTED;
+        RETRY_FUNCTION_UNTIL_TIMEOUT(
+            []() -> int { return WiFi.status(); }, // Function call each cycle
+            lastResult,                            // return variable
+            [](int status) { return status == WL_CONNECTED; }, // check
+            PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
+            PICO_CONNECT_RETRY_DELAY_MS); // interval between retries
 
         if (lastResult == WL_CONNECTED) {
           _statusV2 = WS_NET_CONNECTED;
           // wait 2seconds for connection to stabilize
-          // WS_DELAY_WITH_WDT(2 * ONE_SECOND_IN_MS);
+          WS_DELAY_WITH_WDT(2 * ONE_SECOND_IN_MS);
           return;
         }
       }
