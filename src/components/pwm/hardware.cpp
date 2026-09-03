@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -24,7 +24,7 @@ PWMHardware::PWMHardware() { _is_attached = false; }
 */
 PWMHardware::~PWMHardware() {
   if (_is_attached)
-    DetachPin();
+    detach();
 }
 
 /*!
@@ -32,15 +32,25 @@ PWMHardware::~PWMHardware() {
     @param  pin The pin to attach
     @param  frequency The frequency of the PWM signal
     @param  resolution The resolution of the PWM signal
+    @param  expander_drv Pointer to an expander driver, or nullptr for
+                         native pins.
     @return true if the pin was successfully attached, false otherwise
 */
-bool PWMHardware::AttachPin(uint8_t pin, uint32_t frequency,
-                            uint32_t resolution) {
+bool PWMHardware::attach(uint8_t pin, uint32_t frequency, uint32_t resolution,
+                         ExpanderHardware *expander_drv) {
+  bool has_expander = (expander_drv != nullptr);
+
+  // Attach the pin
+  if (!has_expander) {
 #ifdef ARDUINO_ARCH_ESP32
-  _is_attached = ledcAttach(pin, frequency, resolution);
+    _is_attached = ledcAttach(pin, frequency, resolution);
 #else
-  _is_attached = true;
+    _is_attached = true;
 #endif
+  } else {
+    _is_attached = true;
+    _expander_drv = expander_drv;
+  }
 
   if (_is_attached) {
     _pin = pin;
@@ -56,21 +66,43 @@ bool PWMHardware::AttachPin(uint8_t pin, uint32_t frequency,
     @brief  Detaches a PWM pin and frees it for use.
     @return true if the PWM pin was successfully detached, false otherwise.
 */
-bool PWMHardware::DetachPin() {
-  if (!_is_attached) {
-    WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
+bool PWMHardware::detach() {
+  if (!_is_attached)
     return false;
-  }
+
   bool did_detach = false;
+  bool has_expander = (_expander_drv != nullptr);
+
+  // Detach the pin
+  if (!has_expander) {
 #ifdef ARDUINO_ARCH_ESP32
-  did_detach = ledcDetach(_pin);
+    did_detach = ledcDetach(_pin);
 #else
-  digitalWrite(_pin, LOW); // "Disable" the pin's output
-  did_detach = true;
+    digitalWrite(_pin, LOW);
+    did_detach = true;
 #endif
+  } else {
+    _expander_drv->analogWrite(_pin, 0);
+    did_detach = true;
+  }
 
   _is_attached = false; // always mark as false, for tracking
   return did_detach;
+}
+
+/*!
+    @brief  Dispatches a PWM write message to the appropriate method.
+    @param  msg The PWM write message containing the payload type and value.
+    @return true if the write was successful, false otherwise.
+*/
+bool PWMHardware::write(ws_pwm_Write *msg) {
+  if (msg->which_payload == ws_pwm_Write_duty_cycle_tag) {
+    return writeDutyCycle(msg->payload.duty_cycle);
+  } else if (msg->which_payload == ws_pwm_Write_frequency_tag) {
+    return writeTone(msg->payload.frequency) == msg->payload.frequency;
+  }
+  WS_DEBUG_PRINTLN("[pwm] Error: Invalid payload type!");
+  return false;
 }
 
 /*!
@@ -79,12 +111,14 @@ bool PWMHardware::DetachPin() {
     @param  duty The desired duty cycle to write to the pin.
     @return true if the duty cycle was successfully written, false otherwise
 */
-bool PWMHardware::WriteDutyCycle(uint32_t duty) {
-  if (!_is_attached) {
-    WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
+bool PWMHardware::writeDutyCycle(uint32_t duty) {
+  if (!_is_attached)
     return false;
-  }
+
   bool did_write = false;
+  bool has_expander = (_expander_drv != nullptr);
+
+// Handle inversion for certain boards (e.g. Adafruit Feather ESP8266)
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) && defined(STATUS_LED_PIN)
   // Adafruit Feather ESP8266's analogWrite() gets inverted since the builtin
   // LED is reverse-wired
@@ -93,14 +127,19 @@ bool PWMHardware::WriteDutyCycle(uint32_t duty) {
   _duty_cycle = duty;
 #endif
 
+  if (!has_expander) {
 #ifdef ARDUINO_ARCH_ESP32
-  did_write = analogWrite(_duty_cycle);
+    did_write = analogWrite(_duty_cycle);
 #else
-  analogWrite(_pin, duty);
-  did_write = true;
+    analogWrite(_pin, duty);
+    did_write = true;
 #endif
+  } else {
+    _expander_drv->analogWrite(_pin, (uint16_t)duty);
+    did_write = true;
+  }
 
-  return true;
+  return did_write;
 }
 
 /*!
@@ -108,11 +147,15 @@ bool PWMHardware::WriteDutyCycle(uint32_t duty) {
     @param  freq The desired frequency to write to the pin.
     @return The frequency that was written to the pin.
 */
-uint32_t PWMHardware::WriteTone(uint32_t freq) {
+uint32_t PWMHardware::writeTone(uint32_t freq) {
   if (!_is_attached) {
     WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
     return false;
   }
+
+  // NOTE: Tone generation is not supported on expander pins
+  if (_expander_drv != nullptr)
+    return 0;
 
   uint32_t rc = 0;
 #ifdef ARDUINO_ARCH_ESP32
@@ -130,6 +173,13 @@ uint32_t PWMHardware::WriteTone(uint32_t freq) {
     @return The logical pin number of the PWM pin
 */
 uint8_t PWMHardware::GetPin() { return _pin; }
+
+/*!
+    @brief  Returns a pointer to the expander driver, or nullptr for native
+   pins.
+    @return Pointer to the ExpanderHardware driver, or nullptr.
+*/
+ExpanderHardware *PWMHardware::GetExpanderDriver() { return _expander_drv; }
 
 // LEDC API Wrappers
 #ifdef ARDUINO_ARCH_ESP32

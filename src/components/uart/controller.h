@@ -45,11 +45,10 @@ public:
   void ResetFlags();
 
 private:
-  UARTModel *_uart_model; ///< UART model
-  std::vector<UARTHardware *>
-      _uart_ports; ///< Vector of UART hardware instances
+  UARTModel *_uart_model;             ///< UART model
+  std::vector<UARTHardware *> _ports; ///< Vector of UART hardware instances
   std::vector<drvUartBase *>
       _uart_drivers; ///< Vector of UART device drivers (eg: PM2.5, etc.)
 };
-extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                   // WS_UART_CONTROLLER_H
+extern wippersnapper *Ws; ///< Wippersnapper V2 instance
+#endif                    // WS_UART_CONTROLLER_H

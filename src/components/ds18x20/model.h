@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -28,8 +28,15 @@ public:
   bool DecodeDS18x20Add(pb_istream_t *stream);
   ws_ds18x20_Add *GetDS18x20AddMsg();
   // DS18x20Added Message API
+  /*!
+      @brief    Encodes a DS18x20Added response message.
+      @param    onewire_pin
+                The OneWire pin name.
+      @param    is_init
+                True if encoding during initialization, False otherwise.
+      @returns  True if encoded successfully, False otherwise.
+  */
   bool EncodeDS18x20Added(char *onewire_pin, bool is_init);
-  ws_ds18x20_Added *GetDS18x20AddedMsg();
   // Ds18x20Remove Message API
   bool DecodeDS18x20Remove(pb_istream_t *stream);
   ws_ds18x20_Remove *GetDS18x20RemoveMsg();
@@ -41,7 +48,6 @@ public:
 
 private:
   ws_ds18x20_Add _msg_DS18x20Add;       ///< Add message
-  ws_ds18x20_Added _msg_DS18x20Added;   ///< Added message
   ws_ds18x20_Remove _msg_DS18x20Remove; ///< Remove message
   ws_ds18x20_Event _msg_DS18x20Event;   ///< Event message
 };

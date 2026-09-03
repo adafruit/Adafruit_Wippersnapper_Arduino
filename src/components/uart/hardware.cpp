@@ -16,18 +16,41 @@
 
 /*!
     @brief  Constructs a new UARTHardware object.
-    @param  config The configuration for the serial.
+    @param  config   The configuration for the serial.
+    @param  pin_rx   The RX pin name, e.g. "D16".
+    @param  pin_tx   The TX pin name, e.g. "D17".
 */
-UARTHardware::UARTHardware(const ws_uart_SerialConfig &config) {
+UARTHardware::UARTHardware(const ws_uart_SerialConfig &config,
+                           const char *pin_rx, const char *pin_tx) {
   _config = config;
-  _uart_nbr = config.uart_nbr;
+  // Validate and resolve the pin names once; name + number travel together
+  bool rx_ok = _pin_rx.Set(pin_rx);
+  bool tx_ok = _pin_tx.Set(pin_tx);
+  _pins_valid = rx_ok && tx_ok;
 }
 
 /*!
     @brief  Destructs the UARTHardware.
 */
 UARTHardware::~UARTHardware() {
-  // TODO
+  if (_hwSerial != nullptr) {
+    _hwSerial->end();
+    // Only delete if we heap-allocated it; on platforms where we
+    // assigned &Serial1/&Serial2 the pointer is a global reference.
+#if !defined(ARDUINO_ARCH_RP2040) && !defined(ADAFRUIT_METRO_M4_EXPRESS) &&    \
+    !defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) && !defined(ADAFRUIT_PYPORTAL) && \
+    !defined(ADAFRUIT_PYPORTAL_M4_TITANO) && !defined(ARDUINO_ARCH_SAMD)
+    delete _hwSerial;
+#endif
+    _hwSerial = nullptr;
+  }
+#if HAS_SW_SERIAL
+  if (_swSerial != nullptr) {
+    _swSerial->end();
+    delete _swSerial;
+    _swSerial = nullptr;
+  }
+#endif
 }
 
 /*!
@@ -98,18 +121,12 @@ uint16_t UARTHardware::UartPacketFormatToConfig(
  * @return True if the serial was successfully configured, False otherwise.
  */
 bool UARTHardware::ConfigureSerial() {
-  int8_t rx_pin = -1;
-  int8_t tx_pin = -1;
-  if (_config.pin_rx[0] == 'D' || _config.pin_rx[0] == 'A') {
-    rx_pin = atoi(_config.pin_rx + 1);
-  } else {
-    rx_pin = atoi(_config.pin_rx);
+  if (!_pins_valid) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Invalid RX/TX pin name!");
+    return false;
   }
-  if (_config.pin_tx[0] == 'D' || _config.pin_tx[0] == 'A') {
-    tx_pin = atoi(_config.pin_tx + 1);
-  } else {
-    tx_pin = atoi(_config.pin_tx);
-  }
+  int8_t rx_pin = (int8_t)_pin_rx.num;
+  int8_t tx_pin = (int8_t)_pin_tx.num;
   uint16_t cfg = UartPacketFormatToConfig(_config.format);
 
   if (_config.use_sw_serial) {
@@ -129,19 +146,10 @@ bool UARTHardware::ConfigureSerial() {
 #if defined(ARDUINO_ARCH_RP2040) || defined(ADAFRUIT_METRO_M4_EXPRESS) ||      \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(ARDUINO_ARCH_SAMD)
-    if (_config.uart_nbr == 1) {
-      _hwSerial = &Serial1;
-#if !defined(ADAFRUIT_PYPORTAL) && !defined(ADAFRUIT_PYPORTAL_M4_TITANO)
-    } else if (_config.uart_nbr == 2) {
-      _hwSerial = &Serial2;
-#endif
-    } else {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Invalid UART number for this board!");
-      return false;
-    }
+    _hwSerial = &Serial1;
 #else
-    // Create a new HardwareSerial instance
-    _hwSerial = new HardwareSerial(_config.uart_nbr);
+    // Create a new HardwareSerial instance (use UART1 by default)
+    _hwSerial = new HardwareSerial(1);
 #endif
     if (_hwSerial == nullptr) {
       WS_DEBUG_PRINTLN(
@@ -196,7 +204,7 @@ bool UARTHardware::isSoftwareSerial() const {
  * @brief  Gets the bus number of the hardware instance.
  * @return The bus number of the hardware instance, or -1 if not set.
  */
-int UARTHardware::GetBusNumber() { return _uart_nbr; }
+int UARTHardware::getPortNum() { return (int)_pin_rx.num; }
 
 /*!
  * @brief  Gets the HardwareSerial instance for this port

@@ -61,10 +61,49 @@ public:
     if (!_ens160->begin())
       return false;
 
-    // Set the mode to standard
-    if (!_ens160->setMode(ENS160_OPMODE_STD))
-      return false;
     return true;
+  }
+
+  /*!
+      @brief    Configures the ENS160 sensor with default settings.
+      @returns  True if configured successfully, False otherwise.
+  */
+  bool configureDefaults() override {
+    // Set the mode to standard
+    return _ens160->setMode(ENS160_OPMODE_STD);
+  }
+
+  /*!
+      @brief    Applies the operating mode setting to the driver.
+      @param    mode
+                The mode index from the broker
+                (0=Deep Sleep, 1=Idle, 2=Standard, 3=Low Power).
+      @returns  True if applied successfully, False otherwise.
+  */
+  bool setMode(const ws_config_Value &mode) override {
+    if (mode.which_value != ws_config_Value_int_value_tag) {
+      return false;
+    }
+    int32_t val = mode.value.int_value;
+    uint8_t opmode;
+    switch (val) {
+    case 0:
+      opmode = ENS160_OPMODE_DEP_SLEEP;
+      break;
+    case 1:
+      opmode = ENS160_OPMODE_IDLE;
+      break;
+    case 2:
+      opmode = ENS160_OPMODE_STD;
+      break;
+    case 3:
+      opmode = ENS160_OPMODE_LP;
+      break;
+    default:
+      opmode = ENS160_OPMODE_STD;
+      break;
+    }
+    return _ens160->setMode(opmode);
   }
 
   /*!

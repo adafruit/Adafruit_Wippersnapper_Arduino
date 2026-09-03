@@ -22,6 +22,7 @@
     "dotnet.defaultSolution": "disable",
     "cmake.configureOnOpen": false,
     "workbench.panel.defaultLocation": "right",
-    "terminal.integrated.defaultLocation": "view"
+    "terminal.integrated.defaultLocation": "view",
+
 
 }

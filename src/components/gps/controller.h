@@ -15,6 +15,7 @@
  */
 #ifndef WS_GPS_CONTROLLER_H
 #define WS_GPS_CONTROLLER_H
+#include "components/uart/hardware.h"
 #include "hardware.h"
 #include "model.h"
 #include "wippersnapper.h"
@@ -23,6 +24,7 @@
 class wippersnapper; ///< Forward declaration
 class GPSModel;      ///< Forward declaration
 class GPSHardware;   ///< Forward declaration
+class UARTHardware;  ///< Forward declaration
 
 /*!
     @brief  Routes messages between the GPS.proto API and the hardware.
@@ -31,8 +33,14 @@ class GPSController {
 public:
   GPSController();
   ~GPSController();
+  // Routing
+  bool Router(pb_istream_t *stream);
+  bool Handle_GpsDeviceAddOrReplace(ws_gps_Add *msg);
+  bool Handle_GpsDeviceRemove(ws_gps_Remove *msg);
+  // GPS transport setup
   bool AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config);
   bool AddGPS(TwoWire *wire, uint32_t i2c_addr, ws_gps_Config *gps_config);
+  // Polling
   void update(bool force = false);
   bool UpdateComplete();
   void ResetFlags();
@@ -40,6 +48,7 @@ public:
 private:
   GPSModel *_gps_model;                    ///< GPS model instance
   std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
+  std::vector<UARTHardware *> _ports;      ///< UART hardware for GPS serial
 };
-extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                   // WS_GPS_CONTROLLER_H
+extern wippersnapper *Ws; ///< Wippersnapper V2 instance
+#endif                    // WS_GPS_CONTROLLER_H

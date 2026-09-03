@@ -27,7 +27,7 @@
 #include "Arduino.h"
 #include "wippersnapper.h"
 
-extern wippersnapper Ws;
+extern wippersnapper *Ws;
 
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
@@ -38,9 +38,7 @@ public:
   /*!
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
-  pico_offline() : wippersnapper() {
-    // Do-nothing
-  }
+  pico_offline() : wippersnapper() {}
 
   /*!
   @brief  Destructor

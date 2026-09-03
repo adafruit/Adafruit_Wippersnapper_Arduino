@@ -1,0 +1,150 @@
+# HIL test: WipperSnapper display/sequence proof on real hardware, with camera proof.
+#
+# Builds the WipperSnapper app, merges it with the official tinyuf2 bootloader
+# (so the FATFS provisioning volume behaves), then runs the generic spec-driven
+# driver (.github/scripts/hil_display_test.py) against the usbip-hil-controller.
+# The test sequence is data — see .github/scripts/specs/*.json — so the same
+# workflow drives any board/display or a fuller flow (component adds, multiple
+# display writes, captures). Default spec: lilygo_t_display_s3.json.
+#
+# The driver builds a firmware-bench job (flash @0x0 -> power_cycle ->
+# write_secrets_msc -> power_cycle -> verify_checkin(v2-aware) -> the spec's
+# inject/capture steps), harvests a uniform proof bundle (process invocation,
+# controller command transcript, serial.log, protomq.log, visual proof) and
+# writes hil-report.md. The proof image is hosted on the `hil-proof` release and
+# the report is posted as a sticky PR comment when `pr_number` is supplied.
+#
+# Requires repo secrets HIL_API_BASE + HIL_API_TOKEN (and optionally WIFI_SSID/
+# WIFI_PASSWORD/IO_USERNAME/IO_KEY). The HIL job runs on a runner that can reach
+# the controller (a LAN IP) — use a self-hosted bench runner, or expose the API.
+name: HIL display proof (camera)
+
+on:
+  workflow_dispatch:
+    inputs:
+      uid:
+        description: "WS device uid for the display-Add topic (boardId+macUID)"
+        required: false
+        default: "lilygo-t-display-s321621634"
+      spec:
+        description: "Test spec JSON under .github/scripts/specs/"
+        required: false
+        default: ".github/scripts/specs/lilygo_t_display_s3.json"
+      pr_number:
+        description: "PR number to post the proof report to (blank = artifact only)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write        # upload the proof image to the hil-proof release
+  pull-requests: write   # post the sticky proof report comment
+
+jobs:
+  hil-display:
+    name: 🖥️ flash + checkin + i8080 display + camera
+    runs-on: ubuntu-latest   # switch to [self-hosted, hil] if the controller is LAN-only
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install PlatformIO + esptool
+        run: pip install --quiet platformio esptool
+
+      - name: Build WipperSnapper app (lilygo_t_display_s3)
+        run: pio run -e lilygo_t_display_s3
+
+      - name: Fetch latest tinyuf2 for the board
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view --repo adafruit/tinyuf2 --json tagName -q .tagName)
+          echo "tinyuf2 $tag"
+          mkdir -p tuf2 && cd tuf2
+          gh release download "$tag" --repo adafruit/tinyuf2 \
+            --pattern "tinyuf2-lilygo_tdisplay_s3-*.zip"
+          unzip -o tinyuf2-lilygo_tdisplay_s3-*.zip
+
+      - name: Merge tinyuf2 bootloader + boot_app0 + WS app -> combined.bin
+        run: |
+          APP=.pio/build/lilygo_t_display_s3/firmware.bin
+          BOOT_APP0=$(find ~/.platformio/packages/framework-arduinoespressif32 \
+            -name boot_app0.bin | head -1)
+          # Partition table comes from THIS build (tinyuf2-partitions-16MB-noota
+          # via platformio.ini) — exact parity with the pio env and the CI fqbn
+          # (PartitionScheme=tinyuf2_noota), instead of the tinyuf2 release's
+          # with-OTA table. Same nvs/otadata/uf2/ffat offsets; single 4MB app.
+          python -m esptool --chip esp32s3 merge_bin -o combined.bin \
+            --flash_mode dio --flash_freq 80m --flash_size 16MB \
+            0x0      tuf2/bootloader.bin \
+            0x8000   .pio/build/lilygo_t_display_s3/partitions.bin \
+            0xe000   "$BOOT_APP0" \
+            0x10000  "$APP" \
+            0x410000 tuf2/tinyuf2.bin
+          ls -l combined.bin
+
+      - name: Run HIL display test + pull camera proof
+        env:
+          HIL_API_BASE: ${{ secrets.HIL_API_BASE }}
+          HIL_API_TOKEN: ${{ secrets.HIL_API_TOKEN }}
+          WIFI_SSID: ${{ secrets.WIFI_SSID }}
+          WIFI_PASSWORD: ${{ secrets.WIFI_PASSWORD }}
+          IO_USERNAME: ${{ secrets.IO_USERNAME }}
+          IO_KEY: ${{ secrets.IO_KEY }}
+        run: |
+          # Proof images get hosted on the hil-proof release; embed that URL in the report.
+          python3 .github/scripts/hil_display_test.py \
+            --combined combined.bin \
+            --spec "${{ github.event.inputs.spec }}" \
+            --uid "${{ github.event.inputs.uid }}" \
+            --out-dir hil-out \
+            --img-url-base "${{ github.server_url }}/${{ github.repository }}/releases/download/hil-proof"
+
+      # Per-log artifacts — each type its own download entry (named
+      # <target>-<label>-<type>.log), matching the hil-test-suite convention.
+      - name: Upload serial logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: hil-serial-logs, path: hil-out/*-serial.log, if-no-files-found: ignore }
+      - name: Upload protomq logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: hil-protomq-logs, path: hil-out/*-protomq.log, if-no-files-found: ignore }
+      - name: Upload flash logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: hil-flash-logs, path: hil-out/*-flash.log, if-no-files-found: ignore }
+      - name: Upload events logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: hil-events-logs, path: hil-out/*.events.log, if-no-files-found: ignore }
+      - name: Upload all HIL assets (comment.md + logs + proof)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: hil-assets, path: hil-out/**, if-no-files-found: ignore }
+
+      - name: Host proof image on the hil-proof release
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          imgs=(hil-out/*.jpg hil-out/*.jpeg hil-out/*.png)
+          [ ${#imgs[@]} -eq 0 ] && { echo "no proof image to host"; exit 0; }
+          gh release view hil-proof --repo "${{ github.repository }}" >/dev/null 2>&1 \
+            || gh release create hil-proof --repo "${{ github.repository }}" \
+                 --title "HIL proofs" --notes "Latest HIL camera proofs (overwritten per run)."
+          gh release upload hil-proof "${imgs[@]}" --clobber --repo "${{ github.repository }}"
+
+      # A NEW comment per run (not sticky) so each run is independently trackable
+      # — same convention as hil-test-suite.yml. comment.md carries the proof.
+      - name: Comment proof report on the PR
+        if: ${{ always() && github.event.inputs.pr_number != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f hil-out/comment.md ] || { echo "no comment.md produced"; exit 0; }
+          gh pr comment "${{ github.event.inputs.pr_number }}" \
+            --repo "${{ github.repository }}" --body-file hil-out/comment.md

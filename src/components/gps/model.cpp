@@ -20,6 +20,7 @@
 GPSModel::GPSModel() {
   memset(&_msg_gps_config, 0, sizeof(_msg_gps_config));
   memset(&_msg_gps_event, 0, sizeof(_msg_gps_event));
+  memset(&_msg_gps_d2b, 0, sizeof(_msg_gps_d2b));
 }
 
 /*!
@@ -28,6 +29,7 @@ GPSModel::GPSModel() {
 GPSModel::~GPSModel() {
   memset(&_msg_gps_config, 0, sizeof(_msg_gps_config));
   memset(&_msg_gps_event, 0, sizeof(_msg_gps_event));
+  memset(&_msg_gps_d2b, 0, sizeof(_msg_gps_d2b));
 }
 
 /*!
@@ -80,6 +82,17 @@ bool GPSModel::EncodeGPSEvent() {
  * @returns Pointer to the GPSEvent message.
  */
 ws_gps_Event *GPSModel::GetGPSEvent() { return &_msg_gps_event; };
+
+/*!
+ * @brief Wraps the GPSEvent in a D2B envelope for publishing.
+ * @returns Pointer to the ws_gps_D2B message.
+ */
+ws_gps_D2B *GPSModel::GetGPSD2B() {
+  memset(&_msg_gps_d2b, 0, sizeof(_msg_gps_d2b));
+  _msg_gps_d2b.which_payload = ws_gps_D2B_event_tag;
+  _msg_gps_d2b.payload.event = _msg_gps_event;
+  return &_msg_gps_d2b;
+}
 
 /*!
  * @brief Creates a GPSDateTime message with the provided parameters.

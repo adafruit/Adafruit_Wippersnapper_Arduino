@@ -69,7 +69,10 @@ public:
   bool LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
                               ws_sensor_Type read_type);
   bool LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg);
-  bool LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event);
+  bool LogI2cDeviceEvent(ws_i2c_Event *msg_device_event);
+  bool LogTelemetryEventToSD(const char *name, float value,
+                             ws_sensor_Type read_type);
+  bool LogTelemetryEventToSD(const char *name, const char *value);
   void SetBatteryPercent(float percent);
   bool IsBatteryLow() const;
   bool isRTCSoft() const;
@@ -98,14 +101,12 @@ private:
   bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd, const char *pin,
                          float period, bool value, const char *sample_mode,
                          const char *direction, const char *pull);
-  bool ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd, const char *pin,
+  bool ParseAnalogInAdd(ws_analogin_Add &msg_AnalogInAdd, const char *pin,
                         float period, const char *mode);
   bool ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
                        int resolution, float period, int num_sensors,
                        const char *sensor_type_1, const char *sensor_type_2);
-  bool ParseI2cDeviceAddReplace(
-      JsonObject &component,
-      ws_i2c_DeviceAddOrReplace &msg_i2c_device_add_replace);
+  bool ParseI2cDeviceAddReplace(JsonObject &component, ws_i2c_Add &msg_i2c_add);
   uint32_t HexStrToInt(const char *hex_str);
 
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
@@ -140,5 +141,5 @@ private:
   bool _use_test_data;        ///< True if sample data is being used for testing
   bool _is_battery_low;       ///< True if battery < LOW_SD_WRITE_BATT_THRESH
 };
-extern wippersnapper Ws;
+extern wippersnapper *Ws;
 #endif // WS_SDCARD_H

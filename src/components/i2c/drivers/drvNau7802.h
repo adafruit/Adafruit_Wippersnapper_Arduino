@@ -84,7 +84,7 @@ public:
         return true;
       }
       // WS_DEBUG_PRINTLN("Failed to calibrate internal offset, retrying!");
-      delay(1000);
+      delay(ONE_SECOND_IN_MS);
     }
     // WS_DEBUG_PRINTLN("ERROR: Failed to calibrate internal offset of
     // NAU7802.");

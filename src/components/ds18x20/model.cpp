@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024-2026 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -19,7 +19,6 @@
 */
 DS18X20Model::DS18X20Model() {
   memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
-  memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
   memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
 }
@@ -29,7 +28,6 @@ DS18X20Model::DS18X20Model() {
 */
 DS18X20Model::~DS18X20Model() {
   memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
-  memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
   memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
 }
@@ -51,41 +49,6 @@ bool DS18X20Model::DecodeDS18x20Add(pb_istream_t *stream) {
     @return Pointer to the Ds18x20Add message.
 */
 ws_ds18x20_Add *DS18X20Model::GetDS18x20AddMsg() { return &_msg_DS18x20Add; }
-
-/*!
-    @brief  Returns a pointer to the Ds18x20Added message.
-    @return Pointer to the Ds18x20Added message.
-*/
-ws_ds18x20_Added *DS18X20Model::GetDS18x20AddedMsg() {
-  return &_msg_DS18x20Added;
-}
-
-/*!
-    @brief  Encodes a Ds18x20Added message.
-    @param  onewire_pin
-            The OneWire bus pin to add.
-    @param  is_init
-            True if the sensor was successfully initialized,
-            False otherwise.
-    @return True if the message was successfully encoded,
-            False otherwise.
-*/
-bool DS18X20Model::EncodeDS18x20Added(char *onewire_pin, bool is_init) {
-  // Fill the Ds18x20Added message
-  memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
-  _msg_DS18x20Added.is_initialized = is_init;
-  strcpy(_msg_DS18x20Added.onewire_pin, onewire_pin);
-
-  // Encode the Ds18x20Added message
-  size_t sz_msg;
-  if (!pb_get_encoded_size(&sz_msg, ws_ds18x20_Added_fields,
-                           &_msg_DS18x20Added))
-    return false;
-
-  uint8_t buf[sz_msg];
-  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-  return pb_encode(&msg_stream, ws_ds18x20_Added_fields, &_msg_DS18x20Added);
-}
 
 /*!
     @brief  Attempts to decode a Ds18x20Remove message from the broker.
@@ -137,7 +100,7 @@ bool DS18X20Model::EncodeDs18x20Event() {
 */
 void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
-  _msg_DS18x20Event.sensor_events_count = 0;
+  _msg_DS18x20Event.events_count = 0;
   strcpy(_msg_DS18x20Event.onewire_pin, ow_pin_name);
 }
 
@@ -150,14 +113,13 @@ void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
 */
 void DS18X20Model::addSensorEvent(ws_sensor_Type sensor_type,
                                   float sensor_value) {
-  _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count].type =
-      sensor_type;
-  _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count]
-      .which_value = ws_sensor_Event_float_value_tag;
+  _msg_DS18x20Event.events[_msg_DS18x20Event.events_count].type = sensor_type;
+  _msg_DS18x20Event.events[_msg_DS18x20Event.events_count].which_value =
+      ws_sensor_Event_float_value_tag;
 
   // Convert the float to 2 decimal places
   sensor_value = roundf(sensor_value * 100) / 100;
-  _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count]
-      .value.float_value = sensor_value;
-  _msg_DS18x20Event.sensor_events_count++;
+  _msg_DS18x20Event.events[_msg_DS18x20Event.events_count].value.float_value =
+      sensor_value;
+  _msg_DS18x20Event.events_count++;
 }

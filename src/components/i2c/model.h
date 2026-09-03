@@ -2,7 +2,7 @@
  * @file src/components/i2c/model.h
  *
  * Provides high-level interfaces for messages within i2c.proto and
- * i2c_output.proto.
+ * display.proto (for I2C output devices like OLED, LED backpack, char LCD).
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -17,10 +17,35 @@
 #define WS_I2C_MODEL_H
 #include "wippersnapper.h"
 #include <Adafruit_Sensor.h>
-#include <protos/i2c_output.pb.h>
+#include <protos/display.pb.h>
 
-#define MAX_DEVICE_EVENTS    16 ///< Maximum number of SensorEvents within I2cDeviceEvent
-#define MAX_I2C_SCAN_DEVICES 16 ///< Maximum number of devices found on the bus
+#define MAX_DEVICE_EVENTS 16 ///< Maximum number of SensorEvents within I2cEvent
+#define MAX_PROBE_SPACES 16  ///< Maximum number of AddressSpaces in a Probe
+#define MAX_PROBE_ADDRESSES 112 ///< Maximum number of addresses to probe
+#define MAX_I2C_SETTINGS 8      ///< Maximum settings per I2C device
+#define MAX_SETTING_KEY_LEN 32  ///< Maximum length of a setting key string
+#define MAX_SETTING_STR_LEN 32  ///< Maximum length of a setting string value
+
+/// A single decoded key-value setting from ws_config_Settings.
+struct DecodedSetting {
+  char key[MAX_SETTING_KEY_LEN]; ///< Setting key name (e.g., "gain")
+  bool has_value;                ///< Whether the value field is present
+  pb_size_t which_value;         ///< ws_config_Value_*_tag indicating type
+  int32_t int_value;             ///< Valid when which_value == int_value_tag
+  float float_value;             ///< Valid when which_value == float_value_tag
+  bool bool_value;               ///< Valid when which_value == bool_value_tag
+  char str_value[MAX_SETTING_STR_LEN]; ///< Valid when which_value ==
+                                       ///< str_value_tag
+};
+
+/*!
+    @brief  Repackages a flattened DecodedSetting into the proto ws_config_Value
+            oneof expected by driver setters.
+    @param  setting
+            The decoded setting to convert.
+    @returns A ws_config_Value carrying the setting's tag and active value.
+*/
+ws_config_Value DecodedSettingToValue(const DecodedSetting &setting);
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -33,67 +58,126 @@ public:
   // Decoders
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
-  bool DecodeI2cBusScan(pb_istream_t *stream);
+  /*!
+      @brief    Decodes an I2C output device write message.
+      @param    stream
+                The nanopb input stream.
+      @returns  True if decoded successfully, False otherwise.
+  */
   bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
-  bool encodeMsgI2cDeviceAddedorReplaced(
-      ws_i2c_DeviceDescriptor i2c_device_description,
-      ws_i2c_BusStatus i2c_bus_status, ws_i2c_DeviceStatus i2c_device_status);
   bool EncodeI2cDeviceEvent();
+  bool EncodeI2cDeviceEventD2B();
   // Getters
-  ws_i2c_DeviceRemove *GetI2cDeviceRemoveMsg();
-  ws_i2c_DeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
-  ws_i2c_output_Add *GetI2cOutputAddMsg();
-  ws_i2c_DeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
-  ws_i2c_DeviceEvent *GetI2cDeviceEvent();
-  ws_i2c_Scan *GetI2cBusScanMsg();
-  ws_i2c_Scanned *GetI2cBusScannedMsg();
-  // I2cBusScanned Message API
-  void ClearI2cBusScanned();
-  bool AddDeviceToBusScan(uint32_t pin_scl, uint32_t pin_sda,
-                          uint32_t addr_device, uint32_t addr_mux,
-                          uint32_t mux_channel);
-  void setI2cBusScannedStatus(ws_i2c_BusStatus bus_status);
-  bool encodeI2cScanned();
+  ws_i2c_Remove *GetI2cDeviceRemoveMsg();
+  ws_i2c_Add *GetI2cDeviceAddOrReplaceMsg();
+  /*!
+      @brief  Returns the I2C output Add message.
+      @returns Pointer to the I2C output Add message.
+  */
+  ws_i2c_Event *GetI2cDeviceEvent();
   ws_i2c_D2B *GetI2cD2B();
+  // Probe API — model owns decode/encode/storage
+  void SetupProbeDecodeCallbacks(ws_i2c_Probe *probe);
+  // Settings API — decode settings from ws_i2c_Add
+  void SetupAddDecodeCallbacks(ws_i2c_Add *add);
+  /*!
+      @brief  Returns decoded settings array.
+      @returns Pointer to the decoded settings array.
+  */
+  DecodedSetting *GetDecodedSettings();
+  /*!
+      @brief  Returns decoded settings count.
+      @returns The number of decoded settings.
+  */
+  size_t GetDecodedSettingsCount();
+  /*!
+      @brief  Returns probe address spaces.
+      @returns Pointer to the probe address spaces array.
+  */
+  ws_i2c_AddressSpace *GetProbeAddressSpaces();
+  /*!
+      @brief  Returns probe address spaces count.
+      @returns The number of probe address spaces.
+  */
+  size_t GetProbeAddressSpacesCount();
+  /*!
+      @brief  Returns probe addresses array.
+      @returns Pointer to the probe addresses array.
+  */
+  uint32_t *GetProbeAddresses();
+  /*!
+      @brief  Returns probe addresses count.
+      @returns The number of probe addresses.
+  */
+  size_t GetProbeAddressesCount();
+  /// Clears probed results.
+  void ClearProbed();
+  /*!
+      @brief  Returns next probed result slot.
+      @returns Pointer to the next probed result.
+  */
+  ws_i2c_AddressSpaceResult *GetNextProbedResult();
+  /*!
+      @brief    Returns the found-address buffer for a given index.
+      @param    idx
+                The address space index.
+      @returns  Pointer to the found-address buffer.
+  */
+  uint32_t *GetFoundAddressBuf(size_t idx);
+  /*!
+      @brief    Returns the found-address count for a given index.
+      @param    idx
+                The address space index.
+      @returns  Pointer to the found-address count.
+  */
+  size_t *GetFoundAddressCount(size_t idx);
+  bool EncodeProbed();
   // DeviceEvent Message API
   void ClearI2cDeviceEvent();
-  void SetI2cDeviceEventDeviceDescripton(uint32_t pin_scl,
-                                         uint32_t pin_sda,
+  void SetI2cDeviceEventDeviceDescripton(const char *pin_scl,
+                                         const char *pin_sda,
                                          uint32_t addr_device,
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
   bool AddI2cDeviceSensorEvent(sensors_event_t &event,
-                               ws_sensor_Type sensor_type);
+                               ws_i2c_Add_TypesEntry type_entry);
 
 private:
+  // Probe decode buffers
+  ws_i2c_AddressSpace _probe_spaces[MAX_PROBE_SPACES];
+  size_t _probe_spaces_count;
+  uint32_t _probe_addresses[MAX_PROBE_ADDRESSES];
+  size_t _probe_addresses_count;
+  // Probe results
+  ws_i2c_Probed _msg_probed;
+  struct FoundAddressesCtx {
+    uint32_t addresses[MAX_PROBE_ADDRESSES];
+    size_t count;
+  };
+  FoundAddressesCtx _found_ctx[MAX_PROBE_SPACES];
+  // Probe nanopb callbacks
+  static bool cbDecodeAddressSpace(pb_istream_t *stream,
+                                   const pb_field_t *field, void **arg);
+  static bool cbDecodeAddress(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg);
+  static bool cbEncodeFoundAddresses(pb_ostream_t *stream,
+                                     const pb_field_t *field, void *const *arg);
+  // Settings decode buffers
+  DecodedSetting _decoded_settings[MAX_I2C_SETTINGS];
+  size_t _decoded_settings_count;
+  // Settings nanopb callbacks
+  static bool cbDecodeSettingsEntry(pb_istream_t *stream,
+                                    const pb_field_t *field, void **arg);
+  static bool cbDecodeSettingKey(pb_istream_t *stream, const pb_field_t *field,
+                                 void **arg);
+  static bool cbDecodeSettingStrValue(pb_istream_t *stream,
+                                      const pb_field_t *field, void **arg);
+  // Message storage
   ws_i2c_D2B _msg_i2c_d2b;
-  ws_i2c_Scan _msg_i2c_bus_scan;
-  ws_i2c_Scanned _msg_i2c_bus_scanned;
-  ws_i2c_DeviceAddOrReplace _msg_i2c_device_add_replace;
-  ws_i2c_DeviceAddedOrReplaced _msg_i2c_device_added_replaced;
-  ws_i2c_DeviceRemove _msg_i2c_device_remove;
-  ws_i2c_DeviceRemoved _msg_i2c_device_removed;
-  ws_i2c_DeviceEvent _msg_i2c_device_event;
+  ws_i2c_Add _msg_i2c_add;
+  ws_i2c_Remove _msg_i2c_remove;
+  ws_i2c_Event _msg_i2c_event;
 };
 
-/*!
-    @brief  Provides an interface for creating, encoding, and parsing
-            messages from i2c_output.proto.
-*/
-class I2cOutputModel {
-public:
-  I2cOutputModel();
-  ~I2cOutputModel();
-  // Decoders
-  bool DecodeLedBackpackWrite(pb_istream_t *stream);
-  bool DecodeCharLCDWrite(pb_istream_t *stream);
-  // Getters
-  ws_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
-  ws_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
-
-private:
-  ws_i2c_output_LedBackpackWrite _msg_led_backpack_write;
-  ws_i2c_output_CharLCDWrite _msg_char_lcd_write;
-};
 #endif // WS_I2C_MODEL_H

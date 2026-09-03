@@ -325,7 +325,7 @@ bool GPSHardware::DetectMtkUart() {
   _hw_serial->println(CMD_MTK_QUERY_FW);
   // Query MediaTek firmware version
   // Wait for response
-  uint16_t timeout = 2000; // 1 second timeout
+  uint16_t timeout = 2 * ONE_SECOND_IN_MS; // 2 second timeout
   while (_hw_serial->available() < MAX_NEMA_SENTENCE_LEN && timeout--) {
     delay(1);
   }
@@ -538,7 +538,7 @@ void GPSHardware::PollStoreSentences() {
       _ada_gps->lastNMEA();
 
     // Read from the GPS module for update_rate milliseconds
-    ulong update_rate = 1000 / _nmea_update_rate;
+    ulong update_rate = ONE_SECOND_IN_MS / _nmea_update_rate;
     ulong start_time = millis();
     while (millis() - start_time < update_rate) {
       char c = _ada_gps->read();
@@ -554,7 +554,7 @@ void GPSHardware::PollStoreSentences() {
     // TODO: Too many calls to WS_DEBUG
     // TOO: Maybe just delay for update_rate instead of constantly polling the
     // hw serial for avability? more performant
-    ulong update_rate = 1000 / _nmea_update_rate;
+    ulong update_rate = ONE_SECOND_IN_MS / _nmea_update_rate;
     ulong start_time = millis();
     while (millis() - start_time < update_rate) {
       _ubx_gps_ddc->available();

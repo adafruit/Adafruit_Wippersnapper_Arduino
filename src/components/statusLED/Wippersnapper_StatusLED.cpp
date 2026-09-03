@@ -16,7 +16,7 @@
 #include "Wippersnapper_StatusLED.h"
 #include "wippersnapper.h"
 
-extern wippersnapper Ws;
+extern wippersnapper *Ws;
 #ifdef USE_STATUS_NEOPIXEL
 Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
     STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -33,7 +33,7 @@ Adafruit_DotStar *statusPixelDotStar =
 */
 void initStatusLED() {
 #ifdef USE_STATUS_NEOPIXEL
-  if (Ws.lockStatusNeoPixelV2 == false) {
+  if (Ws->lockStatusNeoPixelV2 == false) {
 #if defined(NEOPIXEL_I2C_POWER)
     pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
     digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
@@ -50,12 +50,12 @@ void initStatusLED() {
         STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
     statusPixel->begin();
     statusPixel->show(); // turn OFF all pixels
-    Ws.lockStatusNeoPixelV2 = true;
+    Ws->lockStatusNeoPixelV2 = true;
   }
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  if (Ws.lockStatusDotStarV2 == false) {
+  if (Ws->lockStatusDotStarV2 == false) {
 #ifdef STATUS_DOTSTAR_COLOR_ORDER
     // Board requires a non-default color order in the constructor
     statusPixelDotStar = new Adafruit_DotStar(
@@ -68,7 +68,7 @@ void initStatusLED() {
 #endif
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn OFF all pixels
-    Ws.lockStatusDotStarV2 = true;
+    Ws->lockStatusDotStarV2 = true;
   }
 #endif
 
@@ -79,8 +79,8 @@ void initStatusLED() {
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
   analogWrite(STATUS_LED_PIN, 255);
 #elif defined(ARDUINO_ARCH_ESP32)
-  // Ws._pwmComponent->attach(STATUS_LED_PIN, LEDC_BASE_FREQ,
-  // LEDC_TIMER_12_BIT); Ws._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+  // Ws->_pwmComponent->attach(STATUS_LED_PIN, LEDC_BASE_FREQ,
+  // LEDC_TIMER_12_BIT); Ws->_pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
   // // turn OFF
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
   digitalWrite(STATUS_LED_PIN, 0);
@@ -88,7 +88,7 @@ void initStatusLED() {
   analogWrite(STATUS_LED_PIN, 0);
 #endif
 
-  Ws.lockStatusLEDV2 = true; // set global pin "lock" flag
+  Ws->lockStatusLEDV2 = true; // set global pin "lock" flag
 #endif
 }
 
@@ -101,7 +101,7 @@ void ReleaseStatusPixel() {
     delete statusPixel;
     statusPixel = nullptr;
   }
-  Ws.lockStatusNeoPixelV2 = false; // unlock
+  Ws->lockStatusNeoPixelV2 = false; // unlock
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
@@ -109,14 +109,14 @@ void ReleaseStatusPixel() {
     delete statusPixelDotStar;
     statusPixelDotStar = nullptr;
   }
-  Ws.lockStatusDotStarV2 = false; // unlock
+  Ws->lockStatusDotStarV2 = false; // unlock
 #endif
 
 #ifdef USE_STATUS_LED
   digitalWrite(STATUS_LED_PIN, 0); // turn off
   pinMode(STATUS_LED_PIN,
-          INPUT);             // "release" for use by setting to input (hi-z)
-  Ws.lockStatusLEDV2 = false; // un-set global pin "lock" flag
+          INPUT);              // "release" for use by setting to input (hi-z)
+  Ws->lockStatusLEDV2 = false; // un-set global pin "lock" flag
 #endif
 }
 
@@ -131,7 +131,7 @@ void setStatusLEDBrightness(float brightness) {
     brightness = 1.0;
   if (brightness < 0.0)
     brightness = 0.0;
-  Ws.status_pixel_brightnessV2 = brightness;
+  Ws->status_pixel_brightnessV2 = brightness;
 }
 
 /*!
@@ -141,14 +141,14 @@ void setStatusLEDBrightness(float brightness) {
 */
 void setStatusLEDColor(uint32_t color) {
 #ifdef USE_STATUS_NEOPIXEL
-  if (!Ws.lockStatusNeoPixelV2)
+  if (!Ws->lockStatusNeoPixelV2)
     return; // status pixel is in-use elsewhere
 
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
-  // map() the Ws.status_pixel_brightnessV2
-  int brightness = Ws.status_pixel_brightnessV2 * 255.0;
+  // map() the Ws->status_pixel_brightnessV2
+  int brightness = Ws->status_pixel_brightnessV2 * 255.0;
   // flood all neopixels
   for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
     statusPixel->setPixelColor(i, brightness * red / 255,
@@ -159,14 +159,14 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  if (!Ws.lockStatusDotStarV2)
+  if (!Ws->lockStatusDotStarV2)
     return; // status pixel is in-use elsewhere
 
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
-  // map() the Ws.status_pixel_brightnessV2
-  int brightness = Ws.status_pixel_brightnessV2 * 255.0;
+  // map() the Ws->status_pixel_brightnessV2
+  int brightness = Ws->status_pixel_brightnessV2 * 255.0;
   // flood all dotstar pixels
   for (int i = 0; i < STATUS_DOTSTAR_NUM; i++) {
     statusPixelDotStar->setPixelColor(i, brightness * red / 255,
@@ -177,16 +177,16 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 
 #ifdef USE_STATUS_LED
-  if (!Ws.lockStatusLEDV2)
+  if (!Ws->lockStatusLEDV2)
     return; // status pixel is in-use elsewhere
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
-/*   if (color != BLACK)
-    Ws._pwmComponent->writeDutyCycle(
-        STATUS_LED_PIN, map(Ws.status_pixel_brightnessV2, 0.0, 1.0, 0, 1023));
+/*   if (color != WS_COLOR_RGB32_BLACK)
+    Ws->_pwmComponent->writeDutyCycle(
+        STATUS_LED_PIN, map(Ws->status_pixel_brightnessV2, 0.0, 1.0, 0, 1023));
   else
-    Ws._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0); */
+    Ws->_pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0); */
 #endif
 #endif
 }
@@ -200,7 +200,7 @@ void setStatusLEDColor(uint32_t color) {
 */
 void setStatusLEDColor(uint32_t color, int brightness) {
 #ifdef USE_STATUS_NEOPIXEL
-  if (!Ws.lockStatusNeoPixelV2)
+  if (!Ws->lockStatusNeoPixelV2)
     return; // status pixel is in-use elsewhere
 
   // parse out the color elements
@@ -217,7 +217,7 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  if (!Ws.lockStatusDotStarV2)
+  if (!Ws->lockStatusDotStarV2)
     return; // status pixel is in-use elsewhere
 
   uint8_t red = (color >> 16) & 0xff;  // red
@@ -233,18 +233,18 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #endif
 
 #ifdef USE_STATUS_LED
-  if (!Ws.lockStatusLEDV2)
+  if (!Ws->lockStatusLEDV2)
     return;
 
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
-  if (color != BLACK) {
+  if (color != WS_COLOR_RGB32_BLACK) {
     // re-map for pixel as a LED
     int pulseWidth = map(brightness, 0, 255, 0, 1023);
-    // Ws._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
+    // Ws->_pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
   } else {
-    // Ws._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+    // Ws->_pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
   }
 #endif
 #endif
@@ -281,7 +281,7 @@ int16_t getStatusDotStarDataPin() {
 */
 void statusLEDFade(uint32_t color, int numFades = 3) {
   // don't fade if our pixel is off
-  if (Ws.status_pixel_brightnessV2 == 0.0)
+  if (Ws->status_pixel_brightnessV2 == 0.0)
     return;
 
   // pulse `numFades` times
@@ -300,10 +300,10 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 
 // Turn status LED off
 #if not defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
-  setStatusLEDColor(BLACK);
+  setStatusLEDColor(WS_COLOR_RGB32_BLACK);
 #else
   // The Adafruit Feather ESP8266's built-in LED is reverse wired
-  setStatusLEDColor(BLACK ^ 1);
+  setStatusLEDColor(WS_COLOR_RGB32_BLACK ^ 1);
 #endif
 }
 
@@ -317,25 +317,25 @@ uint32_t ledStatusStateToColor(ws_led_status_t statusState) {
   uint32_t ledColor;
   switch (statusState) {
   case WS_LED_STATUS_HEARTBEAT:
-    ledColor = GREEN;
+    ledColor = WS_COLOR_RGB32_GREEN;
     break;
   case WS_LED_STATUS_ERROR_RUNTIME:
-    ledColor = RED;
+    ledColor = WS_COLOR_RGB32_RED;
     break;
   case WS_LED_STATUS_WIFI_CONNECTING:
-    ledColor = AMBER;
+    ledColor = WS_COLOR_RGB32_AMBER;
     break;
   case WS_LED_STATUS_MQTT_CONNECTING:
-    ledColor = BLUE;
+    ledColor = WS_COLOR_RGB32_BLUE;
     break;
   case WS_LED_STATUS_WAITING_FOR_REG_MSG:
-    ledColor = PINK;
+    ledColor = WS_COLOR_RGB32_PINK;
     break;
   case WS_LED_STATUS_FS_WRITE:
-    ledColor = YELLOW;
+    ledColor = WS_COLOR_RGB32_YELLOW;
     break;
   default:
-    ledColor = BLACK;
+    ledColor = WS_COLOR_RGB32_BLACK;
     break;
   }
   return ledColor;
@@ -349,12 +349,12 @@ uint32_t ledStatusStateToColor(ws_led_status_t statusState) {
 */
 void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
 #ifdef USE_STATUS_LED
-  if (!Ws.lockStatusLEDV2)
+  if (!Ws->lockStatusLEDV2)
     return;
 #endif
 
 #ifdef USE_STATUS_NEOPIXEL
-  if (!Ws.lockStatusNeoPixelV2)
+  if (!Ws->lockStatusNeoPixelV2)
     return; // status pixel is in-use elsewhere
 #endif
 
@@ -372,12 +372,12 @@ void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
 */
 void statusLEDBlink(ws_led_status_t statusState, int blink_num) {
 #ifdef USE_STATUS_LED
-  if (!Ws.lockStatusLEDV2)
+  if (!Ws->lockStatusLEDV2)
     return;
 #endif
 
 #ifdef USE_STATUS_NEOPIXEL
-  if (!Ws.lockStatusNeoPixelV2)
+  if (!Ws->lockStatusNeoPixelV2)
     return; // status pixel is in-use elsewhere
 #endif
 
@@ -391,9 +391,9 @@ void statusLEDBlink(ws_led_status_t statusState, int blink_num) {
     delay(100);
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
     // The Adafruit Feather ESP8266's built-in LED is reverse wired
-    setStatusLEDColor(BLACK ^ 1);
+    setStatusLEDColor(WS_COLOR_RGB32_BLACK ^ 1);
 #else
-    setStatusLEDColor(BLACK);
+    setStatusLEDColor(WS_COLOR_RGB32_BLACK);
 #endif
     delay(100);
     blink_num--;

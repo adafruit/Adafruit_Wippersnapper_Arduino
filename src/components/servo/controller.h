@@ -46,11 +46,9 @@ public:
 
 private:
   int GetServoIndex(uint8_t pin);
-  bool PublishServoAddedMsg(const char *servo_pin, bool did_attach,
-                            ws_servo_Add *msg_add);
   ServoModel *_servo_model;
   ServoHardware *_servo_hardware[MAX_SERVOS] = {nullptr};
   int _active_servo_pins; ///< Number of active servo pins
 };
-extern wippersnapper Ws; ///< Wippersnapper V2 instance
-#endif                   // WS_SERVO_CONTROLLER_H
+extern wippersnapper *Ws; ///< Wippersnapper V2 instance
+#endif                    // WS_SERVO_CONTROLLER_H

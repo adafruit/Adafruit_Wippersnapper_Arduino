@@ -127,8 +127,10 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
 
   // Configure pin-specific fields
   _msg_sleep_enter.which_config = ws_sleep_SleepConfig_ext0_tag;
-  strncpy(_msg_sleep_enter.config.ext0.pin_name, pin_name, sizeof(_msg_sleep_enter.config.ext0.pin_name) - 1);
-  _msg_sleep_enter.config.ext0.pin_name[sizeof(_msg_sleep_enter.config.ext0.pin_name) - 1] = '\0';
+  strncpy(_msg_sleep_enter.config.ext0.pin_name, pin_name,
+          sizeof(_msg_sleep_enter.config.ext0.pin_name) - 1);
+  _msg_sleep_enter.config.ext0
+      .pin_name[sizeof(_msg_sleep_enter.config.ext0.pin_name) - 1] = '\0';
   _msg_sleep_enter.config.ext0.level = pin_level;
   _msg_sleep_enter.config.ext0.pull = pin_pull;
 }

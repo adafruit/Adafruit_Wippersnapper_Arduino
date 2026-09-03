@@ -65,7 +65,7 @@ bool CheckinModel::Checkin(const char *hardware_uid,
 
   // Publish out
   WS_DEBUG_PRINT("[checkin] Publishing CheckinRequest");
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
+  if (!Ws->PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &_CheckinD2B)) {
     WS_DEBUG_PRINTLN(
         "[checkin] ERROR: Unable to publish CheckinRequest message!");
     return false;
@@ -120,11 +120,11 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
     @brief  Configures controllers limits based on board definition
 */
 void CheckinModel::ConfigureControllers() {
-  Ws.digital_io_controller->SetMaxDigitalPins(
+  Ws->digital_io_controller->SetMaxDigitalPins(
       _CheckinB2D.payload.response.total_gpio_pins);
-  Ws.analogio_controller->SetRefVoltage(
+  Ws->analogin_controller->SetRefVoltage(
       _CheckinB2D.payload.response.reference_voltage);
-  Ws.analogio_controller->SetTotalAnalogPins(
+  Ws->analogin_controller->SetMaxAnalogPins(
       _CheckinB2D.payload.response.total_analog_pins);
 }
 
@@ -151,8 +151,8 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   response->component_adds.digitalio_adds.funcs.decode = &cbDigitalIOAdds;
   response->component_adds.digitalio_adds.arg = model;
 
-  response->component_adds.analogio_adds.funcs.decode = &cbAnalogIOAdds;
-  response->component_adds.analogio_adds.arg = model;
+  response->component_adds.analogin_adds.funcs.decode = &cbAnalogInAdds;
+  response->component_adds.analogin_adds.arg = model;
 
   response->component_adds.servo_adds.funcs.decode = &cbServoAdds;
   response->component_adds.servo_adds.arg = model;
@@ -171,6 +171,9 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
 
   response->component_adds.i2c_adds.funcs.decode = &cbI2cAdds;
   response->component_adds.i2c_adds.arg = model;
+
+  response->component_adds.telemetry_adds.funcs.decode = &cbTelemetryAdds;
+  response->component_adds.telemetry_adds.arg = model;
 
   // Return true WITHOUT consuming the stream - nanopb will continue
   // to decode the Response submessage with our callback now set up
@@ -191,24 +194,24 @@ bool CheckinModel::cbDigitalIOAdds(pb_istream_t *stream,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digitalio add");
     return false;
   }
-  return Ws.digital_io_controller->Handle_DigitalIO_Add(&add_msg);
+  return Ws->digital_io_controller->Handle_DigitalIO_Add(&add_msg);
 }
 
 /*!
-    @brief    Callback for decoding AnalogIO Add messages.
+    @brief    Callback for decoding AnalogIn Add messages.
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
     @returns  True if decoded and executed successfully, False otherwise.
 */
-bool CheckinModel::cbAnalogIOAdds(pb_istream_t *stream, const pb_field_t *field,
+bool CheckinModel::cbAnalogInAdds(pb_istream_t *stream, const pb_field_t *field,
                                   void **arg) {
-  ws_analogio_Add add_msg = ws_analogio_Add_init_zero;
-  if (!pb_decode(stream, ws_analogio_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analogio add");
+  ws_analogin_Add add_msg = ws_analogin_Add_init_zero;
+  if (!pb_decode(stream, ws_analogin_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analogin add");
     return false;
   }
-  return Ws.analogio_controller->Handle_AnalogIOAdd(&add_msg);
+  return Ws->analogin_controller->Handle_AnalogInAdd(&add_msg);
 }
 
 /*!
@@ -225,7 +228,7 @@ bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode servo add");
     return false;
   }
-  return Ws._servo_controller->Handle_Servo_Add(&add_msg);
+  return Ws->_servo_controller->Handle_Servo_Add(&add_msg);
 }
 
 /*!
@@ -242,7 +245,7 @@ bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pwm add");
     return false;
   }
-  return Ws._pwm_controller->Handle_PWM_Add(&add_msg);
+  return Ws->_pwm_controller->Handle_PWM_Add(&add_msg);
 }
 
 /*!
@@ -259,7 +262,7 @@ bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pixels add");
     return false;
   }
-  return Ws._pixels_controller->Handle_Pixels_Add(&add_msg);
+  return Ws->_pixels_controller->Handle_Pixels_Add(&add_msg);
 }
 
 /*!
@@ -276,7 +279,7 @@ bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode ds18x20 add");
     return false;
   }
-  return Ws._ds18x20_controller->Handle_Ds18x20Add(&add_msg);
+  return Ws->_ds18x20_controller->Handle_Ds18x20Add(&add_msg);
 }
 
 /*!
@@ -293,7 +296,7 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode uart add");
     return false;
   }
-  return Ws._uart_controller->Handle_UartAdd(&add_msg);
+  return Ws->_uart_controller->Handle_UartAdd(&add_msg);
 }
 
 /*!
@@ -305,12 +308,30 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg) {
-  ws_i2c_DeviceAddOrReplace add_msg = ws_i2c_DeviceAddOrReplace_init_zero;
-  if (!pb_decode(stream, ws_i2c_DeviceAddOrReplace_fields, &add_msg)) {
+  ws_i2c_Add add_msg = ws_i2c_Add_init_zero;
+  Ws->_i2c_controller->SetupAddDecodeCallbacks(&add_msg);
+  if (!pb_decode(stream, ws_i2c_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode i2c add");
     return false;
   }
-  return Ws._i2c_controller->Handle_I2cDeviceAddOrReplace(&add_msg);
+  return Ws->_i2c_controller->Handle_Add(&add_msg);
+}
+
+/*!
+    @brief    Callback for decoding Telemetry Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+bool CheckinModel::cbTelemetryAdds(pb_istream_t *stream,
+                                   const pb_field_t *field, void **arg) {
+  ws_telemetry_Add add_msg = ws_telemetry_Add_init_zero;
+  if (!pb_decode(stream, ws_telemetry_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode telemetry add");
+    return false;
+  }
+  return Ws->_telemetry_controller->Handle_TelemetryAdd(&add_msg);
 }
 
 /*!
@@ -336,16 +357,16 @@ ws_sleep_SleepConfig *CheckinModel::GetSleepConfig() {
     @brief  Configures sleep controller based on checkin response.
 */
 void CheckinModel::configureSleep() {
-  #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Process sleep configuration if present
   if (IsSleepEnabled()) {
     ws_sleep_SleepConfig *sleep_cfg = GetSleepConfig();
     if (sleep_cfg != nullptr) {
       WS_DEBUG_PRINTLN("[app] Processing sleep configuration from checkin");
-      Ws._sleep_controller->handleSleepConfig(sleep_cfg, true);
+      Ws->_sleep_controller->handleSleepConfig(sleep_cfg, true);
     }
   }
-  #endif
+#endif
 }
 
 /*!
@@ -384,7 +405,7 @@ bool CheckinModel::Complete() {
   }
 
   // Publish the message
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &completeMsg)) {
+  if (!Ws->PublishD2b(ws_signal_DeviceToBroker_checkin_tag, &completeMsg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to publish Complete message!");
     return false;
   }

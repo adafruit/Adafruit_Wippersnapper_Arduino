@@ -23,6 +23,12 @@
 #define WS_DEBUG          /**< Define to enable debugging to serial terminal */
 #define WS_PRINTER Serial /**< Where debug messages will be printed */
 
+#define ONE_MINUTE_IN_MS 60000     ///< One minute expressed in milliseconds
+#define ONE_SECOND_IN_MS 1000      ///< One second expressed in milliseconds
+#define ONE_SECOND_IN_US 1000000   ///< One second expressed in microseconds
+#define TEN_SECONDS_IN_MS 10000    ///< Ten seconds expressed in milliseconds
+#define TEN_SECONDS_IN_US 10000000 ///< Ten seconds expressed in microseconds
+
 /*!
     @brief  Debug print macros for WipperSnapper debugging output
     @details These macros provide debug output functionality when WS_DEBUG is
@@ -36,8 +42,10 @@
 #define WS_DEBUG_PRINT(x)                                                      \
   { WS_PRINTER.print(F(x)); } /**< Print debug message to serial (Flash) */
 #define WS_DEBUG_PRINTLN(x)                                                    \
-  { WS_PRINTER.println(F(x)); } /**< Print debug message with newline (Flash)  \
-                                 */
+  {                                                                            \
+    WS_PRINTER.println(F(x));                                                  \
+  } /**< Print debug message with newline (Flash)                              \
+     */
 #else
 // Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
@@ -45,7 +53,8 @@
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {                                                                            \
     WS_PRINTER.println(__VA_ARGS__);                                           \
-  } /**< Print debug message with newline */
+  } /**< Print debug message with newline                                      \
+     */
 #endif
 
 // Variable printing macros - use for non-string-literal arguments
@@ -80,7 +89,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      Ws._wdt->feed();                                                         \
+      Ws->_wdt->feed();                                                        \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -109,6 +118,7 @@
 
 // Wippersnapper API Helpers
 #include "components/statusLED/Wippersnapper_StatusLED.h"
+#include "helpers/ws_helper_pins.h"
 #include "helpers/ws_helper_status.h"
 #include "helpers/ws_wdt.h"
 #include "ws_boards.h"
@@ -117,11 +127,13 @@
 #endif
 
 // Components (API v2)
-#include "components/analogIO/controller.h"
+#include "components/analogIn/controller.h"
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
+#include "components/display/controller.h"
 #include "components/ds18x20/controller.h"
-#include "components/error/controller.h"
+#include "components/error/handler.h"
+#include "components/expander/controller.h"
 #include "components/gps/controller.h"
 #include "components/i2c/controller.h"
 #include "components/pixels/controller.h"
@@ -129,6 +141,7 @@
 #include "components/sensor/model.h"
 #include "components/servo/controller.h"
 #include "components/sleep/controller.h"
+#include "components/telemetry/controller.h"
 #include "components/uart/controller.h"
 
 #include "provisioning/ConfigJson.h"
@@ -144,8 +157,10 @@
   "2.0.0-alpha.1" ///< WipperSnapper app. version (semver-formatted)
 
 // Timeouts and intervals
-#define WS_KEEPALIVE_INTERVAL_MS                                               \
-  5000 ///< Session keepalive interval time, in milliseconds
+#define WS_BROKER_KEEPALIVE_MS                                                 \
+  11000 ///< Maximum time without a ping before broker disconnects (ms)
+#define WS_DEVICE_PING_MS                                                      \
+  5000 ///< Interval at which device sends ping to broker, in milliseconds
 #define WS_TIMEOUT_WDT 60000 ///< App WDT timeout, in milliseconds
 #define WS_MQTT_POLL_TIMEOUT_MS                                                \
   10 ///< MQTT polling (processPackets()) timeout, in milliseconds
@@ -160,15 +175,18 @@ class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class ws_sdcard;
 class CheckinModel;
-class ErrorController;
+class ErrorHandler;
+class ExpanderController;
 class SensorModel;
 class DigitalIOController;
-class AnalogIOController;
+class DisplayController;
+class AnalogInController;
 class DS18X20Controller;
 class GPSController;
 class I2cController;
 class PixelsController;
 class PWMController;
+class TelemetryController;
 class ServoController;
 class UARTController;
 class SleepController;
@@ -251,18 +269,23 @@ public:
   ws_sdcard *_sdCardV2; ///< Instance of SD card class
 
   // API v2 Components
-  CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
-  ErrorController *error_controller =
-      nullptr;                         ///< Instance of ErrorController class
-  SensorModel *sensor_model = nullptr; ///< Instance of SensorModel class
+  CheckinModel *CheckInModel = nullptr;  ///< Instance of CheckinModel class
+  ErrorHandler *error_handler = nullptr; ///< Instance of ErrorHandler class
+  SensorModel *sensor_model = nullptr;   ///< Instance of SensorModel class
   DigitalIOController *digital_io_controller =
       nullptr; ///< Instance of DigitalIO controller class
-  AnalogIOController *analogio_controller =
-      nullptr; ///< Instance of AnalogIO controller
+  AnalogInController *analogin_controller =
+      nullptr; ///< Instance of AnalogIn controller
+  DisplayController *_display_controller =
+      nullptr; ///< Instance of Display controller
   DS18X20Controller *_ds18x20_controller =
-      nullptr;                              ///< Instance of DS18X20 controller
+      nullptr; ///< Instance of DS18X20 controller
+  ExpanderController *_expander_controller =
+      nullptr;                              ///< Instance of Expander controller
   GPSController *_gps_controller = nullptr; ///< Instance of GPS controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
+  TelemetryController *_telemetry_controller =
+      nullptr; ///< Instance of Telemetry controller
   PixelsController *_pixels_controller =
       nullptr;                              ///< Instance of Pixels controller
   PWMController *_pwm_controller = nullptr; ///< Instance of PWM controller
@@ -292,12 +315,16 @@ public:
   char *throttleMessageV2; /*!< Pointer to throttle message data. */
   int throttleTimeV2;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
+  uint16_t _brokerKeepAliveIntervalSeconds =
+      0; /*!< Cached MQTT broker keepalive interval, in seconds. */
 
   std::vector<std::vector<uint8_t>>
       _sharedConfigBuffers; ///< Shared JSON config buffers for offline mode
   JsonDocument _config_doc; ///< Storage for the config.json file
   uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
+  void _init();
+
   // Separate loop() functions, depending on power mode
   void loop();
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
@@ -329,6 +356,6 @@ protected:
   char *_device_uidV2;     /*!< Unique device identifier  */
   char *_mqtt_client_id;   /*!< MQTT client ID with "io-wipper" prefix */
 };
-extern wippersnapper Ws; ///< Global member variable for callbacks
+extern wippersnapper *Ws; ///< Global member variable for callbacks
 
 #endif // WIPPERSNAPPER_H

@@ -27,10 +27,12 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
+    defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666) ||                              \
+    defined(ARDUINO_LILYGO_T_DISPLAY_S3) ||                                    \
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
-    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) || \
-    defined(ARDUINO_ADAFRUIT_METRO_RP2350) || \
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
+    defined(ARDUINO_ADAFRUIT_METRO_RP2350) ||                                  \
     defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
@@ -106,7 +108,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // Attempt to initialize the flash chip
   if (!flash_v2.begin()) {
-    setStatusLEDColor(RED);
+    setStatusLEDColor(WS_COLOR_RGB32_RED);
     fsHalt("Failed to initialize the flash chip!");
   }
 
@@ -141,7 +143,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   if (_is_secrets_file_empty) {
     writeToBootOut(
         "Please edit the secrets.json file. Then, reset your board.\n");
-    fsHalt("The settings.json file on the WIPPER drive contains default "
+    fsHalt("The secrets.json file on the WIPPER drive contains default "
            "values\n. Using a text editor, edit it to reflect your Adafruit IO "
            "and WiFi credentials. Then, reset the board.");
   }
@@ -165,20 +167,20 @@ void Wippersnapper_FS::GetSDCSPin() {
   // Attempt to open and deserialize the config.json file
   file_cfg = wipperFatFs_v2.open("/config.json");
   if (!file_cfg) {
-    Ws.pin_sd_cs = 255;
+    Ws->pin_sd_cs = 255;
     return;
   }
 
-  error = deserializeJson(Ws._config_doc, file_cfg);
+  error = deserializeJson(Ws->_config_doc, file_cfg);
   if (error) {
     file_cfg.close();
-    Ws.pin_sd_cs = 255;
+    Ws->pin_sd_cs = 255;
     return;
   }
 
   // Parse config.json and save the SD CS pin
-  JsonObject exportedFromDevice = Ws._config_doc["exportedFromDevice"];
-  Ws.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
+  JsonObject exportedFromDevice = Ws->_config_doc["exportedFromDevice"];
+  Ws->pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
   file_cfg.close();
 }
 
@@ -311,9 +313,9 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("Board ID: ");
     bootFile.println(BOARD_ID);
 
-    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", Ws._macAddrV2[0],
-            Ws._macAddrV2[1], Ws._macAddrV2[2], Ws._macAddrV2[3],
-            Ws._macAddrV2[4], Ws._macAddrV2[5]);
+    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", Ws->_macAddrV2[0],
+            Ws->_macAddrV2[1], Ws->_macAddrV2[2], Ws->_macAddrV2[3],
+            Ws->_macAddrV2[4], Ws->_macAddrV2[5]);
     bootFile.print("MAC Address: ");
     bootFile.println(sMAC);
 
@@ -385,7 +387,7 @@ void Wippersnapper_FS::parseSecrets() {
 
   if (doc.containsKey("network_type_wifi")) {
     // set default network config
-    convertFromJson(doc["network_type_wifi"], Ws._configV2.network);
+    convertFromJson(doc["network_type_wifi"], Ws->_configV2.network);
 
     if (!doc["network_type_wifi"].containsKey("alternative_networks")) {
       // do nothing extra, we already have the only network
@@ -409,16 +411,17 @@ void Wippersnapper_FS::parseSecrets() {
         if (i >= 3) {
           WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
                          "only the first 3 will be used. Not using ");
-          WS_DEBUG_PRINTLNVAR(altnetworks[i]["network_ssid"].as<const char *>());
+          WS_DEBUG_PRINTLNVAR(
+              altnetworks[i]["network_ssid"].as<const char *>());
           break;
         }
-        convertFromJson(altnetworks[i], Ws._multiNetworksV2[i]);
+        convertFromJson(altnetworks[i], Ws->_multiNetworksV2[i]);
         WS_DEBUG_PRINT("Added SSID: ");
-        WS_DEBUG_PRINTLNVAR(Ws._multiNetworksV2[i].ssid);
+        WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].ssid);
         WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLNVAR(Ws._multiNetworksV2[i].pass);
+        WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].pass);
       }
-      Ws._isWiFiMultiV2 = true;
+      Ws->_isWiFiMultiV2 = true;
     } else {
       fsHalt("ERROR: Unrecognised value type for "
              "network_type_wifi.alternative_networks in secrets.json!");
@@ -428,11 +431,11 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // Extract a config struct from the JSON document
-  Ws._configV2 = doc.as<secretsConfig>();
+  Ws->_configV2 = doc.as<secretsConfig>();
 
   // Validate the config struct is not filled with default values
-  if (strcmp(Ws._configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
-      strcmp(Ws._configV2.aio_key, "YOUR_IO_KEY_HERE") == 0) {
+  if (strcmp(Ws->_configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
+      strcmp(Ws->_configV2.aio_key, "YOUR_IO_KEY_HERE") == 0) {
     writeToBootOut(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!\n");
@@ -441,8 +444,8 @@ void Wippersnapper_FS::parseSecrets() {
         "io_username and io_key to match your Adafruit IO credentials!");
   }
 
-  if (strcmp(Ws._configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
-      strcmp(Ws._configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
+  if (strcmp(Ws->_configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
+      strcmp(Ws->_configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
     writeToBootOut("ERROR: Invalid network credentials in secrets.json! TO "
                    "FIX: Please change network_ssid and network_password to "
                    "match your Adafruit IO credentials!\n");
@@ -453,11 +456,11 @@ void Wippersnapper_FS::parseSecrets() {
 
   writeToBootOut("Secrets Contents\n");
   writeToBootOut("Network Info\n: ");
-  writeToBootOut(Ws._configV2.network.ssid);
-  writeToBootOut(Ws._configV2.network.pass);
+  writeToBootOut(Ws->_configV2.network.ssid);
+  writeToBootOut(Ws->_configV2.network.pass);
   writeToBootOut("IO Creds.\n: ");
-  writeToBootOut(Ws._configV2.aio_user);
-  writeToBootOut(Ws._configV2.aio_key);
+  writeToBootOut(Ws->_configV2.aio_user);
+  writeToBootOut(Ws->_configV2.aio_key);
 
   // Close secrets.json file
   secretsFile.close();
@@ -490,7 +493,7 @@ void Wippersnapper_FS::fsHalt(String msg) {
   while (1) {
     WS_DEBUG_PRINT("Execution Halted: ");
     WS_DEBUG_PRINTLNVAR(msg.c_str());
-    delay(5000);
+    delay(5 * ONE_SECOND_IN_MS);
     yield();
   }
 }
@@ -507,7 +510,7 @@ void Wippersnapper_FS::fsHalt(String msg, ws_led_status_t ledStatusColor) {
   while (1) {
     WS_DEBUG_PRINT("Execution Halted: ");
     WS_DEBUG_PRINTLNVAR(msg.c_str());
-    delay(5000);
+    delay(5 * ONE_SECOND_IN_MS);
     yield();
   }
 }

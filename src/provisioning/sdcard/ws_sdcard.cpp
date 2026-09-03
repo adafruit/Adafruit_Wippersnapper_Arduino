@@ -19,9 +19,9 @@
 */
 ws_sdcard::ws_sdcard()
 #ifdef SD_USE_SPI_1
-    : _sd_spi_cfg(Ws.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
+    : _sd_spi_cfg(Ws->pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
 #else
-    : _sd_spi_cfg(Ws.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
+    : _sd_spi_cfg(Ws->pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
 #endif
   is_mode_offline = false;
   _use_test_data = false;
@@ -34,7 +34,7 @@ ws_sdcard::ws_sdcard()
 
   // delay(6000); // DEBUG ONLY: Wait for everything to settle
 
-  if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
+  if (Ws->pin_sd_cs == PIN_SD_CS_ERROR)
     return;
 
   if (!_sd.begin(_sd_spi_cfg)) {
@@ -115,7 +115,7 @@ bool ws_sdcard::IsBatteryLow() const { return _is_battery_low; }
    otherwise.
 */
 bool ws_sdcard::begin() {
-  if (Ws.pin_sd_cs == PIN_SD_CS_ERROR)
+  if (Ws->pin_sd_cs == PIN_SD_CS_ERROR)
     return false;
 
   // Restore SPI pins from input state
@@ -139,8 +139,8 @@ bool ws_sdcard::begin() {
               power draw.
 */
 void ws_sdcard::end() {
-  pinMode(Ws.pin_sd_cs, OUTPUT);
-  digitalWrite(Ws.pin_sd_cs, HIGH);
+  pinMode(Ws->pin_sd_cs, OUTPUT);
+  digitalWrite(Ws->pin_sd_cs, HIGH);
   // Close the SD card interface
   _sd.end();
   // Set SPI pins to input to avoid power draw
@@ -148,8 +148,8 @@ void ws_sdcard::end() {
   pinMode(MOSI, INPUT);
   pinMode(MISO, INPUT);
   // Keep CS high
-  pinMode(Ws.pin_sd_cs, OUTPUT);
-  digitalWrite(Ws.pin_sd_cs, HIGH);
+  pinMode(Ws->pin_sd_cs, OUTPUT);
+  digitalWrite(Ws->pin_sd_cs, HIGH);
 }
 
 void ws_sdcard::calculateFileLimits() {
@@ -182,8 +182,8 @@ bool ws_sdcard::InitDS1307() {
   _rtc_ds1307 = new RTC_DS1307();
 
   // Try each available I2C bus
-  for (size_t i = 0; i < Ws._i2c_controller->GetI2cBusCount(); i++) {
-    TwoWire *bus = Ws._i2c_controller->GetI2cBusByIndex(i);
+  for (size_t i = 0; i < Ws->_i2c_controller->GetI2cBusCount(); i++) {
+    TwoWire *bus = Ws->_i2c_controller->GetI2cBusByIndex(i);
     if (bus != nullptr && _rtc_ds1307->begin(bus)) {
       if (!_rtc_ds1307->isrunning())
         _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -206,8 +206,8 @@ bool ws_sdcard::InitDS3231() {
   _rtc_ds3231 = new RTC_DS3231();
 
   // Try each available I2C bus
-  for (size_t i = 0; i < Ws._i2c_controller->GetI2cBusCount(); i++) {
-    TwoWire *bus = Ws._i2c_controller->GetI2cBusByIndex(i);
+  for (size_t i = 0; i < Ws->_i2c_controller->GetI2cBusCount(); i++) {
+    TwoWire *bus = Ws->_i2c_controller->GetI2cBusByIndex(i);
     if (bus != nullptr && _rtc_ds3231->begin(bus)) {
       if (_rtc_ds3231->lostPower())
         _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -230,8 +230,8 @@ bool ws_sdcard::InitPCF8523() {
   _rtc_pcf8523 = new RTC_PCF8523();
 
   // Try each available I2C bus
-  for (size_t i = 0; i < Ws._i2c_controller->GetI2cBusCount(); i++) {
-    TwoWire *bus = Ws._i2c_controller->GetI2cBusByIndex(i);
+  for (size_t i = 0; i < Ws->_i2c_controller->GetI2cBusCount(); i++) {
+    TwoWire *bus = Ws->_i2c_controller->GetI2cBusByIndex(i);
     if (bus != nullptr && _rtc_pcf8523->begin(bus)) {
       if (!_rtc_pcf8523->initialized() || _rtc_pcf8523->lostPower()) {
         _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -257,9 +257,9 @@ bool ws_sdcard::InitSoftRTC() {
   _is_soft_rtc = true;
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Restore counter from RTC memory if waking from sleep
-  if (Ws._sleep_controller != nullptr &&
-      Ws._sleep_controller->DidWakeFromSleep()) {
-    _soft_rtc_counter = Ws._sleep_controller->GetSoftRtcCounter();
+  if (Ws->_sleep_controller != nullptr &&
+      Ws->_sleep_controller->DidWakeFromSleep()) {
+    _soft_rtc_counter = Ws->_sleep_controller->GetSoftRtcCounter();
     WS_DEBUG_PRINT("[SD] Restored soft RTC counter from sleep: ");
     WS_DEBUG_PRINTLNVAR(_soft_rtc_counter);
   } else {
@@ -324,20 +324,21 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
 */
 void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
   // Configure controllers
-  Ws.digital_io_controller->SetMaxDigitalPins(
+  Ws->digital_io_controller->SetMaxDigitalPins(
       exported_from_device["maxDigitalPins"] | 0);
-  Ws.analogio_controller->SetTotalAnalogPins(
+  Ws->analogin_controller->SetMaxAnalogPins(
       exported_from_device["maxAnalogPins"] | 0);
-  Ws.analogio_controller->SetRefVoltage(exported_from_device["refVoltage"] |
-                                        0.0f);
+  Ws->analogin_controller->SetRefVoltage(exported_from_device["refVoltage"] |
+                                         0.0f);
   // Since `secrets.json` is unused in offline mode, use the status LED
   // brightness from here instead
   setStatusLEDBrightness(exported_from_device["statusLEDBrightness"] | 0.3f);
 
   // Parse offline mode heartbeat interval (in seconds), convert to ms
-  uint32_t heartbeat_sec = exported_from_device["heartbeatInterval"] |
-                           (WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS / 1000);
-  _heartbeat_interval_ms = heartbeat_sec * 1000;
+  uint32_t heartbeat_sec =
+      exported_from_device["heartbeatInterval"] |
+      (WS_DEFAULT_OFFLINE_HEARTBEAT_INTERVAL_MS / ONE_SECOND_IN_MS);
+  _heartbeat_interval_ms = heartbeat_sec * ONE_SECOND_IN_MS;
 }
 
 /*!
@@ -510,38 +511,38 @@ bool ws_sdcard::ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
 }
 
 /*!
-    @brief  Parses an AnalogIOAdd message from the JSON configuration file.
-    @param  msg_AnalogIOAdd
-            The AnalogIOAdd message to populate.
+    @brief  Parses an AnalogInAdd message from the JSON configuration file.
+    @param  msg_AnalogInAdd
+            The AnalogInAdd message to populate.
     @param  pin
             The GPIO pin name.
     @param  period
             The desired period to read the sensor, in seconds.
     @param  mode
             The sensor read mode.
-    @returns True if the AnalogIOAdd message was successfully parsed,
+    @returns True if the AnalogInAdd message was successfully parsed,
              False otherwise.
 */
-bool ws_sdcard::ParseAnalogIOAdd(ws_analogio_Add &msg_AnalogIOAdd,
+bool ws_sdcard::ParseAnalogInAdd(ws_analogin_Add &msg_AnalogInAdd,
                                  const char *pin, float period,
                                  const char *mode) {
 
   if (!ValidateJSONKey(pin, "[SD] Parsing Error: Analog pin name not found!"))
     return false;
-  strcpy(msg_AnalogIOAdd.pin_name, pin);
+  strcpy(msg_AnalogInAdd.pin_name, pin);
 
   if (period == 0.0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Analog pin period less than 1.0 "
                      "seconds or not found!");
     return false;
   }
-  msg_AnalogIOAdd.period = period;
+  msg_AnalogInAdd.period = period;
 
   if (!ValidateJSONKey(mode,
                        "[SD] Parsing Error: Analog pin read mode not found!"))
     return false;
-  msg_AnalogIOAdd.read_mode = ParseSensorType(mode);
-  if (msg_AnalogIOAdd.read_mode == ws_sensor_Type_T_UNSPECIFIED) {
+  msg_AnalogInAdd.read_mode = ParseSensorType(mode);
+  if (msg_AnalogInAdd.read_mode == ws_sensor_Type_T_UNSPECIFIED) {
     WS_DEBUG_PRINT("[SD] Parsing Error: Unknown read mode found: ");
     WS_DEBUG_PRINTLNVAR(mode);
     return false;
@@ -577,21 +578,21 @@ bool ws_sdcard::ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
     WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor count not found!");
     return false;
   }
-  msg_DS18X20Add.sensor_types_count = num_sensors;
+  msg_DS18X20Add.types_count = num_sensors;
 
   // Parse the first sensor type
   if (strcmp(sensor_type_1, UNKNOWN_VALUE) == 0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor type 1 not found!");
     return false;
   }
-  msg_DS18X20Add.sensor_types[0] = ParseSensorType(sensor_type_1);
+  msg_DS18X20Add.types[0] = ParseSensorType(sensor_type_1);
   // Parse the second sensor type, if it exists
   if (num_sensors == 2) {
     if (strcmp(sensor_type_2, UNKNOWN_VALUE) == 0) {
       WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor type 2 not found!");
       return false;
     }
-    msg_DS18X20Add.sensor_types[1] = ParseSensorType(sensor_type_2);
+    msg_DS18X20Add.types[1] = ParseSensorType(sensor_type_2);
   }
   return true;
 }
@@ -616,34 +617,58 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
     @returns True if the I2cDeviceAddOrReplace message was successfully
              parsed, False otherwise.
 */
-bool ws_sdcard::ParseI2cDeviceAddReplace(
-    JsonObject &component, ws_i2c_DeviceAddOrReplace &msg_i2c_add) {
-  strcpy(msg_i2c_add.device_name, component["i2cDeviceName"] | UNKNOWN_VALUE);
-  msg_i2c_add.device_period = component["period"] | 0.0;
-  if (msg_i2c_add.device_period == 0.0) {
+bool ws_sdcard::ParseI2cDeviceAddReplace(JsonObject &component,
+                                         ws_i2c_Add &msg_i2c_add) {
+  strcpy(msg_i2c_add.name, component["i2cDeviceName"] | UNKNOWN_VALUE);
+  msg_i2c_add.period = component["period"] | 0.0;
+  if (msg_i2c_add.period == 0.0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Invalid I2C device period!");
     return false;
   }
 
-  msg_i2c_add.has_device_description = true;
-  component["i2cBusScl"] = msg_i2c_add.device_description.pin_scl;
-  component["i2cBusSda"] = msg_i2c_add.device_description.pin_sda;
+  msg_i2c_add.has_descriptor = true;
+  msg_i2c_add.descriptor.has_address_space = true;
+  // Pin names may be strings ("D22", "SCL") or legacy pin numbers,
+  // defaulting to the board's standard I2C pins when not provided
+  JsonVariant bus_scl = component["i2cBusScl"];
+  JsonVariant bus_sda = component["i2cBusSda"];
+  char *pin_scl = msg_i2c_add.descriptor.address_space.pin_scl;
+  char *pin_sda = msg_i2c_add.descriptor.address_space.pin_sda;
+  size_t pin_scl_sz = sizeof(msg_i2c_add.descriptor.address_space.pin_scl);
+  size_t pin_sda_sz = sizeof(msg_i2c_add.descriptor.address_space.pin_sda);
+  if (bus_scl.is<const char *>()) {
+    strncpy(pin_scl, bus_scl.as<const char *>(), pin_scl_sz - 1);
+    pin_scl[pin_scl_sz - 1] = '\0';
+  } else if (bus_scl.is<int>()) {
+    snprintf(pin_scl, pin_scl_sz, "%d", bus_scl.as<int>());
+  } else {
+    strncpy(pin_scl, "SCL", pin_scl_sz);
+  }
+  if (bus_sda.is<const char *>()) {
+    strncpy(pin_sda, bus_sda.as<const char *>(), pin_sda_sz - 1);
+    pin_sda[pin_sda_sz - 1] = '\0';
+  } else if (bus_sda.is<int>()) {
+    snprintf(pin_sda, pin_sda_sz, "%d", bus_sda.as<int>());
+  } else {
+    strncpy(pin_sda, "SDA", pin_sda_sz);
+  }
 
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
-  msg_i2c_add.device_description.device_address = HexStrToInt(addr_device);
+  msg_i2c_add.descriptor.address = HexStrToInt(addr_device);
 
   const char *addr_mux = component["i2cMuxAddress"] | "0x00";
-  msg_i2c_add.device_description.mux_address = HexStrToInt(addr_mux);
+  msg_i2c_add.descriptor.address_space.mux_address = HexStrToInt(addr_mux);
 
   const char *mux_channel = component["i2cMuxChannel"] | "0xFFFF";
-  msg_i2c_add.device_description.mux_channel = HexStrToInt(mux_channel);
+  msg_i2c_add.descriptor.address_space.mux_channel = HexStrToInt(mux_channel);
 
-  msg_i2c_add.device_sensor_types_count = 0;
+  msg_i2c_add.types_count = 0;
   for (JsonObject components_0_i2cDeviceSensorType :
        component["i2cDeviceSensorTypes"].as<JsonArray>()) {
-    msg_i2c_add.device_sensor_types[msg_i2c_add.device_sensor_types_count] =
+    msg_i2c_add.types[msg_i2c_add.types_count].key = msg_i2c_add.types_count;
+    msg_i2c_add.types[msg_i2c_add.types_count].value =
         ParseSensorType(components_0_i2cDeviceSensorType["type"]);
-    msg_i2c_add.device_sensor_types_count++;
+    msg_i2c_add.types_count++;
   }
 
   return true;
@@ -678,7 +703,7 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
         "[SD] Runtime Error: Unable to encode D2B signal message!");
     return false;
   }
-  Ws._sharedConfigBuffers.push_back(std::move(tempBuf));
+  Ws->_sharedConfigBuffers.push_back(std::move(tempBuf));
   return true;
 }
 
@@ -702,8 +727,8 @@ bool ws_sdcard::CreateNewLogFile() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Check if we should restore a previous log file (waking from sleep)
   WS_DEBUG_PRINTLN("[SD] Checking for previous log file to restore...");
-  if (Ws._sleep_controller != nullptr) {
-    const char *prev_filename = Ws._sleep_controller->GetLogFilename();
+  if (Ws->_sleep_controller != nullptr) {
+    const char *prev_filename = Ws->_sleep_controller->GetLogFilename();
     if (prev_filename != nullptr && prev_filename[0] != '\0') {
       WS_DEBUG_PRINT("[SD] Found stored filename: ");
       WS_DEBUG_PRINTLNVAR(prev_filename);
@@ -765,8 +790,8 @@ bool ws_sdcard::CreateNewLogFile() {
 
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // Store the new filename for persistence across sleep cycles
-  if (Ws._sleep_controller != nullptr) {
-    Ws._sleep_controller->SetLogFilename(_log_filename);
+  if (Ws->_sleep_controller != nullptr) {
+    Ws->_sleep_controller->SetLogFilename(_log_filename);
   }
 #endif
 
@@ -807,16 +832,17 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                                       int run_duration) {
   // Configure the sleep enter message using the model
   // Note: lock is always true for offline mode
-  Ws._sleep_controller->GetModel()->SetSleepEnterTimer(
+  Ws->_sleep_controller->GetModel()->SetSleepEnterTimer(
       true, sleep_config["mode"], run_duration, timer_config["duration"]);
 
-  Ws._sleep_controller->SetWakeEnablePin(sleep_config["wakeEnablePin"] | 255,
-                                         sleep_config["wakeEnablePinPull"] | 0);
+  Ws->_sleep_controller->SetWakeEnablePin(sleep_config["wakeEnablePin"] | 255,
+                                          sleep_config["wakeEnablePinPull"] |
+                                              0);
 
   // Pass the message directly to the sleep controller
   // Lock is always true for offline mode
-  return Ws._sleep_controller->handleSleepConfig(
-      Ws._sleep_controller->GetModel()->GetSleepConfig(), true);
+  return Ws->_sleep_controller->handleSleepConfig(
+      Ws->_sleep_controller->GetModel()->GetSleepConfig(), true);
 }
 
 /*!
@@ -835,14 +861,14 @@ bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
                                     int run_duration) {
   // Configure the sleep enter message using the model
   // Note: lock is always true for offline mode
-  Ws._sleep_controller->GetModel()->SetSleepEnterExt0(
+  Ws->_sleep_controller->GetModel()->SetSleepEnterExt0(
       true, sleep_config["mode"], run_duration, pin_config["name"],
       pin_config["level"], pin_config["pull"]);
 
   // Pass the message directly to the sleep controller
   // Lock is always true for offline mode
-  return Ws._sleep_controller->handleSleepConfig(
-      Ws._sleep_controller->GetModel()->GetSleepConfig(), true);
+  return Ws->_sleep_controller->handleSleepConfig(
+      Ws->_sleep_controller->GetModel()->GetSleepConfig(), true);
 }
 #endif // ARDUINO_ARCH_ESP32 || ARDUINO_ARCH_RP2350
 
@@ -859,7 +885,7 @@ bool ws_sdcard::parseConfigFile() {
   // Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
-  doc = Ws._config_doc;
+  doc = Ws->_config_doc;
 #else
   // Use test data rather than data from the filesystem
   if (!_use_test_data) {
@@ -969,22 +995,22 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_digitalio_tag;
       msg_signal_b2d.payload.digitalio.payload.add = msg_DigitalIOAdd;
       msg_signal_b2d.payload.digitalio.which_payload = ws_digitalio_B2D_add_tag;
-    } else if (strcmp(component_api_type, "analogio") == 0) {
-      WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
-      ws_analogio_Add msg_AnalogIOAdd = ws_analogio_Add_init_default;
-      if (!ParseAnalogIOAdd(msg_AnalogIOAdd,
+    } else if (strcmp(component_api_type, "analogin") == 0) {
+      WS_DEBUG_PRINTLN("[SD] AnalogIn component found, decoding JSON to PB...");
+      ws_analogin_Add msg_AnalogInAdd = ws_analogin_Add_init_default;
+      if (!ParseAnalogInAdd(msg_AnalogInAdd,
                             component["pinName"] | UNKNOWN_VALUE,
                             component["period"] | 0.0,
                             component["analogReadMode"] | UNKNOWN_VALUE)) {
         WS_DEBUG_PRINTLN(
-            "[SD] Runtime Error: Unable to parse AnalogIO Component, Pin: ");
+            "[SD] Runtime Error: Unable to parse AnalogIn Component, Pin: ");
         WS_DEBUG_PRINTLNVAR(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
 
-      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_analogio_tag;
-      msg_signal_b2d.payload.analogio.payload.add = msg_AnalogIOAdd;
-      msg_signal_b2d.payload.analogio.which_payload = ws_analogio_B2D_add_tag;
+      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_analogin_tag;
+      msg_signal_b2d.payload.analogin.payload.add = msg_AnalogInAdd;
+      msg_signal_b2d.payload.analogin.which_payload = ws_analogin_B2D_add_tag;
     } else if (strcmp(component_api_type, "ds18x20") == 0) {
       WS_DEBUG_PRINTLN("[SD] Ds18x20 component found, decoding JSON to PB...");
       ws_ds18x20_Add msg_DS18X20Add = ws_ds18x20_Add_init_default;
@@ -1004,17 +1030,14 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.payload.ds18x20.payload.add = msg_DS18X20Add;
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
-      ws_i2c_DeviceAddOrReplace msg_i2c_add_replace =
-          ws_i2c_DeviceAddOrReplace_init_default;
+      ws_i2c_Add msg_i2c_add_replace = ws_i2c_Add_init_default;
       if (!ParseI2cDeviceAddReplace(component, msg_i2c_add_replace)) {
         WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to parse I2C Component");
         return false;
       }
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_i2c_tag;
-      msg_signal_b2d.payload.i2c.which_payload =
-          ws_i2c_B2D_device_add_replace_tag;
-      msg_signal_b2d.payload.i2c.payload.device_add_replace =
-          msg_i2c_add_replace;
+      msg_signal_b2d.payload.i2c.which_payload = ws_i2c_B2D_add_tag;
+      msg_signal_b2d.payload.i2c.payload.add = msg_i2c_add_replace;
     } else {
       WS_DEBUG_PRINT("[SD] Runtime Error: Unknown Component API Type: ");
       WS_DEBUG_PRINTLNVAR(component_api_type);
@@ -1324,12 +1347,12 @@ bool ws_sdcard::LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg) {
   JsonDocument doc;
   // Iterate over the event message's sensor events
   // TODO: Standardize this Event with I2C
-  for (int i = 0; i < event_msg->sensor_events_count; i++) {
+  for (int i = 0; i < event_msg->events_count; i++) {
     uint32_t timestamp = GetTimestamp();
     doc["timestamp"] = timestamp;
     doc["pin"] = event_msg->onewire_pin;
-    doc["value"] = event_msg->sensor_events[i].value.float_value;
-    doc["si_unit"] = SensorTypeToSIUnit(event_msg->sensor_events[i].type);
+    doc["value"] = event_msg->events[i].value.float_value;
+    doc["si_unit"] = SensorTypeToSIUnit(event_msg->events[i].type);
     LogJSONDoc(doc);
   }
   return true;
@@ -1341,33 +1364,73 @@ bool ws_sdcard::LogDS18xSensorEventToSD(ws_ds18x20_Event *event_msg) {
             The I2cDeviceEvent message to log.
     @returns True if the event was successfully logged, False otherwise.
 */
-bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_DeviceEvent *msg_device_event) {
+bool ws_sdcard::LogI2cDeviceEvent(ws_i2c_Event *msg_device_event) {
   if (IsBatteryLow())
     return true;
   JsonDocument doc;
-  // Pull the DeviceDescriptor out
-  ws_i2c_DeviceDescriptor descriptor = msg_device_event->device_description;
+  // Pull the Descriptor out
+  ws_i2c_Descriptor descriptor = msg_device_event->descriptor;
   char hex_addr[5];
-  snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.device_address);
+  snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.address);
   doc["i2c_address"] = hex_addr;
 
   // Using I2C MUX?
-  if (descriptor.mux_address != 0x00) {
-    snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.mux_address);
+  if (descriptor.address_space.mux_address != 0x00) {
+    snprintf(hex_addr, sizeof(hex_addr), "0x%02X",
+             descriptor.address_space.mux_address);
     doc["i2c_mux_addr"] = hex_addr;
-    doc["i2c_mux_ch"] = descriptor.mux_channel;
+    doc["i2c_mux_ch"] = descriptor.address_space.mux_channel;
   }
 
   // Log each event
-  for (pb_size_t i = 0; i < msg_device_event->device_events_count; i++) {
+  for (pb_size_t i = 0; i < msg_device_event->events_count; i++) {
     doc["timestamp"] = GetTimestamp();
-    doc["value"] = msg_device_event->device_events[i].value.float_value;
-    doc["si_unit"] =
-        SensorTypeToSIUnit(msg_device_event->device_events[i].type);
+    doc["value"] = msg_device_event->events[i].value.value.float_value;
+    doc["si_unit"] = SensorTypeToSIUnit(msg_device_event->events[i].value.type);
     if (!LogJSONDoc(doc))
       return false;
   }
   return true;
+}
+
+/*!
+    @brief  Logs a telemetry metric with a numeric value to the SD card.
+    @param  name
+            The telemetry metric's name (e.g. "rssi").
+    @param  value
+            The metric's value.
+    @param  read_type
+            The metric's SensorType.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+bool ws_sdcard::LogTelemetryEventToSD(const char *name, float value,
+                                      ws_sensor_Type read_type) {
+  if (IsBatteryLow())
+    return true;
+  JsonDocument doc;
+  doc["timestamp"] = GetTimestamp();
+  doc["telemetry"] = name;
+  doc["value"] = value;
+  doc["si_unit"] = SensorTypeToSIUnit(read_type);
+  return LogJSONDoc(doc);
+}
+
+/*!
+    @brief  Logs a telemetry metric with a string value to the SD card.
+    @param  name
+            The telemetry metric's name (e.g. "boot_reason").
+    @param  value
+            The metric's string value.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+bool ws_sdcard::LogTelemetryEventToSD(const char *name, const char *value) {
+  if (IsBatteryLow())
+    return true;
+  JsonDocument doc;
+  doc["timestamp"] = GetTimestamp();
+  doc["telemetry"] = name;
+  doc["value"] = value;
+  return LogJSONDoc(doc);
 }
 
 #ifdef OFFLINE_MODE_DEBUG
@@ -1390,7 +1453,7 @@ void ws_sdcard::waitForSerialConfig() {
                    "},"
                    "\"components\": ["
                    "{"
-                   "\"componentAPI\": \"analogio\","
+                   "\"componentAPI\": \"analogin\","
                    "\"name\": \"Analog Pin\","
                    "\"pinName\": \"D14\","
                    "\"type\": \"analog_pin\","
@@ -1402,7 +1465,7 @@ void ws_sdcard::waitForSerialConfig() {
                    "\"isPin\": true"
                    "},"
                    "{"
-                   "\"componentAPI\": \"analogio\","
+                   "\"componentAPI\": \"analogin\","
                    "\"name\": \"Analog Pin\","
                    "\"pinName\": \"D27\","
                    "\"type\": \"analog_pin\","

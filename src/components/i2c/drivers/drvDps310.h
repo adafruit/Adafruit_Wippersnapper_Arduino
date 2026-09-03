@@ -83,7 +83,7 @@ public:
      otherwise.
   */
   bool alreadyRecentlyRead() {
-    return (_last_read != 0 && (millis() - _last_read < 1000));
+    return (_last_read != 0 && (millis() - _last_read < ONE_SECOND_IN_MS));
   }
 
   /*!

@@ -26,8 +26,6 @@ public:
   ~PWMModel();
   bool DecodePWMAdd(pb_istream_t *stream);
   ws_pwm_Add *GetPWMAddMsg();
-  bool EncodePWMAdded(char *pin_name, bool did_attach);
-  ws_pwm_Added *GetPWMAddedMsg();
   bool DecodePWMRemove(pb_istream_t *stream);
   ws_pwm_Remove *GetPWMRemoveMsg();
   bool DecodePWMWrite(pb_istream_t *stream);
@@ -35,7 +33,6 @@ public:
 
 private:
   ws_pwm_Add _msg_pwm_add;       ///< PWMAdd message object
-  ws_pwm_Added _msg_pwm_added;   ///< PWMAdded message object
   ws_pwm_Remove _msg_pwm_remove; ///< PWMRemove message object
   ws_pwm_Write _msg_pwm_write;   ///< PWMWrite message object
 };

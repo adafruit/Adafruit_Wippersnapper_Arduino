@@ -1,0 +1,76 @@
+/*!
+ * @file src/components/analogIn/hardware.h
+ *
+ * Hardware implementation for the analogin.proto message.
+ * Each instance represents a single analog input pin and
+ * carries its own ADC configuration as instance members.
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Brent Rubell 2024-2026 for Adafruit Industries.
+ *
+ * BSD license, all text here must be included in any redistribution.
+ *
+ */
+#ifndef WS_ANALOGIN_HARDWARE_H
+#define WS_ANALOGIN_HARDWARE_H
+#include "wippersnapper.h"
+
+#define DEFAULT_ADC_RESOLUTION 16 ///< Default ADC resolution, in bits
+#define MAX_ADC_RESOLUTION 24 ///< Maximum configurable ADC resolution, in bits
+#define DEFAULT_MCU_VREF 3.3  ///< Default reference voltage, in volts
+
+class ExpanderHardware;
+
+/*!
+    @brief  Represents a single analog input pin and provides
+            hardware-level operations for reading and polling
+            its state. Each instance carries its own ADC
+            configuration.
+*/
+class AnalogInHardware {
+public:
+  AnalogInHardware(uint8_t pin_name, ws_sensor_Type read_mode,
+                   ws_analogin_SampleMode sample_mode, ulong period,
+                   float ref_voltage, ExpanderHardware *expander_drv);
+  ~AnalogInHardware();
+  float ReadValue();
+  bool CheckEvent();
+  bool CheckTimer();
+  uint8_t GetPinNum() const;
+  ws_sensor_Type GetReadMode() const;
+  ws_analogin_SampleMode GetSampleMode() const;
+  float GetValue() const;
+  ExpanderHardware *GetExpanderDriver() const;
+  bool DidReadSend() const;
+  void MarkSent();
+  void ResetSendFlag();
+
+private:
+  uint32_t ReadRawValue();
+  float ReadVoltage();
+  void InitPin();
+  void DeinitPin();
+  void SetNativeADCResolution();
+  void SetResolution(uint8_t resolution);
+  void CalculateScaleFactor();
+  uint8_t _name;                       ///< The pin's number.
+  ws_sensor_Type _read_mode;           ///< Type of analog read (RAW or VOLTAGE)
+  ws_analogin_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)
+  ulong _period;                       ///< The pin's period, in milliseconds.
+  ulong _prv_time;                     ///< Last read timestamp.
+  bool _did_read_send;             ///< True if the last read was sent to IO.
+  uint32_t _value_raw;             ///< Last raw ADC reading.
+  float _value_voltage;            ///< Last voltage reading.
+  uint32_t _prv_value_raw;         ///< Previous raw value for event detection.
+  uint8_t _native_adc_resolution;  ///< Hardware's native ADC resolution.
+  uint8_t _desired_adc_resolution; ///< Desired (final) ADC resolution.
+  uint32_t _max_scale_resolution_desired; ///< Maximum scale resolution desired.
+  uint32_t _max_scale_resolution_native;  ///< Maximum scale resolution native.
+  float _ref_voltage; ///< Reference voltage for reading this pin (MCU vref for
+                      ///< native pins, message vref for expander pins).
+  ExpanderHardware *_expander_drv; ///< Pointer to expander driver, or nullptr.
+};
+#endif // WS_ANALOGIN_HARDWARE_H

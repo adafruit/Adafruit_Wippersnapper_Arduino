@@ -22,12 +22,12 @@
 #include <SPI.h>
 #include <WiFiNINA.h>
 
-#include "Wippersnapper.h"
+#include "wippersnapper.h"
 
 #define SPIWIFI                                                                \
   SPI /*!< Instance of SPI interface used by an external uBlox module. */
 
-extern Wippersnapper WS; ///< Global Wippersnapper instance
+extern Wippersnapper *Ws; ///< Global Wippersnapper instance
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
 */
@@ -52,7 +52,7 @@ public:
     _pass = netPass;
     _username = aioUsername;
     _key = aioKey;
-
+    Ws = this;
     _wifi = &SPIWIFI;
     _mqtt_client = new WiFiSSLClient;
   }
@@ -61,6 +61,7 @@ public:
   @brief  Destructor for the Adafruit IO ublox class.
   */
   ~ninafw_wifi() {
+    disconnect();
     if (_mqtt)
       delete _mqtt;
   }
@@ -71,8 +72,8 @@ public:
                 not avaliable.
   */
   void set_user_key() {
-    strlcpy(WS._config.aio_user, _username, sizeof(WS._config.aio_user));
-    strlcpy(WS._config.aio_key, _key, sizeof(WS._config.aio_key));
+    strlcpy(Ws->_config.aio_user, _username, sizeof(Ws->_config.aio_user));
+    strlcpy(Ws->_config.aio_key, _key, sizeof(Ws->_config.aio_key));
   }
 
   /*!
@@ -83,9 +84,9 @@ public:
             Wireless network's password.
   */
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
-    strlcpy(WS._config.network.ssid, ssid, sizeof(WS._config.network.ssid));
-    strlcpy(WS._config.network.pass, ssidPassword,
-            sizeof(WS._config.network.pass));
+    strlcpy(Ws->_config.network.ssid, ssid, sizeof(Ws->_config.network.ssid));
+    strlcpy(Ws->_config.network.pass, ssidPassword,
+            sizeof(Ws->_config.network.pass));
   }
 
   /*!
@@ -93,8 +94,8 @@ public:
           header file's credentials.
   */
   void set_ssid_pass() {
-    strlcpy(WS._config.network.ssid, _ssid, sizeof(WS._config.network.ssid));
-    strlcpy(WS._config.network.pass, _pass, sizeof(WS._config.network.pass));
+    strlcpy(Ws->_config.network.ssid, _ssid, sizeof(Ws->_config.network.ssid));
+    strlcpy(Ws->_config.network.pass, _pass, sizeof(Ws->_config.network.pass));
   }
 
   /*!
@@ -165,7 +166,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
-    memcpy(WS._macAddr, mac, sizeof(mac));
+    memcpy(Ws->_macAddr, mac, sizeof(mac));
   }
 
   /*!
@@ -180,9 +181,9 @@ public:
           MQTT client identifier
   */
   void setupMQTTClient(const char *clientID) {
-    WS._mqtt = new Adafruit_MQTT_Client(
-        _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
-        WS._config.aio_user, WS._config.aio_key);
+    Ws->_mqtt = new Adafruit_MQTT_Client(
+        _mqtt_client, Ws->_config.aio_url, Ws->_config.io_port, clientID,
+        Ws->_config.aio_user, Ws->_config.aio_key);
   }
 
   /*!
