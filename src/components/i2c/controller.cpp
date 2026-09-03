@@ -459,7 +459,7 @@ bool I2cController::Router(pb_istream_t *stream) {
     _i2c_model->SetupAddDecodeCallbacks(&add);
     if (!ws_pb_decode_oneof_submsg(&saved_stream, ws_i2c_B2D_add_tag,
                                    ws_i2c_Add_fields, &add)) {
-      Ws.error_handler->publishComponentError(
+      Ws->error_handler->publishComponentError(
           add.descriptor, "Failed to decode I2C add message settings!");
       return false;
     }
@@ -489,17 +489,17 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   // Validate the message and its fields
   if (msg == nullptr) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Nullptr in I2C add message!");
-    Ws.error_handler->publishComponentError(ws_i2c_Descriptor{},
-                                            "No I2C add message provided!");
+    Ws->error_handler->publishComponentError(ws_i2c_Descriptor{},
+                                             "No I2C add message provided!");
     return false;
   }
   if (strlen(msg->name) == 0) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         ws_i2c_Descriptor{}, "Empty device name in I2C add message!");
     return false;
   }
   if (msg->descriptor.address == 0) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         msg->descriptor, "Invalid device address in I2C add message!");
     return false;
   }
@@ -507,7 +507,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   // Parse out device name and descriptor
   char name[16];
   if (strlen(msg->name) >= sizeof(name)) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         msg->descriptor, "Name in Add message exceeds length!");
     return false;
   }
@@ -525,14 +525,14 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   I2cHardware *bus = findOrCreateBus(descriptor.address_space.pin_scl,
                                      descriptor.address_space.pin_sda);
   if (bus == nullptr) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         descriptor, "Failed to find/create I2C bus for device!");
     return false;
   }
 
   // Before we do anything on the bus - was the bus initialized correctly?
   if (!IsBusStatusOK(bus)) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         descriptor, "I2C bus is not operational, reset the board!");
     return false;
   }
@@ -541,8 +541,8 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   TwoWire *wire = bus->GetBus();
   // Validate pointer
   if (wire == nullptr) {
-    Ws.error_handler->publishComponentError(descriptor,
-                                            "Failed to fetch TwoWire object!");
+    Ws->error_handler->publishComponentError(descriptor,
+                                             "Failed to fetch TwoWire object!");
     return false;
   }
 
@@ -551,7 +551,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
     if (InitMux(bus, name, descriptor.address_space.mux_address)) {
       return true;
     }
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         descriptor, "Failed to initialize MUX for device!");
     return false;
   }
@@ -563,8 +563,8 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
       bus->ClearMuxChannel();
       bus->SelectMuxChannel(descriptor.address_space.mux_channel);
     } else {
-      Ws.error_handler->publishComponentError(descriptor,
-                                              "No MUX found on bus!");
+      Ws->error_handler->publishComponentError(descriptor,
+                                               "No MUX found on bus!");
       return false;
     }
   }
@@ -574,8 +574,8 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   drvBase *drv = CreateI2cSensorDrv(name, wire, descriptor.address,
                                     descriptor.address_space.mux_channel);
   if (drv == nullptr) {
-    Ws.error_handler->publishComponentError(descriptor,
-                                            "Failed to create driver!");
+    Ws->error_handler->publishComponentError(descriptor,
+                                             "Failed to create driver!");
     if (use_mux) {
       bus->ClearMuxChannel();
     }
@@ -585,8 +585,8 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   // Store the bus pin names on the driver so we can query it
   if (!drv->SetPins(descriptor.address_space.pin_scl,
                     descriptor.address_space.pin_sda)) {
-    Ws.error_handler->publishComponentError(descriptor,
-                                            "Invalid I2C bus pin name(s)!");
+    Ws->error_handler->publishComponentError(descriptor,
+                                             "Invalid I2C bus pin name(s)!");
     if (use_mux) {
       bus->ClearMuxChannel();
     }
@@ -606,7 +606,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   // Attempt to communicate with the driver
   if (!drv->begin()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C driver!");
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         descriptor, "Failed to initialize driver, check wiring + address!");
     if (use_mux) {
       bus->ClearMuxChannel();
@@ -661,8 +661,8 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
   _i2c_model->SetupProbeDecodeCallbacks(&probe);
   if (!ws_pb_decode_oneof_submsg(stream, ws_i2c_B2D_probe_tag,
                                  ws_i2c_Probe_fields, &probe)) {
-    Ws.error_handler->publishComponentError(ws_i2c_Descriptor{},
-                                            "Failed to decode Probe message!");
+    Ws->error_handler->publishComponentError(ws_i2c_Descriptor{},
+                                             "Failed to decode Probe message!");
     return false;
   }
 
@@ -682,7 +682,7 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
       ws_i2c_Descriptor desc = {};
       desc.has_address_space = true;
       desc.address_space = spaces[i];
-      Ws.error_handler->publishComponentError(
+      Ws->error_handler->publishComponentError(
           desc, "Too many address spaces to probe!");
       break;
     }
@@ -693,7 +693,7 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
       ws_i2c_Descriptor desc = {};
       desc.has_address_space = true;
       desc.address_space = spaces[i];
-      Ws.error_handler->publishComponentError(
+      Ws->error_handler->publishComponentError(
           desc, "Failed to find or create I2C bus!");
       continue;
     }
@@ -706,7 +706,7 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
       ws_i2c_Descriptor desc = {};
       desc.has_address_space = true;
       desc.address_space = spaces[i];
-      Ws.error_handler->publishComponentError(
+      Ws->error_handler->publishComponentError(
           desc, "Internal error: probe buffer overflow!");
       continue;
     }
@@ -717,7 +717,7 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
       ws_i2c_Descriptor desc = {};
       desc.has_address_space = true;
       desc.address_space = spaces[i];
-      Ws.error_handler->publishComponentError(desc, "ProbeAddresses failed!");
+      Ws->error_handler->publishComponentError(desc, "ProbeAddresses failed!");
       continue;
     }
 
@@ -729,7 +729,7 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
   }
 
   if (!publishProbed()) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         ws_i2c_Descriptor{}, "Failed to publish Probed results!");
     return false;
   }
@@ -747,21 +747,21 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
 bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
   // Validate message
   if (msg->descriptor.address == 0) {
-    Ws.error_handler->publishComponentError(msg->descriptor,
-                                            "I2c address required for remove");
+    Ws->error_handler->publishComponentError(msg->descriptor,
+                                             "I2c address required for remove");
     return false;
   }
   if (msg->descriptor.address_space.pin_scl[0] == '\0' ||
       msg->descriptor.address_space.pin_sda[0] == '\0') {
-    Ws.error_handler->publishComponentError(msg->descriptor,
-                                            "SCL/SDA required for remove");
+    Ws->error_handler->publishComponentError(msg->descriptor,
+                                             "SCL/SDA required for remove");
     return false;
   }
 
   I2cHardware *bus = findOrCreateBus(msg->descriptor.address_space.pin_scl,
                                      msg->descriptor.address_space.pin_sda);
   if (bus == nullptr) {
-    Ws.error_handler->publishComponentError(
+    Ws->error_handler->publishComponentError(
         msg->descriptor, "Failed to find I2C bus for remove");
     return false;
   }
@@ -787,14 +787,14 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
     bus->SelectMuxChannel(msg->descriptor.address_space.mux_channel);
     if (!RemoveDriver(msg->descriptor.address,
                       msg->descriptor.address_space.mux_channel)) {
-      Ws.error_handler->publishComponentError(
+      Ws->error_handler->publishComponentError(
           msg->descriptor, "Failed to remove I2C device from MUX channel");
       return false;
     }
     // Removing a device on the bare bus
   } else {
     if (!RemoveDriver(msg->descriptor.address)) {
-      Ws.error_handler->publishComponentError(
+      Ws->error_handler->publishComponentError(
           msg->descriptor, "Failed to remove I2C device from bus");
       return false;
     }
@@ -812,7 +812,7 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
     @returns  True if published successfully, False otherwise.
 */
 bool I2cController::publishProbed() {
-  if (Ws._sdCardV2->isModeOffline())
+  if (Ws->_sdCardV2->isModeOffline())
     return true;
 
   if (!_i2c_model->EncodeProbed()) {
@@ -820,8 +820,8 @@ bool I2cController::publishProbed() {
     return false;
   }
 
-  if (!Ws.PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
-                     _i2c_model->GetI2cD2B())) {
+  if (!Ws->PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
+                      _i2c_model->GetI2cD2B())) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish ws_i2c_Probed message!");
     return false;
   }
@@ -883,12 +883,12 @@ void I2cController::update(bool force) {
       }
 
       // Check if this is a battery monitor reporting percentage
-      if (Ws._sdCardV2 != nullptr &&
+      if (Ws->_sdCardV2 != nullptr &&
           drv->_sensors[i].value == ws_sensor_Type_T_UNITLESS_PERCENT &&
           (strcmp(drv->GetDrvName(), "max17048") == 0 ||
            strcmp(drv->GetDrvName(), "lc709203f") == 0 ||
            strcmp(drv->GetDrvName(), "sensor_mock") == 0)) {
-        Ws._sdCardV2->SetBatteryPercent(event.unitless_percent);
+        Ws->_sdCardV2->SetBatteryPercent(event.unitless_percent);
       }
 
       // Fill the I2cDeviceEvent's sensor_event array submsg.
@@ -904,16 +904,16 @@ void I2cController::update(bool force) {
         drv->GetMuxAddress(), mux_channel);
     _i2c_model->EncodeI2cDeviceEvent();
 
-    if (!Ws._sdCardV2->isModeOffline()) {
+    if (!Ws->_sdCardV2->isModeOffline()) {
       // Online: wrap the device event in the i2c D2B envelope and publish it to
       // IO (mirrors publishProbed()'s D2B publish path).
       if (!_i2c_model->EncodeI2cDeviceEventD2B() ||
-          !Ws.PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
-                         _i2c_model->GetI2cD2B())) {
+          !Ws->PublishD2b(ws_signal_DeviceToBroker_i2c_tag,
+                          _i2c_model->GetI2cD2B())) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish the I2cDeviceEvent!");
       }
     } else {
-      if (!Ws._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
+      if (!Ws->_sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
         WS_DEBUG_PRINTLN(
             "[i2c] ERROR: Unable to log the I2cDeviceEvent to SD!");
         statusLEDSolid(WS_LED_STATUS_FS_WRITE);

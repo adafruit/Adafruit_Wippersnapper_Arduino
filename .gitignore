@@ -84,3 +84,6 @@ src/Wippersnapper_demo.ino.cpp
 *.jpg
 *.png
 *.jpeg
+
+# Locally checked-out nested repos (not submodules)
+repos/

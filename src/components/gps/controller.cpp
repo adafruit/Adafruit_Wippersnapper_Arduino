@@ -96,7 +96,7 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(ws_gps_Add *msg) {
     // I2C transport path
     WS_DEBUG_PRINTLN("[gps] Configuring GPS via I2C transport...");
     ws_i2c_Descriptor desc = msg->add_i2c.descriptor;
-    TwoWire *wire = Ws._i2c_controller->GetOrCreateI2cBus(
+    TwoWire *wire = Ws->_i2c_controller->GetOrCreateI2cBus(
         desc.address_space.pin_scl, desc.address_space.pin_sda);
     if (wire == nullptr)
       return false;
@@ -260,8 +260,8 @@ void GPSController::update(bool force) {
         drv->SetDidReadSend(false);
       } else {
         // Publish the GPSEvent to IO
-        if (!Ws.PublishD2b(ws_signal_DeviceToBroker_gps_tag,
-                           _gps_model->GetGPSD2B())) {
+        if (!Ws->PublishD2b(ws_signal_DeviceToBroker_gps_tag,
+                            _gps_model->GetGPSD2B())) {
           WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
           drv->SetDidReadSend(false);
         } else {

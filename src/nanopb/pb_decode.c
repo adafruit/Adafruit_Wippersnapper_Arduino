@@ -571,7 +571,7 @@ static bool checkreturn allocate_field(pb_istream_t *stream, void *pData, size_t
     }
 #endif
 
-    /* Check for multiplication overflows.
+    /* Check for multiplication overfloWs->
      * This code avoids the costly division if the sizes are small enough.
      * Multiplication is safe as long as only half of bits are set
      * in either multiplicand.
