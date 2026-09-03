@@ -14,7 +14,7 @@ name: Nightly build (migrate-api-v2 branch)
 on:
   schedule:
     # 06:00 UTC nightly (06:00 UK in winter, 07:00 during BST)
-    - cron: "0 16 * * *"
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 permissions:
