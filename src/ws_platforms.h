@@ -35,7 +35,8 @@ typedef pico_wifi ws_adapter_wifi;
 // Adafruit "AirLift" (ESP32 coprocessor)
 #elif defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                    \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
-    defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT)
+    defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT) ||            \
+    defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
 #include "platforms/airlift_wifi.h"
 typedef airlift_wifi ws_adapter_wifi;
 // Arduino Nina-Firmware (ESP32 Coprocessor)

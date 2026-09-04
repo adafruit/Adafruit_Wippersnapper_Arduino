@@ -33,7 +33,8 @@
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
     defined(ARDUINO_ADAFRUIT_METRO_RP2350) ||                                  \
-    defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+    defined(ARDUINO_RASPBERRY_PI_PICO_2W) ||                                   \
+    defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -318,6 +319,13 @@ bool Wippersnapper_FS::createBootFile() {
             Ws->_macAddrV2[4], Ws->_macAddrV2[5]);
     bootFile.print("MAC Address: ");
     bootFile.println(sMAC);
+
+#if defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT) ||            \
+    defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
+    defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
+    bootFile.print("AirLift Coprocessor Firmware Version: ");
+    bootFile.println(Ws->_airlift_version);
+#endif
 
 // Print ESP-specific info to boot file
 #ifdef ARDUINO_ARCH_ESP32
