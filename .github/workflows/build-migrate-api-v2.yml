@@ -616,15 +616,15 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build RP2040 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
-      - name: Rename build artifacts to reflect the platform name
+      - name: Rename build artifact to reflect the platform name
         run: |
-          mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
+          mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2 || mv examples/*/build/*/Wippersnapper_demo_offline.ino.uf2 wippersnapper_offline.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2 || mv examples/*/build/*/Wippersnapper_debug.ino.uf2 wippersnapper_debug.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
       - name: upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
-            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
+            wippersnapper*.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
 
   build-esp8266:
     name: 🏗️ESP8266
