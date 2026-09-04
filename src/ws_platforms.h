@@ -47,7 +47,7 @@ typedef ninafw_wifi ws_adapter_wifi;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                  \
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
-    defined(ARDUINO_ADAFRUIT_METRO_RP2350)
+    defined(ARDUINO_ADAFRUIT_METRO_RP2350) || defined(ARDUINO_ARCH_RP2040)
 #include "platforms/pico_offline.h"
 typedef pico_offline ws_adapter_offline;
 #else
