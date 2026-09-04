@@ -120,9 +120,7 @@ public:
   @brief  Returns the type of network connection used by Wippersnapper
   @return Pico
   */
-  const char *connectionType() {
-    return "WS-OFFLINE-PICO";
-  }
+  const char *connectionType() { return "WS-OFFLINE-PICO"; }
 
 protected:
   /*!
