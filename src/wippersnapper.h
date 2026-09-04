@@ -204,6 +204,11 @@ public:
 
   // Adapter capability helpers
   bool isWiFiAdapterInstance();
+  /*!
+  @brief  Returns the type of network connection used by Wippersnapper,
+          overridden by adapter implementations.
+  @return BASE
+  */
   virtual const char *connectionType() { return "BASE"; }
 
   // Global flags for the status led
