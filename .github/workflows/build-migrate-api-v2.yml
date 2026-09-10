@@ -45,22 +45,22 @@ jobs:
             "lilygo_t_display_s3",
           ]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
           path: ci
       - name: Checkout Board Definitions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: adafruit/Wippersnapper_Boards
           ref: api-v2
@@ -88,7 +88,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -97,7 +97,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -223,7 +223,7 @@ jobs:
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.*
       - name: Upload build artifacts zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}-zip
           path: |
@@ -232,7 +232,7 @@ jobs:
         run: |
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
       - name: Upload build artifact UF2 file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}-uf2
           path: |
@@ -253,16 +253,16 @@ jobs:
             "qtpy_esp32s3",
           ]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -287,7 +287,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -296,7 +296,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -319,7 +319,7 @@ jobs:
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
           mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
       - name: upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -348,22 +348,22 @@ jobs:
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
           path: ci
       - name: Checkout Board Definitions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: adafruit/Wippersnapper_Boards
           ref: api-v2
@@ -382,7 +382,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -391,7 +391,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -460,7 +460,7 @@ jobs:
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
       - name: upload build artifacts zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -479,16 +479,16 @@ jobs:
             "metro_m4_airliftlite_tinyusb",
           ]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -510,7 +510,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -519,7 +519,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -538,7 +538,7 @@ jobs:
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
           mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
       - name: upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -553,16 +553,16 @@ jobs:
       matrix:
         arduino-platform: ["picow_rp2040_tinyusb", "picow_rp2350_tinyusb"]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -584,7 +584,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -593,7 +593,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -611,7 +611,7 @@ jobs:
         run: |
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
       - name: upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -625,16 +625,16 @@ jobs:
       matrix:
         arduino-platform: ["feather_esp8266"]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -653,7 +653,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -662,7 +662,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -689,7 +689,7 @@ jobs:
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
       - name: upload build artifacts zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -713,16 +713,16 @@ jobs:
             "metro_esp32s3_debug",
           ]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -747,7 +747,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -756,7 +756,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -779,7 +779,7 @@ jobs:
           mv examples/*/build/*/wippersnapper_debug.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
           mv examples/*/build/*/wippersnapper_debug.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
       - name: upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-dev-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -801,22 +801,22 @@ jobs:
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
           path: ci
       - name: Checkout Board Definitions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: adafruit/Wippersnapper_Boards
           ref: api-v2
@@ -835,7 +835,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -844,7 +844,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -915,7 +915,7 @@ jobs:
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
       - name: upload build artifacts zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-dev-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
