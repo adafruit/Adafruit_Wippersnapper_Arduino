@@ -1,0 +1,121 @@
+/*!
+ * @file drvD6t1a.h
+ *
+ * Device driver for the OMRON D6T-1A Non-contact Thermal sensor.
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Tyeth Gundry 2026 for Adafruit Industries.
+ *
+ * MIT license, all text here must be included in any redistribution.
+ *
+ */
+
+#ifndef DRV_D6T1A_H
+#define DRV_D6T1A_H
+#include <OmronD6T.h>
+
+#include "drvBase.h"
+
+/*!
+    @brief  Class that provides a sensor driver for the D6T1A temperature
+   sensor.
+*/
+class drvD6t1a : public drvBase {
+public:
+  /*!
+      @brief    Constructor for a D6T1A sensor.
+      @param    i2c
+                The I2C interface.
+      @param    sensorAddress
+                7-bit device address.
+      @param    mux_channel
+                The I2C multiplexer channel.
+      @param    driver_name
+                The name of the driver.
+  */
+  drvD6t1a(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+           const char *driver_name)
+      : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
+    _deviceTemp = NAN;
+    _objectTemp = NAN;
+    _d6t1a = nullptr;
+  }
+
+  /*!
+      @brief    Destructor for a D6T1A sensor.
+  */
+  ~drvD6t1a() { delete _d6t1a; }
+
+  /*!
+      @brief    Initializes the D6T1A sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  bool begin() override {
+    _d6t1a = new OmronD6T(OmronD6T::D6T_1A, _i2c);
+    return _d6t1a->begin(_address);
+
+    // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
+    //  - The D6T-1A is a fixed-function single-element thermopile; if the
+    //    library exposes emissivity or averaging, surface those.
+  }
+
+  /*!
+      @brief    Reads ambient and object temperatures in one transaction so
+                both metrics reflect the same sample. Serves the cached sample
+                if the last read was under one second ago.
+      @returns  True if a valid sample is cached, False otherwise.
+  */
+  bool ReadSensorData() override {
+    if (HasBeenReadInLastSecond())
+      return _have_data;
+
+    _d6t1a->read();
+    _deviceTemp = (float)_d6t1a->ambientTempC();
+    _objectTemp = (float)_d6t1a->objectTempC(0, 0);
+    if (!isnan(_deviceTemp) || !isnan(_objectTemp)) {
+      _last_read = millis();
+      _have_data = true;
+    }
+    return _have_data;
+  }
+
+  /*!
+      @brief    Gets the D6T1A's current ambient temperature.
+      @param    tempEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the temperature was obtained successfully, False
+     otherwise.
+  */
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+    if (ReadSensorData() && !isnan(_deviceTemp)) {
+      tempEvent->temperature = _deviceTemp;
+      return true;
+    }
+    return false;
+  }
+
+  /*!
+      @brief    Gets the D6T1A's object temperature.
+      @param    tempEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the temperature was obtained successfully, False
+     otherwise.
+  */
+  bool getEventObjectTemp(sensors_event_t *tempEvent) {
+    if (ReadSensorData() && !isnan(_objectTemp)) {
+      tempEvent->temperature = _objectTemp;
+      return true;
+    }
+    return false;
+  }
+
+protected:
+  float _deviceTemp = NAN;    ///< Device temperature in Celsius
+  float _objectTemp = NAN;    ///< Object temperature in Celsius
+  OmronD6T *_d6t1a = nullptr; ///< D6T1A object
+};
+
+#endif // DRV_D6T1A_H

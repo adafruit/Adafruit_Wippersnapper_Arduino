@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Tyeth Gundry 2023 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2026 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -19,6 +19,8 @@
 #include "drvBase.h"
 #include <Adafruit_SGP40.h>
 #include <Wire.h>
+
+#define SGP40_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
 
 /*!
     @brief  Class that provides a driver interface for the SGP40 sensor.
@@ -53,36 +55,62 @@ public:
     }
 
     // TODO: update to use setCalibration() and pass in temp/humidity
-
+    _lastFastMs = millis() - SGP40_FASTTICK_INTERVAL_MS;
     return true;
   }
 
   /*!
-      @brief    Gets the sensor's current raw unprocessed value.
+      @brief  Background sampling for the SGP40. measureVocIndex() runs the
+              Sensirion VOC algorithm internally and expects to be called at
+              ~1 Hz, independent of the device's publish period, so sampling is
+              done here (called every loop) rather than in the getEvent*
+              handlers. Non-blocking; the millis() guard enforces the cadence.
+  */
+  void fastTick() override {
+    if (!_sgp40)
+      return;
+    uint32_t now = millis();
+    if (now - _lastFastMs < SGP40_FASTTICK_INTERVAL_MS)
+      return;
+    _lastFastMs = now;
+    _rawValue = _sgp40->measureRaw();
+    _vocIdx = (int32_t)_sgp40->measureVocIndex();
+  }
+
+  /*!
+      @brief    Gets the sensor's current raw unprocessed value (cached from
+                the most recent fastTick() sample).
       @param    rawEvent
                 Pointer to an Adafruit_Sensor event.
-      @returns  True if the temperature was obtained successfully, False
-                otherwise.
+      @returns  True if the value was obtained successfully, False otherwise.
   */
   bool getEventRaw(sensors_event_t *rawEvent) {
-    rawEvent->data[0] = (float)_sgp40->measureRaw();
+    if (!_sgp40)
+      return false;
+    rawEvent->data[0] = (float)_rawValue;
     return true;
   }
 
   /*!
-      @brief    Gets the SGP40's current VOC reading.
+      @brief    Gets the SGP40's current VOC reading (cached from the most
+                recent fastTick() sample).
       @param    vocIndexEvent
                   Adafruit Sensor event for VOC Index (1-500, 100 is normal)
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    vocIndexEvent->voc_index = (float)_sgp40->measureVocIndex();
+    if (!_sgp40)
+      return false;
+    vocIndexEvent->voc_index = (float)_vocIdx;
     return true;
   }
 
 protected:
-  Adafruit_SGP40 *_sgp40; ///< SEN5X driver object
+  Adafruit_SGP40 *_sgp40;   ///< SGP40 driver object
+  uint16_t _rawValue = 0;   ///< Cached raw sensor output (ticks)
+  int32_t _vocIdx = 0;      ///< Cached VOC Index (signed, per datasheet)
+  uint32_t _lastFastMs = 0; ///< Last fastTick sample time (1 Hz guard)
 };
 
-#endif // WipperSnapper_I2C_Driver_SEN5X
+#endif // DRV_SGP40_H

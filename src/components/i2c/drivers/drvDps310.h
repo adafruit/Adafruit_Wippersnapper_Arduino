@@ -78,31 +78,24 @@ public:
   }
 
   /*!
-      @brief    Reads the DPS310's temperature and pressure.
-      @returns  True if the measurements were read successfully, False
-     otherwise.
+      @brief    Reads the DPS310's temperature and pressure in one transaction
+                so both metrics reflect the same sample. Serves the cached
+                sample if the last read was under one second ago, or if no new
+                data is ready yet.
+      @returns  True if a valid sample is cached, False otherwise.
   */
-  bool alreadyRecentlyRead() {
-    return (_last_read != 0 && (millis() - _last_read < ONE_SECOND_IN_MS));
-  }
+  bool ReadSensorData() override {
+    if (HasBeenReadInLastSecond())
+      return _have_data;
 
-  /*!
-      @brief    Reads the DPS310's temperature and pressure.
-      @returns  True if the measurements were read successfully, False
-     otherwise.
-  */
-  bool ReadMeasurements() {
-    if (alreadyRecentlyRead())
-      return true;
+    if (!_dps310->temperatureAvailable() || !_dps310->pressureAvailable())
+      return _have_data;
 
-    while (!_dps310->temperatureAvailable() || !_dps310->pressureAvailable())
-      return false;
-
-    if (!_dps310->getEvents(&_temp_event, &_pressure_event))
-      return false;
-
-    _last_read = millis();
-    return true;
+    if (_dps310->getEvents(&_temp_event, &_pressure_event)) {
+      _last_read = millis();
+      _have_data = true;
+    }
+    return _have_data;
   }
 
   /*!
@@ -113,7 +106,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadMeasurements()) {
+    if (!ReadSensorData()) {
       return false;
     }
     tempEvent->temperature = _temp_event.temperature;
@@ -128,7 +121,7 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!ReadMeasurements()) {
+    if (!ReadSensorData()) {
       return false;
     }
     pressureEvent->pressure = _pressure_event.pressure;
@@ -138,10 +131,9 @@ public:
 protected:
   sensors_event_t _temp_event = {
       0}; ///< DPS310 sensor event for temperature readings
-  sensors_event_t
-      _pressure_event;      ///< DPS310 sensor event for pressure readings
-  ulong _last_read;         ///< Last time the sensor was read
-  Adafruit_DPS310 *_dps310; ///< DPS310 driver object
+  sensors_event_t _pressure_event = {
+      0}; ///< DPS310 sensor event for pressure readings
+  Adafruit_DPS310 *_dps310 = nullptr; ///< DPS310 driver object
   Adafruit_Sensor *_dps_temp =
       NULL; ///< Holds data for the DPS310's temperature sensor
   Adafruit_Sensor *_dps_pressure =

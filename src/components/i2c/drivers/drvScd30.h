@@ -52,50 +52,31 @@ public:
   }
 
   /*!
-      @brief    Checks if sensor was read within last 1s, or is the first read.
-      @returns  True if the sensor was recently read, False otherwise.
+      @brief    Checks if the sensor has a new measurement ready to read.
+      @returns  True if a new measurement is ready, False otherwise.
   */
-  bool hasBeenReadInLastSecond() {
-    return _lastRead != 0 && millis() - _lastRead < ONE_SECOND_IN_MS;
-  }
+  bool IsSensorReady() { return _scd->dataReady(); }
 
   /*!
-      @brief    Checks if the sensor is ready to be read
-      @returns  True if the sensor is ready, False otherwise.
+      @brief    Reads the SCD30's CO2, temperature and humidity in one
+                transaction so all metrics reflect the same sample, caching
+                the results. Serves the cached sample if the last read was
+                under one second ago, or if no new data is ready yet.
+      @returns  True if a valid sample is cached, False if no sample has been
+                read yet (or the read failed).
   */
-  bool isSensorReady() {
-    if (!_scd->dataReady()) {
-      // failed, one more quick attempt
-      delay(100);
-      if (!_scd->dataReady()) {
-        return false;
-      }
-    }
-    return true;
-  }
+  bool ReadSensorData() override {
+    if (HasBeenReadInLastSecond())
+      return _have_data;
 
-  /*!
-      @brief    Reads the SCD30 sensor.
-      @returns  True if the sensor was read successfully, False otherwise.
-  */
-  bool readSensorData() {
-    // dont read sensor more than once per second
-    if (hasBeenReadInLastSecond()) {
-      return true;
+    if (IsSensorReady() && _scd->read()) {
+      _CO2 = _scd->CO2;
+      _humidity = _scd->relative_humidity;
+      _temperature = _scd->temperature;
+      _last_read = millis();
+      _have_data = true;
     }
-
-    if (!isSensorReady()) {
-      return false;
-    }
-
-    if (!_scd->read()) {
-      return false;
-    }
-    _CO2 = _scd->CO2;
-    _humidity = _scd->relative_humidity;
-    _temperature = _scd->temperature;
-    _lastRead = millis();
-    return true;
+    return _have_data;
   }
 
   /*!
@@ -107,7 +88,7 @@ public:
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // check if sensor is enabled and data is available
-    if (!readSensorData()) {
+    if (!ReadSensorData()) {
       return false;
     }
 
@@ -124,7 +105,7 @@ public:
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
-    if (!readSensorData()) {
+    if (!ReadSensorData()) {
       return false;
     }
 
@@ -141,7 +122,7 @@ public:
   */
   bool getEventCO2(sensors_event_t *co2Event) {
     // check if sensor is enabled and data is available
-    if (!readSensorData()) {
+    if (!ReadSensorData()) {
       return false;
     }
 
@@ -151,10 +132,9 @@ public:
 
 protected:
   Adafruit_SCD30 *_scd = nullptr; ///< SCD30 driver object
-  ulong _lastRead = 0;            ///< Last time the sensor was read
-  float _temperature;             ///< Temperature
-  float _humidity;                ///< Relative Humidity
-  float _CO2;                     ///< CO2
+  float _temperature = NAN;       ///< Temperature
+  float _humidity = NAN;          ///< Relative Humidity
+  float _CO2 = NAN;               ///< CO2
 };
 
 #endif // drvScd30

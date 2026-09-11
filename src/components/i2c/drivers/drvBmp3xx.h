@@ -288,11 +288,37 @@ public:
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
     if (!_bmp3xx->performReading())
       return false;
-    altitudeEvent->altitude = _bmp3xx->readAltitude(SEALEVELPRESSURE_HPA);
+    altitudeEvent->altitude = _bmp3xx->readAltitude(_seaLevelPressureHpa);
+    return true;
+  }
+
+  /*!
+      @brief    Applies the sea-level pressure reference (hPa) used to compute
+                altitude. Sent as a direct value, not an option index.
+      @param    sea_level_pressure
+                The reference sea-level pressure, in hPa.
+      @returns  True if applied successfully, False otherwise.
+  */
+  bool setSeaLevelPressure(const ws_config_Value &sea_level_pressure) override {
+    float pressure;
+    if (sea_level_pressure.which_value == ws_config_Value_float_value_tag) {
+      pressure = sea_level_pressure.value.float_value;
+    } else if (sea_level_pressure.which_value ==
+               ws_config_Value_int_value_tag) {
+      pressure = (float)sea_level_pressure.value.int_value;
+    } else {
+      return false;
+    }
+    if (pressure <= 0.0f) {
+      return false;
+    }
+    _seaLevelPressureHpa = pressure;
     return true;
   }
 
 protected:
   Adafruit_BMP3XX *_bmp3xx; ///< BMP3XX  object
+  float _seaLevelPressureHpa =
+      SEALEVELPRESSURE_HPA; ///< Sea-level pressure reference (hPa)
 };
 #endif // drvBmp3xx
