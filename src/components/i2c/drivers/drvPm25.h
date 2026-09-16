@@ -55,6 +55,19 @@ public:
   }
 
   /*!
+      @brief    Reads one PM2.5 AQI data frame so the PM1.0/2.5/10 metrics in
+                a read pass come from the same sample.
+      @returns  True if a frame was read successfully, False otherwise.
+  */
+  bool ReadDevice() override {
+    if (!_pm25->read(&_data)) {
+      WS_DEBUG_PRINTLN("Failed to read PM25 data frame");
+      return false;
+    }
+    return true;
+  }
+
+  /*!
       @brief    Gets the PM25 sensor's PM1.0 STD reading.
       @param    pm10StdEvent
                   Adafruit Sensor event for PM1.0
@@ -62,15 +75,9 @@ public:
                 otherwise.
   */
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
-    PM25_AQI_Data data;
-    if (!_pm25->read(&data)) {
-      WS_DEBUG_PRINTLN("Failed to read PM10STD data");
-      return false; // couldn't read data
-    }
-
-    pm10StdEvent->pm10_std = (float)data.pm10_standard;
-    WS_DEBUG_PRINT("PM10STD: ");
-    WS_DEBUG_PRINTLNVAR(pm10StdEvent->pm10_std);
+    if (!ReadSensorData())
+      return false;
+    pm10StdEvent->pm10_std = (float)_data.pm10_standard;
     return true;
   }
 
@@ -82,14 +89,9 @@ public:
                 otherwise.
   */
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
-    PM25_AQI_Data data;
-    if (!_pm25->read(&data)) {
-      WS_DEBUG_PRINTLN("Failed to read PM25STD data");
-      return false; // couldn't read data
-    }
-    pm25StdEvent->pm25_std = (float)data.pm25_standard;
-    WS_DEBUG_PRINT("PM25STD: ");
-    WS_DEBUG_PRINTLNVAR(pm25StdEvent->pm25_std);
+    if (!ReadSensorData())
+      return false;
+    pm25StdEvent->pm25_std = (float)_data.pm25_standard;
     return true;
   }
 
@@ -101,20 +103,15 @@ public:
                 otherwise.
   */
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
-    PM25_AQI_Data data;
-    if (!_pm25->read(&data)) {
-      WS_DEBUG_PRINTLN("Failed to read PM100STD data");
-      return false; // couldn't read data
-    }
-
-    pm100StdEvent->pm100_std = (float)data.pm100_standard;
-    WS_DEBUG_PRINT("PM100STD: ");
-    WS_DEBUG_PRINTLNVAR(pm100StdEvent->pm100_std);
+    if (!ReadSensorData())
+      return false;
+    pm100StdEvent->pm100_std = (float)_data.pm100_standard;
     return true;
   }
 
 protected:
   Adafruit_PM25AQI *_pm25; ///< PM25 driver object
+  PM25_AQI_Data _data = {0}; ///< Cached data frame from the last read
 };
 
 #endif // drvPm25
