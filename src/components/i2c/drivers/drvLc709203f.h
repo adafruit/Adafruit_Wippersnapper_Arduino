@@ -69,6 +69,18 @@ public:
   }
 
   /*!
+      @brief    Reads cell voltage and charge in one pass. The library returns
+                0.0 on a CRC or bus failure; the gauge cannot operate below
+                2.5 V, so a voltage under 2 V is a failed read, not a value.
+      @returns  True if the reads succeeded, False otherwise.
+  */
+  bool ReadSensorData() override {
+    _voltage = _lc->cellVoltage();
+    _percent = _lc->cellPercent();
+    return _voltage >= 2.0f;
+  }
+
+  /*!
       @brief    Reads a voltage sensor and converts the
                 reading into the expected SI unit.
       @param    voltageEvent
@@ -77,7 +89,9 @@ public:
                 otherwise.
   */
   bool getEventVoltage(sensors_event_t *voltageEvent) {
-    voltageEvent->voltage = _lc->cellVoltage();
+    if (!AttemptRead())
+      return false;
+    voltageEvent->voltage = _voltage;
     return true;
   }
 
@@ -90,12 +104,16 @@ public:
                 otherwise.
   */
   bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
-    unitlessPercentEvent->unitless_percent = _lc->cellPercent();
+    if (!AttemptRead())
+      return false;
+    unitlessPercentEvent->unitless_percent = _percent;
     return true;
   }
 
 protected:
   Adafruit_LC709203F *_lc; ///< Pointer to LC709203F sensor object
+  float _voltage = 0;      ///< Cached cell voltage, V
+  float _percent = 0;      ///< Cached cell charge, %
 };
 
 #endif // drvLc709203f

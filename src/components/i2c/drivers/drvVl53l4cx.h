@@ -157,11 +157,9 @@ public:
   bool getProximity(sensors_event_t *proximityEvent, int whichObject = 0) {
     if (!AttemptRead())
       return false;
-    // whichObject: 0-based index, return NaN(Object not found) if too few found
-    if (_ranging.NumberOfObjectsFound - 1 < whichObject) {
-      proximityEvent->data[0] = NAN;
-      return true;
-    }
+    // whichObject: 0-based index; no value when too few objects were found
+    if (_ranging.NumberOfObjectsFound - 1 < whichObject)
+      return false;
     // RESULT: take the first or second detected object from ranging data,
     // if valid then set event data in proximityEvent or return false
     return updateDataPointIfValid(_ranging.RangeData[whichObject],

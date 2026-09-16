@@ -80,6 +80,9 @@ public:
   */
   void switchMode(ltr390_mode_t mode) {
     _ltr390->setMode(mode);
+    // Reading MAIN_STATUS clears a new-data flag left by the previous mode,
+    // so the first data accepted in this mode is its own conversion
+    (void)_ltr390->newDataAvailable();
     _mode_start = millis();
   }
 
@@ -138,9 +141,12 @@ public:
                 otherwise.
   */
   bool getEventLight(sensors_event_t *lightEvent) {
-    if (!AttemptRead() || !_have_als)
+    // 65535 is a saturated 16-bit conversion
+    if (!AttemptRead() || !_have_als || _als >= 0xFFFF)
       return false;
-    lightEvent->light = (float)_als;
+    // Datasheet lux formula: 0.6 * ALS / (gain * integration/100ms), for the
+    // gain 3 / 16-bit (25ms) configuration set in begin()
+    lightEvent->light = 0.6f * (float)_als / (3.0f * 0.25f);
     return true;
   }
 

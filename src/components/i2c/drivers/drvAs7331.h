@@ -302,27 +302,35 @@ public:
     return ok;
   }
 
-  /*******************************************************************************/
+  /*!
+      @brief    Checks the STATUS register's NDATA flag: a new measurement has
+                been transferred to the output registers. Without it the
+                first pass after power-up reads zeros.
+      @returns  True if new data is available, False otherwise.
+  */
+  bool IsSensorReady() override { return _as7331->hasNewData(); }
+
   /*!
       @brief    Gets the AS7331's current UVB reading in uW/cm2 as raw event.
+                Rejected when the STATUS overflow flags (ADCOF/MRESOF/
+                OUTCONVOF) are set: the gain is too high for the light level.
       @param    rawEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
+    if (!AttemptRead() || _as7331->hasOverflow())
+      return false;
     float uva, uvb, uvc;
     if (!_as7331->readAllUV_uWcm2(&uva, &uvb, &uvc))
       return false;
-
     WS_DEBUG_PRINT("AS7331 UVA: ");
     WS_DEBUG_PRINTVAR(uva);
     WS_DEBUG_PRINT(" UVB: ");
     WS_DEBUG_PRINTVAR(uvb);
     WS_DEBUG_PRINT(" UVC: ");
     WS_DEBUG_PRINTLNVAR(uvc);
-
     rawEvent->data[0] = uvb;
     return true;
   }

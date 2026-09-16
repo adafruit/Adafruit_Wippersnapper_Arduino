@@ -207,8 +207,15 @@ public:
   */
   bool readBothChannels() {
     if (_LTR329->newDataAvailable()) {
-      _LTR329->readBothChannels(_visible_plus_ir, _infrared);
-      _has_reading = true;
+      uint16_t ch0, ch1;
+      // The library returns the ALS_STATUS "data valid" bit; a full-scale
+      // channel (65535) is saturated
+      if (_LTR329->readBothChannels(ch0, ch1) && ch0 != 0xFFFF &&
+          ch1 != 0xFFFF) {
+        _visible_plus_ir = ch0;
+        _infrared = ch1;
+        _has_reading = true;
+      }
     }
     return _has_reading;
   }

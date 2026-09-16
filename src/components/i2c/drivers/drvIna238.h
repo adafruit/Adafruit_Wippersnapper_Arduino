@@ -169,6 +169,7 @@ public:
    * otherwise.
    */
   bool getEventCurrent(sensors_event_t *currentEvent);
+  bool IsSensorReady() override;
 
 protected:
   Adafruit_INA238 *_ina238 = nullptr; ///< Pointer to INA238 sensor object
