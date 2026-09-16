@@ -269,8 +269,10 @@ public:
                 must run continuously. Take one non-blocking step per call and
                 call NewSample() once the cached values are ready to publish -
                 for a ticking driver that is the only way a sample reaches
-                AttemptRead(). The controller selects the device's MUX channel
-                before each tick.
+                AttemptRead(). _first_tick is true on the first call of a lead
+                window, so a multi-step measurement can restart from scratch
+                instead of trusting a result that completed while idle. The
+                controller selects the device's MUX channel before each tick.
   */
   virtual void fastTick() {}
 
@@ -296,6 +298,10 @@ public:
       if (!pending)
         return false;
     }
+    // A gap of more than one missed tick means the lead window just opened:
+    // let fastTick() restart its measurement state rather than trust results
+    // that completed while it was idle.
+    _first_tick = now - _last_fast_tick > 2 * _fast_tick_ms;
     _last_fast_tick = now;
     return true;
   }
@@ -1298,7 +1304,9 @@ protected:
   uint32_t _fast_tick_ms = 0; ///< fastTick() cadence in ms; 0 = no tick.
   uint32_t _tick_lead_ms = TICK_ALWAYS; ///< How long before a read is due the
                                         ///< ticks start; TICK_ALWAYS = always.
-  ulong _last_fast_tick; ///< millis() timestamp of the last fastTick().
+  ulong _last_fast_tick;    ///< millis() timestamp of the last fastTick().
+  bool _first_tick = false; ///< True during the first fastTick() of a lead
+                            ///< window (the previous tick was long ago).
 
   /*!
       @brief    Marks the driver's cached values as a fresh, publishable

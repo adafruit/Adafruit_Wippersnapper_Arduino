@@ -113,10 +113,7 @@ public:
                 next one, and a valid result filed with NewSample().
   */
   void fastTick() override {
-    ulong now = millis();
-    bool resumed = now - _last_tick_ms > 2 * VL53L4CD_TICK_MS;
-    _last_tick_ms = now;
-    if (resumed) {
+    if (_first_tick) {
       _VL53L4CD->VL53L4CD_ClearInterrupt();
       return;
     }
@@ -156,7 +153,6 @@ public:
 protected:
   VL53L4CD *_VL53L4CD;       ///< Pointer to VL53L4CD sensor object
   uint16_t _distance_mm = 0; ///< Last valid range, in mm
-  ulong _last_tick_ms = 0;   ///< millis() of the last fastTick() call
 };
 
 #endif // drvVl53l4cd

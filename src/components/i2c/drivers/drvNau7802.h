@@ -19,7 +19,8 @@
 #include "drvBase.h"
 #include <Adafruit_NAU7802.h>
 
-#define NAU7802_TIMEOUT_MS 250 ///< Timeout waiting for data from NAU7802
+#define NAU7802_TICK_MS 50       ///< Poll for a new ADC sample every 50ms
+#define NAU7802_READ_LEAD_MS 500 ///< Start polling 0.5s before a read is due
 
 /*!
     @brief  Class that provides a driver interface for the NAU7802.
@@ -40,7 +41,11 @@ public:
   drvNau7802(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // The ADC runs at 10 SPS; rather than spin-wait for available() in the
+    // read pass, samples are harvested by fastTick() during the lead window
+    // before each read is due.
+    _fast_tick_ms = NAU7802_TICK_MS;
+    _tick_lead_ms = NAU7802_READ_LEAD_MS;
   }
 
   /*!
@@ -105,27 +110,34 @@ public:
   }
 
   /*!
-      @brief    Gets the sensor's raw "force" value.
+      @brief    Background sampling step, called every NAU7802_TICK_MS while a
+                read is pending: takes the ADC sample if one is available and
+                files it with NewSample().
+  */
+  void fastTick() override {
+    if (!_nau7802->available())
+      return;
+    _raw = _nau7802->read();
+    NewSample();
+  }
+
+  /*!
+      @brief    Gets the sensor's raw "force" value, from the most recent
+                sample collected by fastTick().
       @param    rawEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the reading was obtained successfully, False otherwise.
   */
   bool getEventRaw(sensors_event_t *rawEvent) {
-    unsigned long start = millis();
-
-    // Wait for the sensor to be ready
-    while (!_nau7802->available()) {
-      if (millis() - start > NAU7802_TIMEOUT_MS) {
-        // WS_DEBUG_PRINTLN("NAU7802 data not available");
-        return false;
-      }
-    }
-    rawEvent->data[0] = (float)_nau7802->read();
+    if (!AttemptRead())
+      return false;
+    rawEvent->data[0] = (float)_raw;
     return true;
   }
 
 protected:
   Adafruit_NAU7802 *_nau7802 = nullptr; ///< NAU7802 object
+  int32_t _raw = 0;                     ///< Last ADC sample
 };
 
 #endif // DRV_NAU7802_H
