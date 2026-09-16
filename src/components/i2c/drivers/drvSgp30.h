@@ -123,7 +123,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventECO2(sensors_event_t *eco2Event) {
-    if (!_sgp30 || !ReadSensorData())
+    if (!_sgp30 || !AttemptRead())
       return false;
     eco2Event->eCO2 = (float)_eco2;
     return true;
@@ -140,7 +140,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventTVOC(sensors_event_t *tvocEvent) {
-    if (!_sgp30 || !ReadSensorData())
+    if (!_sgp30 || !AttemptRead())
       return false;
     tvocEvent->tvoc = (float)_tvoc;
     return true;

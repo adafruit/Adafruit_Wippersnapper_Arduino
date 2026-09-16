@@ -63,7 +63,7 @@ public:
                 the results.
       @returns  True if the read succeeded, False otherwise.
   */
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     if (!_scd->read())
       return false;
     _CO2 = _scd->CO2;
@@ -81,7 +81,7 @@ public:
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // check if sensor is enabled and data is available
-    if (!ReadSensorData()) {
+    if (!AttemptRead()) {
       return false;
     }
 
@@ -98,7 +98,7 @@ public:
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
-    if (!ReadSensorData()) {
+    if (!AttemptRead()) {
       return false;
     }
 
@@ -115,7 +115,7 @@ public:
   */
   bool getEventCO2(sensors_event_t *co2Event) {
     // check if sensor is enabled and data is available
-    if (!ReadSensorData()) {
+    if (!AttemptRead()) {
       return false;
     }
 

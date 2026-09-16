@@ -992,7 +992,7 @@ bool I2cController::publishProbed() {
               Short description of the failure, for the debug log.
 */
 void I2cController::BackoffDriverRead(drvBase *drv, const char *reason) {
-  ulong retry_in = drv->ScheduleRetry(millis());
+  ulong retry_in = drv->SampleDone(false);
   WS_DEBUG_PRINT("[i2c] Driver read failed (");
   WS_DEBUG_PRINTVAR(reason);
   WS_DEBUG_PRINT("), retrying in ");
@@ -1049,23 +1049,17 @@ void I2cController::update(bool force) {
     if (drv->GetDidReadSend() && force)
       continue;
 
-    // Waiting out a read backoff? Honoured even when forced, so a device that
-    // is not ready yet is not re-polled every loop iteration.
-    if (drv->InBackoff(cur_time))
+    // Period elapsed (or forced) and not waiting out a read backoff?
+    if (!drv->ReadDue(cur_time, force))
       continue;
-
-    // Did driver's period elapse yet?
-    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod() && !force)
-      continue; // bail out if the period hasn't elapsed yet or we aren't
-                // forcing an update
 
     // Optionally configure the I2C MUX
     SelectDriverMux(drv);
 
-    // Read the device once, up-front - drivers that override ReadDevice()
+    // Read the device once, up-front - drivers that override ReadSensorData()
     // cache all metrics from one transaction so the getEvent accessors below
     // stay in sync and cause no further bus traffic (base impl is a no-op).
-    if (!drv->ReadSensorData()) {
+    if (!drv->AttemptRead()) {
       // No new sample (sensor not ready, or the read failed)
       BackoffDriverRead(drv, "no valid sample");
       continue;
@@ -1127,7 +1121,7 @@ void I2cController::update(bool force) {
     }
     drv->SetDidReadSend(true);
     // The cached sample has been consumed; the next pass needs a fresh one
-    drv->NoteReadSuccess();
+    drv->SampleDone(true);
     drv->SetSensorPeriodPrv(millis());
   }
 }

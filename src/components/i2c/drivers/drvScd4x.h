@@ -83,7 +83,7 @@ public:
       @returns  True if the read succeeded and the sample is valid, False
                 otherwise.
   */
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     uint16_t co2 = 0;
     float temperature = 0;
     float humidity = 0;
@@ -104,7 +104,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _temperature;
     return true;
@@ -118,7 +118,7 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     humidEvent->relative_humidity = _humidity;
     return true;
@@ -132,7 +132,7 @@ public:
                 otherwise.
   */
   bool getEventCO2(sensors_event_t *co2Event) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     co2Event->CO2 = (float)_co2;
     return true;

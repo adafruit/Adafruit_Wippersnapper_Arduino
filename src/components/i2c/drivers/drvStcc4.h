@@ -91,7 +91,7 @@ public:
       @returns  True if the read succeeded, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     uint16_t co2, status;
     float temperature, humidity;
     if (!_stcc4->readMeasurement(&co2, &temperature, &humidity, &status))
@@ -112,7 +112,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _cachedTemperature;
     return true;
@@ -128,7 +128,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     humidEvent->relative_humidity = _cachedHumidity;
     return true;
@@ -144,7 +144,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     co2Event->CO2 = (float)_cachedCO2;
     return true;
