@@ -22,6 +22,8 @@
 #include <Wire.h>
 
 #define SGP40_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
+/// The gas-index algorithm outputs 0 during its 45s initial blackout
+#define SGP40_BLACKOUT_SAMPLES 45
 
 /**************************************************************************/
 /*!
@@ -50,6 +52,7 @@ public:
     // of the publish period - opt in to the controller's fastTick() cadence.
     _fast_tick_ms = SGP40_FASTTICK_INTERVAL_MS;
     _tick_lead_ms = TICK_ALWAYS;
+    _discard_samples = SGP40_BLACKOUT_SAMPLES;
   }
 
   /*******************************************************************************/

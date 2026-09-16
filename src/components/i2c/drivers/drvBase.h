@@ -358,7 +358,8 @@ public:
     if (!IsSensorReady() || !ReadSensorData())
       return false;
     NewSample();
-    return true;
+    // False while the sample was a warm-up discard: the controller retries
+    return _have_data && !_sample_consumed;
   }
 
   /*!
@@ -1304,17 +1305,30 @@ protected:
   uint32_t _fast_tick_ms = 0; ///< fastTick() cadence in ms; 0 = no tick.
   uint32_t _tick_lead_ms = TICK_ALWAYS; ///< How long before a read is due the
                                         ///< ticks start; TICK_ALWAYS = always.
-  ulong _last_fast_tick;    ///< millis() timestamp of the last fastTick().
-  bool _first_tick = false; ///< True during the first fastTick() of a lead
-                            ///< window (the previous tick was long ago).
+  ulong _last_fast_tick;        ///< millis() timestamp of the last fastTick().
+  bool _first_tick = false;     ///< True during the first fastTick() of a lead
+                                ///< window (the previous tick was long ago).
+  uint8_t _discard_samples = 0; ///< Warm-up samples still to be dropped by
+                                ///< NewSample(); set in the constructor by
+                                ///< drivers whose first conversions are known
+                                ///< to be garbage.
 
   /*!
       @brief    Marks the driver's cached values as a fresh, publishable
                 sample. Called by AttemptRead() after a successful
                 ReadSensorData(), and by ticking drivers from fastTick() once a
-                measurement has completed.
+                measurement has completed. While _discard_samples is non-zero
+                the sample is dropped instead (and the counter decremented):
+                many devices return garbage for their first conversion(s)
+                after power-up - the DS18B20's 85C reset value, the HDC302X's
+                -45C, the SGP gas-index blackout - and this is the one place
+                to swallow them.
   */
   void NewSample() {
+    if (_discard_samples > 0) {
+      _discard_samples--;
+      return;
+    }
     _have_data = true;
     _sample_consumed = false;
   }

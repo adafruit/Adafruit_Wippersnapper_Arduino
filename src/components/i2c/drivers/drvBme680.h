@@ -42,7 +42,9 @@ public:
   drvBme680(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // The first reading after power-up (first gas heater cycle) is not
+    // trustworthy
+    _discard_samples = 1;
   }
 
   /*!

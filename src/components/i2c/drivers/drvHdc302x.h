@@ -44,7 +44,8 @@ public:
   drvHdc302x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // discard first reading (It returned -45c for me once)
+    _discard_samples = 1;
   }
 
   /*******************************************************************************/
@@ -82,10 +83,6 @@ public:
   bool configureDefaults() override {
     // use on-demand single-shot reads rather than continuous auto-mode
     _hdc302x->setAutoMode(EXIT_AUTO_MODE);
-    // discard first reading (It returned -45c for me once); also serves as a
-    // comms sanity check
-    double temp, humidity;
-    _hdc302x->readTemperatureHumidityOnDemand(temp, humidity, TRIGGERMODE_LP0);
     return true;
   }
 
