@@ -19,6 +19,12 @@
 #include "drvBase.h"
 #include <Adafruit_BMP3XX.h>
 
+#define BMP3XX_TICK_MS 50       ///< Poll the forced conversion every 50ms
+#define BMP3XX_READ_LEAD_MS 500 ///< Start converting 0.5s before a read
+/// Datasheet 3.9.2: conversion time at the maximum 32x/32x oversampling is
+/// ~130ms; wait this long before collecting a forced measurement
+#define BMP3XX_CONV_MS 150
+
 #define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
 
 /*!
@@ -41,7 +47,13 @@ public:
   drvBmp3xx(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // The library's performReading() triggers a forced conversion and reads
+    // the data registers immediately, i.e. it returns the *previous*
+    // conversion (and reset garbage the first time). Trigger on one tick and
+    // collect on a later one instead, in the lead window before a read.
+    _fast_tick_ms = BMP3XX_TICK_MS;
+    _tick_lead_ms = BMP3XX_READ_LEAD_MS;
+    _discard_samples = 1;
   }
 
   /*!
@@ -250,6 +262,28 @@ public:
   }
 
   /*!
+      @brief    Background conversion step, called every BMP3XX_TICK_MS while
+                a read is pending. The first tick triggers a forced conversion
+                (its returned data is the stale previous one and is ignored);
+                once BMP3XX_CONV_MS has elapsed the next performReading()
+                returns the completed conversion, which is filed with
+                NewSample().
+  */
+  void fastTick() override {
+    ulong now = millis();
+    if (_first_tick || !_armed) {
+      _armed = _bmp3xx->performReading(); // trigger; data returned is stale
+      _arm_ms = now;
+      return;
+    }
+    if (now - _arm_ms < BMP3XX_CONV_MS)
+      return;
+    _armed = false;
+    if (_bmp3xx->performReading())
+      NewSample();
+  }
+
+  /*!
       @brief    Gets the BMP3XX's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -257,7 +291,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!_bmp3xx->performReading())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _bmp3xx->temperature;
     return true;
@@ -272,23 +306,27 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!_bmp3xx->performReading())
+    if (!AttemptRead())
       return false;
     pressureEvent->pressure = _bmp3xx->pressure / 100.0F;
     return true;
   }
 
   /*!
-      @brief    Reads a the BMP3XX's altitude sensor into an event.
+      @brief    Reads a the BMP3XX's altitude sensor into an event. Derived
+                from the cached pressure sample, so no extra bus traffic.
       @param    altitudeEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!_bmp3xx->performReading())
+    if (!AttemptRead())
       return false;
-    altitudeEvent->altitude = _bmp3xx->readAltitude(_seaLevelPressureHpa);
+    // Same formula as Adafruit_BMP3XX::readAltitude(), without the re-read
+    float atmospheric = _bmp3xx->pressure / 100.0F;
+    altitudeEvent->altitude =
+        44330.0F * (1.0F - pow(atmospheric / _seaLevelPressureHpa, 0.1903F));
     return true;
   }
 
@@ -318,6 +356,8 @@ public:
 
 protected:
   Adafruit_BMP3XX *_bmp3xx; ///< BMP3XX  object
+  bool _armed = false;      ///< A forced conversion is in flight
+  ulong _arm_ms = 0;        ///< millis() the conversion was triggered
   float _seaLevelPressureHpa =
       SEALEVELPRESSURE_HPA; ///< Sea-level pressure reference (hPa)
 };

@@ -1,7 +1,7 @@
 /*!
  * @file drvSgp30.h
  *
- * Device driver for the SGP30 VOC/eCO2 gas sensor.
+ * Device driver for the SGP30 eCO2/TVOC gas sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -21,6 +21,9 @@
 #include <Wire.h>
 
 #define SGP30_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
+/// IAQmeasure() returns a fixed 400ppm / 0ppb for the first 15s after init
+/// (datasheet "Air Quality Signals"); one extra tick of margin on the boundary
+#define SGP30_IAQ_INIT_SAMPLES 16
 
 /**************************************************************************/
 /*!
@@ -45,7 +48,11 @@ public:
   drvSgp30(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // The IAQ baseline algorithm requires IAQmeasure() at ~1 Hz, independent
+    // of the publish period - opt in to the controller's fastTick() cadence.
+    _fast_tick_ms = SGP30_FASTTICK_INTERVAL_MS;
+    _tick_lead_ms = TICK_ALWAYS;
+    _discard_samples = SGP30_IAQ_INIT_SAMPLES;
   }
 
   /*******************************************************************************/
@@ -65,7 +72,6 @@ public:
     _sgp30 = new Adafruit_SGP30();
     if (!_sgp30->begin(_i2c))
       return false;
-    _lastFastMs = millis() - SGP30_FASTTICK_INTERVAL_MS;
     return true;
 
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
@@ -79,23 +85,19 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief  Background sampling for the SGP30. The IAQ baseline algorithm
-              requires IAQmeasure() to be called at ~1 Hz, independent of the
-              device's publish period, so sampling is done here (called every
-              loop) rather than in the getEvent* handlers. Non-blocking; the
-              millis() guard enforces the 1 Hz cadence.
+      @brief    Background sampling for the SGP30, called by the controller
+                every _fast_tick_ms. Takes one IAQ measurement and caches the
+                result for the getEvent*() accessors; the cache is left
+                untouched if the measurement fails.
   */
   /*******************************************************************************/
   void fastTick() override {
     if (!_sgp30)
       return;
-    uint32_t now = millis();
-    if (now - _lastFastMs < SGP30_FASTTICK_INTERVAL_MS)
-      return;
-    _lastFastMs = now;
     if (_sgp30->IAQmeasure()) {
       _eco2 = (uint16_t)_sgp30->eCO2;
       _tvoc = (uint16_t)_sgp30->TVOC;
+      NewSample();
     }
   }
 
@@ -110,7 +112,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventECO2(sensors_event_t *eco2Event) {
-    if (!_sgp30)
+    if (!_sgp30 || !AttemptRead())
       return false;
     eco2Event->eCO2 = (float)_eco2;
     return true;
@@ -127,17 +129,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventTVOC(sensors_event_t *tvocEvent) {
-    if (!_sgp30)
+    if (!_sgp30 || !AttemptRead())
       return false;
     tvocEvent->tvoc = (float)_tvoc;
     return true;
   }
 
 protected:
-  Adafruit_SGP30 *_sgp30;   ///< SGP30 driver object
-  uint16_t _eco2 = 0;       ///< Cached eCO2 reading, in ppm
-  uint16_t _tvoc = 0;       ///< Cached TVOC reading, in ppb
-  uint32_t _lastFastMs = 0; ///< Last fastTick sample time (1 Hz guard)
+  Adafruit_SGP30 *_sgp30 = nullptr; ///< SGP30 driver object
+  uint16_t _eco2 = 0;               ///< Cached eCO2 reading, in ppm
+  uint16_t _tvoc = 0;               ///< Cached TVOC reading, in ppb
 };
 
 #endif // DRV_SGP30_H

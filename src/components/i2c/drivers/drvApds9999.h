@@ -82,6 +82,20 @@ public:
   }
 
   /*!
+      @brief    Reads MAIN_STATUS once per pass (datasheet 0x07: reading
+                clears every status bit) and remembers which channels have a
+                new, unread conversion. The data registers still hold the
+                previous (or the zeroed power-on) values otherwise.
+      @returns  True if either channel has new data, False otherwise.
+  */
+  bool IsSensorReady() override {
+    uint8_t status = _apds9999->getMainStatus();
+    _ls_new = status & APDS9999_STATUS_LIGHT_DATA;
+    _ps_new = status & APDS9999_STATUS_PROX_DATA;
+    return _ls_new || _ps_new;
+  }
+
+  /*!
       @brief    Performs a light sensor read using the Adafruit
                 Unified Sensor API.
       @param    lightEvent
@@ -90,10 +104,14 @@ public:
                 otherwise.
   */
   bool getEventLight(sensors_event_t *lightEvent) {
+    if (!AttemptRead() || !_ls_new)
+      return false;
     uint32_t r, g, b, ir;
     if (!_apds9999->getRGBIRData(&r, &g, &b, &ir))
       return false;
-
+    // Full-scale count for the configured resolution means saturation
+    if (g >= ((1UL << _ls_bits) - 1))
+      return false;
     lightEvent->light = _apds9999->calculateLux(g);
     return true;
   }
@@ -106,10 +124,11 @@ public:
                 otherwise.
   */
   bool getEventProximity(sensors_event_t *proximityEvent) {
+    if (!AttemptRead() || !_ps_new)
+      return false;
     uint16_t prox;
     if (!_apds9999->readProximity(&prox))
       return false;
-
     proximityEvent->data[0] = (float)prox;
     return true;
   }
@@ -160,6 +179,9 @@ public:
       return false;
     }
     int32_t val = light_resolution.value.int_value;
+    static const uint8_t kBits[] = {20, 19, 18, 17, 16, 13};
+    if (val >= 0 && val < 6)
+      _ls_bits = kBits[val];
     switch (val) {
     case 0:
       _apds9999->setLightResolution(APDS9999_LIGHT_RES_20BIT);
@@ -300,7 +322,10 @@ public:
 
 protected:
   Adafruit_APDS9999 *_apds9999 =
-      nullptr; ///< Pointer to APDS-9999 sensor object
+      nullptr;           ///< Pointer to APDS-9999 sensor object
+  uint8_t _ls_bits = 18; ///< Configured light-sensor resolution, bits
+  bool _ls_new = false;  ///< Light channel has an unread conversion
+  bool _ps_new = false;  ///< Proximity channel has an unread conversion
 };
 
 #endif // DRV_APDS9999_H

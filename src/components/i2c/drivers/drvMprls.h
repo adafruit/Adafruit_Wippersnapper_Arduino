@@ -66,8 +66,14 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    pressureEvent->pressure = _mprls->readPressure();
-    return pressureEvent->pressure != NAN;
+    // NAN on integrity failure / math saturation / timeout (comparison with
+    // NAN is always true, so isnan() is required); the powered bit must be
+    // set in a valid status byte (datasheet 6.5)
+    float p = _mprls->readPressure();
+    if (isnan(p) || !(_mprls->lastStatus & MPRLS_STATUS_POWERED))
+      return false;
+    pressureEvent->pressure = p;
+    return true;
   }
 
 protected:

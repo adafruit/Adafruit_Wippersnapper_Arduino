@@ -76,12 +76,32 @@ public:
       @returns  True if configured successfully, False otherwise.
   */
   bool configureDefaults() override {
-    _bmp->setSampling(Adafruit_BMP280::MODE_NORMAL,  /* Operating Mode. */
-                      Adafruit_BMP280::SAMPLING_X2,  /* Temp. oversampling */
-                      Adafruit_BMP280::SAMPLING_X16, /* Pressure oversampling */
-                      Adafruit_BMP280::FILTER_X16,   /* Filtering. */
-                      Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+    // Cache the defaults so the setters re-issue the same state
+    _mode = Adafruit_BMP280::MODE_NORMAL;
+    _temp_sampling = Adafruit_BMP280::SAMPLING_X2;
+    _press_sampling = Adafruit_BMP280::SAMPLING_X16;
+    _filter = Adafruit_BMP280::FILTER_X16;
+    _duration = Adafruit_BMP280::STANDBY_MS_500;
+    applySampling();
     return true;
+  }
+
+  /*!
+      @brief    Reads temperature and pressure for the pass. In forced mode a
+                measurement is triggered first (the device sleeps after each
+                one, so without this every pass would republish the same
+                sample); in sleep mode there is nothing to read.
+      @returns  True if a valid sample was read, False otherwise.
+  */
+  bool ReadSensorData() override {
+    if (_mode == Adafruit_BMP280::MODE_SLEEP)
+      return false;
+    if (_mode == Adafruit_BMP280::MODE_FORCED && !_bmp->takeForcedMeasurement())
+      return false;
+    _temperature = _bmp->readTemperature();
+    _pressure_hpa = _bmp->readPressure() / 100.0F;
+    // Unconverted reset registers or a failed read give NAN / 0
+    return !isnan(_temperature) && _pressure_hpa > 0.0F;
   }
 
   /*!
@@ -277,7 +297,10 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    return _bmp_temp->getEvent(tempEvent);
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temperature;
+    return true;
   }
 
   /*!
@@ -289,7 +312,10 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    return _bmp_pressure->getEvent(pressureEvent);
+    if (!AttemptRead())
+      return false;
+    pressureEvent->pressure = _pressure_hpa;
+    return true;
   }
 
   /*!
@@ -300,7 +326,11 @@ public:
                 otherwise.
   */
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    altitudeEvent->altitude = _bmp->readAltitude(_seaLevelPressureHpa);
+    if (!AttemptRead())
+      return false;
+    // Same formula as Adafruit_BMP280::readAltitude(), without the re-read
+    altitudeEvent->altitude =
+        44330.0F * (1.0F - pow(_pressure_hpa / _seaLevelPressureHpa, 0.1903F));
     return true;
   }
 
@@ -337,11 +367,17 @@ protected:
                 full call from the cached state.
   */
   void applySampling() {
+    // Datasheet 4.3.5: config-register writes in normal mode may be ignored,
+    // so put the device to sleep first, then apply the settings and mode
+    _bmp->setSampling(Adafruit_BMP280::MODE_SLEEP, _temp_sampling,
+                      _press_sampling, _filter, _duration);
     _bmp->setSampling(_mode, _temp_sampling, _press_sampling, _filter,
                       _duration);
   }
 
-  Adafruit_BMP280 *_bmp; ///< BMP280  object
+  Adafruit_BMP280 *_bmp;     ///< BMP280  object
+  float _temperature = NAN;  ///< Cached temperature, C
+  float _pressure_hpa = NAN; ///< Cached pressure, hPa
   float _seaLevelPressureHpa =
       SEALEVELPRESSURE_HPA; ///< Sea-level pressure reference (hPa)
   Adafruit_Sensor *_bmp_temp =

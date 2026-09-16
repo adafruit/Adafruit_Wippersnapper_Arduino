@@ -207,8 +207,10 @@ void GPSController::update(bool force) {
     return; // bail-out!
 
   for (GPSHardware *drv : _gps_drivers) {
-    // (force only) - Was driver previously read and sent?
-    if (drv->GetDidReadSend())
+    // (force only, sleep mode) - Was driver previously read and sent? The
+    // flag is only reset between sleep cycles, so it must not gate periodic
+    // reads in continuous mode.
+    if (drv->GetDidReadSend() && force)
       continue;
 
     // TODO: Commented out due to parsing failures, stability issue (failed to

@@ -75,10 +75,9 @@ public:
     // Get sensor event
     _tsl->getEvent(lightEvent);
 
-    // If lightEvent->light = 0 lux the sensor is probably saturated and no
-    // reliable data could be generated! or if lightEvent->light is +/-
-    // 4294967040 there was a float over/underflow
-    if ((lightEvent->light == 0) | (lightEvent->light > 4294966000.0) |
+    // The library returns -1 when either channel is saturated (65535), and
+    // +/-4294967040 on a float over/underflow; 0 lux is genuine darkness
+    if ((lightEvent->light < 0) || (lightEvent->light > 4294966000.0) ||
         (lightEvent->light < -4294966000.0))
       return false;
 

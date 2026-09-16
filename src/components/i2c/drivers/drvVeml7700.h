@@ -183,9 +183,12 @@ public:
                 otherwise.
   */
   bool getEventLight(sensors_event_t *lightEvent) {
+    // A full-scale ALS count (65535) is saturation: the lux the library
+    // derives from it (tens of thousands) is not a measurement
+    if (_veml->readALS(false) == 0xFFFF)
+      return false;
     // Get sensor event populated in lux via the configured lux method
     lightEvent->light = _veml->readLux(_luxMethod);
-
     return true;
   }
 

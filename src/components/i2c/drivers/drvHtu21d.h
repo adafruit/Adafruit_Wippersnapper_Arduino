@@ -58,7 +58,10 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    tempEvent->temperature = _htu21d->readTemperature();
+    float t = _htu21d->readTemperature(); // NAN on a failed read
+    if (isnan(t))
+      return false;
+    tempEvent->temperature = t;
     return true;
   }
 
@@ -70,7 +73,10 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    humidEvent->relative_humidity = _htu21d->readHumidity();
+    float rh = _htu21d->readHumidity(); // NAN on a failed read
+    if (isnan(rh))
+      return false;
+    humidEvent->relative_humidity = rh;
     return true;
   }
 

@@ -298,6 +298,19 @@ bool drvIna237::getEventVoltage(sensors_event_t *voltageEvent) {
  * otherwise.
  */
 bool drvIna237::getEventCurrent(sensors_event_t *currentEvent) {
+  // DIAG_ALRT MATHOF (bit 9): current/power arithmetic overflowed - the
+  // shunt calibration does not fit the measured current
+  if (_ina237->alertFunctionFlags() & (1u << 9))
+    return false;
   currentEvent->current = _ina237->getCurrent_mA();
   return true;
 }
+
+/*!
+    @brief    Checks the INA237's conversion-ready flag (DIAG_ALRT CNVRF),
+              which is set once all conversions and averaging for a sample
+              have completed and cleared by reading it. Gates the pass so a
+              value from before the last configuration change is not read.
+    @returns  True if a fresh averaged sample is ready, False otherwise.
+*/
+bool drvIna237::IsSensorReady() { return _ina237->conversionReady(); }
