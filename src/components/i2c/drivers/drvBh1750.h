@@ -18,6 +18,9 @@
 #include "drvBase.h"
 #include <hp_BH1750.h> //include the library for the BH1750 sensor
 
+#define BH1750_TICK_MS 50        ///< Poll the conversion every 50ms
+#define BH1750_READ_LEAD_MS 1000 ///< Start measuring 1s before a read
+
 /*!
     @brief  Class that provides a driver interface for a BH1750 Light sensor.
 
