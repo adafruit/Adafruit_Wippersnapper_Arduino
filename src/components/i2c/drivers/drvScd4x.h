@@ -71,7 +71,7 @@ public:
       @brief    Checks if the sensor has a new measurement ready to read.
       @returns  True if a new measurement is ready, False otherwise.
   */
-  bool IsSensorReady() {
+  bool IsSensorReady() override {
     bool isDataReady = false;
     return (_scd->getDataReadyStatus(isDataReady) == 0) && isDataReady;
   }
@@ -79,29 +79,21 @@ public:
   /*!
       @brief    Reads the SCD4x's CO2, temperature and humidity in one
                 transaction so all metrics reflect the same sample, caching
-                the results. Serves the cached sample if the last read was
-                under one second ago, or if no new data is ready yet.
-      @returns  True if a valid sample is cached, False if no sample has been
-                read yet (or the read failed).
+                the results.
+      @returns  True if the read succeeded and the sample is valid, False
+                otherwise.
   */
-  bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
-    if (IsSensorReady()) {
-      uint16_t co2 = 0;
-      float temperature = 0;
-      float humidity = 0;
-      // Reject co2 == 0: the SCD4x reports it for an invalid/warmup sample
-      if (_scd->readMeasurement(co2, temperature, humidity) == 0 && co2 != 0) {
-        _co2 = co2;
-        _temperature = temperature;
-        _humidity = humidity;
-        _last_read = millis();
-        _have_data = true;
-      }
-    }
-    return _have_data;
+  bool ReadDevice() override {
+    uint16_t co2 = 0;
+    float temperature = 0;
+    float humidity = 0;
+    // Reject co2 == 0: the SCD4x reports it for an invalid/warmup sample
+    if (_scd->readMeasurement(co2, temperature, humidity) != 0 || co2 == 0)
+      return false;
+    _co2 = co2;
+    _temperature = temperature;
+    _humidity = humidity;
+    return true;
   }
 
   /*!

@@ -226,18 +226,13 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads ambient and object temperatures together when the sensor
-                has new data ready. Leaves the cached members untouched (last
-                good sample) when no new data is available this pass, and
-                serves the cached sample if the last read was under one second
-                ago.
-      @returns  True if a valid sample is cached, False otherwise.
+      @brief    Checks if the MLX90632 has a new measurement ready. In step
+                and sleeping-step modes this triggers a single measurement and
+                waits (up to the mode's refresh delay) for it to complete.
+      @returns  True if new data is ready to read, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
+  bool IsSensorReady() override {
     // Check if we need to trigger a new measurement for step modes
     mlx90632_mode_t currentMode = _mlx90632->getMode();
     if (currentMode == MLX90632_MODE_STEP ||
@@ -245,35 +240,42 @@ public:
       // Trigger single measurement (SOC bit) for step modes
       if (!_mlx90632->startSingleMeasurement()) {
         WS_DEBUG_PRINTLN("Failed to start single measurement");
-        return _have_data;
+        return false;
       }
       // In step / sleep_step mode we should await the latest data
-      int16_t refreshDelay = getRefreshDelay();
-      int16_t now_ms = millis();
+      uint32_t refreshDelay = getRefreshDelay();
+      uint32_t start_ms = millis();
       do {
         delay(10); // Short delay to avoid busy-waiting
-      } while (!_mlx90632->isNewData() && (millis() - now_ms < refreshDelay));
+      } while (!_mlx90632->isNewData() && (millis() - start_ms < refreshDelay));
     }
 
     // Only check new data flag - much more efficient for continuous mode
-    if (_mlx90632->isNewData()) {
-      _deviceTemp = _mlx90632->getAmbientTemperature();
-      _objectTemp = _mlx90632->getObjectTemperature();
-      if (isnan(_objectTemp)) {
-        WS_DEBUG_PRINTLN("NaN (invalid cycle position)");
-        return false;
-      }
-      _last_read = millis();
-      _have_data = true;
-      // Reset new data flag after reading
-      if (!_mlx90632->resetNewData()) {
-        WS_DEBUG_PRINTLN("Failed to reset new data flag");
-      }
-    } else {
-      WS_DEBUG_PRINTLN("No new data available, skipping read");
-    }
+    return _mlx90632->isNewData();
+  }
 
-    return _have_data;
+  /*******************************************************************************/
+  /*!
+      @brief    Reads ambient and object temperatures together so both metrics
+                reflect the same sample. Leaves the cached members untouched
+                (last good sample) if the object temperature is invalid.
+      @returns  True if the read succeeded, False otherwise.
+  */
+  /*******************************************************************************/
+  bool ReadDevice() override {
+    double deviceTemp = _mlx90632->getAmbientTemperature();
+    double objectTemp = _mlx90632->getObjectTemperature();
+    // Reset new data flag after reading so the next ready check is genuine
+    if (!_mlx90632->resetNewData()) {
+      WS_DEBUG_PRINTLN("Failed to reset new data flag");
+    }
+    if (isnan(objectTemp)) {
+      WS_DEBUG_PRINTLN("NaN (invalid cycle position)");
+      return false;
+    }
+    _deviceTemp = deviceTemp;
+    _objectTemp = objectTemp;
+    return true;
   }
 
   /*******************************************************************************/
@@ -351,10 +353,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // Refresh both temps together; the member holds the last good sample if no
-    // new data was ready this pass.
-    ReadSensorData();
-    if (isnan(_deviceTemp))
+    if (!ReadSensorData() || isnan(_deviceTemp))
       return false;
     tempEvent->temperature = _deviceTemp;
     return true;
@@ -370,8 +369,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventObjectTemp(sensors_event_t *tempEvent) {
-    ReadSensorData();
-    if (isnan(_objectTemp))
+    if (!ReadSensorData() || isnan(_objectTemp))
       return false;
     tempEvent->temperature = _objectTemp;
     return true;

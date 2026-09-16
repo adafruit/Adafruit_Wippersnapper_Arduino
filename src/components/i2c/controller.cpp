@@ -985,21 +985,35 @@ bool I2cController::publishProbed() {
               publishable data. Carries the v1 update() retry semantics
               forward: a few quick retries (~1s apart), then wait out a full
               period, instead of re-polling the device every loop iteration.
+              The backoff is honoured even when update() is forced.
     @param    drv
               The I2C device driver that failed to read.
     @param    reason
               Short description of the failure, for the debug log.
 */
 void I2cController::BackoffDriverRead(drvBase *drv, const char *reason) {
-  ulong retry_in =
-      drv->NoteReadFailure() ? ONE_SECOND_IN_MS : drv->GetSensorPeriod();
-  // Stamp PeriodPrv so the period check re-fires retry_in ms from now
-  drv->SetSensorPeriodPrv(millis() + retry_in - drv->GetSensorPeriod());
+  ulong retry_in = drv->ScheduleRetry(millis());
   WS_DEBUG_PRINT("[i2c] Driver read failed (");
   WS_DEBUG_PRINTVAR(reason);
   WS_DEBUG_PRINT("), retrying in ");
   WS_DEBUG_PRINTVAR(retry_in);
   WS_DEBUG_PRINTLN("ms");
+}
+
+/*!
+    @brief    Selects the driver's channel on its bus's I2C MUX, if the device
+              sits behind one. No-op for devices wired directly to the bus.
+    @param    drv
+              The I2C device driver about to use the bus.
+*/
+void I2cController::SelectDriverMux(drvBase *drv) {
+  if (!drv->HasMux())
+    return;
+  I2cHardware *drv_bus = findOrCreateBus(drv->GetPinSCL(), drv->GetPinSDA());
+  if (drv_bus == nullptr)
+    return;
+  drv_bus->ClearMuxChannel();
+  drv_bus->SelectMuxChannel(drv->GetMuxChannel());
 }
 
 /*!
@@ -1019,36 +1033,40 @@ void I2cController::update(bool force) {
     if (sensor_count == 0)
       continue; // bail out if driver has no sensors enabled
 
-    // Per-driver background tick (non-blocking). Runs every loop iteration,
-    // independent of the device's publish period, for sensors that require a
-    // fixed internal sampling cadence (e.g. SGP gas-index ~1 Hz sampling).
-    drv->fastTick();
+    ulong cur_time = millis();
 
-    if (drv->GetDidReadSend())
-      continue; // bail out if driver has already read and sent data to IO
+    // Per-driver background tick, on the driver's own cadence and independent
+    // of its publish period (e.g. SGP gas-index ~1 Hz sampling). Select the
+    // MUX channel first so the tick talks to the right device.
+    if (drv->FastTickDue(cur_time)) {
+      SelectDriverMux(drv);
+      drv->fastTick();
+    }
+
+    // (force only, sleep mode) - bail out if this driver already completed its
+    // read/send for this wake cycle. The flag is only reset between sleep
+    // cycles, so it must not gate periodic reads in continuous mode.
+    if (drv->GetDidReadSend() && force)
+      continue;
+
+    // Waiting out a read backoff? Honoured even when forced, so a device that
+    // is not ready yet is not re-polled every loop iteration.
+    if (drv->InBackoff(cur_time))
+      continue;
 
     // Did driver's period elapse yet?
-    ulong cur_time = millis();
     if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod() && !force)
       continue; // bail out if the period hasn't elapsed yet or we aren't
                 // forcing an update
 
-    // Get the I2cHardware bus for this driver using its stored pins
-    I2cHardware *drv_bus = findOrCreateBus(drv->GetPinSCL(), drv->GetPinSDA());
-
     // Optionally configure the I2C MUX
-    uint32_t mux_channel = drv->GetMuxChannel();
-    WS_DEBUG_PRINTLNVAR(mux_channel);
-    if (drv->HasMux() && drv_bus != nullptr) {
-      drv_bus->ClearMuxChannel();
-      drv_bus->SelectMuxChannel(mux_channel);
-    }
+    SelectDriverMux(drv);
 
-    // Read the device once, up-front — drivers that override ReadSensorData()
+    // Read the device once, up-front - drivers that override ReadDevice()
     // cache all metrics from one transaction so the getEvent accessors below
     // stay in sync and cause no further bus traffic (base impl is a no-op).
     if (!drv->ReadSensorData()) {
-      // No valid sample yet (sensor not ready, or the read failed)
+      // No new sample (sensor not ready, or the read failed)
       BackoffDriverRead(drv, "no valid sample");
       continue;
     }
@@ -1060,7 +1078,7 @@ void I2cController::update(bool force) {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
       if (!drv->GetSensorEvent(drv->_sensors[i].value, &event)) {
-        // Metric unavailable this pass (e.g. still warming up) — publish the
+        // Metric unavailable this pass (e.g. still warming up) - publish the
         // metrics that did read rather than dropping the whole device event.
         WS_DEBUG_PRINT("[i2c] WARNING: Failed to read sensor type=");
         WS_DEBUG_PRINTLNVAR(drv->_sensors[i].value);
@@ -1085,12 +1103,11 @@ void I2cController::update(bool force) {
       BackoffDriverRead(drv, "all sensor reads failed");
       continue;
     }
-    drv->NoteReadSuccess();
 
     // Configure the DeviceEvent's DeviceDescription sub-msg
     _i2c_model->SetI2cDeviceEventDeviceDescripton(
         drv->GetPinSCL(), drv->GetPinSDA(), (uint32_t)drv->GetAddress(),
-        drv->GetMuxAddress(), mux_channel);
+        drv->GetMuxAddress(), drv->GetMuxChannel());
     _i2c_model->EncodeI2cDeviceEvent();
 
     if (!Ws->_sdCardV2->isModeOffline()) {
@@ -1109,9 +1126,9 @@ void I2cController::update(bool force) {
       }
     }
     drv->SetDidReadSend(true);
-
-    cur_time = millis();
-    drv->SetSensorPeriodPrv(cur_time);
+    // The cached sample has been consumed; the next pass needs a fresh one
+    drv->NoteReadSuccess();
+    drv->SetSensorPeriodPrv(millis());
   }
 }
 
