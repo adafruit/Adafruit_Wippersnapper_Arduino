@@ -222,27 +222,21 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the sensor and stores the data in the object.
-      @returns  True if the sensor was read successfully, False otherwise.
+      @brief    Triggers one one-shot conversion and reads temperature and
+                pressure together once both data-ready bits (P_DA and T_DA)
+                are set, so the pass gets one consistent sample instead of
+                two conversions.
+      @returns  True if the sample was read, False on trigger failure or if
+                the conversion did not complete within 100ms.
   */
   /*******************************************************************************/
-  bool readSensor() {
-    // grab one reading to seed the sensor
-    if (!_lps28->triggerOneShot()) {
+  bool ReadSensorData() override {
+    if (!_lps28->triggerOneShot())
       return false;
-    }
-
-    // Wait (block up to 100ms) until data is ready
+    const uint8_t both = LPS28_STATUS_PRESS_READY | LPS28_STATUS_TEMP_READY;
     for (uint8_t i = 0; i < 100; i++) {
-      if (_lps28->getStatus() & LPS28_STATUS_PRESS_READY) {
-        if (_temp == NULL) {
-          _temp = _lps28->getTemperatureSensor();
-        }
-        if (_pressure == NULL) {
-          _pressure = _lps28->getPressureSensor();
-        }
-        return true;
-      }
+      if ((_lps28->getStatus() & both) == both)
+        return _lps28->getEvent(&_pressure_ev, &_temp_ev);
       delay(1);
     }
     return false;
@@ -258,9 +252,9 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!readSensor())
+    if (!AttemptRead())
       return false;
-    _temp->getEvent(tempEvent);
+    tempEvent->temperature = _temp_ev.temperature;
     return true;
   }
 
@@ -275,18 +269,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!readSensor())
+    if (!AttemptRead())
       return false;
-    _pressure->getEvent(pressureEvent);
+    pressureEvent->pressure = _pressure_ev.pressure;
     return true;
   }
 
 protected:
-  Adafruit_LPS28 *_lps28 = nullptr; ///< LPS28DFW  object
-  Adafruit_Sensor *_temp =
-      NULL; ///< Ptr to an adafruit_sensor representing the temperature
-  Adafruit_Sensor *_pressure =
-      NULL; ///< Ptr to an adafruit_sensor representing the pressure
+  Adafruit_LPS28 *_lps28 = nullptr;   ///< LPS28DFW  object
+  sensors_event_t _temp_ev = {0};     ///< Cached temperature event
+  sensors_event_t _pressure_ev = {0}; ///< Cached pressure event
 };
 
 #endif // DRV_LPS28DFW_H

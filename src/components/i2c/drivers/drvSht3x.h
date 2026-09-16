@@ -63,6 +63,13 @@ public:
   }
 
   /*!
+      @brief    Takes one measurement for both metrics (CRC-checked by the
+                library) instead of one per metric.
+      @returns  True if the measurement succeeded, False otherwise.
+  */
+  bool ReadSensorData() override { return _sht3x->readSample(); }
+
+  /*!
       @brief    Gets the SHT3X's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -70,8 +77,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // populate temp and humidity objects with fresh data
-    if (!_sht3x->readSample())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _sht3x->getTemperature();
     return true;
@@ -85,8 +91,7 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    // populate temp and humidity objects with fresh data
-    if (!_sht3x->readSample())
+    if (!AttemptRead())
       return false;
     humidEvent->relative_humidity = _sht3x->getHumidity();
     return true;

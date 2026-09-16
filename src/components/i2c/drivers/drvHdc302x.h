@@ -130,7 +130,12 @@ public:
   bool ReadSensorData() override {
     uint16_t status = _hdc302x->readStatus();
     if (status & 0x0010) {
-      WS_DEBUG_PRINTLN("Device Reset Detected");
+      // A reset (brown-out, hard/soft reset) cleared the stored results and
+      // the auto-mode setting. The flag is sticky until cleared, so recover
+      // here instead of refusing to read for ever.
+      WS_DEBUG_PRINTLN("HDC302X: device reset detected, reconfiguring");
+      _hdc302x->clearStatusRegister();
+      _hdc302x->setAutoMode(EXIT_AUTO_MODE);
       return false;
     }
 
@@ -145,6 +150,10 @@ public:
       WS_DEBUG_PRINTLN("Failed to read temperature and humidity.");
       return false;
     }
+    // Raw 0x0000 words (cleared result registers) decode to exactly -45C /
+    // 0 %RH with a valid CRC: not a measurement
+    if (_temp <= -44.99 && _humidity <= 0.01)
+      return false;
     return true;
   }
 

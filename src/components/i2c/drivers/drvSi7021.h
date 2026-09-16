@@ -69,8 +69,10 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // check if sensor is enabled and data is available
-    tempEvent->temperature = _si7021->readTemperature();
+    float t = _si7021->readTemperature(); // NAN on timeout
+    if (isnan(t))
+      return false;
+    tempEvent->temperature = t;
     return true;
   }
 
@@ -82,8 +84,10 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    // check if sensor is enabled and data is available
-    humidEvent->relative_humidity = _si7021->readHumidity();
+    float rh = _si7021->readHumidity(); // NAN on timeout
+    if (isnan(rh))
+      return false;
+    humidEvent->relative_humidity = rh;
     return true;
   }
 

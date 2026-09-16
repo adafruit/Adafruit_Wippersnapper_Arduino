@@ -185,10 +185,41 @@ public:
     default:
       return false;
     }
-    return _tmp119->setMeasurementMode(meas_mode);
+    if (!_tmp119->setMeasurementMode(meas_mode))
+      return false;
+    _mode = meas_mode;
+    _one_shot_pending = false;
+    return true;
   }
 
-  /*******************************************************************************/
+  /*!
+      @brief    Checks a new conversion is available (Data_Ready). Handles the
+                modes exposed as settings: shutdown never measures; one-shot
+                measures once then shuts down, so a conversion is requested
+                per pass. Reading the alerts clears Data_Ready, so the
+                temperature is read in the same pass by ReadSensorData().
+      @returns  True if fresh data is ready to read, False otherwise.
+  */
+  bool IsSensorReady() override {
+    if (_mode == TMP117_MODE_SHUTDOWN)
+      return false;
+    if (_mode == TMP117_MODE_ONE_SHOT && !_one_shot_pending) {
+      _one_shot_pending = _tmp119->setMeasurementMode(TMP117_MODE_ONE_SHOT);
+      return false;
+    }
+    tmp117_alerts_t alerts;
+    return _tmp119->getAlerts(&alerts) && alerts.data_ready;
+  }
+
+  /*!
+      @brief    Reads the completed conversion.
+      @returns  True if the read succeeded, False otherwise.
+  */
+  bool ReadSensorData() override {
+    _one_shot_pending = false;
+    return _tmp119->getEvent(&_temp);
+  }
+
   /*!
       @brief    Gets the TMP119's current temperature.
       @param    tempEvent
@@ -196,13 +227,18 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    return _tmp119->getEvent(tempEvent);
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temp.temperature;
+    return true;
   }
 
 protected:
-  Adafruit_TMP119 *_tmp119 = nullptr; ///< TMP119 driver object
+  Adafruit_TMP119 *_tmp119 = nullptr;           ///< TMP119 driver object
+  tmp117_mode_t _mode = TMP117_MODE_CONTINUOUS; ///< Configured mode
+  bool _one_shot_pending = false; ///< One-shot conversion requested
+  sensors_event_t _temp = {0};    ///< Cached temperature event
 };
 
 #endif // DRV_TMP119_H

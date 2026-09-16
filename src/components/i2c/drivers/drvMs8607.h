@@ -77,7 +77,15 @@ public:
       @returns  True if the measurement succeeded, False otherwise.
   */
   bool ReadSensorData() override {
-    return _ms8607->getEvent(&_pressure, &_temp, &_humidity);
+    // The library's getEvent() ignores read/CRC failures and returns true, so
+    // range-check against the datasheet spans (10-2000 mbar, -40..85C,
+    // 0..100 %RH) with the pressure span tightened to atmospheric
+    if (!_ms8607->getEvent(&_pressure, &_temp, &_humidity))
+      return false;
+    return _pressure.pressure >= 300.0F && _pressure.pressure <= 1200.0F &&
+           _temp.temperature >= -40.0F && _temp.temperature <= 85.0F &&
+           _humidity.relative_humidity >= 0.0F &&
+           _humidity.relative_humidity <= 100.0F;
   }
 
   /*!
