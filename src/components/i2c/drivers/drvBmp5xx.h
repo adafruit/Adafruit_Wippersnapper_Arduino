@@ -247,6 +247,15 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Performs one BMP5XX reading so temperature, pressure and
+                altitude in a read pass come from the same sample.
+      @returns  True if the reading succeeded, False otherwise.
+  */
+  /*******************************************************************************/
+  bool ReadDevice() override { return _bmp5xx->performReading(); }
+
+  /*******************************************************************************/
+  /*!
       @brief    Gets the BMP5XX's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -255,9 +264,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!_bmp5xx->performReading()) {
+    if (!ReadSensorData())
       return false;
-    }
     tempEvent->temperature = _bmp5xx->temperature;
     return true;
   }
@@ -273,16 +281,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!_bmp5xx->performReading()) {
+    if (!ReadSensorData())
       return false;
-    }
     pressureEvent->pressure = _bmp5xx->pressure;
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a the BMP5XX's altitude sensor into an event.
+      @brief    Reads a the BMP5XX's altitude sensor into an event. Derived
+                from the cached pressure sample, so no extra bus traffic.
       @param    altitudeEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -290,10 +298,13 @@ public:
   */
   /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!_bmp5xx->performReading()) {
+    if (!ReadSensorData())
       return false;
-    }
-    altitudeEvent->altitude = _bmp5xx->readAltitude(_seaLevelPressureHpa);
+    // Same formula as Adafruit_BMP5xx::readAltitude(), without the re-read;
+    // the library reports pressure in hPa
+    altitudeEvent->altitude =
+        44330.0F *
+        (1.0F - pow(_bmp5xx->pressure / _seaLevelPressureHpa, 0.1903F));
     return true;
   }
 

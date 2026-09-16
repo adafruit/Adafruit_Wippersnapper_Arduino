@@ -107,12 +107,17 @@ public:
   }
 
   /*!
-      @brief    Performs a reading in blocking mode.
+      @brief    Checks if the ENS160 has a new measurement available.
+      @returns  True if new data is ready, False otherwise.
+  */
+  bool IsSensorReady() override { return _ens160->available(); }
+
+  /*!
+      @brief    Reads the ENS160's measurement (eCO2, TVOC and AQI) in one
+                blocking transaction so all metrics reflect the same sample.
       @returns  True if the reading succeeded, False otherwise.
   */
-  bool ensPerformReading() {
-    return _ens160->available() && _ens160->measure(true);
-  }
+  bool ReadDevice() override { return _ens160->measure(true); }
 
   /*!
       @brief    Reads the ENS160's eCO2 sensor into an event.
@@ -122,7 +127,7 @@ public:
                 otherwise.
   */
   bool getEventECO2(sensors_event_t *eco2Event) {
-    if (!ensPerformReading())
+    if (!ReadSensorData())
       return false;
     eco2Event->eCO2 = (float)_ens160->geteCO2();
     return true;
@@ -136,7 +141,7 @@ public:
                 otherwise.
   */
   bool getEventTVOC(sensors_event_t *tvocEvent) {
-    if (!ensPerformReading())
+    if (!ReadSensorData())
       return false;
     tvocEvent->tvoc = (float)_ens160->getTVOC();
     return true;
@@ -150,7 +155,7 @@ public:
                 otherwise.
   */
   bool getEventRaw(sensors_event_t *rawEvent) {
-    if (!ensPerformReading())
+    if (!ReadSensorData())
       return false;
     rawEvent->data[0] = (float)_ens160->getAQI();
     return true;

@@ -60,6 +60,13 @@ public:
   }
 
   /*!
+      @brief    Reads the SHT4X's temperature and humidity in one measurement
+                so both metrics in a read pass come from the same sample.
+      @returns  True if the measurement succeeded, False otherwise.
+  */
+  bool ReadDevice() override { return _sht4x->getEvent(&_humidity, &_temp); }
+
+  /*!
       @brief    Gets the SHT4X's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -67,8 +74,9 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    sensors_event_t humid;
-    _sht4x->getEvent(&humid, tempEvent);
+    if (!ReadSensorData())
+      return false;
+    tempEvent->temperature = _temp.temperature;
     return true;
   }
 
@@ -80,12 +88,15 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    sensors_event_t temp;
-    _sht4x->getEvent(humidEvent, &temp);
+    if (!ReadSensorData())
+      return false;
+    humidEvent->relative_humidity = _humidity.relative_humidity;
     return true;
   }
 
 protected:
-  Adafruit_SHT4x *_sht4x; ///< SHT4X object
+  Adafruit_SHT4x *_sht4x;          ///< SHT4X object
+  sensors_event_t _temp = {0};     ///< Cached temperature event
+  sensors_event_t _humidity = {0}; ///< Cached humidity event
 };
 #endif // drvSht4x

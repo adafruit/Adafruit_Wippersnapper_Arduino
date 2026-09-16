@@ -207,10 +207,13 @@ public:
   }
 
   /*!
-      @brief    Performs a reading in blocking mode.
+      @brief    Performs one blocking BME680 reading (temperature, humidity,
+                pressure and gas heater cycle) so every metric in a read pass
+                comes from the same sample. The library only updates its
+                public readings on success.
       @returns  True if the reading succeeded, False otherwise.
   */
-  bool bmePerformReading() { return _bme->performReading(); }
+  bool ReadDevice() override { return _bme->performReading(); }
 
   /*!
       @brief    Gets the BME680's current temperature.
@@ -220,7 +223,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!bmePerformReading())
+    if (!ReadSensorData())
       return false;
     tempEvent->temperature = _bme->temperature;
     return true;
@@ -234,7 +237,7 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!bmePerformReading())
+    if (!ReadSensorData())
       return false;
     humidEvent->relative_humidity = _bme->humidity;
     return true;
@@ -249,23 +252,27 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!bmePerformReading())
+    if (!ReadSensorData())
       return false;
     pressureEvent->pressure = (float)_bme->pressure;
     return true;
   }
 
   /*!
-      @brief    Reads a the BME680's altitude sensor into an event.
+      @brief    Reads a the BME680's altitude sensor into an event. Derived
+                from the cached pressure sample, so no extra bus traffic.
       @param    altitudeEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!bmePerformReading())
+    if (!ReadSensorData())
       return false;
-    altitudeEvent->altitude = (float)_bme->readAltitude(_seaLevelPressureHpa);
+    // Same formula as Adafruit_BME680::readAltitude(), without the re-read
+    float atmospheric = (float)_bme->pressure / 100.0F;
+    altitudeEvent->altitude =
+        44330.0F * (1.0F - pow(atmospheric / _seaLevelPressureHpa, 0.1903F));
     return true;
   }
 
@@ -278,9 +285,8 @@ public:
                 otherwise.
   */
   virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
-    if (!bmePerformReading())
+    if (!ReadSensorData())
       return false;
-
     gasEvent->gas_resistance = (float)_bme->gas_resistance;
     return true;
   }
