@@ -78,24 +78,20 @@ public:
   }
 
   /*!
-      @brief    Reads the DPS310's temperature and pressure in one transaction
-                so both metrics reflect the same sample. Serves the cached
-                sample if the last read was under one second ago, or if no new
-                data is ready yet.
-      @returns  True if a valid sample is cached, False otherwise.
+      @brief    Checks if the DPS310 has new temperature and pressure samples.
+      @returns  True if both are ready, False otherwise.
   */
-  bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
+  bool IsSensorReady() override {
+    return _dps310->temperatureAvailable() && _dps310->pressureAvailable();
+  }
 
-    if (!_dps310->temperatureAvailable() || !_dps310->pressureAvailable())
-      return _have_data;
-
-    if (_dps310->getEvents(&_temp_event, &_pressure_event)) {
-      _last_read = millis();
-      _have_data = true;
-    }
-    return _have_data;
+  /*!
+      @brief    Reads the DPS310's temperature and pressure in one transaction
+                so both metrics reflect the same sample.
+      @returns  True if the read succeeded, False otherwise.
+  */
+  bool ReadDevice() override {
+    return _dps310->getEvents(&_temp_event, &_pressure_event);
   }
 
   /*!

@@ -87,26 +87,19 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Reads all sensor data from the STCC4 in one transaction,
-                caching the results so temp/humidity/CO2 stay in sync. Serves
-                the cached sample if the last read was under one second ago.
-      @returns  True if a valid sample is cached, False if no sample has been
-                read yet (or the read failed).
+                caching the results so temp/humidity/CO2 stay in sync.
+      @returns  True if the read succeeded, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
+  bool ReadDevice() override {
     uint16_t co2, status;
     float temperature, humidity;
-    if (_stcc4->readMeasurement(&co2, &temperature, &humidity, &status)) {
-      _cachedCO2 = co2;
-      _cachedTemperature = temperature;
-      _cachedHumidity = humidity;
-      _last_read = millis();
-      _have_data = true;
-    }
-    return _have_data;
+    if (!_stcc4->readMeasurement(&co2, &temperature, &humidity, &status))
+      return false;
+    _cachedCO2 = co2;
+    _cachedTemperature = temperature;
+    _cachedHumidity = humidity;
+    return true;
   }
 
   /*******************************************************************************/

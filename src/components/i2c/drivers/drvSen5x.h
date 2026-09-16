@@ -71,34 +71,24 @@ public:
       @brief    Checks if the sensor has a new measurement ready to read.
       @returns  True if a new measurement is ready, False otherwise.
   */
-  bool IsSensorReady() {
+  bool IsSensorReady() override {
     bool isDataReady = false;
     return (_sen->readDataReady(isDataReady) == 0) && isDataReady;
   }
 
   /*!
-      @brief    Reads all SEN5X metrics in one transaction when new data is
-                ready, leaving the cached members untouched otherwise so every
-                metric in a read pass reflects the same sample. Serves the
-                cached sample if the last read was under one second ago.
-      @returns  True once a successful read has populated the cached values,
-                False before the first successful read.
+      @brief    Reads all SEN5X metrics in one transaction so every metric in
+                a read pass reflects the same sample. The library only writes
+                the cached members on success, so the last good sample
+                survives a failed read.
+      @returns  True if the read succeeded, False otherwise.
   */
-  bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
-    if (IsSensorReady()) {
-      uint16_t error = _sen->readMeasuredValues(
-          _massConcentrationPm1p0, _massConcentrationPm2p5,
-          _massConcentrationPm4p0, _massConcentrationPm10p0, _ambientHumidity,
-          _ambientTemperature, _vocIndex, _noxIndex);
-      if (error == 0) {
-        _last_read = millis();
-        _have_data = true;
-      }
-    }
-    return _have_data;
+  bool ReadDevice() override {
+    return _sen->readMeasuredValues(
+               _massConcentrationPm1p0, _massConcentrationPm2p5,
+               _massConcentrationPm4p0, _massConcentrationPm10p0,
+               _ambientHumidity, _ambientTemperature, _vocIndex,
+               _noxIndex) == 0;
   }
 
   /*!

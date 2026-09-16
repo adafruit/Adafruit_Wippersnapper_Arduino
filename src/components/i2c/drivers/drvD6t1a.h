@@ -64,22 +64,17 @@ public:
 
   /*!
       @brief    Reads ambient and object temperatures in one transaction so
-                both metrics reflect the same sample. Serves the cached sample
-                if the last read was under one second ago.
-      @returns  True if a valid sample is cached, False otherwise.
+                both metrics reflect the same sample.
+      @returns  True if the read succeeded and at least one temperature is
+                valid, False otherwise.
   */
-  bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
-    _d6t1a->read();
+  bool ReadDevice() override {
+    // read() returns 0 (I2C_ERROR_OK) on success, else an I2C/PEC error code
+    if (_d6t1a->read() != 0)
+      return false;
     _deviceTemp = (float)_d6t1a->ambientTempC();
     _objectTemp = (float)_d6t1a->objectTempC(0, 0);
-    if (!isnan(_deviceTemp) || !isnan(_objectTemp)) {
-      _last_read = millis();
-      _have_data = true;
-    }
-    return _have_data;
+    return !isnan(_deviceTemp) || !isnan(_objectTemp);
   }
 
   /*!

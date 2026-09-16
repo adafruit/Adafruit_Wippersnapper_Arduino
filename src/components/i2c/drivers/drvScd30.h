@@ -55,28 +55,21 @@ public:
       @brief    Checks if the sensor has a new measurement ready to read.
       @returns  True if a new measurement is ready, False otherwise.
   */
-  bool IsSensorReady() { return _scd->dataReady(); }
+  bool IsSensorReady() override { return _scd->dataReady(); }
 
   /*!
       @brief    Reads the SCD30's CO2, temperature and humidity in one
                 transaction so all metrics reflect the same sample, caching
-                the results. Serves the cached sample if the last read was
-                under one second ago, or if no new data is ready yet.
-      @returns  True if a valid sample is cached, False if no sample has been
-                read yet (or the read failed).
+                the results.
+      @returns  True if the read succeeded, False otherwise.
   */
-  bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
-    if (IsSensorReady() && _scd->read()) {
-      _CO2 = _scd->CO2;
-      _humidity = _scd->relative_humidity;
-      _temperature = _scd->temperature;
-      _last_read = millis();
-      _have_data = true;
-    }
-    return _have_data;
+  bool ReadDevice() override {
+    if (!_scd->read())
+      return false;
+    _CO2 = _scd->CO2;
+    _humidity = _scd->relative_humidity;
+    _temperature = _scd->temperature;
+    return true;
   }
 
   /*!

@@ -66,10 +66,6 @@ public:
     if (!_hdc302x->begin(_address, _i2c))
       return false;
 
-    // discard first reading (It returned -45c for me once); also serves as a
-    // comms sanity check
-    _hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
-                                              TRIGGERMODE_LP0);
     return true;
 
     // Note: measurement mode/rate is intentionally NOT exposed as a setting -
@@ -86,6 +82,10 @@ public:
   bool configureDefaults() override {
     // use on-demand single-shot reads rather than continuous auto-mode
     _hdc302x->setAutoMode(EXIT_AUTO_MODE);
+    // discard first reading (It returned -45c for me once); also serves as a
+    // comms sanity check
+    double temp, humidity;
+    _hdc302x->readTemperatureHumidityOnDemand(temp, humidity, TRIGGERMODE_LP0);
     return true;
   }
 
@@ -126,15 +126,11 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Reads the HDC302X's temperature and humidity in one on-demand
-                conversion so both metrics reflect the same sample. Serves the
-                cached sample if the last read was under one second ago.
-      @returns  True if a valid sample is cached, False otherwise.
+                conversion so both metrics reflect the same sample.
+      @returns  True if the read succeeded, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
+  bool ReadDevice() override {
     uint16_t status = _hdc302x->readStatus();
     if (status & 0x0010) {
       WS_DEBUG_PRINTLN("Device Reset Detected");
@@ -150,10 +146,8 @@ public:
     if (!_hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
                                                    TRIGGERMODE_LP0)) {
       WS_DEBUG_PRINTLN("Failed to read temperature and humidity.");
-      return _have_data;
+      return false;
     }
-    _last_read = millis();
-    _have_data = true;
     return true;
   }
 
