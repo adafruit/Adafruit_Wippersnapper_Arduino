@@ -63,8 +63,11 @@ public:
     }
 
     // init OK, perform sensor configuration
-    _dps310->configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps310->configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
+    // Datasheet 8.3: rate_T*t_T + rate_P*t_P must stay under 1 second; at
+    // 64x oversampling (104.4ms) that allows 4 Hz for each channel (835ms).
+    // The library's 64 Hz default is out of spec and its timing undefined.
+    _dps310->configureTemperature(DPS310_4HZ, DPS310_64SAMPLES);
+    _dps310->configurePressure(DPS310_4HZ, DPS310_64SAMPLES);
     _dps_temp = _dps310->getTemperatureSensor();
     if (_dps_temp == NULL) {
       return false;

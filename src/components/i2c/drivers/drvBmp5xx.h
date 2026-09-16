@@ -83,12 +83,14 @@ public:
   */
   /*******************************************************************************/
   bool configureDefaults() override {
-    return _bmp5xx->setTemperatureOversampling(BMP5XX_OVERSAMPLING_8X) &&
-           _bmp5xx->setPressureOversampling(BMP5XX_OVERSAMPLING_16X) &&
-           _bmp5xx->setIIRFilterCoeff(BMP5XX_IIR_FILTER_COEFF_3) &&
-           _bmp5xx->setOutputDataRate(BMP5XX_ODR_50_HZ) &&
-           _bmp5xx->setPowerMode(BMP5XX_POWERMODE_NORMAL) &&
-           _bmp5xx->enablePressure(true);
+    bool ok = _bmp5xx->setTemperatureOversampling(BMP5XX_OVERSAMPLING_8X) &&
+              _bmp5xx->setPressureOversampling(BMP5XX_OVERSAMPLING_16X) &&
+              _bmp5xx->setIIRFilterCoeff(BMP5XX_IIR_FILTER_COEFF_3) &&
+              _bmp5xx->setOutputDataRate(BMP5XX_ODR_50_HZ) &&
+              _bmp5xx->setPowerMode(BMP5XX_POWERMODE_NORMAL) &&
+              _bmp5xx->enablePressure(true);
+    _power_mode = BMP5XX_POWERMODE_NORMAL;
+    return ok;
   }
 
   /*******************************************************************************/
@@ -242,7 +244,33 @@ public:
     default:
       return false;
     }
-    return _bmp5xx->setPowerMode(mode);
+    if (!_bmp5xx->setPowerMode(mode))
+      return false;
+    _power_mode = mode;
+    _forced_pending = false;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Checks a new conversion is available (INT_STATUS drdy). Handles
+                the power modes exposed as settings: standby modes never
+                measure, forced mode is re-triggered per pass.
+      @returns  True if fresh data is ready to read, False otherwise.
+  */
+  /*******************************************************************************/
+  bool IsSensorReady() override {
+    // Standby modes do not measure: the data registers only hold old values
+    if (_power_mode == BMP5XX_POWERMODE_STANDBY ||
+        _power_mode == BMP5XX_POWERMODE_DEEP_STANDBY)
+      return false;
+    // Forced mode measures once then returns to standby: trigger a new
+    // conversion for this pass, then wait for its data-ready flag
+    if (_power_mode == BMP5XX_POWERMODE_FORCED && !_forced_pending) {
+      _forced_pending = _bmp5xx->setPowerMode(BMP5XX_POWERMODE_FORCED);
+      return false;
+    }
+    return _bmp5xx->dataReady();
   }
 
   /*******************************************************************************/
@@ -252,7 +280,10 @@ public:
       @returns  True if the reading succeeded, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadSensorData() override { return _bmp5xx->performReading(); }
+  bool ReadSensorData() override {
+    _forced_pending = false;
+    return _bmp5xx->performReading();
+  }
 
   /*******************************************************************************/
   /*!
@@ -361,7 +392,9 @@ protected:
     return true;
   }
 
-  Adafruit_BMP5xx *_bmp5xx; ///< BMP5xx object
+  Adafruit_BMP5xx *_bmp5xx;                                 ///< BMP5xx object
+  bmp5xx_powermode_t _power_mode = BMP5XX_POWERMODE_NORMAL; ///< Configured
+  bool _forced_pending = false; ///< A forced conversion has been triggered
   float _seaLevelPressureHpa =
       SEALEVELPRESSURE_HPA; ///< Sea-level pressure reference (hPa)
 };

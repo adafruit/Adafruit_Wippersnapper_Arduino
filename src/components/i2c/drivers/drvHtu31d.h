@@ -103,7 +103,15 @@ public:
     }
   }
 
-  /*******************************************************************************/
+  /*!
+      @brief    Takes one HTU31D conversion for both metrics (the library
+                CRC-checks both words).
+      @returns  True if the conversion succeeded, False otherwise.
+  */
+  bool ReadSensorData() override {
+    return _htu31d->getEvent(&_humidity, &_temp);
+  }
+
   /*!
       @brief    Gets the HTU31D's current temperature, in degrees Celsius.
       @param    tempEvent
@@ -111,12 +119,13 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    return _htu31d->getEvent(nullptr, tempEvent);
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temp.temperature;
+    return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the HTU31D's current relative humidity, in percent.
       @param    humidEvent
@@ -124,13 +133,17 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    return _htu31d->getEvent(humidEvent, nullptr);
+    if (!AttemptRead())
+      return false;
+    humidEvent->relative_humidity = _humidity.relative_humidity;
+    return true;
   }
 
 protected:
-  Adafruit_HTU31D *_htu31d; ///< Pointer to an HTU31D object
+  Adafruit_HTU31D *_htu31d;        ///< Pointer to an HTU31D object
+  sensors_event_t _temp = {0};     ///< Cached temperature event
+  sensors_event_t _humidity = {0}; ///< Cached humidity event
 };
 
 #endif // DRV_HTU31D_H

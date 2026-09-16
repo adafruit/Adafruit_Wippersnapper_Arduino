@@ -50,7 +50,7 @@ public:
   */
   bool begin() override {
     _sht4x = new Adafruit_SHT4x();
-    if (!_sht4x->begin())
+    if (!_sht4x->begin(_i2c))
       return false;
 
     _sht4x->setPrecision(SHT4X_HIGH_PRECISION);

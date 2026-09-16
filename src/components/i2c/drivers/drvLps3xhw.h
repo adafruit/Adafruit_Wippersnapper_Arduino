@@ -58,11 +58,24 @@ public:
     if (!_lps3xhw->begin_I2C(_address, _i2c))
       return false;
 
-    // Set up sample rate and filter initialization
+    // One-shot: a conversion per read pass. (The low-pass filter only acts
+    // in continuous mode, so it is not enabled here.)
     _lps3xhw->setDataRate(LPS35HW_RATE_ONE_SHOT);
-    _lps3xhw->enableLowPass();
 
     return true;
+  }
+
+  /*!
+      @brief    Takes one one-shot measurement for both metrics. A failed read
+                leaves the raw registers at 0, which decodes to a pressure far
+                outside the 260-1260 hPa datasheet range.
+      @returns  True if a valid sample was read, False otherwise.
+  */
+  bool ReadSensorData() override {
+    _lps3xhw->takeMeasurement();
+    _pressure = _lps3xhw->readPressure();
+    _temperature = _lps3xhw->readTemperature();
+    return _pressure >= 260.0F && _pressure <= 1260.0F;
   }
 
   /*!
@@ -73,8 +86,9 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    _lps3xhw->takeMeasurement();
-    tempEvent->temperature = _lps3xhw->readTemperature();
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temperature;
     return true;
   }
 
@@ -87,13 +101,16 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    _lps3xhw->takeMeasurement();
-    pressureEvent->pressure = _lps3xhw->readPressure();
+    if (!AttemptRead())
+      return false;
+    pressureEvent->pressure = _pressure;
     return true;
   }
 
 protected:
   Adafruit_LPS35HW *_lps3xhw; ///< LPS3XHW  object
+  float _temperature = NAN;   ///< Cached temperature, C
+  float _pressure = NAN;      ///< Cached pressure, hPa
 };
 
 #endif // drvLps3xhw
