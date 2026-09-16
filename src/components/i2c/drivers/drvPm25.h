@@ -110,7 +110,7 @@ public:
   }
 
 protected:
-  Adafruit_PM25AQI *_pm25; ///< PM25 driver object
+  Adafruit_PM25AQI *_pm25;   ///< PM25 driver object
   PM25_AQI_Data _data = {0}; ///< Cached data frame from the last read
 };
 
