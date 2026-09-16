@@ -100,10 +100,7 @@ public:
                 and the sample filed with NewSample().
   */
   void fastTick() override {
-    ulong now = millis();
-    bool resumed = now - _last_tick_ms > 2 * VL53L4CX_TICK_MS;
-    _last_tick_ms = now;
-    if (resumed) {
+    if (_first_tick) {
       _VL53L4CX->VL53L4CX_ClearInterruptAndStartMeasurement();
       return;
     }
@@ -193,7 +190,6 @@ public:
 protected:
   VL53L4CX *_VL53L4CX; ///< Pointer to VL53L4CX sensor object
   VL53L4CX_MultiRangingData_t _ranging = {}; ///< Last ranging data
-  ulong _last_tick_ms = 0; ///< millis() of the last fastTick() call
 };
 
 #endif // drvVl53l4cx

@@ -20,6 +20,9 @@
 #define DS18B20_CMD_CONVERT_T 0x44       ///< Convert T command
 #define DS18B20_CMD_MATCH_ROM 0x55       ///< Match ROM command
 #define DS18B20_CMD_READ_SCRATCHPAD 0xBE ///< Read Scratchpad command
+#define DS18B20_CONVERT_MS 750   ///< 12-bit conversion time (datasheet max)
+#define DS2484_TICK_MS 50        ///< Poll the conversion every 50ms
+#define DS2484_READ_LEAD_MS 1000 ///< Start converting 1s before a read is due
 
 #include "drvBase.h"
 #include <Adafruit_DS248x.h>
@@ -45,7 +48,11 @@ public:
   drvDs2484(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // A DS18B20 conversion takes 750ms, so it is started and collected by
+    // fastTick() during the lead window before each read is due rather than
+    // blocking the read pass.
+    _fast_tick_ms = DS2484_TICK_MS;
+    _tick_lead_ms = DS2484_READ_LEAD_MS;
   }
 
   /*!
@@ -84,66 +91,83 @@ public:
   }
 
   /*!
-      @brief    Processes a temperature event.
-      @param    tempEvent
-                Pointer to an Adafruit_Sensor event.
-      @returns  True if the temperature was obtained successfully, False
+      @brief    Addresses the DS18B20 on the OneWire bus: reset, then Match ROM
+                with the address found in begin().
+      @returns  True if the bus reset succeeded and a device is present, False
                 otherwise.
   */
-  bool processTemperatureEvent(sensors_event_t *tempEvent) {
-    if (!_ds2484->OneWireReset())
+  bool selectDevice() {
+    if (!_ds2484->OneWireReset() || !_ds2484->presencePulseDetected())
       return false;
-
-    if (!_ds2484->presencePulseDetected()) {
-      tempEvent->temperature = NAN;
-      return true;
-    }
-
-    _ds2484->OneWireWriteByte(DS18B20_CMD_MATCH_ROM); // Match ROM command
+    _ds2484->OneWireWriteByte(DS18B20_CMD_MATCH_ROM);
     for (int i = 0; i < 8; i++) {
       _ds2484->OneWireWriteByte(_rom[i]);
     }
-
-    // Start temperature conversion
-    _ds2484->OneWireWriteByte(DS18B20_CMD_CONVERT_T); // Convert T command
-    delay(750); // Wait for conversion (750ms for maximum precision)
-
-    // Read scratchpad
-    if (!_ds2484->OneWireReset()) {
-      return false;
-    }
-    _ds2484->OneWireWriteByte(DS18B20_CMD_MATCH_ROM); // Match ROM command
-    for (int i = 0; i < 8; i++) {
-      _ds2484->OneWireWriteByte(_rom[i]);
-    }
-    _ds2484->OneWireWriteByte(
-        DS18B20_CMD_READ_SCRATCHPAD); // Read Scratchpad command
-
-    uint8_t data[9];
-    for (int i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
-      _ds2484->OneWireReadByte(&data[i]);
-    }
-
-    // Calculate temperature
-    int16_t raw = (data[1] << 8) | data[0];
-    tempEvent->temperature = (float)raw / 16.0;
     return true;
   }
 
   /*!
-      @brief    Gets the DS2484's current temperature.
+      @brief    Background conversion step, called every DS2484_TICK_MS while
+                a read is pending. The first tick of a window starts a
+                temperature conversion; once DS18B20_CONVERT_MS has elapsed
+                the scratchpad is read and the sample filed with NewSample().
+                A DS18B20 that has disappeared from the bus files NAN, as the
+                blocking version did.
+  */
+  void fastTick() override {
+    ulong now = millis();
+    if (_first_tick)
+      _converting = false; // any conversion from a previous window is stale
+
+    if (!_converting) {
+      if (!selectDevice()) {
+        _temperature = NAN;
+        NewSample();
+        return;
+      }
+      _ds2484->OneWireWriteByte(DS18B20_CMD_CONVERT_T);
+      _converting = true;
+      _convert_start = now;
+      return;
+    }
+
+    if (now - _convert_start < DS18B20_CONVERT_MS)
+      return; // still converting
+
+    _converting = false;
+    if (!selectDevice())
+      return; // lost the device mid-conversion; retry next tick
+    _ds2484->OneWireWriteByte(DS18B20_CMD_READ_SCRATCHPAD);
+    uint8_t data[9];
+    for (size_t i = 0; i < sizeof(data); i++) {
+      _ds2484->OneWireReadByte(&data[i]);
+    }
+    int16_t raw = (data[1] << 8) | data[0];
+    _temperature = (float)raw / 16.0;
+    NewSample();
+  }
+
+  /*!
+      @brief    Gets the DS18B20's current temperature, from the most recent
+                conversion collected by fastTick().
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    return processTemperatureEvent(tempEvent);
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temperature;
+    return true;
   }
 
 protected:
   Adafruit_DS248x *_ds2484; ///< DS2484 driver object
   uint8_t _rom[8];          ///< DS18B20 ROM
+  float _temperature = NAN; ///< Last converted temperature, in C
+  bool _converting = false; ///< A temperature conversion is in flight
+  ulong _convert_start = 0; ///< millis() the in-flight conversion started
 };
 
 #endif // drvDs2484
