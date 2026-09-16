@@ -18,6 +18,10 @@
 
 #include "drvBase.h"
 #include <Adafruit_PM25AQI.h>
+
+/// Plantower manual: "stable data should be got at least 30 seconds after the
+/// sensor wakeup ... because of the fan's performance"
+#define PM25_FAN_STARTUP_MS 30000
 #include <Wire.h>
 
 /*!
@@ -49,9 +53,20 @@ public:
   */
   bool begin() override {
     _pm25 = new Adafruit_PM25AQI();
-    // Wait three seconds for the sensor to boot up!
-    delay(3 * ONE_SECOND_IN_MS);
-    return _pm25->begin_I2C(_i2c);
+    if (!_pm25->begin_I2C(_i2c))
+      return false;
+    // The fan spin-up gate in IsSensorReady() runs from here
+    _boot_ms = millis();
+    return true;
+  }
+
+  /*!
+      @brief    Waits out the fan spin-up: the manual says data is stable at
+                least 30s after wake-up.
+      @returns  True once frames can be trusted, False otherwise.
+  */
+  bool IsSensorReady() override {
+    return millis() - _boot_ms >= PM25_FAN_STARTUP_MS;
   }
 
   /*!
@@ -62,6 +77,12 @@ public:
   bool ReadSensorData() override {
     if (!_pm25->read(&_data)) {
       WS_DEBUG_PRINTLN("Failed to read PM25 data frame");
+      return false;
+    }
+    // Frame data 13: high byte firmware version, low byte error code
+    if ((_data.unused & 0x00FF) != 0) {
+      WS_DEBUG_PRINT("PM25 frame reports error code ");
+      WS_DEBUG_PRINTLNVAR(_data.unused & 0x00FF);
       return false;
     }
     return true;
@@ -112,6 +133,7 @@ public:
 protected:
   Adafruit_PM25AQI *_pm25;   ///< PM25 driver object
   PM25_AQI_Data _data = {0}; ///< Cached data frame from the last read
+  ulong _boot_ms = 0;        ///< millis() the sensor was started
 };
 
 #endif // drvPm25

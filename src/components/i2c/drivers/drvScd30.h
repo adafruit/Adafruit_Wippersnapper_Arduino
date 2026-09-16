@@ -114,8 +114,8 @@ public:
                 otherwise.
   */
   bool getEventCO2(sensors_event_t *co2Event) {
-    // check if sensor is enabled and data is available
-    if (!AttemptRead()) {
+    // 0 ppm is not a real reading (seen as the first sample after a reset)
+    if (!AttemptRead() || isnan(_CO2) || _CO2 <= 0.0f) {
       return false;
     }
 

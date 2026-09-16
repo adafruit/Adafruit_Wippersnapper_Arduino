@@ -21,12 +21,21 @@
 #include <SensirionI2CSen5x.h>
 #include <Wire.h>
 
+/// Datasheet Table 1: PM number-concentration start-up up to 30s (fan spin-up)
+#define SEN5X_PM_STARTUP_MS 30000
+/// Datasheet Table 5: VOC/NOx events reliably detected after <60s
+#define SEN5X_INDEX_STARTUP_MS 60000
+#define SEN5X_STATUS_FAN (1UL << 4)   ///< Device status: fan failure
+#define SEN5X_STATUS_LASER (1UL << 5) ///< Device status: laser failure
+#define SEN5X_STATUS_RHT (1UL << 6)   ///< Device status: RH/T sensor error
+#define SEN5X_STATUS_GAS (1UL << 7)   ///< Device status: gas sensor error
+#define SEN5X_STATUS_FAN_CLEANING (1UL << 19) ///< Fan cleaning: values frozen
+#define SEN5X_STATUS_SPEED (1UL << 21)        ///< Fan speed out of range
+
 /*!
     @brief  Class that provides a driver interface for the SEN5X sensor.
 */
 class drvSen5x : public drvBase {
-
-  const float OVERFLOW_SEN55 = (0xFFFF / 10); // maxes out at u_int16 / 10
 
 public:
   /*!
@@ -57,13 +66,12 @@ public:
     if (error_stop != 0) {
       return false;
     }
-    // Wait 1 second for sensors to start recording + 100ms for reset command
-    delay(1100);
     u_int16_t error_start = _sen->startMeasurement();
     if (error_start != 0) {
       return false;
     }
-
+    // Start-up gates (fan spin-up, gas-index learning) run from here
+    _start_ms = millis();
     return true;
   }
 
@@ -84,11 +92,37 @@ public:
       @returns  True if the read succeeded, False otherwise.
   */
   bool ReadSensorData() override {
+    if (_sen->readDeviceStatus(_status) != 0)
+      return false;
+    // Datasheet 5.2: measurement values are not updated during fan cleaning
+    if (_status & SEN5X_STATUS_FAN_CLEANING)
+      return false;
     return _sen->readMeasuredValues(
                _massConcentrationPm1p0, _massConcentrationPm2p5,
                _massConcentrationPm4p0, _massConcentrationPm10p0,
                _ambientHumidity, _ambientTemperature, _vocIndex,
                _noxIndex) == 0;
+  }
+
+  /*!
+      @brief    Checks the PM channel is trustworthy: fan spun up (datasheet
+                Table 1 start-up, up to 30s) and no fan/laser/speed fault.
+      @returns  True if PM values may be published, False otherwise.
+  */
+  bool PmValid() {
+    return millis() - _start_ms >= SEN5X_PM_STARTUP_MS &&
+           !(_status &
+             (SEN5X_STATUS_FAN | SEN5X_STATUS_LASER | SEN5X_STATUS_SPEED));
+  }
+
+  /*!
+      @brief    Checks the gas indices are trustworthy: past the switch-on
+                learning window (datasheet Table 5, <60s) and no gas fault.
+      @returns  True if VOC/NOx indices may be published, False otherwise.
+  */
+  bool GasValid() {
+    return millis() - _start_ms >= SEN5X_INDEX_STARTUP_MS &&
+           !(_status & SEN5X_STATUS_GAS);
   }
 
   /*!
@@ -99,7 +133,8 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!AttemptRead() || isnan(_ambientTemperature)) {
+    if (!AttemptRead() || (_status & SEN5X_STATUS_RHT) ||
+        isnan(_ambientTemperature)) {
       return false;
     }
 
@@ -115,7 +150,8 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!AttemptRead() || isnan(_ambientHumidity)) {
+    if (!AttemptRead() || (_status & SEN5X_STATUS_RHT) ||
+        isnan(_ambientHumidity)) {
       return false;
     }
 
@@ -134,7 +170,7 @@ public:
                 otherwise.
   */
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
-    if (!AttemptRead() || isnan(_noxIndex)) {
+    if (!AttemptRead() || !GasValid() || isnan(_noxIndex)) {
       return false;
     }
 
@@ -150,7 +186,7 @@ public:
                 otherwise.
   */
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    if (!AttemptRead() || isnan(_vocIndex)) {
+    if (!AttemptRead() || !GasValid() || isnan(_vocIndex)) {
       return false;
     }
 
@@ -166,8 +202,7 @@ public:
                 otherwise.
   */
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
-    if (!AttemptRead() || isnan(_massConcentrationPm1p0) ||
-        _massConcentrationPm1p0 == OVERFLOW_SEN55) {
+    if (!AttemptRead() || !PmValid() || isnan(_massConcentrationPm1p0)) {
       return false;
     }
 
@@ -183,8 +218,7 @@ public:
                 otherwise.
   */
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
-    if (!AttemptRead() || isnan(_massConcentrationPm2p5) ||
-        _massConcentrationPm2p5 == OVERFLOW_SEN55) {
+    if (!AttemptRead() || !PmValid() || isnan(_massConcentrationPm2p5)) {
       return false;
     }
 
@@ -200,8 +234,7 @@ public:
                 otherwise.
   */
   bool getEventPM40_STD(sensors_event_t *pm40StdEvent) {
-    if (!AttemptRead() || isnan(_massConcentrationPm4p0) ||
-        _massConcentrationPm4p0 == OVERFLOW_SEN55) {
+    if (!AttemptRead() || !PmValid() || isnan(_massConcentrationPm4p0)) {
       return false;
     }
 
@@ -217,8 +250,7 @@ public:
                 otherwise.
   */
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
-    if (!AttemptRead() || isnan(_massConcentrationPm10p0) ||
-        _massConcentrationPm10p0 == OVERFLOW_SEN55) {
+    if (!AttemptRead() || !PmValid() || isnan(_massConcentrationPm10p0)) {
       return false;
     }
 
@@ -236,6 +268,8 @@ protected:
   float _ambientTemperature = NAN;      ///< Ambient temperature
   float _vocIndex = NAN;                ///< VOC index
   float _noxIndex = NAN;                ///< NOx index
+  uint32_t _status = 0;                 ///< Last device status word
+  ulong _start_ms = 0;                  ///< millis() measurement started
 };
 
 #endif // drvSen5x
