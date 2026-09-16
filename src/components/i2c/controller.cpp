@@ -1035,10 +1035,11 @@ void I2cController::update(bool force) {
 
     ulong cur_time = millis();
 
-    // Per-driver background tick, on the driver's own cadence and independent
-    // of its publish period (e.g. SGP gas-index ~1 Hz sampling). Select the
-    // MUX channel first so the tick talks to the right device.
-    if (drv->FastTickDue(cur_time)) {
+    // Per-driver background tick, on the driver's own cadence: either always
+    // (SGP gas-index ~1 Hz sampling) or only in the lead window before a read
+    // is due (VL53 ranging). Select the MUX channel first so the tick talks to
+    // the right device.
+    if (drv->FastTickDue(cur_time, force)) {
       SelectDriverMux(drv);
       drv->fastTick();
     }

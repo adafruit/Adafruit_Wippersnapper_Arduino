@@ -44,6 +44,10 @@ static_assert(sizeof(WsPinName::name) >= DRV_BASE_PIN_NAME_LEN,
     instead of waiting out a full period. Name kept in sync with the v1 driver
     base (src/components/i2c/drivers/WipperSnapper_I2C_Driver.h on main). */
 #define PERIOD_24HRS_AGO_MILLIS (millis() - (24 * 60 * 60 * 1000))
+/*! _tick_lead_ms value for drivers whose fastTick() must run continuously
+    (host-side algorithms such as the SGP gas index), rather than only in the
+    window before a read is due. */
+#define TICK_ALWAYS UINT32_MAX
 #define UINT12_MAX 0xFFF ///< Maximum value for a 12-bit unsigned integer
 
 /*!
@@ -253,30 +257,45 @@ public:
   virtual bool configureDefaults() { return true; }
 
   /*!
-      @brief    Per-driver background tick, invoked by the controller every
-                _fast_tick_ms milliseconds regardless of the device's publish
-                period. Override in drivers that require a fixed internal
-                sampling cadence - e.g. the Sensirion SGP gas-index
-                conditioning and algorithms, which must be fed raw signals at
-                ~1 Hz - and set _fast_tick_ms in the constructor to opt in.
-                Take one non-blocking sample and cache it for the getEvent*()
-                accessors. The controller owns the cadence and selects the
-                device's MUX channel before each tick, so no millis() guard is
-                needed here.
+      @brief    Driver hook: background tick for devices that cannot produce a
+                sample inside one read pass, either because an algorithm needs
+                a fixed cadence (SGP gas index at ~1 Hz) or because the
+                measurement takes longer than we are willing to block (VL53
+                ranging, MLX90632 step mode, DS18B20 conversion). Set
+                _fast_tick_ms in the constructor to opt in. By default ticks
+                run only in the _tick_lead_ms window before the next read is
+                due, so a device with a 5 minute period is not measured every
+                second; set _tick_lead_ms = TICK_ALWAYS for algorithms that
+                must run continuously. Take one non-blocking step per call and
+                call NewSample() once the cached values are ready to publish -
+                for a ticking driver that is the only way a sample reaches
+                AttemptRead(). The controller selects the device's MUX channel
+                before each tick.
   */
   virtual void fastTick() {}
 
   /*!
-      @brief    Checks whether fastTick() is due for this driver and, if so,
-                records the tick time.
+      @brief    Controller query: is fastTick() due for this driver? True every
+                _fast_tick_ms while a read is pending: within _tick_lead_ms of
+                the period elapsing, during a retry backoff, or when forced
+                (sleep mode) and not yet published. Drivers with _tick_lead_ms
+                == TICK_ALWAYS tick unconditionally.
       @param    now
                 The current millis() timestamp.
-      @returns  True if the controller should call fastTick() now, False if
-                the driver does not tick or its interval has not elapsed.
+      @param    force
+                True if the update is forced (sleep mode).
+      @returns  True if the controller should call fastTick() now.
   */
-  bool FastTickDue(ulong now) {
+  bool FastTickDue(ulong now, bool force) {
     if (_fast_tick_ms == 0 || now - _last_fast_tick < _fast_tick_ms)
       return false;
+    if (_tick_lead_ms != TICK_ALWAYS) {
+      bool pending =
+          force ? !_did_read_send
+                : (now - _sensor_period_prv) + _tick_lead_ms >= _sensor_period;
+      if (!pending)
+        return false;
+    }
     _last_fast_tick = now;
     return true;
   }
@@ -284,10 +303,11 @@ public:
   /*!
       @brief    Checks whether the device has a new measurement ready to read.
                 Override in drivers whose silicon exposes a data-ready flag
-                (e.g. Sensirion CO2/PM devices), or whose cache is fed by
-                fastTick(), so AttemptRead() only takes a sample when a fresh
-                one exists. Must be non-blocking; the controller backs off
-                and retries when this returns false.
+                (e.g. Sensirion CO2/PM devices) so AttemptRead() only takes a
+                sample when a fresh one exists. Must be non-blocking; the
+                controller backs off and retries when this returns false.
+                Not used by ticking drivers, whose samples come from
+                fastTick().
       @returns  True if a new measurement is ready (default), False otherwise.
   */
   virtual bool IsSensorReady() { return true; }
@@ -314,23 +334,24 @@ public:
                 to fetch the cached sample, so every metric in a pass reflects
                 the same measurement and causes no further bus traffic. A
                 sample is served only until the controller consumes it
-                (SampleDone(true)); after that a fresh measurement is required,
+                (SampleDone()); after that a fresh measurement is required,
                 so a stalled or disconnected device stops publishing instead of
-                repeating its last value. Drivers override the two hooks, not
-                this.
-      @returns  True if an unconsumed sample is cached (freshly read, or read
-                within the last second), False if no new sample is available
-                (device not ready, or the read failed).
+                repeating its last value. Ticking drivers (_fast_tick_ms set)
+                are served only samples filed by fastTick(). Drivers override
+                the hooks, not this.
+      @returns  True if an unconsumed sample is cached, False if no new sample
+                is available (device not ready, or the read failed).
   */
   virtual bool AttemptRead() {
-    // Serve the sample already taken this pass to every getEvent*() accessor
-    if (_have_data && !_sample_consumed && HasBeenReadInLastSecond())
+    // Serve the unconsumed sample: taken earlier this pass, or by fastTick()
+    if (_have_data && !_sample_consumed)
       return true;
+    // Ticking drivers get their samples from fastTick() only
+    if (_fast_tick_ms != 0)
+      return false;
     if (!IsSensorReady() || !ReadSensorData())
       return false;
-    _last_read = millis();
-    _have_data = true;
-    _sample_consumed = false;
+    NewSample();
     return true;
   }
 
@@ -356,11 +377,11 @@ public:
 
   /*!
       @brief    Controller notification that the read pass has finished.
-                On success the cached sample is marked consumed, so the next
-                pass requires a fresh measurement, and the failure counter is
-                reset. On failure the next attempt is scheduled, mirroring the
-                v1 update() retry behavior: a few quick retries ~1s apart,
-                then wait out a full period.
+                Either way the cached sample is marked consumed, so the next
+                pass requires a fresh measurement. On success the failure
+                counter is reset. On failure the next attempt is scheduled,
+                mirroring the v1 update() retry behavior: a few quick retries
+                ~1s apart, then wait out a full period.
       @param    published
                 True if the pass produced a device event that was published or
                 logged, False if it produced nothing.
@@ -368,9 +389,9 @@ public:
                 success), for the debug log.
   */
   ulong SampleDone(bool published) {
+    _sample_consumed = true;
     if (published) {
       _read_fails = 0;
-      _sample_consumed = true;
       return 0;
     }
     // 3 quick retries before backing off, matching v1's update() retry count
@@ -1266,28 +1287,28 @@ protected:
   ulong _sensor_period;     ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv; ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;    ///< Number of sensors on the device.
-  bool _did_read_send;  ///< True if data was read and sent to IO successfully.
-  ulong _last_read = 0; ///< millis() timestamp of the last successful read.
+  bool _did_read_send; ///< True if data was read and sent to IO successfully.
   bool _have_data = false;       ///< True once a valid sample has been cached.
-  bool _sample_consumed = false; ///< True once the controller has published
-                                 ///< or logged the cached sample.
+  bool _sample_consumed = false; ///< True once the controller has finished the
+                                 ///< read pass that used the cached sample.
   uint8_t _read_fails = 0;    ///< Consecutive failed read passes (for backoff).
   ulong _retry_at = 0;        ///< millis() timestamp of the next allowed read
                               ///< attempt while backing off.
   bool _in_backoff = false;   ///< True while waiting out a read backoff.
   uint32_t _fast_tick_ms = 0; ///< fastTick() cadence in ms; 0 = no tick.
-  ulong _last_fast_tick;      ///< millis() timestamp of the last fastTick().
+  uint32_t _tick_lead_ms = TICK_ALWAYS; ///< How long before a read is due the
+                                        ///< ticks start; TICK_ALWAYS = always.
+  ulong _last_fast_tick; ///< millis() timestamp of the last fastTick().
 
-private:
   /*!
-      @brief    Checks if the device was read within the last second, so
-                AttemptRead() can serve one shared sample to all metrics in a
-                read pass.
-      @returns  True if the sensor was read less than one second ago, False
-                otherwise (including if it has never been read).
+      @brief    Marks the driver's cached values as a fresh, publishable
+                sample. Called by AttemptRead() after a successful
+                ReadSensorData(), and by ticking drivers from fastTick() once a
+                measurement has completed.
   */
-  bool HasBeenReadInLastSecond() {
-    return _last_read != 0 && millis() - _last_read < ONE_SECOND_IN_MS;
+  void NewSample() {
+    _have_data = true;
+    _sample_consumed = false;
   }
 };
 #endif // DRV_BASE_H

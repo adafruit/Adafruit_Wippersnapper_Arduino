@@ -49,6 +49,7 @@ public:
     // The VOC gas-index algorithm expects a raw signal at ~1 Hz, independent
     // of the publish period - opt in to the controller's fastTick() cadence.
     _fast_tick_ms = SGP40_FASTTICK_INTERVAL_MS;
+    _tick_lead_ms = TICK_ALWAYS;
   }
 
   /*******************************************************************************/
@@ -71,7 +72,6 @@ public:
     }
     _rawValue = 0;
     _vocIdx = 0;
-    _sample_ms = 0;
     return true;
 
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
@@ -98,22 +98,7 @@ public:
       return;
     _rawValue = sraw;
     _vocIdx = _vocAlgorithm.process((int32_t)sraw);
-    _sample_ms = millis();
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Checks if a recent fastTick() sample is available to publish.
-                Nothing is published before the first successful measurement,
-                and a device that stops answering stops publishing rather than
-                repeating its last value.
-      @returns  True if a sample was taken within the last two tick intervals,
-                False otherwise.
-  */
-  /*******************************************************************************/
-  bool IsSensorReady() override {
-    return _sample_ms != 0 &&
-           millis() - _sample_ms < 2 * SGP40_FASTTICK_INTERVAL_MS;
+    NewSample();
   }
 
   /*******************************************************************************/
@@ -155,9 +140,7 @@ protected:
   Adafruit_SGP40 *_sgp40 = nullptr;   ///< SGP40 driver object
   VOCGasIndexAlgorithm _vocAlgorithm; ///< VOC gas index state machine
   uint16_t _rawValue = 0;             ///< Cached raw sensor output (ticks)
-  int32_t _vocIdx = 0;     ///< Cached VOC Index (signed, per datasheet)
-  uint32_t _sample_ms = 0; ///< millis() of the last successful fastTick()
-                           ///< sample, 0 if none yet
+  int32_t _vocIdx = 0; ///< Cached VOC Index (signed, per datasheet)
 };
 
 #endif // DRV_SGP40_H
