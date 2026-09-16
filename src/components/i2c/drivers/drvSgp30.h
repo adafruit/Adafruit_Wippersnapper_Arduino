@@ -48,6 +48,7 @@ public:
     // The IAQ baseline algorithm requires IAQmeasure() at ~1 Hz, independent
     // of the publish period - opt in to the controller's fastTick() cadence.
     _fast_tick_ms = SGP30_FASTTICK_INTERVAL_MS;
+    _tick_lead_ms = TICK_ALWAYS;
   }
 
   /*******************************************************************************/
@@ -67,7 +68,6 @@ public:
     _sgp30 = new Adafruit_SGP30();
     if (!_sgp30->begin(_i2c))
       return false;
-    _sample_ms = 0;
     return true;
 
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
@@ -93,23 +93,8 @@ public:
     if (_sgp30->IAQmeasure()) {
       _eco2 = (uint16_t)_sgp30->eCO2;
       _tvoc = (uint16_t)_sgp30->TVOC;
-      _sample_ms = millis();
+      NewSample();
     }
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Checks if a recent fastTick() sample is available to publish.
-                Nothing is published before the first successful measurement,
-                and a device that stops answering stops publishing rather than
-                repeating its last value.
-      @returns  True if a sample was taken within the last two tick intervals,
-                False otherwise.
-  */
-  /*******************************************************************************/
-  bool IsSensorReady() override {
-    return _sample_ms != 0 &&
-           millis() - _sample_ms < 2 * SGP30_FASTTICK_INTERVAL_MS;
   }
 
   /*******************************************************************************/
@@ -150,8 +135,6 @@ protected:
   Adafruit_SGP30 *_sgp30 = nullptr; ///< SGP30 driver object
   uint16_t _eco2 = 0;               ///< Cached eCO2 reading, in ppm
   uint16_t _tvoc = 0;               ///< Cached TVOC reading, in ppb
-  uint32_t _sample_ms = 0; ///< millis() of the last successful fastTick()
-                           ///< sample, 0 if none yet
 };
 
 #endif // DRV_SGP30_H

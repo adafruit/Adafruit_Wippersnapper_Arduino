@@ -55,6 +55,7 @@ public:
     // ~1 Hz, independent of the publish period - opt in to the controller's
     // fastTick() cadence.
     _fast_tick_ms = SGP41_FASTTICK_INTERVAL_MS;
+    _tick_lead_ms = TICK_ALWAYS;
   }
 
   /*******************************************************************************/
@@ -115,7 +116,6 @@ public:
     _vocIdx = 0;
     _noxIdx = 0;
     _conditioningTicks = 0;
-    _sample_ms = 0;
     _have_index = false;
     return true;
 
@@ -149,7 +149,7 @@ public:
       // It warms up the VOC sensing path and seeds early baseline behavior.
       if (_sgp41->executeConditioning(&srawVoc)) {
         _rawValue = srawVoc;
-        _sample_ms = millis();
+        NewSample();
       }
       _conditioningTicks++;
       return;
@@ -161,24 +161,9 @@ public:
       _rawNOxValue = srawNox;
       _vocIdx = _vocAlgorithm.process((int32_t)srawVoc);
       _noxIdx = _noxAlgorithm.process((int32_t)srawNox);
-      _sample_ms = millis();
+      NewSample();
       _have_index = true;
     }
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Checks if a recent fastTick() sample is available to publish.
-                Nothing is published before the first successful measurement,
-                and a device that stops answering stops publishing rather than
-                repeating its last value.
-      @returns  True if a sample was taken within the last two tick intervals,
-                False otherwise.
-  */
-  /*******************************************************************************/
-  bool IsSensorReady() override {
-    return _sample_ms != 0 &&
-           millis() - _sample_ms < 2 * SGP41_FASTTICK_INTERVAL_MS;
   }
 
   /*******************************************************************************/
@@ -250,8 +235,6 @@ protected:
   uint8_t _conditioningTicks = 0;     ///< Completed initial conditioning cycles
   bool _have_index = false; ///< True once the gas indices have been computed
                             ///< from a post-conditioning measurement
-  uint32_t _sample_ms = 0;  ///< millis() of the last successful fastTick()
-                            ///< sample, 0 if none yet
   uint16_t _serialNumber[3] = {0, 0, 0}; ///< Optional serial number cache
   uint16_t _selfTestResult = 0;          ///< Optional self-test cache
   bool _hasSerial = false; ///< True if serial number read succeeded
