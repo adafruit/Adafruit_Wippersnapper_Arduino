@@ -24,8 +24,10 @@
 
 #define SGP41_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
 #define SGP41_CONDITIONING_TICKS 10     ///< Recommended warmup cycles
-#define SGP41_VOC_LEARNING_MS 60000UL   ///< VOC index meaningful after ~60s
-#define SGP41_NOX_LEARNING_MS 300000UL  ///< NOx index meaningful after ~300s
+/// The gas-index algorithms output 0 during their 45s initial blackout
+#define SGP41_BLACKOUT_SAMPLES 45
+#define SGP41_VOC_LEARNING_MS 60000UL  ///< VOC index meaningful after ~60s
+#define SGP41_NOX_LEARNING_MS 300000UL ///< NOx index meaningful after ~300s
 
 /**************************************************************************/
 /*!
@@ -56,6 +58,7 @@ public:
     // fastTick() cadence.
     _fast_tick_ms = SGP41_FASTTICK_INTERVAL_MS;
     _tick_lead_ms = TICK_ALWAYS;
+    _discard_samples = SGP41_BLACKOUT_SAMPLES;
   }
 
   /*******************************************************************************/
@@ -116,7 +119,6 @@ public:
     _vocIdx = 0;
     _noxIdx = 0;
     _conditioningTicks = 0;
-    _have_index = false;
     return true;
 
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
@@ -130,11 +132,13 @@ public:
       @brief    Background sampling for the SGP41, called by the controller
                 every _fast_tick_ms. The first SGP41_CONDITIONING_TICKS cycles
                 run the datasheet's conditioning command, which warms the
-                sensing path and yields only a raw VOC signal; the gas-index
+                sensing path; no samples are filed and the gas-index
                 algorithms are not fed until conditioning completes (per the
                 Sensirion reference usage). After that each tick takes one raw
-                VOC/NOx measurement and runs both algorithms. The cache is
-                left untouched if a measurement fails.
+                VOC/NOx measurement and runs both algorithms; the first
+                SGP41_BLACKOUT_SAMPLES results are discarded by NewSample()
+                while the algorithms are in their initial blackout. The cache
+                is left untouched if a measurement fails.
   */
   /*******************************************************************************/
   void fastTick() override {
@@ -147,10 +151,7 @@ public:
     if (_conditioningTicks < SGP41_CONDITIONING_TICKS) {
       // Conditioning is part of expected SGP41 startup usage.
       // It warms up the VOC sensing path and seeds early baseline behavior.
-      if (_sgp41->executeConditioning(&srawVoc)) {
-        _rawValue = srawVoc;
-        NewSample();
-      }
+      _sgp41->executeConditioning(&srawVoc);
       _conditioningTicks++;
       return;
     }
@@ -162,15 +163,13 @@ public:
       _vocIdx = _vocAlgorithm.process((int32_t)srawVoc);
       _noxIdx = _noxAlgorithm.process((int32_t)srawNox);
       NewSample();
-      _have_index = true;
     }
   }
 
   /*******************************************************************************/
   /*!
       @brief    Gets the sensor's current raw unprocessed VOC value (cached
-                from the most recent fastTick() sample). Available during
-                conditioning, before the gas indices are.
+                from the most recent fastTick() sample).
       @param    rawEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the raw value was obtained successfully, False
@@ -187,8 +186,8 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets the SGP41's current VOC reading. Not available until
-                conditioning has completed and the first measurement has been
-                processed. Note: the VOC algorithm learning period is
+                conditioning and the algorithm blackout have completed.
+                Note: the VOC algorithm learning period is
                 ~SGP41_VOC_LEARNING_MS from then; values are valid for
                 publishing immediately, but become meaningful only after it.
       @param    vocIndexEvent
@@ -198,7 +197,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    if (!_sgp41 || !AttemptRead() || !_have_index)
+    if (!_sgp41 || !AttemptRead())
       return false;
     vocIndexEvent->voc_index = _vocIdx;
     return true;
@@ -207,8 +206,8 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets the SGP41's current NOx reading. Not available until
-                conditioning has completed and the first measurement has been
-                processed. Note: the NOx algorithm learning period is
+                conditioning and the algorithm blackout have completed.
+                Note: the NOx algorithm learning period is
                 ~SGP41_NOX_LEARNING_MS from then; values are valid for
                 publishing immediately, but become meaningful only after it.
       @param    noxIndexEvent
@@ -218,7 +217,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
-    if (!_sgp41 || !AttemptRead() || !_have_index)
+    if (!_sgp41 || !AttemptRead())
       return false;
     noxIndexEvent->nox_index = _noxIdx;
     return true;
@@ -233,8 +232,6 @@ protected:
   VOCGasIndexAlgorithm _vocAlgorithm; ///< VOC gas index state machine
   NOxGasIndexAlgorithm _noxAlgorithm; ///< NOx gas index state machine
   uint8_t _conditioningTicks = 0;     ///< Completed initial conditioning cycles
-  bool _have_index = false; ///< True once the gas indices have been computed
-                            ///< from a post-conditioning measurement
   uint16_t _serialNumber[3] = {0, 0, 0}; ///< Optional serial number cache
   uint16_t _selfTestResult = 0;          ///< Optional self-test cache
   bool _hasSerial = false; ///< True if serial number read succeeded

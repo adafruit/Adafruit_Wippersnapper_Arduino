@@ -59,6 +59,8 @@ public:
     // blocking the read pass.
     _fast_tick_ms = DS2484_TICK_MS;
     _tick_lead_ms = DS2484_READ_LEAD_MS;
+    // The first conversion after power-up is not trustworthy
+    _discard_samples = 1;
   }
 
   /*!

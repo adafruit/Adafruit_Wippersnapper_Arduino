@@ -21,6 +21,8 @@
 #include <Wire.h>
 
 #define SGP30_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
+/// IAQmeasure() returns a fixed 400ppm / 0ppb for the first 15s after init
+#define SGP30_IAQ_INIT_SAMPLES 15
 
 /**************************************************************************/
 /*!
@@ -49,6 +51,7 @@ public:
     // of the publish period - opt in to the controller's fastTick() cadence.
     _fast_tick_ms = SGP30_FASTTICK_INTERVAL_MS;
     _tick_lead_ms = TICK_ALWAYS;
+    _discard_samples = SGP30_IAQ_INIT_SAMPLES;
   }
 
   /*******************************************************************************/
