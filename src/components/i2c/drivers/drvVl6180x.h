@@ -89,10 +89,9 @@ public:
       } else if (status == VL6180X_ERROR_RANGEOFLOW) {
         WS_DEBUG_PRINTLN("VL6180X: Range reading overflow");
       }
-      proximityEvent->data[0] = NAN;
-    } else {
-      proximityEvent->data[0] = range;
+      return false;
     }
+    proximityEvent->data[0] = range;
     return true;
   }
 
@@ -105,13 +104,14 @@ public:
   */
   bool getEventLight(sensors_event_t *lightEvent) {
     // TODO: Update when I2C Sensor Properties allow setting custom Gain, etc.
-    // Gain_5 results in max 41.6klux with cover glass - See 2.10.3 in datasheet
+    // Gain 5 (datasheet 2.10.3): 0.32 lx/count / 5, so a full-scale 65535
+    // count is 4194 lx = saturation. (The 41.6 klx figure in the datasheet
+    // is the column for 10%-transmissive cover glass, which the library's
+    // formula does not model.)
     float notRealLux = _vl6180x->readLux(VL6180X_ALS_GAIN_5);
-    if (notRealLux < 0 || notRealLux > 41700) {
-      lightEvent->light = NAN;
-    } else {
-      lightEvent->light = notRealLux;
-    }
+    if (notRealLux < 0 || notRealLux >= 4194.0f)
+      return false;
+    lightEvent->light = notRealLux;
     return true;
   }
 

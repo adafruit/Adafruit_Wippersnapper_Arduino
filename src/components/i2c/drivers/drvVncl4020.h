@@ -56,16 +56,29 @@ public:
   }
 
   /*!
-      @brief    Performs a light sensor read using the Adafruit
-                Unified Sensor API.
+      @brief    Latches the VCNL4020's ambient and proximity data-ready flags
+                for the pass (Command register als_data_rdy / prox_data_rdy;
+                each clears when its result register is read).
+      @returns  True if either channel has a new result, False otherwise.
+  */
+  bool IsSensorReady() override {
+    _als_ready = _vcnl4020->isAmbientReady();
+    _prox_ready = _vcnl4020->isProxReady();
+    return _als_ready || _prox_ready;
+  }
+
+  /*!
+      @brief    Gets the ambient light reading, in lux.
       @param    lightEvent
                 Light sensor reading, in lux.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   bool getEventLight(sensors_event_t *lightEvent) {
-    // Get sensor event populated in lux via AUTO integration and gain
-    lightEvent->light = _vcnl4020->readAmbient();
+    if (!AttemptRead() || !_als_ready)
+      return false;
+    // Datasheet: ambient light resolution 0.25 lx per count
+    lightEvent->light = 0.25f * (float)_vcnl4020->readAmbient();
     return true;
   }
 
@@ -77,12 +90,16 @@ public:
                 otherwise.
   */
   bool getEventProximity(sensors_event_t *proximityEvent) {
+    if (!AttemptRead() || !_prox_ready)
+      return false;
     proximityEvent->data[0] = (float)_vcnl4020->readProximity();
     return true;
   }
 
 protected:
   Adafruit_VCNL4020 *_vcnl4020; ///< Pointer to VCNL4020 light sensor object
+  bool _als_ready = false;      ///< Ambient result ready this pass
+  bool _prox_ready = false;     ///< Proximity result ready this pass
 };
 
 #endif // drvVncl4020

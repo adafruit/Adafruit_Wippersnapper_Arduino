@@ -56,8 +56,12 @@ public:
   bool begin() {
     _VL53L1X = new Adafruit_VL53L1X();
     if (_VL53L1X->begin((uint8_t)_address, _i2c, false)) {
-      _VL53L1X->startRanging();
+      // ULD flow: configure before StartRanging, and keep the
+      // inter-measurement period >= the timing budget (the default ~100ms
+      // period would be shorter than a 500ms budget)
       _VL53L1X->setTimingBudget(500); // distance mode is long(2) by default
+      _VL53L1X->VL53L1X_SetInterMeasurementInMs(500);
+      _VL53L1X->startRanging();
       return true;
     }
     return false;
@@ -74,13 +78,12 @@ public:
     if (!_VL53L1X->dataReady()) {
       return false;
     }
-    int16_t proximityMM = _VL53L1X->distance();
-    if (proximityMM == -1) {
-      proximityEvent->data[0] = NAN;
-    } else {
-      proximityEvent->data[0] = proximityMM;
-      _VL53L1X->clearInterrupt();
-    }
+    int16_t proximityMM = _VL53L1X->distance(); // -1 when RangeStatus != 0
+    // Always re-arm: without ClearInterrupt no further data is ever ready
+    _VL53L1X->clearInterrupt();
+    if (proximityMM < 0)
+      return false;
+    proximityEvent->data[0] = proximityMM;
     return true;
   }
 

@@ -45,7 +45,11 @@ public:
   drvBh1750(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // A high-resolution one-time measurement takes 120-180ms (datasheet
+    // tHR), so it is started and collected by fastTick() in the lead window
+    // before each read rather than blocking the read pass
+    _fast_tick_ms = BH1750_TICK_MS;
+    _tick_lead_ms = BH1750_READ_LEAD_MS;
   }
 
   /*!
@@ -72,22 +76,43 @@ public:
   }
 
   /*!
-      @brief    Performs a light sensor read using the One Time Measurement
-                feature of the BH1750. The sensor goes to Power Down mode after
-                each reading.
+      @brief    Background measurement step, called every BH1750_TICK_MS
+                while a read is pending: starts a one-time high-resolution
+                measurement, then collects it once hasValue() reports it
+                done. A saturated result (65535 counts) is not filed.
+  */
+  void fastTick() override {
+    if (_first_tick || !_started) {
+      _started = _bh1750->start();
+      return;
+    }
+    if (!_bh1750->hasValue())
+      return;
+    _started = false;
+    if (_bh1750->saturated())
+      return;
+    _lux = _bh1750->getLux();
+    NewSample();
+  }
+
+  /*!
+      @brief    Gets the ambient light reading collected by fastTick().
       @param    lightEvent
                 Light sensor reading, in lux.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   bool getEventLight(sensors_event_t *lightEvent) {
-    _bh1750->start();
-    lightEvent->light = _bh1750->getLux();
+    if (!AttemptRead())
+      return false;
+    lightEvent->light = _lux;
     return true;
   }
 
 protected:
-  hp_BH1750 *_bh1750; ///< Pointer to BH1750 light sensor object
+  hp_BH1750 *_bh1750;    ///< Pointer to BH1750 light sensor object
+  bool _started = false; ///< A one-time measurement is in flight
+  float _lux = 0;        ///< Last collected reading, lux
 };
 
 #endif // drvBh1750

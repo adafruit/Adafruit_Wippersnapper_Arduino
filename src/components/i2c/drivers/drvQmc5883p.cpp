@@ -246,19 +246,39 @@ bool drvQmc5883p::getEventRaw(sensors_event_t *rawEvent) {
     return false;
   }
 
-  float gx, gy, gz;
-
-  // Get Gauss field data
-  if (!_qmc->getGaussField(&gx, &gy, &gz)) {
-    WS_DEBUG_PRINTLN("Failed to read Gauss field data");
+  int16_t x, y, z;
+  if (!_qmc->getRawMagnetic(&x, &y, &z)) {
+    WS_DEBUG_PRINTLN("Failed to read magnetometer data");
     return false;
   }
 
-  // Check for overflow
-  if (_qmc->isOverflow()) {
+  // Datasheet 9.2.2: OVFL flags any axis outside +/-30000 LSB, but reading
+  // STATUS for the data-ready check above already cleared it, so apply the
+  // same limit to the raw data
+  if (abs(x) > 30000 || abs(y) > 30000 || abs(z) > 30000) {
     WS_DEBUG_PRINTLN("QMC5883P data overflow - skipping reading");
     return false;
   }
+
+  // LSB per gauss for the configured full-scale range (datasheet p4)
+  float lsb_per_gauss;
+  switch (_qmc->getRange()) {
+  case QMC5883P_RANGE_2G:
+    lsb_per_gauss = 15000.0f;
+    break;
+  case QMC5883P_RANGE_8G:
+    lsb_per_gauss = 3750.0f;
+    break;
+  case QMC5883P_RANGE_12G:
+    lsb_per_gauss = 2500.0f;
+    break;
+  default:
+    lsb_per_gauss = 1000.0f; // 30 G
+    break;
+  }
+  float gx = x / lsb_per_gauss;
+  float gy = y / lsb_per_gauss;
+  float gz = z / lsb_per_gauss;
 
   WS_DEBUG_PRINT("QMC5883P Gauss X: ");
   WS_DEBUG_PRINTVAR(gx);
