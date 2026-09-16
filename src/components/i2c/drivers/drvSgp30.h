@@ -22,7 +22,8 @@
 
 #define SGP30_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
 /// IAQmeasure() returns a fixed 400ppm / 0ppb for the first 15s after init
-#define SGP30_IAQ_INIT_SAMPLES 15
+/// (datasheet "Air Quality Signals"); one extra tick of margin on the boundary
+#define SGP30_IAQ_INIT_SAMPLES 16
 
 /**************************************************************************/
 /*!

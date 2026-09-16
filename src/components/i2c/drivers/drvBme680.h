@@ -42,8 +42,9 @@ public:
   drvBme680(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // The first reading after power-up (first gas heater cycle) is not
-    // trustworthy
+    // Skip the first conversion after power-up (heater still cold; the
+    // datasheet's per-conversion criterion is the gas_valid_r/heat_stab_r
+    // status, applied in getEventGasResistance())
     _discard_samples = 1;
   }
 
@@ -287,7 +288,10 @@ public:
                 otherwise.
   */
   virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
-    if (!AttemptRead())
+    // The library reports 0 when the conversion's gas_valid_r / heat_stab_r
+    // status bits were not set (datasheet 3.4): the heater did not reach its
+    // target, so the resistance is not a measurement.
+    if (!AttemptRead() || _bme->gas_resistance == 0)
       return false;
     gasEvent->gas_resistance = (float)_bme->gas_resistance;
     return true;

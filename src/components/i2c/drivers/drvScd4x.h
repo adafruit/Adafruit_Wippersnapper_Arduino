@@ -87,7 +87,8 @@ public:
     uint16_t co2 = 0;
     float temperature = 0;
     float humidity = 0;
-    // Reject co2 == 0: the SCD4x reports it for an invalid/warmup sample
+    // Reject co2 == 0: Sensirion's reference example treats it as an invalid
+    // sample (it is not a documented sentinel; data-ready gating is the rule)
     if (_scd->readMeasurement(co2, temperature, humidity) != 0 || co2 == 0)
       return false;
     _co2 = co2;

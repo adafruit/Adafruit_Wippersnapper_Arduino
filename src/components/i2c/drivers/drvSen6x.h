@@ -22,14 +22,18 @@
 #include <SensirionI2cSen66.h>
 #include <Wire.h>
 
+/// Datasheet 4.3.3: fan speed is unchecked for the first 10s (settling); PM
+/// start-up as SEN5x Table 1, up to 30s
+#define SEN6X_PM_STARTUP_MS 30000
+/// Datasheet Table 4: VOC/NOx events reliably detected after <60s
+#define SEN6X_INDEX_STARTUP_MS 60000
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the SEN6X sensor.
 */
 /**************************************************************************/
 class drvSen6x : public drvBase {
-
-  const float OVERFLOW_SEN6X = (0xFFFF / 10); // maxes out at u_int16 / 10
 
 public:
   /*******************************************************************************/
@@ -72,13 +76,12 @@ public:
     if (error_stop != 0) {
       return false;
     }
-    // Wait 1 second for sensors to start recording + 100ms for reset command
-    delay(1100);
     uint16_t error_start = _sen->startContinuousMeasurement();
     if (error_start != 0) {
       return false;
     }
-
+    // Start-up gates (fan settling, gas-index learning) run from here
+    _start_ms = millis();
     return true;
 
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
@@ -112,11 +115,49 @@ public:
   */
   /*******************************************************************************/
   bool ReadSensorData() override {
-    return _sen->readMeasuredValues(
-               _massConcentrationPm1p0, _massConcentrationPm2p5,
-               _massConcentrationPm4p0, _massConcentrationPm10p0,
-               _ambientHumidity, _ambientTemperature, _vocIndex, _noxIndex,
-               _co2) == 0;
+    if (_sen->readDeviceStatus(_status) != 0)
+      return false;
+    uint16_t pm1, pm25, pm4, pm10, co2;
+    int16_t rh, t, voc, nox;
+    if (_sen->readMeasuredValuesAsIntegers(pm1, pm25, pm4, pm10, rh, t, voc,
+                                           nox, co2) != 0)
+      return false;
+    // Datasheet 4.8.8: 0xFFFF (uint16) / 0x7FFF (int16) mean "unknown" - e.g.
+    // CO2 for the first 5-6s, VOC/NOx for the first 10-11s. The SEN66 library
+    // returns them unscaled (3276.7, 6553.5 ...), so map them to NAN here.
+    _massConcentrationPm1p0 = pm1 == 0xFFFF ? NAN : pm1 / 10.0f;
+    _massConcentrationPm2p5 = pm25 == 0xFFFF ? NAN : pm25 / 10.0f;
+    _massConcentrationPm4p0 = pm4 == 0xFFFF ? NAN : pm4 / 10.0f;
+    _massConcentrationPm10p0 = pm10 == 0xFFFF ? NAN : pm10 / 10.0f;
+    _ambientHumidity = rh == 0x7FFF ? NAN : rh / 100.0f;
+    _ambientTemperature = t == 0x7FFF ? NAN : t / 200.0f;
+    _vocIndex = voc == 0x7FFF ? NAN : voc / 10.0f;
+    _noxIndex = nox == 0x7FFF ? NAN : nox / 10.0f;
+    _co2 = co2;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Checks the PM channel is trustworthy: fan settled (datasheet
+                4.3.3 / SEN5x Table 1 start-up) and no fan/PM/speed fault.
+      @returns  True if PM values may be published, False otherwise.
+  */
+  /*******************************************************************************/
+  bool PmValid() {
+    return millis() - _start_ms >= SEN6X_PM_STARTUP_MS && !_status.fanError &&
+           !_status.pmError && !_status.fanSpeedWarning;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Checks the gas indices are trustworthy: past the switch-on
+                learning window (datasheet Table 4, <60s) and no gas fault.
+      @returns  True if VOC/NOx indices may be published, False otherwise.
+  */
+  /*******************************************************************************/
+  bool GasValid() {
+    return millis() - _start_ms >= SEN6X_INDEX_STARTUP_MS && !_status.gasError;
   }
 
   /*******************************************************************************/
@@ -129,7 +170,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!AttemptRead() || isnan(_ambientTemperature)) {
+    if (!AttemptRead() || _status.rhtError || isnan(_ambientTemperature)) {
       return false;
     }
     tempEvent->temperature = _ambientTemperature;
@@ -146,7 +187,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!AttemptRead() || isnan(_ambientHumidity)) {
+    if (!AttemptRead() || _status.rhtError || isnan(_ambientHumidity)) {
       return false;
     }
     humidEvent->relative_humidity = _ambientHumidity;
@@ -166,7 +207,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
-    if (!AttemptRead() || isnan(_noxIndex)) {
+    if (!AttemptRead() || !GasValid() || isnan(_noxIndex)) {
       return false;
     }
     noxIndexEvent->nox_index = _noxIndex;
@@ -183,7 +224,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    if (!AttemptRead() || isnan(_vocIndex)) {
+    if (!AttemptRead() || !GasValid() || isnan(_vocIndex)) {
       return false;
     }
     vocIndexEvent->voc_index = _vocIndex;
@@ -200,8 +241,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
-    if (!AttemptRead() || isnan(_massConcentrationPm1p0) ||
-        _massConcentrationPm1p0 == OVERFLOW_SEN6X) {
+    if (!AttemptRead() || !PmValid() || isnan(_massConcentrationPm1p0)) {
       return false;
     }
     pm10StdEvent->pm10_std = _massConcentrationPm1p0;
@@ -218,8 +258,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
-    if (!AttemptRead() || isnan(_massConcentrationPm2p5) ||
-        _massConcentrationPm2p5 == OVERFLOW_SEN6X) {
+    if (!AttemptRead() || !PmValid() || isnan(_massConcentrationPm2p5)) {
       return false;
     }
     pm25StdEvent->pm25_std = _massConcentrationPm2p5;
@@ -236,8 +275,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
-    if (!AttemptRead() || isnan(_massConcentrationPm10p0) ||
-        _massConcentrationPm10p0 == OVERFLOW_SEN6X) {
+    if (!AttemptRead() || !PmValid() || isnan(_massConcentrationPm10p0)) {
       return false;
     }
     pm100StdEvent->pm100_std = _massConcentrationPm10p0;
@@ -254,7 +292,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
-    if (!AttemptRead() || _co2 == 0xFFFF) {
+    // 0xFFFF = unknown (first 5-6s); co22Error = CO2 sensor fault
+    if (!AttemptRead() || _co2 == 0xFFFF || _status.co22Error) {
       return false;
     }
     co2Event->CO2 = _co2;
@@ -272,6 +311,8 @@ protected:
   float _vocIndex;                   ///< VOC index
   float _noxIndex;                   ///< NOx index
   uint16_t _co2;                     ///< CO2 value
+  SEN66DeviceStatus _status = {};    ///< Last device status word
+  ulong _start_ms = 0;               ///< millis() measurement started
 };
 
 #endif // DRV_SEN6X_H

@@ -22,8 +22,9 @@
 #include <Wire.h>
 
 #define SGP40_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
-/// The gas-index algorithm outputs 0 during its 45s initial blackout
-#define SGP40_BLACKOUT_SAMPLES 45
+/// The gas-index algorithm outputs 0 while uptime <= 45s, i.e. for the first
+/// 46 one-second samples (sensirion_gas_index_algorithm.c, INITIAL_BLACKOUT)
+#define SGP40_BLACKOUT_SAMPLES 46
 
 /**************************************************************************/
 /*!
@@ -133,7 +134,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    if (!_sgp40 || !AttemptRead())
+    // A genuine post-blackout index is clamped >= 0.5; 0 means still learning
+    if (!_sgp40 || !AttemptRead() || _vocIdx <= 0)
       return false;
     vocIndexEvent->voc_index = (float)_vocIdx;
     return true;

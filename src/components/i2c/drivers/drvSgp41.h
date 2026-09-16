@@ -24,8 +24,12 @@
 
 #define SGP41_FASTTICK_INTERVAL_MS 1000 ///< Enforce ~1 Hz sampling cadence
 #define SGP41_CONDITIONING_TICKS 10     ///< Recommended warmup cycles
-/// The gas-index algorithms output 0 during their 45s initial blackout
-#define SGP41_BLACKOUT_SAMPLES 45
+/// The gas-index algorithms output 0 while uptime <= 45s, i.e. for the first
+/// 46 one-second samples (sensirion_gas_index_algorithm.c, INITIAL_BLACKOUT)
+#define SGP41_BLACKOUT_SAMPLES 46
+/// Datasheet 3.1: conditioning is recommended for 10s but "must not be exceeded
+/// to avoid damage to the sensing material" - stop early under loop jitter
+#define SGP41_CONDITIONING_MAX_MS 9000
 #define SGP41_VOC_LEARNING_MS 60000UL  ///< VOC index meaningful after ~60s
 #define SGP41_NOX_LEARNING_MS 300000UL ///< NOx index meaningful after ~300s
 
@@ -151,9 +155,17 @@ public:
     if (_conditioningTicks < SGP41_CONDITIONING_TICKS) {
       // Conditioning is part of expected SGP41 startup usage.
       // It warms up the VOC sensing path and seeds early baseline behavior.
-      _sgp41->executeConditioning(&srawVoc);
-      _conditioningTicks++;
-      return;
+      ulong now = millis();
+      if (_conditioningTicks == 0)
+        _conditioning_start = now;
+      if (now - _conditioning_start >= SGP41_CONDITIONING_MAX_MS) {
+        // Ticks stretched past the datasheet's 10s ceiling: stop conditioning
+        _conditioningTicks = SGP41_CONDITIONING_TICKS;
+      } else {
+        _sgp41->executeConditioning(&srawVoc);
+        _conditioningTicks++;
+        return;
+      }
     }
 
     // After conditioning, 1 Hz raw sampling is expected usage for SGP41.
@@ -197,7 +209,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    if (!_sgp41 || !AttemptRead())
+    // A genuine post-blackout index is clamped >= 0.5; 0 means still learning
+    if (!_sgp41 || !AttemptRead() || _vocIdx <= 0)
       return false;
     vocIndexEvent->voc_index = _vocIdx;
     return true;
@@ -217,7 +230,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
-    if (!_sgp41 || !AttemptRead())
+    // A genuine post-blackout index is clamped >= 0.5; 0 means still learning
+    if (!_sgp41 || !AttemptRead() || _noxIdx <= 0)
       return false;
     noxIndexEvent->nox_index = _noxIdx;
     return true;
@@ -232,6 +246,7 @@ protected:
   VOCGasIndexAlgorithm _vocAlgorithm; ///< VOC gas index state machine
   NOxGasIndexAlgorithm _noxAlgorithm; ///< NOx gas index state machine
   uint8_t _conditioningTicks = 0;     ///< Completed initial conditioning cycles
+  ulong _conditioning_start = 0;      ///< millis() conditioning began
   uint16_t _serialNumber[3] = {0, 0, 0}; ///< Optional serial number cache
   uint16_t _selfTestResult = 0;          ///< Optional self-test cache
   bool _hasSerial = false; ///< True if serial number read succeeded

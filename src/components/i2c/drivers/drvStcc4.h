@@ -19,6 +19,10 @@
 #include "drvBase.h"
 #include <Adafruit_STCC4.h>
 
+/// Datasheet 1.1.4: CO2 output is fixed at 390 ppm during the first 20s of
+/// continuous measurement mode (bypass phase); +1s margin
+#define STCC4_BYPASS_MS 21000
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the STCC4 sensor.
@@ -71,6 +75,7 @@ public:
     // Enable continuous measurement mode for periodic reading
     if (!_stcc4->enableContinuousMeasurement(true))
       return false;
+    _start_ms = millis();
     return true;
 
     // POTENTIAL CUSTOM SETTINGS (not yet exposed via the v2 properties API):
@@ -86,6 +91,17 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Waits out the STCC4's bypass phase: for the first 20s of
+                continuous mode the device outputs a fixed 390 ppm.
+      @returns  True once real measurements are available, False otherwise.
+  */
+  /*******************************************************************************/
+  bool IsSensorReady() override {
+    return millis() - _start_ms >= STCC4_BYPASS_MS;
+  }
+
+  /*******************************************************************************/
+  /*!
       @brief    Reads all sensor data from the STCC4 in one transaction,
                 caching the results so temp/humidity/CO2 stay in sync.
       @returns  True if the read succeeded, False otherwise.
@@ -95,6 +111,9 @@ public:
     uint16_t co2, status;
     float temperature, humidity;
     if (!_stcc4->readMeasurement(&co2, &temperature, &humidity, &status))
+      return false;
+    // Status bit 14: testing mode (ASC paused) - datasheet 3.4.13
+    if (status & 0x4000)
       return false;
     _cachedCO2 = co2;
     _cachedTemperature = temperature;
@@ -152,6 +171,7 @@ public:
 
 protected:
   Adafruit_STCC4 *_stcc4 = nullptr; ///< STCC4 driver object
+  ulong _start_ms = 0;              ///< millis() continuous mode started
   float _cachedTemperature = NAN;   ///< Cached temperature reading
   float _cachedHumidity = NAN;      ///< Cached humidity reading
   uint16_t _cachedCO2 = 0;          ///< Cached CO2 reading in ppm
