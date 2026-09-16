@@ -213,7 +213,7 @@ public:
                 public readings on success.
       @returns  True if the reading succeeded, False otherwise.
   */
-  bool ReadDevice() override { return _bme->performReading(); }
+  bool ReadSensorData() override { return _bme->performReading(); }
 
   /*!
       @brief    Gets the BME680's current temperature.
@@ -223,7 +223,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _bme->temperature;
     return true;
@@ -237,7 +237,7 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     humidEvent->relative_humidity = _bme->humidity;
     return true;
@@ -252,7 +252,7 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     pressureEvent->pressure = (float)_bme->pressure;
     return true;
@@ -267,7 +267,7 @@ public:
                 otherwise.
   */
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     // Same formula as Adafruit_BME680::readAltitude(), without the re-read
     float atmospheric = (float)_bme->pressure / 100.0F;
@@ -285,7 +285,7 @@ public:
                 otherwise.
   */
   virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     gasEvent->gas_resistance = (float)_bme->gas_resistance;
     return true;

@@ -83,7 +83,7 @@ public:
                 survives a failed read.
       @returns  True if the read succeeded, False otherwise.
   */
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     return _sen->readMeasuredValues(
                _massConcentrationPm1p0, _massConcentrationPm2p5,
                _massConcentrationPm4p0, _massConcentrationPm10p0,
@@ -99,7 +99,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData() || isnan(_ambientTemperature)) {
+    if (!AttemptRead() || isnan(_ambientTemperature)) {
       return false;
     }
 
@@ -115,7 +115,7 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!ReadSensorData() || isnan(_ambientHumidity)) {
+    if (!AttemptRead() || isnan(_ambientHumidity)) {
       return false;
     }
 
@@ -134,7 +134,7 @@ public:
                 otherwise.
   */
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
-    if (!ReadSensorData() || isnan(_noxIndex)) {
+    if (!AttemptRead() || isnan(_noxIndex)) {
       return false;
     }
 
@@ -150,7 +150,7 @@ public:
                 otherwise.
   */
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    if (!ReadSensorData() || isnan(_vocIndex)) {
+    if (!AttemptRead() || isnan(_vocIndex)) {
       return false;
     }
 
@@ -166,7 +166,7 @@ public:
                 otherwise.
   */
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
-    if (!ReadSensorData() || isnan(_massConcentrationPm1p0) ||
+    if (!AttemptRead() || isnan(_massConcentrationPm1p0) ||
         _massConcentrationPm1p0 == OVERFLOW_SEN55) {
       return false;
     }
@@ -183,7 +183,7 @@ public:
                 otherwise.
   */
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
-    if (!ReadSensorData() || isnan(_massConcentrationPm2p5) ||
+    if (!AttemptRead() || isnan(_massConcentrationPm2p5) ||
         _massConcentrationPm2p5 == OVERFLOW_SEN55) {
       return false;
     }
@@ -200,7 +200,7 @@ public:
                 otherwise.
   */
   bool getEventPM40_STD(sensors_event_t *pm40StdEvent) {
-    if (!ReadSensorData() || isnan(_massConcentrationPm4p0) ||
+    if (!AttemptRead() || isnan(_massConcentrationPm4p0) ||
         _massConcentrationPm4p0 == OVERFLOW_SEN55) {
       return false;
     }
@@ -217,7 +217,7 @@ public:
                 otherwise.
   */
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
-    if (!ReadSensorData() || isnan(_massConcentrationPm10p0) ||
+    if (!AttemptRead() || isnan(_massConcentrationPm10p0) ||
         _massConcentrationPm10p0 == OVERFLOW_SEN55) {
       return false;
     }

@@ -117,7 +117,7 @@ public:
                 blocking transaction so all metrics reflect the same sample.
       @returns  True if the reading succeeded, False otherwise.
   */
-  bool ReadDevice() override { return _ens160->measure(true); }
+  bool ReadSensorData() override { return _ens160->measure(true); }
 
   /*!
       @brief    Reads the ENS160's eCO2 sensor into an event.
@@ -127,7 +127,7 @@ public:
                 otherwise.
   */
   bool getEventECO2(sensors_event_t *eco2Event) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     eco2Event->eCO2 = (float)_ens160->geteCO2();
     return true;
@@ -141,7 +141,7 @@ public:
                 otherwise.
   */
   bool getEventTVOC(sensors_event_t *tvocEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     tvocEvent->tvoc = (float)_ens160->getTVOC();
     return true;
@@ -155,7 +155,7 @@ public:
                 otherwise.
   */
   bool getEventRaw(sensors_event_t *rawEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     rawEvent->data[0] = (float)_ens160->getAQI();
     return true;

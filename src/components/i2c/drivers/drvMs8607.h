@@ -76,7 +76,7 @@ public:
                 sample (one conversion instead of three).
       @returns  True if the measurement succeeded, False otherwise.
   */
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     return _ms8607->getEvent(&_pressure, &_temp, &_humidity);
   }
 
@@ -88,7 +88,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _temp.temperature;
     return true;
@@ -102,7 +102,7 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     humidEvent->relative_humidity = _humidity.relative_humidity;
     return true;
@@ -117,7 +117,7 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     pressureEvent->pressure = _pressure.pressure;
     return true;

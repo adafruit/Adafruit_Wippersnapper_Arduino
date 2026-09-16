@@ -68,7 +68,7 @@ public:
       @returns  True if the read succeeded and at least one temperature is
                 valid, False otherwise.
   */
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     // read() returns 0 (I2C_ERROR_OK) on success, else an I2C/PEC error code
     if (_d6t1a->read() != 0)
       return false;
@@ -85,7 +85,7 @@ public:
      otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (ReadSensorData() && !isnan(_deviceTemp)) {
+    if (AttemptRead() && !isnan(_deviceTemp)) {
       tempEvent->temperature = _deviceTemp;
       return true;
     }
@@ -100,7 +100,7 @@ public:
      otherwise.
   */
   bool getEventObjectTemp(sensors_event_t *tempEvent) {
-    if (ReadSensorData() && !isnan(_objectTemp)) {
+    if (AttemptRead() && !isnan(_objectTemp)) {
       tempEvent->temperature = _objectTemp;
       return true;
     }

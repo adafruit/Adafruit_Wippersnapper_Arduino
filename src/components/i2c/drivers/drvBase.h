@@ -284,46 +284,48 @@ public:
       @brief    Checks whether the device has a new measurement ready to read.
                 Override in drivers whose silicon exposes a data-ready flag
                 (e.g. Sensirion CO2/PM devices), or whose cache is fed by
-                fastTick(), so ReadSensorData() only reports a sample when a
-                fresh one exists. Must be non-blocking; the controller backs
-                off and retries when this returns false.
+                fastTick(), so AttemptRead() only takes a sample when a fresh
+                one exists. Must be non-blocking; the controller backs off
+                and retries when this returns false.
       @returns  True if a new measurement is ready (default), False otherwise.
   */
   virtual bool IsSensorReady() { return true; }
 
   /*!
-      @brief    Performs the device's measurement transaction, reading every
-                metric at once into the driver's cached members. Override in
-                drivers whose metrics come from one measurement; leave the
-                default for drivers that read directly inside their
-                getEvent*() functions. Called by ReadSensorData() only when
+      @brief    Driver hook: performs the device's measurement transaction,
+                reading every metric at once into the driver's cached members.
+                Override in drivers whose metrics come from one measurement;
+                leave the default for drivers that read directly inside their
+                getEvent*() functions. Called by AttemptRead() only when
                 IsSensorReady() is true. Leave the cached members untouched
                 on failure so the last good sample survives.
       @returns  True if the read succeeded and the cache holds a valid sample,
                 False otherwise.
   */
-  virtual bool ReadDevice() { return true; }
+  virtual bool ReadSensorData() { return true; }
 
   /*!
-      @brief    Takes one shared sample for the read pass. The controller calls
-                this once per elapsed period, before any getEvent*() call, and
-                the getEvent*() accessors call it again to fetch the cached
-                sample, so every metric in a pass reflects the same measurement
-                and causes no further bus traffic. A sample is served only
-                until the controller consumes it (publishes or logs it); after
-                that a fresh measurement is required, so a stalled or
-                disconnected device stops publishing instead of repeating its
-                last value. Prefer overriding IsSensorReady() and ReadDevice()
-                to overriding this.
+      @brief    Controller entry point: attempts to take one shared sample for
+                the read pass. Runs the driver's IsSensorReady() and
+                ReadSensorData() hooks and the cache bookkeeping. The
+                controller calls this once per due pass, before any
+                getEvent*() call, and the getEvent*() accessors call it again
+                to fetch the cached sample, so every metric in a pass reflects
+                the same measurement and causes no further bus traffic. A
+                sample is served only until the controller consumes it
+                (SampleDone(true)); after that a fresh measurement is required,
+                so a stalled or disconnected device stops publishing instead of
+                repeating its last value. Drivers override the two hooks, not
+                this.
       @returns  True if an unconsumed sample is cached (freshly read, or read
                 within the last second), False if no new sample is available
                 (device not ready, or the read failed).
   */
-  virtual bool ReadSensorData() {
+  virtual bool AttemptRead() {
     // Serve the sample already taken this pass to every getEvent*() accessor
     if (_have_data && !_sample_consumed && HasBeenReadInLastSecond())
       return true;
-    if (!IsSensorReady() || !ReadDevice())
+    if (!IsSensorReady() || !ReadSensorData())
       return false;
     _last_read = millis();
     _have_data = true;
@@ -332,27 +334,44 @@ public:
   }
 
   /*!
-      @brief    Checks if the device was read within the last second, so
-                ReadSensorData() can serve one shared sample to all metrics in
-                a read pass (and to any direct getEvent*() calls).
-      @returns  True if the sensor was read less than one second ago, False
-                otherwise (including if it has never been read).
+      @brief    Controller query: may this driver be read now? False while the
+                driver is waiting out a retry backoff (honoured even when the
+                update is forced, so a device that is not ready is not
+                re-polled every loop iteration), or while its publish period
+                has not elapsed and the update is not forced.
+      @param    now
+                The current millis() timestamp.
+      @param    force
+                True to ignore the publish period (sleep mode).
+      @returns  True if the controller should call AttemptRead() now.
   */
-  bool HasBeenReadInLastSecond() {
-    return _last_read != 0 && millis() - _last_read < ONE_SECOND_IN_MS;
+  bool ReadDue(ulong now, bool force) {
+    if (_in_backoff && (long)(now - _retry_at) >= 0)
+      _in_backoff = false;
+    if (_in_backoff)
+      return false;
+    return force || now - _sensor_period_prv >= _sensor_period;
   }
 
   /*!
-      @brief    Records a failed read pass and schedules the next attempt,
-                mirroring the v1 update() retry behavior: a few quick retries
-                ~1s apart, then wait out a full period. The controller honours
-                the schedule even when an update is forced (sleep mode), so a
-                device that is not ready is not re-polled every loop iteration.
-      @param    now
-                The current millis() timestamp.
-      @returns  The delay until the next attempt, in milliseconds.
+      @brief    Controller notification that the read pass has finished.
+                On success the cached sample is marked consumed, so the next
+                pass requires a fresh measurement, and the failure counter is
+                reset. On failure the next attempt is scheduled, mirroring the
+                v1 update() retry behavior: a few quick retries ~1s apart,
+                then wait out a full period.
+      @param    published
+                True if the pass produced a device event that was published or
+                logged, False if it produced nothing.
+      @returns  The delay until the next attempt in milliseconds (0 on
+                success), for the debug log.
   */
-  ulong ScheduleRetry(ulong now) {
+  ulong SampleDone(bool published) {
+    if (published) {
+      _read_fails = 0;
+      _sample_consumed = true;
+      return 0;
+    }
     // 3 quick retries before backing off, matching v1's update() retry count
     ulong retry_in = ONE_SECOND_IN_MS;
     if (++_read_fails >= 3) {
@@ -362,32 +381,9 @@ public:
     // Never re-poll a failing device faster than 1 Hz (period 0 / sub-second)
     if (retry_in < ONE_SECOND_IN_MS)
       retry_in = ONE_SECOND_IN_MS;
-    _retry_at = now + retry_in;
+    _retry_at = millis() + retry_in;
     _in_backoff = true;
     return retry_in;
-  }
-
-  /*!
-      @brief    Records a successful read/publish pass: resets the consecutive
-                read-failure counter and marks the cached sample as consumed so
-                the next pass requires a fresh measurement.
-  */
-  void NoteReadSuccess() {
-    _read_fails = 0;
-    _sample_consumed = true;
-  }
-
-  /*!
-      @brief    Checks whether the driver is still waiting out a read backoff.
-      @param    now
-                The current millis() timestamp.
-      @returns  True if the next read attempt is still in the future, False
-                if the driver may read now.
-  */
-  bool InBackoff(ulong now) {
-    if (_in_backoff && (long)(now - _retry_at) >= 0)
-      _in_backoff = false;
-    return _in_backoff;
   }
 
   /*!
@@ -1280,5 +1276,17 @@ protected:
   bool _in_backoff = false;   ///< True while waiting out a read backoff.
   uint32_t _fast_tick_ms = 0; ///< fastTick() cadence in ms; 0 = no tick.
   ulong _last_fast_tick;      ///< millis() timestamp of the last fastTick().
+
+private:
+  /*!
+      @brief    Checks if the device was read within the last second, so
+                AttemptRead() can serve one shared sample to all metrics in a
+                read pass.
+      @returns  True if the sensor was read less than one second ago, False
+                otherwise (including if it has never been read).
+  */
+  bool HasBeenReadInLastSecond() {
+    return _last_read != 0 && millis() - _last_read < ONE_SECOND_IN_MS;
+  }
 };
 #endif // DRV_BASE_H

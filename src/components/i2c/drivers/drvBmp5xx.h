@@ -252,7 +252,7 @@ public:
       @returns  True if the reading succeeded, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadDevice() override { return _bmp5xx->performReading(); }
+  bool ReadSensorData() override { return _bmp5xx->performReading(); }
 
   /*******************************************************************************/
   /*!
@@ -264,7 +264,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _bmp5xx->temperature;
     return true;
@@ -281,7 +281,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     pressureEvent->pressure = _bmp5xx->pressure;
     return true;
@@ -298,7 +298,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     // Same formula as Adafruit_BMP5xx::readAltitude(), without the re-read;
     // the library reports pressure in hPa

@@ -90,7 +90,7 @@ public:
                 so both metrics reflect the same sample.
       @returns  True if the read succeeded, False otherwise.
   */
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     return _dps310->getEvents(&_temp_event, &_pressure_event);
   }
 
@@ -102,7 +102,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData()) {
+    if (!AttemptRead()) {
       return false;
     }
     tempEvent->temperature = _temp_event.temperature;
@@ -117,7 +117,7 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!ReadSensorData()) {
+    if (!AttemptRead()) {
       return false;
     }
     pressureEvent->pressure = _pressure_event.pressure;

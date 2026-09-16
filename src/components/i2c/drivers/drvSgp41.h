@@ -193,7 +193,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
-    if (!_sgp41 || !ReadSensorData())
+    if (!_sgp41 || !AttemptRead())
       return false;
     rawEvent->data[0] = (float)_rawValue;
     return true;
@@ -213,7 +213,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    if (!_sgp41 || !ReadSensorData() || !_have_index)
+    if (!_sgp41 || !AttemptRead() || !_have_index)
       return false;
     vocIndexEvent->voc_index = _vocIdx;
     return true;
@@ -233,7 +233,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
-    if (!_sgp41 || !ReadSensorData() || !_have_index)
+    if (!_sgp41 || !AttemptRead() || !_have_index)
       return false;
     noxIndexEvent->nox_index = _noxIdx;
     return true;

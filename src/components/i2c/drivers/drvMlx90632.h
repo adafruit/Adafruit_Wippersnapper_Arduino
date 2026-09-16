@@ -262,7 +262,7 @@ public:
       @returns  True if the read succeeded, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     double deviceTemp = _mlx90632->getAmbientTemperature();
     double objectTemp = _mlx90632->getObjectTemperature();
     // Reset new data flag after reading so the next ready check is genuine
@@ -353,7 +353,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData() || isnan(_deviceTemp))
+    if (!AttemptRead() || isnan(_deviceTemp))
       return false;
     tempEvent->temperature = _deviceTemp;
     return true;
@@ -369,7 +369,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventObjectTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData() || isnan(_objectTemp))
+    if (!AttemptRead() || isnan(_objectTemp))
       return false;
     tempEvent->temperature = _objectTemp;
     return true;

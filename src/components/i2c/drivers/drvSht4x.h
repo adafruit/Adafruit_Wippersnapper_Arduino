@@ -64,7 +64,9 @@ public:
                 so both metrics in a read pass come from the same sample.
       @returns  True if the measurement succeeded, False otherwise.
   */
-  bool ReadDevice() override { return _sht4x->getEvent(&_humidity, &_temp); }
+  bool ReadSensorData() override {
+    return _sht4x->getEvent(&_humidity, &_temp);
+  }
 
   /*!
       @brief    Gets the SHT4X's current temperature.
@@ -74,7 +76,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _temp.temperature;
     return true;
@@ -88,7 +90,7 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     humidEvent->relative_humidity = _humidity.relative_humidity;
     return true;

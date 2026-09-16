@@ -126,7 +126,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
-    if (!_sgp40 || !ReadSensorData())
+    if (!_sgp40 || !AttemptRead())
       return false;
     rawEvent->data[0] = (float)_rawValue;
     return true;
@@ -145,7 +145,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    if (!_sgp40 || !ReadSensorData())
+    if (!_sgp40 || !AttemptRead())
       return false;
     vocIndexEvent->voc_index = (float)_vocIdx;
     return true;

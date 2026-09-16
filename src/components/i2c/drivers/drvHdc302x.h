@@ -130,7 +130,7 @@ public:
       @returns  True if the read succeeded, False otherwise.
   */
   /*******************************************************************************/
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     uint16_t status = _hdc302x->readStatus();
     if (status & 0x0010) {
       WS_DEBUG_PRINTLN("Device Reset Detected");
@@ -161,7 +161,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (ReadSensorData() == false)
+    if (AttemptRead() == false)
       return false;
     tempEvent->temperature = _temp;
     return true;
@@ -177,7 +177,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (ReadSensorData() == false)
+    if (AttemptRead() == false)
       return false;
     humidEvent->relative_humidity = _humidity;
     return true;

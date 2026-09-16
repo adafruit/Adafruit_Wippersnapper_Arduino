@@ -59,7 +59,7 @@ public:
                 a read pass come from the same sample.
       @returns  True if a frame was read successfully, False otherwise.
   */
-  bool ReadDevice() override {
+  bool ReadSensorData() override {
     if (!_pm25->read(&_data)) {
       WS_DEBUG_PRINTLN("Failed to read PM25 data frame");
       return false;
@@ -75,7 +75,7 @@ public:
                 otherwise.
   */
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     pm10StdEvent->pm10_std = (float)_data.pm10_standard;
     return true;
@@ -89,7 +89,7 @@ public:
                 otherwise.
   */
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     pm25StdEvent->pm25_std = (float)_data.pm25_standard;
     return true;
@@ -103,7 +103,7 @@ public:
                 otherwise.
   */
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     pm100StdEvent->pm100_std = (float)_data.pm100_standard;
     return true;

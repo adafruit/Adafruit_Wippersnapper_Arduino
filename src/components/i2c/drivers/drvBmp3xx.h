@@ -254,7 +254,7 @@ public:
                 altitude in a read pass come from the same sample.
       @returns  True if the reading succeeded, False otherwise.
   */
-  bool ReadDevice() override { return _bmp3xx->performReading(); }
+  bool ReadSensorData() override { return _bmp3xx->performReading(); }
 
   /*!
       @brief    Gets the BMP3XX's current temperature.
@@ -264,7 +264,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _bmp3xx->temperature;
     return true;
@@ -279,7 +279,7 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     pressureEvent->pressure = _bmp3xx->pressure / 100.0F;
     return true;
@@ -294,7 +294,7 @@ public:
                 otherwise.
   */
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!ReadSensorData())
+    if (!AttemptRead())
       return false;
     // Same formula as Adafruit_BMP3XX::readAltitude(), without the re-read
     float atmospheric = _bmp3xx->pressure / 100.0F;
