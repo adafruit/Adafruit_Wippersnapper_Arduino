@@ -4,13 +4,14 @@
  */
 
 /* Use the GCC warn_unused_result attribute to check that all return values
- * are propagated correctly. On other compilers and gcc before 3.4.0 just
- * ignore the annotation.
+ * are propagated correctly. On other compilers, gcc before 3.4.0 and iar
+ * before 9.40.1 just ignore the annotation.
  */
-#if !defined(__GNUC__) || ( __GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 4)
-    #define checkreturn
-#else
+#if (defined(__GNUC__) && ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4))) || \
+    (defined(__IAR_SYSTEMS_ICC__) && (__VER__ >= 9040001))
     #define checkreturn __attribute__((warn_unused_result))
+#else
+    #define checkreturn
 #endif
 
 #include "pb.h"
@@ -111,7 +112,11 @@ bool checkreturn pb_read(pb_istream_t *stream, pb_byte_t *buf, size_t count)
         return false;
 #endif
     
-    stream->bytes_left -= count;
+    if (stream->bytes_left < count)
+        stream->bytes_left = 0;
+    else
+        stream->bytes_left -= count;
+
     return true;
 }
 
@@ -155,6 +160,9 @@ pb_istream_t pb_istream_from_buffer(const pb_byte_t *buf, size_t msglen)
     stream.bytes_left = msglen;
 #ifndef PB_NO_ERRMSG
     stream.errmsg = NULL;
+#endif
+#ifdef PB_MESSAGE_NESTING_MAX
+    stream.depth = 0;
 #endif
     return stream;
 }
@@ -364,6 +372,12 @@ bool checkreturn pb_make_string_substream(pb_istream_t *stream, pb_istream_t *su
     if (substream->bytes_left < size)
         PB_RETURN_ERROR(stream, "parent stream too short");
     
+#ifdef PB_MESSAGE_NESTING_MAX
+    substream->depth++;
+    if (substream->depth > PB_MESSAGE_NESTING_MAX)
+        PB_RETURN_ERROR(stream, "max depth");
+#endif
+
     substream->bytes_left = (size_t)size;
     stream->bytes_left -= (size_t)size;
     return true;
@@ -571,7 +585,7 @@ static bool checkreturn allocate_field(pb_istream_t *stream, void *pData, size_t
     }
 #endif
 
-    /* Check for multiplication overfloWs->
+    /* Check for multiplication overflows.
      * This code avoids the costly division if the sizes are small enough.
      * Multiplication is safe as long as only half of bits are set
      * in either multiplicand.
@@ -746,6 +760,18 @@ static bool checkreturn decode_pointer_field(pb_istream_t *stream, pb_wire_type_
 
 static bool checkreturn decode_callback_field(pb_istream_t *stream, pb_wire_type_t wire_type, pb_field_iter_t *field)
 {
+    /* Clear any data that may have been decoded for another oneof field
+     * that has come before this callback field.
+     */
+    if (PB_HTYPE(field->type) == PB_HTYPE_ONEOF)
+    {
+        if (*(pb_size_t*)field->pSize != 0 && *(pb_size_t*)field->pSize != field->tag)
+        {
+            memset(field->pData, 0, (size_t)field->data_size);
+        }
+        *(pb_size_t*)field->pSize = field->tag;
+    }
+
     if (!field->descriptor->field_callback)
         return pb_skip_field(stream, wire_type);
 
@@ -756,6 +782,22 @@ static bool checkreturn decode_callback_field(pb_istream_t *stream, pb_wire_type
         
         if (!pb_make_string_substream(stream, &substream))
             return false;
+
+        /* If the callback field is inside a submsg, first call the submsg_callback which
+         * should set the decoder for the callback field. */
+        if (PB_LTYPE(field->type) == PB_LTYPE_SUBMSG_W_CB && field->pSize != NULL) {
+            pb_callback_t* callback;
+            *(pb_size_t*)field->pSize = field->tag;
+            callback = (pb_callback_t*)field->pSize - 1;
+
+            if (callback->funcs.decode)
+            {
+                if (!callback->funcs.decode(&substream, field, &callback->arg)) {
+                    PB_SET_ERROR(stream, substream.errmsg ? substream.errmsg : "submsg callback failed");
+                    return false;
+                }
+            }
+        }
         
         do
         {
@@ -1163,7 +1205,7 @@ bool checkreturn pb_decode_ex(pb_istream_t *stream, const pb_msgdesc_t *fields, 
       status = pb_decode_inner(&substream, fields, dest_struct, flags);
 
       if (!pb_close_string_substream(stream, &substream))
-        return false;
+        status = false;
     }
     
 #ifdef PB_ENABLE_MALLOC
@@ -1326,6 +1368,13 @@ void pb_release(const pb_msgdesc_t *fields, void *dest_struct)
     {
         pb_release_single_field(&iter);
     } while (pb_field_iter_next(&iter));
+}
+#else
+void pb_release(const pb_msgdesc_t *fields, void *dest_struct)
+{
+    /* Nothing to release without PB_ENABLE_MALLOC. */
+    PB_UNUSED(fields);
+    PB_UNUSED(dest_struct);
 }
 #endif
 
