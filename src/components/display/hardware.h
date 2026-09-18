@@ -22,6 +22,7 @@
 #include "drivers/dispDrvQuadAlphaNum.h"
 #include "drivers/dispDrvSh1107.h"
 #include "drivers/dispDrvSsd1306.h"
+#include "drivers/dispDrvSt7735.h"
 #include "drivers/dispDrvSt7789.h"
 #include "wippersnapper.h"
 #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
