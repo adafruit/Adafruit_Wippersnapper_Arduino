@@ -92,6 +92,7 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -307,6 +308,7 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -426,6 +428,7 @@ jobs:
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -571,6 +574,7 @@ jobs:
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -661,6 +665,7 @@ jobs:
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -746,6 +751,7 @@ jobs:
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -857,6 +863,7 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -964,6 +971,7 @@ jobs:
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
