@@ -75,5 +75,16 @@
     "elf": ".pio/build/raspberypi_picow/firmware.elf",
     "ld": ".pio/build/raspberypi_picow/memmap_default.ld",
     "linker_vars": ""
+  },
+  {
+    "target_name": "pico_2w",
+    "mcu": "rp2350",
+    "port": "arduinopico",
+    "board": "raspberypi_pico2w",
+    "setup_cmd": "pip install --upgrade platformio",
+    "build_cmd": "pio run -e raspberypi_pico2w",
+    "elf": ".pio/build/raspberypi_pico2w/firmware.elf",
+    "ld": ".pio/build/raspberypi_pico2w/memmap_default.ld",
+    "linker_vars": ""
   }
 ]
