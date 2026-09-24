@@ -1,0 +1,82 @@
+name: Membrowse Memory Report
+
+on:
+  workflow_call:
+    secrets:
+      MEMBROWSE_API_KEY:
+        required: false
+
+concurrency:
+  group: membrowse-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  load-targets:
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Load target matrix
+        id: set-matrix
+        run: echo "matrix=$(jq -c '.' .github/membrowse-targets.json)" >> $GITHUB_OUTPUT
+
+  analyze:
+    name: analyze (${{ matrix.mcu }}, ${{ matrix.board }})
+    needs: load-targets
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.load-targets.outputs.matrix) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Cache PlatformIO platforms and packages
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.platformio/platforms
+            ~/.platformio/packages
+            ~/.platformio/.cache
+          key: pio-${{ matrix.mcu }}-${{ hashFiles('platformio.ini') }}
+          restore-keys: |
+            pio-${{ matrix.mcu }}-
+
+      - name: Install packages
+        run: ${{ matrix.setup_cmd }}
+
+      - name: Build firmware
+        run: ${{ matrix.build_cmd }}
+
+      - name: Run Membrowse PR Action
+        id: analyze
+        continue-on-error: true
+        uses: membrowse/membrowse-action@v1
+        with:
+          target_name: ${{ matrix.target_name }}
+          elf: ${{ matrix.elf }}
+          ld: ${{ matrix.ld }}
+          linker_vars: ${{ matrix.linker_vars }}
+          api_key: ${{ secrets.MEMBROWSE_API_KEY }}
+          api_url: ${{ vars.MEMBROWSE_API_URL }}
+          verbose: INFO
+
+      - name: Upload report artifact
+        if: ${{ steps.analyze.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: membrowse-report-${{ matrix.target_name }}
+          path: ${{ steps.analyze.outputs.report_path }}
