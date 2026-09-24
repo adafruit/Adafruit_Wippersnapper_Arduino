@@ -11,6 +11,9 @@ on:
         required: false
         default: ''
   pull_request:
+  push:
+    branches:
+      - main
   workflow_call:
     secrets:
       GH_REPO_TOKEN:
@@ -1109,3 +1112,13 @@ jobs:
           GH_REPO_TOKEN: ${{ secrets.GH_REPO_TOKEN }}
           PRETTYNAME: "Adafruit.io WipperSnapper Library"
         run: bash ci/doxy_gen_and_deploy.sh
+
+  membrowse:
+    # The merge jobs depend on every release and development build group.
+    needs: [merge-job-build-files, merge-job2, clang_and_doxy]
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    uses: ./.github/workflows/membrowse-report.yml
+    secrets:
+      MEMBROWSE_API_KEY: ${{ secrets.MEMBROWSE_API_KEY }}

@@ -3,7 +3,7 @@
 </p>
 
 # Adafruit WipperSnapper
-![Build CI](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/actions/workflows/build-clang-doxy.yml/badge.svg)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit_Wippersnapper_Arduino/html/index.html)
+![Build CI](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/actions/workflows/build-clang-doxy.yml/badge.svg)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit_Wippersnapper_Arduino/html/index.html)[![MemBrowse](https://membrowse.com/badge.svg)](https://membrowse.com/public/adafruit/Adafruit_Wippersnapper_Arduino)
 
 Adafruit.io WipperSnapper is a firmware designed to turn any Wi-Fi-capable board into an Internet-of-Things (IoT) device. No programming is required!
 
