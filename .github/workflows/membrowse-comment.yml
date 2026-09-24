@@ -2,7 +2,7 @@ name: Membrowse PR Comment
 
 on:
   workflow_run:
-    workflows: [Membrowse Memory Report]
+    workflows: [WipperSnapper Build CI]
     types: [completed]
 
 permissions:

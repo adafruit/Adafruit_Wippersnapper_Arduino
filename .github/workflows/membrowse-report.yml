@@ -1,13 +1,13 @@
 name: Membrowse Memory Report
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_call:
+    secrets:
+      MEMBROWSE_API_KEY:
+        required: false
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: membrowse-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
