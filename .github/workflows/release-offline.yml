@@ -122,6 +122,7 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -211,6 +212,7 @@ jobs:
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
           git clone --quiet --branch fix-for-pico https://github.com/brentru/SdFat.git /home/runner/Arduino/libraries/SdFat_-_Adafruit_Fork/
+          git clone --quiet --branch fix-negative-temperature https://github.com/tyeth/adafruit-Adafruit_BMP5xx.git /home/runner/Arduino/libraries/Adafruit_BMP5xx_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
