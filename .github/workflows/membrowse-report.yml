@@ -24,6 +24,7 @@ jobs:
         run: echo "matrix=$(jq -c '.' .github/membrowse-targets.json)" >> $GITHUB_OUTPUT
 
   analyze:
+    name: analyze (${{ matrix.mcu }}, ${{ matrix.board }})
     needs: load-targets
     runs-on: ubuntu-22.04
     strategy:
@@ -50,9 +51,9 @@ jobs:
             ~/.platformio/platforms
             ~/.platformio/packages
             ~/.platformio/.cache
-          key: pio-${{ matrix.port }}-${{ hashFiles('platformio.ini') }}
+          key: pio-${{ matrix.mcu }}-${{ hashFiles('platformio.ini') }}
           restore-keys: |
-            pio-${{ matrix.port }}-
+            pio-${{ matrix.mcu }}-
 
       - name: Install packages
         run: ${{ matrix.setup_cmd }}

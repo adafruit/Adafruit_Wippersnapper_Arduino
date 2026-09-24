@@ -1,6 +1,7 @@
 [
   {
     "target_name": "feather_esp32",
+    "mcu": "esp32",
     "port": "esp32",
     "board": "featheresp32",
     "setup_cmd": "pip install --upgrade platformio",
@@ -11,6 +12,7 @@
   },
   {
     "target_name": "feather_esp32s2",
+    "mcu": "esp32s2",
     "port": "esp32",
     "board": "featheresp32s2",
     "setup_cmd": "pip install --upgrade platformio",
@@ -21,6 +23,7 @@
   },
   {
     "target_name": "feather_esp32s3",
+    "mcu": "esp32s3",
     "port": "esp32",
     "board": "adafruit_feather_esp32s3",
     "setup_cmd": "pip install --upgrade platformio",
@@ -31,6 +34,7 @@
   },
   {
     "target_name": "qtpy_esp32c3",
+    "mcu": "esp32c3",
     "port": "esp32",
     "board": "adafruit_qtpy_esp32c3",
     "setup_cmd": "pip install --upgrade platformio",
@@ -41,6 +45,7 @@
   },
   {
     "target_name": "huzzah_esp8266",
+    "mcu": "esp8266",
     "port": "esp8266",
     "board": "huzzah",
     "setup_cmd": "pip install --upgrade platformio",
@@ -51,6 +56,7 @@
   },
   {
     "target_name": "pyportal_m4",
+    "mcu": "samd51",
     "port": "atsamd",
     "board": "adafruit_pyportal_m4",
     "setup_cmd": "pip install --upgrade platformio",
@@ -61,6 +67,7 @@
   },
   {
     "target_name": "pico_w",
+    "mcu": "rp2040",
     "port": "arduinopico",
     "board": "rpipicow",
     "setup_cmd": "pip install --upgrade platformio",
