@@ -46,6 +46,7 @@ public:
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _bmp5xx = nullptr;
+    _discard_samples = 1;
   }
 
   /*******************************************************************************/
@@ -233,7 +234,7 @@ public:
       mode = BMP5XX_POWERMODE_NORMAL;
       break;
     case 2:
-      mode = BMP5XX_POWERMODE_FORCED;
+      mode = BMP5XX_POWERMODE_FORCED; ///< Single shot then return to standby
       break;
     case 3:
       mode = BMP5XX_POWERMODE_CONTINUOUS;
