@@ -921,3 +921,20 @@ jobs:
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
 
+  membrowse:
+    # Wait for every release and development build group before reporting.
+    needs:
+      - build-esp32sx-esptool
+      - build-esp32sx
+      - build-esp32
+      - build-samd
+      - build-rp2040
+      - build-esp8266
+      - build-esp32sx-dev
+      - build-esp32-dev
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/migrate-api-v2')
+    uses: ./.github/workflows/membrowse-report.yml
+    secrets:
+      MEMBROWSE_API_KEY: ${{ secrets.MEMBROWSE_API_KEY }}
