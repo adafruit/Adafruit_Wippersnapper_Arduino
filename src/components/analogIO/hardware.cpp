@@ -1,5 +1,5 @@
 /*!
- * @file src/components/analogIn/hardware.cpp
+ * @file src/components/analogIO/hardware.cpp
  *
  * Hardware driver for the analogin.proto API
  *
@@ -15,7 +15,7 @@
 #include "hardware.h"
 
 /*!
-    @brief  AnalogInHardware constructor
+    @brief  AnalogIOHardware constructor
     @param  pin_name      The broker-provided pin name.
     @param  pin_num       The resolved pin number.
     @param  read_mode     The type of analog read (RAW or VOLTAGE).
@@ -24,7 +24,7 @@
     @param  ref_voltage   The reference voltage for analog reads.
     @param  expander_drv  Pointer to expander driver, or nullptr.
 */
-AnalogInHardware::AnalogInHardware(const char *pin_name, uint8_t pin_num,
+AnalogIOHardware::AnalogIOHardware(const char *pin_name, uint8_t pin_num,
                                    ws_sensor_Type read_mode,
                                    ws_analogin_SampleMode sample_mode,
                                    ulong period, float ref_voltage,
@@ -47,16 +47,14 @@ AnalogInHardware::AnalogInHardware(const char *pin_name, uint8_t pin_num,
 }
 
 /*!
-    @brief  AnalogInHardware destructor. Resets pin to floating INPUT state.
+    @brief  AnalogIOHardware destructor. Resets pin to floating INPUT state.
 */
-AnalogInHardware::~AnalogInHardware() {
-    deinit();
-}
+AnalogIOHardware::~AnalogIOHardware() { deinit(); }
 
 /*!
     @brief  Initializes an analog input pin.
 */
-void AnalogInHardware::init() {
+void AnalogIOHardware::init() {
   if (_expander_drv != nullptr) {
     _expander_drv->pinMode(_name, INPUT);
   } else {
@@ -68,7 +66,7 @@ void AnalogInHardware::init() {
     @brief  Deinitializes an analog input pin and frees it for
             other uses.
 */
-void AnalogInHardware::deinit() {
+void AnalogIOHardware::deinit() {
   if (_expander_drv != nullptr) {
     _expander_drv->pinMode(_name, INPUT);
   } else {
@@ -79,7 +77,7 @@ void AnalogInHardware::deinit() {
 /*!
     @brief  Configures the hardware's native ADC resolution.
 */
-void AnalogInHardware::setAdcResolutionNative() {
+void AnalogIOHardware::setAdcResolutionNative() {
 #if defined(ARDUINO_ARCH_SAMD)
   _native_adc_resolution = 12;
 #elif defined(ARDUINO_ARCH_ESP32)
@@ -106,7 +104,7 @@ void AnalogInHardware::setAdcResolutionNative() {
     @param  resolution
             The requested resolution, in bits.
 */
-void AnalogInHardware::setAdcResolution(uint8_t resolution) {
+void AnalogIOHardware::setAdcResolution(uint8_t resolution) {
   if (resolution > MAX_ADC_RESOLUTION) {
     resolution = MAX_ADC_RESOLUTION;
   }
@@ -120,7 +118,7 @@ void AnalogInHardware::setAdcResolution(uint8_t resolution) {
     @brief  Calculates a factor used by the hardware for scaling
             the ADC's resolution.
 */
-void AnalogInHardware::getScaleFactor() {
+void AnalogIOHardware::getScaleFactor() {
   _max_scale_resolution_desired = pow(2, _desired_adc_resolution);
   _max_scale_resolution_native = pow(2, _native_adc_resolution);
 }
@@ -130,7 +128,7 @@ void AnalogInHardware::getScaleFactor() {
             desired resolution.
     @return The raw ADC value.
 */
-uint32_t AnalogInHardware::readValueRaw() {
+uint32_t AnalogIOHardware::readValueRaw() {
   if (_expander_drv != nullptr) {
     _value_raw = (uint32_t)(((uint64_t)_expander_drv->analogRead(_name) *
                              _max_scale_resolution_desired) /
@@ -147,7 +145,7 @@ uint32_t AnalogInHardware::readValueRaw() {
     @brief  Reads the voltage from the analog pin.
     @return The pin's voltage.
 */
-float AnalogInHardware::readVoltage() {
+float AnalogIOHardware::readVoltage() {
   if (_expander_drv != nullptr) {
     _value_voltage =
         (readValueRaw() * _ref_voltage) / _max_scale_resolution_desired;
@@ -166,7 +164,7 @@ float AnalogInHardware::readVoltage() {
     @brief  Checks if the pin's raw value has changed since last check.
     @return True if the value changed.
 */
-bool AnalogInHardware::checkEvent() {
+bool AnalogIOHardware::checkEvent() {
   readValue();
 
   if (_value_raw == _prv_value_raw)
@@ -179,7 +177,7 @@ bool AnalogInHardware::checkEvent() {
     @brief  Reads the pin according to its read_mode.
     @return The pin's value as a float (raw cast or voltage).
 */
-float AnalogInHardware::readValue() {
+float AnalogIOHardware::readValue() {
   if (_read_mode == ws_sensor_Type_T_RAW) {
     return (float)readValueRaw();
   }
@@ -190,7 +188,7 @@ float AnalogInHardware::readValue() {
     @brief  Checks if the pin's timer has expired and reads the value.
     @return True if the timer expired.
 */
-bool AnalogInHardware::checkTimer() {
+bool AnalogIOHardware::checkTimer() {
   ulong cur_time = millis();
   if (cur_time - _prv_time <= _period)
     return false;
@@ -204,25 +202,25 @@ bool AnalogInHardware::checkTimer() {
     @brief  Gets the pin's number.
     @return The pin's number.
 */
-uint8_t AnalogInHardware::getPinNum() const { return _name; }
+uint8_t AnalogIOHardware::getPinNum() const { return _name; }
 
 /*!
     @brief  Gets the broker-provided pin name.
     @return The pin name, valid for the lifetime of this hardware instance.
 */
-const char *AnalogInHardware::getPinName() const { return _pin_name; }
+const char *AnalogIOHardware::getPinName() const { return _pin_name; }
 
 /*!
     @brief  Gets the pin's read mode.
     @return The pin's read mode (RAW or VOLTAGE).
 */
-ws_sensor_Type AnalogInHardware::getReadMode() const { return _read_mode; }
+ws_sensor_Type AnalogIOHardware::getReadMode() const { return _read_mode; }
 
 /*!
     @brief  Gets the pin's sample mode.
     @return The pin's sample mode (TIMER or EVENT).
 */
-ws_analogin_SampleMode AnalogInHardware::getSampleMode() const {
+ws_analogin_SampleMode AnalogIOHardware::getSampleMode() const {
   return _sample_mode;
 }
 
@@ -230,7 +228,7 @@ ws_analogin_SampleMode AnalogInHardware::getSampleMode() const {
     @brief  Gets the last read value according to read_mode.
     @return The last value as a float (raw cast or voltage).
 */
-float AnalogInHardware::getValue() const {
+float AnalogIOHardware::getValue() const {
   if (_read_mode == ws_sensor_Type_T_RAW) {
     return (float)_value_raw;
   }
@@ -241,7 +239,7 @@ float AnalogInHardware::getValue() const {
     @brief  Gets the expander driver, or nullptr for native pins.
     @return Pointer to the expander driver, or nullptr.
 */
-ExpanderHardware *AnalogInHardware::getExpander() const {
+ExpanderHardware *AnalogIOHardware::getExpander() const {
   return _expander_drv;
 }
 
@@ -249,14 +247,14 @@ ExpanderHardware *AnalogInHardware::getExpander() const {
     @brief  Gets whether the last read was sent to IO.
     @return True if the last read was sent successfully.
 */
-bool AnalogInHardware::didReadSend() const { return _did_read_send; }
+bool AnalogIOHardware::didReadSend() const { return _did_read_send; }
 
 /*!
     @brief  Marks that the current pin value has been sent to IO.
 */
-void AnalogInHardware::markSent() { _did_read_send = true; }
+void AnalogIOHardware::markSent() { _did_read_send = true; }
 
 /*!
     @brief  Resets the pin's did_read_send flag to false.
 */
-void AnalogInHardware::resetSendFlag() { _did_read_send = false; }
+void AnalogIOHardware::resetSendFlag() { _did_read_send = false; }

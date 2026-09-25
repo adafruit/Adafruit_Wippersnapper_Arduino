@@ -122,9 +122,9 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
 void CheckinModel::ConfigureControllers() {
   Ws->digital_io_controller->SetMaxDigitalPins(
       _CheckinB2D.payload.response.total_gpio_pins);
-  Ws->analogin_controller->SetRefVoltage(
+  Ws->analogio_controller->SetRefVoltage(
       _CheckinB2D.payload.response.reference_voltage);
-  Ws->analogin_controller->SetMaxAnalogPins(
+  Ws->analogio_controller->SetMaxAnalogPins(
       _CheckinB2D.payload.response.total_analog_pins);
 }
 
@@ -211,7 +211,7 @@ bool CheckinModel::cbAnalogInAdds(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analogin add");
     return false;
   }
-  return Ws->analogin_controller->Handle_AnalogInAdd(&add_msg);
+  return Ws->analogio_controller->Handle_AnalogInAdd(&add_msg);
 }
 
 /*!

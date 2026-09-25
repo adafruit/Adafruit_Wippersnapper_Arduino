@@ -1,5 +1,5 @@
 /*!
- * @file src/components/analogIn/controller.cpp
+ * @file src/components/analogIO/controller.cpp
  *
  * Controller for the analogin.proto API
  *
@@ -17,17 +17,17 @@
 #include "hardware.h"
 
 /*!
-    @brief  AnalogIn controller constructor
+    @brief  AnalogIO controller constructor
 */
-AnalogInController::AnalogInController() {
-  _analogin_model = new AnalogInModel();
+AnalogIOController::AnalogIOController() {
+  _analogin_model = new AnalogIOModel();
   _mcu_ref_voltage = DEFAULT_MCU_VREF;
 }
 
 /*!
-    @brief  AnalogIn controller destructor
+    @brief  AnalogIO controller destructor
 */
-AnalogInController::~AnalogInController() {
+AnalogIOController::~AnalogIOController() {
   for (size_t i = 0; i < _pins.size(); i++)
     delete _pins[i];
   delete _analogin_model;
@@ -38,7 +38,7 @@ AnalogInController::~AnalogInController() {
     @param  voltage
             The reference voltage.
 */
-void AnalogInController::SetRefVoltage(float voltage) {
+void AnalogIOController::SetRefVoltage(float voltage) {
   _mcu_ref_voltage = voltage;
 }
 
@@ -47,7 +47,7 @@ void AnalogInController::SetRefVoltage(float voltage) {
     @param  max_analog_pins
             The hardware's maximum number of analog pins.
 */
-void AnalogInController::SetMaxAnalogPins(uint8_t max_analog_pins) {
+void AnalogIOController::SetMaxAnalogPins(uint8_t max_analog_pins) {
   _pins.reserve(max_analog_pins);
 }
 
@@ -58,7 +58,7 @@ void AnalogInController::SetMaxAnalogPins(uint8_t max_analog_pins) {
             The nanopb input stream.
     @return True if the message was successfully routed, False otherwise.
 */
-bool AnalogInController::Router(pb_istream_t *stream) {
+bool AnalogIOController::Router(pb_istream_t *stream) {
   // Attempt to decode the AnalogIn B2D envelope
   ws_analogin_B2D b2d = ws_analogin_B2D_init_zero;
   if (!ws_pb_decode(stream, ws_analogin_B2D_fields, &b2d)) {
@@ -92,7 +92,7 @@ bool AnalogInController::Router(pb_istream_t *stream) {
             The pin number to remove.
     @return True if the pin was found and removed.
 */
-bool AnalogInController::RemovePin(uint8_t pin_num,
+bool AnalogIOController::RemovePin(uint8_t pin_num,
                                    ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
     if (_pins[i]->getPinNum() == pin_num &&
@@ -111,11 +111,10 @@ bool AnalogInController::RemovePin(uint8_t pin_num,
             The pin's number.
     @return Pointer to the analog pin, or nullptr if not found.
 */
-AnalogInHardware *AnalogInController::GetPin(uint8_t pin_num,
+AnalogIOHardware *AnalogIOController::GetPin(uint8_t pin_num,
                                              ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
-    if (_pins[i]->getPinNum() == pin_num &&
-        _pins[i]->getExpander() == expander)
+    if (_pins[i]->getPinNum() == pin_num && _pins[i]->getExpander() == expander)
       return _pins[i];
   }
   return nullptr;
@@ -128,26 +127,29 @@ AnalogInHardware *AnalogInController::GetPin(uint8_t pin_num,
             The AnalogInAdd message.
     @return True if the pin was successfully added, False otherwise.
 */
-bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
+bool AnalogIOController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   WS_DEBUG_PRINTLN("[analogin] Handle_AnalogInAdd MESSAGE...");
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
                                                 &expander_drv)) {
-    Ws->error_handler->publishComponentError(msg->pin_name, "Unable to resolve pin name");
+    Ws->error_handler->publishComponentError(msg->pin_name,
+                                             "Unable to resolve pin name");
     return false;
   }
 
   // Validate the read mode
   if (msg->read_mode != ws_sensor_Type_T_RAW &&
       msg->read_mode != ws_sensor_Type_T_VOLTAGE) {
-    Ws->error_handler->publishComponentError(msg->pin_name, "Invalid read mode");
+    Ws->error_handler->publishComponentError(msg->pin_name,
+                                             "Invalid read mode");
     return false;
   }
   // Validate the sample mode
   if (msg->sample_mode != ws_analogin_SampleMode_SM_TIMER &&
       msg->sample_mode != ws_analogin_SampleMode_SM_EVENT) {
-    Ws->error_handler->publishComponentError(msg->pin_name, "Invalid sample mode");
+    Ws->error_handler->publishComponentError(msg->pin_name,
+                                             "Invalid sample mode");
     return false;
   }
 
@@ -162,7 +164,7 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   }
 
   // Create a new analog input pin
-  AnalogInHardware *new_pin = new AnalogInHardware(
+  AnalogIOHardware *new_pin = new AnalogIOHardware(
       msg->pin_name, pin_num, msg->read_mode, msg->sample_mode,
       (ulong)(msg->period * 1000.0f), ref_voltage, expander_drv);
 
@@ -189,17 +191,19 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
             The AnalogInRemove message.
     @return True if the pin was successfully removed, False otherwise.
 */
-bool AnalogInController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
+bool AnalogIOController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
                                                 &expander_drv)) {
-    Ws->error_handler->publishComponentError(msg->pin_name, "Unable to resolve pin name");
+    Ws->error_handler->publishComponentError(msg->pin_name,
+                                             "Unable to resolve pin name");
     return false;
   }
 
   if (!RemovePin(pin_num, expander_drv)) {
-    Ws->error_handler->publishComponentError(msg->pin_name, "Failed to find pin");
+    Ws->error_handler->publishComponentError(msg->pin_name,
+                                             "Failed to find pin");
     return false;
   }
 
@@ -215,7 +219,7 @@ bool AnalogInController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
             Pointer to the analog pin hardware object.
     @return True if the message was successfully recorded.
 */
-bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
+bool AnalogIOController::EncodePublishPinEvent(AnalogIOHardware *pin) {
   uint8_t pin_num = pin->getPinNum();
   float value = pin->getValue();
   ws_sensor_Type read_type = pin->getReadMode();
@@ -237,7 +241,8 @@ bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
       return false;
     }
   } else {
-    Ws->error_handler->publishComponentError(c_pin_name, "Invalid read type specified!");
+    Ws->error_handler->publishComponentError(c_pin_name,
+                                             "Invalid read type specified!");
     return false;
   }
 
@@ -255,17 +260,17 @@ bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
 }
 
 /*!
-    @brief  Update/polling loop for the AnalogIn controller.
+    @brief  Update/polling loop for the AnalogIO controller.
     @param  force
             If true, forces a read on all pins regardless of period.
 */
-void AnalogInController::update(bool force) {
+void AnalogIOController::update(bool force) {
   // Bail-out if the vector is empty
   if (_pins.empty())
     return;
 
   for (size_t i = 0; i < _pins.size(); i++) {
-    AnalogInHardware *pin = _pins[i];
+    AnalogIOHardware *pin = _pins[i];
 
     // Is the pin ready for a new reading?
     if (!force) {
@@ -285,8 +290,8 @@ void AnalogInController::update(bool force) {
     }
 
     if (!EncodePublishPinEvent(pin)) {
-      Ws->error_handler->publishComponentError(
-          pin->getPinName(), "Unable to record pin value!");
+      Ws->error_handler->publishComponentError(pin->getPinName(),
+                                               "Unable to record pin value!");
       pin->resetSendFlag();
       continue;
     }
@@ -298,7 +303,7 @@ void AnalogInController::update(bool force) {
     @brief  Checks if all analog pins have been read and their values sent.
     @return True if all pins have been read and sent, False otherwise.
 */
-bool AnalogInController::UpdateComplete() {
+bool AnalogIOController::UpdateComplete() {
   for (size_t i = 0; i < _pins.size(); i++) {
     if (!_pins[i]->didReadSend()) {
       return false;
@@ -310,7 +315,7 @@ bool AnalogInController::UpdateComplete() {
 /*!
     @brief  Resets all analog pins' did_read_send flags to false.
 */
-void AnalogInController::ResetFlags() {
+void AnalogIOController::ResetFlags() {
   for (size_t i = 0; i < _pins.size(); i++) {
     _pins[i]->resetSendFlag();
   }

@@ -40,7 +40,9 @@
 #ifdef ARDUINO_ARCH_ESP8266
 // ESP8266: Use F() macro to store string literals in Flash (PROGMEM)
 #define WS_DEBUG_PRINT(x)                                                      \
-  { WS_PRINTER.print(F(x)); } /**< Print debug message to serial (Flash) */
+  {                                                                            \
+    WS_PRINTER.print(F(x));                                                    \
+  } /**< Print debug message to serial (Flash) */
 #define WS_DEBUG_PRINTLN(x)                                                    \
   {                                                                            \
     WS_PRINTER.println(F(x));                                                  \
@@ -49,7 +51,9 @@
 #else
 // Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+  } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {                                                                            \
     WS_PRINTER.println(__VA_ARGS__);                                           \
@@ -59,23 +63,34 @@
 
 // Variable printing macros - use for non-string-literal arguments
 #define WS_DEBUG_PRINTVAR(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__); } /**< Print variable to serial */
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+  } /**< Print variable to serial */
 #define WS_DEBUG_PRINTLNVAR(...)                                               \
-  { WS_PRINTER.println(__VA_ARGS__); } /**< Print variable with newline */
+  {                                                                            \
+    WS_PRINTER.println(__VA_ARGS__);                                           \
+  } /**< Print variable with newline */
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } /**< Print in hexadecimal */
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
+  } /**< Print in hexadecimal */
 
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} /**< Debug print disabled */
+  {                                                                            \
+  } /**< Debug print disabled */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} /**< Debug println disabled */
+  {                                                                            \
+  } /**< Debug println disabled */
 #define WS_DEBUG_PRINTVAR(...)                                                 \
-  {} /**< Debug print variable disabled */
+  {                                                                            \
+  } /**< Debug print variable disabled */
 #define WS_DEBUG_PRINTLNVAR(...)                                               \
-  {} /**< Debug println variable disabled */
+  {                                                                            \
+  } /**< Debug println variable disabled */
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  {} /**< Debug print hex disabled */
+  {                                                                            \
+  } /**< Debug print hex disabled */
 #endif
 
 /*!
@@ -127,7 +142,7 @@
 #endif
 
 // Components (API v2)
-#include "components/analogIn/controller.h"
+#include "components/analogIO/controller.h"
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/display/controller.h"
@@ -180,7 +195,7 @@ class ExpanderController;
 class SensorModel;
 class DigitalIOController;
 class DisplayController;
-class AnalogInController;
+class AnalogIOController;
 class DS18X20Controller;
 class GPSController;
 class I2cController;
@@ -270,8 +285,8 @@ public:
   SensorModel *sensor_model = nullptr;   ///< Instance of SensorModel class
   DigitalIOController *digital_io_controller =
       nullptr; ///< Instance of DigitalIO controller class
-  AnalogInController *analogin_controller =
-      nullptr; ///< Instance of AnalogIn controller
+  AnalogIOController *analogio_controller =
+      nullptr; ///< Instance of AnalogIO controller
   DisplayController *_display_controller =
       nullptr; ///< Instance of Display controller
   DS18X20Controller *_ds18x20_controller =
