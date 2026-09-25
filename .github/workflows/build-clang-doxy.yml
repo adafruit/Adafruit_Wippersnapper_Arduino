@@ -99,7 +99,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -107,8 +107,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -116,11 +116,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -314,7 +314,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -322,8 +322,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -331,11 +331,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -433,7 +433,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -441,8 +441,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -450,11 +450,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -578,7 +578,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -586,8 +586,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -595,11 +595,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -668,7 +668,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -676,8 +676,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -685,11 +685,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -753,7 +753,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -761,8 +761,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -770,11 +770,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -864,7 +864,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -872,8 +872,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -881,11 +881,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -971,7 +971,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -979,8 +979,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -988,11 +988,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
