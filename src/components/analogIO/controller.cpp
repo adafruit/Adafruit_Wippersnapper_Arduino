@@ -280,6 +280,9 @@ void AnalogIOController::update(bool force) {
 
   for (size_t i = 0; i < _pins.size(); i++) {
     AnalogIOHardware *pin = _pins[i];
+    ws_sensor_Type read_mode = pin->getReadMode();
+    bool invalid_read_type = read_mode != ws_sensor_Type_T_RAW &&
+                             read_mode != ws_sensor_Type_T_VOLTAGE;
 
     // Is the pin ready for a new reading?
     if (!force) {
@@ -299,9 +302,7 @@ void AnalogIOController::update(bool force) {
     }
 
     if (!EncodePublishPinEvent(pin)) {
-      ws_sensor_Type read_mode = pin->getReadMode();
-      if (read_mode == ws_sensor_Type_T_RAW ||
-          read_mode == ws_sensor_Type_T_VOLTAGE) {
+      if (!invalid_read_type) {
         reportPinError(pin->getPinName(), "Unable to record pin value!");
       }
       pin->resetSendFlag();
