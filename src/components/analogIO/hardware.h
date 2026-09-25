@@ -1,5 +1,5 @@
 /*!
- * @file src/components/analogIn/hardware.h
+ * @file src/components/analogIO/hardware.h
  *
  * Hardware implementation for the analogin.proto message.
  * Each instance represents a single analog input pin and
@@ -14,8 +14,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_ANALOGIN_HARDWARE_H
-#define WS_ANALOGIN_HARDWARE_H
+#ifndef WS_ANALOGIO_HARDWARE_H
+#define WS_ANALOGIO_HARDWARE_H
 #include "wippersnapper.h"
 
 #define DEFAULT_ADC_RESOLUTION 16 ///< Default ADC resolution, in bits
@@ -30,33 +30,37 @@ class ExpanderHardware;
             its state. Each instance carries its own ADC
             configuration.
 */
-class AnalogInHardware {
+class AnalogIOHardware {
 public:
-  AnalogInHardware(uint8_t pin_name, ws_sensor_Type read_mode,
-                   ws_analogin_SampleMode sample_mode, ulong period,
-                   float ref_voltage, ExpanderHardware *expander_drv);
-  ~AnalogInHardware();
-  float ReadValue();
-  bool CheckEvent();
-  bool CheckTimer();
-  uint8_t GetPinNum() const;
-  ws_sensor_Type GetReadMode() const;
-  ws_analogin_SampleMode GetSampleMode() const;
-  float GetValue() const;
-  ExpanderHardware *GetExpanderDriver() const;
-  bool DidReadSend() const;
-  void MarkSent();
-  void ResetSendFlag();
+  AnalogIOHardware(const char *pin_name, uint8_t pin_num,
+                   ws_sensor_Type read_mode, ws_analogin_SampleMode sample_mode,
+                   ulong period, float ref_voltage,
+                   ExpanderHardware *expander_drv);
+  ~AnalogIOHardware();
+  float readValue();
+  bool checkEvent();
+  bool checkTimer();
+  uint8_t getPinNum() const;
+  const char *getPinName() const;
+  ws_sensor_Type getReadMode() const;
+  ws_analogin_SampleMode getSampleMode() const;
+  float getValue() const;
+  ExpanderHardware *getExpander() const;
+  bool didReadSend() const;
+  void markSent();
+  void resetSendFlag();
 
 private:
-  uint32_t ReadRawValue();
-  float ReadVoltage();
-  void InitPin();
-  void DeinitPin();
-  void SetNativeADCResolution();
-  void SetResolution(uint8_t resolution);
-  void CalculateScaleFactor();
-  uint8_t _name;                       ///< The pin's number.
+  uint32_t readValueRaw();
+  float readVoltage();
+  void init();
+  void deinit();
+  void setAdcResolutionNative();
+  void setAdcResolution(uint8_t resolution);
+  void getScaleFactor();
+  uint8_t _name; ///< The pin's number.
+  char _pin_name[sizeof(
+      ws_analogin_Add::pin_name)];     ///< Broker-provided pin name.
   ws_sensor_Type _read_mode;           ///< Type of analog read (RAW or VOLTAGE)
   ws_analogin_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)
   ulong _period;                       ///< The pin's period, in milliseconds.
@@ -73,4 +77,4 @@ private:
                       ///< native pins, message vref for expander pins).
   ExpanderHardware *_expander_drv; ///< Pointer to expander driver, or nullptr.
 };
-#endif // WS_ANALOGIN_HARDWARE_H
+#endif // WS_ANALOGIO_HARDWARE_H
