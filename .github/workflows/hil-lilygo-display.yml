@@ -44,9 +44,9 @@ jobs:
     name: 🖥️ flash + checkin + i8080 display + camera
     runs-on: ubuntu-latest   # switch to [self-hosted, hil] if the controller is LAN-only
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 
@@ -106,23 +106,23 @@ jobs:
       # <target>-<label>-<type>.log), matching the hil-test-suite convention.
       - name: Upload serial logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with: { name: hil-serial-logs, path: hil-out/*-serial.log, if-no-files-found: ignore }
       - name: Upload protomq logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with: { name: hil-protomq-logs, path: hil-out/*-protomq.log, if-no-files-found: ignore }
       - name: Upload flash logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with: { name: hil-flash-logs, path: hil-out/*-flash.log, if-no-files-found: ignore }
       - name: Upload events logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with: { name: hil-events-logs, path: hil-out/*.events.log, if-no-files-found: ignore }
       - name: Upload all HIL assets (comment.md + logs + proof)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with: { name: hil-assets, path: hil-out/**, if-no-files-found: ignore }
 
       - name: Host proof image on the hil-proof release

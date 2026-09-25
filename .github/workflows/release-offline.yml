@@ -20,12 +20,12 @@ jobs:
     name: 🔎 Clang
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -41,9 +41,9 @@ jobs:
     needs: clang
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Install Python dependencies
@@ -94,16 +94,16 @@ jobs:
             "qtpy_esp32s3_n4r2",
           ]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -130,7 +130,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -139,7 +139,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -168,7 +168,7 @@ jobs:
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
           mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
       - name: upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -188,16 +188,16 @@ jobs:
                            "metro_rp2350_tinyusb"
                            ]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -219,7 +219,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -228,7 +228,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         env:
           cache-name: cache-node-modules
         with:
@@ -246,7 +246,7 @@ jobs:
         run: |
           mv examples/*/build/*/Wippersnapper_demo_offline.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
       - name: upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -258,7 +258,7 @@ jobs:
     needs: [build-esp32sx, build-rp2040]
     steps:
       - name: Merge Artifacts from Builds
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v7
         with:
           name: build-files
           pattern: build-files-!(dev)-*
