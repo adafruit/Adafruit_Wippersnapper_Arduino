@@ -252,8 +252,7 @@ bool AnalogIOController::EncodePublishPinEvent(AnalogIOHardware *pin) {
       return false;
     }
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Invalid read type for AnalogInEvent message!");
-    return false;
+    return reportPinError(c_pin_name, "Invalid read type specified!");
   }
 
   // Publish the AnalogIn message to the broker
@@ -300,7 +299,11 @@ void AnalogIOController::update(bool force) {
     }
 
     if (!EncodePublishPinEvent(pin)) {
-      reportPinError(pin->getPinName(), "Unable to record pin value!");
+      ws_sensor_Type read_mode = pin->getReadMode();
+      if (read_mode == ws_sensor_Type_T_RAW ||
+          read_mode == ws_sensor_Type_T_VOLTAGE) {
+        reportPinError(pin->getPinName(), "Unable to record pin value!");
+      }
       pin->resetSendFlag();
       continue;
     }
