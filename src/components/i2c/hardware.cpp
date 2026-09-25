@@ -185,17 +185,29 @@ bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
     SelectMuxChannel(address_space->mux_channel);
   }
 
-  // A caller-supplied empty address list currently probes nothing (the
-  // "empty means scan all" proto semantic is not implemented here yet), which
-  // otherwise looks like a silent "found 0 devices". Make it visible.
+  // An empty address list scans all non-reserved I2C addresses
+  bool scan_all = false;
   if (addresses_count == 0) {
-    WS_DEBUG_PRINTLN("[i2c] WARNING: No addresses to probe — the address list "
-                     "is empty (broker must send explicit addresses to scan).");
+    scan_all = true;
+  }
+  size_t probe_count = addresses_count;
+  if (scan_all) {
+    // Probe the full I2C address range (0x08-0x77)
+    probe_count = MAX_I2C_ADDRESSES;
   }
 
-  // Probe addresses
-  for (size_t i = 0; i < addresses_count; i++) {
-    uint8_t addr = (uint8_t)addresses[i];
+  // found_buf holds, at most, MAX_I2C_ADDRESSES entries
+  if (probe_count > MAX_I2C_ADDRESSES) {
+    probe_count = MAX_I2C_ADDRESSES;
+  }
+
+  for (size_t i = 0; i < probe_count; i++) {
+    uint8_t addr = (uint8_t)(0x08 + i);
+    if (!scan_all) {
+      // Use the address from the provided list instead of the full range
+      addr = (uint8_t)addresses[i];
+    }
+
     // Skip reserved I2C addresses (0x00-0x07 and 0x78-0x7F)
     if (addr <= 0x07 || addr >= 0x78) {
       continue;
@@ -203,13 +215,6 @@ bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
     _bus->beginTransmission(addr);
     uint8_t rc = _bus->endTransmission();
     if (rc == 0) {
-      if (*found_count >= MAX_I2C_ADDRESSES) {
-        WS_DEBUG_PRINTLN("[i2c] WARNING: found_buf full, stopping probe");
-        break;
-      }
-      WS_DEBUG_PRINT("[i2c] Found device at 0x");
-      WS_DEBUG_PRINTHEX(addr);
-      WS_DEBUG_PRINTLN("");
       found_buf[*found_count] = addr;
       (*found_count)++;
     }
@@ -218,6 +223,16 @@ bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
   // Clear MUX channel if we used one
   if (using_mux) {
     ClearMuxChannel();
+  }
+
+  // Print the addresses found on the bus
+  if (*found_count > 0) {
+    WS_DEBUG_PRINT("[i2c] Found devices at:");
+    for (size_t i = 0; i < *found_count; i++) {
+      WS_DEBUG_PRINT(" 0x");
+      WS_DEBUG_PRINTHEX(found_buf[i]);
+    }
+    WS_DEBUG_PRINTLN("");
   }
 
   return true;
