@@ -252,7 +252,8 @@ bool AnalogIOController::EncodePublishPinEvent(AnalogIOHardware *pin) {
       return false;
     }
   } else {
-    return reportPinError(c_pin_name, "Invalid read type specified!");
+    WS_DEBUG_PRINTLN("ERROR: Invalid read type for AnalogInEvent message!");
+    return false;
   }
 
   // Publish the AnalogIn message to the broker
