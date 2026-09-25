@@ -2,7 +2,9 @@ name: Membrowse PR Comment
 
 on:
   workflow_run:
-    workflows: [WipperSnapper Build CI]
+    # workflow_run always runs the copy of this file on the default branch
+    # (main), so list every build workflow that calls membrowse-report.yml.
+    workflows: ["WipperSnapper Build CI", "Build CI (migrate-api-v2 branch)"]
     types: [completed]
 
 permissions:
