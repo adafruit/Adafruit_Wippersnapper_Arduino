@@ -16,6 +16,21 @@
 #include "../expander/controller.h"
 #include "hardware.h"
 
+namespace {
+bool reportPinError(const char *pin_name, const char *error_msg) {
+  if (Ws->_sdCardV2->isModeOffline()) {
+    WS_DEBUG_PRINT("[analogin] ERROR on ");
+    WS_DEBUG_PRINT(pin_name);
+    WS_DEBUG_PRINT(": ");
+    WS_DEBUG_PRINTLN(error_msg);
+    return false;
+  }
+
+  Ws->error_handler->publishComponentError(pin_name, error_msg);
+  return false;
+}
+} // namespace
+
 /*!
     @brief  AnalogIO controller constructor
 */
@@ -133,24 +148,18 @@ bool AnalogIOController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
                                                 &expander_drv)) {
-    Ws->error_handler->publishComponentError(msg->pin_name,
-                                             "Unable to resolve pin name");
-    return false;
+    return reportPinError(msg->pin_name, "Unable to resolve pin name");
   }
 
   // Validate the read mode
   if (msg->read_mode != ws_sensor_Type_T_RAW &&
       msg->read_mode != ws_sensor_Type_T_VOLTAGE) {
-    Ws->error_handler->publishComponentError(msg->pin_name,
-                                             "Invalid read mode");
-    return false;
+    return reportPinError(msg->pin_name, "Invalid read mode");
   }
   // Validate the sample mode
   if (msg->sample_mode != ws_analogin_SampleMode_SM_TIMER &&
       msg->sample_mode != ws_analogin_SampleMode_SM_EVENT) {
-    Ws->error_handler->publishComponentError(msg->pin_name,
-                                             "Invalid sample mode");
-    return false;
+    return reportPinError(msg->pin_name, "Invalid sample mode");
   }
 
   // If pin is being updated, remove the existing pin first
@@ -196,15 +205,11 @@ bool AnalogIOController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
                                                 &expander_drv)) {
-    Ws->error_handler->publishComponentError(msg->pin_name,
-                                             "Unable to resolve pin name");
-    return false;
+    return reportPinError(msg->pin_name, "Unable to resolve pin name");
   }
 
   if (!RemovePin(pin_num, expander_drv)) {
-    Ws->error_handler->publishComponentError(msg->pin_name,
-                                             "Failed to find pin");
-    return false;
+    return reportPinError(msg->pin_name, "Failed to find pin");
   }
 
   WS_DEBUG_PRINT("[analogin] Removed pin: ");
@@ -220,15 +225,21 @@ bool AnalogIOController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
     @return True if the message was successfully recorded.
 */
 bool AnalogIOController::EncodePublishPinEvent(AnalogIOHardware *pin) {
-  uint8_t pin_num = pin->getPinNum();
   float value = pin->getValue();
   ws_sensor_Type read_type = pin->getReadMode();
-
-  if (Ws->_sdCardV2->isModeOffline()) {
-    return Ws->_sdCardV2->LogGPIOSensorEventToSD(pin_num, value, read_type);
+  uint8_t pin_num = pin->getPinNum();
+  char c_pin_name[20];
+  ExpanderHardware *expander = pin->getExpander();
+  if (expander != nullptr) {
+    ExpanderHardware::FormatPinName(c_pin_name, sizeof(c_pin_name),
+                                    expander->getAddress(), pin_num);
+  } else {
+    snprintf(c_pin_name, sizeof(c_pin_name), "A%d", pin_num);
   }
 
-  const char *c_pin_name = pin->getPinName();
+  if (Ws->_sdCardV2->isModeOffline()) {
+    return Ws->_sdCardV2->LogGPIOSensorEventToSD(c_pin_name, value, read_type);
+  }
 
   if (read_type == ws_sensor_Type_T_RAW) {
     if (!_analogin_model->encodeAnalogInEventRaw(c_pin_name, value)) {
@@ -241,9 +252,7 @@ bool AnalogIOController::EncodePublishPinEvent(AnalogIOHardware *pin) {
       return false;
     }
   } else {
-    Ws->error_handler->publishComponentError(c_pin_name,
-                                             "Invalid read type specified!");
-    return false;
+    return reportPinError(c_pin_name, "Invalid read type specified!");
   }
 
   // Publish the AnalogIn message to the broker
@@ -290,8 +299,7 @@ void AnalogIOController::update(bool force) {
     }
 
     if (!EncodePublishPinEvent(pin)) {
-      Ws->error_handler->publishComponentError(pin->getPinName(),
-                                               "Unable to record pin value!");
+      reportPinError(pin->getPinName(), "Unable to record pin value!");
       pin->resetSendFlag();
       continue;
     }

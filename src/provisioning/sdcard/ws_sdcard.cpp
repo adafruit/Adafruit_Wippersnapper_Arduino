@@ -1189,6 +1189,25 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
     @param  doc
             The JSON document to populate.
     @param  pin
+            The canonical pin identifier.
+    @param  value
+            The sensor value.
+    @param  read_type
+            The sensor type.
+*/
+void ws_sdcard::BuildJSONDoc(JsonDocument &doc, const char *pin, float value,
+                             ws_sensor_Type read_type) {
+  doc["timestamp"] = GetTimestamp();
+  doc["pin"] = pin;
+  doc["value"] = value;
+  doc["si_unit"] = SensorTypeToSIUnit(read_type);
+}
+
+/*!
+    @brief  Builds a JSON document for a sensor event.
+    @param  doc
+            The JSON document to populate.
+    @param  pin
             The GPIO pin number.
     @param  value
             The sensor value.
@@ -1279,6 +1298,27 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
     @returns True if the event was successfully logged, False otherwise.
 */
 bool ws_sdcard::LogGPIOSensorEventToSD(uint8_t pin, float value,
+                                       ws_sensor_Type read_type) {
+  if (IsBatteryLow())
+    return true;
+  JsonDocument doc;
+  BuildJSONDoc(doc, pin, value, read_type);
+  if (!LogJSONDoc(doc))
+    return false;
+  return true;
+}
+
+/*!
+    @brief  Logs a GPIO sensor event to the SD card.
+    @param  pin
+            The canonical pin identifier.
+    @param  value
+            The sensor value.
+    @param  read_type
+            The sensor type.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+bool ws_sdcard::LogGPIOSensorEventToSD(const char *pin, float value,
                                        ws_sensor_Type read_type) {
   if (IsBatteryLow())
     return true;
