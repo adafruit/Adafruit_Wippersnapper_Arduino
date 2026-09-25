@@ -67,7 +67,7 @@ bool drvIna228::configureDefaults() {
 */
 /*******************************************************************************/
 bool drvIna228::setShuntResistance(const ws_config_Value &shunt_resistance) {
-  float v;
+  float v = _shuntResistance;
   if (shunt_resistance.which_value == ws_config_Value_float_value_tag) {
     v = shunt_resistance.value.float_value;
   } else if (shunt_resistance.which_value == ws_config_Value_int_value_tag) {
@@ -94,7 +94,7 @@ bool drvIna228::setShuntResistance(const ws_config_Value &shunt_resistance) {
 */
 /*******************************************************************************/
 bool drvIna228::setMaxCurrent(const ws_config_Value &max_current) {
-  float v;
+  float v = _maxCurrent;
   if (max_current.which_value == ws_config_Value_float_value_tag) {
     v = max_current.value.float_value;
   } else if (max_current.which_value == ws_config_Value_int_value_tag) {
@@ -144,7 +144,7 @@ bool drvIna228::setAveragedSamples(const ws_config_Value &averaged_samples) {
   if (averaged_samples.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  INA228_AveragingCount count;
+  INA228_AveragingCount count = INA228_COUNT_16;
   switch (averaged_samples.value.int_value) {
   case 0:
     count = INA228_COUNT_1;
@@ -192,7 +192,7 @@ bool drvIna228::setVoltageConversionTime(
   if (voltage_conversion_time.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  INA228_ConversionTime time;
+  INA228_ConversionTime time = INA228_TIME_150_us;
   switch (voltage_conversion_time.value.int_value) {
   case 0:
     time = INA228_TIME_50_us;
@@ -241,7 +241,7 @@ bool drvIna228::setCurrentConversionTime(
   if (current_conversion_time.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  INA228_ConversionTime time;
+  INA228_ConversionTime time = INA228_TIME_280_us;
   switch (current_conversion_time.value.int_value) {
   case 0:
     time = INA228_TIME_50_us;

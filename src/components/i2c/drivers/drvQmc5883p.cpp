@@ -73,7 +73,7 @@ bool drvQmc5883p::setMode(const ws_config_Value &mode) {
   if (mode.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  qmc5883p_mode_t meas_mode;
+  qmc5883p_mode_t meas_mode = QMC5883P_MODE_CONTINUOUS;
   switch (mode.value.int_value) {
   case 0:
     meas_mode = QMC5883P_MODE_SUSPEND;
@@ -107,7 +107,7 @@ bool drvQmc5883p::setOutputDataRate(const ws_config_Value &output_data_rate) {
   if (output_data_rate.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  qmc5883p_odr_t odr;
+  qmc5883p_odr_t odr = QMC5883P_ODR_50HZ;
   switch (output_data_rate.value.int_value) {
   case 0:
     odr = QMC5883P_ODR_10HZ;
@@ -141,7 +141,7 @@ bool drvQmc5883p::setOverSampleRatio(const ws_config_Value &oversample_ratio) {
   if (oversample_ratio.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  qmc5883p_osr_t osr;
+  qmc5883p_osr_t osr = QMC5883P_OSR_4;
   switch (oversample_ratio.value.int_value) {
   case 0:
     osr = QMC5883P_OSR_8;
@@ -175,7 +175,7 @@ bool drvQmc5883p::setDownSampleRatio(const ws_config_Value &downsample_ratio) {
   if (downsample_ratio.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  qmc5883p_dsr_t dsr;
+  qmc5883p_dsr_t dsr = QMC5883P_DSR_2;
   switch (downsample_ratio.value.int_value) {
   case 0:
     dsr = QMC5883P_DSR_1;
@@ -209,7 +209,7 @@ bool drvQmc5883p::setRange(const ws_config_Value &range) {
   if (range.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  qmc5883p_range_t fs_range;
+  qmc5883p_range_t fs_range = QMC5883P_RANGE_30G;
   switch (range.value.int_value) {
   case 0:
     fs_range = QMC5883P_RANGE_30G;

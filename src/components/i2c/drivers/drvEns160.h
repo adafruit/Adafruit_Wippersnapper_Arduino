@@ -85,7 +85,7 @@ public:
       return false;
     }
     int32_t val = mode.value.int_value;
-    uint8_t opmode;
+    uint8_t opmode = ENS160_OPMODE_STD;
     switch (val) {
     case 0:
       opmode = ENS160_OPMODE_DEP_SLEEP;

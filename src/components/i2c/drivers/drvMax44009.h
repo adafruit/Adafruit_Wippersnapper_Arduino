@@ -99,7 +99,7 @@ public:
     if (mode.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    max44009_mode_t meas_mode;
+    max44009_mode_t meas_mode = MAX44009_MODE_DEFAULT;
     switch (mode.value.int_value) {
     case 0:
       meas_mode = MAX44009_MODE_DEFAULT;
@@ -135,7 +135,7 @@ public:
     if (integration_time.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    max44009_integration_time_t integ;
+    max44009_integration_time_t integ = MAX44009_INTEGRATION_100MS;
     switch (integration_time.value.int_value) {
     case 0:
       integ = MAX44009_INTEGRATION_800MS;

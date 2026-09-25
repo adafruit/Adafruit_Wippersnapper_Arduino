@@ -101,7 +101,7 @@ public:
     if (temp_oversampling.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    spa06_003_oversample_t oversampling;
+    spa06_003_oversample_t oversampling = SPA06_003_OVERSAMPLE_128;
     switch (temp_oversampling.value.int_value) {
     case 0:
       oversampling = SPA06_003_OVERSAMPLE_1;
@@ -147,7 +147,7 @@ public:
     if (pressure_oversampling.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    spa06_003_oversample_t oversampling;
+    spa06_003_oversample_t oversampling = SPA06_003_OVERSAMPLE_128;
     switch (pressure_oversampling.value.int_value) {
     case 0:
       oversampling = SPA06_003_OVERSAMPLE_1;
@@ -194,7 +194,7 @@ public:
     if (output_data_rate.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    spa06_003_rate_t r;
+    spa06_003_rate_t r = SPA06_003_RATE_200;
     switch (output_data_rate.value.int_value) {
     case 0:
       r = SPA06_003_RATE_1;

@@ -44,6 +44,7 @@ static_assert(sizeof(WsPinName::name) >= DRV_BASE_PIN_NAME_LEN,
     instead of waiting out a full period. Name kept in sync with the v1 driver
     base (src/components/i2c/drivers/WipperSnapper_I2C_Driver.h on main). */
 #define PERIOD_24HRS_AGO_MILLIS (millis() - (24 * 60 * 60 * 1000))
+#define UINT12_MAX 0xFFF ///< Maximum value for a 12-bit unsigned integer
 
 /*!
     @brief  Base class for I2C Drivers.

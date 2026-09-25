@@ -91,7 +91,7 @@ public:
     if (averaged_samples.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    tmp117_average_count_t count;
+    tmp117_average_count_t count = TMP117_AVERAGE_8X;
     switch (averaged_samples.value.int_value) {
     case 0:
       count = TMP117_AVERAGE_1X;
@@ -126,7 +126,7 @@ public:
     if (read_delay.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    tmp117_delay_t delay;
+    tmp117_delay_t delay = TMP117_DELAY_1000_MS;
     switch (read_delay.value.int_value) {
     case 0:
       delay = TMP117_DELAY_0_MS;
@@ -171,7 +171,7 @@ public:
     if (mode.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    tmp117_mode_t meas_mode;
+    tmp117_mode_t meas_mode = TMP117_MODE_CONTINUOUS;
     switch (mode.value.int_value) {
     case 0:
       meas_mode = TMP117_MODE_CONTINUOUS;

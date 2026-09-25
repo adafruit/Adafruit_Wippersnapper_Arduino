@@ -111,7 +111,7 @@ public:
   bool setGain(const ws_config_Value &gain) override {
     if (gain.which_value != ws_config_Value_int_value_tag)
       return false;
-    as7331_gain_t g;
+    as7331_gain_t g = AS7331_GAIN_2X;
     switch (gain.value.int_value) {
     case 0:
       g = AS7331_GAIN_2048X;
@@ -173,7 +173,7 @@ public:
   bool setIntegrationTime(const ws_config_Value &integration_time) override {
     if (integration_time.which_value != ws_config_Value_int_value_tag)
       return false;
-    as7331_time_t t;
+    as7331_time_t t = AS7331_TIME_64MS;
     switch (integration_time.value.int_value) {
     case 0:
       t = AS7331_TIME_1MS;
@@ -243,7 +243,7 @@ public:
   bool setMode(const ws_config_Value &mode) override {
     if (mode.which_value != ws_config_Value_int_value_tag)
       return false;
-    as7331_mode_t m;
+    as7331_mode_t m = AS7331_MODE_CMD;
     switch (mode.value.int_value) {
     case 0:
       m = AS7331_MODE_CONT;
@@ -279,7 +279,7 @@ public:
   bool setClockFrequency(const ws_config_Value &clock_frequency) override {
     if (clock_frequency.which_value != ws_config_Value_int_value_tag)
       return false;
-    as7331_clock_t c;
+    as7331_clock_t c = AS7331_CLOCK_1024MHZ;
     switch (clock_frequency.value.int_value) {
     case 0:
       c = AS7331_CLOCK_1024MHZ;

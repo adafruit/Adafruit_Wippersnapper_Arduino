@@ -96,7 +96,7 @@ public:
     if (output_data_rate.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    lps28_odr_t odr;
+    lps28_odr_t odr = LPS28_ODR_ONESHOT;
     switch (output_data_rate.value.int_value) {
     case 0:
       odr = LPS28_ODR_ONESHOT;
@@ -145,7 +145,7 @@ public:
     if (averaged_samples.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    lps28_avg_t avg;
+    lps28_avg_t avg = LPS28_AVG_4;
     switch (averaged_samples.value.int_value) {
     case 0:
       avg = LPS28_AVG_4;

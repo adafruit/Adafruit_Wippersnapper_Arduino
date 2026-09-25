@@ -90,7 +90,7 @@ public:
       return false;
     }
     int32_t val = temp_oversampling.value.int_value;
-    uint8_t oversampling;
+    uint8_t oversampling = BMP3_NO_OVERSAMPLING;
     switch (val) {
     case 0:
       oversampling = BMP3_NO_OVERSAMPLING;
@@ -129,7 +129,7 @@ public:
       return false;
     }
     int32_t val = pressure_oversampling.value.int_value;
-    uint8_t oversampling;
+    uint8_t oversampling = BMP3_NO_OVERSAMPLING;
     switch (val) {
     case 0:
       oversampling = BMP3_NO_OVERSAMPLING;
@@ -168,7 +168,7 @@ public:
       return false;
     }
     int32_t val = iir_filter.value.int_value;
-    uint8_t coeff;
+    uint8_t coeff = BMP3_IIR_FILTER_DISABLE;
     switch (val) {
     case 0:
       coeff = BMP3_IIR_FILTER_DISABLE;
@@ -214,7 +214,7 @@ public:
       return false;
     }
     int32_t val = output_data_rate.value.int_value;
-    uint8_t odr;
+    uint8_t odr = BMP3_ODR_25_HZ;
     switch (val) {
     case 0:
       odr = BMP3_ODR_50_HZ;

@@ -104,7 +104,7 @@ public:
     if (temp_oversampling.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    bmp5xx_oversampling_t oversampling;
+    bmp5xx_oversampling_t oversampling = BMP5XX_OVERSAMPLING_2X;
     if (!IndexToOversampling(temp_oversampling.value.int_value, oversampling)) {
       return false;
     }
@@ -125,7 +125,7 @@ public:
     if (pressure_oversampling.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    bmp5xx_oversampling_t oversampling;
+    bmp5xx_oversampling_t oversampling = BMP5XX_OVERSAMPLING_16X;
     if (!IndexToOversampling(pressure_oversampling.value.int_value,
                              oversampling)) {
       return false;
@@ -147,7 +147,7 @@ public:
     if (iir_filter.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    bmp5xx_iir_filter_t coeff;
+    bmp5xx_iir_filter_t coeff = BMP5XX_IIR_FILTER_COEFF_1;
     switch (iir_filter.value.int_value) {
     case 0:
       coeff = BMP5XX_IIR_FILTER_BYPASS;
@@ -222,7 +222,7 @@ public:
     if (power_mode.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    bmp5xx_powermode_t mode;
+    bmp5xx_powermode_t mode = BMP5XX_POWERMODE_NORMAL;
     switch (power_mode.value.int_value) {
     case 0:
       mode = BMP5XX_POWERMODE_STANDBY;

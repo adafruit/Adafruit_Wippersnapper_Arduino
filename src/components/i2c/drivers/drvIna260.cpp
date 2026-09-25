@@ -70,7 +70,7 @@ bool drvIna260::setAveragedSamples(const ws_config_Value &averaged_samples) {
   if (averaged_samples.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  INA260_AveragingCount count;
+  INA260_AveragingCount count = INA260_COUNT_16;
   switch (averaged_samples.value.int_value) {
   case 0:
     count = INA260_COUNT_1;
@@ -118,7 +118,7 @@ bool drvIna260::setVoltageConversionTime(
   if (voltage_conversion_time.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  INA260_ConversionTime time;
+  INA260_ConversionTime time = INA260_TIME_140_us;
   switch (voltage_conversion_time.value.int_value) {
   case 0:
     time = INA260_TIME_140_us;
@@ -167,7 +167,7 @@ bool drvIna260::setCurrentConversionTime(
   if (current_conversion_time.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  INA260_ConversionTime time;
+  INA260_ConversionTime time = INA260_TIME_140_us;
   switch (current_conversion_time.value.int_value) {
   case 0:
     time = INA260_TIME_140_us;
@@ -213,7 +213,7 @@ bool drvIna260::setMode(const ws_config_Value &mode) {
   if (mode.which_value != ws_config_Value_int_value_tag) {
     return false;
   }
-  INA260_MeasurementMode meas_mode;
+  INA260_MeasurementMode meas_mode = INA260_MODE_CONTINUOUS;
   switch (mode.value.int_value) {
   case 0:
     meas_mode = INA260_MODE_SHUTDOWN;

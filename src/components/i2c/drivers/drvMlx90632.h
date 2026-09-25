@@ -158,7 +158,7 @@ public:
     if (mode.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    mlx90632_mode_t devMode;
+    mlx90632_mode_t devMode = MLX90632_MODE_CONTINUOUS;
     switch (mode.value.int_value) {
     case 0:
       devMode = MLX90632_MODE_CONTINUOUS;
@@ -192,7 +192,7 @@ public:
     if (measurement_rate.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    mlx90632_refresh_rate_t rate;
+    mlx90632_refresh_rate_t rate = MLX90632_REFRESH_2HZ;
     switch (measurement_rate.value.int_value) {
     case 0:
       rate = MLX90632_REFRESH_0_5HZ;

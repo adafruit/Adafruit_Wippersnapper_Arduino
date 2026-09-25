@@ -96,7 +96,7 @@ public:
   bool setIntegrationTime(const ws_config_Value &integration_time) override {
     if (integration_time.which_value != ws_config_Value_int_value_tag)
       return false;
-    vcnl4030_als_it_t it;
+    vcnl4030_als_it_t it = VCNL4030_ALS_IT_100MS;
     switch (integration_time.value.int_value) {
     case 0:
       it = VCNL4030_ALS_IT_50MS;
@@ -133,7 +133,7 @@ public:
   bool setProxLedCurrent(const ws_config_Value &prox_led_current) override {
     if (prox_led_current.which_value != ws_config_Value_int_value_tag)
       return false;
-    vcnl4030_prox_led_t current;
+    vcnl4030_prox_led_t current = VCNL4030_PROX_LED_200MA;
     switch (prox_led_current.value.int_value) {
     case 0:
       current = VCNL4030_PROX_LED_50MA;
@@ -177,7 +177,7 @@ public:
   bool setProxDuty(const ws_config_Value &prox_duty) override {
     if (prox_duty.which_value != ws_config_Value_int_value_tag)
       return false;
-    vcnl4030_prox_duty_t duty;
+    vcnl4030_prox_duty_t duty = VCNL4030_PROX_DUTY_40;
     switch (prox_duty.value.int_value) {
     case 0:
       duty = VCNL4030_PROX_DUTY_40;
@@ -210,7 +210,7 @@ public:
       const ws_config_Value &prox_integration_time) override {
     if (prox_integration_time.which_value != ws_config_Value_int_value_tag)
       return false;
-    vcnl4030_prox_it_t it;
+    vcnl4030_prox_it_t it = VCNL4030_PROX_IT_1T;
     switch (prox_integration_time.value.int_value) {
     case 0:
       it = VCNL4030_PROX_IT_1T;
@@ -254,7 +254,7 @@ public:
   bool setProxResolution(const ws_config_Value &prox_resolution) override {
     if (prox_resolution.which_value != ws_config_Value_int_value_tag)
       return false;
-    bool enable;
+    bool enable = false;
     switch (prox_resolution.value.int_value) {
     case 0:
       enable = false;

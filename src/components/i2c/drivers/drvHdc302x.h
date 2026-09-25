@@ -103,7 +103,7 @@ public:
     if (heater.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    HDC302x_HeaterPower power;
+    HDC302x_HeaterPower power = HEATER_OFF;
     switch (heater.value.int_value) {
     case 0:
       power = HEATER_OFF;

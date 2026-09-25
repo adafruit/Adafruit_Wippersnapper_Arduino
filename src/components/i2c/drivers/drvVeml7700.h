@@ -75,7 +75,7 @@ public:
       return false;
     }
     int32_t val = gain.value.int_value;
-    uint8_t als_gain;
+    uint8_t als_gain = VEML7700_GAIN_1_8;
     switch (val) {
     case 0:
       als_gain = VEML7700_GAIN_1;
@@ -109,7 +109,7 @@ public:
       return false;
     }
     int32_t val = integration_time.value.int_value;
-    uint8_t int_time;
+    uint8_t int_time = VEML7700_IT_100MS;
     switch (val) {
     case 0:
       int_time = VEML7700_IT_25MS;

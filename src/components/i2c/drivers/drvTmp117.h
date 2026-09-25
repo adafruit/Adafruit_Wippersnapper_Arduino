@@ -77,7 +77,7 @@ public:
       return false;
     }
     int32_t val = averaged_samples.value.int_value;
-    tmp117_average_count_t count;
+    tmp117_average_count_t count = TMP117_AVERAGE_8X;
     switch (val) {
     case 0:
       count = TMP117_AVERAGE_1X;
@@ -112,7 +112,7 @@ public:
       return false;
     }
     int32_t val = read_delay.value.int_value;
-    tmp117_delay_t delay;
+    tmp117_delay_t delay = TMP117_DELAY_1000_MS;
     switch (val) {
     case 0:
       delay = TMP117_DELAY_0_MS;
@@ -157,7 +157,7 @@ public:
       return false;
     }
     int32_t val = mode.value.int_value;
-    tmp117_mode_t meas_mode;
+    tmp117_mode_t meas_mode = TMP117_MODE_CONTINUOUS;
     switch (val) {
     case 0:
       meas_mode = TMP117_MODE_CONTINUOUS;

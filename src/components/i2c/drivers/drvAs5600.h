@@ -91,8 +91,8 @@ public:
         ok && _as5600->setFastFilterThresh(AS5600_FAST_FILTER_THRESH_SLOW_ONLY);
     // Reset position settings to defaults
     ok = ok && _as5600->setZPosition(0);
-    ok = ok && _as5600->setMPosition(4095);
-    ok = ok && _as5600->setMaxAngle(4095);
+    ok = ok && _as5600->setMPosition(UINT12_MAX);
+    ok = ok && _as5600->setMaxAngle(UINT12_MAX);
     return ok;
   }
 
@@ -110,7 +110,7 @@ public:
     if (output_stage.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    as5600_output_stage_t stage;
+    as5600_output_stage_t stage = AS5600_OUTPUT_STAGE_ANALOG_FULL;
     switch (output_stage.value.int_value) {
     case 0:
       stage = AS5600_OUTPUT_STAGE_ANALOG_FULL;
@@ -141,7 +141,7 @@ public:
     if (power_mode.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    as5600_power_mode_t mode;
+    as5600_power_mode_t mode = AS5600_POWER_MODE_NOM;
     switch (power_mode.value.int_value) {
     case 0:
       mode = AS5600_POWER_MODE_NOM;
@@ -175,7 +175,7 @@ public:
     if (slow_filter.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    as5600_slow_filter_t filter;
+    as5600_slow_filter_t filter = AS5600_SLOW_FILTER_16X;
     switch (slow_filter.value.int_value) {
     case 0:
       filter = AS5600_SLOW_FILTER_16X;
@@ -211,7 +211,7 @@ public:
     if (fast_filter_threshold.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    as5600_fast_filter_thresh_t thresh;
+    as5600_fast_filter_thresh_t thresh = AS5600_FAST_FILTER_THRESH_SLOW_ONLY;
     switch (fast_filter_threshold.value.int_value) {
     case 0:
       thresh = AS5600_FAST_FILTER_THRESH_SLOW_ONLY;
@@ -257,7 +257,7 @@ public:
     if (hysteresis.which_value != ws_config_Value_int_value_tag) {
       return false;
     }
-    as5600_hysteresis_t hyst;
+    as5600_hysteresis_t hyst = AS5600_HYSTERESIS_OFF;
     switch (hysteresis.value.int_value) {
     case 0:
       hyst = AS5600_HYSTERESIS_OFF;
@@ -291,7 +291,7 @@ public:
       return false;
     }
     int32_t val = z_position.value.int_value;
-    if (val < 0 || val > 4095) {
+    if (val < 0 || val > UINT12_MAX) {
       return false;
     }
     return _as5600->setZPosition((uint16_t)val);
@@ -311,7 +311,7 @@ public:
       return false;
     }
     int32_t val = m_position.value.int_value;
-    if (val < 0 || val > 4095) {
+    if (val < 0 || val > UINT12_MAX) {
       return false;
     }
     return _as5600->setMPosition((uint16_t)val);
@@ -331,7 +331,7 @@ public:
       return false;
     }
     int32_t val = max_angle.value.int_value;
-    if (val < 0 || val > 4095) {
+    if (val < 0 || val > UINT12_MAX) {
       return false;
     }
     return _as5600->setMaxAngle((uint16_t)val);
@@ -354,7 +354,7 @@ public:
       WS_DEBUG_PRINTLN("ML: magnet too weak");
     } else {
       uint16_t angle = _as5600->getAngle();
-      _angle = ((float)angle / 4095.0) * 360.0;
+      _angle = ((float)angle / UINT12_MAX) * 360.0;
       return true;
     }
     // Show raw changing data if low/high value errors
