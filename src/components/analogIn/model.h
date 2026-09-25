@@ -25,18 +25,18 @@ public:
   AnalogInModel();
   ~AnalogInModel();
   // AnalogInAdd
-  bool DecodeAnalogInAdd(pb_istream_t *stream);
-  ws_analogin_Add *GetAnalogInAddMsg();
+  bool decodeAnalogInAdd(pb_istream_t *stream);
+  ws_analogin_Add *getAnalogInAddMsg();
   // AnalogInRemove
-  bool DecodeAnalogInRemove(pb_istream_t *stream);
+  bool decodeAnalogInRemove(pb_istream_t *stream);
   ws_analogin_Remove *GetAnalogInRemoveMsg();
   // AnalogInEvent
-  bool EncodeAnalogInEvent(const char *pin_name, float pin_value,
+  bool encodeAnalogInEvent(const char *pin_name, float pin_value,
                            ws_sensor_Type read_type);
-  bool EncodeAnalogInEventVoltage(const char *pin_name, float pin_value);
-  bool EncodeAnalogInEventRaw(const char *pin_name, float pin_value);
-  ws_analogin_Event *GetAnalogInEvent();
-  ws_analogin_D2B *GetAnalogInD2B();
+  bool encodeAnalogInEventVoltage(const char *pin_name, float pin_value);
+  bool encodeAnalogInEventRaw(const char *pin_name, float pin_value);
+  ws_analogin_Event *getAnalogInEvent();
+  ws_analogin_D2B *getAnalogInD2b();
 
 private:
   ws_analogin_Add _msg_AnalogInAdd;       ///< AnalogInAdd message

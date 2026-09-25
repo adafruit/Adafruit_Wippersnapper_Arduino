@@ -32,31 +32,33 @@ class ExpanderHardware;
 */
 class AnalogInHardware {
 public:
-  AnalogInHardware(uint8_t pin_name, ws_sensor_Type read_mode,
+  AnalogInHardware(const char *pin_name, uint8_t pin_num, ws_sensor_Type read_mode,
                    ws_analogin_SampleMode sample_mode, ulong period,
                    float ref_voltage, ExpanderHardware *expander_drv);
   ~AnalogInHardware();
-  float ReadValue();
-  bool CheckEvent();
-  bool CheckTimer();
-  uint8_t GetPinNum() const;
-  ws_sensor_Type GetReadMode() const;
-  ws_analogin_SampleMode GetSampleMode() const;
-  float GetValue() const;
-  ExpanderHardware *GetExpanderDriver() const;
-  bool DidReadSend() const;
-  void MarkSent();
-  void ResetSendFlag();
+  float readValue();
+  bool checkEvent();
+  bool checkTimer();
+  uint8_t getPinNum() const;
+  const char *getPinName() const;
+  ws_sensor_Type getReadMode() const;
+  ws_analogin_SampleMode getSampleMode() const;
+  float getValue() const;
+  ExpanderHardware *getExpander() const;
+  bool didReadSend() const;
+  void markSent();
+  void resetSendFlag();
 
 private:
-  uint32_t ReadRawValue();
-  float ReadVoltage();
-  void InitPin();
-  void DeinitPin();
-  void SetNativeADCResolution();
-  void SetResolution(uint8_t resolution);
-  void CalculateScaleFactor();
+  uint32_t readValueRaw();
+  float readVoltage();
+  void init();
+  void deinit();
+  void setAdcResolutionNative();
+  void setAdcResolution(uint8_t resolution);
+  void getScaleFactor();
   uint8_t _name;                       ///< The pin's number.
+  char _pin_name[sizeof(ws_analogin_Add::pin_name)]; ///< Broker-provided pin name.
   ws_sensor_Type _read_mode;           ///< Type of analog read (RAW or VOLTAGE)
   ws_analogin_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)
   ulong _period;                       ///< The pin's period, in milliseconds.
