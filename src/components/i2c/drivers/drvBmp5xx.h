@@ -46,6 +46,7 @@ public:
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _bmp5xx = nullptr;
+    _discard_samples = 1;
   }
 
   /*******************************************************************************/
@@ -83,12 +84,14 @@ public:
   */
   /*******************************************************************************/
   bool configureDefaults() override {
-    return _bmp5xx->setTemperatureOversampling(BMP5XX_OVERSAMPLING_8X) &&
-           _bmp5xx->setPressureOversampling(BMP5XX_OVERSAMPLING_16X) &&
-           _bmp5xx->setIIRFilterCoeff(BMP5XX_IIR_FILTER_COEFF_3) &&
-           _bmp5xx->setOutputDataRate(BMP5XX_ODR_50_HZ) &&
-           _bmp5xx->setPowerMode(BMP5XX_POWERMODE_NORMAL) &&
-           _bmp5xx->enablePressure(true);
+    bool ok = _bmp5xx->setTemperatureOversampling(BMP5XX_OVERSAMPLING_8X) &&
+              _bmp5xx->setPressureOversampling(BMP5XX_OVERSAMPLING_16X) &&
+              _bmp5xx->setIIRFilterCoeff(BMP5XX_IIR_FILTER_COEFF_3) &&
+              _bmp5xx->setOutputDataRate(BMP5XX_ODR_50_HZ) &&
+              _bmp5xx->setPowerMode(BMP5XX_POWERMODE_NORMAL) &&
+              _bmp5xx->enablePressure(true);
+    _power_mode = BMP5XX_POWERMODE_NORMAL;
+    return ok;
   }
 
   /*******************************************************************************/
@@ -231,7 +234,7 @@ public:
       mode = BMP5XX_POWERMODE_NORMAL;
       break;
     case 2:
-      mode = BMP5XX_POWERMODE_FORCED;
+      mode = BMP5XX_POWERMODE_FORCED; ///< Single shot then return to standby
       break;
     case 3:
       mode = BMP5XX_POWERMODE_CONTINUOUS;
@@ -242,7 +245,45 @@ public:
     default:
       return false;
     }
-    return _bmp5xx->setPowerMode(mode);
+    if (!_bmp5xx->setPowerMode(mode))
+      return false;
+    _power_mode = mode;
+    _forced_pending = false;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Checks a new conversion is available (INT_STATUS drdy). Handles
+                the power modes exposed as settings: standby modes never
+                measure, forced mode is re-triggered per pass.
+      @returns  True if fresh data is ready to read, False otherwise.
+  */
+  /*******************************************************************************/
+  bool IsSensorReady() override {
+    // Standby modes do not measure: the data registers only hold old values
+    if (_power_mode == BMP5XX_POWERMODE_STANDBY ||
+        _power_mode == BMP5XX_POWERMODE_DEEP_STANDBY)
+      return false;
+    // Forced mode measures once then returns to standby: trigger a new
+    // conversion for this pass, then wait for its data-ready flag
+    if (_power_mode == BMP5XX_POWERMODE_FORCED && !_forced_pending) {
+      _forced_pending = _bmp5xx->setPowerMode(BMP5XX_POWERMODE_FORCED);
+      return false;
+    }
+    return _bmp5xx->dataReady();
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Performs one BMP5XX reading so temperature, pressure and
+                altitude in a read pass come from the same sample.
+      @returns  True if the reading succeeded, False otherwise.
+  */
+  /*******************************************************************************/
+  bool ReadSensorData() override {
+    _forced_pending = false;
+    return _bmp5xx->performReading();
   }
 
   /*******************************************************************************/
@@ -255,9 +296,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!_bmp5xx->performReading()) {
+    if (!AttemptRead())
       return false;
-    }
     tempEvent->temperature = _bmp5xx->temperature;
     return true;
   }
@@ -273,16 +313,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!_bmp5xx->performReading()) {
+    if (!AttemptRead())
       return false;
-    }
     pressureEvent->pressure = _bmp5xx->pressure;
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a the BMP5XX's altitude sensor into an event.
+      @brief    Reads a the BMP5XX's altitude sensor into an event. Derived
+                from the cached pressure sample, so no extra bus traffic.
       @param    altitudeEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -290,10 +330,13 @@ public:
   */
   /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!_bmp5xx->performReading()) {
+    if (!AttemptRead())
       return false;
-    }
-    altitudeEvent->altitude = _bmp5xx->readAltitude(_seaLevelPressureHpa);
+    // Same formula as Adafruit_BMP5xx::readAltitude(), without the re-read;
+    // the library reports pressure in hPa
+    altitudeEvent->altitude =
+        44330.0F *
+        (1.0F - pow(_bmp5xx->pressure / _seaLevelPressureHpa, 0.1903F));
     return true;
   }
 
@@ -350,7 +393,9 @@ protected:
     return true;
   }
 
-  Adafruit_BMP5xx *_bmp5xx; ///< BMP5xx object
+  Adafruit_BMP5xx *_bmp5xx;                                 ///< BMP5xx object
+  bmp5xx_powermode_t _power_mode = BMP5XX_POWERMODE_NORMAL; ///< Configured
+  bool _forced_pending = false; ///< A forced conversion has been triggered
   float _seaLevelPressureHpa =
       SEALEVELPRESSURE_HPA; ///< Sea-level pressure reference (hPa)
 };

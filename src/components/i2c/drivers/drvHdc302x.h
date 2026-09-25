@@ -44,7 +44,8 @@ public:
   drvHdc302x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // discard first reading (It returned -45c for me once)
+    _discard_samples = 1;
   }
 
   /*******************************************************************************/
@@ -66,10 +67,6 @@ public:
     if (!_hdc302x->begin(_address, _i2c))
       return false;
 
-    // discard first reading (It returned -45c for me once); also serves as a
-    // comms sanity check
-    _hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
-                                              TRIGGERMODE_LP0);
     return true;
 
     // Note: measurement mode/rate is intentionally NOT exposed as a setting -
@@ -126,18 +123,19 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Reads the HDC302X's temperature and humidity in one on-demand
-                conversion so both metrics reflect the same sample. Serves the
-                cached sample if the last read was under one second ago.
-      @returns  True if a valid sample is cached, False otherwise.
+                conversion so both metrics reflect the same sample.
+      @returns  True if the read succeeded, False otherwise.
   */
   /*******************************************************************************/
   bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
     uint16_t status = _hdc302x->readStatus();
     if (status & 0x0010) {
-      WS_DEBUG_PRINTLN("Device Reset Detected");
+      // A reset (brown-out, hard/soft reset) cleared the stored results and
+      // the auto-mode setting. The flag is sticky until cleared, so recover
+      // here instead of refusing to read for ever.
+      WS_DEBUG_PRINTLN("HDC302X: device reset detected, reconfiguring");
+      _hdc302x->clearStatusRegister();
+      _hdc302x->setAutoMode(EXIT_AUTO_MODE);
       return false;
     }
 
@@ -150,10 +148,12 @@ public:
     if (!_hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
                                                    TRIGGERMODE_LP0)) {
       WS_DEBUG_PRINTLN("Failed to read temperature and humidity.");
-      return _have_data;
+      return false;
     }
-    _last_read = millis();
-    _have_data = true;
+    // Raw 0x0000 words (cleared result registers) decode to exactly -45C /
+    // 0 %RH with a valid CRC: not a measurement
+    if (_temp <= -44.99 && _humidity <= 0.01)
+      return false;
     return true;
   }
 
@@ -167,7 +167,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (ReadSensorData() == false)
+    if (AttemptRead() == false)
       return false;
     tempEvent->temperature = _temp;
     return true;
@@ -183,7 +183,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (ReadSensorData() == false)
+    if (AttemptRead() == false)
       return false;
     humidEvent->relative_humidity = _humidity;
     return true;

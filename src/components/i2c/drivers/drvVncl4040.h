@@ -37,7 +37,9 @@ public:
   drvVncl4040(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // No data-ready flag: the first pass can read before the first 80ms ALS
+    // integration has completed
+    _discard_samples = 1;
   }
 
   /*!
@@ -78,7 +80,9 @@ public:
                 otherwise.
   */
   bool getEventLight(sensors_event_t *lightEvent) {
-    // Get sensor event populated in lux via AUTO integration and gain
+    // 65535 counts is a saturated 16-bit ALS conversion
+    if (_vcnl4040->getAmbientLight() == 0xFFFF)
+      return false;
     lightEvent->light = _vcnl4040->getLux();
     return true;
   }
@@ -91,7 +95,10 @@ public:
                 otherwise.
   */
   bool getEventProximity(sensors_event_t *proximityEvent) {
-    proximityEvent->data[0] = (float)_vcnl4040->getProximity();
+    uint16_t prox = _vcnl4040->getProximity();
+    if (prox == 0xFFFF) // saturated (16-bit mode)
+      return false;
+    proximityEvent->data[0] = (float)prox;
     return true;
   }
 

@@ -106,8 +106,11 @@ public:
   */
   bool getEventVoltage(sensors_event_t *voltageEvent) {
     float shuntvoltage_mV = _ina219->getShuntVoltage_mV();
+    if (!_ina219->success())
+      return false;
     float busvoltage_V = _ina219->getBusVoltage_V();
-
+    if (!_ina219->success())
+      return false; // the library leaves the value uninitialised on failure
     // Compute load voltage
     float loadvoltage = busvoltage_V + (shuntvoltage_mV / 1000);
     voltageEvent->voltage = loadvoltage;
@@ -124,6 +127,8 @@ public:
    */
   bool getEventCurrent(sensors_event_t *currentEvent) {
     float current_mA = _ina219->getCurrent_mA();
+    if (!_ina219->success())
+      return false;
     currentEvent->current = current_mA;
     return true;
   }

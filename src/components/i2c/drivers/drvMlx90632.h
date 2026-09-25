@@ -18,6 +18,8 @@
 #include "drvBase.h"
 #include <Adafruit_MLX90632.h>
 
+#define MLX90632_TICK_MS 50 ///< Poll for a finished measurement every 50ms
+
 /*!
     @brief  Class that provides a driver interface for an MLX90632 sensor.
 */
@@ -39,6 +41,11 @@ public:
   drvMLX90632(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
+    // A measurement takes up to seconds at the slow refresh rates (and must be
+    // requested explicitly in step modes), so it is collected by fastTick()
+    // during the lead window before each read is due rather than blocking the
+    // read pass. The lead is set from the configured mode and rate.
+    _fast_tick_ms = MLX90632_TICK_MS;
     _mlx90632 = nullptr;
     _deviceTemp = NAN;
     _objectTemp = NAN;
@@ -141,6 +148,8 @@ public:
       WS_DEBUG_PRINTLN("Failed to reset new data flag");
       return false;
     }
+    _mode = MLX90632_MODE_CONTINUOUS;
+    _tick_lead_ms = 2 * (uint32_t)getRefreshDelay();
     return true;
   }
 
@@ -175,7 +184,11 @@ public:
     default:
       return false;
     }
-    return _mlx90632->setMode(devMode);
+    if (!_mlx90632->setMode(devMode))
+      return false;
+    _mode = devMode;
+    _tick_lead_ms = 2 * (uint32_t)getRefreshDelay();
+    return true;
   }
 
   /*******************************************************************************/
@@ -221,59 +234,53 @@ public:
     default:
       return false;
     }
-    return _mlx90632->setRefreshRate(rate);
+    if (!_mlx90632->setRefreshRate(rate))
+      return false;
+    _tick_lead_ms = 2 * (uint32_t)getRefreshDelay();
+    return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads ambient and object temperatures together when the sensor
-                has new data ready. Leaves the cached members untouched (last
-                good sample) when no new data is available this pass, and
-                serves the cached sample if the last read was under one second
-                ago.
-      @returns  True if a valid sample is cached, False otherwise.
+      @brief    Background measurement step, called every MLX90632_TICK_MS
+                while a read is pending. In step and sleeping-step modes a
+                single measurement is requested first (and re-requested if it
+                does not complete within the lead time); in continuous mode
+                the device measures on its own. Once new data is flagged, both
+                temperatures are read together, the flag cleared, and a valid
+                sample filed with NewSample().
   */
   /*******************************************************************************/
-  bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
-    // Check if we need to trigger a new measurement for step modes
-    mlx90632_mode_t currentMode = _mlx90632->getMode();
-    if (currentMode == MLX90632_MODE_STEP ||
-        currentMode == MLX90632_MODE_SLEEPING_STEP) {
-      // Trigger single measurement (SOC bit) for step modes
-      if (!_mlx90632->startSingleMeasurement()) {
-        WS_DEBUG_PRINTLN("Failed to start single measurement");
-        return _have_data;
+  void fastTick() override {
+    if (!_mlx90632->isNewData()) {
+      bool step =
+          (_mode == MLX90632_MODE_STEP || _mode == MLX90632_MODE_SLEEPING_STEP);
+      // Step modes measure only on request: kick one off if none in flight
+      if (step && (!_measuring || millis() - _measure_start > _tick_lead_ms)) {
+        if (_mlx90632->startSingleMeasurement()) {
+          _measuring = true;
+          _measure_start = millis();
+        } else {
+          WS_DEBUG_PRINTLN("Failed to start single measurement");
+        }
       }
-      // In step / sleep_step mode we should await the latest data
-      int16_t refreshDelay = getRefreshDelay();
-      int16_t now_ms = millis();
-      do {
-        delay(10); // Short delay to avoid busy-waiting
-      } while (!_mlx90632->isNewData() && (millis() - now_ms < refreshDelay));
+      return;
     }
+    _measuring = false;
 
-    // Only check new data flag - much more efficient for continuous mode
-    if (_mlx90632->isNewData()) {
-      _deviceTemp = _mlx90632->getAmbientTemperature();
-      _objectTemp = _mlx90632->getObjectTemperature();
-      if (isnan(_objectTemp)) {
-        WS_DEBUG_PRINTLN("NaN (invalid cycle position)");
-        return false;
-      }
-      _last_read = millis();
-      _have_data = true;
-      // Reset new data flag after reading
-      if (!_mlx90632->resetNewData()) {
-        WS_DEBUG_PRINTLN("Failed to reset new data flag");
-      }
-    } else {
-      WS_DEBUG_PRINTLN("No new data available, skipping read");
+    double deviceTemp = _mlx90632->getAmbientTemperature();
+    double objectTemp = _mlx90632->getObjectTemperature();
+    // Reset new data flag after reading so the next check is genuine
+    if (!_mlx90632->resetNewData()) {
+      WS_DEBUG_PRINTLN("Failed to reset new data flag");
     }
-
-    return _have_data;
+    if (isnan(objectTemp)) {
+      WS_DEBUG_PRINTLN("NaN (invalid cycle position)");
+      return;
+    }
+    _deviceTemp = deviceTemp;
+    _objectTemp = objectTemp;
+    NewSample();
   }
 
   /*******************************************************************************/
@@ -351,10 +358,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // Refresh both temps together; the member holds the last good sample if no
-    // new data was ready this pass.
-    ReadSensorData();
-    if (isnan(_deviceTemp))
+    if (!AttemptRead() || isnan(_deviceTemp))
       return false;
     tempEvent->temperature = _deviceTemp;
     return true;
@@ -370,8 +374,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventObjectTemp(sensors_event_t *tempEvent) {
-    ReadSensorData();
-    if (isnan(_objectTemp))
+    if (!AttemptRead() || isnan(_objectTemp))
       return false;
     tempEvent->temperature = _objectTemp;
     return true;
@@ -381,6 +384,9 @@ protected:
   double _deviceTemp = NAN; ///< Device temperature in Celsius
   double _objectTemp = NAN; ///< Object temperature in Celsius
   bool _extendedRange; ///< True for extended-range variant, false for medical
+  mlx90632_mode_t _mode = MLX90632_MODE_CONTINUOUS; ///< Configured mode
+  bool _measuring = false;  ///< Step modes: a single measurement is in flight
+  ulong _measure_start = 0; ///< millis() the in-flight measurement started
   Adafruit_MLX90632 *_mlx90632; ///< Pointer to MLX90632 sensor object
 };
 

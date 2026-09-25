@@ -41,7 +41,9 @@ public:
   drvVncl4200(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // No data-ready flag: the first pass can read before the first 400ms ALS
+    // integration has completed
+    _discard_samples = 1;
   }
 
   /*******************************************************************************/
@@ -269,8 +271,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
-    // Get sensor event populated in lux via AUTO integration and gain
-    lightEvent->light = _vcnl4200->readALSdata();
+    uint16_t raw = _vcnl4200->readALSdata();
+    if (raw == 0xFFFF) // saturated
+      return false;
+    // Datasheet Table 14: lux per count by ALS integration time
+    // (50/100/200/400 ms -> 0.024/0.012/0.006/0.003 lx)
+    static const float kLuxPerCount[] = {0.024f, 0.012f, 0.006f, 0.003f};
+    uint8_t it = (uint8_t)_vcnl4200->getALSIntegrationTime();
+    if (it > 3)
+      it = 3;
+    lightEvent->light = raw * kLuxPerCount[it];
     return true;
   }
 
@@ -284,7 +294,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
-    proximityEvent->data[0] = (float)_vcnl4200->readProxData();
+    uint16_t prox = _vcnl4200->readProxData();
+    if (prox == 0xFFFF) // saturated (16-bit mode)
+      return false;
+    proximityEvent->data[0] = (float)prox;
     return true;
   }
 

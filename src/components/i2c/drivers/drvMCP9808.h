@@ -65,7 +65,10 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    tempEvent->temperature = _mcp9808->readTempC();
+    float t = _mcp9808->readTempC(); // NAN on a failed read
+    if (isnan(t))
+      return false;
+    tempEvent->temperature = t;
     return true;
   }
 

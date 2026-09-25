@@ -258,3 +258,11 @@ bool drvIna260::getEventCurrent(sensors_event_t *currentEvent) {
   currentEvent->current = _ina260->readCurrent();
   return true;
 }
+
+/*!
+    @brief    Checks the INA260's conversion-ready flag (Mask/Enable CVRF),
+              set once all conversions, averaging and multiplications for a
+              sample have completed and cleared by reading it.
+    @returns  True if a fresh averaged sample is ready, False otherwise.
+*/
+bool drvIna260::IsSensorReady() { return _ina260->conversionReady(); }

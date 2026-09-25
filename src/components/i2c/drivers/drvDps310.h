@@ -44,7 +44,6 @@ public:
     _i2c_mux_channel = mux_channel;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
-    _last_read = 0;
   }
 
   /*!
@@ -64,8 +63,11 @@ public:
     }
 
     // init OK, perform sensor configuration
-    _dps310->configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps310->configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
+    // Datasheet 8.3: rate_T*t_T + rate_P*t_P must stay under 1 second; at
+    // 64x oversampling (104.4ms) that allows 4 Hz for each channel (835ms).
+    // The library's 64 Hz default is out of spec and its timing undefined.
+    _dps310->configureTemperature(DPS310_4HZ, DPS310_64SAMPLES);
+    _dps310->configurePressure(DPS310_4HZ, DPS310_64SAMPLES);
     _dps_temp = _dps310->getTemperatureSensor();
     if (_dps_temp == NULL) {
       return false;
@@ -78,24 +80,20 @@ public:
   }
 
   /*!
+      @brief    Checks if the DPS310 has new temperature and pressure samples.
+      @returns  True if both are ready, False otherwise.
+  */
+  bool IsSensorReady() override {
+    return _dps310->temperatureAvailable() && _dps310->pressureAvailable();
+  }
+
+  /*!
       @brief    Reads the DPS310's temperature and pressure in one transaction
-                so both metrics reflect the same sample. Serves the cached
-                sample if the last read was under one second ago, or if no new
-                data is ready yet.
-      @returns  True if a valid sample is cached, False otherwise.
+                so both metrics reflect the same sample.
+      @returns  True if the read succeeded, False otherwise.
   */
   bool ReadSensorData() override {
-    if (HasBeenReadInLastSecond())
-      return _have_data;
-
-    if (!_dps310->temperatureAvailable() || !_dps310->pressureAvailable())
-      return _have_data;
-
-    if (_dps310->getEvents(&_temp_event, &_pressure_event)) {
-      _last_read = millis();
-      _have_data = true;
-    }
-    return _have_data;
+    return _dps310->getEvents(&_temp_event, &_pressure_event);
   }
 
   /*!
@@ -106,7 +104,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadSensorData()) {
+    if (!AttemptRead()) {
       return false;
     }
     tempEvent->temperature = _temp_event.temperature;
@@ -121,7 +119,7 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!ReadSensorData()) {
+    if (!AttemptRead()) {
       return false;
     }
     pressureEvent->pressure = _pressure_event.pressure;

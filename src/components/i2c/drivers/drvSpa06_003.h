@@ -262,7 +262,7 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     bool success = false;
-    if (_spa06_003_temp == NULL)
+    if (_spa06_003_temp == NULL || _spa06_003->isTempDataReady() == false)
       return false;
     success = _spa06_003_temp->getEvent(tempEvent);
     if (tempEvent->temperature > SPA06_003_TEMP_MAX ||

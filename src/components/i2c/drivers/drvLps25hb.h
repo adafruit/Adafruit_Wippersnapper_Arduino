@@ -58,7 +58,7 @@ public:
     if (!_lps25->begin_I2C(_address, _i2c))
       return false;
 
-    // Set up sample rate and filter initialization
+    // One-shot: a conversion per read pass
     _lps25->setDataRate(LPS25_RATE_ONE_SHOT);
     _temp = _lps25->getTemperatureSensor();
     if (_temp == NULL)
@@ -70,6 +70,18 @@ public:
   }
 
   /*!
+      @brief    Takes one one-shot measurement for both metrics (the
+                per-sensor wrappers would trigger one conversion each).
+                A failed read leaves the raw registers at 0, which decodes to
+                a pressure far below the 260 hPa datasheet minimum.
+      @returns  True if a valid sample was read, False otherwise.
+  */
+  bool ReadSensorData() override {
+    return _lps25->getEvent(&_pressure_ev, &_temp_ev) &&
+           _pressure_ev.pressure >= 260.0F;
+  }
+
+  /*!
       @brief    Gets the LPS25HB's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -77,7 +89,10 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    return _temp->getEvent(tempEvent);
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temp_ev.temperature;
+    return true;
   }
 
   /*!
@@ -89,11 +104,16 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    return _pressure->getEvent(pressureEvent);
+    if (!AttemptRead())
+      return false;
+    pressureEvent->pressure = _pressure_ev.pressure;
+    return true;
   }
 
 protected:
-  Adafruit_LPS25 *_lps25; ///< LPS25HB  object
+  Adafruit_LPS25 *_lps25;             ///< LPS25HB  object
+  sensors_event_t _temp_ev = {0};     ///< Cached temperature event
+  sensors_event_t _pressure_ev = {0}; ///< Cached pressure event
   Adafruit_Sensor *_temp =
       NULL; ///< Ptr to an adafruit_sensor representing the temperature
   Adafruit_Sensor *_pressure =
