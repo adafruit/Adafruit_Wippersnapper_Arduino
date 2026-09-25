@@ -38,7 +38,9 @@ public:
   drvMax1704x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // begin() issues a POR; the first SOC update arrives ~1s after it
+    // (datasheet), so the first pass is dropped
+    _discard_samples = 1;
   }
 
   /*!
@@ -64,7 +66,10 @@ public:
                 otherwise.
   */
   bool getEventVoltage(sensors_event_t *voltageEvent) {
-    voltageEvent->voltage = _maxlipo->cellVoltage();
+    float v = _maxlipo->cellVoltage(); // NAN on a failed read
+    if (isnan(v))
+      return false;
+    voltageEvent->voltage = v;
     return true;
   }
 
@@ -77,7 +82,10 @@ public:
                 otherwise.
   */
   bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
-    unitlessPercentEvent->unitless_percent = _maxlipo->cellPercent();
+    float pct = _maxlipo->cellPercent(); // NAN on a failed read
+    if (isnan(pct))
+      return false;
+    unitlessPercentEvent->unitless_percent = pct;
     return true;
   }
 

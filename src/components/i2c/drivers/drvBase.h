@@ -36,6 +36,20 @@ struct DecodedSetting;    ///< Forward declaration
 static_assert(sizeof(WsPinName::name) >= DRV_BASE_PIN_NAME_LEN,
               "WsPinName.name must hold any ws_i2c_AddressSpace pin name");
 
+#ifndef ONE_SECOND_IN_MS
+#define ONE_SECOND_IN_MS 1000 ///< One second expressed in milliseconds
+#endif
+/*! Initial value for _sensor_period_prv: backdates the last-publish stamp so
+    a newly added device publishes its first reading on the next update() pass
+    instead of waiting out a full period. Name kept in sync with the v1 driver
+    base (src/components/i2c/drivers/WipperSnapper_I2C_Driver.h on main). */
+#define PERIOD_24HRS_AGO_MILLIS (millis() - (24 * 60 * 60 * 1000))
+/*! _tick_lead_ms value for drivers whose fastTick() must run continuously
+    (host-side algorithms such as the SGP gas index), rather than only in the
+    window before a read is due. */
+#define TICK_ALWAYS UINT32_MAX
+#define UINT12_MAX 0xFFF ///< Maximum value for a 12-bit unsigned integer
+
 /*!
     @brief  Base class for I2C Drivers.
 */
@@ -63,6 +77,10 @@ public:
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
     _did_read_send = false;
+    _sensor_period = 0;
+    _sensor_period_prv = PERIOD_24HRS_AGO_MILLIS;
+    _last_fast_tick = PERIOD_24HRS_AGO_MILLIS;
+    _sensors_count = 0;
   }
 
   /*!
@@ -237,6 +255,165 @@ public:
       @returns  True if applied successfully, False otherwise.
   */
   virtual bool configureDefaults() { return true; }
+
+  /*!
+      @brief    Driver hook: background tick for devices that cannot produce a
+                sample inside one read pass, either because an algorithm needs
+                a fixed cadence (SGP gas index at ~1 Hz) or because the
+                measurement takes longer than we are willing to block (VL53
+                ranging, MLX90632 step mode, DS18B20 conversion). Set
+                _fast_tick_ms in the constructor to opt in. By default ticks
+                run only in the _tick_lead_ms window before the next read is
+                due, so a device with a 5 minute period is not measured every
+                second; set _tick_lead_ms = TICK_ALWAYS for algorithms that
+                must run continuously. Take one non-blocking step per call and
+                call NewSample() once the cached values are ready to publish -
+                for a ticking driver that is the only way a sample reaches
+                AttemptRead(). _first_tick is true on the first call of a lead
+                window, so a multi-step measurement can restart from scratch
+                instead of trusting a result that completed while idle. The
+                controller selects the device's MUX channel before each tick.
+  */
+  virtual void fastTick() {}
+
+  /*!
+      @brief    Controller query: is fastTick() due for this driver? True every
+                _fast_tick_ms while a read is pending: within _tick_lead_ms of
+                the period elapsing, during a retry backoff, or when forced
+                (sleep mode) and not yet published. Drivers with _tick_lead_ms
+                == TICK_ALWAYS tick unconditionally.
+      @param    now
+                The current millis() timestamp.
+      @param    force
+                True if the update is forced (sleep mode).
+      @returns  True if the controller should call fastTick() now.
+  */
+  bool FastTickDue(ulong now, bool force) {
+    if (_fast_tick_ms == 0 || now - _last_fast_tick < _fast_tick_ms)
+      return false;
+    if (_tick_lead_ms != TICK_ALWAYS) {
+      bool pending =
+          force ? !_did_read_send
+                : (now - _sensor_period_prv) + _tick_lead_ms >= _sensor_period;
+      if (!pending)
+        return false;
+    }
+    // A gap of more than one missed tick means the lead window just opened:
+    // let fastTick() restart its measurement state rather than trust results
+    // that completed while it was idle.
+    _first_tick = now - _last_fast_tick > 2 * _fast_tick_ms;
+    _last_fast_tick = now;
+    return true;
+  }
+
+  /*!
+      @brief    Checks whether the device has a new measurement ready to read.
+                Override in drivers whose silicon exposes a data-ready flag
+                (e.g. Sensirion CO2/PM devices) so AttemptRead() only takes a
+                sample when a fresh one exists. Must be non-blocking; the
+                controller backs off and retries when this returns false.
+                Not used by ticking drivers, whose samples come from
+                fastTick().
+      @returns  True if a new measurement is ready (default), False otherwise.
+  */
+  virtual bool IsSensorReady() { return true; }
+
+  /*!
+      @brief    Driver hook: performs the device's measurement transaction,
+                reading every metric at once into the driver's cached members.
+                Override in drivers whose metrics come from one measurement;
+                leave the default for drivers that read directly inside their
+                getEvent*() functions. Called by AttemptRead() only when
+                IsSensorReady() is true. Leave the cached members untouched
+                on failure so the last good sample survives.
+      @returns  True if the read succeeded and the cache holds a valid sample,
+                False otherwise.
+  */
+  virtual bool ReadSensorData() { return true; }
+
+  /*!
+      @brief    Controller entry point: attempts to take one shared sample for
+                the read pass. Runs the driver's IsSensorReady() and
+                ReadSensorData() hooks and the cache bookkeeping. The
+                controller calls this once per due pass, before any
+                getEvent*() call, and the getEvent*() accessors call it again
+                to fetch the cached sample, so every metric in a pass reflects
+                the same measurement and causes no further bus traffic. A
+                sample is served only until the controller consumes it
+                (SampleDone()); after that a fresh measurement is required,
+                so a stalled or disconnected device stops publishing instead of
+                repeating its last value. Ticking drivers (_fast_tick_ms set)
+                are served only samples filed by fastTick(). Drivers override
+                the hooks, not this.
+      @returns  True if an unconsumed sample is cached, False if no new sample
+                is available (device not ready, or the read failed).
+  */
+  virtual bool AttemptRead() {
+    // Serve the unconsumed sample: taken earlier this pass, or by fastTick()
+    if (_have_data && !_sample_consumed)
+      return true;
+    // Ticking drivers get their samples from fastTick() only
+    if (_fast_tick_ms != 0)
+      return false;
+    if (!IsSensorReady() || !ReadSensorData())
+      return false;
+    NewSample();
+    // False while the sample was a warm-up discard: the controller retries
+    return _have_data && !_sample_consumed;
+  }
+
+  /*!
+      @brief    Controller query: may this driver be read now? False while the
+                driver is waiting out a retry backoff (honoured even when the
+                update is forced, so a device that is not ready is not
+                re-polled every loop iteration), or while its publish period
+                has not elapsed and the update is not forced.
+      @param    now
+                The current millis() timestamp.
+      @param    force
+                True to ignore the publish period (sleep mode).
+      @returns  True if the controller should call AttemptRead() now.
+  */
+  bool ReadDue(ulong now, bool force) {
+    if (_in_backoff && (long)(now - _retry_at) >= 0)
+      _in_backoff = false;
+    if (_in_backoff)
+      return false;
+    return force || now - _sensor_period_prv >= _sensor_period;
+  }
+
+  /*!
+      @brief    Controller notification that the read pass has finished.
+                Either way the cached sample is marked consumed, so the next
+                pass requires a fresh measurement. On success the failure
+                counter is reset. On failure the next attempt is scheduled,
+                mirroring the v1 update() retry behavior: a few quick retries
+                ~1s apart, then wait out a full period.
+      @param    published
+                True if the pass produced a device event that was published or
+                logged, False if it produced nothing.
+      @returns  The delay until the next attempt in milliseconds (0 on
+                success), for the debug log.
+  */
+  ulong SampleDone(bool published) {
+    _sample_consumed = true;
+    if (published) {
+      _read_fails = 0;
+      return 0;
+    }
+    // 3 quick retries before backing off, matching v1's update() retry count
+    ulong retry_in = ONE_SECOND_IN_MS;
+    if (++_read_fails >= 3) {
+      _read_fails = 0;
+      retry_in = _sensor_period;
+    }
+    // Never re-poll a failing device faster than 1 Hz (period 0 / sub-second)
+    if (retry_in < ONE_SECOND_IN_MS)
+      retry_in = ONE_SECOND_IN_MS;
+    _retry_at = millis() + retry_in;
+    _in_backoff = true;
+    return retry_in;
+  }
 
   /*!
       @brief    Base implementation - Applies a gain setting to the driver.
@@ -445,6 +622,243 @@ public:
       @returns  True if applied successfully, False otherwise.
   */
   virtual bool setCalibration(const ws_config_Value &calibration) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a power mode setting to the
+                driver. Selects the sensor's power/measurement state (e.g.
+                standby, normal, forced, continuous). Must override in driver.
+      @param    power_mode
+                The power mode index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setPowerMode(const ws_config_Value &power_mode) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies an over-sample ratio (OSR)
+                setting to the driver. Must override in driver.
+      @param    oversample_ratio
+                The over-sample ratio index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setOverSampleRatio(const ws_config_Value &oversample_ratio) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a down-sample ratio (DSR)
+                setting to the driver. Must override in driver.
+      @param    downsample_ratio
+                The down-sample ratio index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setDownSampleRatio(const ws_config_Value &downsample_ratio) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a full-scale range setting to
+                the driver. Must override in driver.
+      @param    range
+                The range index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setRange(const ws_config_Value &range) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a bus/voltage ADC conversion
+                time setting to the driver. Must override in driver.
+      @param    voltage_conversion_time
+                The voltage conversion time index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setVoltageConversionTime(const ws_config_Value &voltage_conversion_time) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a shunt/current ADC conversion
+                time setting to the driver. Must override in driver.
+      @param    current_conversion_time
+                The current conversion time index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setCurrentConversionTime(const ws_config_Value &current_conversion_time) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an ADC range setting to the
+                driver (e.g. high vs low shunt-voltage range). Must override
+                in driver.
+      @param    adc_range
+                The ADC range index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setAdcRange(const ws_config_Value &adc_range) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a shunt resistance (ohms)
+                calibration value to the driver. Must override in driver.
+      @param    shunt_resistance
+                The shunt resistance, in ohms, from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setShuntResistance(const ws_config_Value &shunt_resistance) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a maximum expected current
+                (amps) calibration value to the driver. Must override in
+                driver.
+      @param    max_current
+                The maximum expected current, in amps, from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMaxCurrent(const ws_config_Value &max_current) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an on-chip heater setting to the
+                driver. Must override in driver.
+      @param    heater
+                The heater setting index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setHeater(const ws_config_Value &heater) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies an internal clock frequency
+                setting to the driver. Must override in driver.
+      @param    clock_frequency
+                The clock frequency index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setClockFrequency(const ws_config_Value &clock_frequency) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies an output stage setting to the
+                driver (e.g. analog vs PWM output). Must override in driver.
+      @param    output_stage
+                The output stage index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setOutputStage(const ws_config_Value &output_stage) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a slow (moving-average) filter
+                setting to the driver. Must override in driver.
+      @param    slow_filter
+                The slow filter index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setSlowFilter(const ws_config_Value &slow_filter) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a fast-filter threshold setting
+                to the driver. Must override in driver.
+      @param    fast_filter_threshold
+                The fast filter threshold index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setFastFilterThreshold(const ws_config_Value &fast_filter_threshold) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a hysteresis setting to the
+                driver. Must override in driver.
+      @param    hysteresis
+                The hysteresis index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setHysteresis(const ws_config_Value &hysteresis) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a start (zero) position to the
+                driver, mapping the start of a partial rotation. Must override
+                in driver.
+      @param    z_position
+                The zero position raw value from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setZPosition(const ws_config_Value &z_position) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a stop (maximum) position to the
+                driver, mapping the end of a partial rotation. Must override
+                in driver.
+      @param    m_position
+                The maximum position raw value from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMPosition(const ws_config_Value &m_position) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a maximum angle setting to the
+                driver. Must override in driver.
+      @param    max_angle
+                The maximum angle raw value from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setMaxAngle(const ws_config_Value &max_angle) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a proximity LED current setting
+                to the driver. Must override in driver.
+      @param    prox_led_current
+                The proximity LED current index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setProxLedCurrent(const ws_config_Value &prox_led_current) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a proximity duty-cycle setting
+                to the driver. Must override in driver.
+      @param    prox_duty
+                The proximity duty-cycle index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setProxDuty(const ws_config_Value &prox_duty) { return false; }
+
+  /*!
+      @brief    Base implementation - Applies a proximity integration time
+                setting to the driver. Must override in driver.
+      @param    prox_integration_time
+                The proximity integration time index from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool
+  setProxIntegrationTime(const ws_config_Value &prox_integration_time) {
+    return false;
+  }
+
+  /*!
+      @brief    Base implementation - Applies a sea-level pressure reference
+                (hPa) used to compute altitude from barometric pressure. The
+                value is sent directly (float), not an option index. Must
+                override in driver.
+      @param    sea_level_pressure
+                The reference sea-level pressure, in hPa, from the broker.
+      @returns  True if applied successfully, False otherwise.
+  */
+  virtual bool setSeaLevelPressure(const ws_config_Value &sea_level_pressure) {
     return false;
   }
 
@@ -881,5 +1295,42 @@ protected:
   ulong _sensor_period_prv; ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;    ///< Number of sensors on the device.
   bool _did_read_send; ///< True if data was read and sent to IO successfully.
+  bool _have_data = false;       ///< True once a valid sample has been cached.
+  bool _sample_consumed = false; ///< True once the controller has finished the
+                                 ///< read pass that used the cached sample.
+  uint8_t _read_fails = 0;    ///< Consecutive failed read passes (for backoff).
+  ulong _retry_at = 0;        ///< millis() timestamp of the next allowed read
+                              ///< attempt while backing off.
+  bool _in_backoff = false;   ///< True while waiting out a read backoff.
+  uint32_t _fast_tick_ms = 0; ///< fastTick() cadence in ms; 0 = no tick.
+  uint32_t _tick_lead_ms = TICK_ALWAYS; ///< How long before a read is due the
+                                        ///< ticks start; TICK_ALWAYS = always.
+  ulong _last_fast_tick;        ///< millis() timestamp of the last fastTick().
+  bool _first_tick = false;     ///< True during the first fastTick() of a lead
+                                ///< window (the previous tick was long ago).
+  uint8_t _discard_samples = 0; ///< Warm-up samples still to be dropped by
+                                ///< NewSample(); set in the constructor by
+                                ///< drivers whose first conversions are known
+                                ///< to be garbage.
+
+  /*!
+      @brief    Marks the driver's cached values as a fresh, publishable
+                sample. Called by AttemptRead() after a successful
+                ReadSensorData(), and by ticking drivers from fastTick() once a
+                measurement has completed. While _discard_samples is non-zero
+                the sample is dropped instead (and the counter decremented):
+                many devices return garbage for their first conversion(s)
+                after power-up - the DS18B20's 85C reset value, the HDC302X's
+                -45C, the SGP gas-index blackout - and this is the one place
+                to swallow them.
+  */
+  void NewSample() {
+    if (_discard_samples > 0) {
+      _discard_samples--;
+      return;
+    }
+    _have_data = true;
+    _sample_consumed = false;
+  }
 };
 #endif // DRV_BASE_H

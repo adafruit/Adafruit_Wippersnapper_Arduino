@@ -71,6 +71,14 @@ public:
   }
 
   /*!
+      @brief    Takes one AHTx0 measurement for both metrics. The library's
+                per-sensor wrappers discard the bus result; the combined call
+                returns it, so a failed read is not published as a value.
+      @returns  True if the measurement succeeded, False otherwise.
+  */
+  bool ReadSensorData() override { return _aht->getEvent(&_humidity, &_temp); }
+
+  /*!
       @brief    Gets the AHTX0's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -78,7 +86,9 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    _aht_temp->getEvent(tempEvent);
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temp.temperature;
     return true;
   }
 
@@ -90,12 +100,16 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    _aht_humidity->getEvent(humidEvent);
+    if (!AttemptRead())
+      return false;
+    humidEvent->relative_humidity = _humidity.relative_humidity;
     return true;
   }
 
 protected:
-  Adafruit_AHTX0 *_aht; ///< Pointer to an AHTX0 object
+  Adafruit_AHTX0 *_aht;            ///< Pointer to an AHTX0 object
+  sensors_event_t _temp = {0};     ///< Cached temperature event
+  sensors_event_t _humidity = {0}; ///< Cached humidity event
   Adafruit_Sensor *_aht_temp =
       NULL; ///< Holds data for the AHTX0's temperature sensor
   Adafruit_Sensor *_aht_humidity =

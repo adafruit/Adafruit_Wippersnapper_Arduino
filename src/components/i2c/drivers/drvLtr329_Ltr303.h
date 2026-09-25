@@ -83,7 +83,7 @@ public:
       return false;
     }
     int32_t val = gain.value.int_value;
-    ltr329_gain_t als_gain;
+    ltr329_gain_t als_gain = LTR3XX_GAIN_1;
     switch (val) {
     case 0:
       als_gain = LTR3XX_GAIN_1;
@@ -124,7 +124,7 @@ public:
       return false;
     }
     int32_t val = integration_time.value.int_value;
-    ltr329_integrationtime_t int_time;
+    ltr329_integrationtime_t int_time = LTR3XX_INTEGTIME_100;
     switch (val) {
     case 0:
       int_time = LTR3XX_INTEGTIME_50;
@@ -170,7 +170,7 @@ public:
       return false;
     }
     int32_t val = measurement_rate.value.int_value;
-    ltr329_measurerate_t meas_rate;
+    ltr329_measurerate_t meas_rate = LTR3XX_MEASRATE_500;
     switch (val) {
     case 0:
       meas_rate = LTR3XX_MEASRATE_50;
@@ -207,8 +207,15 @@ public:
   */
   bool readBothChannels() {
     if (_LTR329->newDataAvailable()) {
-      _LTR329->readBothChannels(_visible_plus_ir, _infrared);
-      _has_reading = true;
+      uint16_t ch0, ch1;
+      // The library returns the ALS_STATUS "data valid" bit; a full-scale
+      // channel (65535) is saturated
+      if (_LTR329->readBothChannels(ch0, ch1) && ch0 != 0xFFFF &&
+          ch1 != 0xFFFF) {
+        _visible_plus_ir = ch0;
+        _infrared = ch1;
+        _has_reading = true;
+      }
     }
     return _has_reading;
   }

@@ -71,6 +71,24 @@ public:
   }
 
   /*!
+      @brief    Reads the MS8607's pressure, temperature and humidity in one
+                measurement so all metrics in a read pass come from the same
+                sample (one conversion instead of three).
+      @returns  True if the measurement succeeded, False otherwise.
+  */
+  bool ReadSensorData() override {
+    // The library's getEvent() ignores read/CRC failures and returns true, so
+    // range-check against the datasheet spans (10-2000 mbar, -40..85C,
+    // 0..100 %RH) with the pressure span tightened to atmospheric
+    if (!_ms8607->getEvent(&_pressure, &_temp, &_humidity))
+      return false;
+    return _pressure.pressure >= 300.0F && _pressure.pressure <= 1200.0F &&
+           _temp.temperature >= -40.0F && _temp.temperature <= 85.0F &&
+           _humidity.relative_humidity >= 0.0F &&
+           _humidity.relative_humidity <= 100.0F;
+  }
+
+  /*!
       @brief    Gets the MS8607's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -78,7 +96,9 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    _ms8607_temp->getEvent(tempEvent);
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temp.temperature;
     return true;
   }
 
@@ -90,7 +110,9 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    _ms8607_humidity->getEvent(humidEvent);
+    if (!AttemptRead())
+      return false;
+    humidEvent->relative_humidity = _humidity.relative_humidity;
     return true;
   }
 
@@ -103,12 +125,17 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    _ms8607_pressure->getEvent(pressureEvent);
+    if (!AttemptRead())
+      return false;
+    pressureEvent->pressure = _pressure.pressure;
     return true;
   }
 
 protected:
-  Adafruit_MS8607 *_ms8607; ///< MS8607  object
+  Adafruit_MS8607 *_ms8607;        ///< MS8607  object
+  sensors_event_t _pressure = {0}; ///< Cached pressure event
+  sensors_event_t _temp = {0};     ///< Cached temperature event
+  sensors_event_t _humidity = {0}; ///< Cached humidity event
   Adafruit_Sensor *_ms8607_temp =
       NULL; ///< Ptr to an adafruit_sensor representing the temperature
   Adafruit_Sensor *_ms8607_pressure =

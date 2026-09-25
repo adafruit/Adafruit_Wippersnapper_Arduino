@@ -68,27 +68,32 @@ public:
   }
 
   /*!
-      @brief    Attempts to read the SCD4x's sensor measurements
-      @returns  True if the measurements were read without errors, False
-                if read errors occured or if sensor did not have data ready.
+      @brief    Checks if the sensor has a new measurement ready to read.
+      @returns  True if a new measurement is ready, False otherwise.
   */
-  bool readSensorMeasurements() {
-    uint16_t error;
+  bool IsSensorReady() override {
     bool isDataReady = false;
-    delay(100);
+    return (_scd->getDataReadyStatus(isDataReady) == 0) && isDataReady;
+  }
 
-    // Check if data is ready
-    error = _scd->getDataReadyStatus(isDataReady);
-    if (error || !isDataReady) {
+  /*!
+      @brief    Reads the SCD4x's CO2, temperature and humidity in one
+                transaction so all metrics reflect the same sample, caching
+                the results.
+      @returns  True if the read succeeded and the sample is valid, False
+                otherwise.
+  */
+  bool ReadSensorData() override {
+    uint16_t co2 = 0;
+    float temperature = 0;
+    float humidity = 0;
+    // Reject co2 == 0: Sensirion's reference example treats it as an invalid
+    // sample (it is not a documented sentinel; data-ready gating is the rule)
+    if (_scd->readMeasurement(co2, temperature, humidity) != 0 || co2 == 0)
       return false;
-    }
-
-    // Read SCD4x measurement
-    error = _scd->readMeasurement(_co2, _temperature, _humidity);
-    if (error || _co2 == 0) {
-      return false;
-    }
-
+    _co2 = co2;
+    _temperature = temperature;
+    _humidity = humidity;
     return true;
   }
 
@@ -100,8 +105,8 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // read all sensor measurements
-    readSensorMeasurements();
+    if (!AttemptRead())
+      return false;
     tempEvent->temperature = _temperature;
     return true;
   }
@@ -114,8 +119,8 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    // read all sensor measurements
-    readSensorMeasurements();
+    if (!AttemptRead())
+      return false;
     humidEvent->relative_humidity = _humidity;
     return true;
   }
@@ -128,17 +133,17 @@ public:
                 otherwise.
   */
   bool getEventCO2(sensors_event_t *co2Event) {
-    // read all sensor measurements
-    readSensorMeasurements();
+    if (!AttemptRead())
+      return false;
     co2Event->CO2 = (float)_co2;
     return true;
   }
 
 protected:
-  SensirionI2cScd4x *_scd; ///< SCD4x driver object
-  uint16_t _co2;           ///< SCD4x co2 reading
-  float _temperature;      ///< SCD4x temperature reading
-  float _humidity;         ///< SCD4x humidity reading
+  SensirionI2cScd4x *_scd = nullptr; ///< SCD4x driver object
+  uint16_t _co2 = 0;                 ///< SCD4x co2 reading
+  float _temperature = NAN;          ///< SCD4x temperature reading
+  float _humidity = NAN;             ///< SCD4x humidity reading
 };
 
 #endif // drvScd4x

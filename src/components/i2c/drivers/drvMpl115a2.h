@@ -58,6 +58,20 @@ public:
   }
 
   /*!
+      @brief    Takes one conversion for both metrics. The library ignores
+                I2C failures and would return an uninitialised buffer, so the
+                result is range-checked against the 50-115 kPa datasheet span.
+      @returns  True if a plausible sample was read, False otherwise.
+  */
+  bool ReadSensorData() override {
+    float p_kpa, t;
+    _mpl115a2->getPT(&p_kpa, &t);
+    _pressure = p_kpa * 10.0F; // kPa -> hPa
+    _temperature = t;
+    return _pressure >= 500.0F && _pressure <= 1150.0F;
+  }
+
+  /*!
       @brief    Gets the MPL115A2's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -65,7 +79,9 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    tempEvent->temperature = _mpl115a2->getTemperature();
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temperature;
     return true;
   }
 
@@ -78,12 +94,16 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    pressureEvent->pressure = _mpl115a2->getPressure() * 10;
+    if (!AttemptRead())
+      return false;
+    pressureEvent->pressure = _pressure;
     return true;
   }
 
 protected:
   Adafruit_MPL115A2 *_mpl115a2; ///< MPL115A2  object
+  float _temperature = NAN;     ///< Cached temperature, C
+  float _pressure = NAN;        ///< Cached pressure, hPa
 };
 
 #endif // drvMpl115a2

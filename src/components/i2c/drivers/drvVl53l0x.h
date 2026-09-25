@@ -70,11 +70,11 @@ public:
   */
   bool getEventProximity(sensors_event_t *proximityEvent) {
     u_int16_t proximityMM = _vl53l0x->readRange();
-    if (proximityMM == 0xffff) {
-      proximityEvent->data[0] = NAN;
-    } else {
-      proximityEvent->data[0] = proximityMM;
-    }
+    // 0xffff = API error; RangeStatus != 0 = sigma/signal/phase failure,
+    // e.g. no target (which reads as ~8190 mm)
+    if (proximityMM == 0xffff || _vl53l0x->readRangeStatus() != 0)
+      return false;
+    proximityEvent->data[0] = proximityMM;
     return true;
   }
 

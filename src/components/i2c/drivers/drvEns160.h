@@ -85,7 +85,7 @@ public:
       return false;
     }
     int32_t val = mode.value.int_value;
-    uint8_t opmode;
+    uint8_t opmode = ENS160_OPMODE_STD;
     switch (val) {
     case 0:
       opmode = ENS160_OPMODE_DEP_SLEEP;
@@ -107,12 +107,38 @@ public:
   }
 
   /*!
-      @brief    Performs a reading in blocking mode.
+      @brief    Checks the ENS160's DEVICE_STATUS register (0x20) directly, as
+                the library exposes neither the validity flag nor the new-data
+                bit (its available() is the init flag). Ready only when there
+                is no error (STATER), the VALIDITY flag is 0 - i.e. not in the
+                3 minute warm-up (1), the first-hour initial start-up (2) or
+                "no valid output" (3), datasheet 10 / Table 10 - and NEWDAT is
+                set. Reading 0x20 does not clear NEWDAT.
+      @returns  True if a new, valid measurement is available, False otherwise.
+  */
+  bool IsSensorReady() override {
+    _i2c->beginTransmission((uint8_t)_address);
+    _i2c->write((uint8_t)ENS160_REG_DATA_STATUS);
+    if (_i2c->endTransmission(false) != 0)
+      return false;
+    if (_i2c->requestFrom((uint8_t)_address, (uint8_t)1) != 1)
+      return false;
+    uint8_t status = _i2c->read();
+    if (status & 0x40) // STATER: device error
+      return false;
+    if (((status >> 2) & 0x03) != 0) // VALIDITY: warm-up / start-up / invalid
+      return false;
+    return (status & ENS160_DATA_STATUS_NEWDAT) != 0;
+  }
+
+  /*!
+      @brief    Reads the ENS160's measurement (eCO2, TVOC and AQI) in one
+                transaction so all metrics reflect the same sample. Called
+                only after IsSensorReady() saw NEWDAT, so the non-blocking
+                form is used (measure(true) spins until new data).
       @returns  True if the reading succeeded, False otherwise.
   */
-  bool ensPerformReading() {
-    return _ens160->available() && _ens160->measure(true);
-  }
+  bool ReadSensorData() override { return _ens160->measure(false); }
 
   /*!
       @brief    Reads the ENS160's eCO2 sensor into an event.
@@ -122,7 +148,7 @@ public:
                 otherwise.
   */
   bool getEventECO2(sensors_event_t *eco2Event) {
-    if (!ensPerformReading())
+    if (!AttemptRead())
       return false;
     eco2Event->eCO2 = (float)_ens160->geteCO2();
     return true;
@@ -136,7 +162,7 @@ public:
                 otherwise.
   */
   bool getEventTVOC(sensors_event_t *tvocEvent) {
-    if (!ensPerformReading())
+    if (!AttemptRead())
       return false;
     tvocEvent->tvoc = (float)_ens160->getTVOC();
     return true;
@@ -150,7 +176,7 @@ public:
                 otherwise.
   */
   bool getEventRaw(sensors_event_t *rawEvent) {
-    if (!ensPerformReading())
+    if (!AttemptRead())
       return false;
     rawEvent->data[0] = (float)_ens160->getAQI();
     return true;

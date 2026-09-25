@@ -20,7 +20,8 @@
 #include <vl53l4cx_def.h>
 
 #define VL53_SHUTDOWN_PIN -1         ///< Shutdown pin for VL53L4CX sensor
-#define VL53_READING_DELAY 250       ///< Delay for reading data attempts
+#define VL53L4CX_TICK_MS 50          ///< Poll for a finished range every 50ms
+#define VL53L4CX_READ_LEAD_MS 1000   ///< Start ranging 1s before a read is due
 #define VL53_TIMING_BUDGET_NS 200000 ///< Timing budget for VL53L4CX sensor
 
 /*!
@@ -42,7 +43,11 @@ public:
   drvVl53l4cx(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // A range takes up to the 200ms timing budget, so it is collected in the
+    // background by fastTick() during the lead window before each read is due
+    // rather than blocking the read pass.
+    _fast_tick_ms = VL53L4CX_TICK_MS;
+    _tick_lead_ms = VL53L4CX_READ_LEAD_MS;
   }
 
   /*!
@@ -86,6 +91,36 @@ public:
   }
 
   /*!
+      @brief    Background ranging step, called every VL53L4CX_TICK_MS while a
+                read is pending. On resuming after idle the interrupt is
+                cleared and a fresh measurement started so a stale result
+                completed long ago is discarded ("seemed to be accepting stale
+                value"). Otherwise, if a range has completed, the multi-object
+                ranging data is read and cached, the next measurement started,
+                and the sample filed with NewSample().
+  */
+  void fastTick() override {
+    if (_first_tick) {
+      _VL53L4CX->VL53L4CX_ClearInterruptAndStartMeasurement();
+      return;
+    }
+
+    uint8_t ready = 0;
+    if (_VL53L4CX->VL53L4CX_GetMeasurementDataReady(&ready) !=
+            VL53L4CX_ERROR_NONE ||
+        !ready)
+      return;
+
+    VL53L4CX_MultiRangingData_t data;
+    int status = _VL53L4CX->VL53L4CX_GetMultiRangingData(&data);
+    _VL53L4CX->VL53L4CX_ClearInterruptAndStartMeasurement();
+    if (status != VL53L4CX_ERROR_NONE)
+      return;
+    _ranging = data;
+    NewSample();
+  }
+
+  /*!
       @brief    Gets the VL53L4CX's current proximity for first object if found.
       @param    proximityEvent
                 Pointer to an Adafruit_Sensor event.
@@ -98,7 +133,7 @@ public:
 
   /*!
       @brief    Gets the VL53L4CX's current proximity for second object if
-     found.
+                found.
       @param    proximityEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the proximity was obtained successfully, False
@@ -109,61 +144,25 @@ public:
   }
 
   /*!
-      @brief    Gets the VL53L4CX's current proximity (first or second object).
+      @brief    Gets the VL53L4CX's current proximity (first or second object)
+                from the most recent ranging data collected by fastTick().
       @param    proximityEvent
                 Pointer to an Adafruit_Sensor event.
       @param    whichObject
                 Index of the proximity object to get (0, or 1 for second
-     object).
+                object).
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
   bool getProximity(sensors_event_t *proximityEvent, int whichObject = 0) {
-    VL53L4CX_MultiRangingData_t MultiRangingData;
-    VL53L4CX_MultiRangingData_t *pMultiRangingData = &MultiRangingData;
-    uint8_t NewDataReady = 0;
-    int status;
-
-    // Start fresh reading, seemed to be accepting stale value
-    status = _VL53L4CX->VL53L4CX_ClearInterruptAndStartMeasurement();
-    if (status != VL53L4CX_ERROR_NONE) {
-      // WS_DEBUG_PRINT("VL53L4CX Error clearing interrupt and starting
-      // measurement: "); WS_DEBUG_PRINTLN(status);
+    if (!AttemptRead())
       return false;
-    }
-
-    // Wait for data read period then update data ready status
-    // WS_DEBUG_PRINT("Waiting for VL53L4CX data ready...");
-    delay(VL53_READING_DELAY);
-    status = _VL53L4CX->VL53L4CX_GetMeasurementDataReady(&NewDataReady);
-
-    if ((status != VL53L4CX_ERROR_NONE) || (NewDataReady == 0)) {
-      // error or no data ready
-      // WS_DEBUG_PRINT("VL53L4CX Error checking for data ready: ");
-      // WS_DEBUG_PRINTLN(status);
+    // whichObject: 0-based index; no value when too few objects were found
+    if (_ranging.NumberOfObjectsFound - 1 < whichObject)
       return false;
-    }
-
-    // get data - still to verify which of one or two objects found
-    status = _VL53L4CX->VL53L4CX_GetMultiRangingData(pMultiRangingData);
-    if (status != VL53L4CX_ERROR_NONE) {
-      // WS_DEBUG_PRINT("VL53L4CX Error getting multi ranging data: ");
-      // WS_DEBUG_PRINTLN(status);
-      return false;
-    }
-
-    // whichObject: 0-based index, return NaN(Object not found) if too few found
-    if (pMultiRangingData->NumberOfObjectsFound - 1 < whichObject) {
-      // WS_DEBUG_PRINT("Object not found at index #");
-      // WS_DEBUG_PRINT(whichObject + 1); // human readable 1-based index
-      // WS_DEBUG_PRINTLN(", returning NaN");
-      proximityEvent->data[0] = NAN;
-      return true;
-    }
-
     // RESULT: take the first or second detected object from ranging data,
     // if valid then set event data in proximityEvent or return false
-    return updateDataPointIfValid(pMultiRangingData->RangeData[whichObject],
+    return updateDataPointIfValid(_ranging.RangeData[whichObject],
                                   proximityEvent);
   }
 
@@ -187,7 +186,8 @@ public:
   }
 
 protected:
-  VL53L4CX *_VL53L4CX; ///< Pointer to VL53L4CX temperature sensor object
+  VL53L4CX *_VL53L4CX; ///< Pointer to VL53L4CX sensor object
+  VL53L4CX_MultiRangingData_t _ranging = {}; ///< Last ranging data
 };
 
 #endif // drvVl53l4cx

@@ -72,6 +72,73 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvApds9999(i2c, addr, mux_channel, driver_name);
      }},
+    {"as5600",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvAs5600(i2c, addr, mux_channel, driver_name);
+     }},
+    {"as7331",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvAs7331(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bmp580",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp5xx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bmp581",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp5xx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bmp585",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp5xx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"max44009",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMax44009(i2c, addr, mux_channel, driver_name);
+     }},
+    {"qmc5883p",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvQmc5883p(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sgp41",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSgp41(i2c, addr, mux_channel, driver_name);
+     }},
+    {"spa06_003",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSpa06_003(i2c, addr, mux_channel, driver_name);
+     }},
+    {"stcc4",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvStcc4(i2c, addr, mux_channel, driver_name);
+     }},
+    {"tmp119",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvTmp119(i2c, addr, mux_channel, driver_name);
+     }},
+    // Component id in Wippersnapper_Components is "vcnl4030"; the legacy
+    // misspelling ("vncl") is also registered to match existing sibling keys.
+    {"vcnl4030",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVcnl4030(i2c, addr, mux_channel, driver_name);
+     }},
+    {"vncl4030",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVcnl4030(i2c, addr, mux_channel, driver_name);
+     }},
     {"bh1750",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -117,10 +184,20 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvDs2484(i2c, addr, mux_channel, driver_name);
      }},
+    {"d6t1a",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvD6t1a(i2c, addr, mux_channel, driver_name);
+     }},
     {"ens160",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvEns160(i2c, addr, mux_channel, driver_name);
+     }},
+    {"hdc302x",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvHdc302x(i2c, addr, mux_channel, driver_name);
      }},
     {"hts221",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -132,10 +209,35 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvHtu21d(i2c, addr, mux_channel, driver_name);
      }},
+    {"htu31d",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvHtu31d(i2c, addr, mux_channel, driver_name);
+     }},
     {"ina219",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvIna219(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina228",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna228(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina237",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna237(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina238",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna238(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina260",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna260(i2c, addr, mux_channel, driver_name);
      }},
     {"lc709203f",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -156,6 +258,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvLps25hb(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lps28dfw",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLps28dfw(i2c, addr, mux_channel, driver_name);
      }},
     {"ltr329",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -186,6 +293,24 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvMcp9808(i2c, addr, mux_channel, driver_name);
+     }},
+    {"mlx90632b",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMLX90632(i2c, addr, mux_channel, driver_name);
+     }},
+    {"mlx90632d_med",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMLX90632(i2c, addr, mux_channel, driver_name);
+     }},
+    {"mlx90632d_ext",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       // Extended temperature range variant (vs. the default medical range)
+       drvMLX90632 *drv = new drvMLX90632(i2c, addr, mux_channel, driver_name);
+       drv->ConfigureAndPrintSensorInfo(true);
+       return drv;
      }},
     {"mpl115a2",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -236,6 +361,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvScd4x(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sgp30",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSgp30(i2c, addr, mux_channel, driver_name);
      }},
     {"sgp40",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -292,6 +422,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvSen5x(i2c, addr, mux_channel, driver_name);
      }},
+    {"sen66",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen6x(i2c, addr, mux_channel, driver_name);
+     }},
     {"shtc3",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -331,6 +466,18 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvVncl4040(i2c, addr, mux_channel, driver_name);
+     }},
+    // Component id in Wippersnapper_Components is "vcnl4200"; the legacy
+    // misspelling ("vncl") is also registered to match existing sibling keys.
+    {"vcnl4200",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVncl4200(i2c, addr, mux_channel, driver_name);
+     }},
+    {"vncl4200",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVncl4200(i2c, addr, mux_channel, driver_name);
      }},
     {"vl53l0x",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -834,6 +981,42 @@ bool I2cController::publishProbed() {
 /******************************************************************************/
 
 /*!
+    @brief    Schedules a retry for a driver whose read pass produced no
+              publishable data. Carries the v1 update() retry semantics
+              forward: a few quick retries (~1s apart), then wait out a full
+              period, instead of re-polling the device every loop iteration.
+              The backoff is honoured even when update() is forced.
+    @param    drv
+              The I2C device driver that failed to read.
+    @param    reason
+              Short description of the failure, for the debug log.
+*/
+void I2cController::BackoffDriverRead(drvBase *drv, const char *reason) {
+  ulong retry_in = drv->SampleDone(false);
+  WS_DEBUG_PRINT("[i2c] Driver read failed (");
+  WS_DEBUG_PRINTVAR(reason);
+  WS_DEBUG_PRINT("), retrying in ");
+  WS_DEBUG_PRINTVAR(retry_in);
+  WS_DEBUG_PRINTLN("ms");
+}
+
+/*!
+    @brief    Selects the driver's channel on its bus's I2C MUX, if the device
+              sits behind one. No-op for devices wired directly to the bus.
+    @param    drv
+              The I2C device driver about to use the bus.
+*/
+void I2cController::SelectDriverMux(drvBase *drv) {
+  if (!drv->HasMux())
+    return;
+  I2cHardware *drv_bus = findOrCreateBus(drv->GetPinSCL(), drv->GetPinSDA());
+  if (drv_bus == nullptr)
+    return;
+  drv_bus->ClearMuxChannel();
+  drv_bus->SelectMuxChannel(drv->GetMuxChannel());
+}
+
+/*!
     @brief    Handles polling, reading, and logger for i2c devices
               attached to the I2C controller.
     @param    force
@@ -850,35 +1033,50 @@ void I2cController::update(bool force) {
     if (sensor_count == 0)
       continue; // bail out if driver has no sensors enabled
 
-    if (drv->GetDidReadSend())
-      continue; // bail out if driver has already read and sent data to IO
-
-    // Did driver's period elapse yet?
     ulong cur_time = millis();
-    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod() && !force)
-      continue; // bail out if the period hasn't elapsed yet or we aren't
-                // forcing an update
 
-    // Get the I2cHardware bus for this driver using its stored pins
-    I2cHardware *drv_bus = findOrCreateBus(drv->GetPinSCL(), drv->GetPinSDA());
+    // Per-driver background tick, on the driver's own cadence: either always
+    // (SGP gas-index ~1 Hz sampling) or only in the lead window before a read
+    // is due (VL53 ranging). Select the MUX channel first so the tick talks to
+    // the right device.
+    if (drv->FastTickDue(cur_time, force)) {
+      SelectDriverMux(drv);
+      drv->fastTick();
+    }
+
+    // (force only, sleep mode) - bail out if this driver already completed its
+    // read/send for this wake cycle. The flag is only reset between sleep
+    // cycles, so it must not gate periodic reads in continuous mode.
+    if (drv->GetDidReadSend() && force)
+      continue;
+
+    // Period elapsed (or forced) and not waiting out a read backoff?
+    if (!drv->ReadDue(cur_time, force))
+      continue;
 
     // Optionally configure the I2C MUX
-    uint32_t mux_channel = drv->GetMuxChannel();
-    WS_DEBUG_PRINTLNVAR(mux_channel);
-    if (drv->HasMux() && drv_bus != nullptr) {
-      drv_bus->ClearMuxChannel();
-      drv_bus->SelectMuxChannel(mux_channel);
+    SelectDriverMux(drv);
+
+    // Read the device once, up-front - drivers that override ReadSensorData()
+    // cache all metrics from one transaction so the getEvent accessors below
+    // stay in sync and cause no further bus traffic (base impl is a no-op).
+    if (!drv->AttemptRead()) {
+      // No new sample (sensor not ready, or the read failed)
+      BackoffDriverRead(drv, "no valid sample");
+      continue;
     }
 
     // Read the driver's sensors
     _i2c_model->ClearI2cDeviceEvent();
-    bool read_succeeded = true;
+    size_t events_added = 0;
     for (size_t i = 0; i < sensor_count; i++) {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
       if (!drv->GetSensorEvent(drv->_sensors[i].value, &event)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to read sensor!");
-        read_succeeded = false;
+        // Metric unavailable this pass (e.g. still warming up) - publish the
+        // metrics that did read rather than dropping the whole device event.
+        WS_DEBUG_PRINT("[i2c] WARNING: Failed to read sensor type=");
+        WS_DEBUG_PRINTLNVAR(drv->_sensors[i].value);
         continue;
       }
 
@@ -893,15 +1091,18 @@ void I2cController::update(bool force) {
 
       // Fill the I2cDeviceEvent's sensor_event array submsg.
       _i2c_model->AddI2cDeviceSensorEvent(event, drv->_sensors[i]);
+      events_added++;
     }
 
-    if (!read_succeeded)
+    if (events_added == 0) {
+      BackoffDriverRead(drv, "all sensor reads failed");
       continue;
+    }
 
     // Configure the DeviceEvent's DeviceDescription sub-msg
     _i2c_model->SetI2cDeviceEventDeviceDescripton(
         drv->GetPinSCL(), drv->GetPinSDA(), (uint32_t)drv->GetAddress(),
-        drv->GetMuxAddress(), mux_channel);
+        drv->GetMuxAddress(), drv->GetMuxChannel());
     _i2c_model->EncodeI2cDeviceEvent();
 
     if (!Ws->_sdCardV2->isModeOffline()) {
@@ -920,9 +1121,9 @@ void I2cController::update(bool force) {
       }
     }
     drv->SetDidReadSend(true);
-
-    cur_time = millis();
-    drv->SetSensorPeriodPrv(cur_time);
+    // The cached sample has been consumed; the next pass needs a fresh one
+    drv->SampleDone(true);
+    drv->SetSensorPeriodPrv(millis());
   }
 }
 
@@ -1098,7 +1299,15 @@ I2cHardware *I2cController::findOrCreateBus(const char *pin_scl,
   WS_DEBUG_PRINT("SDA Pin: ");
   WS_DEBUG_PRINTLNVAR(pin_sda);
 
-  I2cHardware *new_bus = new I2cHardware(sda.num, scl.num);
+  uint8_t bus_instance = 0;
+#ifdef I2C_STEMMA_WIRE1
+  // On boards whose STEMMA QT / Qwiic connector is wired to the secondary I2C
+  // peripheral (Wire1), ws_boards.h defines I2C_STEMMA_WIRE1. Use bus instance
+  // 1 so probes/devices reach the STEMMA bus instead of the (empty) primary
+  // Wire.
+  bus_instance = 1;
+#endif
+  I2cHardware *new_bus = new I2cHardware(sda.num, scl.num, bus_instance);
   if (!new_bus->begin()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to initialize I2C bus!");
     delete new_bus;

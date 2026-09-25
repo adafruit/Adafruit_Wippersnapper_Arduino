@@ -18,6 +18,9 @@
 #include "drvBase.h"
 #include <vl53l4cd_class.h>
 
+#define VL53L4CD_TICK_MS 50        ///< Poll for a finished range every 50ms
+#define VL53L4CD_READ_LEAD_MS 1000 ///< Start ranging 1s before a read is due
+
 /*!
     @brief  Class that provides a driver interface for a VL53L4CD sensor.
 */
@@ -37,7 +40,11 @@ public:
   drvVl53l4cd(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // A range takes up to the 200ms timing budget, so it is collected in the
+    // background by fastTick() during the lead window before each read is due
+    // rather than blocking the read pass.
+    _fast_tick_ms = VL53L4CD_TICK_MS;
+    _tick_lead_ms = VL53L4CD_READ_LEAD_MS;
   }
 
   /*!
@@ -98,61 +105,54 @@ public:
   }
 
   /*!
-      @brief    Gets the VL53L4CD's current proximity.
+      @brief    Background ranging step, called every VL53L4CD_TICK_MS while a
+                read is pending. On resuming after idle the pending interrupt
+                is cleared so a stale result completed long ago is discarded
+                ("seemed to be accepting stale value"). Otherwise, if a range
+                has completed, it is read, the interrupt cleared to start the
+                next one, and a valid result filed with NewSample().
+  */
+  void fastTick() override {
+    if (_first_tick) {
+      _VL53L4CD->VL53L4CD_ClearInterrupt();
+      return;
+    }
+
+    uint8_t ready = 0;
+    if (_VL53L4CD->VL53L4CD_CheckForDataReady(&ready) != VL53L4CD_ERROR_NONE ||
+        !ready)
+      return;
+
+    VL53L4CD_Result_t results = {0};
+    uint8_t status = _VL53L4CD->VL53L4CD_GetResult(&results);
+    // (Mandatory) Clear HW interrupt to restart measurements
+    _VL53L4CD->VL53L4CD_ClearInterrupt();
+    // RangeStatus = 0 means valid data; otherwise keep waiting for a good one
+    if (status != VL53L4CD_ERROR_NONE || results.range_status != 0)
+      return;
+    // NOTE: results also carries sigma_mm (std deviation) should we want it.
+    _distance_mm = results.distance_mm;
+    NewSample();
+  }
+
+  /*!
+      @brief    Gets the VL53L4CD's current proximity, from the most recent
+                valid range collected by fastTick().
       @param    proximityEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
   bool getEventProximity(sensors_event_t *proximityEvent) {
-    uint8_t NewDataReady = 0;
-    VL53L4CD_Result_t results;
-    uint8_t status;
-    // Start fresh reading, seemed to be accepting stale value
-    _VL53L4CD->VL53L4CD_ClearInterrupt();
-    // WS_DEBUG_PRINT("Waiting for VL53L4CD data ready...");
-    delay(250);
-
-    for (uint8_t retries = 0;
-         (status = _VL53L4CD->VL53L4CD_CheckForDataReady(&NewDataReady)) &&
-         !NewDataReady && retries < 3;
-         retries++) {
-      delay(300);
-      // WS_DEBUG_PRINT(" .");
-    }
-    // WS_DEBUG_PRINTLN();
-    if ((status == VL53L4CD_ERROR_NONE) && (NewDataReady != 0)) {
-      // (Mandatory) Clear HW interrupt to restart measurements
-      _VL53L4CD->VL53L4CD_ClearInterrupt();
-
-      // Read measured distance. RangeStatus = 0 means valid data
-      if (_VL53L4CD->VL53L4CD_GetResult(&results) == VL53L4CD_ERROR_NONE) {
-        if (results.range_status != 0) {
-          // WS_DEBUG_PRINT("VL53L4CD range status: ");
-          // WS_DEBUG_PRINTLN(results.range_status);
-          return false;
-        }
-        proximityEvent->data[0] = (float)results.distance_mm;
-        return true;
-      }
-      // NOTE: Once I2C sensors fire all data points during a single call, we
-      // can return the std deviation in MM for the measurements. See
-      // https://github.com/stm32duino/VL53L4CD/blob/066664f983bcf70819133c7fcf43101035b09bab/src/vl53l4cd_api.h#L130-L131
-    } else {
-      if (status == VL53L4CD_ERROR_INVALID_ARGUMENT) {
-        // WS_DEBUG_PRINTLN("VL53L4CD: Invalid argument to
-        // CheckForDataReady()");
-      } else if (status == VL53L4CD_ERROR_TIMEOUT) {
-        // WS_DEBUG_PRINTLN("VL53L4CD: Timeout waiting for data ready");
-      } else {
-        // WS_DEBUG_PRINTLN("VL53L4CD: data not ready yet");
-      }
-    }
-    return false;
+    if (!AttemptRead())
+      return false;
+    proximityEvent->data[0] = (float)_distance_mm;
+    return true;
   }
 
 protected:
-  VL53L4CD *_VL53L4CD; ///< Pointer to VL53L4CD temperature sensor object
+  VL53L4CD *_VL53L4CD;       ///< Pointer to VL53L4CD sensor object
+  uint16_t _distance_mm = 0; ///< Last valid range, in mm
 };
 
 #endif // drvVl53l4cd

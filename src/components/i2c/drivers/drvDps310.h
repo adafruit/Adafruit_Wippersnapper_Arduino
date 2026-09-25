@@ -44,7 +44,6 @@ public:
     _i2c_mux_channel = mux_channel;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
-    _last_read = 0;
   }
 
   /*!
@@ -64,8 +63,11 @@ public:
     }
 
     // init OK, perform sensor configuration
-    _dps310->configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps310->configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
+    // Datasheet 8.3: rate_T*t_T + rate_P*t_P must stay under 1 second; at
+    // 64x oversampling (104.4ms) that allows 4 Hz for each channel (835ms).
+    // The library's 64 Hz default is out of spec and its timing undefined.
+    _dps310->configureTemperature(DPS310_4HZ, DPS310_64SAMPLES);
+    _dps310->configurePressure(DPS310_4HZ, DPS310_64SAMPLES);
     _dps_temp = _dps310->getTemperatureSensor();
     if (_dps_temp == NULL) {
       return false;
@@ -78,31 +80,20 @@ public:
   }
 
   /*!
-      @brief    Reads the DPS310's temperature and pressure.
-      @returns  True if the measurements were read successfully, False
-     otherwise.
+      @brief    Checks if the DPS310 has new temperature and pressure samples.
+      @returns  True if both are ready, False otherwise.
   */
-  bool alreadyRecentlyRead() {
-    return (_last_read != 0 && (millis() - _last_read < ONE_SECOND_IN_MS));
+  bool IsSensorReady() override {
+    return _dps310->temperatureAvailable() && _dps310->pressureAvailable();
   }
 
   /*!
-      @brief    Reads the DPS310's temperature and pressure.
-      @returns  True if the measurements were read successfully, False
-     otherwise.
+      @brief    Reads the DPS310's temperature and pressure in one transaction
+                so both metrics reflect the same sample.
+      @returns  True if the read succeeded, False otherwise.
   */
-  bool ReadMeasurements() {
-    if (alreadyRecentlyRead())
-      return true;
-
-    while (!_dps310->temperatureAvailable() || !_dps310->pressureAvailable())
-      return false;
-
-    if (!_dps310->getEvents(&_temp_event, &_pressure_event))
-      return false;
-
-    _last_read = millis();
-    return true;
+  bool ReadSensorData() override {
+    return _dps310->getEvents(&_temp_event, &_pressure_event);
   }
 
   /*!
@@ -113,7 +104,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!ReadMeasurements()) {
+    if (!AttemptRead()) {
       return false;
     }
     tempEvent->temperature = _temp_event.temperature;
@@ -128,7 +119,7 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!ReadMeasurements()) {
+    if (!AttemptRead()) {
       return false;
     }
     pressureEvent->pressure = _pressure_event.pressure;
@@ -138,10 +129,9 @@ public:
 protected:
   sensors_event_t _temp_event = {
       0}; ///< DPS310 sensor event for temperature readings
-  sensors_event_t
-      _pressure_event;      ///< DPS310 sensor event for pressure readings
-  ulong _last_read;         ///< Last time the sensor was read
-  Adafruit_DPS310 *_dps310; ///< DPS310 driver object
+  sensors_event_t _pressure_event = {
+      0}; ///< DPS310 sensor event for pressure readings
+  Adafruit_DPS310 *_dps310 = nullptr; ///< DPS310 driver object
   Adafruit_Sensor *_dps_temp =
       NULL; ///< Holds data for the DPS310's temperature sensor
   Adafruit_Sensor *_dps_pressure =

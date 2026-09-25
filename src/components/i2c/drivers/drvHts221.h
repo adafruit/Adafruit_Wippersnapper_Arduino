@@ -31,7 +31,9 @@ public:
   drvHts221(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // The library has no data-ready accessor; the first pass can read the
+    // zeroed output registers before the first conversion completes
+    _discard_samples = 1;
   }
 
   /*!
@@ -66,6 +68,15 @@ public:
   }
 
   /*!
+      @brief    Reads temperature and humidity together so both metrics in a
+                pass come from the same sample.
+      @returns  True if the read succeeded, False otherwise.
+  */
+  bool ReadSensorData() override {
+    return _hts221->getEvent(&_humidity, &_temp);
+  }
+
+  /*!
       @brief    Gets the HTS221's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -73,7 +84,10 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    return _hts221_temp->getEvent(tempEvent);
+    if (!AttemptRead())
+      return false;
+    tempEvent->temperature = _temp.temperature;
+    return true;
   }
 
   /*!
@@ -84,11 +98,16 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    return _hts221_humidity->getEvent(humidEvent);
+    if (!AttemptRead())
+      return false;
+    humidEvent->relative_humidity = _humidity.relative_humidity;
+    return true;
   }
 
 protected:
-  Adafruit_HTS221 *_hts221; ///< Pointer to an HTS221 object
+  Adafruit_HTS221 *_hts221;        ///< Pointer to an HTS221 object
+  sensors_event_t _temp = {0};     ///< Cached temperature event
+  sensors_event_t _humidity = {0}; ///< Cached humidity event
   Adafruit_Sensor *_hts221_temp =
       NULL; ///< Holds data for the HTS221's temperature sensor
   Adafruit_Sensor *_hts221_humidity =

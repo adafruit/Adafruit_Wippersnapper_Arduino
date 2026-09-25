@@ -42,7 +42,10 @@ public:
   drvBme680(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // Initialization handled by drvBase constructor
+    // Skip the first conversion after power-up (heater still cold; the
+    // datasheet's per-conversion criterion is the gas_valid_r/heat_stab_r
+    // status, applied in getEventGasResistance())
+    _discard_samples = 1;
   }
 
   /*!
@@ -207,10 +210,13 @@ public:
   }
 
   /*!
-      @brief    Performs a reading in blocking mode.
+      @brief    Performs one blocking BME680 reading (temperature, humidity,
+                pressure and gas heater cycle) so every metric in a read pass
+                comes from the same sample. The library only updates its
+                public readings on success.
       @returns  True if the reading succeeded, False otherwise.
   */
-  bool bmePerformReading() { return _bme->performReading(); }
+  bool ReadSensorData() override { return _bme->performReading(); }
 
   /*!
       @brief    Gets the BME680's current temperature.
@@ -220,7 +226,7 @@ public:
                 otherwise.
   */
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!bmePerformReading())
+    if (!AttemptRead())
       return false;
     tempEvent->temperature = _bme->temperature;
     return true;
@@ -234,7 +240,7 @@ public:
                 otherwise.
   */
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!bmePerformReading())
+    if (!AttemptRead())
       return false;
     humidEvent->relative_humidity = _bme->humidity;
     return true;
@@ -249,23 +255,27 @@ public:
                 otherwise.
   */
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!bmePerformReading())
+    if (!AttemptRead())
       return false;
     pressureEvent->pressure = (float)_bme->pressure;
     return true;
   }
 
   /*!
-      @brief    Reads a the BME680's altitude sensor into an event.
+      @brief    Reads a the BME680's altitude sensor into an event. Derived
+                from the cached pressure sample, so no extra bus traffic.
       @param    altitudeEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!bmePerformReading())
+    if (!AttemptRead())
       return false;
-    altitudeEvent->altitude = (float)_bme->readAltitude(SEALEVELPRESSURE_HPA);
+    // Same formula as Adafruit_BME680::readAltitude(), without the re-read
+    float atmospheric = (float)_bme->pressure / 100.0F;
+    altitudeEvent->altitude =
+        44330.0F * (1.0F - pow(atmospheric / _seaLevelPressureHpa, 0.1903F));
     return true;
   }
 
@@ -278,15 +288,43 @@ public:
                 otherwise.
   */
   virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
-    if (!bmePerformReading())
+    // The library reports 0 when the conversion's gas_valid_r / heat_stab_r
+    // status bits were not set (datasheet 3.4): the heater did not reach its
+    // target, so the resistance is not a measurement.
+    if (!AttemptRead() || _bme->gas_resistance == 0)
       return false;
-
     gasEvent->gas_resistance = (float)_bme->gas_resistance;
+    return true;
+  }
+
+  /*!
+      @brief    Applies the sea-level pressure reference (hPa) used to compute
+                altitude. Sent as a direct value, not an option index.
+      @param    sea_level_pressure
+                The reference sea-level pressure, in hPa.
+      @returns  True if applied successfully, False otherwise.
+  */
+  bool setSeaLevelPressure(const ws_config_Value &sea_level_pressure) override {
+    float pressure;
+    if (sea_level_pressure.which_value == ws_config_Value_float_value_tag) {
+      pressure = sea_level_pressure.value.float_value;
+    } else if (sea_level_pressure.which_value ==
+               ws_config_Value_int_value_tag) {
+      pressure = (float)sea_level_pressure.value.int_value;
+    } else {
+      return false;
+    }
+    if (pressure <= 0.0f) {
+      return false;
+    }
+    _seaLevelPressureHpa = pressure;
     return true;
   }
 
 protected:
   Adafruit_BME680 *_bme; ///< BME680 object
+  float _seaLevelPressureHpa =
+      SEALEVELPRESSURE_HPA; ///< Sea-level pressure reference (hPa)
 };
 
 #endif // drvBme680
