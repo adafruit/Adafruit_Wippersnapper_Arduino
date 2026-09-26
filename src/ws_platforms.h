@@ -29,13 +29,14 @@ typedef esp8266_wifi ws_adapter_wifi;
 typedef esp32_wifi ws_adapter_wifi;
 // Raspberry Pi Pico W
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                  \
-    defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+    defined(ARDUINO_RASPBERRY_PI_PICO_2W) || defined(PICO_CYW43_SUPPORTED)
 #include "platforms/pico_wifi.h"
 typedef pico_wifi ws_adapter_wifi;
 // Adafruit "AirLift" (ESP32 coprocessor)
 #elif defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                    \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
-    defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT)
+    defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT) ||            \
+    defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
 #include "platforms/airlift_wifi.h"
 typedef airlift_wifi ws_adapter_wifi;
 // Arduino Nina-Firmware (ESP32 Coprocessor)
@@ -46,7 +47,7 @@ typedef ninafw_wifi ws_adapter_wifi;
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                  \
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
-    defined(ARDUINO_ADAFRUIT_METRO_RP2350)
+    defined(ARDUINO_ADAFRUIT_METRO_RP2350) || defined(ARDUINO_ARCH_RP2040)
 #include "platforms/pico_offline.h"
 typedef pico_offline ws_adapter_offline;
 #else
