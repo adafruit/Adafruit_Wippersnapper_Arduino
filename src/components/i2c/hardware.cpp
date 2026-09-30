@@ -162,10 +162,11 @@ bool I2cHardware::begin() {
     @returns  WS_I2C_PROBE_OK if the probe completed, a ws_i2c_probe_err_t
               error code otherwise.
 */
-ws_i2c_probe_err_t I2cHardware::ProbeAddresses(
-    ws_i2c_AddressSpace *address_space, uint32_t *addresses,
-    size_t addresses_count, ws_i2c_AddressSpaceResult *result,
-    uint32_t *found_buf, size_t *found_count) {
+ws_i2c_probe_err_t
+I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
+                            uint32_t *addresses, size_t addresses_count,
+                            ws_i2c_AddressSpaceResult *result,
+                            uint32_t *found_buf, size_t *found_count) {
   if (!result || !found_buf || !found_count)
     return WS_I2C_PROBE_ERR_INVALID_ARGS;
 
@@ -248,7 +249,7 @@ const char *I2cHardware::ProbeErrorToString(ws_i2c_probe_err_t err) {
   case WS_I2C_PROBE_OK:
     return "OK";
   case WS_I2C_PROBE_ERR_INVALID_ARGS:
-    return "ProbeAddresses: invalid arguments!";
+    return (const char *)F("ProbeAddresses: invalid arguments!");
   case WS_I2C_PROBE_ERR_NO_MUX:
     return "AddressSpace specifies MUX but none on bus!";
   case WS_I2C_PROBE_ERR_TOO_MANY_ADDRS:

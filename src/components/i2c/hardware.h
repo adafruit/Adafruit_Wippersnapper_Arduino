@@ -30,9 +30,9 @@
 
 /** Defines the result codes returned by I2cHardware::ProbeAddresses() */
 typedef enum {
-  WS_I2C_PROBE_OK = 0,                 // Probe completed
-  WS_I2C_PROBE_ERR_INVALID_ARGS = 1,   // Null result/found_buf/found_count
-  WS_I2C_PROBE_ERR_NO_MUX = 2,         // AddressSpace specifies MUX, none on bus
+  WS_I2C_PROBE_OK = 0,               // Probe completed
+  WS_I2C_PROBE_ERR_INVALID_ARGS = 1, // Null result/found_buf/found_count
+  WS_I2C_PROBE_ERR_NO_MUX = 2,       // AddressSpace specifies MUX, none on bus
   WS_I2C_PROBE_ERR_TOO_MANY_ADDRS = 3, // Address list exceeds MAX_I2C_ADDRESSES
 } ws_i2c_probe_err_t;
 
