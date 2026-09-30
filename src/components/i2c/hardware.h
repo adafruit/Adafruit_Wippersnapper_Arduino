@@ -28,6 +28,14 @@
 #define I2C_WDT_TIMEOUT_MS 50 ///< I2C timeout
 #define MAX_I2C_ADDRESSES 112 ///< 128 total 7-bit addresses minus 16 reserved
 
+/** Defines the result codes returned by I2cHardware::ProbeAddresses() */
+typedef enum {
+  WS_I2C_PROBE_OK = 0,                 // Probe completed
+  WS_I2C_PROBE_ERR_INVALID_ARGS = 1,   // Null result/found_buf/found_count
+  WS_I2C_PROBE_ERR_NO_MUX = 2,         // AddressSpace specifies MUX, none on bus
+  WS_I2C_PROBE_ERR_TOO_MANY_ADDRS = 3, // Address list exceeds MAX_I2C_ADDRESSES
+} ws_i2c_probe_err_t;
+
 /*!
     @brief  Interfaces with the I2C bus via the Arduino "Wire" API.
 */
@@ -44,9 +52,11 @@ public:
   ~I2cHardware();
   // Bus API
   bool begin();
-  bool ProbeAddresses(ws_i2c_AddressSpace *address_space, uint32_t *addresses,
-                      size_t addresses_count, ws_i2c_AddressSpaceResult *result,
-                      uint32_t *found_buf, size_t *found_count);
+  ws_i2c_probe_err_t ProbeAddresses(ws_i2c_AddressSpace *address_space,
+                                    uint32_t *addresses, size_t addresses_count,
+                                    ws_i2c_AddressSpaceResult *result,
+                                    uint32_t *found_buf, size_t *found_count);
+  static const char *ProbeErrorToString(ws_i2c_probe_err_t err);
   TwoWire *GetBus();
   /*!
       @brief  Returns the SDA pin number.

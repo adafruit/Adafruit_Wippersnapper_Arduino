@@ -159,16 +159,22 @@ bool I2cHardware::begin() {
                 Buffer to store found addresses (caller-owned).
     @param    found_count
                 Output: number of addresses found.
-    @returns  True if the probe completed, False on bus error.
+    @returns  WS_I2C_PROBE_OK if the probe completed, a ws_i2c_probe_err_t
+              error code otherwise.
 */
-bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
-                                 uint32_t *addresses, size_t addresses_count,
-                                 ws_i2c_AddressSpaceResult *result,
-                                 uint32_t *found_buf, size_t *found_count) {
+ws_i2c_probe_err_t I2cHardware::ProbeAddresses(
+    ws_i2c_AddressSpace *address_space, uint32_t *addresses,
+    size_t addresses_count, ws_i2c_AddressSpaceResult *result,
+    uint32_t *found_buf, size_t *found_count) {
   if (!result || !found_buf || !found_count)
-    return false;
+    return WS_I2C_PROBE_ERR_INVALID_ARGS;
 
   *found_count = 0;
+
+  // found_buf holds, at most, MAX_I2C_ADDRESSES entries
+  if (addresses_count > MAX_I2C_ADDRESSES) {
+    return WS_I2C_PROBE_ERR_TOO_MANY_ADDRS;
+  }
 
   // Copy address space into result
   result->has_address_space = true;
@@ -178,9 +184,7 @@ bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
   bool using_mux = (address_space->mux_address != 0);
   if (using_mux) {
     if (!_has_mux) {
-      WS_DEBUG_PRINTLN(
-          "[i2c] ERROR: AddressSpace specifies MUX but none on bus!");
-      return false;
+      return WS_I2C_PROBE_ERR_NO_MUX;
     }
     SelectMuxChannel(address_space->mux_channel);
   }
@@ -193,11 +197,6 @@ bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
   size_t probe_count = addresses_count;
   if (scan_all) {
     // Probe the full I2C address range (0x08-0x77)
-    probe_count = MAX_I2C_ADDRESSES;
-  }
-
-  // found_buf holds, at most, MAX_I2C_ADDRESSES entries
-  if (probe_count > MAX_I2C_ADDRESSES) {
     probe_count = MAX_I2C_ADDRESSES;
   }
 
@@ -235,7 +234,28 @@ bool I2cHardware::ProbeAddresses(ws_i2c_AddressSpace *address_space,
     WS_DEBUG_PRINTLN("");
   }
 
-  return true;
+  return WS_I2C_PROBE_OK;
+}
+
+/*!
+    @brief  Returns a human-readable string for a ProbeAddresses() result.
+    @param    err
+                The ws_i2c_probe_err_t returned by ProbeAddresses().
+    @returns  Error string suitable for publishComponentError().
+*/
+const char *I2cHardware::ProbeErrorToString(ws_i2c_probe_err_t err) {
+  switch (err) {
+  case WS_I2C_PROBE_OK:
+    return "OK";
+  case WS_I2C_PROBE_ERR_INVALID_ARGS:
+    return "ProbeAddresses: invalid arguments!";
+  case WS_I2C_PROBE_ERR_NO_MUX:
+    return "AddressSpace specifies MUX but none on bus!";
+  case WS_I2C_PROBE_ERR_TOO_MANY_ADDRS:
+    return "Too many addresses to probe (max 112)!";
+  default:
+    return "ProbeAddresses failed!";
+  }
 }
 
 /*!

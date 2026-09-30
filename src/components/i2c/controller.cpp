@@ -859,12 +859,14 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
     }
 
     // Probe the addresses on this bus/mux channel
-    if (!bus->ProbeAddresses(&spaces[i], addresses, addresses_count, result,
-                             found_buf, found_count)) {
+    ws_i2c_probe_err_t probe_err = bus->ProbeAddresses(
+        &spaces[i], addresses, addresses_count, result, found_buf, found_count);
+    if (probe_err != WS_I2C_PROBE_OK) {
       ws_i2c_Descriptor desc = {};
       desc.has_address_space = true;
       desc.address_space = spaces[i];
-      Ws->error_handler->publishComponentError(desc, "ProbeAddresses failed!");
+      Ws->error_handler->publishComponentError(
+          desc, I2cHardware::ProbeErrorToString(probe_err));
       continue;
     }
 
