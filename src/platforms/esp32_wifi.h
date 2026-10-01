@@ -74,7 +74,7 @@ public:
   }
 
   /*!
-  @brief  Destructor for the Adafruit IO AirLift class.
+  @brief  Destructor for the Adafruit IO ESP32 class.
   */
   ~esp32_wifi() {
     disconnect();
@@ -127,6 +127,7 @@ public:
     int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true);
     if (n == 0) {
       WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
+      WiFi.scanDelete(); // Free the scan result memory
       return WS_SSID_SCAN_NO_NETWORKS;
     }
 

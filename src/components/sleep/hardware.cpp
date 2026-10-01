@@ -280,7 +280,8 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
   gpio_num_t pin = (gpio_num_t)pin_num;
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3) ||                                      \
-    defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
+    defined(CONFIG_IDF_TARGET_ESP32C5) ||                                      \
+    defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32P4)
   // Configure pull resistor to match the owning component's configuration
   if (pull_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
     gpio_pulldown_dis(pin);
