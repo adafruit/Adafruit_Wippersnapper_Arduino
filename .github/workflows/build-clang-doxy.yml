@@ -560,7 +560,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-boards-local-txt-p4s
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -601,7 +601,7 @@ jobs:
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build SAMD platforms
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --boards-local-txt
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -650,7 +650,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-boards-local-txt-p4s
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -691,7 +691,7 @@ jobs:
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build RP2040 platforms
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --boards-local-txt
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -738,7 +738,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-boards-local-txt-p4s
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -776,7 +776,7 @@ jobs:
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build ESP8266 platforms
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --boards-local-txt
       - name: list build artifacts
         run: |
           ls

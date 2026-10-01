@@ -1,0 +1,3 @@
+# boards.local.txt mechanism test for the SAMD (adafruit:samd) BSP. Changes only the
+# USB product string, so a flashed board enumerates as "PyPortal M4 (boards.local.txt)".
+adafruit_pyportal_m4.build.usb_product="PyPortal M4 (boards.local.txt)"
