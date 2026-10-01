@@ -87,3 +87,5 @@ src/Wippersnapper_demo.ino.cpp
 
 # Locally checked-out nested repos (not submodules)
 repos/
+build_output_*.txt
+tests/__pycache__/
