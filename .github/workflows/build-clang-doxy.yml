@@ -366,13 +366,16 @@ jobs:
         arduino-platform:
           [
             "esp32p4",
-            "waveshare_p4_wifi6"
+            "waveshare_p4_wifi6",
+            "dfrobot_firebeetle2_esp32p4"
           ]
         include:
           - offset: "0x2000"
             arduino-platform: "waveshare_p4_wifi6"
           - offset: "0x2000"
             arduino-platform: "esp32p4"
+          - offset: "0x2000"
+            arduino-platform: "dfrobot_firebeetle2_esp32p4"
     steps:
       - name: "skip if unwanted"
         continue-on-error: true
