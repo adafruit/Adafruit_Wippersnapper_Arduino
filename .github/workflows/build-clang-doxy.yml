@@ -150,7 +150,12 @@ jobs:
           board_name=${board_name#wippersnapper_}
           # Remove 'espressif_' prefix if present
           board_name=${board_name#espressif_}
-          content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
+          # board folders may use underscores or dashes; try the exact name first
+          if [ -f "ws-boards/boards/${board_name}/definition.json" ]; then
+            content=$(cat "ws-boards/boards/${board_name}/definition.json")
+          else
+            content=$(cat "ws-boards/boards/${board_name//_/-}/definition.json")
+          fi
           {
             echo 'boardJson<<EOF'
             echo $content
@@ -365,7 +370,7 @@ jobs:
       matrix:
         arduino-platform:
           [
-            "esp32p4",
+            "adafruit_metro_esp32p4",
             "waveshare_p4_wifi6",
             "dfrobot_firebeetle2_esp32p4"
           ]
@@ -373,7 +378,7 @@ jobs:
           - offset: "0x2000"
             arduino-platform: "waveshare_p4_wifi6"
           - offset: "0x2000"
-            arduino-platform: "esp32p4"
+            arduino-platform: "adafruit_metro_esp32p4"
           - offset: "0x2000"
             arduino-platform: "dfrobot_firebeetle2_esp32p4"
     steps:
@@ -417,7 +422,7 @@ jobs:
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
-          ref: waveshare-p4-wifi6
+          ref: adafruit-metro-esp32p4 # stacked on dfrobotp4 -> waveshare-p4-wifi6 (Boards #234/#251)
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
@@ -493,7 +498,12 @@ jobs:
           board_name=${board_name#wippersnapper_}
           # Remove 'espressif_' prefix if present
           board_name=${board_name#espressif_}
-          content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
+          # board folders may use underscores or dashes; try the exact name first
+          if [ -f "ws-boards/boards/${board_name}/definition.json" ]; then
+            content=$(cat "ws-boards/boards/${board_name}/definition.json")
+          else
+            content=$(cat "ws-boards/boards/${board_name//_/-}/definition.json")
+          fi
           {
             echo 'boardJson<<EOF'
             echo $content
@@ -1032,7 +1042,12 @@ jobs:
           board_name=${board_name#wippersnapper_}
           # Remove 'espressif_' prefix if present
           board_name=${board_name#espressif_}
-          content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
+          # board folders may use underscores or dashes; try the exact name first
+          if [ -f "ws-boards/boards/${board_name}/definition.json" ]; then
+            content=$(cat "ws-boards/boards/${board_name}/definition.json")
+          else
+            content=$(cat "ws-boards/boards/${board_name//_/-}/definition.json")
+          fi
           {
             echo 'boardJson<<EOF'
             echo $content
