@@ -67,6 +67,8 @@ public:
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
     digitalWrite(TFT_BACKLITE, LOW);
+#elif defined(ARDUINO_ARDUINO_NESSO_N1)
+    digitalWrite(LCD_BACKLIGHT, LOW);
 #endif
   }
 
@@ -75,12 +77,31 @@ public:
       @return True if the display was initialized successfully, false otherwise.
   */
   bool begin() override {
-
-    _display = new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_rst);
+#if defined(ARDUINO_ARDUINO_NESSO_N1)
+    WS_DEBUG_PRINT("pin_cs: ");
+    WS_DEBUG_PRINTLN(_pin_cs);
+    WS_DEBUG_PRINT(" == LCD_CS ");
+    WS_DEBUG_PRINTLN(_pin_cs == LCD_CS);
+    if (_pin_cs == LCD_CS)
+      _display =
+          new Adafruit_ST7789((int8_t)_pin_cs, (int8_t)_pin_dc, &LCD_RESET);
+    else
+#endif
+      _display = new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_rst);
     if (!_display)
       return false;
 
-    _display->init(_width, _height);
+// Built in displays with custom init / swapped w+h
+#ifdef ARDUINO_ARDUINO_NESSO_N1
+    if (_pin_cs == LCD_CS) {
+      _display->init(135, 240); // Init ST7789 240x135
+      _display->invertDisplay(true);
+    } else {
+#endif
+      _display->init(_width, _height);
+#if defined(ARDUINO_ARDUINO_NESSO_N1)
+    }
+#endif
     _display->setRotation(_rotation);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
@@ -96,9 +117,40 @@ public:
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
     pinMode(TFT_BACKLITE, OUTPUT);
     digitalWrite(TFT_BACKLITE, HIGH);
+#elif defined(ARDUINO_ARDUINO_NESSO_N1)
+    pinMode(LCD_BACKLIGHT, OUTPUT);
+    digitalWrite(LCD_BACKLIGHT, HIGH);
 #endif
 
     return true;
+  }
+
+  /*!
+  @brief  Draws the battery icon based on the current battery level.
+  @param  bat
+          The current battery level as a percentage (0-100).
+  */
+  void drawBatteryIcon(uint8_t bat) override {
+    const unsigned char *bat_icon = epd_bmp_bat_empty;
+    if (bat >= 75) {
+      bat_icon = epd_bmp_bat_full;
+    } else if (bat < 75 && bat >= 50) {
+      bat_icon = epd_bmp_bat_75;
+    } else if (bat < 50 && bat >= 25) {
+      bat_icon = epd_bmp_bat_50;
+    } else if (bat < 25 && bat >= 10) {
+      bat_icon = epd_bmp_bat_25;
+    } else {
+      bat_icon = epd_bmp_bat_empty;
+    }
+    // Clear and draw the new battery icon, based on battery level
+    _display->fillRect(_statusbar_icon_battery_x, _statusbar_icons_y,
+                       ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                       ST77XX_WHITE);
+    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
+                         bat_icon, ST7789_STATUSBAR_ICON_SZ,
+                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+    _statusbar_bat = bat;
   }
 
   /*!
@@ -162,9 +214,11 @@ public:
     _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
                          epd_bmp_wifi_full, ST7789_STATUSBAR_ICON_SZ,
                          ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
-    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
-                         epd_bmp_bat_full, ST7789_STATUSBAR_ICON_SZ,
-                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+    // _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
+    //                      epd_bmp_bat_full, ST7789_STATUSBAR_ICON_SZ,
+    //                      ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+
+    drawBatteryIcon(_statusbar_bat);
 
     // Reset text color and size for main text area
     _display->setTextColor(ST77XX_WHITE);
@@ -189,9 +243,10 @@ public:
     bool update_rssi = abs(rssi - _statusbar_rssi) >= 3;
     // Only update cloud icon if MQTT status has changed
     bool update_mqtt = mqtt_status != _statusbar_mqtt_connected;
+    bool update_battery = bat != _statusbar_bat;
 
     // No need to update if nothing has changed
-    if (!update_rssi && !update_mqtt)
+    if (!update_rssi && !update_mqtt && !update_battery)
       return;
 
     if (update_mqtt) {
@@ -233,6 +288,11 @@ public:
                            wifi_icon, ST7789_STATUSBAR_ICON_SZ,
                            ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
       _statusbar_rssi = rssi;
+    }
+
+    // Update battery icon only if battery level has changed
+    if (update_battery) {
+      drawBatteryIcon(bat);
     }
   }
 
