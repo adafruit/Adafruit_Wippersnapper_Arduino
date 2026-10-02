@@ -33,6 +33,10 @@
 
 #include "Wippersnapper_FS.h"
 #include "print_dependencies.h"
+#ifdef ARDUINO_ARCH_ESP32
+#include <Preferences.h> // NVS-backed store for the boot-region rescue backup
+#include <stdlib.h>      // malloc/free for the (heap, not stack) region buffers
+#endif
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
 // - EXTERNAL_FLASH_USE_QSPI
@@ -88,6 +92,226 @@ bool setVolumeLabel() {
   return true;
 }
 
+#ifdef ARDUINO_ARCH_ESP32
+// ---------------------------------------------------------------------------
+// Boot-region rescue
+//
+// A full battery drain / brownout can make the on-board SPI flash misinterpret
+// a command as Vcc collapses and erase one 4 KB block. When that block is the
+// first one of the FAT volume it takes out the *boot sector AND both FAT
+// tables* - they all live in that first 4 KB, while the root directory and file
+// data start right after it. The volume then refuses to mount even though every
+// file is still physically intact (see #621 and #898, plus PR #937: a flash
+// dump showed only the first 4 KB came back as 0xFF, with secrets.json
+// byte-perfect just past it).
+//
+// FAT keeps two FAT copies for redundancy, but one 4 KB erase wipes both at
+// once, so that doesn't help. FAT32 also keeps a backup boot sector at sector
+// 6; this volume is FAT12 (FM_FAT | FM_SFD) and has none. So we add our own:
+// after a clean mount we snapshot that first boot region into NVS - a separate
+// flash area that survives a format and is very unlikely to be hit by the same
+// erase. On a later boot, if the region reads back blank, we write the backup
+// back and re-mount, recovering the whole filesystem untouched.
+//
+// "Blank" is deliberately not "every byte is 0xFF": a real power-loss erase is
+// often incomplete and leaves a few stragglers that did not finish erasing (we
+// saw exactly one 0x7F byte in a 4 KB region after a hardware drain). So we
+// accept the region as erased when it has no valid boot signature and only a
+// handful of non-0xFF bytes (see kMaxBlankStragglerDiv).
+//
+// Paranoia is the entire point. We only ever write the region back when it is
+// blank in that sense (no boot signature, near-all-0xFF, so we can never
+// clobber a partially-written or differently-damaged FS) and only from a backup
+// that passes a boot-signature and CRC32 check, with the flash chip confirmed
+// responsive first. Anything unexpected -> do nothing and let the normal path
+// run, so this can only ever help, never make a bad situation worse.
+// ---------------------------------------------------------------------------
+namespace {
+const char *kBootBkNamespace = "ws_boot_bk"; ///< NVS namespace for the backup
+const char *kBootBkBlobKey = "blob";         ///< boot-region bytes
+const char *kBootBkLenKey = "len";           ///< blob length (bytes)
+const char *kBootBkCrcKey = "crc";           ///< CRC32 of the blob
+
+const size_t kBootSectorSize = 512;   ///< one logical FAT sector
+const size_t kFlashEraseBlock = 4096; ///< SPI-NOR erase granularity
+const size_t kMaxBootRegion = 8192;   ///< cap; keeps blob within nvs part
+
+// "Blank enough" tolerance. A real power-loss erase is often *incomplete*:
+// most of the region reaches 0xFF but a few bytes stall partway (e.g. 0x7F) as
+// Vcc collapses mid-cycle. We treat the region as erased if at most len/this
+// bytes are non-0xFF. A populated boot region has thousands of non-0xFF bytes
+// (FAT free entries are 0x00) plus a 0x55AA signature, so this never matches
+// live data. (len/64 = 64 bytes for a 4 KB region.)
+const size_t kMaxBlankStragglerDiv = 64; ///< max non-0xFF bytes = len/this
+
+/*! @brief Standard CRC32 (poly 0xEDB88420) over a byte buffer.
+    @param data Pointer to the bytes.
+    @param len  Number of bytes.
+    @returns The CRC32 value. */
+uint32_t crc32_buf(const uint8_t *data, size_t len) {
+  uint32_t crc = 0xFFFFFFFF;
+  for (size_t i = 0; i < len; i++) {
+    crc ^= data[i];
+    for (int b = 0; b < 8; b++)
+      crc = (crc >> 1) ^ (0xEDB88420 & (-(int32_t)(crc & 1)));
+  }
+  return ~crc;
+}
+
+/*! @brief Size (bytes) of the FAT boot region to protect: boot sector +
+           reserved sectors + every FAT table, rounded up to a flash erase
+           block (the unit a power-loss glitch erases). Parsed from the BPB of
+           a known-good boot sector.
+    @param bootSector A 512-byte buffer holding sector 0.
+    @returns Region length in bytes, or 0 if the BPB looks invalid. */
+size_t bootRegionLen(const uint8_t *bootSector) {
+  if (bootSector[510] != 0x55 || bootSector[511] != 0xAA)
+    return 0; // no boot signature -> not a boot sector we understand
+  uint16_t bytesPerSec = bootSector[11] | (bootSector[12] << 8);
+  uint16_t rsvdSecs = bootSector[14] | (bootSector[15] << 8);
+  uint8_t numFats = bootSector[16];
+  uint16_t fatSz16 = bootSector[22] | (bootSector[23] << 8);
+  if (bytesPerSec != kBootSectorSize || numFats == 0 || fatSz16 == 0)
+    return 0; // unexpected geometry - don't try to be clever
+  size_t regionBytes =
+      ((size_t)rsvdSecs + (size_t)numFats * fatSz16) * bytesPerSec;
+  // Round up to the flash erase block: that whole block is what gets erased.
+  regionBytes = ((regionBytes + kFlashEraseBlock - 1) / kFlashEraseBlock) *
+                kFlashEraseBlock;
+  if (regionBytes == 0 || regionBytes > kMaxBootRegion)
+    return 0;
+  return regionBytes;
+}
+} // namespace
+
+/**************************************************************************/
+/*!
+    @brief  Snapshots the FAT boot region (boot sector + reserved sectors +
+            every FAT table) into NVS, so a later power-loss erase of that
+            region can be repaired automatically. Only writes NVS when the
+            region actually changed, to spare flash wear. Safe to call only
+            once the filesystem is healthy (mounted or freshly formatted).
+*/
+/**************************************************************************/
+void Wippersnapper_FS::backupBootRegion() {
+  if (!flash.begin())
+    return;
+  uint8_t bootSec[kBootSectorSize];
+  if (!flash.readBlocks(0, bootSec, 1))
+    return;
+  size_t len = bootRegionLen(bootSec);
+  if (len == 0) {
+    WS_DEBUG_PRINTLN("[fs] boot-region backup skipped (unrecognized BPB)");
+    return;
+  }
+  uint8_t *buf = (uint8_t *)malloc(len);
+  if (buf == NULL)
+    return;
+  if (!flash.readBlocks(0, buf, len / kBootSectorSize)) {
+    free(buf);
+    return;
+  }
+  uint32_t crc = crc32_buf(buf, len);
+
+  Preferences prefs;
+  if (!prefs.begin(kBootBkNamespace, /*readOnly=*/false)) {
+    free(buf);
+    return;
+  }
+  // Skip the write if the stored backup already matches (no FS change).
+  if (prefs.getUInt(kBootBkLenKey, 0) == (uint32_t)len &&
+      prefs.getUInt(kBootBkCrcKey, 0) == crc) {
+    prefs.end();
+    free(buf);
+    return;
+  }
+  prefs.putBytes(kBootBkBlobKey, buf, len);
+  prefs.putUInt(kBootBkLenKey, (uint32_t)len);
+  prefs.putUInt(kBootBkCrcKey, crc);
+  prefs.end();
+  free(buf);
+  WS_DEBUG_PRINT("[fs] boot-region backup updated: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes saved to NVS");
+}
+
+/**************************************************************************/
+/*!
+    @brief  If the FAT boot region reads back blank - near-all-0xFF with no
+            valid boot signature, the fingerprint of a (possibly incomplete)
+            power-loss erase - and a verified NVS backup exists, writes that
+            backup back to flash so the volume can mount again. Performs no
+            destructive action in any other case.
+    @returns True if a restore was actually written (caller should re-mount),
+             false otherwise (no backup, region not blank, or a check failed).
+*/
+/**************************************************************************/
+bool Wippersnapper_FS::restoreBootRegionIfBlank() {
+  if (!flash.begin())
+    return false;
+  Preferences prefs;
+  if (!prefs.begin(kBootBkNamespace, /*readOnly=*/true))
+    return false;
+  size_t len = prefs.getUInt(kBootBkLenKey, 0);
+  uint32_t wantCrc = prefs.getUInt(kBootBkCrcKey, 0);
+  if (len == 0 || len > kMaxBootRegion ||
+      (size_t)prefs.getBytesLength(kBootBkBlobKey) != len) {
+    prefs.end();
+    return false; // no usable backup
+  }
+  uint8_t *backup = (uint8_t *)malloc(len);
+  uint8_t *live = (uint8_t *)malloc(len);
+  if (backup == NULL || live == NULL) {
+    prefs.end();
+    free(backup);
+    free(live);
+    return false;
+  }
+  size_t got = prefs.getBytes(kBootBkBlobKey, backup, len);
+  prefs.end();
+
+  bool ok = (got == len) &&
+            // Trust the backup only if it passes its own integrity checks.
+            (crc32_buf(backup, len) == wantCrc) && (backup[510] == 0x55) &&
+            (backup[511] == 0xAA) &&
+            // Read the live region; we decide below whether it is blank.
+            flash.readBlocks(0, live, len / kBootSectorSize);
+  if (ok) {
+    // Restore when the region is blank *enough*: no valid boot signature, and
+    // only a handful of non-0xFF stragglers left by an incomplete power-loss
+    // erase. Anything structured (a 0x55AA signature, or many non-0xFF bytes)
+    // means a state we do not understand - hands off.
+    size_t stragglers = 0;
+    for (size_t i = 0; i < len; i++)
+      if (live[i] != 0xFF)
+        stragglers++;
+    bool hasBootSig = (live[510] == 0x55 && live[511] == 0xAA);
+    if (hasBootSig || stragglers > len / kMaxBlankStragglerDiv)
+      ok = false; // structured data or too dirty -> do not touch
+  }
+  // Confirm the flash chip is actually responding before writing to it.
+  if (ok) {
+    uint32_t jedec = flash.getJEDECID();
+    if (jedec == 0 || jedec == 0xFFFFFF)
+      ok = false;
+  }
+
+  if (ok) {
+    WS_DEBUG_PRINTLN("[fs] boot region blank - restoring from backup...");
+    ok = flash.writeBlocks(0, backup, len / kBootSectorSize);
+    flash.syncBlocks();
+    if (ok) {
+      WS_DEBUG_PRINT("[fs] boot region restored (");
+      WS_DEBUG_PRINT(len);
+      WS_DEBUG_PRINTLN(" bytes). Re-mounting...");
+    }
+  }
+  free(backup);
+  free(live);
+  return ok;
+}
+#endif // ARDUINO_ARCH_ESP32
+
 /**************************************************************************/
 /*!
     @brief    Initializes USB-MSC and the QSPI flash filesystem.
@@ -106,13 +330,28 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // Wait for detach
   delay(500);
 
-  // If a filesystem does not already exist - attempt to initialize a new
-  // filesystem
-  if (!initFilesystem() && !initFilesystem(true)) {
+  // Try to mount the existing filesystem first.
+  bool mounted = initFilesystem();
+#ifdef ARDUINO_ARCH_ESP32
+  // If the mount failed because a power-loss glitch erased the boot region
+  // (boot sector + FATs), restore it from our NVS backup and try again - this
+  // recovers the volume without reformatting, keeping every file intact.
+  if (!mounted && restoreBootRegionIfBlank())
+    mounted = initFilesystem();
+#endif
+  // Last resort (and the original behavior): create a fresh filesystem.
+  if (!mounted && !initFilesystem(true)) {
     TinyUSBDevice.attach();
     setStatusLEDColor(RED);
     fsHalt("ERROR Initializing Filesystem");
   }
+
+#ifdef ARDUINO_ARCH_ESP32
+  // Filesystem is healthy now (mounted or freshly formatted): refresh the NVS
+  // backup of the boot region so a future power-loss erase of it can be
+  // auto-repaired on the next boot.
+  backupBootRegion();
+#endif
 
   // Initialize USB-MSD
   initUSBMSC();
