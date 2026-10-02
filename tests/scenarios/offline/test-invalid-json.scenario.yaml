@@ -3,6 +3,7 @@ version: 1
 author: Brent Rubell for Adafruit Industries
 
 steps:
+  - wait-serial: 'POWERON_RESET'
   - wait-serial: '[SD] Waiting for incoming JSON string...'
   - write-serial: '{"exportVersion":"1.0.0",'
   - write-serial: '\n'
