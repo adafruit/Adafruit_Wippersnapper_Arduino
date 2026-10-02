@@ -2642,7 +2642,16 @@ void Wippersnapper::pingBroker() {
     @brief    Feeds the WDT to prevent hardware reset.
 */
 /*******************************************************/
-void Wippersnapper::feedWDT() { Watchdog.reset(); }
+void Wippersnapper::feedWDT() {
+#ifdef ARDUINO_ARCH_ESP32
+  // Only feed the TWDT once enableWDT() has subscribed this task to it.
+  // arduino-esp32 3.x initializes the TWDT itself at boot, so an
+  // unsubscribed esp_task_wdt_reset() logs "task_wdt: task not found".
+  if (esp_task_wdt_status(NULL) != ESP_OK)
+    return;
+#endif
+  Watchdog.reset();
+}
 
 /********************************************************/
 /*!
@@ -2653,7 +2662,12 @@ void Wippersnapper::feedWDT() { Watchdog.reset(); }
 */
 /*******************************************************/
 void Wippersnapper::enableWDT(int timeoutMS) {
-#ifndef ARDUINO_ARCH_RP2040
+#if defined(ARDUINO_ARCH_ESP32)
+  // Watchdog.disable() unsubscribes this task from the TWDT, which logs
+  // "task_wdt: task not found" if the task was never subscribed.
+  if (esp_task_wdt_status(NULL) == ESP_OK)
+    Watchdog.disable();
+#elif !defined(ARDUINO_ARCH_RP2040)
   Watchdog.disable();
 #endif
   if (Watchdog.enable(timeoutMS) == 0) {
