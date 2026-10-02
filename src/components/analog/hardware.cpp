@@ -25,10 +25,10 @@
     @param  expander_drv  Pointer to expander driver, or nullptr.
 */
 AnalogHardware::AnalogHardware(const char *pin_name, uint8_t pin_num,
-                                   ws_sensor_Type read_mode,
-                                   ws_analogin_SampleMode sample_mode,
-                                   ulong period, float ref_voltage,
-                                   ExpanderHardware *expander_drv)
+                               ws_sensor_Type read_mode,
+                               ws_analogin_SampleMode sample_mode, ulong period,
+                               float ref_voltage,
+                               ExpanderHardware *expander_drv)
     : _name(pin_num), _read_mode(read_mode), _sample_mode(sample_mode),
       _period(period), _prv_time(0), _did_read_send(false), _value_raw(0),
       _value_voltage(0.0f), _prv_value_raw(0), _native_adc_resolution(0),
@@ -239,9 +239,7 @@ float AnalogHardware::getValue() const {
     @brief  Gets the expander driver, or nullptr for native pins.
     @return Pointer to the expander driver, or nullptr.
 */
-ExpanderHardware *AnalogHardware::getExpander() const {
-  return _expander_drv;
-}
+ExpanderHardware *AnalogHardware::getExpander() const { return _expander_drv; }
 
 /*!
     @brief  Gets whether the last read was sent to IO.

@@ -18,8 +18,8 @@
 #include "wippersnapper.h"
 
 class wippersnapper;    ///< Forward declaration
-class AnalogModel;    ///< Forward declaration
-class AnalogHardware; ///< Forward declaration
+class AnalogModel;      ///< Forward declaration
+class AnalogHardware;   ///< Forward declaration
 class ExpanderHardware; ///< Forward declaration
 
 /*!

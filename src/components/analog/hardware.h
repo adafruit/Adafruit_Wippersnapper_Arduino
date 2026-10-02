@@ -33,9 +33,9 @@ class ExpanderHardware;
 class AnalogHardware {
 public:
   AnalogHardware(const char *pin_name, uint8_t pin_num,
-                   ws_sensor_Type read_mode, ws_analogin_SampleMode sample_mode,
-                   ulong period, float ref_voltage,
-                   ExpanderHardware *expander_drv);
+                 ws_sensor_Type read_mode, ws_analogin_SampleMode sample_mode,
+                 ulong period, float ref_voltage,
+                 ExpanderHardware *expander_drv);
   ~AnalogHardware();
   float readValue();
   bool checkEvent();

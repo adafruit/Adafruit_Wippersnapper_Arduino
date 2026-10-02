@@ -329,7 +329,7 @@ void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
   Ws->analog_controller->SetMaxAnalogPins(
       exported_from_device["maxAnalogPins"] | 0);
   Ws->analog_controller->SetRefVoltage(exported_from_device["refVoltage"] |
-                                         0.0f);
+                                       0.0f);
   // Since `secrets.json` is unused in offline mode, use the status LED
   // brightness from here instead
   setStatusLEDBrightness(exported_from_device["statusLEDBrightness"] | 0.3f);
