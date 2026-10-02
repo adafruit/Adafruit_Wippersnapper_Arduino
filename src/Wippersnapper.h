@@ -149,6 +149,7 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include "components/ledc/ws_ledc.h"
 #include <Esp.h>
+#include <esp_task_wdt.h>
 #endif
 
 #include "components/display/controller.h"
