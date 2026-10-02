@@ -1,0 +1,7 @@
+# boards.local.txt mechanism test for the ESP8266 BSP. Remaps the eesz=4M2M menu option
+# (used by the feather_esp8266 CI platform) to the 4MB/3MB-FS flash layout, so the
+# linker script and FS start address change (visible in build properties, and the FS
+# is re-created on first boot because it moved).
+huzzah.menu.eesz.4M2M=4MB (FS:3MB OTA:~512KB) [boards.local.txt]
+huzzah.menu.eesz.4M2M.build.flash_ld=eagle.flash.4m3m.ld
+huzzah.menu.eesz.4M2M.build.spiffs_start=0x100000

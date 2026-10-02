@@ -195,6 +195,22 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#elif defined(WS_WAVESHARE_ESP32P4_WIFI6_STICK)
+// No status LED nor RGB LED on this board
+#define BOARD_ID "waveshare-p4-wifi6"
+#define USE_LITTLEFS
+// #define USE_TINYUSB
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#elif defined(ARDUINO_DFROBOT_FIREBEETLE2_ESP32P4)
+// No status LED nor RGB LED on this board
+#define BOARD_ID "dfrobot-firebeetle2-esp32p4"
+#define USE_LITTLEFS
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#elif defined(ARDUINO_ESP32P4_DEV)
+// Generic ESP32-P4 Dev Module entry (Adafruit Metro ESP32-P4)
+#define BOARD_ID "adafruit_metro_esp32p4"
+#define USE_LITTLEFS
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ESP32C3_DEV)
 // Note: this board reuses a generic preprocessor define
 // espressif/arduino-esp32@fcd4799c6de6eb5a5a8eba94818adf770238ecc0
