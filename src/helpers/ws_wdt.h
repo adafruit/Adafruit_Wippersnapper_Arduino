@@ -18,6 +18,9 @@
 #define WS_WDT_H
 
 #include "Adafruit_SleepyDog.h"
+#ifdef ARDUINO_ARCH_ESP32
+#include "esp_task_wdt.h"
+#endif
 
 #define WS_WDT_DEFAULT_TIMEOUT_MS 60000 ///< Default WDT timeout in milliseconds
 
