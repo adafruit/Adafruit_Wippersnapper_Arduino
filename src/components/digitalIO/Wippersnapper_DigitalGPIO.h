@@ -57,6 +57,5 @@ private:
   int32_t
       _totalDigitalInputPins; /*!< Total number of digital-input capable pins */
 };
-extern Wippersnapper WS;
 
 #endif // WIPPERSNAPPER_DIGITALGPIO_H

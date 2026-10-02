@@ -43,5 +43,5 @@ private:
       _hw_instances; ///< Holds pointers to DisplayHardware instances
   unsigned long _last_bar_update; ///< Timestamp of last status bar update
 };
-extern Wippersnapper WS; ///< Global WS instance
+
 #endif
