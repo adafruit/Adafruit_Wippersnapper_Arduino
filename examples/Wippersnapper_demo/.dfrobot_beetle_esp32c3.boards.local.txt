@@ -1,0 +1,16 @@
+# Per-platform boards.local.txt override for the dfrobot_beetle_esp32c3 CI target.
+#
+# ci-arduino's build_platform.py (--boards-local-txt) installs the most specific match as
+# <platform dir>/boards.local.txt before building this example:
+#   <example>/.<platform>.boards.local.txt > <example>/boards.local.txt > repo-root file > none
+#
+# Use it to give boards that reuse a generic BSP definition a unique define. The name should
+# match the Board ID in Wippersnapper_Boards.h, uppercased with underscores for dashes:
+# "dfrobot-beetle-esp32c3" -> -DWS_DFROBOT_BEETLE_ESP32C3. Mirror it in platformio.ini build_flags.
+#
+# Check boards.txt first: if a menu entry sets build.defines for the board (e.g.
+# dfrobot_romeo_esp32s3.menu.PSRAM.enabled.build.defines=-DBOARD_HAS_PSRAM) the menu value wins,
+# so override that menu key with the existing defines plus the new one instead of the board key.
+#
+# DFRobot Beetle ESP32-C3 shares ARDUINO_ESP32C3_DEV with the Espressif ESP32-C3 dev module:
+dfrobot_beetle_esp32c3.build.defines=-DWS_DFROBOT_BEETLE_ESP32C3

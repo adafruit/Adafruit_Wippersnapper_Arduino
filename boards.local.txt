@@ -9,9 +9,11 @@
 #
 # Do the same for the board entry in the platformio.ini file:    build_flags = -DWS_YOUR_UNIQUE_BOARD_ID
 #
-# Note: If needed we can do a version of this file for each board build target in case boards don't have a
-# unique definition in boards.txt to add an override. Then in CI pass filename with --boards-local-txt file
-
-
+# This root file is the fallback for every CI target. For a single build target, put the override in
+# examples/Wippersnapper_demo/.<ci-platform-name>.boards.local.txt instead: ci-arduino installs the most
+# specific file it finds for each example (<example>/.<platform>.boards.local.txt > <example>/boards.local.txt
+# > this file) and removes it again afterwards, so per-target files cannot leak into other builds.
+#
+# Example (lives in examples/Wippersnapper_demo/.dfrobot_beetle_esp32c3.boards.local.txt):
 # DF Robot ESP32-C3 shares define with Espressif ESP32_C3 Devkit/Module, so needs unique define:
-dfrobot_beetle_esp32c3.build.defines=-DWS_DFROBOT_BEETLE_ESP32C3
+# dfrobot_beetle_esp32c3.build.defines=-DWS_DFROBOT_BEETLE_ESP32C3
