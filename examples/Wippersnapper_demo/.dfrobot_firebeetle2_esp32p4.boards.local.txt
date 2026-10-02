@@ -1,0 +1,5 @@
+# DFRobot FireBeetle 2 ESP32-P4: the BSP entry hard-codes build.usb_mode=1 (Hardware CDC and
+# JTAG console) with no USBMode menu. WipperSnapper uses the native USB-OTG port with TinyUSB
+# CDC as the console instead, which sidesteps the HWCDC vs ROM-console race that panics ES
+# silicon whenever core debug logging is on: https://github.com/espressif/arduino-esp32/issues/12966
+dfrobot_firebeetle2_esp32p4.build.usb_mode=0
