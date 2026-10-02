@@ -64,6 +64,8 @@ public:
   void waitForSerialConfig();
   bool LogGPIOSensorEventToSD(uint8_t pin, float value,
                               ws_sensor_Type read_type);
+  bool LogGPIOSensorEventToSD(const char *pin, float value,
+                              ws_sensor_Type read_type);
   bool LogGPIOSensorEventToSD(uint8_t pin, bool value,
                               ws_sensor_Type read_type);
   bool LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
@@ -110,6 +112,8 @@ private:
   uint32_t HexStrToInt(const char *hex_str);
 
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
+                    ws_sensor_Type read_type);
+  void BuildJSONDoc(JsonDocument &doc, const char *pin, float value,
                     ws_sensor_Type read_type);
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
                     ws_sensor_Type read_type);

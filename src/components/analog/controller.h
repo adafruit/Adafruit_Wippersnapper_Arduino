@@ -1,5 +1,5 @@
 /*!
- * @file src/components/analogIn/controller.h
+ * @file src/components/analog/controller.h
  *
  * Controller for the AnalogIn API
  *
@@ -12,14 +12,14 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_ANALOGIN_CONTROLLER_H
-#define WS_ANALOGIN_CONTROLLER_H
+#ifndef WS_ANALOG_CONTROLLER_H
+#define WS_ANALOG_CONTROLLER_H
 #include "model.h"
 #include "wippersnapper.h"
 
 class wippersnapper;    ///< Forward declaration
-class AnalogInModel;    ///< Forward declaration
-class AnalogInHardware; ///< Forward declaration
+class AnalogModel;      ///< Forward declaration
+class AnalogHardware;   ///< Forward declaration
 class ExpanderHardware; ///< Forward declaration
 
 /*!
@@ -27,10 +27,10 @@ class ExpanderHardware; ///< Forward declaration
             appropriate hardware and model classes, controls and tracks
             the state of the hardware's analog input pins.
 */
-class AnalogInController {
+class AnalogController {
 public:
-  AnalogInController();
-  ~AnalogInController();
+  AnalogController();
+  ~AnalogController();
   // Routing
   bool Router(pb_istream_t *stream);
   bool Handle_AnalogInAdd(ws_analogin_Add *msg);
@@ -46,13 +46,13 @@ public:
   void ResetFlags();
 
 private:
-  bool EncodePublishPinEvent(AnalogInHardware *pin);
+  bool EncodePublishPinEvent(AnalogHardware *pin);
   bool RemovePin(uint8_t pin_num, ExpanderHardware *expander);
-  AnalogInHardware *GetPin(uint8_t pin_num, ExpanderHardware *expander);
-  std::vector<AnalogInHardware *> _pins; ///< Vector of analog pin objects
-  AnalogInModel *_analogin_model;        ///< AnalogIn model
+  AnalogHardware *GetPin(uint8_t pin_num, ExpanderHardware *expander);
+  std::vector<AnalogHardware *> _pins; ///< Vector of analog pin objects
+  AnalogModel *_analogin_model;        ///< Analog model
   float _mcu_ref_voltage; ///< MCU/board reference voltage, used for native pins
                           ///< (expander pins use their own message ref_voltage)
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
-#endif                    // WS_ANALOGIN_CONTROLLER_H
+#endif                    // WS_ANALOG_CONTROLLER_H
