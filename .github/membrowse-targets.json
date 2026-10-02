@@ -1,0 +1,90 @@
+[
+  {
+    "target_name": "feather_esp32",
+    "mcu": "esp32",
+    "port": "esp32",
+    "board": "featheresp32",
+    "setup_cmd": "pip install --upgrade platformio",
+    "build_cmd": "pio run -e featheresp32",
+    "elf": ".pio/build/featheresp32/firmware.elf",
+    "ld": "/home/runner/.platformio/packages/framework-arduinoespressif32-libs/esp32/ld/memory.ld",
+    "linker_vars": ""
+  },
+  {
+    "target_name": "feather_esp32s2",
+    "mcu": "esp32s2",
+    "port": "esp32",
+    "board": "featheresp32s2",
+    "setup_cmd": "pip install --upgrade platformio",
+    "build_cmd": "pio run -e featheresp32s2",
+    "elf": ".pio/build/featheresp32s2/firmware.elf",
+    "ld": "/home/runner/.platformio/packages/framework-arduinoespressif32-libs/esp32s2/ld/memory.ld",
+    "linker_vars": ""
+  },
+  {
+    "target_name": "feather_esp32s3",
+    "mcu": "esp32s3",
+    "port": "esp32",
+    "board": "adafruit_feather_esp32s3",
+    "setup_cmd": "pip install --upgrade platformio",
+    "build_cmd": "pio run -e adafruit_feather_esp32s3",
+    "elf": ".pio/build/adafruit_feather_esp32s3/firmware.elf",
+    "ld": "/home/runner/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/ld/memory.ld",
+    "linker_vars": ""
+  },
+  {
+    "target_name": "qtpy_esp32c3",
+    "mcu": "esp32c3",
+    "port": "esp32",
+    "board": "adafruit_qtpy_esp32c3",
+    "setup_cmd": "pip install --upgrade platformio",
+    "build_cmd": "pio run -e adafruit_qtpy_esp32c3",
+    "elf": ".pio/build/adafruit_qtpy_esp32c3/firmware.elf",
+    "ld": "/home/runner/.platformio/packages/framework-arduinoespressif32-libs/esp32c3/ld/memory.ld",
+    "linker_vars": ""
+  },
+  {
+    "target_name": "huzzah_esp8266",
+    "mcu": "esp8266",
+    "port": "esp8266",
+    "board": "huzzah",
+    "setup_cmd": "pip install --upgrade platformio",
+    "build_cmd": "pio run -e huzzah",
+    "elf": ".pio/build/huzzah/firmware.elf",
+    "ld": "/home/runner/.platformio/packages/framework-arduinoespressif8266/tools/sdk/ld/eagle.flash.4m2m.ld",
+    "linker_vars": ""
+  },
+  {
+    "target_name": "pyportal_m4",
+    "mcu": "samd51",
+    "port": "atsamd",
+    "board": "adafruit_pyportal_m4",
+    "setup_cmd": "pip install --upgrade platformio",
+    "build_cmd": "pio run -e adafruit_pyportal_m4",
+    "elf": ".pio/build/adafruit_pyportal_m4/firmware.elf",
+    "ld": "/home/runner/.platformio/packages/framework-arduino-samd-adafruit/variants/pyportal_m4/linker_scripts/gcc/flash_with_bootloader.ld",
+    "linker_vars": ""
+  },
+  {
+    "target_name": "pico_w",
+    "mcu": "rp2040",
+    "port": "arduinopico",
+    "board": "rpipicow",
+    "setup_cmd": "pip install --upgrade platformio",
+    "build_cmd": "pio run -e raspberypi_picow",
+    "elf": ".pio/build/raspberypi_picow/firmware.elf",
+    "ld": ".pio/build/raspberypi_picow/memmap_default.ld",
+    "linker_vars": ""
+  },
+  {
+    "target_name": "pico_2w",
+    "mcu": "rp2350",
+    "port": "arduinopico",
+    "board": "raspberypi_pico2w",
+    "setup_cmd": "pip install --upgrade platformio",
+    "build_cmd": "pio run -e raspberypi_pico2w",
+    "elf": ".pio/build/raspberypi_pico2w/firmware.elf",
+    "ld": ".pio/build/raspberypi_pico2w/memmap_default.ld",
+    "linker_vars": ""
+  }
+]

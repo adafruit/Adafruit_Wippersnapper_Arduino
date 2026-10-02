@@ -8,13 +8,14 @@
 #include "pb_common.h"
 
 /* Use the GCC warn_unused_result attribute to check that all return values
- * are propagated correctly. On other compilers and gcc before 3.4.0 just
- * ignore the annotation.
+ * are propagated correctly. On other compilers, gcc before 3.4.0 and iar
+ * before 9.40.1 just ignore the annotation.
  */
-#if !defined(__GNUC__) || ( __GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 4)
-    #define checkreturn
-#else
+#if (defined(__GNUC__) && ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4))) || \
+    (defined(__IAR_SYSTEMS_ICC__) && (__VER__ >= 9040001))
     #define checkreturn __attribute__((warn_unused_result))
+#else
+    #define checkreturn
 #endif
 
 /**************************************
@@ -53,9 +54,18 @@ static bool checkreturn buf_write(pb_ostream_t *stream, const pb_byte_t *buf, si
 {
     pb_byte_t *dest = (pb_byte_t*)stream->state;
     stream->state = dest + count;
-    
-    memcpy(dest, buf, count * sizeof(pb_byte_t));
-    
+
+    /* Skip the copy if buf is NULL. Callers should not invoke this with NULL,
+     * but pb_write may pass NULL for sizing passes. Some compilers
+     * (e.g. picolibc/arm-zephyr-eabi GCC 12.2) emit a -Wnonnull warning
+     * against memcpy's nonnull argument even though count would be 0 in
+     * that case. See #1141.
+     */
+    if (buf != NULL)
+    {
+        memcpy(dest, buf, count * sizeof(pb_byte_t));
+    }
+
     return true;
 }
 

@@ -22,7 +22,9 @@
 #include "drivers/WipperSnapper_I2C_Driver.h"
 #include "drivers/WipperSnapper_I2C_Driver_ADT7410.h"
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
+#include "drivers/WipperSnapper_I2C_Driver_APDS9999.h"
 #include "drivers/WipperSnapper_I2C_Driver_AS5600.h"
+#include "drivers/WipperSnapper_I2C_Driver_AS7331.h"
 #include "drivers/WipperSnapper_I2C_Driver_BH1750.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME680.h"
@@ -32,7 +34,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_D6T1A.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_DS2484.h"
-#include "drivers/WipperSnapper_I2C_Driver_ENS160.h"
+#include "drivers/WipperSnapper_I2C_Driver_ENS16X.h"
 #include "drivers/WipperSnapper_I2C_Driver_HDC302X.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTS221.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTU21D.h"
@@ -50,6 +52,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_LTR329_LTR303.h"
 #include "drivers/WipperSnapper_I2C_Driver_LTR390.h"
 #include "drivers/WipperSnapper_I2C_Driver_MAX17048.h"
+#include "drivers/WipperSnapper_I2C_Driver_MAX44009.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP3421.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP9808.h"
 #include "drivers/WipperSnapper_I2C_Driver_MLX90632D.h"
@@ -72,15 +75,19 @@
 #include "drivers/WipperSnapper_I2C_Driver_SEN6X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SGP30.h"
 #include "drivers/WipperSnapper_I2C_Driver_SGP40.h"
+#include "drivers/WipperSnapper_I2C_Driver_SGP41.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHT3X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHT4X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHTC3.h"
 #include "drivers/WipperSnapper_I2C_Driver_SI7021.h"
 #include "drivers/WipperSnapper_I2C_Driver_SPA06_003.h"
+#include "drivers/WipperSnapper_I2C_Driver_STCC4.h"
 #include "drivers/WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor.h"
 #include "drivers/WipperSnapper_I2C_Driver_TMP117.h"
+#include "drivers/WipperSnapper_I2C_Driver_TMP119.h"
 #include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
 #include "drivers/WipperSnapper_I2C_Driver_VCNL4020.h"
+#include "drivers/WipperSnapper_I2C_Driver_VCNL4030.h"
 #include "drivers/WipperSnapper_I2C_Driver_VCNL4040.h"
 #include "drivers/WipperSnapper_I2C_Driver_VCNL4200.h"
 #include "drivers/WipperSnapper_I2C_Driver_VEML7700.h"
@@ -163,11 +170,13 @@ private:
       _drivers_out; ///< List of i2c output drivers
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
+  WipperSnapper_I2C_Driver_APDS9999 *_apds9999 = nullptr;
   WipperSnapper_I2C_Driver_AS5600 *_as5600 = nullptr;
+  WipperSnapper_I2C_Driver_AS7331 *_as7331 = nullptr;
   WipperSnapper_I2C_Driver_D6T1A *_d6t1a = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
   WipperSnapper_I2C_Driver_DS2484 *_ds2484 = nullptr;
-  WipperSnapper_I2C_Driver_ENS160 *_ens160 = nullptr;
+  WipperSnapper_I2C_Driver_ENS16x *_ens16x = nullptr;
   WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
   WipperSnapper_I2C_Driver_BH1750 *_bh1750 = nullptr;
   WipperSnapper_I2C_Driver_BME280 *_bme280 = nullptr;
@@ -195,8 +204,10 @@ private:
   WipperSnapper_I2C_Driver_MS8607 *_ms8607 = nullptr;
   WipperSnapper_I2C_Driver_NAU7802 *_nau7802 = nullptr;
   WipperSnapper_I2C_Driver_TMP117 *_tmp117 = nullptr;
+  WipperSnapper_I2C_Driver_TMP119 *_tmp119 = nullptr;
   WipperSnapper_I2C_Driver_TSL2591 *_tsl2591 = nullptr;
   WipperSnapper_I2C_Driver_VCNL4020 *_vcnl4020 = nullptr;
+  WipperSnapper_I2C_Driver_VCNL4030 *_vcnl4030 = nullptr;
   WipperSnapper_I2C_Driver_VCNL4040 *_vcnl4040 = nullptr;
   WipperSnapper_I2C_Driver_VCNL4200 *_vcnl4200 = nullptr;
   WipperSnapper_I2C_Driver_VEML7700 *_veml7700 = nullptr;
@@ -205,6 +216,7 @@ private:
   WipperSnapper_I2C_Driver_SEN6X *_sen6x = nullptr;
   WipperSnapper_I2C_Driver_SGP30 *_sgp30 = nullptr;
   WipperSnapper_I2C_Driver_SGP40 *_sgp40 = nullptr;
+  WipperSnapper_I2C_Driver_SGP41 *_sgp41 = nullptr;
   WipperSnapper_I2C_Driver_SPA06_003 *_spa06_003 = nullptr;
   WipperSnapper_I2C_Driver_PCT2075 *_pct2075 = nullptr;
   WipperSnapper_I2C_Driver_PM25 *_pm25 = nullptr;
@@ -218,6 +230,7 @@ private:
   WipperSnapper_I2C_Driver_LPS25HB *_lps25hb = nullptr;
   WipperSnapper_I2C_Driver_LPS28DFW *_lps28hb = nullptr;
   WipperSnapper_I2C_Driver_LPS3XHW *_lps3xhw = nullptr;
+  WipperSnapper_I2C_Driver_STCC4 *_stcc4 = nullptr;
   WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor *_ss = nullptr;
   WipperSnapper_I2C_Driver_VL53L0X *_vl53l0x = nullptr;
   WipperSnapper_I2C_Driver_VL53L1X *_vl53l1x = nullptr;
@@ -225,6 +238,7 @@ private:
   WipperSnapper_I2C_Driver_VL53L4CX *_vl53l4cx = nullptr;
   WipperSnapper_I2C_Driver_VL6180X *_vl6180x = nullptr;
   WipperSnapper_I2C_Driver_MAX17048 *_max17048 = nullptr;
+  WipperSnapper_I2C_Driver_MAX44009 *_max44009 = nullptr;
   WipperSnapper_I2C_Driver_ADT7410 *_adt7410 = nullptr;
   WipperSnapper_I2C_Driver_Out_QuadAlphaNum *_quadAlphaNum = nullptr;
   WipperSnapper_I2C_Driver_Out_CharLcd *_charLcd = nullptr;

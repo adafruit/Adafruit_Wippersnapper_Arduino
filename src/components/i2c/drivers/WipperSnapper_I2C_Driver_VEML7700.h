@@ -73,7 +73,22 @@ public:
   bool getEventLight(sensors_event_t *lightEvent) {
     // Get sensor event populated in lux via AUTO integration and gain
     lightEvent->light = _veml->readLux(VEML_LUX_AUTO);
+    return true;
+  }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the VEML7700's current ambient light reading in lux.
+      @param    luxEvent
+                Light sensor reading, in lux.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventLux(sensors_event_t *luxEvent) {
+    if (!_veml)
+      return false;
+    luxEvent->light = _veml->readLux(VEML_LUX_AUTO);
     return true;
   }
 

@@ -89,7 +89,7 @@ public:
   bool ConfigureAndPrintSensorInfo(bool extendedInsteadOfMedicalRange = false) {
     // Reset the device
     if (!_mlx90632->reset()) {
-      WS_DEBUG_PRINTLN(F("Device reset failed"));
+      WS_DEBUG_PRINTLNVAR(F("Device reset failed"));
       return false;
     }
 
@@ -100,7 +100,7 @@ public:
     uint8_t accuracy = productCode & 0x1F;
 
     if (!_mlx90632->setMode(MLX90632_MODE_CONTINUOUS)) {
-      WS_DEBUG_PRINTLN(F("Failed to set mode"));
+      WS_DEBUG_PRINTLNVAR(F("Failed to set mode"));
       return false;
     }
 
@@ -109,12 +109,12 @@ public:
       // Set and get measurement select (medical)
       if (!extendedInsteadOfMedicalRange &&
           !_mlx90632->setMeasurementSelect(MLX90632_MEAS_MEDICAL)) {
-        WS_DEBUG_PRINTLN(F("Failed to set measurement select to Medical"));
+        WS_DEBUG_PRINTLNVAR(F("Failed to set measurement select to Medical"));
         return false;
       } else if (extendedInsteadOfMedicalRange &&
                  !_mlx90632->setMeasurementSelect(
                      MLX90632_MEAS_EXTENDED_RANGE)) {
-        WS_DEBUG_PRINTLN(
+        WS_DEBUG_PRINTLNVAR(
             F("Failed to set measurement select to Extended Range"));
         return false;
       }
@@ -122,12 +122,12 @@ public:
 
     // Set and get refresh rate (default to 2Hz)
     if (!_mlx90632->setRefreshRate(MLX90632_REFRESH_2HZ)) {
-      WS_DEBUG_PRINTLN(F("Failed to set refresh rate to 2Hz"));
+      WS_DEBUG_PRINTLNVAR(F("Failed to set refresh rate to 2Hz"));
       return false;
     }
 
     if (!_mlx90632->resetNewData()) {
-      WS_DEBUG_PRINTLN(F("Failed to reset new data flag"));
+      WS_DEBUG_PRINTLNVAR(F("Failed to reset new data flag"));
       return false;
     }
     return true;
@@ -152,7 +152,7 @@ public:
   bool ReadSensorData() {
     bool result = false;
     if (HasBeenReadInLast200ms()) {
-      WS_DEBUG_PRINTLN(F("Sensor was read recently, using cached data"));
+      WS_DEBUG_PRINTLNVAR(F("Sensor was read recently, using cached data"));
       return true;
     }
 
@@ -162,7 +162,7 @@ public:
         currentMode == MLX90632_MODE_SLEEPING_STEP) {
       // Trigger single measurement (SOC bit) for step modes
       if (!_mlx90632->startSingleMeasurement()) {
-        WS_DEBUG_PRINTLN(F("Failed to start single measurement"));
+        WS_DEBUG_PRINTLNVAR(F("Failed to start single measurement"));
         return false;
       }
       delay(510); // Wait for measurement to complete @ 2Hz
@@ -173,17 +173,17 @@ public:
       _deviceTemp = _mlx90632->getAmbientTemperature();
       _objectTemp = _mlx90632->getObjectTemperature();
       if (isnan(_objectTemp)) {
-        WS_DEBUG_PRINTLN(F("NaN (invalid cycle position)"));
+        WS_DEBUG_PRINTLNVAR(F("NaN (invalid cycle position)"));
         return false;
       }
       result = true;
       _lastRead = millis();
       // Reset new data flag after reading
       if (!_mlx90632->resetNewData()) {
-        WS_DEBUG_PRINTLN(F("Failed to reset new data flag"));
+        WS_DEBUG_PRINTLNVAR(F("Failed to reset new data flag"));
       }
     } else {
-      WS_DEBUG_PRINTLN(F("No new data available, skipping read"));
+      WS_DEBUG_PRINTLNVAR(F("No new data available, skipping read"));
     }
 
     return result;

@@ -48,17 +48,45 @@
 
 // Define actual debug output functions when necessary.
 #ifdef WS_DEBUG
+
+#ifdef ARDUINO_ARCH_ESP8266
+// ESP8266: Use F() macro to store string literals in Flash (PROGMEM) instead
+// of RAM. This saves precious RAM on memory-constrained ESP8266 devices.
+// NOTE: WS_DEBUG_PRINT/PRINTLN only accept string literals on ESP8266.
+// Use WS_DEBUG_PRINTVAR/PRINTLNVAR for variables.
+#define WS_DEBUG_PRINT(x)                                                      \
+  { WS_PRINTER.print(F(x)); } ///< Prints string literal from Flash
+#define WS_DEBUG_PRINTLN(x)                                                    \
+  { WS_PRINTER.println(F(x)); } ///< Prints string literal line from Flash
+#else
+// Other platforms: Standard variadic macros
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
   { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#endif
+
+// Variable printing macros - use for non-string-literal arguments
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints variable (any type)
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints variable with newline
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints in hexadecimal
+
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} ///< Prints debug output
+  {} ///< Disabled debug output
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} ///< Prints line from debug output.
+  {} ///< Disabled debug output
+#define WS_DEBUG_PRINTVAR(...)                                                 \
+  {} ///< Disabled debug output
+#define WS_DEBUG_PRINTLNVAR(...)                                               \
+  {} ///< Disabled debug output
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  {} ///< Disabled debug output
+#define WS_DEBUG_HEAP(label)                                                   \
+  {} ///< Disabled heap debug output
 #endif
 
 #define WS_DELAY_WITH_WDT(timeout)                                             \
@@ -139,7 +167,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.119" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.132" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -220,8 +248,10 @@ typedef enum {
 
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
-#define WS_KEEPALIVE_INTERVAL_MS                                               \
-  5000 ///< Session keepalive interval time, in milliseconds
+#define WS_BROKER_KEEPALIVE_MS                                                 \
+  11000 ///< Maximum time without a ping before broker disconnects (ms)
+#define WS_DEVICE_PING_MS                                                      \
+  5000 ///< Interval at which device sends ping to broker, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
   512 ///< MAXIMUM expected payload size, in bytes
@@ -353,11 +383,11 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
-  ws_pwm *_pwmComponent;          ///< Instance of pwm class
-  ws_servo *_servoComponent;      ///< Instance of servo class
-  ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
-  ws_uart *_uartComponent;        ///< Instance of UART class
+  ws_pixels *_pixelsComponent;   ///< ptr to instance of ws_pixels class
+  ws_pwm *_pwmComponent;         ///< Instance of pwm class
+  ws_servo *_servoComponent;     ///< Instance of servo class
+  ws_ds18x20 *_ds18x20Component; ///< Instance of DS18x20 class
+  ws_uart *_uartComponent;       ///< Instance of UART class
   DisplayController
       *_displayController; ///< Instance of display controller class
 
@@ -448,6 +478,8 @@ protected:
   ws_status_t _status = WS_IDLE;   /*!< Adafruit IO connection status */
   uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                           Adafruit IO, in milliseconds. */
+  uint16_t _brokerKeepAliveIntervalSeconds =
+      0; /*!< Cached MQTT broker keepalive interval, in seconds. */
   uint32_t _prv_ping = 0;    /*!< Previous time when client pinged Adafruit IO's
                                 MQTT broker, in milliseconds. */
   uint32_t _prvKATBlink = 0; /*!< Previous time when client pinged Adafruit IO's

@@ -52,6 +52,9 @@ public:
 
   ~drvDispThinkInkGrayscale4Eaamfgn() {
     if (_display) {
+      // Clear the display buffer before deleting
+      _display->clearBuffer();
+      _display->display();
       delete _display;
       _display = nullptr;
     }
@@ -138,7 +141,6 @@ public:
     _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
                          epd_bmp_bat_full, STATUS_BAR_ICON_SZ,
                          STATUS_BAR_ICON_SZ, EPD_BLACK);
-
     _display->display();
   }
 

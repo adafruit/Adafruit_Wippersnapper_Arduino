@@ -290,7 +290,7 @@ bool Wippersnapper_FS::createBootFile() {
   if (bootFile) {
     bootFile.println("Adafruit.io WipperSnapper");
 
-    bootFile.print("Firmware Version: ");
+    bootFile.print("WipperSnapper Firmware Version: ");
     bootFile.println(WS_VERSION);
 
     bootFile.print("Board ID: ");
@@ -299,7 +299,7 @@ bool Wippersnapper_FS::createBootFile() {
 #if defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT) ||          \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) || \
     defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
-    bootFile.print("AirLift FW Revision: ");
+    bootFile.print("AirLift Coprocessor Firmware Version: ");
     bootFile.println(WS._airlift_version);
 #endif
 

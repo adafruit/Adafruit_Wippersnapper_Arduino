@@ -41,7 +41,7 @@
 #define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA ///< DotStar Data Pin
 #define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK ///< DotStar Clock Pin
 #define STATUS_DOTSTAR_NUM 5                     ///< Number of DotStar LEDs
-#define STATUS_DOTSTAR_COLOR_ORDER DOTSTAR_GBR   ///< DotStar Color Order
+#define STATUS_DOTSTAR_COLOR_ORDER DOTSTAR_BGR   ///< DotStar Color Order
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_METRO_ESP32S2)
 #define BOARD_ID "metroesp32s2"
@@ -171,6 +171,16 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#elif defined(ARDUINO_ESP32C5_DEV)
+#define BOARD_ID "esp32c5-devkitc-1-n8r4"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_RGB_LED
+// PIN_RGB_LED = 27, or GPIO_NUM+27 if using RGBwrite()
+#define STATUS_NEOPIXEL_NUM 1
+#ifdef BOARD_HAS_PSRAM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#endif
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
 #define BOARD_ID "feather-esp32-v2"
 #define USE_LITTLEFS

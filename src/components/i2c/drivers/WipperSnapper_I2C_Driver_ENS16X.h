@@ -1,7 +1,7 @@
 /*!
- * @file WipperSnapper_I2C_Driver_ENS160.h
+ * @file WipperSnapper_I2C_Driver_ENS16X.h
  *
- * Device driver for a ENS160 MOX Gas Sensor.
+ * Device driver for a ENS160/ENS161 MOX Gas Sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_ENS160_H
-#define WipperSnapper_I2C_Driver_ENS160_H
+#ifndef WipperSnapper_I2C_Driver_ENS16X_H
+#define WipperSnapper_I2C_Driver_ENS16X_H
 
 #include "WipperSnapper_I2C_Driver.h"
 #include <ScioSense_ENS160.h>
@@ -23,23 +23,23 @@
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the ENS160 temperature
-            and humidity sensor.
+    @brief  Class that provides a sensor driver for the ENS16x temperature
+            and humidity sensors.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_ENS160 : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_ENS16x : public WipperSnapper_I2C_Driver {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an ENS160 sensor.
+      @brief    Constructor for an ENS16x sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_ENS160(TwoWire *i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_ENS16x(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -47,26 +47,29 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an ENS160 sensor.
+      @brief    Destructor for an ENS16x sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_ENS160() { delete _ens160; }
+  ~WipperSnapper_I2C_Driver_ENS16x() { delete _ens16x; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the ENS160 sensor and begins I2C.
+      @brief    Initializes the ENS16x sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() {
-    _ens160 = new ScioSense_ENS160((TwoWire *)_i2c, (uint8_t)_sensorAddress);
+    _ens16x = new ScioSense_ENS160((TwoWire *)_i2c, (uint8_t)_sensorAddress);
 
-    // attempt to initialize ENS160
-    if (!_ens160->begin())
+    // attempt to initialize ENS16x, verify chip id
+    if (!_ens16x->begin() || !_ens16x->available())
       return false;
 
-    // Set the mode to standard
-    return _ens160->setMode(ENS160_OPMODE_STD);
+    /* In future set the mode to ulp for 161 (need to add to adafruit lib), see
+     * https://github.com/sciosense/ens16x-arduino/blob/d09d25dd0912b729a21366e58b55393a49afc256/src/lib/ens16x/ScioSense_Ens161.h#L10-L22
+     * _ens16x->revENS16x() == 0 ? ENS160_OPMODE_STD : ENS160_OPMODE_LP/ULP
+     */
+    return _ens16x->setMode(ENS160_OPMODE_STD);
   }
 
   /*******************************************************************************/
@@ -76,12 +79,12 @@ public:
   */
   /*******************************************************************************/
   bool ensPerformReading() {
-    return _ens160->available() && _ens160->measure(true);
+    return _ens16x->available() && _ens16x->measure(true);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the ENS160's eCO2 sensor into an event.
+      @brief    Reads the ENS16x's eCO2 sensor into an event.
       @param    eco2Event
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -91,13 +94,13 @@ public:
   bool getEventECO2(sensors_event_t *eco2Event) {
     if (!ensPerformReading())
       return false;
-    eco2Event->eCO2 = (float)_ens160->geteCO2();
+    eco2Event->eCO2 = (float)_ens16x->geteCO2();
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the ENS160's TVOC sensor into an event.
+      @brief    Reads the ENS16x's TVOC sensor into an event.
       @param    tvocEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -107,13 +110,13 @@ public:
   bool getEventTVOC(sensors_event_t *tvocEvent) {
     if (!ensPerformReading())
       return false;
-    tvocEvent->tvoc = (float)_ens160->getTVOC();
+    tvocEvent->tvoc = (float)_ens16x->getTVOC();
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the ENS160's AQI value into an event.
+      @brief    Reads the ENS16x's AQI value into an event.
       @param    rawEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -123,12 +126,12 @@ public:
   bool getEventRaw(sensors_event_t *rawEvent) {
     if (!ensPerformReading())
       return false;
-    rawEvent->data[0] = (float)_ens160->getAQI();
+    rawEvent->data[0] = (float)_ens16x->getAQI();
     return true;
   }
 
 protected:
-  ScioSense_ENS160 *_ens160; ///< ENS160 object
+  ScioSense_ENS160 *_ens16x; ///< ENS16x object
 };
 
-#endif // WipperSnapper_I2C_Driver_ENS160
+#endif // WipperSnapper_I2C_Driver_ENS16X_H

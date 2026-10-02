@@ -3,7 +3,7 @@
 </p>
 
 # Adafruit WipperSnapper
-![Build CI](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/actions/workflows/build-clang-doxy.yml/badge.svg) [![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit_Wippersnapper_Arduino/html/index.html)
+![Build CI](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/actions/workflows/build-clang-doxy.yml/badge.svg)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit_Wippersnapper_Arduino/html/index.html)[![MemBrowse](https://membrowse.com/badge.svg)](https://membrowse.com/public/adafruit/Adafruit_Wippersnapper_Arduino)
 
 Adafruit.io WipperSnapper is a firmware designed to turn any Wi-Fi-capable board into an Internet-of-Things (IoT) device. No programming is required!
 
@@ -20,7 +20,7 @@ You will need a **free** [Adafruit IO](https://io.adafruit.com) account to use W
 
 |Platform| MCU(s) |
 |--|--|
-|[ESP32-x](https://github.com/espressif/arduino-esp32)| ESP32, ESP32-Sx, ESP32-C3, ESP32-C6 |
+|[ESP32-x](https://github.com/espressif/arduino-esp32)| ESP32, ESP32-Sx, ESP32-C3, ESP32-C5, ESP32-C6 |
 |[ESP8266](https://github.com/esp8266/Arduino)| ESP8266 |
 |[RP2040](https://github.com/earlephilhower/arduino-pico)| RP2040 MCU w/WiFi (i.e: Pico W) |
 |[RP2350](https://github.com/earlephilhower/arduino-pico)| RP2350 MCU w/WiFi (i.e: Pico 2W) |
