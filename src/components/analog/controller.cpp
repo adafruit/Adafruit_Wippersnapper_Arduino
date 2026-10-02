@@ -17,9 +17,21 @@
 #include "hardware.h"
 
 namespace {
+/*!
+    @brief  Reports an analog pin error. In offline (SD card) mode there is
+            no broker, so the error is only printed to the debug serial.
+            Otherwise, it is published to the broker via the error handler
+            (which also prints it).
+    @param  pin_name
+            The name of the pin that the error occurred on.
+    @param  error_msg
+            The error message.
+    @return Always false, so callers can `return reportPinError(...)` from
+            a failing handler.
+*/
 bool reportPinError(const char *pin_name, const char *error_msg) {
   if (Ws->_sdCardV2->isModeOffline()) {
-    WS_DEBUG_PRINT("[analogin] ERROR on ");
+    WS_DEBUG_PRINT("[analog] ERROR on ");
     WS_DEBUG_PRINT(pin_name);
     WS_DEBUG_PRINT(": ");
     WS_DEBUG_PRINTLN(error_msg);
@@ -77,8 +89,7 @@ bool AnalogController::Router(pb_istream_t *stream) {
   // Attempt to decode the AnalogIn B2D envelope
   ws_analogin_B2D b2d = ws_analogin_B2D_init_zero;
   if (!ws_pb_decode(stream, ws_analogin_B2D_fields, &b2d)) {
-    WS_DEBUG_PRINTLN(
-        "[analogin] ERROR: Unable to decode AnalogIn B2D envelope");
+    WS_DEBUG_PRINTLN("[analog] ERROR: Unable to decode AnalogIn B2D envelope");
     return false;
   }
 
@@ -92,7 +103,7 @@ bool AnalogController::Router(pb_istream_t *stream) {
     res = Handle_AnalogInRemove(&b2d.payload.remove);
     break;
   default:
-    WS_DEBUG_PRINTLN("[analogin] WARNING: Unsupported AnalogIn payload");
+    WS_DEBUG_PRINTLN("[analog] WARNING: Unsupported AnalogIn payload");
     res = false;
     break;
   }
@@ -107,8 +118,7 @@ bool AnalogController::Router(pb_istream_t *stream) {
             The pin number to remove.
     @return True if the pin was found and removed.
 */
-bool AnalogController::RemovePin(uint8_t pin_num,
-                                   ExpanderHardware *expander) {
+bool AnalogController::RemovePin(uint8_t pin_num, ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
     if (_pins[i]->getPinNum() == pin_num &&
         _pins[i]->getExpander() == expander) {
@@ -127,7 +137,7 @@ bool AnalogController::RemovePin(uint8_t pin_num,
     @return Pointer to the analog pin, or nullptr if not found.
 */
 AnalogHardware *AnalogController::GetPin(uint8_t pin_num,
-                                             ExpanderHardware *expander) {
+                                         ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
     if (_pins[i]->getPinNum() == pin_num && _pins[i]->getExpander() == expander)
       return _pins[i];
@@ -143,7 +153,7 @@ AnalogHardware *AnalogController::GetPin(uint8_t pin_num,
     @return True if the pin was successfully added, False otherwise.
 */
 bool AnalogController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
-  WS_DEBUG_PRINTLN("[analogin] Handle_AnalogInAdd MESSAGE...");
+  WS_DEBUG_PRINTLN("[analog] Handle_AnalogInAdd MESSAGE...");
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
@@ -181,7 +191,7 @@ bool AnalogController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   _pins.push_back(new_pin);
 
   // Print out the pin's details
-  WS_DEBUG_PRINTLN("[analogin] Added new pin:");
+  WS_DEBUG_PRINTLN("[analog] Added new pin:");
   WS_DEBUG_PRINT("Pin Name: ");
   WS_DEBUG_PRINTLNVAR(new_pin->getPinName());
   WS_DEBUG_PRINT("Period: ");
@@ -212,7 +222,7 @@ bool AnalogController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
     return reportPinError(msg->pin_name, "Failed to find pin");
   }
 
-  WS_DEBUG_PRINT("[analogin] Removed pin: ");
+  WS_DEBUG_PRINT("[analog] Removed pin: ");
   WS_DEBUG_PRINTLNVAR(msg->pin_name);
   return true;
 }

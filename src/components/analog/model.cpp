@@ -52,9 +52,7 @@ bool AnalogModel::decodeAnalogInAdd(pb_istream_t *stream) {
     @brief  Gets an AnalogInAdd message struct.
     @return Pointer to an AnalogInAdd message struct.
 */
-ws_analogin_Add *AnalogModel::getAnalogInAddMsg() {
-  return &_msg_AnalogInAdd;
-}
+ws_analogin_Add *AnalogModel::getAnalogInAddMsg() { return &_msg_AnalogInAdd; }
 
 /*!
     @brief  Decodes an AnalogInRemove message from a stream into an
@@ -104,7 +102,7 @@ ws_analogin_D2B *AnalogModel::getAnalogInD2b() { return &_msg_AnalogInD2B; }
     @return True if successful, False otherwise.
 */
 bool AnalogModel::encodeAnalogInEvent(const char *pin_name, float pin_value,
-                                        ws_sensor_Type read_type) {
+                                      ws_sensor_Type read_type) {
   // Initialize the AnalogInEvent message to default values
   memset(&_msg_AnalogInEvent, 0, sizeof(_msg_AnalogInEvent));
   // Fill the AnalogInEvent message's fields
@@ -132,8 +130,8 @@ bool AnalogModel::encodeAnalogInEvent(const char *pin_name, float pin_value,
     @return True if successful, False otherwise.
 */
 bool AnalogModel::encodeAnalogInEventRaw(const char *pin_name,
-                                           float pin_value) {
-  WS_DEBUG_PRINT("[analogin] Pin: ");
+                                         float pin_value) {
+  WS_DEBUG_PRINT("[analog] Pin: ");
   WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Raw Value: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
@@ -149,8 +147,8 @@ bool AnalogModel::encodeAnalogInEventRaw(const char *pin_name,
     @return True if successful, False otherwise.
 */
 bool AnalogModel::encodeAnalogInEventVoltage(const char *pin_name,
-                                               float pin_value) {
-  WS_DEBUG_PRINT("[analogin] Pin: ");
+                                             float pin_value) {
+  WS_DEBUG_PRINT("[analog] Pin: ");
   WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Voltage: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
