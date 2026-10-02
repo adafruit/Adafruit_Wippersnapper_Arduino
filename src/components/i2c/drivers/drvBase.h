@@ -33,6 +33,10 @@ struct DecodedSetting;    ///< Forward declaration
 /*! Size of the pin name buffers, exactly matches
     ws_i2c_AddressSpace.pin_scl/pin_sda in i2c.pb.h */
 #define DRV_BASE_PIN_NAME_LEN (sizeof(((ws_i2c_AddressSpace *)0)->pin_scl))
+/*! Max number of sensor TypesEntry per device, exactly matches
+    ws_i2c_Add.types in i2c.pb.h */
+#define DRV_BASE_MAX_SENSORS                                                   \
+  (sizeof(((ws_i2c_Add *)0)->types) / sizeof(ws_i2c_Add_TypesEntry))
 static_assert(sizeof(WsPinName::name) >= DRV_BASE_PIN_NAME_LEN,
               "WsPinName.name must hold any ws_i2c_AddressSpace pin name");
 
@@ -1150,18 +1154,22 @@ public:
 
   /*!
       @brief   Reads a sensor's event from the i2c driver.
-      @param   sensor_type
-                The sensor type to read.
+      @param    entry
+                The TypesEntry to read. key is the broker-assigned index,
+                value is the sensor's SI type. Drivers with multiple
+                components of the same type may override this, switch on
+                entry.key, and fall back to drvBase::GetSensorEvent().
       @param    sensors_event
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  bool GetSensorEvent(ws_sensor_Type sensor_type,
-                      sensors_event_t *sensors_event) {
-    auto it = SensorEventHandlers.find(sensor_type);
+  virtual bool GetSensorEvent(const ws_i2c_Add_TypesEntry &entry,
+                              sensors_event_t *sensors_event) {
+    std::map<ws_sensor_Type, fnGetEvent>::iterator it =
+        SensorEventHandlers.find(entry.value);
     if (it == SensorEventHandlers.end())
-      return false; // Could not find sensor_type
+      return false; // Could not find entry.value
     return it->second(sensors_event);
   }
 
@@ -1279,7 +1287,8 @@ public:
          return this->getEventTVOC(event);
        }}}; ///< SensorType to function call map
 
-  ws_i2c_Add_TypesEntry _sensors[16]; ///< Keyed sensor types from broker.
+  ws_i2c_Add_TypesEntry
+      _sensors[DRV_BASE_MAX_SENSORS]; ///< Keyed sensor types from broker.
 
 protected:
   TwoWire *_i2c;                 ///< Pointer to the TwoWire bus

@@ -1074,10 +1074,14 @@ void I2cController::update(bool force) {
     for (size_t i = 0; i < sensor_count; i++) {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
-      if (!drv->GetSensorEvent(drv->_sensors[i].value, &event)) {
-        // Metric unavailable this pass (e.g. still warming up) - publish the
-        // metrics that did read rather than dropping the whole device event.
-        WS_DEBUG_PRINT("[i2c] WARNING: Failed to read sensor type=");
+      if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
+        // Metric unavailable this pass (e.g. still warming up, or an override
+        // didn't recognize entry.key) - publish the metrics that did read
+        // rather than dropping the whole device event. Print key as well as
+        // type since a device may carry multiple entries of the same type.
+        WS_DEBUG_PRINT("[i2c] WARNING: Failed to read sensor key=");
+        WS_DEBUG_PRINTVAR(drv->_sensors[i].key);
+        WS_DEBUG_PRINT(" type=");
         WS_DEBUG_PRINTLNVAR(drv->_sensors[i].value);
         continue;
       }
