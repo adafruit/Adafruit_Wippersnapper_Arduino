@@ -3,6 +3,7 @@ version: 1
 author: Brent Rubell for Adafruit Industries
 
 steps:
+  - wait-serial: 'POWERON_RESET'
   - wait-serial: '[SD] Waiting for incoming JSON string...'
   - write-serial: '{"exportedFromDevice":{"referenceVoltage":3.3,"totalGPIOPins":43,"totalAnalogPins":20,"statusLEDBrightness":0.5},"components":[{"name":"Analog Pin","componentAPI":"analogio","pinName":"D14","mode":"raw","direction":"INPUT","sampleMode":"TIMER","analogReadMode":"raw","period":5}],"checksum":149}'
   - write-serial: '\n'
@@ -10,7 +11,6 @@ steps:
   - wait-serial: 'Pin Name: 14'
   - wait-serial: 'Period: 5000.00'
   - wait-serial: 'Read Mode: 18'
-  - delay: 5s
   - wait-serial: '{"timestamp":0,"pin":"A14","value":0,"si_unit":"none (Raw)"}'
   - set-control:
       part-id: pot1
