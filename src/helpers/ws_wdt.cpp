@@ -78,7 +78,12 @@ int ws_wdt::enable(int timeout_ms) {
 */
 void ws_wdt::disable() {
 #ifndef OFFLINE_MODE_WOKWI
-#ifndef ARDUINO_ARCH_RP2040
+#if defined(ARDUINO_ARCH_ESP32)
+  // Watchdog.disable() unsubscribes this task from the TWDT, which logs
+  // "task_wdt: task not found" if the task was never subscribed.
+  if (esp_task_wdt_status(NULL) == ESP_OK)
+    Watchdog.disable();
+#elif !defined(ARDUINO_ARCH_RP2040)
   // RP2040 WDT cannot be disabled once enabled
   Watchdog.disable();
 #endif
@@ -103,7 +108,7 @@ int ws_wdt::reconfigure(int timeout_ms) {
   timeout_ms = timeout_ms;
   return timeout_ms;
 #else
-  Watchdog.disable();
+  disable();
   int rc = Watchdog.enable(timeout_ms);
   return rc;
 #endif
@@ -114,6 +119,13 @@ int ws_wdt::reconfigure(int timeout_ms) {
 */
 void ws_wdt::feed() {
 #ifndef OFFLINE_MODE_WOKWI
+#ifdef ARDUINO_ARCH_ESP32
+  // Only feed the TWDT once enable() has subscribed this task to it.
+  // arduino-esp32 3.x initializes the TWDT itself at boot, so an
+  // unsubscribed esp_task_wdt_reset() logs "task_wdt: task not found".
+  if (esp_task_wdt_status(NULL) != ESP_OK)
+    return;
+#endif
   Watchdog.reset();
 #endif
 }
