@@ -1,5 +1,5 @@
 /*!
- * @file src/components/analogIO/model.h
+ * @file src/components/analog/model.h
  *
  * Model interface for the analogin.proto message.
  *
@@ -12,18 +12,18 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_ANALOGIO_MODEL_H
-#define WS_ANALOGIO_MODEL_H
+#ifndef WS_ANALOG_MODEL_H
+#define WS_ANALOG_MODEL_H
 #include "wippersnapper.h"
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from analogin.proto.
 */
-class AnalogIOModel {
+class AnalogModel {
 public:
-  AnalogIOModel();
-  ~AnalogIOModel();
+  AnalogModel();
+  ~AnalogModel();
   // AnalogInAdd
   bool decodeAnalogInAdd(pb_istream_t *stream);
   ws_analogin_Add *getAnalogInAddMsg();
@@ -44,4 +44,4 @@ private:
   ws_analogin_Event _msg_AnalogInEvent;   ///< AnalogInEvent message
   ws_analogin_D2B _msg_AnalogInD2B;       ///< AnalogIn DeviceToBroker wrapper
 };
-#endif // WS_ANALOGIO_MODEL_H
+#endif // WS_ANALOG_MODEL_H

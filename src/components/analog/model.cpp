@@ -1,5 +1,5 @@
 /*!
- * @file src/components/analogIO/model.cpp
+ * @file src/components/analog/model.cpp
  *
  * Interfaces for the analogin.proto API
  *
@@ -15,9 +15,9 @@
 #include "model.h"
 
 /*!
-    @brief  AnalogIOModel constructor
+    @brief  AnalogModel constructor
 */
-AnalogIOModel::AnalogIOModel() {
+AnalogModel::AnalogModel() {
   memset(&_msg_AnalogInAdd, 0, sizeof(_msg_AnalogInAdd));
   memset(&_msg_AnalogInRemove, 0, sizeof(_msg_AnalogInRemove));
   memset(&_msg_AnalogInEvent, 0, sizeof(_msg_AnalogInEvent));
@@ -25,9 +25,9 @@ AnalogIOModel::AnalogIOModel() {
 }
 
 /*!
-    @brief  AnalogIOModel destructor
+    @brief  AnalogModel destructor
 */
-AnalogIOModel::~AnalogIOModel() {
+AnalogModel::~AnalogModel() {
   memset(&_msg_AnalogInAdd, 0, sizeof(_msg_AnalogInAdd));
   memset(&_msg_AnalogInRemove, 0, sizeof(_msg_AnalogInRemove));
   memset(&_msg_AnalogInEvent, 0, sizeof(_msg_AnalogInEvent));
@@ -40,7 +40,7 @@ AnalogIOModel::~AnalogIOModel() {
            The pb_istream_t stream to decode.
     @return True if successful, False otherwise.
 */
-bool AnalogIOModel::decodeAnalogInAdd(pb_istream_t *stream) {
+bool AnalogModel::decodeAnalogInAdd(pb_istream_t *stream) {
   // Zero-out the AnalogInAdd message struct. to ensure we don't have any old
   // data
   memset(&_msg_AnalogInAdd, 0, sizeof(_msg_AnalogInAdd));
@@ -52,7 +52,7 @@ bool AnalogIOModel::decodeAnalogInAdd(pb_istream_t *stream) {
     @brief  Gets an AnalogInAdd message struct.
     @return Pointer to an AnalogInAdd message struct.
 */
-ws_analogin_Add *AnalogIOModel::getAnalogInAddMsg() {
+ws_analogin_Add *AnalogModel::getAnalogInAddMsg() {
   return &_msg_AnalogInAdd;
 }
 
@@ -63,7 +63,7 @@ ws_analogin_Add *AnalogIOModel::getAnalogInAddMsg() {
            The pb_istream_t stream to decode.
     @return True if successful, False otherwise.
 */
-bool AnalogIOModel::decodeAnalogInRemove(pb_istream_t *stream) {
+bool AnalogModel::decodeAnalogInRemove(pb_istream_t *stream) {
   // Zero-out the AnalogInRemove message struct. to ensure we don't have any old
   // data
   memset(&_msg_AnalogInRemove, 0, sizeof(_msg_AnalogInRemove));
@@ -75,7 +75,7 @@ bool AnalogIOModel::decodeAnalogInRemove(pb_istream_t *stream) {
     @brief  Gets an AnalogInRemove message struct.
     @return Pointer to an AnalogInRemove message struct.
 */
-ws_analogin_Remove *AnalogIOModel::GetAnalogInRemoveMsg() {
+ws_analogin_Remove *AnalogModel::GetAnalogInRemoveMsg() {
   return &_msg_AnalogInRemove;
 }
 
@@ -83,7 +83,7 @@ ws_analogin_Remove *AnalogIOModel::GetAnalogInRemoveMsg() {
     @brief  Gets an AnalogInEvent message struct.
     @return Pointer to an AnalogInEvent message struct.
 */
-ws_analogin_Event *AnalogIOModel::getAnalogInEvent() {
+ws_analogin_Event *AnalogModel::getAnalogInEvent() {
   return &_msg_AnalogInEvent;
 }
 
@@ -91,7 +91,7 @@ ws_analogin_Event *AnalogIOModel::getAnalogInEvent() {
     @brief  Gets an AnalogIn DeviceToBroker message struct.
     @return Pointer to an AnalogIn D2B message struct.
 */
-ws_analogin_D2B *AnalogIOModel::getAnalogInD2b() { return &_msg_AnalogInD2B; }
+ws_analogin_D2B *AnalogModel::getAnalogInD2b() { return &_msg_AnalogInD2B; }
 
 /*!
     @brief  Encodes an AnalogInEvent message.
@@ -103,7 +103,7 @@ ws_analogin_D2B *AnalogIOModel::getAnalogInD2b() { return &_msg_AnalogInD2B; }
            The type of sensor event to encode.
     @return True if successful, False otherwise.
 */
-bool AnalogIOModel::encodeAnalogInEvent(const char *pin_name, float pin_value,
+bool AnalogModel::encodeAnalogInEvent(const char *pin_name, float pin_value,
                                         ws_sensor_Type read_type) {
   // Initialize the AnalogInEvent message to default values
   memset(&_msg_AnalogInEvent, 0, sizeof(_msg_AnalogInEvent));
@@ -131,7 +131,7 @@ bool AnalogIOModel::encodeAnalogInEvent(const char *pin_name, float pin_value,
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogIOModel::encodeAnalogInEventRaw(const char *pin_name,
+bool AnalogModel::encodeAnalogInEventRaw(const char *pin_name,
                                            float pin_value) {
   WS_DEBUG_PRINT("[analogin] Pin: ");
   WS_DEBUG_PRINTVAR(pin_name);
@@ -148,7 +148,7 @@ bool AnalogIOModel::encodeAnalogInEventRaw(const char *pin_name,
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogIOModel::encodeAnalogInEventVoltage(const char *pin_name,
+bool AnalogModel::encodeAnalogInEventVoltage(const char *pin_name,
                                                float pin_value) {
   WS_DEBUG_PRINT("[analogin] Pin: ");
   WS_DEBUG_PRINTVAR(pin_name);

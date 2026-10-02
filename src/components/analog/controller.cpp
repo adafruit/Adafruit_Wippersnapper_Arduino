@@ -1,5 +1,5 @@
 /*!
- * @file src/components/analogIO/controller.cpp
+ * @file src/components/analog/controller.cpp
  *
  * Controller for the analogin.proto API
  *
@@ -32,17 +32,17 @@ bool reportPinError(const char *pin_name, const char *error_msg) {
 } // namespace
 
 /*!
-    @brief  AnalogIO controller constructor
+    @brief  Analog controller constructor
 */
-AnalogIOController::AnalogIOController() {
-  _analogin_model = new AnalogIOModel();
+AnalogController::AnalogController() {
+  _analogin_model = new AnalogModel();
   _mcu_ref_voltage = DEFAULT_MCU_VREF;
 }
 
 /*!
-    @brief  AnalogIO controller destructor
+    @brief  Analog controller destructor
 */
-AnalogIOController::~AnalogIOController() {
+AnalogController::~AnalogController() {
   for (size_t i = 0; i < _pins.size(); i++)
     delete _pins[i];
   delete _analogin_model;
@@ -53,7 +53,7 @@ AnalogIOController::~AnalogIOController() {
     @param  voltage
             The reference voltage.
 */
-void AnalogIOController::SetRefVoltage(float voltage) {
+void AnalogController::SetRefVoltage(float voltage) {
   _mcu_ref_voltage = voltage;
 }
 
@@ -62,7 +62,7 @@ void AnalogIOController::SetRefVoltage(float voltage) {
     @param  max_analog_pins
             The hardware's maximum number of analog pins.
 */
-void AnalogIOController::SetMaxAnalogPins(uint8_t max_analog_pins) {
+void AnalogController::SetMaxAnalogPins(uint8_t max_analog_pins) {
   _pins.reserve(max_analog_pins);
 }
 
@@ -73,7 +73,7 @@ void AnalogIOController::SetMaxAnalogPins(uint8_t max_analog_pins) {
             The nanopb input stream.
     @return True if the message was successfully routed, False otherwise.
 */
-bool AnalogIOController::Router(pb_istream_t *stream) {
+bool AnalogController::Router(pb_istream_t *stream) {
   // Attempt to decode the AnalogIn B2D envelope
   ws_analogin_B2D b2d = ws_analogin_B2D_init_zero;
   if (!ws_pb_decode(stream, ws_analogin_B2D_fields, &b2d)) {
@@ -107,7 +107,7 @@ bool AnalogIOController::Router(pb_istream_t *stream) {
             The pin number to remove.
     @return True if the pin was found and removed.
 */
-bool AnalogIOController::RemovePin(uint8_t pin_num,
+bool AnalogController::RemovePin(uint8_t pin_num,
                                    ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
     if (_pins[i]->getPinNum() == pin_num &&
@@ -126,7 +126,7 @@ bool AnalogIOController::RemovePin(uint8_t pin_num,
             The pin's number.
     @return Pointer to the analog pin, or nullptr if not found.
 */
-AnalogIOHardware *AnalogIOController::GetPin(uint8_t pin_num,
+AnalogHardware *AnalogController::GetPin(uint8_t pin_num,
                                              ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
     if (_pins[i]->getPinNum() == pin_num && _pins[i]->getExpander() == expander)
@@ -142,7 +142,7 @@ AnalogIOHardware *AnalogIOController::GetPin(uint8_t pin_num,
             The AnalogInAdd message.
     @return True if the pin was successfully added, False otherwise.
 */
-bool AnalogIOController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
+bool AnalogController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   WS_DEBUG_PRINTLN("[analogin] Handle_AnalogInAdd MESSAGE...");
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
@@ -173,7 +173,7 @@ bool AnalogIOController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   }
 
   // Create a new analog input pin
-  AnalogIOHardware *new_pin = new AnalogIOHardware(
+  AnalogHardware *new_pin = new AnalogHardware(
       msg->pin_name, pin_num, msg->read_mode, msg->sample_mode,
       (ulong)(msg->period * 1000.0f), ref_voltage, expander_drv);
 
@@ -200,7 +200,7 @@ bool AnalogIOController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
             The AnalogInRemove message.
     @return True if the pin was successfully removed, False otherwise.
 */
-bool AnalogIOController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
+bool AnalogController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
@@ -224,7 +224,7 @@ bool AnalogIOController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
             Pointer to the analog pin hardware object.
     @return True if the message was successfully recorded.
 */
-bool AnalogIOController::EncodePublishPinEvent(AnalogIOHardware *pin) {
+bool AnalogController::EncodePublishPinEvent(AnalogHardware *pin) {
   float value = pin->getValue();
   ws_sensor_Type read_type = pin->getReadMode();
   uint8_t pin_num = pin->getPinNum();
@@ -269,17 +269,17 @@ bool AnalogIOController::EncodePublishPinEvent(AnalogIOHardware *pin) {
 }
 
 /*!
-    @brief  Update/polling loop for the AnalogIO controller.
+    @brief  Update/polling loop for the Analog controller.
     @param  force
             If true, forces a read on all pins regardless of period.
 */
-void AnalogIOController::update(bool force) {
+void AnalogController::update(bool force) {
   // Bail-out if the vector is empty
   if (_pins.empty())
     return;
 
   for (size_t i = 0; i < _pins.size(); i++) {
-    AnalogIOHardware *pin = _pins[i];
+    AnalogHardware *pin = _pins[i];
     ws_sensor_Type read_mode = pin->getReadMode();
     bool invalid_read_type = read_mode != ws_sensor_Type_T_RAW &&
                              read_mode != ws_sensor_Type_T_VOLTAGE;
@@ -316,7 +316,7 @@ void AnalogIOController::update(bool force) {
     @brief  Checks if all analog pins have been read and their values sent.
     @return True if all pins have been read and sent, False otherwise.
 */
-bool AnalogIOController::UpdateComplete() {
+bool AnalogController::UpdateComplete() {
   for (size_t i = 0; i < _pins.size(); i++) {
     if (!_pins[i]->didReadSend()) {
       return false;
@@ -328,7 +328,7 @@ bool AnalogIOController::UpdateComplete() {
 /*!
     @brief  Resets all analog pins' did_read_send flags to false.
 */
-void AnalogIOController::ResetFlags() {
+void AnalogController::ResetFlags() {
   for (size_t i = 0; i < _pins.size(); i++) {
     _pins[i]->resetSendFlag();
   }

@@ -1,5 +1,5 @@
 /*!
- * @file src/components/analogIO/hardware.h
+ * @file src/components/analog/hardware.h
  *
  * Hardware implementation for the analogin.proto message.
  * Each instance represents a single analog input pin and
@@ -14,8 +14,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_ANALOGIO_HARDWARE_H
-#define WS_ANALOGIO_HARDWARE_H
+#ifndef WS_ANALOG_HARDWARE_H
+#define WS_ANALOG_HARDWARE_H
 #include "wippersnapper.h"
 
 #define DEFAULT_ADC_RESOLUTION 16 ///< Default ADC resolution, in bits
@@ -30,13 +30,13 @@ class ExpanderHardware;
             its state. Each instance carries its own ADC
             configuration.
 */
-class AnalogIOHardware {
+class AnalogHardware {
 public:
-  AnalogIOHardware(const char *pin_name, uint8_t pin_num,
+  AnalogHardware(const char *pin_name, uint8_t pin_num,
                    ws_sensor_Type read_mode, ws_analogin_SampleMode sample_mode,
                    ulong period, float ref_voltage,
                    ExpanderHardware *expander_drv);
-  ~AnalogIOHardware();
+  ~AnalogHardware();
   float readValue();
   bool checkEvent();
   bool checkTimer();
@@ -77,4 +77,4 @@ private:
                       ///< native pins, message vref for expander pins).
   ExpanderHardware *_expander_drv; ///< Pointer to expander driver, or nullptr.
 };
-#endif // WS_ANALOGIO_HARDWARE_H
+#endif // WS_ANALOG_HARDWARE_H
