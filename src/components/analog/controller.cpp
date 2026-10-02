@@ -32,9 +32,9 @@ namespace {
 bool reportPinError(const char *pin_name, const char *error_msg) {
   if (Ws->_sdCardV2->isModeOffline()) {
     WS_DEBUG_PRINT("[analog] ERROR on ");
-    WS_DEBUG_PRINT(pin_name);
+    WS_DEBUG_PRINTVAR(pin_name);
     WS_DEBUG_PRINT(": ");
-    WS_DEBUG_PRINTLN(error_msg);
+    WS_DEBUG_PRINTLNVAR(error_msg);
     return false;
   }
 
