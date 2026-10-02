@@ -168,6 +168,56 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvLc709203f(i2c, addr, mux_channel, driver_name);
      }},
+    {"lis3dh",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLis3dh(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lis2mdl",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLis2mdl(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lis3mdl",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLis3mdl(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm303agr",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm303agr(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm303dlh",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm303dlh(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm6ds3",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm6ds3(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm6dso32",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm6dso32(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ism330dlc",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIsm330dhcx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ism330dhcx",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIsm330dhcx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm9ds1",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm9ds1(i2c, addr, mux_channel, driver_name);
+     }},
     {"lps3xhw",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -407,13 +457,13 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x0B, {"lc709203f"}},
         {0x12, {"pmsa003i"}},
         {0x13, {"vncl4020"}},
-        {0x18, {"ds2484", "mcp9808", "mprls"}},
-        {0x19, {"mcp9808"}},
+        {0x18, {"ds2484", "mcp9808", "mprls", "lis3dh"}},
+        {0x19, {"mcp9808", "lsm303agr", "lsm303dlh", "lis3dh"}}, // LIS3DH last - seems to match LSM303AGR
         {0x1A, {"mcp9808"}},
         {0x1B, {"mcp9808"}},
-        {0x1C, {"mcp9808"}},
+        {0x1C, {"mcp9808", "lis3mdl"}},
         {0x1D, {"mcp9808"}},
-        {0x1E, {"mcp9808"}},
+        {0x1E, {"mcp9808", "lis3mdl", "lis2mdl"}}, // "lsm303dlh", "lsm303agr", but rely on first addr
         {0x1F, {"mcp9808"}},
         {0x23, {"bh1750"}},
         {0x28, {"pct2075"}},
@@ -458,7 +508,11 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x62, {"scd40"}},
         {0x68, {"mcp3421"}},
         {0x69, {"sen55"}},
-        {0x6B, {"sen66"}},
+        {0x6A, {"lsm6dso32", "ism330dhcx", "lsm6ds3"}},
+        {0x6B, {"sen66", "lsm6ds3", "lsm6dso32", "ism330dhcx"}},
+        {0x6C, {"lsm303dlh"}},
+        {0x6D, {"lsm303agr"}},
+        {0x6E, {"lsm9ds1"}},
         {0x70, {"pct2075", "shtc3"}},
         {0x71, {"pct2075"}},
         {0x72, {"pct2075"}},
