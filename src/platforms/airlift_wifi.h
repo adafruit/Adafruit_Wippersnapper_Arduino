@@ -28,9 +28,15 @@
 #include "WiFiNINA.h"
 #include "wippersnapper.h"
 
+#if defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
+#define NINAFWVER                                                              \
+  "3.3.0" /*!< Fruit Jam's ESP32-C6 requires nina-fw version 3.3.0+ to work    \
+             with this library. */
+#else
 #define NINAFWVER                                                              \
   "2.0.0-rc.0+adafruit" /*!< min. nina-fw version compatible with this         \
                            library. */
+#endif
 #define AIRLIFT_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define AIRLIFT_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
@@ -47,9 +53,13 @@ public:
   @brief  Initializes the Adafruit IO class for AirLift devices.
   */
   airlift_wifi() : wippersnapper() {
-    _ssPin = SPIWIFI_SS;     // 10;
-    _ackPin = SPIWIFI_ACK;   // 7;
+    _ssPin = SPIWIFI_SS;   // 10;
+    _ackPin = SPIWIFI_ACK; // 7;
+#ifdef ESP32_RESETN
+    _rstPin = ESP32_RESETN; // FruitJam
+#else
     _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals
+#endif // ESP32_RESETN
 #ifdef ESP32_GPIO0
     _gpio0Pin = ESP32_GPIO0;
 #else
@@ -168,6 +178,9 @@ public:
   */
   bool firmwareCheck() {
     _fv = WiFi.firmwareVersion();
+    if (_fv == nullptr || _fv[0] == '\0')
+      return false; // co-processor unresponsive or returned no version
+    Ws->_airlift_version = _fv;
     return compareVersions(_fv, NINAFWVER);
   }
 
@@ -213,6 +226,12 @@ public:
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
     memcpy(Ws->_macAddrV2, mac, sizeof(mac));
+    // Runs before the filesystem is provisioned, so the version is
+    // valid by the time the bootlog is written. Keeps the "unknown"
+    // default if the co-processor doesn't answer.
+    const char *fv = WiFi.firmwareVersion();
+    if (fv != nullptr && fv[0] != '\0')
+      Ws->_airlift_version = fv;
   }
 
   /*!
@@ -294,8 +313,11 @@ protected:
 
       // validate co-processor's firmware version
       if (!firmwareCheck()) {
-        WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the "
-                         "latest version.");
+        WS_DEBUG_PRINTLN("WARNING: Unable to read nina-fw version or "
+                         "incompatible version detected!");
+        WS_DEBUG_PRINT("Required nina-fw version: ");
+        WS_DEBUG_PRINTLN(NINAFWVER);
+        WS_PRINTER.flush();
       }
 
       WS_DEBUG_PRINT("Connecting to ");
