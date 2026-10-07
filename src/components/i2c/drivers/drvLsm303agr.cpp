@@ -9,7 +9,7 @@
 #include <math.h>
 
 #define LSM303AGR_ACCEL_DEFAULT_ADDR 0x19 ///< LSM303AGR default address
-#define LSM303AGR_MAG_DEFAULT_ADDR 0x1E ///< LIS2MDL default address
+#define LSM303AGR_MAG_DEFAULT_ADDR 0x1E   ///< LIS2MDL default address
 
 /******************************************************************************/
 /*!

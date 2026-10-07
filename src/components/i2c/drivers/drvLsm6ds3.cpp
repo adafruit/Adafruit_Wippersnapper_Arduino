@@ -52,4 +52,3 @@ bool drvLsm6ds3::begin() {
   WS_DEBUG_PRINTLN("[drvLsm6ds3] Sensor initialised successfully");
   return true;
 }
-

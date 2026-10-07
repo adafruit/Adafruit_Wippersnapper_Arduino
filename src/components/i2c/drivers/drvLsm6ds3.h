@@ -13,9 +13,9 @@
 
 class drvLsm6ds3 : public drvBaseAccelLsm6 {
 public:
-    drvLsm6ds3(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-          const char *driver_name)
-        : drvBaseAccelLsm6(i2c, sensorAddress, mux_channel, driver_name) {}
+  drvLsm6ds3(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+             const char *driver_name)
+      : drvBaseAccelLsm6(i2c, sensorAddress, mux_channel, driver_name) {}
 
   ~drvLsm6ds3();
 

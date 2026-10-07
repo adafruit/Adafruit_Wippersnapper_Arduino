@@ -43,12 +43,14 @@ void drvLsm303dlh::teardown() {
 bool drvLsm303dlh::begin() {
   WS_DEBUG_PRINTLN("[drvLsm303dlh] Initializing LSM303DLH driver...");
 
-  WS_DEBUG_PRINTLN("[drvLsm303dlh] Tearing down any existing sensor instances...");
+  WS_DEBUG_PRINTLN(
+      "[drvLsm303dlh] Tearing down any existing sensor instances...");
   teardown();
 
   WS_DEBUG_PRINTLN("[drvLsm303dlh] Creating new sensor instances...");
   _accel = new Adafruit_LSM303_Accel_Unified();
-  WS_DEBUG_PRINTLN("[drvLsm303dlh] Created accelerometer instance, DLH mag next");
+  WS_DEBUG_PRINTLN(
+      "[drvLsm303dlh] Created accelerometer instance, DLH mag next");
   _mag = new Adafruit_LSM303DLH_Mag_Unified();
   WS_DEBUG_PRINTLN("[drvLsm303dlh] Created magnetometer instance");
   if (!_accel || !_mag) {

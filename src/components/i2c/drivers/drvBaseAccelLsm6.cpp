@@ -31,7 +31,7 @@ bool drvBaseAccelLsm6::readAllEvents() {
   if (_has_last_events && _internalPollPeriod > 0 &&
       (now - _lastPoll) < _internalPollPeriod) {
     // too soon reuse cached data, except first run or interval=0
-    return true; 
+    return true;
   }
 
   _lastPoll = now; // TODO: set in fastTicks, if used, instead
@@ -43,17 +43,18 @@ bool drvBaseAccelLsm6::readAllEvents() {
     _last_shake = true;
   }
 
-//   uint16_t step_change = imu->readPedometer();
-//   if (step_change > 0) {
-//     WS_DEBUG_PRINT("[");
-//     WS_DEBUG_PRINT(_name);
-//     WS_DEBUG_PRINT("] Steps detected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!: ");
-//     WS_DEBUG_PRINTLN(step_change);
-//     _last_steps += step_change;
-//     imu->resetPedometer();
-//   }
+  //   uint16_t step_change = imu->readPedometer();
+  //   if (step_change > 0) {
+  //     WS_DEBUG_PRINT("[");
+  //     WS_DEBUG_PRINT(_name);
+  //     WS_DEBUG_PRINT("] Steps detected
+  //     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!:
+  //     "); WS_DEBUG_PRINTLN(step_change); _last_steps += step_change;
+  //     imu->resetPedometer();
+  //   }
 
-  bool success = imu->getEvent(&_lastAccelEvent, &_lastGyroEvent, &_lastTempEvent);
+  bool success =
+      imu->getEvent(&_lastAccelEvent, &_lastGyroEvent, &_lastTempEvent);
   _has_last_events = success;
   return success;
 }
@@ -63,12 +64,10 @@ bool drvBaseAccelLsm6::computeAccelMagnitude(float *magnitude) {
     return false;
   }
 
-  *magnitude = sqrtf(_lastAccelEvent.acceleration.x *
-                        _lastAccelEvent.acceleration.x +
-                    _lastAccelEvent.acceleration.y *
-                        _lastAccelEvent.acceleration.y +
-                    _lastAccelEvent.acceleration.z *
-                        _lastAccelEvent.acceleration.z);
+  *magnitude =
+      sqrtf(_lastAccelEvent.acceleration.x * _lastAccelEvent.acceleration.x +
+            _lastAccelEvent.acceleration.y * _lastAccelEvent.acceleration.y +
+            _lastAccelEvent.acceleration.z * _lastAccelEvent.acceleration.z);
   return true;
 }
 

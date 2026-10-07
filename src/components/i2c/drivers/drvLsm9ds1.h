@@ -84,7 +84,8 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the LSM9DS1's temperature sensor event (not necessarily *C).
+      @brief    Gets the LSM9DS1's temperature sensor event (not necessarily
+     *C).
       @param    tempEvent
                 Pointer to the temperature sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -122,7 +123,6 @@ protected:
 
   bool readAllEvents(sensors_event_t *accel, sensors_event_t *mag,
                      sensors_event_t *gyro, sensors_event_t *temp);
-
 };
 
 #endif // DRV_LSM9DS1_H

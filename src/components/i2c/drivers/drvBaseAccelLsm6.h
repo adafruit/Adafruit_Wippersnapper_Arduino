@@ -13,8 +13,8 @@
 
 class drvBaseAccelLsm6 : public drvBase {
 public:
-  drvBaseAccelLsm6(TwoWire *i2c, uint16_t sensorAddress,
-                   uint32_t mux_channel, const char *driver_name);
+  drvBaseAccelLsm6(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+                   const char *driver_name);
   virtual ~drvBaseAccelLsm6();
 
   bool getEventBoolean(sensors_event_t *booleanEvent) override;
@@ -29,7 +29,7 @@ public:
 
 protected:
   virtual Adafruit_LSM6DS *getLSM6Sensor() const = 0;
-  
+
   /*!
       @brief    Builds a unique Adafruit_Sensor ID for this IMU from its I2C
                 address, MUX address/channel (if set) and I2C bus (default
@@ -60,8 +60,8 @@ protected:
   sensors_event_t _lastAccelEvent; ///< Last accelerometer event
   sensors_event_t _lastGyroEvent;  ///< Last gyroscope event
   sensors_event_t _lastTempEvent;  ///< Last temperature event (raw)
-//   uint16_t _last_steps = 0;        ///< Last step count
-  uint32_t _lastPoll = 0;          ///< Last poll time
+  //   uint16_t _last_steps = 0;        ///< Last step count
+  uint32_t _lastPoll = 0;             ///< Last poll time
   uint32_t _internalPollPeriod = 200; ///< Internal Polling interval in ms
 };
 

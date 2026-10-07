@@ -8,7 +8,7 @@
 
 drvIsm330dhcx::drvIsm330dhcx(TwoWire *i2c, uint16_t sensorAddress,
                              uint32_t mux_channel, const char *driver_name)
-  : drvBaseAccelLsm6(i2c, sensorAddress, mux_channel, driver_name) {}
+    : drvBaseAccelLsm6(i2c, sensorAddress, mux_channel, driver_name) {}
 
 drvIsm330dhcx::~drvIsm330dhcx() {
   if (_imu) {
@@ -53,4 +53,3 @@ bool drvIsm330dhcx::begin() {
   WS_DEBUG_PRINTLN("[drvIsm330dhcx] Sensor initialised successfully");
   return true;
 }
-

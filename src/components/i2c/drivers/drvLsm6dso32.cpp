@@ -51,4 +51,3 @@ bool drvLsm6dso32::begin() {
   WS_DEBUG_PRINTLN("[drvLsm6dso32] Sensor initialised successfully");
   return true;
 }
-
