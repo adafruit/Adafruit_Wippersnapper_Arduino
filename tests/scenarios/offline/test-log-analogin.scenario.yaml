@@ -11,6 +11,7 @@ steps:
   - wait-serial: 'Pin Name: 14'
   - wait-serial: 'Period: 5000.00'
   - wait-serial: 'Read Mode: 18'
+  - delay: 5s
   - wait-serial: '{"timestamp":0,"pin":"A14","value":0,"si_unit":"none (Raw)"}'
   - set-control:
       part-id: pot1
