@@ -14,9 +14,13 @@ drvBaseAccelLsm6::drvBaseAccelLsm6(TwoWire *i2c, uint16_t sensorAddress,
 drvBaseAccelLsm6::~drvBaseAccelLsm6() {}
 
 void drvBaseAccelLsm6::setInternalPollingInterval(uint32_t interval_ms) {
+  // Polling interval is managed internally.
   _internalPollPeriod = interval_ms;
 }
 
+// TODO: every getEvent*() calls readAllEvents(); the internal poll period
+// only caches the re-reads. On API v2 this becomes one ReadSensorData() with
+// accessors returning the cached events, and shake() moves to fastTick().
 bool drvBaseAccelLsm6::readAllEvents() {
   Adafruit_LSM6DS *imu = getLSM6Sensor();
   if (!imu) {
@@ -30,7 +34,7 @@ bool drvBaseAccelLsm6::readAllEvents() {
     return true; 
   }
 
-  _lastPoll = now;
+  _lastPoll = now; // TODO: set in fastTicks, if used, instead
 
   if (imu->shake()) {
     WS_DEBUG_PRINT("[");

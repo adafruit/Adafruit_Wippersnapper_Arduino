@@ -31,7 +31,7 @@ bool drvLsm6dso32::begin() {
   WS_DEBUG_PRINTHEX(addr);
   WS_DEBUG_PRINTLN("...");
 
-  if (!_imu->begin_I2C(addr, _i2c)) { // consider 3rd argument of sensor id, ensure we can run two of these. Could pass mux(+255+muxADDR) add 1000 for bus 1 vs 0 and add sensor addr
+  if (!_imu->begin_I2C(addr, _i2c, getLsmSensorID())) {
     WS_DEBUG_PRINTLN("[drvLsm6dso32] Failed to initialise sensor");
     delete _imu;
     _imu = nullptr;

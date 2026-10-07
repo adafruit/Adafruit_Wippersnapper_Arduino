@@ -66,7 +66,11 @@ bool drvLis3dh::getEventRaw(sensors_event_t *rawEvent) {
   WS_DEBUG_PRINTLN("[drvLis3dh] Getting raw event...");
   // Read an Adafruit_Sensor compatible event from the device
   sensors_event_t event;
-  _lis->getEvent(&event);
+  // NOTE: Adafruit_LIS3DH::getEvent() currently always returns true (read()
+  // is void), so I2C read errors are not detected here yet.
+  if (!_lis->getEvent(&event)) {
+    return false;
+  }
 
   // Calculate magnitude of the acceleration vector (m/s^2) and store in
   // event->data[0] to be consistent with other drivers that expose "raw"
@@ -129,8 +133,7 @@ bool drvLis3dh::getEventAccelerometer(sensors_event_t *accelEvent) {
   }
   WS_DEBUG_PRINTLN("[drvLis3dh] Getting accelerometer event...");
   // Fill the provided event with sensor data
-  _lis->getEvent(accelEvent);
-  return true;
+  return _lis->getEvent(accelEvent);
 }
 
 void drvLis3dh::ConfigureDefaultSensorTypes() {

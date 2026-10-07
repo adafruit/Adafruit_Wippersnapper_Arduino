@@ -30,12 +30,24 @@ public:
 protected:
   virtual Adafruit_LSM6DS *getLSM6Sensor() const = 0;
   
+  /*!
+      @brief    Builds a unique Adafruit_Sensor ID for this IMU from its I2C
+                address, MUX address/channel (if set) and I2C bus (default
+                or alt.), so several LSM6 parts can run at once. Passed to
+                begin_I2C(), which uses id, id + 1 and id + 2 for the accel,
+                gyro and temp events.
+      @returns  The base sensor ID for this driver instance.
+  */
   uint32_t getLsmSensorID() {
     // allow 4 ids per sensor (acc/mag/gyro/temp)
     uint32_t sensor_id = 10 * GetAddress();
     if (GetMuxAddress() != 0x0) {
       sensor_id += 10000 + GetMuxAddress();
       sensor_id += 1000 + (1000 * GetMuxChannel());
+    }
+    // alt. bus offset sits above the address + MUX range (max 19389)
+    if (HasAltI2CBus()) {
+      sensor_id += 100000;
     }
     return sensor_id;
   }

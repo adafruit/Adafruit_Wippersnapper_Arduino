@@ -31,6 +31,11 @@ drvLsm9ds1::~drvLsm9ds1() {
 bool drvLsm9ds1::begin() {
   _lsm = new Adafruit_LSM9DS1(_i2c);
   // Consumes I2C Addresses 0x1E and 0x6B
+  // TODO: Adafruit_LSM9DS1::begin() hardcodes 0x6B/0x1E (members are
+  // private), so _address is ignored and the SDO-low addresses (0x6A/0x1C)
+  // are unreachable. Needs an upstream begin(ag_addr, mag_addr) overload,
+  // see adafruit/Adafruit_Wippersnapper_Arduino#1010. Note the library
+  // soft-resets the AG half before checking its WHO_AM_I.
   if (!_lsm->begin()) {
     WS_DEBUG_PRINTLN("LSM9DS1 failed to initialise!");
     return false;
@@ -89,6 +94,8 @@ bool drvLsm9ds1::getEventRaw(sensors_event_t *rawEvent) {
               otherwise.
 */
 /******************************************************************************/
+// NOTE: the boolean tap event (|accel| > 15 m/s^2) was removed in edcf7d94,
+// so getEventBoolean() falls back to drvBase and returns false.
 bool drvLsm9ds1::getEventAccelerometer(sensors_event_t *accelEvent) {
   WS_DEBUG_PRINTLN("[drvLsm9ds1] Getting accelerometer event...");
   sensors_event_t mag, gyro, temp;

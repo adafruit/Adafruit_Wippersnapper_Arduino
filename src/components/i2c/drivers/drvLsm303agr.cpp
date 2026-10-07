@@ -52,7 +52,9 @@ bool drvLsm303agr::begin() {
 
   // TODO: if _address isn't default (or alt), shift mag by same offset.
   // to support adress translators. Alternatively compound components.
-  
+  // NOTE: for XOR address translators the shift is an XOR (mag = accel ^
+  // 0x07), see adafruit/Adafruit_Wippersnapper_Arduino#1010
+
   WS_DEBUG_PRINT("[drvLsm303agr] Initialising accel @ 0x");
   WS_DEBUG_PRINTHEX(LSM303AGR_ACCEL_DEFAULT_ADDR);
   WS_DEBUG_PRINTLN("...");
