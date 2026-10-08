@@ -1204,12 +1204,18 @@ void Wippersnapper_V2::feedWDTV2() {
             the WDT executes.
 */
 void Wippersnapper_V2::enableWDTV2(int timeoutMS) {
+#ifdef OFFLINE_MODE_WOKWI
+  // The Wokwi simulator does not support the WDT and newer SleepyDog releases
+  // hang the sim in disable()/enable(), so leave it off (see feedWDTV2()).
+  (void)timeoutMS;
+#else
 #ifndef ARDUINO_ARCH_RP2040
   Watchdog.disable();
 #endif
   if (Watchdog.enable(timeoutMS) == 0) {
     WsV2.haltErrorV2("WDT initialization failure!");
   }
+#endif // OFFLINE_MODE_WOKWI
 }
 
 /*!
