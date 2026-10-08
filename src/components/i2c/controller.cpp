@@ -168,6 +168,56 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvLc709203f(i2c, addr, mux_channel, driver_name);
      }},
+    {"lis3dh",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLis3dh(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lis2mdl",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLis2mdl(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lis3mdl",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLis3mdl(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm303agr",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm303agr(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm303dlh",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm303dlh(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm6ds3",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm6ds3(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm6dso32",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm6dso32(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ism330dlc",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIsm330dlc(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ism330dhcx",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIsm330dhcx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lsm9ds1",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLsm9ds1(i2c, addr, mux_channel, driver_name);
+     }},
     {"lps3xhw",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -407,13 +457,17 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x0B, {"lc709203f"}},
         {0x12, {"pmsa003i"}},
         {0x13, {"vncl4020"}},
-        {0x18, {"ds2484", "mcp9808", "mprls"}},
-        {0x19, {"mcp9808"}},
+        {0x18, {"ds2484", "mcp9808", "mprls", "lis3dh"}},
+        {0x19,
+         {"mcp9808", "lsm303agr", "lsm303dlh",
+          "lis3dh"}}, // LIS3DH last - seems to match LSM303AGR
         {0x1A, {"mcp9808"}},
         {0x1B, {"mcp9808"}},
-        {0x1C, {"mcp9808"}},
+        {0x1C, {"mcp9808", "lis3mdl"}},
         {0x1D, {"mcp9808"}},
-        {0x1E, {"mcp9808"}},
+        {0x1E,
+         {"mcp9808", "lis3mdl",
+          "lis2mdl"}}, // "lsm303dlh", "lsm303agr", but rely on first addr
         {0x1F, {"mcp9808"}},
         {0x23, {"bh1750"}},
         {0x28, {"pct2075"}},
@@ -458,7 +512,10 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x62, {"scd40"}},
         {0x68, {"mcp3421"}},
         {0x69, {"sen55"}},
-        {0x6B, {"sen66"}},
+        {0x6A, {"lsm6dso32", "ism330dhcx", "ism330dlc", "lsm6ds3"}},
+        {0x6B,
+         {"sen66", "lsm6ds3", "lsm6dso32", "ism330dhcx", "ism330dlc",
+          "lsm9ds1"}},
         {0x70, {"pct2075", "shtc3"}},
         {0x71, {"pct2075"}},
         {0x72, {"pct2075"}},
@@ -1126,6 +1183,11 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINT("[i2c] Obtaining driver candidates @ 0x");
     WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address, HEX);
 
+    // TODO: compound drivers (lsm303agr/dlh, lsm9ds1) also own a mag
+    // address; skip it when it is scanned so a standalone lis2mdl/lis3mdl
+    // is not configured for the same part.
+    // TODO: the returns below skip the MUX channel clear at the end of this
+    // function, so a MUX channel stays selected after autoconfig.
     // Probe each candidate to see if it communicates
     bool did_find_driver = false;
     for (const char *driverName :
@@ -1135,6 +1197,15 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       drv = CreateI2cSensorDrv(
           driverName, bus, device_descriptor.i2c_device_address,
           device_descriptor.i2c_mux_channel, device_status);
+      // Set MUX/alt. bus info before begin(), as the explicit config path
+      // does, so drivers can use it during init (e.g. unique sensor IDs)
+      if (did_set_mux_ch) {
+        drv->SetMuxAddress(device_descriptor.i2c_mux_address);
+      }
+      if (use_alt_bus) {
+        drv->EnableAltI2CBus(device_descriptor.i2c_bus_scl,
+                             device_descriptor.i2c_bus_sda);
+      }
       // Probe the driver to check if it communicates its init. sequence
       if (!drv->begin()) {
         WS_DEBUG_PRINTLN("[i2c] Failed to initialize candidate: ");

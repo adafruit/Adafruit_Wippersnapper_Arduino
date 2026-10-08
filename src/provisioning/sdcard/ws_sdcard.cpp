@@ -1382,23 +1382,24 @@ bool ws_sdcard::LogEventDs18x(wippersnapper_ds18x20_Ds18x20Event *event_msg) {
 */
 bool ws_sdcard::LogEventI2c(
     wippersnapper_i2c_I2cDeviceEvent *msg_device_event) {
-  JsonDocument doc;
+  JsonDocument baseDoc;
   // Pull the DeviceDescriptor out
   wippersnapper_i2c_I2cDeviceDescriptor descriptor =
       msg_device_event->i2c_device_description;
   char hex_addr[5];
   snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.i2c_device_address);
-  doc["i2c_address"] = hex_addr;
+  baseDoc["i2c_address"] = hex_addr;
 
   // Using I2C MUX?
   if (descriptor.i2c_mux_address != 0x00) {
     snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.i2c_mux_address);
-    doc["i2c_mux_addr"] = hex_addr;
-    doc["i2c_mux_ch"] = descriptor.i2c_mux_channel;
+    baseDoc["i2c_mux_addr"] = hex_addr;
+    baseDoc["i2c_mux_ch"] = descriptor.i2c_mux_channel;
   }
 
   // Log each event
   for (pb_size_t i = 0; i < msg_device_event->i2c_device_events_count; i++) {
+    JsonDocument doc = baseDoc; // no stale vectors/values
     doc["timestamp"] = GetTimestamp();
     // if mag/vector/colour etc log all value elements
     if (msg_device_event->i2c_device_events[i].type ==
@@ -1480,6 +1481,13 @@ bool ws_sdcard::LogEventI2c(
       if (!LogJSONDoc(doc))
         return false;
       continue;
+    } else if (msg_device_event->i2c_device_events[i].type ==
+               wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN) {
+      doc["value"] = msg_device_event->i2c_device_events[i].value.bool_value;
+      doc["si_unit"] =
+          SensorTypeToSIUnit(msg_device_event->i2c_device_events[i].type);
+      if (!LogJSONDoc(doc))
+        return false;
     } else { // normal scalar float value
       doc["value"] = msg_device_event->i2c_device_events[i].value.float_value;
       doc["si_unit"] =
