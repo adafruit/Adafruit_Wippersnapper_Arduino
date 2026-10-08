@@ -48,6 +48,10 @@ public:
   bool isSleepConfigTimer();
 #endif
 private:
+#ifdef ARDUINO_ARCH_ESP32
+  bool _wdtSet = false; ///< True once enable() has subscribed this task to the
+                        ///< TWDT; feed() is a no-op until then.
+#endif
 #ifdef ARDUINO_ARCH_RP2350
   bool
       _did_wake_from_sleep; ///< True if device woke from sleep, False otherwise
