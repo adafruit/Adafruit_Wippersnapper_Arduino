@@ -14,6 +14,7 @@ on:
       types: [published]
       branches:
         - offline-mode
+    workflow_dispatch:
     workflow_call:
       secrets:
         GH_REPO_TOKEN:
@@ -24,12 +25,12 @@ jobs:
     name: 🔎 Clang
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -45,9 +46,9 @@ jobs:
     needs: clang
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.13'
       - name: Install Python dependencies
@@ -55,7 +56,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r tests/requirements.txt
       - name: Install Wokwi CI Server
-        uses: wokwi/wokwi-ci-server-action@v1
+        uses: wokwi/wokwi-ci-server-action@dbcd1765ab1f3ab71aa246c361dd85d036a8f080 # v1
       - name: Install Wokwi CLI
         run: curl -L https://wokwi.com/ci/install.sh | sh
       - name: Install PIO Libraries for esp32dev target
@@ -69,11 +70,11 @@ jobs:
         env:
           WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
       - name: Publish Wokwi Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         if: always()
         with:
           files: |
-            /home/runner/work/Adafruit_Wippersnapper_Arduino/Adafruit_Wippersnapper_Arduino/report.xml
+            report.xml
 
   build-esp32sx:
     name: 🏗️ ESP32-Sx
@@ -100,22 +101,22 @@ jobs:
             "xiao_esp32s3",
           ]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
           path: ci
       - name: Checkout Board Definitions
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
@@ -142,7 +143,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         env:
           cache-name: cache-node-modules
         with:
@@ -151,7 +152,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         env:
           cache-name: cache-node-modules
         with:
@@ -273,7 +274,7 @@ jobs:
       - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
         name: Check boot_app0 file existence (esp32sx built from core, not-source)
         id: check_files
-        uses: andstor/file-existence-action@v3
+        uses: andstor/file-existence-action@558493d6c74bf472d87c84eab196434afc2fa029 # v3.1.0
         with:
           files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
       - if: ${{ steps.get_tinyuf2.outcome == 'success' && steps.check_files.outputs.files_exists == 'true' }}
@@ -305,13 +306,13 @@ jobs:
           zip -r wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.*
       - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
         name: Upload build artifacts zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-files-${{ matrix.arduino-platform }}-zip
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.zip
       - name: upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -330,16 +331,16 @@ jobs:
                         "metro_rp2350_tinyusb"
                         ]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
           git describe --dirty --tags
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
@@ -360,7 +361,7 @@ jobs:
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         env:
           cache-name: cache-node-modules
         with:
@@ -369,7 +370,7 @@ jobs:
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         env:
           cache-name: cache-node-modules
         with:
@@ -387,7 +388,7 @@ jobs:
         run: |
           mv examples/*/build/*/Wippersnapper_demo_offline_nonetiface.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
       - name: upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
@@ -399,7 +400,7 @@ jobs:
     needs: [build-esp32sx, build-rp2040]
     steps:
       - name: Merge Artifacts from Builds
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-files
           pattern: build-files-!(dev)-*
@@ -413,13 +414,13 @@ jobs:
     if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download build artifacts from build-platform steps
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: build-files
       - name: List Files
         run: ls
       - name: Upload Assets to the GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
