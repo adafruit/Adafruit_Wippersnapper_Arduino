@@ -18,6 +18,9 @@
 #define WS_WDT_H
 
 #include "Adafruit_SleepyDog.h"
+#ifdef ARDUINO_ARCH_ESP32
+#include "esp_task_wdt.h"
+#endif
 
 #define WS_WDT_DEFAULT_TIMEOUT_MS 60000 ///< Default WDT timeout in milliseconds
 
@@ -45,6 +48,10 @@ public:
   bool isSleepConfigTimer();
 #endif
 private:
+#ifdef ARDUINO_ARCH_ESP32
+  bool _wdtSet = false; ///< True once enable() has subscribed this task to the
+                        ///< TWDT; feed() is a no-op until then.
+#endif
 #ifdef ARDUINO_ARCH_RP2350
   bool
       _did_wake_from_sleep; ///< True if device woke from sleep, False otherwise
