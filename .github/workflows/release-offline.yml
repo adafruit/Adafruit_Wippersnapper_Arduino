@@ -108,8 +108,12 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          # forks lack the upstream release tags, so fetch them for describe
+          if [ "${{ github.repository }}" != "adafruit/Adafruit_Wippersnapper_Arduino" ]; then
+            git fetch --force --tags https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git
+          fi
+          git describe --dirty --tags --always
+          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags --always)
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: adafruit/ci-arduino
@@ -338,8 +342,12 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          # forks lack the upstream release tags, so fetch them for describe
+          if [ "${{ github.repository }}" != "adafruit/Adafruit_Wippersnapper_Arduino" ]; then
+            git fetch --force --tags https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git
+          fi
+          git describe --dirty --tags --always
+          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags --always)
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: adafruit/ci-arduino
