@@ -149,6 +149,7 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include "components/ledc/ws_ledc.h"
 #include <Esp.h>
+#include <esp_task_wdt.h>
 #endif
 
 #include "components/display/controller.h"
@@ -473,6 +474,12 @@ public:
 
 private:
   void _init();
+#ifdef ARDUINO_ARCH_ESP32
+  bool _isEsp32WdtSet = false; ///< True once enableWDT() has subscribed
+                               ///< this task to the TWDT; feedWDT() is a
+                               ///< no-op until then unless the task is
+                               ///< already subscribed.
+#endif
 
 protected:
   ws_status_t _status = WS_IDLE;   /*!< Adafruit IO connection status */
