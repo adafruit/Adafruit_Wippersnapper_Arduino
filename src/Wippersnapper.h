@@ -474,6 +474,11 @@ public:
 
 private:
   void _init();
+#ifdef ARDUINO_ARCH_ESP32
+  bool _wdtSet = false; ///< True once enableWDT() has subscribed this task to
+                        ///< the TWDT; feedWDT() is a no-op until then unless
+                        ///< the task is already subscribed.
+#endif
 
 protected:
   ws_status_t _status = WS_IDLE;   /*!< Adafruit IO connection status */
