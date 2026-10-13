@@ -316,7 +316,7 @@ protected:
         WS_DEBUG_PRINTLN("WARNING: Unable to read nina-fw version or "
                          "incompatible version detected!");
         WS_DEBUG_PRINT("Required nina-fw version: ");
-        WS_DEBUG_PRINTLN(NINAFWVER);
+        WS_DEBUG_PRINTLNVAR(NINAFWVER);
         WS_PRINTER.flush();
       }
 
