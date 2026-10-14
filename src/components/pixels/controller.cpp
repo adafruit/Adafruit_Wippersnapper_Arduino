@@ -57,15 +57,23 @@ bool PixelsController::Router(pb_istream_t *stream) {
   case ws_pixels_B2D_remove_tag:
     res = Handle_Pixels_Remove(&b2d.payload.remove);
     break;
-  case ws_pixels_B2D_modify_tag:
-    // Modify = Remove the old component, then Add the new one.
-    if (b2d.payload.modify.has_remove) {
-      (void)Handle_Pixels_Remove(&b2d.payload.modify.remove);
+  case ws_pixels_B2D_modify_tag: {
+    // Modify = Remove the old component, then Add the new one. Bail before
+    // removing anything if there is no Add to replace it with.
+    auto &m = b2d.payload.modify;
+    if (!m.has_add) {
+      Ws->error_handler->publishComponentError(
+          m.has_remove ? m.remove.pin_data : "",
+          "Modify requires an Add, nothing was removed");
+      res = false;
+      break;
     }
-    res = b2d.payload.modify.has_add
-              ? Handle_Pixels_Add(&b2d.payload.modify.add)
-              : false;
+    if (m.has_remove) {
+      (void)Handle_Pixels_Remove(&m.remove);
+    }
+    res = Handle_Pixels_Add(&m.add);
     break;
+  }
   case ws_pixels_B2D_write_tag:
     res = Handle_Pixels_Write(&b2d.payload.write);
     break;

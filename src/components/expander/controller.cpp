@@ -72,10 +72,19 @@ bool ExpanderController::Router(pb_istream_t *stream) {
           "[expander] ERROR: Failed to decode modify with settings");
       return false;
     }
+    // Bail before removing anything if there is no Add to replace it with.
+    if (!modify.has_add) {
+      Ws->error_handler->publishComponentError(
+          modify.has_remove && modify.remove.has_cfg_i2c
+              ? modify.remove.cfg_i2c.descriptor
+              : ws_i2c_Descriptor{},
+          "Modify requires an Add, nothing was removed");
+      return false;
+    }
     if (modify.has_remove) {
       (void)Handle_Remove(&modify.remove);
     }
-    res = modify.has_add ? Handle_Add(&modify.add) : false;
+    res = Handle_Add(&modify.add);
     break;
   }
   default:
