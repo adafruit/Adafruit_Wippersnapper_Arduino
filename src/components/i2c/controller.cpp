@@ -649,10 +649,15 @@ bool I2cController::Router(pb_istream_t *stream) {
               component may no longer exist (e.g. after a reboot).
 */
 bool I2cController::Handle_Modify(ws_i2c_Modify *msg) {
-  if (msg == nullptr || !msg->has_add) {
+  if (msg == nullptr) {
+    return false;
+  }
+  // Bail before removing anything if there is no Add to replace it with.
+  if (!msg->has_add) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2C modify message has no add!");
-    Ws->error_handler->publishComponentError(ws_i2c_Descriptor{},
-                                             "I2C modify message has no add!");
+    Ws->error_handler->publishComponentError(
+        msg->has_remove ? msg->remove.descriptor : ws_i2c_Descriptor{},
+        "Modify requires an Add, nothing was removed");
     return false;
   }
   if (msg->has_remove && !Handle_Remove(&msg->remove)) {
