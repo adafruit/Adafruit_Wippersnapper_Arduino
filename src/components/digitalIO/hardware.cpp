@@ -1,7 +1,7 @@
 /*!
  * @file src/components/digitalIO/hardware.cpp
  *
- * Hardware driver for the digitalio.proto API
+ * Hardware driver for the digital.proto API
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -25,8 +25,8 @@
     @param  is_inverted   True if the pin's logic is active-low (inverted).
 */
 DigitalIOHardware::DigitalIOHardware(uint8_t pin_name,
-                                     ws_digitalio_Direction direction,
-                                     ws_digitalio_SampleMode sample_mode,
+                                     ws_digital_Direction direction,
+                                     ws_digital_SampleMode sample_mode,
                                      bool initial_value, ulong period,
                                      ExpanderHardware *expander_drv,
                                      bool is_inverted)
@@ -57,7 +57,7 @@ DigitalIOHardware::~DigitalIOHardware() {
 
 /*!
     @brief  Converts a logical pin value to the electrical level to drive.
-            The digitalio.proto `is_inverted` field marks active-low pins
+            The digital.proto `is_inverted` field marks active-low pins
             (e.g. an LED wired to VCC): IO always speaks in logical values,
             so inverted pins must drive the opposite electrical level.
     @param  logical_value  The logical value from the broker's perspective.
@@ -82,7 +82,7 @@ bool DigitalIOHardware::SetMode() {
 
   bool has_expander = (_expander_drv != nullptr);
 
-  if (_direction == ws_digitalio_Direction_D_OUTPUT) {
+  if (_direction == ws_digital_Direction_D_OUTPUT) {
     uint8_t level = GetElectricalLevel(_value);
     if (!has_expander) {
       pinMode(_name, OUTPUT);
@@ -95,13 +95,13 @@ bool DigitalIOHardware::SetMode() {
       _expander_drv->pinMode(_name, OUTPUT);
       _expander_drv->digitalWrite(_name, level);
     }
-  } else if (_direction == ws_digitalio_Direction_D_INPUT) {
+  } else if (_direction == ws_digital_Direction_D_INPUT) {
     if (!has_expander) {
       pinMode(_name, INPUT);
     } else {
       _expander_drv->pinMode(_name, INPUT);
     }
-  } else if (_direction == ws_digitalio_Direction_D_INPUT_PULL_UP) {
+  } else if (_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
     if (!has_expander) {
       pinMode(_name, INPUT_PULLUP);
     } else {
@@ -216,7 +216,7 @@ bool DigitalIOHardware::GetPinValue() const { return _value; }
     @brief  Gets the pin's direction.
     @return The pin's direction.
 */
-ws_digitalio_Direction DigitalIOHardware::GetDirection() const {
+ws_digital_Direction DigitalIOHardware::GetDirection() const {
   return _direction;
 }
 
@@ -224,7 +224,7 @@ ws_digitalio_Direction DigitalIOHardware::GetDirection() const {
     @brief  Gets the pin's sample mode.
     @return The pin's sample mode.
 */
-ws_digitalio_SampleMode DigitalIOHardware::GetSampleMode() const {
+ws_digital_SampleMode DigitalIOHardware::GetSampleMode() const {
   return _sample_mode;
 }
 

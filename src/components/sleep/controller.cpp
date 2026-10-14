@@ -213,16 +213,15 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
     break;
   case ws_sleep_SleepConfig_ext0_tag:
 #ifdef ARDUINO_ARCH_ESP32
-    rc = _sleep_hardware->RegisterExt0Wakeup(msg->config.ext0.pin_name,
-                                             msg->config.ext0.level,
-                                             msg->config.ext0.pull);
+    rc = _sleep_hardware->RegisterExt0Wakeup(
+        msg->config.ext0.pin, msg->config.ext0.level, msg->config.ext0.pull);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set ext0 wakeup");
     }
 #else
   {
     // Convert pin name string to numeric GPIO pin
-    const char *pin_num = msg->config.ext0.pin_name;
+    const char *pin_num = msg->config.ext0.pin;
     if ((pin_num[0] == 'D' || pin_num[0] == 'A') && pin_num[1] != '\0') {
       pin_num = pin_num + 1;
     }
@@ -232,7 +231,7 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
   }
 #endif
     WS_DEBUG_PRINT("[sleep] EXT0 wakeup set on pin ");
-    WS_DEBUG_PRINTVAR(msg->config.ext0.pin_name);
+    WS_DEBUG_PRINTVAR(msg->config.ext0.pin);
     WS_DEBUG_PRINT(" | Level ");
     WS_DEBUG_PRINTVAR(msg->config.ext0.level ? "HIGH" : "LOW");
     WS_DEBUG_PRINT(" | Pull: ");

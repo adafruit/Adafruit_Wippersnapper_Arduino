@@ -148,11 +148,11 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   CheckinModel *model = (CheckinModel *)*arg;
 
   // Set up callbacks for ALL component types
-  response->component_adds.digitalio_adds.funcs.decode = &cbDigitalIOAdds;
-  response->component_adds.digitalio_adds.arg = model;
+  response->component_adds.digital_adds.funcs.decode = &cbDigitalIOAdds;
+  response->component_adds.digital_adds.arg = model;
 
-  response->component_adds.analogin_adds.funcs.decode = &cbAnalogInAdds;
-  response->component_adds.analogin_adds.arg = model;
+  response->component_adds.analog_adds.funcs.decode = &cbAnalogInAdds;
+  response->component_adds.analog_adds.arg = model;
 
   response->component_adds.servo_adds.funcs.decode = &cbServoAdds;
   response->component_adds.servo_adds.arg = model;
@@ -189,9 +189,9 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
 */
 bool CheckinModel::cbDigitalIOAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
-  ws_digitalio_Add add_msg = ws_digitalio_Add_init_zero;
-  if (!pb_decode(stream, ws_digitalio_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digitalio add");
+  ws_digital_Add add_msg = ws_digital_Add_init_zero;
+  if (!pb_decode(stream, ws_digital_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digital add");
     return false;
   }
   return Ws->digital_io_controller->Handle_DigitalIO_Add(&add_msg);
@@ -206,9 +206,9 @@ bool CheckinModel::cbDigitalIOAdds(pb_istream_t *stream,
 */
 bool CheckinModel::cbAnalogInAdds(pb_istream_t *stream, const pb_field_t *field,
                                   void **arg) {
-  ws_analogin_Add add_msg = ws_analogin_Add_init_zero;
-  if (!pb_decode(stream, ws_analogin_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analogin add");
+  ws_analog_Add add_msg = ws_analog_Add_init_zero;
+  if (!pb_decode(stream, ws_analog_Add_fields, &add_msg)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analog add");
     return false;
   }
   return Ws->analog_controller->Handle_AnalogInAdd(&add_msg);
