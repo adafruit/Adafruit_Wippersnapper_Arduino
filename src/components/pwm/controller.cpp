@@ -53,6 +53,14 @@ bool PWMController::Router(pb_istream_t *stream) {
   case ws_pwm_B2D_remove_tag:
     res = Handle_PWM_Remove(&b2d.payload.remove);
     break;
+  case ws_pwm_B2D_modify_tag:
+    // Modify = Remove the old component, then Add the new one.
+    if (b2d.payload.modify.has_remove) {
+      (void)Handle_PWM_Remove(&b2d.payload.modify.remove);
+    }
+    res = b2d.payload.modify.has_add ? Handle_PWM_Add(&b2d.payload.modify.add)
+                                     : false;
+    break;
   case ws_pwm_B2D_write_tag:
     res = Handle_PWM_Write(&b2d.payload.write);
     break;
