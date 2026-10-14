@@ -160,7 +160,7 @@ async def test_invalid_checksum(client):
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
-        '"components": [{"componentAPI": "analog", "name": "Analog Pin", "pinName": "D14", '
+        '"components": [{"componentAPI": "analog", "name": "Analog Pin", "pin": "D14", '
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
         '"analogReadMode": "PIN_VALUE", "period": 5, "isPin": true}], "checksum": 5}\\n'
     )
@@ -176,9 +176,9 @@ async def test_valid_checksum(client):
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
-        '"components": [{"componentAPI": "analog", "name": "Analog Pin", "pinName": "D14", '
+        '"components": [{"componentAPI": "analog", "name": "Analog Pin", "pin": "D14", '
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
-        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 68}\\n'
+        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 195}\\n'
     )
     await wait_for_text("[SD] Successfully deserialized JSON config file!")
 
@@ -194,8 +194,8 @@ async def test_digital_input(client):
     await wait_for_text("[SD] Waiting for incoming JSON string...")
     # Configure digital input on D4 with pull-up
     await client.serial_write(
-        '{"checksum":223,"components":[{"componentAPI":"digital","direction":"INPUT",'
-        '"isPin":true,"mode":"DIGITAL","name":"Button (D4)","period":5,"pinName":"D4",'
+        '{"checksum":94,"components":[{"componentAPI":"digital","direction":"INPUT",'
+        '"isPin":true,"mode":"DIGITAL","name":"Button (D4)","period":5,"pin":"D4",'
         '"pull":"UP","sampleMode":"EVENT","type":"push_button"}],"exportVersion":"1.0.0",'
         '"exportedAt":"2024-10-28T18:58:23.976Z","exportedBy":"wokwi",'
         '"exportedFromDevice":{"board":"metroesp32s3","firmwareVersion":"1.0.0-beta.93",'
@@ -230,9 +230,9 @@ async def test_analog_input(client):
         '{"exportVersion": "1.0.0", "exportedBy": "wokwi", "exportedAt": "2024-10-28T18:58:23.976Z", '
         '"exportedFromDevice": {"board": "metroesp32s3", "firmwareVersion": "1.0.0-beta.93", '
         '"referenceVoltage": 2.6, "totalGPIOPins": 11, "totalAnalogPins": 6}, '
-        '"components": [{"componentAPI": "analog", "name": "Analog Pin", "pinName": "D14", '
+        '"components": [{"componentAPI": "analog", "name": "Analog Pin", "pin": "D14", '
         '"type": "analog_pin", "mode": "ANALOG", "direction": "INPUT", "sampleMode": "TIMER", '
-        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 189}\\n'
+        '"analogReadMode": "raw", "period": 5, "isPin": true}], "checksum": 60}\\n'
     )
     await client.serial_write("\n")
 
