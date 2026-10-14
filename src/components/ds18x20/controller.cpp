@@ -58,15 +58,23 @@ bool DS18X20Controller::Router(pb_istream_t *stream) {
   case ws_ds18x20_B2D_remove_tag:
     res = Handle_Ds18x20Remove(&b2d.payload.remove);
     break;
-  case ws_ds18x20_B2D_modify_tag:
-    // Modify = Remove the old component, then Add the new one.
-    if (b2d.payload.modify.has_remove) {
-      (void)Handle_Ds18x20Remove(&b2d.payload.modify.remove);
+  case ws_ds18x20_B2D_modify_tag: {
+    // Modify = Remove the old component, then Add the new one. Bail before
+    // removing anything if there is no Add to replace it with.
+    auto &m = b2d.payload.modify;
+    if (!m.has_add) {
+      Ws->error_handler->publishComponentError(
+          m.has_remove ? m.remove.onewire_pin : "",
+          "Modify requires an Add, nothing was removed");
+      res = false;
+      break;
     }
-    res = b2d.payload.modify.has_add
-              ? Handle_Ds18x20Add(&b2d.payload.modify.add)
-              : false;
+    if (m.has_remove) {
+      (void)Handle_Ds18x20Remove(&m.remove);
+    }
+    res = Handle_Ds18x20Add(&m.add);
     break;
+  }
   default:
     WS_DEBUG_PRINTLN("[ds18x20] WARNING: Unsupported DS18X20 payload");
     res = false;
