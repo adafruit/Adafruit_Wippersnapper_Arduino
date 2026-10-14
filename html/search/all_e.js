@@ -3,7 +3,7 @@ var searchData=
   ['packuartresponse',['packUARTResponse',['../classws__uart__drv.html#a2d212426ce77b3d166ce8f8ee26d9126',1,'ws_uart_drv']]],
   ['period',['period',['../structanalog_input_pin.html#a9c802b98c645728111732287daedea2b',1,'analogInputPin::period()'],['../structdigital_input_pin.html#a5c96669839f0ee5be8579726497240f8',1,'digitalInputPin::period()']]],
   ['period_5f24hrs_5fago_5fmillis',['PERIOD_24HRS_AGO_MILLIS',['../_wipper_snapper___i2_c___driver_8h.html#a77f07f886a8d851d45d1046599df7eeb',1,'WipperSnapper_I2C_Driver.h']]],
-  ['pin',['pin',['../structservo_component.html#a10177caa27f60f6bff9dbdad120afbc6',1,'servoComponent::pin()'],['../structservo__t.html#a04bcc6cf13ea5cd2c4dabdc977e054cb',1,'servo_t::Pin()']]],
+  ['pin',['Pin',['../structservo__t.html#a04bcc6cf13ea5cd2c4dabdc977e054cb',1,'servo_t::Pin()'],['../structservo_component.html#a10177caa27f60f6bff9dbdad120afbc6',1,'servoComponent::pin()']]],
   ['pincfgcompleted',['pinCfgCompleted',['../class_wippersnapper.html#ae625ae372c5aa19eb0a8713f25b1fca9',1,'Wippersnapper']]],
   ['pindotstarclock',['pinDotStarClock',['../structstrand__s.html#ad7c7f86db3afb63cbb8261179cc4d7be',1,'strand_s']]],
   ['pindotstardata',['pinDotStarData',['../structstrand__s.html#a0c314d917738e634288685b4c3ebad55',1,'strand_s']]],
