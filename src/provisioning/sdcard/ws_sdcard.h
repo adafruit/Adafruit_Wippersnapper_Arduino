@@ -100,10 +100,10 @@ private:
                            const JsonObject &pin_config, int run_duration);
 #endif
   ws_sensor_Type ParseSensorType(const char *sensor_type);
-  bool ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd, const char *pin,
+  bool ParseDigitalIOAdd(ws_digital_Add &msg_DigitalIOAdd, const char *pin,
                          float period, bool value, const char *sample_mode,
                          const char *direction, const char *pull);
-  bool ParseAnalogInAdd(ws_analogin_Add &msg_AnalogInAdd, const char *pin,
+  bool ParseAnalogInAdd(ws_analog_Add &msg_AnalogInAdd, const char *pin,
                         float period, const char *mode);
   bool ParseDS18X20Add(ws_ds18x20_Add &msg_DS18X20Add, const char *pin,
                        int resolution, float period, int num_sensors,

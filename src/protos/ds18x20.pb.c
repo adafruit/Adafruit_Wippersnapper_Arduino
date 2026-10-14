@@ -18,6 +18,9 @@ PB_BIND(ws_ds18x20_Add, ws_ds18x20_Add, AUTO)
 PB_BIND(ws_ds18x20_Remove, ws_ds18x20_Remove, AUTO)
 
 
+PB_BIND(ws_ds18x20_Modify, ws_ds18x20_Modify, AUTO)
+
+
 PB_BIND(ws_ds18x20_Event, ws_ds18x20_Event, AUTO)
 
 

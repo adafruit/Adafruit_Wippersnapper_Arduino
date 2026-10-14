@@ -39,13 +39,24 @@ typedef struct _ws_telemetry_Remove {
 } ws_telemetry_Remove;
 
 /* *
+ A combined Remove/Add message, for when a user updates an existing component. Allows the user to change
+ deep settings and keeps protobuf traffic to a single message. */
+typedef struct _ws_telemetry_Modify {
+    bool has_remove;
+    ws_telemetry_Remove remove; /* * Specifies the old component/settings to remove */
+    bool has_add;
+    ws_telemetry_Add add; /* * Specifies the new component/settings to configure after removal */
+} ws_telemetry_Modify;
+
+/* *
  BrokerToDevice message envelope.
- Used to add or remove a telemetry component on the device. */
+ Used to add, remove, or modify a telemetry component on the device. */
 typedef struct _ws_telemetry_B2D {
     pb_size_t which_payload;
     union {
         ws_telemetry_Add add;
         ws_telemetry_Remove remove;
+        ws_telemetry_Modify modify;
     } payload;
 } ws_telemetry_B2D;
 
@@ -83,6 +94,7 @@ extern "C" {
 
 #define ws_telemetry_Remove_type_ENUMTYPE ws_telemetry_Type
 
+
 #define ws_telemetry_Event_type_ENUMTYPE ws_telemetry_Type
 
 
@@ -91,11 +103,13 @@ extern "C" {
 #define ws_telemetry_D2B_init_default            {0, {ws_telemetry_Event_init_default}}
 #define ws_telemetry_Add_init_default            {_ws_telemetry_Type_MIN, 0, false}
 #define ws_telemetry_Remove_init_default         {_ws_telemetry_Type_MIN}
+#define ws_telemetry_Modify_init_default         {false, ws_telemetry_Remove_init_default, false, ws_telemetry_Add_init_default}
 #define ws_telemetry_Event_init_default          {_ws_telemetry_Type_MIN, false, ws_sensor_Event_init_default}
 #define ws_telemetry_B2D_init_zero               {0, {ws_telemetry_Add_init_zero}}
 #define ws_telemetry_D2B_init_zero               {0, {ws_telemetry_Event_init_zero}}
 #define ws_telemetry_Add_init_zero               {_ws_telemetry_Type_MIN, 0, false}
 #define ws_telemetry_Remove_init_zero            {_ws_telemetry_Type_MIN}
+#define ws_telemetry_Modify_init_zero            {false, ws_telemetry_Remove_init_zero, false, ws_telemetry_Add_init_zero}
 #define ws_telemetry_Event_init_zero             {_ws_telemetry_Type_MIN, false, ws_sensor_Event_init_zero}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -103,8 +117,11 @@ extern "C" {
 #define ws_telemetry_Add_period_tag              2
 #define ws_telemetry_Add_report_once_tag         3
 #define ws_telemetry_Remove_type_tag             1
+#define ws_telemetry_Modify_remove_tag           1
+#define ws_telemetry_Modify_add_tag              2
 #define ws_telemetry_B2D_add_tag                 1
 #define ws_telemetry_B2D_remove_tag              2
+#define ws_telemetry_B2D_modify_tag              3
 #define ws_telemetry_Event_type_tag              1
 #define ws_telemetry_Event_value_tag             2
 #define ws_telemetry_D2B_event_tag               1
@@ -112,11 +129,13 @@ extern "C" {
 /* Struct field encoding specification for nanopb */
 #define ws_telemetry_B2D_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,add,payload.add),   1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,modify,payload.modify),   3)
 #define ws_telemetry_B2D_CALLBACK NULL
 #define ws_telemetry_B2D_DEFAULT NULL
 #define ws_telemetry_B2D_payload_add_MSGTYPE ws_telemetry_Add
 #define ws_telemetry_B2D_payload_remove_MSGTYPE ws_telemetry_Remove
+#define ws_telemetry_B2D_payload_modify_MSGTYPE ws_telemetry_Modify
 
 #define ws_telemetry_D2B_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,event,payload.event),   1)
@@ -136,6 +155,14 @@ X(a, STATIC,   SINGULAR, UENUM,    type,              1)
 #define ws_telemetry_Remove_CALLBACK NULL
 #define ws_telemetry_Remove_DEFAULT NULL
 
+#define ws_telemetry_Modify_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  remove,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  add,               2)
+#define ws_telemetry_Modify_CALLBACK NULL
+#define ws_telemetry_Modify_DEFAULT NULL
+#define ws_telemetry_Modify_remove_MSGTYPE ws_telemetry_Remove
+#define ws_telemetry_Modify_add_MSGTYPE ws_telemetry_Add
+
 #define ws_telemetry_Event_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  value,             2)
@@ -147,6 +174,7 @@ extern const pb_msgdesc_t ws_telemetry_B2D_msg;
 extern const pb_msgdesc_t ws_telemetry_D2B_msg;
 extern const pb_msgdesc_t ws_telemetry_Add_msg;
 extern const pb_msgdesc_t ws_telemetry_Remove_msg;
+extern const pb_msgdesc_t ws_telemetry_Modify_msg;
 extern const pb_msgdesc_t ws_telemetry_Event_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
@@ -154,16 +182,18 @@ extern const pb_msgdesc_t ws_telemetry_Event_msg;
 #define ws_telemetry_D2B_fields &ws_telemetry_D2B_msg
 #define ws_telemetry_Add_fields &ws_telemetry_Add_msg
 #define ws_telemetry_Remove_fields &ws_telemetry_Remove_msg
+#define ws_telemetry_Modify_fields &ws_telemetry_Modify_msg
 #define ws_telemetry_Event_fields &ws_telemetry_Event_msg
 
 /* Maximum encoded size of messages (where known) */
 #if defined(ws_sensor_Event_size)
 #endif
+#define WS_TELEMETRY_TELEMETRY_PB_H_MAX_SIZE     ws_telemetry_B2D_size
 #define ws_telemetry_Add_size                    10
-#define ws_telemetry_B2D_size                    12
+#define ws_telemetry_B2D_size                    18
+#define ws_telemetry_Modify_size                 16
 #define ws_telemetry_Remove_size                 2
 #if defined(ws_sensor_Event_size)
-#define WS_TELEMETRY_TELEMETRY_PB_H_MAX_SIZE     ws_telemetry_D2B_size
 #define ws_telemetry_D2B_size                    (14 + ws_sensor_Event_size)
 #define ws_telemetry_Event_size                  (8 + ws_sensor_Event_size)
 #endif

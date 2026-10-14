@@ -351,9 +351,9 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     return Ws->error_handler->Router(stream);
   case ws_signal_BrokerToDevice_checkin_tag:
     return handleCheckinResponse(stream);
-  case ws_signal_BrokerToDevice_digitalio_tag:
+  case ws_signal_BrokerToDevice_digital_tag:
     return Ws->digital_io_controller->Router(stream);
-  case ws_signal_BrokerToDevice_analogin_tag:
+  case ws_signal_BrokerToDevice_analog_tag:
     return Ws->analog_controller->Router(stream);
   case ws_signal_BrokerToDevice_pixels_tag:
     return Ws->_pixels_controller->Router(stream);
@@ -831,13 +831,13 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     msg->which_payload = ws_signal_DeviceToBroker_checkin_tag;
     msg->payload.checkin = *(ws_checkin_D2B *)payload;
     break;
-  case ws_signal_DeviceToBroker_digitalio_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_digitalio_tag;
-    msg->payload.digitalio = *(ws_digitalio_D2B *)payload;
+  case ws_signal_DeviceToBroker_digital_tag:
+    msg->which_payload = ws_signal_DeviceToBroker_digital_tag;
+    msg->payload.digital = *(ws_digital_D2B *)payload;
     break;
-  case ws_signal_DeviceToBroker_analogin_tag:
-    msg->which_payload = ws_signal_DeviceToBroker_analogin_tag;
-    msg->payload.analogin = *(ws_analogin_D2B *)payload;
+  case ws_signal_DeviceToBroker_analog_tag:
+    msg->which_payload = ws_signal_DeviceToBroker_analog_tag;
+    msg->payload.analog = *(ws_analog_D2B *)payload;
     break;
   case ws_signal_DeviceToBroker_ds18x20_tag:
     msg->which_payload = ws_signal_DeviceToBroker_ds18x20_tag;

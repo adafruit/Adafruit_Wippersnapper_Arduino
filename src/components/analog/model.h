@@ -1,7 +1,7 @@
 /*!
  * @file src/components/analog/model.h
  *
- * Model interface for the analogin.proto message.
+ * Model interface for the analog.proto message.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -18,7 +18,7 @@
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
-            messages from analogin.proto.
+            messages from analog.proto.
 */
 class AnalogModel {
 public:
@@ -26,22 +26,22 @@ public:
   ~AnalogModel();
   // AnalogInAdd
   bool decodeAnalogInAdd(pb_istream_t *stream);
-  ws_analogin_Add *getAnalogInAddMsg();
+  ws_analog_Add *getAnalogInAddMsg();
   // AnalogInRemove
   bool decodeAnalogInRemove(pb_istream_t *stream);
-  ws_analogin_Remove *GetAnalogInRemoveMsg();
+  ws_analog_Remove *GetAnalogInRemoveMsg();
   // AnalogInEvent
   bool encodeAnalogInEvent(const char *pin_name, float pin_value,
                            ws_sensor_Type read_type);
   bool encodeAnalogInEventVoltage(const char *pin_name, float pin_value);
   bool encodeAnalogInEventRaw(const char *pin_name, float pin_value);
-  ws_analogin_Event *getAnalogInEvent();
-  ws_analogin_D2B *getAnalogInD2b();
+  ws_analog_Event *getAnalogInEvent();
+  ws_analog_D2B *getAnalogInD2b();
 
 private:
-  ws_analogin_Add _msg_AnalogInAdd;       ///< AnalogInAdd message
-  ws_analogin_Remove _msg_AnalogInRemove; ///< AnalogInRemove message
-  ws_analogin_Event _msg_AnalogInEvent;   ///< AnalogInEvent message
-  ws_analogin_D2B _msg_AnalogInD2B;       ///< AnalogIn DeviceToBroker wrapper
+  ws_analog_Add _msg_AnalogInAdd;       ///< AnalogInAdd message
+  ws_analog_Remove _msg_AnalogInRemove; ///< AnalogInRemove message
+  ws_analog_Event _msg_AnalogInEvent;   ///< AnalogInEvent message
+  ws_analog_D2B _msg_AnalogInD2B;       ///< AnalogIn DeviceToBroker wrapper
 };
 #endif // WS_ANALOG_MODEL_H

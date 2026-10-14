@@ -274,7 +274,7 @@
 // The on-board ST7789 (170x320, 8-bit i8080 parallel) is fully described by
 // the ws.display.Add protobuf: data/cs/dc/rst/write/read via
 // I8080PinDescriptor, backlight via Add.backlight (BacklightConfig), and the
-// panel power-enable rail via Add.power (a prerequisite ws.digitalio.Add) —
+// panel power-enable rail via Add.power (a prerequisite ws.digital.Add) —
 // no board-hardcoded display pins here.
 #elif defined(WS_LILYGO_T_DONGLE_C5)
 #define BOARD_ID "lilygo-t-dongle-c5" ///< Board ID

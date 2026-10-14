@@ -6,7 +6,7 @@
 #include <pb.h>
 #include "i2c.pb.h"
 #include "pwm.pb.h"
-#include "digitalio.pb.h"
+#include "digital.pb.h"
 #include "spi.pb.h"
 
 #if PB_PROTO_HEADER_VERSION != 40
@@ -142,7 +142,7 @@ typedef struct _ws_display_DsiInterfaceDescriptor {
 typedef struct _ws_display_BacklightConfig {
     pb_size_t which_backlight_add;
     union {
-        ws_digitalio_Add backlight_digital; /* * Optional digital pin configuration for backlight control, used during check-in. */
+        ws_digital_Add backlight_digital; /* * Optional digital pin configuration for backlight control, used during check-in. */
         ws_pwm_Add backlight_pwm; /* * Optional PWM configuration for backlight control, used during check-in. */
     } backlight_add;
 } ws_display_BacklightConfig;
@@ -214,10 +214,20 @@ typedef struct _ws_display_Add {
     bool has_backlight;
     ws_display_BacklightConfig backlight; /* * Optional backlight configuration (shared across display types). */
     bool has_power;
-    ws_digitalio_Add power; /* * Optional prerequisite digital output (e.g. a panel power-enable
+    ws_digital_Add power; /* * Optional prerequisite digital output (e.g. a panel power-enable
 rail on boards like the LilyGo T-Display-S3), configured before
 display init. Supports is_inverted + an initial write. */
 } ws_display_Add;
+
+/* *
+ A combined Remove/Add message, for when a user updates an existing component. Allows the user to change
+ deep settings and keeps protobuf traffic to a single message. */
+typedef struct _ws_display_Modify {
+    bool has_remove;
+    ws_display_Remove remove; /* * Specifies the old component/settings to remove */
+    bool has_add;
+    ws_display_Add add; /* * Specifies the new component/settings to configure after removal */
+} ws_display_Modify;
 
 /* *
  BrokerToDevice message envelope */
@@ -227,6 +237,7 @@ typedef struct _ws_display_B2D {
         ws_display_Add add;
         ws_display_Remove remove;
         ws_display_Write write;
+        ws_display_Modify modify;
     } payload;
 } ws_display_B2D;
 
@@ -267,6 +278,7 @@ extern "C" {
 
 
 
+
 /* Initializer values for message structs */
 #define ws_display_B2D_init_default              {0, {ws_display_Add_init_default}}
 #define ws_display_DisplayProperties_init_default {0, 0, 0, 0, true}
@@ -278,10 +290,11 @@ extern "C" {
 #define ws_display_TtlRgb666PinDescriptor_init_default {"", "", "", "", "", "", "", "", ""}
 #define ws_display_I8080PinDescriptor_init_default {"", "", "", "", "", "", "", "", "", "", "", "", ""}
 #define ws_display_DsiInterfaceDescriptor_init_default {0, ""}
-#define ws_display_BacklightConfig_init_default  {0, {ws_digitalio_Add_init_default}}
+#define ws_display_BacklightConfig_init_default  {0, {ws_digital_Add_init_default}}
 #define ws_display_InterfaceDescriptor_init_default {0, {ws_display_EpdSpiDescriptor_init_default}}
-#define ws_display_Add_init_default              {"", _ws_display_DisplayClass_MIN, "", "", false, ws_display_InterfaceDescriptor_init_default, 0, {ws_display_EPDConfig_init_default}, false, ws_display_Write_init_default, false, ws_display_BacklightConfig_init_default, false, ws_digitalio_Add_init_default}
+#define ws_display_Add_init_default              {"", _ws_display_DisplayClass_MIN, "", "", false, ws_display_InterfaceDescriptor_init_default, 0, {ws_display_EPDConfig_init_default}, false, ws_display_Write_init_default, false, ws_display_BacklightConfig_init_default, false, ws_digital_Add_init_default}
 #define ws_display_Remove_init_default           {"", false, ws_display_InterfaceDescriptor_init_default}
+#define ws_display_Modify_init_default           {false, ws_display_Remove_init_default, false, ws_display_Add_init_default}
 #define ws_display_Write_init_default            {"", false, ws_display_InterfaceDescriptor_init_default, ""}
 #define ws_display_B2D_init_zero                 {0, {ws_display_Add_init_zero}}
 #define ws_display_DisplayProperties_init_zero   {0, 0, 0, 0, true}
@@ -293,10 +306,11 @@ extern "C" {
 #define ws_display_TtlRgb666PinDescriptor_init_zero {"", "", "", "", "", "", "", "", ""}
 #define ws_display_I8080PinDescriptor_init_zero  {"", "", "", "", "", "", "", "", "", "", "", "", ""}
 #define ws_display_DsiInterfaceDescriptor_init_zero {0, ""}
-#define ws_display_BacklightConfig_init_zero     {0, {ws_digitalio_Add_init_zero}}
+#define ws_display_BacklightConfig_init_zero     {0, {ws_digital_Add_init_zero}}
 #define ws_display_InterfaceDescriptor_init_zero {0, {ws_display_EpdSpiDescriptor_init_zero}}
-#define ws_display_Add_init_zero                 {"", _ws_display_DisplayClass_MIN, "", "", false, ws_display_InterfaceDescriptor_init_zero, 0, {ws_display_EPDConfig_init_zero}, false, ws_display_Write_init_zero, false, ws_display_BacklightConfig_init_zero, false, ws_digitalio_Add_init_zero}
+#define ws_display_Add_init_zero                 {"", _ws_display_DisplayClass_MIN, "", "", false, ws_display_InterfaceDescriptor_init_zero, 0, {ws_display_EPDConfig_init_zero}, false, ws_display_Write_init_zero, false, ws_display_BacklightConfig_init_zero, false, ws_digital_Add_init_zero}
 #define ws_display_Remove_init_zero              {"", false, ws_display_InterfaceDescriptor_init_zero}
+#define ws_display_Modify_init_zero              {false, ws_display_Remove_init_zero, false, ws_display_Add_init_zero}
 #define ws_display_Write_init_zero               {"", false, ws_display_InterfaceDescriptor_init_zero, ""}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -368,20 +382,25 @@ extern "C" {
 #define ws_display_Add_write_tag                 10
 #define ws_display_Add_backlight_tag             11
 #define ws_display_Add_power_tag                 12
+#define ws_display_Modify_remove_tag             1
+#define ws_display_Modify_add_tag                2
 #define ws_display_B2D_add_tag                   1
 #define ws_display_B2D_remove_tag                2
 #define ws_display_B2D_write_tag                 3
+#define ws_display_B2D_modify_tag                4
 
 /* Struct field encoding specification for nanopb */
 #define ws_display_B2D_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,add,payload.add),   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,write,payload.write),   3)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,write,payload.write),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,modify,payload.modify),   4)
 #define ws_display_B2D_CALLBACK NULL
 #define ws_display_B2D_DEFAULT NULL
 #define ws_display_B2D_payload_add_MSGTYPE ws_display_Add
 #define ws_display_B2D_payload_remove_MSGTYPE ws_display_Remove
 #define ws_display_B2D_payload_write_MSGTYPE ws_display_Write
+#define ws_display_B2D_payload_modify_MSGTYPE ws_display_Modify
 
 #define ws_display_DisplayProperties_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, INT32,    width,             1) \
@@ -470,7 +489,7 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (backlight_add,backlight_digital,backlight_ad
 X(a, STATIC,   ONEOF,    MESSAGE,  (backlight_add,backlight_pwm,backlight_add.backlight_pwm),   2)
 #define ws_display_BacklightConfig_CALLBACK NULL
 #define ws_display_BacklightConfig_DEFAULT NULL
-#define ws_display_BacklightConfig_backlight_add_backlight_digital_MSGTYPE ws_digitalio_Add
+#define ws_display_BacklightConfig_backlight_add_backlight_digital_MSGTYPE ws_digital_Add
 #define ws_display_BacklightConfig_backlight_add_backlight_pwm_MSGTYPE ws_pwm_Add
 
 #define ws_display_InterfaceDescriptor_FIELDLIST(X, a) \
@@ -511,7 +530,7 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  power,            12)
 #define ws_display_Add_config_config_display_MSGTYPE ws_display_DisplayProperties
 #define ws_display_Add_write_MSGTYPE ws_display_Write
 #define ws_display_Add_backlight_MSGTYPE ws_display_BacklightConfig
-#define ws_display_Add_power_MSGTYPE ws_digitalio_Add
+#define ws_display_Add_power_MSGTYPE ws_digital_Add
 
 #define ws_display_Remove_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   name,              1) \
@@ -519,6 +538,14 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  descriptor,        3)
 #define ws_display_Remove_CALLBACK NULL
 #define ws_display_Remove_DEFAULT NULL
 #define ws_display_Remove_descriptor_MSGTYPE ws_display_InterfaceDescriptor
+
+#define ws_display_Modify_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  remove,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  add,               2)
+#define ws_display_Modify_CALLBACK NULL
+#define ws_display_Modify_DEFAULT NULL
+#define ws_display_Modify_remove_MSGTYPE ws_display_Remove
+#define ws_display_Modify_add_MSGTYPE ws_display_Add
 
 #define ws_display_Write_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   name,              1) \
@@ -542,6 +569,7 @@ extern const pb_msgdesc_t ws_display_BacklightConfig_msg;
 extern const pb_msgdesc_t ws_display_InterfaceDescriptor_msg;
 extern const pb_msgdesc_t ws_display_Add_msg;
 extern const pb_msgdesc_t ws_display_Remove_msg;
+extern const pb_msgdesc_t ws_display_Modify_msg;
 extern const pb_msgdesc_t ws_display_Write_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
@@ -559,18 +587,17 @@ extern const pb_msgdesc_t ws_display_Write_msg;
 #define ws_display_InterfaceDescriptor_fields &ws_display_InterfaceDescriptor_msg
 #define ws_display_Add_fields &ws_display_Add_msg
 #define ws_display_Remove_fields &ws_display_Remove_msg
+#define ws_display_Modify_fields &ws_display_Modify_msg
 #define ws_display_Write_fields &ws_display_Write_msg
 
 /* Maximum encoded size of messages (where known) */
-#if defined(ws_digitalio_Add_size) && defined(ws_digitalio_Add_size)
-union ws_display_B2D_payload_size_union {char f1[(1487 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union) + ws_digitalio_Add_size)]; char f0[1189];};
+#if defined(ws_digital_Add_size) && defined(ws_digital_Add_size) && defined(ws_digital_Add_size) && defined(ws_digital_Add_size)
+union ws_display_B2D_payload_size_union {char f1[(1487 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union) + ws_digital_Add_size)]; char f4[(1656 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union) + ws_digital_Add_size)]; char f0[1189];};
 #endif
-#if defined(ws_digitalio_Add_size)
-union ws_display_BacklightConfig_backlight_add_size_union {char f1[(6 + ws_digitalio_Add_size)]; char f0[73];};
+#if defined(ws_digital_Add_size)
+union ws_display_BacklightConfig_backlight_add_size_union {char f1[(6 + ws_digital_Add_size)]; char f0[73];};
 #endif
-#if defined(ws_digitalio_Add_size) && defined(ws_digitalio_Add_size)
-#define WS_DISPLAY_DISPLAY_PB_H_MAX_SIZE         ws_display_Add_size
-#define ws_display_Add_size                      (1481 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union) + ws_digitalio_Add_size)
+#if defined(ws_digital_Add_size) && defined(ws_digital_Add_size) && defined(ws_digital_Add_size) && defined(ws_digital_Add_size)
 #define ws_display_B2D_size                      (0 + sizeof(union ws_display_B2D_payload_size_union))
 #endif
 #define ws_display_CharLcdConfig_size            12
@@ -585,8 +612,13 @@ union ws_display_BacklightConfig_backlight_add_size_union {char f1[(6 + ws_digit
 #define ws_display_TftSpiDescriptor_size         55
 #define ws_display_TtlRgb666PinDescriptor_size   63
 #define ws_display_Write_size                    1186
-#if defined(ws_digitalio_Add_size)
+#if defined(ws_digital_Add_size)
 #define ws_display_BacklightConfig_size          (0 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union))
+#endif
+#if defined(ws_digital_Add_size) && defined(ws_digital_Add_size)
+#define WS_DISPLAY_DISPLAY_PB_H_MAX_SIZE         ws_display_Modify_size
+#define ws_display_Add_size                      (1481 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union) + ws_digital_Add_size)
+#define ws_display_Modify_size                   (1650 + sizeof(union ws_display_BacklightConfig_backlight_add_size_union) + ws_digital_Add_size)
 #endif
 
 #ifdef __cplusplus

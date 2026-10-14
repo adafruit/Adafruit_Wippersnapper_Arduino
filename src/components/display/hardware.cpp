@@ -183,8 +183,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
     bool bl_active_low = false;
     if (msg->backlight.which_backlight_add ==
         ws_display_BacklightConfig_backlight_digital_tag) {
-      bl_pin =
-          parsePin(msg->backlight.backlight_add.backlight_digital.pin_name);
+      bl_pin = parsePin(msg->backlight.backlight_add.backlight_digital.pin);
       // Active-low backlight (e.g. LilyGO T-Dongle C5 drives LCD_BL LOW = on)
       bl_active_low =
           msg->backlight.backlight_add.backlight_digital.is_inverted;
@@ -615,15 +614,15 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
     return false;
   }
 
-  // Backlight comes from the Add's shared BacklightConfig (digitalio or pwm
-  // pin). TODO: route it through the digitalio/pwm controllers so it stays
+  // Backlight comes from the Add's shared BacklightConfig (digital or pwm
+  // pin). TODO: route it through the digital/pwm controllers so it stays
   // runtime-controllable; for now the driver drives the pin directly.
   if (msg->has_backlight) {
     int16_t bl = -1;
     bool bl_active_low = false;
     if (msg->backlight.which_backlight_add ==
         ws_display_BacklightConfig_backlight_digital_tag) {
-      bl = parsePin(msg->backlight.backlight_add.backlight_digital.pin_name);
+      bl = parsePin(msg->backlight.backlight_add.backlight_digital.pin);
       bl_active_low =
           msg->backlight.backlight_add.backlight_digital.is_inverted;
     } else if (msg->backlight.which_backlight_add ==
@@ -634,7 +633,7 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
       _drvDisp->setBacklightPin(bl, bl_active_low);
   }
   // Optional prerequisite digital output — a panel power-enable rail —
-  // carried as a full ws.digitalio.Add so it composes like any other pin
+  // carried as a full ws.digital.Add so it composes like any other pin
   // (direction/inversion/initial write).
   //
   // Ownership rules: if the pin is already registered with the digitalio
@@ -644,14 +643,14 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
   // the DISPLAY owns the rail: the driver drives it to the enable level
   // before init and releases it in its destructor (display Remove/replace).
   if (msg->has_power) {
-    int16_t power = parsePin(msg->power.pin_name);
+    int16_t power = parsePin(msg->power.pin);
     if (power >= 0) {
       bool enable_level = !msg->power.is_inverted;
-      ws_digitalio_Direction dir;
+      ws_digital_Direction dir;
       bool value;
       if (Ws->digital_io_controller->QueryPinState((uint8_t)power, &dir,
                                                    &value)) {
-        if (dir == ws_digitalio_Direction_D_OUTPUT && value == enable_level) {
+        if (dir == ws_digital_Direction_D_OUTPUT && value == enable_level) {
           WS_DEBUG_PRINTLN("[display] Power-enable pin already driven by "
                            "digitalio at the enable level - passing through "
                            "(display does not take ownership)");
