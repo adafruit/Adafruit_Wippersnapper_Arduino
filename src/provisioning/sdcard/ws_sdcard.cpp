@@ -977,7 +977,9 @@ bool ws_sdcard::parseConfigFile() {
     }
 
     // Determine the component type and parse it into a PB message
-    if (strcmp(component_api_type, "digitalio") == 0) {
+    // "digitalio" / "analogin" are the legacy names, still accepted.
+    if (strcmp(component_api_type, "digital") == 0 ||
+        strcmp(component_api_type, "digitalio") == 0) {
       WS_DEBUG_PRINTLN(
           "[SD] DigitalIO component found, decoding JSON to PB...");
       ws_digital_Add msg_DigitalIOAdd = ws_digital_Add_init_default;
@@ -995,7 +997,8 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_digital_tag;
       msg_signal_b2d.payload.digital.payload.add = msg_DigitalIOAdd;
       msg_signal_b2d.payload.digital.which_payload = ws_digital_B2D_add_tag;
-    } else if (strcmp(component_api_type, "analogin") == 0) {
+    } else if (strcmp(component_api_type, "analog") == 0 ||
+               strcmp(component_api_type, "analogin") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIn component found, decoding JSON to PB...");
       ws_analog_Add msg_AnalogInAdd = ws_analog_Add_init_default;
       if (!ParseAnalogInAdd(msg_AnalogInAdd,
@@ -1493,7 +1496,7 @@ void ws_sdcard::waitForSerialConfig() {
                    "},"
                    "\"components\": ["
                    "{"
-                   "\"componentAPI\": \"analogin\","
+                   "\"componentAPI\": \"analog\","
                    "\"name\": \"Analog Pin\","
                    "\"pinName\": \"D14\","
                    "\"type\": \"analog_pin\","
@@ -1505,7 +1508,7 @@ void ws_sdcard::waitForSerialConfig() {
                    "\"isPin\": true"
                    "},"
                    "{"
-                   "\"componentAPI\": \"analogin\","
+                   "\"componentAPI\": \"analog\","
                    "\"name\": \"Analog Pin\","
                    "\"pinName\": \"D27\","
                    "\"type\": \"analog_pin\","
@@ -1517,7 +1520,7 @@ void ws_sdcard::waitForSerialConfig() {
                    "\"isPin\": true"
                    "},"
                    "{"
-                   "\"componentAPI\": \"digitalio\","
+                   "\"componentAPI\": \"digital\","
                    "\"name\": \"Button (D4)\","
                    "\"pinName\": \"D4\","
                    "\"type\": \"push_button\","
