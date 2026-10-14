@@ -23,7 +23,7 @@ class AnalogHardware;   ///< Forward declaration
 class ExpanderHardware; ///< Forward declaration
 
 /*!
-    @brief  Routes messages using the analogin.proto API to the
+    @brief  Routes messages using the analog.proto API to the
             appropriate hardware and model classes, controls and tracks
             the state of the hardware's analog input pins.
 */
@@ -33,8 +33,8 @@ public:
   ~AnalogController();
   // Routing
   bool Router(pb_istream_t *stream);
-  bool Handle_AnalogInAdd(ws_analogin_Add *msg);
-  bool Handle_AnalogInRemove(ws_analogin_Remove *msg);
+  bool Handle_AnalogInAdd(ws_analog_Add *msg);
+  bool Handle_AnalogInRemove(ws_analog_Remove *msg);
   void update(bool force = false);
 
   // Called by CheckinModel

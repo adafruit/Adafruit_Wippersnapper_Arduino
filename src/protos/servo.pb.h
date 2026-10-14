@@ -39,6 +39,16 @@ typedef struct _ws_servo_Add {
 } ws_servo_Add;
 
 /* *
+ A combined Remove/Add message, for when a user updates an existing component. Allows the user to change
+ deep settings and keeps protobuf traffic to a single message. */
+typedef struct _ws_servo_Modify {
+    bool has_remove;
+    ws_servo_Remove remove; /* * Specifies the old component/settings to remove */
+    bool has_add;
+    ws_servo_Add add; /* * Specifies the new component/settings to configure after removal */
+} ws_servo_Modify;
+
+/* *
  BrokerToDevice message envelope */
 typedef struct _ws_servo_B2D {
     pb_size_t which_payload;
@@ -46,6 +56,7 @@ typedef struct _ws_servo_B2D {
         ws_servo_Add add;
         ws_servo_Remove remove;
         ws_servo_Write write;
+        ws_servo_Modify modify;
     } payload;
 } ws_servo_B2D;
 
@@ -58,10 +69,12 @@ extern "C" {
 #define ws_servo_B2D_init_default                {0, {ws_servo_Add_init_default}}
 #define ws_servo_Add_init_default                {"", 0, 0, 0, false, ws_servo_Write_init_default}
 #define ws_servo_Remove_init_default             {""}
+#define ws_servo_Modify_init_default             {false, ws_servo_Remove_init_default, false, ws_servo_Add_init_default}
 #define ws_servo_Write_init_default              {"", 0}
 #define ws_servo_B2D_init_zero                   {0, {ws_servo_Add_init_zero}}
 #define ws_servo_Add_init_zero                   {"", 0, 0, 0, false, ws_servo_Write_init_zero}
 #define ws_servo_Remove_init_zero                {""}
+#define ws_servo_Modify_init_zero                {false, ws_servo_Remove_init_zero, false, ws_servo_Add_init_zero}
 #define ws_servo_Write_init_zero                 {"", 0}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -73,20 +86,25 @@ extern "C" {
 #define ws_servo_Add_min_pulse_width_tag         3
 #define ws_servo_Add_max_pulse_width_tag         4
 #define ws_servo_Add_write_tag                   5
+#define ws_servo_Modify_remove_tag               1
+#define ws_servo_Modify_add_tag                  2
 #define ws_servo_B2D_add_tag                     1
 #define ws_servo_B2D_remove_tag                  2
 #define ws_servo_B2D_write_tag                   3
+#define ws_servo_B2D_modify_tag                  4
 
 /* Struct field encoding specification for nanopb */
 #define ws_servo_B2D_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,add,payload.add),   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,write,payload.write),   3)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,write,payload.write),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,modify,payload.modify),   4)
 #define ws_servo_B2D_CALLBACK NULL
 #define ws_servo_B2D_DEFAULT NULL
 #define ws_servo_B2D_payload_add_MSGTYPE ws_servo_Add
 #define ws_servo_B2D_payload_remove_MSGTYPE ws_servo_Remove
 #define ws_servo_B2D_payload_write_MSGTYPE ws_servo_Write
+#define ws_servo_B2D_payload_modify_MSGTYPE ws_servo_Modify
 
 #define ws_servo_Add_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   servo_pin,         1) \
@@ -103,6 +121,14 @@ X(a, STATIC,   SINGULAR, STRING,   servo_pin,         1)
 #define ws_servo_Remove_CALLBACK NULL
 #define ws_servo_Remove_DEFAULT NULL
 
+#define ws_servo_Modify_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  remove,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  add,               2)
+#define ws_servo_Modify_CALLBACK NULL
+#define ws_servo_Modify_DEFAULT NULL
+#define ws_servo_Modify_remove_MSGTYPE ws_servo_Remove
+#define ws_servo_Modify_add_MSGTYPE ws_servo_Add
+
 #define ws_servo_Write_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   servo_pin,         1) \
 X(a, STATIC,   SINGULAR, INT32,    pulse_width,       2)
@@ -112,18 +138,21 @@ X(a, STATIC,   SINGULAR, INT32,    pulse_width,       2)
 extern const pb_msgdesc_t ws_servo_B2D_msg;
 extern const pb_msgdesc_t ws_servo_Add_msg;
 extern const pb_msgdesc_t ws_servo_Remove_msg;
+extern const pb_msgdesc_t ws_servo_Modify_msg;
 extern const pb_msgdesc_t ws_servo_Write_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define ws_servo_B2D_fields &ws_servo_B2D_msg
 #define ws_servo_Add_fields &ws_servo_Add_msg
 #define ws_servo_Remove_fields &ws_servo_Remove_msg
+#define ws_servo_Modify_fields &ws_servo_Modify_msg
 #define ws_servo_Write_fields &ws_servo_Write_msg
 
 /* Maximum encoded size of messages (where known) */
 #define WS_SERVO_SERVO_PB_H_MAX_SIZE             ws_servo_B2D_size
 #define ws_servo_Add_size                        60
-#define ws_servo_B2D_size                        62
+#define ws_servo_B2D_size                        73
+#define ws_servo_Modify_size                     71
 #define ws_servo_Remove_size                     7
 #define ws_servo_Write_size                      18
 

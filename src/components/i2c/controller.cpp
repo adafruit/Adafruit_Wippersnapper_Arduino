@@ -616,6 +616,20 @@ bool I2cController::Router(pb_istream_t *stream) {
   case ws_i2c_B2D_remove_tag:
     res = Handle_Remove(&b2d.payload.remove);
     break;
+  case ws_i2c_B2D_modify_tag: {
+    // Decode the Modify as a standalone message so the callbacks on the nested
+    // Add's settings map survive (same reason as the Add case above).
+    ws_i2c_Modify modify = ws_i2c_Modify_init_zero;
+    _i2c_model->SetupAddDecodeCallbacks(&modify.add);
+    if (!ws_pb_decode_oneof_submsg(&saved_stream, ws_i2c_B2D_modify_tag,
+                                   ws_i2c_Modify_fields, &modify)) {
+      Ws->error_handler->publishComponentError(
+          modify.add.descriptor, "Failed to decode I2C modify message!");
+      return false;
+    }
+    res = Handle_Modify(&modify);
+    break;
+  }
   default:
     WS_DEBUG_PRINTLN("[i2c] WARNING: Unsupported I2C payload");
     res = false;
@@ -623,6 +637,28 @@ bool I2cController::Router(pb_istream_t *stream) {
   }
 
   return res;
+}
+
+/*!
+    @brief    Implements handling for an I2C Modify message, a Remove of the
+              old component followed by an Add of the new one.
+    @param    msg
+              Pointer to the I2C Modify message.
+    @returns  True if the new component was added, False otherwise. A failed
+              Remove is reported but does not prevent the Add, since the old
+              component may no longer exist (e.g. after a reboot).
+*/
+bool I2cController::Handle_Modify(ws_i2c_Modify *msg) {
+  if (msg == nullptr || !msg->has_add) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C modify message has no add!");
+    Ws->error_handler->publishComponentError(ws_i2c_Descriptor{},
+                                             "I2C modify message has no add!");
+    return false;
+  }
+  if (msg->has_remove && !Handle_Remove(&msg->remove)) {
+    WS_DEBUG_PRINTLN("[i2c] WARNING: Remove failed in modify, adding anyway");
+  }
+  return Handle_Add(&msg->add);
 }
 
 /*!
