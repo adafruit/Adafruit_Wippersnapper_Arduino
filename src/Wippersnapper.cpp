@@ -2642,7 +2642,17 @@ void Wippersnapper::pingBroker() {
     @brief    Feeds the WDT to prevent hardware reset.
 */
 /*******************************************************/
-void Wippersnapper::feedWDT() { Watchdog.reset(); }
+void Wippersnapper::feedWDT() {
+#ifdef ARDUINO_ARCH_ESP32
+  // No-op until enableWDT() has subscribed this task, or the task was
+  // already subscribed elsewhere (e.g. a sketch calling enableLoopWDT()).
+  // arduino-esp32 3.x initializes the TWDT itself at boot, so an
+  // unsubscribed esp_task_wdt_reset() logs "task_wdt: task not found".
+  if (!_isEsp32WdtSet && esp_task_wdt_status(NULL) != ESP_OK)
+    return;
+#endif
+  Watchdog.reset();
+}
 
 /********************************************************/
 /*!
@@ -2653,12 +2663,21 @@ void Wippersnapper::feedWDT() { Watchdog.reset(); }
 */
 /*******************************************************/
 void Wippersnapper::enableWDT(int timeoutMS) {
-#ifndef ARDUINO_ARCH_RP2040
+#if defined(ARDUINO_ARCH_ESP32)
+  // If this task is already subscribed to the TWDT (by us or the sketch),
+  // unsubscribe first so Watchdog.enable() can re-register it.
+  // esp_task_wdt_status() is the source of truth, not _isEsp32WdtSet.
+  if (esp_task_wdt_status(NULL) == ESP_OK)
+    Watchdog.disable();
+#elif !defined(ARDUINO_ARCH_RP2040)
   Watchdog.disable();
 #endif
   if (Watchdog.enable(timeoutMS) == 0) {
     WS.haltError("WDT initialization failure!");
   }
+#ifdef ARDUINO_ARCH_ESP32
+  _isEsp32WdtSet = true;
+#endif
 }
 
 /********************************************************/
