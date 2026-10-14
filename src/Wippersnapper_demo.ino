@@ -11,7 +11,7 @@
 #include "ws_platforms.h"
 #if defined(PICO_CYW43_SUPPORTED) || defined(ARDUINO_ARCH_ESP8266) || defined(USE_AIRLIFT) \
     || defined(ARDUINO_ARCH_ESP32) || defined(ESP_HOSTED) \
-    || defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
+    || defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350) || defined(ARDUINO_ARCH_SAMD)
 ws_adapter_wifi wipper;
 #else
 // Uncomment the following line to use the offline adapter for Pico
