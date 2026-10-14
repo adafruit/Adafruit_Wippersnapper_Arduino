@@ -74,7 +74,24 @@ public:
       _bmp5xx = nullptr;
       return false;
     }
-    return true;
+    return EnableDataReady();
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    (Re)enables the latched data-ready interrupt flag that
+                IsSensorReady() polls. Adafruit_BMP5xx::begin() enables the
+                data-ready source and the interrupt pin in an order that leaves
+                the flag permanently clear (dataReady() never goes true), while
+                configureInterrupt() applies them in the order that works (as
+                the library's own bmp5xx_test example does before polling).
+      @returns  True if configured successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool EnableDataReady() {
+    return _bmp5xx->configureInterrupt(
+        BMP5XX_INTERRUPT_LATCHED, BMP5XX_INTERRUPT_ACTIVE_HIGH,
+        BMP5XX_INTERRUPT_PUSH_PULL, BMP5XX_INTERRUPT_DATA_READY, true);
   }
 
   /*******************************************************************************/
@@ -89,7 +106,7 @@ public:
               _bmp5xx->setIIRFilterCoeff(BMP5XX_IIR_FILTER_COEFF_3) &&
               _bmp5xx->setOutputDataRate(BMP5XX_ODR_50_HZ) &&
               _bmp5xx->setPowerMode(BMP5XX_POWERMODE_NORMAL) &&
-              _bmp5xx->enablePressure(true);
+              _bmp5xx->enablePressure(true) && EnableDataReady();
     _power_mode = BMP5XX_POWERMODE_NORMAL;
     return ok;
   }
