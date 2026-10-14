@@ -45,6 +45,15 @@ bool DisplayController::Router(pb_istream_t *stream) {
     return Handle_Display_Add(&b2d.payload.add);
   case ws_display_B2D_remove_tag:
     return Handle_Display_Remove(&b2d.payload.remove);
+  case ws_display_B2D_modify_tag:
+    // Modify = Remove the old component, then Add the new one.
+    if (b2d.payload.modify.has_remove) {
+      (void)Handle_Display_Remove(&b2d.payload.modify.remove);
+    }
+    if (!b2d.payload.modify.has_add) {
+      return false;
+    }
+    return Handle_Display_Add(&b2d.payload.modify.add);
   case ws_display_B2D_write_tag:
     return Handle_Display_Write(&b2d.payload.write);
   default:
