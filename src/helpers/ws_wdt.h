@@ -49,8 +49,9 @@ public:
 #endif
 private:
 #ifdef ARDUINO_ARCH_ESP32
-  bool _wdtSet = false; ///< True once enable() has subscribed this task to the
-                        ///< TWDT; feed() is a no-op until then.
+  bool _isEsp32WdtSet = false; ///< True once enable() has subscribed this
+                               ///< task to the TWDT; feed() is a no-op until
+                               ///< then unless the task is already subscribed.
 #endif
 #ifdef ARDUINO_ARCH_RP2350
   bool
