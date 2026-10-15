@@ -113,6 +113,7 @@ float GetValueFromSensorsEvent(ws_sensor_Type sensor_type,
     value = event->unitless_percent;
     break;
   case ws_sensor_Type_T_LIGHT:
+  case ws_sensor_Type_T_LUX:
     value = event->light;
     break;
   default:

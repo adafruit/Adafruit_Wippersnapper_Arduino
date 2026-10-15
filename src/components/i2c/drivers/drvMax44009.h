@@ -171,6 +171,27 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets the MAX44009's current ambient light reading in lux.
+      @param    luxEvent
+                Light sensor reading, in lux.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventLux(sensors_event_t *luxEvent) override {
+    float lux = _max44009->readLux();
+    if (isnan(lux))
+      return false;
+    luxEvent->light = lux;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Legacy "light" sensor type. The MAX44009 component was briefly
+                published with a "light" subcomponent before switching to
+                "lux", so devices added in that window still request T_LIGHT.
+                Serves the same lux reading so those devices keep publishing;
+                I2cController::Handle_Add() tells the user to re-add it.
       @param    lightEvent
                 Light sensor reading, in lux.
       @returns  True if the sensor event was obtained successfully, False
@@ -178,11 +199,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) override {
-    float lux = _max44009->readLux();
-    if (isnan(lux))
-      return false;
-    lightEvent->light = lux;
-    return true;
+    return getEventLux(lightEvent);
   }
 
 protected:
