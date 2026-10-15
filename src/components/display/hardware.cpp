@@ -620,14 +620,18 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
   // runtime-controllable; for now the driver drives the pin directly.
   if (msg->has_backlight) {
     int16_t bl = -1;
+    bool bl_active_low = false;
     if (msg->backlight.which_backlight_add ==
-        ws_display_BacklightConfig_backlight_digital_tag)
+        ws_display_BacklightConfig_backlight_digital_tag) {
       bl = parsePin(msg->backlight.backlight_add.backlight_digital.pin_name);
-    else if (msg->backlight.which_backlight_add ==
-             ws_display_BacklightConfig_backlight_pwm_tag)
+      bl_active_low =
+          msg->backlight.backlight_add.backlight_digital.is_inverted;
+    } else if (msg->backlight.which_backlight_add ==
+               ws_display_BacklightConfig_backlight_pwm_tag) {
       bl = parsePin(msg->backlight.backlight_add.backlight_pwm.pin);
+    }
     if (bl >= 0)
-      _drvDisp->setBacklightPin(bl);
+      _drvDisp->setBacklightPin(bl, bl_active_low);
   }
   // Optional prerequisite digital output — a panel power-enable rail —
   // carried as a full ws.digitalio.Add so it composes like any other pin
