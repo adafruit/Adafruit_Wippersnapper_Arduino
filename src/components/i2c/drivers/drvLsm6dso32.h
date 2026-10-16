@@ -25,7 +25,11 @@ protected:
   Adafruit_LSM6DS *getLSM6Sensor() const override { return _imu; }
 
 private:
-  Adafruit_LSM6DSO32 *_imu = nullptr;
+  bool isDsoxScale();
+
+  // Adafruit_LSM6DSO32, or Adafruit_LSM6DSOX for an LSM6DSOX (same
+  // WHO_AM_I 0x6C, but half the accel full-scale for each range code)
+  Adafruit_LSM6DSOX *_imu = nullptr;
 };
 
 #endif // DRV_LSM6DSO32_H
