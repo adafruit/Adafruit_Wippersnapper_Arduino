@@ -1,7 +1,7 @@
 /*!
  * @file src/components/analog/controller.cpp
  *
- * Controller for the analogin.proto API
+ * Controller for the analog.proto API
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -79,7 +79,7 @@ void AnalogController::SetMaxAnalogPins(uint8_t max_analog_pins) {
 }
 
 /*!
-    @brief  Routes messages using the analogin.proto API to the
+    @brief  Routes messages using the analog.proto API to the
             appropriate controller functions.
     @param  stream
             The nanopb input stream.
@@ -87,8 +87,8 @@ void AnalogController::SetMaxAnalogPins(uint8_t max_analog_pins) {
 */
 bool AnalogController::Router(pb_istream_t *stream) {
   // Attempt to decode the AnalogIn B2D envelope
-  ws_analogin_B2D b2d = ws_analogin_B2D_init_zero;
-  if (!ws_pb_decode(stream, ws_analogin_B2D_fields, &b2d)) {
+  ws_analog_B2D b2d = ws_analog_B2D_init_zero;
+  if (!ws_pb_decode(stream, ws_analog_B2D_fields, &b2d)) {
     WS_DEBUG_PRINTLN("[analog] ERROR: Unable to decode AnalogIn B2D envelope");
     return false;
   }
@@ -96,12 +96,29 @@ bool AnalogController::Router(pb_istream_t *stream) {
   // Route based on payload type
   bool res = false;
   switch (b2d.which_payload) {
-  case ws_analogin_B2D_add_tag:
+  case ws_analog_B2D_add_tag:
     res = Handle_AnalogInAdd(&b2d.payload.add);
     break;
-  case ws_analogin_B2D_remove_tag:
+  case ws_analog_B2D_remove_tag:
     res = Handle_AnalogInRemove(&b2d.payload.remove);
     break;
+  case ws_analog_B2D_modify_tag: {
+    // Modify = Remove the old component, then Add the new one. Bail before
+    // removing anything if there is no Add to replace it with.
+    auto &m = b2d.payload.modify;
+    if (!m.has_add) {
+      Ws->error_handler->publishComponentError(
+          m.has_remove ? m.remove.pin : "",
+          "Modify requires an Add, nothing was removed");
+      res = false;
+      break;
+    }
+    if (m.has_remove) {
+      (void)Handle_AnalogInRemove(&m.remove);
+    }
+    res = Handle_AnalogInAdd(&m.add);
+    break;
+  }
   default:
     WS_DEBUG_PRINTLN("[analog] WARNING: Unsupported AnalogIn payload");
     res = false;
@@ -152,24 +169,24 @@ AnalogHardware *AnalogController::GetPin(uint8_t pin_num,
             The AnalogInAdd message.
     @return True if the pin was successfully added, False otherwise.
 */
-bool AnalogController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
+bool AnalogController::Handle_AnalogInAdd(ws_analog_Add *msg) {
   WS_DEBUG_PRINTLN("[analog] Handle_AnalogInAdd MESSAGE...");
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
-  if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
+  if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin_num,
                                                 &expander_drv)) {
-    return reportPinError(msg->pin_name, "Unable to resolve pin name");
+    return reportPinError(msg->pin, "Unable to resolve pin name");
   }
 
   // Validate the read mode
   if (msg->read_mode != ws_sensor_Type_T_RAW &&
       msg->read_mode != ws_sensor_Type_T_VOLTAGE) {
-    return reportPinError(msg->pin_name, "Invalid read mode");
+    return reportPinError(msg->pin, "Invalid read mode");
   }
   // Validate the sample mode
-  if (msg->sample_mode != ws_analogin_SampleMode_SM_TIMER &&
-      msg->sample_mode != ws_analogin_SampleMode_SM_EVENT) {
-    return reportPinError(msg->pin_name, "Invalid sample mode");
+  if (msg->sample_mode != ws_analog_SampleMode_SM_TIMER &&
+      msg->sample_mode != ws_analog_SampleMode_SM_EVENT) {
+    return reportPinError(msg->pin, "Invalid sample mode");
   }
 
   // If pin is being updated, remove the existing pin first
@@ -184,7 +201,7 @@ bool AnalogController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
 
   // Create a new analog input pin
   AnalogHardware *new_pin = new AnalogHardware(
-      msg->pin_name, pin_num, msg->read_mode, msg->sample_mode,
+      msg->pin, pin_num, msg->read_mode, msg->sample_mode,
       (ulong)(msg->period * 1000.0f), ref_voltage, expander_drv);
 
   // Add the pin to the controller's list
@@ -210,20 +227,20 @@ bool AnalogController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
             The AnalogInRemove message.
     @return True if the pin was successfully removed, False otherwise.
 */
-bool AnalogController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
+bool AnalogController::Handle_AnalogInRemove(ws_analog_Remove *msg) {
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
-  if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
+  if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin_num,
                                                 &expander_drv)) {
-    return reportPinError(msg->pin_name, "Unable to resolve pin name");
+    return reportPinError(msg->pin, "Unable to resolve pin name");
   }
 
   if (!RemovePin(pin_num, expander_drv)) {
-    return reportPinError(msg->pin_name, "Failed to find pin");
+    return reportPinError(msg->pin, "Failed to find pin");
   }
 
   WS_DEBUG_PRINT("[analog] Removed pin: ");
-  WS_DEBUG_PRINTLNVAR(msg->pin_name);
+  WS_DEBUG_PRINTLNVAR(msg->pin);
   return true;
 }
 
@@ -267,9 +284,9 @@ bool AnalogController::EncodePublishPinEvent(AnalogHardware *pin) {
 
   // Publish the AnalogIn message to the broker
   WS_DEBUG_PRINT("Publishing AnalogInEvent...");
-  if (!Ws->PublishD2b(ws_signal_DeviceToBroker_analogin_tag,
+  if (!Ws->PublishD2b(ws_signal_DeviceToBroker_analog_tag,
                       _analogin_model->getAnalogInD2b())) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to publish analogin voltage event message, "
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish analog voltage event message, "
                      "moving onto the next pin!");
     return false;
   }
@@ -297,7 +314,7 @@ void AnalogController::update(bool force) {
     // Is the pin ready for a new reading?
     if (!force) {
       bool ready;
-      if (pin->getSampleMode() == ws_analogin_SampleMode_SM_EVENT) {
+      if (pin->getSampleMode() == ws_analog_SampleMode_SM_EVENT) {
         ready = pin->checkEvent();
       } else {
         ready = pin->checkTimer();

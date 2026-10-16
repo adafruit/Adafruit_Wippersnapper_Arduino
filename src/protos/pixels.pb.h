@@ -63,6 +63,16 @@ typedef struct _ws_pixels_Add {
 } ws_pixels_Add;
 
 /* *
+ A combined Remove/Add message, for when a user updates an existing component. Allows the user to change
+ deep settings and keeps protobuf traffic to a single message. */
+typedef struct _ws_pixels_Modify {
+    bool has_remove;
+    ws_pixels_Remove remove; /* * Specifies the old component/settings to remove */
+    bool has_add;
+    ws_pixels_Add add; /* * Specifies the new component/settings to configure after removal */
+} ws_pixels_Modify;
+
+/* *
  BrokerToDevice message envelope */
 typedef struct _ws_pixels_B2D {
     pb_size_t which_payload;
@@ -70,6 +80,7 @@ typedef struct _ws_pixels_B2D {
         ws_pixels_Add add;
         ws_pixels_Remove remove;
         ws_pixels_Write write;
+        ws_pixels_Modify modify;
     } payload;
 } ws_pixels_B2D;
 
@@ -94,14 +105,17 @@ extern "C" {
 
 
 
+
 /* Initializer values for message structs */
 #define ws_pixels_B2D_init_default               {0, {ws_pixels_Add_init_default}}
 #define ws_pixels_Add_init_default               {_ws_pixels_Type_MIN, 0, _ws_pixels_Order_MIN, 0, "", "", false, ws_pixels_Write_init_default}
 #define ws_pixels_Remove_init_default            {""}
+#define ws_pixels_Modify_init_default            {false, ws_pixels_Remove_init_default, false, ws_pixels_Add_init_default}
 #define ws_pixels_Write_init_default             {"", 0}
 #define ws_pixels_B2D_init_zero                  {0, {ws_pixels_Add_init_zero}}
 #define ws_pixels_Add_init_zero                  {_ws_pixels_Type_MIN, 0, _ws_pixels_Order_MIN, 0, "", "", false, ws_pixels_Write_init_zero}
 #define ws_pixels_Remove_init_zero               {""}
+#define ws_pixels_Modify_init_zero               {false, ws_pixels_Remove_init_zero, false, ws_pixels_Add_init_zero}
 #define ws_pixels_Write_init_zero                {"", 0}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -115,20 +129,25 @@ extern "C" {
 #define ws_pixels_Add_pin_data_tag               5
 #define ws_pixels_Add_pin_dotstar_clock_tag      6
 #define ws_pixels_Add_write_tag                  7
+#define ws_pixels_Modify_remove_tag              1
+#define ws_pixels_Modify_add_tag                 2
 #define ws_pixels_B2D_add_tag                    1
 #define ws_pixels_B2D_remove_tag                 2
 #define ws_pixels_B2D_write_tag                  3
+#define ws_pixels_B2D_modify_tag                 4
 
 /* Struct field encoding specification for nanopb */
 #define ws_pixels_B2D_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,add,payload.add),   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,write,payload.write),   3)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,write,payload.write),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,modify,payload.modify),   4)
 #define ws_pixels_B2D_CALLBACK NULL
 #define ws_pixels_B2D_DEFAULT NULL
 #define ws_pixels_B2D_payload_add_MSGTYPE ws_pixels_Add
 #define ws_pixels_B2D_payload_remove_MSGTYPE ws_pixels_Remove
 #define ws_pixels_B2D_payload_write_MSGTYPE ws_pixels_Write
+#define ws_pixels_B2D_payload_modify_MSGTYPE ws_pixels_Modify
 
 #define ws_pixels_Add_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
@@ -147,6 +166,14 @@ X(a, STATIC,   SINGULAR, STRING,   pin_data,          1)
 #define ws_pixels_Remove_CALLBACK NULL
 #define ws_pixels_Remove_DEFAULT NULL
 
+#define ws_pixels_Modify_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  remove,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  add,               2)
+#define ws_pixels_Modify_CALLBACK NULL
+#define ws_pixels_Modify_DEFAULT NULL
+#define ws_pixels_Modify_remove_MSGTYPE ws_pixels_Remove
+#define ws_pixels_Modify_add_MSGTYPE ws_pixels_Add
+
 #define ws_pixels_Write_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   pin_data,          1) \
 X(a, STATIC,   SINGULAR, UINT32,   color,             2)
@@ -156,18 +183,21 @@ X(a, STATIC,   SINGULAR, UINT32,   color,             2)
 extern const pb_msgdesc_t ws_pixels_B2D_msg;
 extern const pb_msgdesc_t ws_pixels_Add_msg;
 extern const pb_msgdesc_t ws_pixels_Remove_msg;
+extern const pb_msgdesc_t ws_pixels_Modify_msg;
 extern const pb_msgdesc_t ws_pixels_Write_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define ws_pixels_B2D_fields &ws_pixels_B2D_msg
 #define ws_pixels_Add_fields &ws_pixels_Add_msg
 #define ws_pixels_Remove_fields &ws_pixels_Remove_msg
+#define ws_pixels_Modify_fields &ws_pixels_Modify_msg
 #define ws_pixels_Write_fields &ws_pixels_Write_msg
 
 /* Maximum encoded size of messages (where known) */
 #define WS_PIXELS_PIXELS_PB_H_MAX_SIZE           ws_pixels_B2D_size
 #define ws_pixels_Add_size                       45
-#define ws_pixels_B2D_size                       47
+#define ws_pixels_B2D_size                       58
+#define ws_pixels_Modify_size                    56
 #define ws_pixels_Remove_size                    7
 #define ws_pixels_Write_size                     13
 

@@ -32,7 +32,7 @@ typedef struct _ws_gps_Config {
     char commands_pmtks[8][90]; /* * List of PMTK commands in string format. * */
     pb_size_t commands_ubxes_count;
     ws_gps_Config_commands_ubxes_t commands_ubxes[8]; /* * List of UBX commands in bytes format. * */
-    uint32_t period; /* * Desired period to poll the GPS module, in milliseconds */
+    uint32_t period; /* * Desired period to poll the GPS module, in seconds */
 } ws_gps_Config;
 
 /* *
@@ -48,12 +48,23 @@ typedef struct _ws_gps_Add {
 } ws_gps_Add;
 
 /* *
+ A combined Remove/Add message, for when a user updates an existing component. Allows the user to change
+ deep settings and keeps protobuf traffic to a single message. */
+typedef struct _ws_gps_Modify {
+    bool has_remove;
+    ws_gps_Remove remove; /* * Specifies the old component/settings to remove */
+    bool has_add;
+    ws_gps_Add add; /* * Specifies the new component/settings to configure after removal */
+} ws_gps_Modify;
+
+/* *
  BrokerToDevice message envelope */
 typedef struct _ws_gps_B2D {
     pb_size_t which_payload;
     union {
         ws_gps_Add add;
         ws_gps_Remove remove;
+        ws_gps_Modify modify;
     } payload;
 } ws_gps_B2D;
 
@@ -123,6 +134,7 @@ extern "C" {
 #define ws_gps_D2B_init_default                  {0, {ws_gps_Event_init_default}}
 #define ws_gps_Add_init_default                  {false, ws_i2c_Add_init_default, false, ws_uart_Add_init_default, false, ws_gps_Config_init_default}
 #define ws_gps_Remove_init_default               {false, ws_i2c_Remove_init_default, false, ws_uart_Remove_init_default}
+#define ws_gps_Modify_init_default               {false, ws_gps_Remove_init_default, false, ws_gps_Add_init_default}
 #define ws_gps_Config_init_default               {0, {"", "", "", "", "", "", "", ""}, 0, {{0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}}, 0}
 #define ws_gps_DateTime_init_default             {0, 0, 0, 0, 0, 0, 0}
 #define ws_gps_RMCResponse_init_default          {false, ws_gps_DateTime_init_default, "", "", "", "", "", "", ""}
@@ -132,6 +144,7 @@ extern "C" {
 #define ws_gps_D2B_init_zero                     {0, {ws_gps_Event_init_zero}}
 #define ws_gps_Add_init_zero                     {false, ws_i2c_Add_init_zero, false, ws_uart_Add_init_zero, false, ws_gps_Config_init_zero}
 #define ws_gps_Remove_init_zero                  {false, ws_i2c_Remove_init_zero, false, ws_uart_Remove_init_zero}
+#define ws_gps_Modify_init_zero                  {false, ws_gps_Remove_init_zero, false, ws_gps_Add_init_zero}
 #define ws_gps_Config_init_zero                  {0, {"", "", "", "", "", "", "", ""}, 0, {{0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}}, 0}
 #define ws_gps_DateTime_init_zero                {0, 0, 0, 0, 0, 0, 0}
 #define ws_gps_RMCResponse_init_zero             {false, ws_gps_DateTime_init_zero, "", "", "", "", "", "", ""}
@@ -147,8 +160,11 @@ extern "C" {
 #define ws_gps_Add_add_i2c_tag                   1
 #define ws_gps_Add_add_uart_tag                  2
 #define ws_gps_Add_config_tag                    3
+#define ws_gps_Modify_remove_tag                 1
+#define ws_gps_Modify_add_tag                    2
 #define ws_gps_B2D_add_tag                       1
 #define ws_gps_B2D_remove_tag                    2
+#define ws_gps_B2D_modify_tag                    3
 #define ws_gps_DateTime_hour_tag                 1
 #define ws_gps_DateTime_minute_tag               2
 #define ws_gps_DateTime_seconds_tag              3
@@ -181,11 +197,13 @@ extern "C" {
 /* Struct field encoding specification for nanopb */
 #define ws_gps_B2D_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,add,payload.add),   1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,modify,payload.modify),   3)
 #define ws_gps_B2D_CALLBACK NULL
 #define ws_gps_B2D_DEFAULT NULL
 #define ws_gps_B2D_payload_add_MSGTYPE ws_gps_Add
 #define ws_gps_B2D_payload_remove_MSGTYPE ws_gps_Remove
+#define ws_gps_B2D_payload_modify_MSGTYPE ws_gps_Modify
 
 #define ws_gps_D2B_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,event,payload.event),   1)
@@ -210,6 +228,14 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  remove_uart,       2)
 #define ws_gps_Remove_DEFAULT NULL
 #define ws_gps_Remove_remove_i2c_MSGTYPE ws_i2c_Remove
 #define ws_gps_Remove_remove_uart_MSGTYPE ws_uart_Remove
+
+#define ws_gps_Modify_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  remove,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  add,               2)
+#define ws_gps_Modify_CALLBACK NULL
+#define ws_gps_Modify_DEFAULT NULL
+#define ws_gps_Modify_remove_MSGTYPE ws_gps_Remove
+#define ws_gps_Modify_add_MSGTYPE ws_gps_Add
 
 #define ws_gps_Config_FIELDLIST(X, a) \
 X(a, STATIC,   REPEATED, STRING,   commands_pmtks,    1) \
@@ -269,6 +295,7 @@ extern const pb_msgdesc_t ws_gps_B2D_msg;
 extern const pb_msgdesc_t ws_gps_D2B_msg;
 extern const pb_msgdesc_t ws_gps_Add_msg;
 extern const pb_msgdesc_t ws_gps_Remove_msg;
+extern const pb_msgdesc_t ws_gps_Modify_msg;
 extern const pb_msgdesc_t ws_gps_Config_msg;
 extern const pb_msgdesc_t ws_gps_DateTime_msg;
 extern const pb_msgdesc_t ws_gps_RMCResponse_msg;
@@ -280,6 +307,7 @@ extern const pb_msgdesc_t ws_gps_Event_msg;
 #define ws_gps_D2B_fields &ws_gps_D2B_msg
 #define ws_gps_Add_fields &ws_gps_Add_msg
 #define ws_gps_Remove_fields &ws_gps_Remove_msg
+#define ws_gps_Modify_fields &ws_gps_Modify_msg
 #define ws_gps_Config_fields &ws_gps_Config_msg
 #define ws_gps_DateTime_fields &ws_gps_DateTime_msg
 #define ws_gps_RMCResponse_fields &ws_gps_RMCResponse_msg
@@ -287,11 +315,10 @@ extern const pb_msgdesc_t ws_gps_Event_msg;
 #define ws_gps_Event_fields &ws_gps_Event_msg
 
 /* Maximum encoded size of messages (where known) */
-#if defined(ws_i2c_Add_size) && defined(ws_uart_Add_size)
-union ws_gps_B2D_payload_size_union {char f1[(1803 + ws_i2c_Add_size + ws_uart_Add_size)]; char f0[163];};
+#if defined(ws_i2c_Add_size) && defined(ws_uart_Add_size) && defined(ws_i2c_Add_size) && defined(ws_uart_Add_size)
+union ws_gps_B2D_payload_size_union {char f1[(1803 + ws_i2c_Add_size + ws_uart_Add_size)]; char f3[(1972 + ws_i2c_Add_size + ws_uart_Add_size)]; char f0[163];};
 #endif
-#if defined(ws_i2c_Add_size) && defined(ws_uart_Add_size)
-#define ws_gps_Add_size                          (1797 + ws_i2c_Add_size + ws_uart_Add_size)
+#if defined(ws_i2c_Add_size) && defined(ws_uart_Add_size) && defined(ws_i2c_Add_size) && defined(ws_uart_Add_size)
 #define ws_gps_B2D_size                          (0 + sizeof(union ws_gps_B2D_payload_size_union))
 #endif
 #define WS_GPS_GPS_PB_H_MAX_SIZE                 ws_gps_D2B_size
@@ -302,6 +329,10 @@ union ws_gps_B2D_payload_size_union {char f1[(1803 + ws_i2c_Add_size + ws_uart_A
 #define ws_gps_GPGGAResponse_size                168
 #define ws_gps_RMCResponse_size                  139
 #define ws_gps_Remove_size                       160
+#if defined(ws_i2c_Add_size) && defined(ws_uart_Add_size)
+#define ws_gps_Add_size                          (1797 + ws_i2c_Add_size + ws_uart_Add_size)
+#define ws_gps_Modify_size                       (1966 + ws_i2c_Add_size + ws_uart_Add_size)
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

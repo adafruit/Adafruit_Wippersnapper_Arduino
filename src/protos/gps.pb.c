@@ -18,6 +18,9 @@ PB_BIND(ws_gps_Add, ws_gps_Add, 2)
 PB_BIND(ws_gps_Remove, ws_gps_Remove, AUTO)
 
 
+PB_BIND(ws_gps_Modify, ws_gps_Modify, 2)
+
+
 PB_BIND(ws_gps_Config, ws_gps_Config, 2)
 
 

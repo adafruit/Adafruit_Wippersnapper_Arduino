@@ -1,7 +1,7 @@
 /*!
  * @file src/components/digitalIO/controller.h
  *
- * Controller for the digitalio API
+ * Controller for the digital API
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -23,7 +23,7 @@ class DigitalIOHardware;
 class ExpanderHardware;
 
 /*!
-    @brief  Routes messages using the digitalio.proto API to the
+    @brief  Routes messages using the digital.proto API to the
             appropriate hardware and model classes, controls and tracks
             the state of the hardware's digital I/O pins.
 */
@@ -32,14 +32,14 @@ public:
   DigitalIOController();
   ~DigitalIOController();
   bool Router(pb_istream_t *stream);
-  bool Handle_DigitalIO_Add(ws_digitalio_Add *msg);
-  bool Handle_DigitalIO_Remove(ws_digitalio_Remove *msg);
-  bool Handle_DigitalIO_Write(ws_digitalio_Write *msg);
+  bool Handle_DigitalIO_Add(ws_digital_Add *msg);
+  bool Handle_DigitalIO_Remove(ws_digital_Remove *msg);
+  bool Handle_DigitalIO_Write(ws_digital_Write *msg);
   void update(bool force = false);
   bool UpdateComplete();
   void ResetFlags();
   void SetMaxDigitalPins(uint8_t max_digital_pins);
-  bool QueryPinState(uint8_t pin_num, ws_digitalio_Direction *direction,
+  bool QueryPinState(uint8_t pin_num, ws_digital_Direction *direction,
                      bool *value);
 
 private:

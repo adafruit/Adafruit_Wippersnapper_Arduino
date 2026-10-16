@@ -1,7 +1,7 @@
 /*!
  * @file src/components/analog/hardware.cpp
  *
- * Hardware driver for the analogin.proto API
+ * Hardware driver for the analog.proto API
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -26,7 +26,7 @@
 */
 AnalogHardware::AnalogHardware(const char *pin_name, uint8_t pin_num,
                                ws_sensor_Type read_mode,
-                               ws_analogin_SampleMode sample_mode, ulong period,
+                               ws_analog_SampleMode sample_mode, ulong period,
                                float ref_voltage,
                                ExpanderHardware *expander_drv)
     : _name(pin_num), _read_mode(read_mode), _sample_mode(sample_mode),
@@ -220,7 +220,7 @@ ws_sensor_Type AnalogHardware::getReadMode() const { return _read_mode; }
     @brief  Gets the pin's sample mode.
     @return The pin's sample mode (TIMER or EVENT).
 */
-ws_analogin_SampleMode AnalogHardware::getSampleMode() const {
+ws_analog_SampleMode AnalogHardware::getSampleMode() const {
   return _sample_mode;
 }
 

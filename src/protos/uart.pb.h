@@ -71,7 +71,7 @@ typedef struct _ws_uart_SerialConfig {
 typedef struct _ws_uart_GenericInputConfig {
     pb_callback_t name; /* * The name used to identify the device. */
     ws_uart_GenericDeviceLineEnding line_ending; /* * The line ending used by the device. */
-    uint32_t period; /* * The period to poll the device, in milliseconds */
+    uint32_t period; /* * The period to poll the device, in seconds */
     pb_size_t types_count;
     ws_sensor_Type types[15]; /* * SI Types for each sensor on the UART device. */
 } ws_uart_GenericInputConfig;
@@ -88,7 +88,7 @@ typedef struct _ws_uart_TrinamicDynamixelConfig {
  containing device-specific configuration info for PM2.5 AQI sensors. */
 typedef struct _ws_uart_PM25AQIConfig {
     bool is_pm1006; /* * True if the device is a PM1006 AQ sensor, Defaults to False. */
-    uint32_t period; /* * The period to poll the device, in milliseconds */
+    uint32_t period; /* * The period to poll the device, in seconds */
     pb_size_t types_count;
     ws_sensor_Type types[15]; /* * SI Types for each sensor on the I2c device. */
 } ws_uart_PM25AQIConfig;
@@ -149,6 +149,16 @@ typedef struct _ws_uart_Add {
 } ws_uart_Add;
 
 /* *
+ A combined Remove/Add message, for when a user updates an existing component. Allows the user to change
+ deep settings and keeps protobuf traffic to a single message. */
+typedef struct _ws_uart_Modify {
+    bool has_remove;
+    ws_uart_Remove remove; /* * Specifies the old component/settings to remove */
+    bool has_add;
+    ws_uart_Add add; /* * Specifies the new component/settings to configure after removal */
+} ws_uart_Modify;
+
+/* *
  BrokerToDevice message envelope */
 typedef struct _ws_uart_B2D {
     pb_size_t which_payload;
@@ -156,6 +166,7 @@ typedef struct _ws_uart_B2D {
         ws_uart_Add add;
         ws_uart_Remove remove;
         ws_uart_Write write;
+        ws_uart_Modify modify;
     } payload;
 } ws_uart_B2D;
 
@@ -211,6 +222,7 @@ extern "C" {
 
 
 
+
 /* Initializer values for message structs */
 #define ws_uart_B2D_init_default                 {0, {ws_uart_Add_init_default}}
 #define ws_uart_D2B_init_default                 {0, {ws_uart_Event_init_default}}
@@ -222,6 +234,7 @@ extern "C" {
 #define ws_uart_Descriptor_init_default          {"", ""}
 #define ws_uart_Add_init_default                 {"", false, ws_uart_Descriptor_init_default, false, ws_uart_SerialConfig_init_default, false, ws_uart_DeviceConfig_init_default, false, ws_uart_Write_init_default}
 #define ws_uart_Remove_init_default              {false, ws_uart_Descriptor_init_default}
+#define ws_uart_Modify_init_default              {false, ws_uart_Remove_init_default, false, ws_uart_Add_init_default}
 #define ws_uart_Write_init_default               {false, ws_uart_Descriptor_init_default, 0, {{{NULL}, NULL}}}
 #define ws_uart_Event_init_default               {false, ws_uart_Descriptor_init_default, 0, {ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default, ws_sensor_Event_init_default}}
 #define ws_uart_B2D_init_zero                    {0, {ws_uart_Add_init_zero}}
@@ -234,6 +247,7 @@ extern "C" {
 #define ws_uart_Descriptor_init_zero             {"", ""}
 #define ws_uart_Add_init_zero                    {"", false, ws_uart_Descriptor_init_zero, false, ws_uart_SerialConfig_init_zero, false, ws_uart_DeviceConfig_init_zero, false, ws_uart_Write_init_zero}
 #define ws_uart_Remove_init_zero                 {false, ws_uart_Descriptor_init_zero}
+#define ws_uart_Modify_init_zero                 {false, ws_uart_Remove_init_zero, false, ws_uart_Add_init_zero}
 #define ws_uart_Write_init_zero                  {false, ws_uart_Descriptor_init_zero, 0, {{{NULL}, NULL}}}
 #define ws_uart_Event_init_zero                  {false, ws_uart_Descriptor_init_zero, 0, {ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero, ws_sensor_Event_init_zero}}
 
@@ -266,9 +280,12 @@ extern "C" {
 #define ws_uart_Add_cfg_serial_tag               3
 #define ws_uart_Add_cfg_device_tag               4
 #define ws_uart_Add_write_tag                    5
+#define ws_uart_Modify_remove_tag                1
+#define ws_uart_Modify_add_tag                   2
 #define ws_uart_B2D_add_tag                      1
 #define ws_uart_B2D_remove_tag                   2
 #define ws_uart_B2D_write_tag                    3
+#define ws_uart_B2D_modify_tag                   4
 #define ws_uart_Event_descriptor_tag             1
 #define ws_uart_Event_events_tag                 2
 #define ws_uart_D2B_event_tag                    1
@@ -277,12 +294,14 @@ extern "C" {
 #define ws_uart_B2D_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,add,payload.add),   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,write,payload.write),   3)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,write,payload.write),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,modify,payload.modify),   4)
 #define ws_uart_B2D_CALLBACK NULL
 #define ws_uart_B2D_DEFAULT NULL
 #define ws_uart_B2D_payload_add_MSGTYPE ws_uart_Add
 #define ws_uart_B2D_payload_remove_MSGTYPE ws_uart_Remove
 #define ws_uart_B2D_payload_write_MSGTYPE ws_uart_Write
+#define ws_uart_B2D_payload_modify_MSGTYPE ws_uart_Modify
 
 #define ws_uart_D2B_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,event,payload.event),   1)
@@ -355,6 +374,14 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  descriptor,        1)
 #define ws_uart_Remove_DEFAULT NULL
 #define ws_uart_Remove_descriptor_MSGTYPE ws_uart_Descriptor
 
+#define ws_uart_Modify_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  remove,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  add,               2)
+#define ws_uart_Modify_CALLBACK NULL
+#define ws_uart_Modify_DEFAULT NULL
+#define ws_uart_Modify_remove_MSGTYPE ws_uart_Remove
+#define ws_uart_Modify_add_MSGTYPE ws_uart_Add
+
 #define ws_uart_Write_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  descriptor,        1) \
 X(a, CALLBACK, ONEOF,    BYTES,    (payload,bytes_data,payload.bytes_data),   2) \
@@ -381,6 +408,7 @@ extern const pb_msgdesc_t ws_uart_DeviceConfig_msg;
 extern const pb_msgdesc_t ws_uart_Descriptor_msg;
 extern const pb_msgdesc_t ws_uart_Add_msg;
 extern const pb_msgdesc_t ws_uart_Remove_msg;
+extern const pb_msgdesc_t ws_uart_Modify_msg;
 extern const pb_msgdesc_t ws_uart_Write_msg;
 extern const pb_msgdesc_t ws_uart_Event_msg;
 
@@ -395,6 +423,7 @@ extern const pb_msgdesc_t ws_uart_Event_msg;
 #define ws_uart_Descriptor_fields &ws_uart_Descriptor_msg
 #define ws_uart_Add_fields &ws_uart_Add_msg
 #define ws_uart_Remove_fields &ws_uart_Remove_msg
+#define ws_uart_Modify_fields &ws_uart_Modify_msg
 #define ws_uart_Write_fields &ws_uart_Write_msg
 #define ws_uart_Event_fields &ws_uart_Event_msg
 
@@ -406,6 +435,7 @@ extern const pb_msgdesc_t ws_uart_Event_msg;
 /* ws_uart_GenericInputConfig_size depends on runtime parameters */
 /* ws_uart_DeviceConfig_size depends on runtime parameters */
 /* ws_uart_Add_size depends on runtime parameters */
+/* ws_uart_Modify_size depends on runtime parameters */
 /* ws_uart_Write_size depends on runtime parameters */
 #if defined(ws_sensor_Event_size)
 #define WS_UART_UART_PB_H_MAX_SIZE               ws_uart_D2B_size

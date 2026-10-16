@@ -88,6 +88,16 @@ typedef struct _ws_i2c_Remove {
 } ws_i2c_Remove;
 
 /* *
+ A combined Remove/Add message, for when a user updates an existing component. Allows the user to change
+ deep settings (like Descriptor or component name) and keeps protobuf traffic to a single message. */
+typedef struct _ws_i2c_Modify {
+    bool has_remove;
+    ws_i2c_Remove remove; /* * Specifies the old component/settings to remove */
+    bool has_add;
+    ws_i2c_Add add; /* * Specifies the new component/settings to configure after removal */
+} ws_i2c_Modify;
+
+/* *
  BrokerToDevice message envelope */
 typedef struct _ws_i2c_B2D {
     pb_size_t which_payload;
@@ -95,6 +105,7 @@ typedef struct _ws_i2c_B2D {
         ws_i2c_Probe probe;
         ws_i2c_Add add;
         ws_i2c_Remove remove;
+        ws_i2c_Modify modify;
     } payload;
 } ws_i2c_B2D;
 
@@ -139,6 +150,7 @@ extern "C" {
 #define ws_i2c_Add_init_default                  {false, ws_i2c_Descriptor_init_default, "", 0, 0, {ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default, ws_i2c_Add_TypesEntry_init_default}, false, ws_config_Settings_init_default}
 #define ws_i2c_Add_TypesEntry_init_default       {0, _ws_sensor_Type_MIN}
 #define ws_i2c_Remove_init_default               {false, ws_i2c_Descriptor_init_default}
+#define ws_i2c_Modify_init_default               {false, ws_i2c_Remove_init_default, false, ws_i2c_Add_init_default}
 #define ws_i2c_Event_init_default                {false, ws_i2c_Descriptor_init_default, 0, {ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default, ws_i2c_Event_EventsEntry_init_default}}
 #define ws_i2c_Event_EventsEntry_init_default    {0, false, ws_sensor_Event_init_default}
 #define ws_i2c_B2D_init_zero                     {0, {ws_i2c_Probe_init_zero}}
@@ -151,6 +163,7 @@ extern "C" {
 #define ws_i2c_Add_init_zero                     {false, ws_i2c_Descriptor_init_zero, "", 0, 0, {ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero, ws_i2c_Add_TypesEntry_init_zero}, false, ws_config_Settings_init_zero}
 #define ws_i2c_Add_TypesEntry_init_zero          {0, _ws_sensor_Type_MIN}
 #define ws_i2c_Remove_init_zero                  {false, ws_i2c_Descriptor_init_zero}
+#define ws_i2c_Modify_init_zero                  {false, ws_i2c_Remove_init_zero, false, ws_i2c_Add_init_zero}
 #define ws_i2c_Event_init_zero                   {false, ws_i2c_Descriptor_init_zero, 0, {ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero, ws_i2c_Event_EventsEntry_init_zero}}
 #define ws_i2c_Event_EventsEntry_init_zero       {0, false, ws_sensor_Event_init_zero}
 
@@ -174,9 +187,12 @@ extern "C" {
 #define ws_i2c_Add_types_tag                     4
 #define ws_i2c_Add_settings_tag                  5
 #define ws_i2c_Remove_descriptor_tag             1
+#define ws_i2c_Modify_remove_tag                 1
+#define ws_i2c_Modify_add_tag                    2
 #define ws_i2c_B2D_probe_tag                     1
 #define ws_i2c_B2D_add_tag                       2
 #define ws_i2c_B2D_remove_tag                    3
+#define ws_i2c_B2D_modify_tag                    4
 #define ws_i2c_Event_EventsEntry_key_tag         1
 #define ws_i2c_Event_EventsEntry_value_tag       2
 #define ws_i2c_Event_descriptor_tag              1
@@ -188,12 +204,14 @@ extern "C" {
 #define ws_i2c_B2D_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,probe,payload.probe),   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,add,payload.add),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   3)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,modify,payload.modify),   4)
 #define ws_i2c_B2D_CALLBACK NULL
 #define ws_i2c_B2D_DEFAULT NULL
 #define ws_i2c_B2D_payload_probe_MSGTYPE ws_i2c_Probe
 #define ws_i2c_B2D_payload_add_MSGTYPE ws_i2c_Add
 #define ws_i2c_B2D_payload_remove_MSGTYPE ws_i2c_Remove
+#define ws_i2c_B2D_payload_modify_MSGTYPE ws_i2c_Modify
 
 #define ws_i2c_D2B_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,probed,payload.probed),   1) \
@@ -262,6 +280,14 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  descriptor,        1)
 #define ws_i2c_Remove_DEFAULT NULL
 #define ws_i2c_Remove_descriptor_MSGTYPE ws_i2c_Descriptor
 
+#define ws_i2c_Modify_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  remove,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  add,               2)
+#define ws_i2c_Modify_CALLBACK NULL
+#define ws_i2c_Modify_DEFAULT NULL
+#define ws_i2c_Modify_remove_MSGTYPE ws_i2c_Remove
+#define ws_i2c_Modify_add_MSGTYPE ws_i2c_Add
+
 #define ws_i2c_Event_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  descriptor,        1) \
 X(a, STATIC,   REPEATED, MESSAGE,  events,            2)
@@ -287,6 +313,7 @@ extern const pb_msgdesc_t ws_i2c_Descriptor_msg;
 extern const pb_msgdesc_t ws_i2c_Add_msg;
 extern const pb_msgdesc_t ws_i2c_Add_TypesEntry_msg;
 extern const pb_msgdesc_t ws_i2c_Remove_msg;
+extern const pb_msgdesc_t ws_i2c_Modify_msg;
 extern const pb_msgdesc_t ws_i2c_Event_msg;
 extern const pb_msgdesc_t ws_i2c_Event_EventsEntry_msg;
 
@@ -301,6 +328,7 @@ extern const pb_msgdesc_t ws_i2c_Event_EventsEntry_msg;
 #define ws_i2c_Add_fields &ws_i2c_Add_msg
 #define ws_i2c_Add_TypesEntry_fields &ws_i2c_Add_TypesEntry_msg
 #define ws_i2c_Remove_fields &ws_i2c_Remove_msg
+#define ws_i2c_Modify_fields &ws_i2c_Modify_msg
 #define ws_i2c_Event_fields &ws_i2c_Event_msg
 #define ws_i2c_Event_EventsEntry_fields &ws_i2c_Event_EventsEntry_msg
 
@@ -316,6 +344,7 @@ extern const pb_msgdesc_t ws_i2c_Event_EventsEntry_msg;
 #define ws_i2c_Remove_size                       88
 #if defined(ws_config_Settings_size)
 #define ws_i2c_Add_size                          (277 + ws_config_Settings_size)
+#define ws_i2c_Modify_size                       (373 + ws_config_Settings_size)
 #endif
 #if defined(ws_sensor_Event_size)
 #define WS_I2C_I2C_PB_H_MAX_SIZE                 ws_i2c_Event_size

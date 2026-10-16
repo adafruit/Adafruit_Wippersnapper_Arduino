@@ -1,7 +1,7 @@
 /*!
  * @file src/components/digitalIO/hardware.h
  *
- * Hardware for the digitalio.proto message.
+ * Hardware for the digital.proto message.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -25,8 +25,8 @@ class ExpanderHardware;
 */
 class DigitalIOHardware {
 public:
-  DigitalIOHardware(uint8_t pin_name, ws_digitalio_Direction direction,
-                    ws_digitalio_SampleMode sample_mode, bool initial_value,
+  DigitalIOHardware(uint8_t pin_name, ws_digital_Direction direction,
+                    ws_digital_SampleMode sample_mode, bool initial_value,
                     ulong period, ExpanderHardware *expander_drv,
                     bool is_inverted = false);
   ~DigitalIOHardware();
@@ -42,8 +42,8 @@ public:
   // Getters
   uint8_t GetPinNum() const;
   bool GetPinValue() const;
-  ws_digitalio_Direction GetDirection() const;
-  ws_digitalio_SampleMode GetSampleMode() const;
+  ws_digital_Direction GetDirection() const;
+  ws_digital_SampleMode GetSampleMode() const;
   ExpanderHardware *GetExpanderDriver() const;
 
   // Sleep cycle support
@@ -58,8 +58,8 @@ private:
   bool IsStatusLEDPin() const;
 
   uint8_t _name;
-  ws_digitalio_Direction _direction;
-  ws_digitalio_SampleMode _sample_mode;
+  ws_digital_Direction _direction;
+  ws_digital_SampleMode _sample_mode;
   bool _value;
   bool _prv_value;
   bool _first_read;  ///< True until CheckEvent() has read real hardware state.

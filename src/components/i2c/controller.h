@@ -112,6 +112,7 @@ public:
   bool Handle_Add(ws_i2c_Add *msg);
   bool Handle_Probe(pb_istream_t *stream);
   bool Handle_Remove(ws_i2c_Remove *msg);
+  bool Handle_Modify(ws_i2c_Modify *msg);
   // Publishing //
   bool publishProbed();
   // Update //

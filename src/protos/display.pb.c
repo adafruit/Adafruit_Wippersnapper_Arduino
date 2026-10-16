@@ -48,6 +48,9 @@ PB_BIND(ws_display_Add, ws_display_Add, 2)
 PB_BIND(ws_display_Remove, ws_display_Remove, AUTO)
 
 
+PB_BIND(ws_display_Modify, ws_display_Modify, 2)
+
+
 PB_BIND(ws_display_Write, ws_display_Write, 2)
 
 
