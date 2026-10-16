@@ -102,6 +102,43 @@ public:
   }
 
   /*!
+      @brief  Selects the battery icon for a battery level.
+      @param  bat
+              The battery level as a percentage (0-100).
+      @return Pointer to the matching battery icon bitmap.
+  */
+  static const unsigned char *batteryIcon(uint8_t bat) {
+    if (bat >= 75)
+      return epd_bmp_bat_full;
+    if (bat >= 50)
+      return epd_bmp_bat_75;
+    if (bat >= 25)
+      return epd_bmp_bat_50;
+    if (bat >= 10)
+      return epd_bmp_bat_25;
+    return epd_bmp_bat_empty;
+  }
+
+  /*!
+      @brief  Draws the battery icon based on the current battery level.
+      @param  bat
+              The current battery level as a percentage (0-100).
+  */
+  void drawBatteryIcon(uint8_t bat) override {
+    if (!_display)
+      return;
+
+    // Clear and draw the new battery icon, based on battery level
+    _display->fillRect(_statusbar_icon_battery_x, _statusbar_icons_y,
+                       ST7789_STATUSBAR_ICON_SZ, ST7789_STATUSBAR_ICON_SZ,
+                       ST77XX_WHITE);
+    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
+                         batteryIcon(bat), ST7789_STATUSBAR_ICON_SZ,
+                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+    _statusbar_bat = bat;
+  }
+
+  /*!
       @brief  Displays the splash screen on the display.
   */
   void showSplash() override {
@@ -162,9 +199,7 @@ public:
     _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
                          epd_bmp_wifi_full, ST7789_STATUSBAR_ICON_SZ,
                          ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
-    _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
-                         epd_bmp_bat_full, ST7789_STATUSBAR_ICON_SZ,
-                         ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
+    drawBatteryIcon(_statusbar_bat);
 
     // Reset text color and size for main text area
     _display->setTextColor(ST77XX_WHITE);
@@ -189,9 +224,11 @@ public:
     bool update_rssi = abs(rssi - _statusbar_rssi) >= 3;
     // Only update cloud icon if MQTT status has changed
     bool update_mqtt = mqtt_status != _statusbar_mqtt_connected;
+    // Only update battery icon if the battery level crossed an icon threshold
+    bool update_battery = batteryIcon(bat) != batteryIcon(_statusbar_bat);
 
     // No need to update if nothing has changed
-    if (!update_rssi && !update_mqtt)
+    if (!update_rssi && !update_mqtt && !update_battery)
       return;
 
     if (update_mqtt) {
@@ -234,6 +271,10 @@ public:
                            ST7789_STATUSBAR_ICON_SZ, ST77XX_BLACK);
       _statusbar_rssi = rssi;
     }
+
+    // Update battery icon only if the battery level crossed a threshold
+    if (update_battery)
+      drawBatteryIcon(bat);
   }
 
   /*!
