@@ -369,6 +369,5 @@ protected:
   }
 };
 
-
 #endif // ARDUINO_ARCH_ESP32_H
 #endif // Wippersnapper_ESP32_H
