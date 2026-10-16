@@ -29,6 +29,25 @@ drvLsm9ds1::~drvLsm9ds1() {
 */
 /******************************************************************************/
 bool drvLsm9ds1::begin() {
+  // Adafruit_LSM9DS1::begin() resets the mag (0x1E) and then the accel/gyro
+  // (0x6B) before checking the accel/gyro WHO_AM_I, so confirm both halves
+  // first with reads only: nothing is written to a part that isn't an
+  // LSM9DS1.
+  Adafruit_I2CDevice ag(LSM9DS1_ADDRESS_ACCELGYRO, _i2c);
+  Adafruit_I2CDevice mag(LSM9DS1_ADDRESS_MAG, _i2c);
+  if (!ag.begin() || !mag.begin()) {
+    WS_DEBUG_PRINTLN("[drvLsm9ds1] No device at 0x6B/0x1E");
+    return false;
+  }
+  Adafruit_BusIO_Register ag_id(&ag,
+                                Adafruit_LSM9DS1::LSM9DS1_REGISTER_WHO_AM_I_XG);
+  Adafruit_BusIO_Register mag_id(&mag, LIS3MDL_REG_WHO_AM_I);
+  if (ag_id.read() != LSM9DS1_XG_ID ||
+      mag_id.read() != 0x3D) { // mag is LIS3MDL
+    WS_DEBUG_PRINTLN("[drvLsm9ds1] WHO_AM_I mismatch, not an LSM9DS1");
+    return false;
+  }
+
   _lsm = new Adafruit_LSM9DS1(_i2c);
   // Consumes I2C Addresses 0x1E and 0x6B
   // TODO: Adafruit_LSM9DS1::begin() hardcodes 0x6B/0x1E (members are
