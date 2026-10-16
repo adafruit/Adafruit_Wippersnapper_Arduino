@@ -60,6 +60,5 @@ private:
   std::vector<ds18x20Obj *>
       _ds18xDrivers; ///< Vec. of ptrs. to ds18x driver objects
 };
-extern Wippersnapper WS;
 
 #endif // WIPPERSNAPPER_DS18X20_H
