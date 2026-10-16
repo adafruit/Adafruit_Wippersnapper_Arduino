@@ -52,8 +52,9 @@ bool drvIsm330dlc::begin() {
     return false;
   }
 
-  // NOTE: WHO_AM_I 0x6A is shared by ISM330DLC, LSM6DSL and LSM6DS3TR-C, so
-  // autoconfig will name any of them "ism330dlc" (register compatible).
+  // NOTE: WHO_AM_I 0x6A is shared by ISM330DLC, LSM6DSL and LSM6DS3TR-C
+  // (register compatible). Autoconfig tries "lsm6ds3" first, so it names
+  // any of them "lsm6ds3"; select "ism330dlc" explicitly in the config.
   uint8_t addr = _address == 0 ? LSM6DS_I2CADDR_DEFAULT : (uint8_t)_address;
   WS_DEBUG_PRINT("[drvIsm330dlc] Initialising @ 0x");
   WS_DEBUG_PRINTHEX(addr);

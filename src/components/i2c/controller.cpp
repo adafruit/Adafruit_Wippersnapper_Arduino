@@ -512,7 +512,7 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x62, {"scd40"}},
         {0x68, {"mcp3421"}},
         {0x69, {"sen55"}},
-        {0x6A, {"lsm6dso32", "ism330dhcx", "ism330dlc", "lsm6ds3"}},
+        {0x6A, {"lsm6dso32", "ism330dhcx", "lsm6ds3", "ism330dlc"}},
         {0x6B,
          {"sen66", "lsm6ds3", "lsm6dso32", "ism330dhcx", "ism330dlc",
           "lsm9ds1"}},
