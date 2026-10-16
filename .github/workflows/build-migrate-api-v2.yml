@@ -79,7 +79,7 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Install Dependencies (esptool)
         run: |
-          pip3 install esptool
+          pip3 install esptool==5.6.0
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -339,12 +339,15 @@ jobs:
             "feather_esp32_v2",
             "itsybitsy_esp32",
             "wippersnapper_qtpy_esp32c3",
+            "lilygo_t_dongle_c5",
             "wippersnapper_feather_esp32c6"
           ]
         include:
           - offset: "0x1000"
           - offset: "0x0"
             arduino-platform: "wippersnapper_qtpy_esp32c3"
+          - offset: "0x2000"
+            arduino-platform: "lilygo_t_dongle_c5"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
@@ -405,9 +408,9 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: Install Dependencies
         run: |
-          pip install esptool==4.6
+          pip3 install esptool==5.6.0
       - name: build ESP32 platforms
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --boards-local-txt
       - name: Check artifacts
         run: |
           ls examples/Wippersnapper_demo/build/*
@@ -447,10 +450,10 @@ jobs:
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
+            --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
+            --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
+            --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
@@ -804,11 +807,14 @@ jobs:
         arduino-platform:
           [
             "wippersnapper_feather_esp32c6_debug",
+            "lilygo_t_dongle_c5_debug",
           ]
         include:
           - offset: "0x1000"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
+          - offset: "0x2000"
+            arduino-platform: "lilygo_t_dongle_c5_debug"
     steps:
       - uses: actions/setup-python@v7
         with:
@@ -867,9 +873,9 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: Install Dependencies
         run: |
-          pip3 install esptool
+          pip3 install esptool==5.6.0
       - name: build ESP32 platforms
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --boards-local-txt
       - name: Check artifacts
         run: |
           ls examples/wippersnapper_debug/build/*
@@ -911,10 +917,10 @@ jobs:
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
+            --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
+            --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
+            --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
