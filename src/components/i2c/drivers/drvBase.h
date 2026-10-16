@@ -512,6 +512,15 @@ public:
   }
 
   /*!
+      @brief    Gets a sensor's Boolean value.
+      @param    booleanEvent
+                The Boolean value.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventBoolean(sensors_event_t *booleanEvent) { return false; }
+
+  /*!
       @brief    Gets a sensor's Raw value.
       @param    rawEvent
                 The Raw value.
@@ -633,6 +642,10 @@ public:
 
   // Maps SensorType to function calls
   std::map<wippersnapper_sensor_SensorType, fnGetEvent> SensorEventHandlers = {
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventBoolean(event);
+       }},
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED,
        [this](sensors_event_t *event) -> bool {
          return this->getEventRaw(event);
