@@ -2718,9 +2718,9 @@ bool Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
   if (!WS._mqtt->publish(topic, payload, bLen, qos)) {
     WS_DEBUG_PRINTLN("FAILED!");
     WS_DEBUG_PRINT("Mqtt connected: ");
-    WS_DEBUG_PRINTLN(WS._mqtt->connected());
+    WS_DEBUG_PRINTLNVAR(WS._mqtt->connected());
     WS_DEBUG_PRINT("Network status: ");
-    WS_DEBUG_PRINTLN(networkStatus());
+    WS_DEBUG_PRINTLNVAR(networkStatus());
     if (WS._mqtt->connected() && (networkStatus() == WS_NET_CONNECTED)) {
       WS_DEBUG_PRINTLN("Failed to publish MQTT message, retrying!");
     } else {
