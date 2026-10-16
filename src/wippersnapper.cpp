@@ -40,7 +40,7 @@ wippersnapper *Ws;
 */
 wippersnapper::wippersnapper()
     : _mqttV2(nullptr), sensor_model(nullptr), error_handler(nullptr),
-      digital_io_controller(nullptr), analogin_controller(nullptr),
+      digital_io_controller(nullptr), analog_controller(nullptr),
       _display_controller(nullptr), _ds18x20_controller(nullptr),
       _expander_controller(nullptr), _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
@@ -68,7 +68,7 @@ void wippersnapper::_init() {
 
   // Initialize controller classes
   digital_io_controller = new DigitalIOController();
-  analogin_controller = new AnalogInController();
+  analog_controller = new AnalogController();
   _display_controller = new DisplayController();
   _ds18x20_controller = new DS18X20Controller();
   _expander_controller = new ExpanderController();
@@ -94,7 +94,7 @@ wippersnapper::~wippersnapper() {
   delete this->error_handler;
   delete this->digital_io_controller;
   delete this->_display_controller;
-  delete this->analogin_controller;
+  delete this->analog_controller;
   delete this->_ds18x20_controller;
   delete this->_expander_controller;
   delete this->_gps_controller;
@@ -152,7 +152,7 @@ void wippersnapper::getMacAddr() {
     @return   int32_t RSSI value, 0 to 255, in dB
 */
 int32_t wippersnapper::getRSSI() {
-  WS_DEBUG_PRINTLN("Wiippersnapper_V2::getRSSI");
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::getRSSI");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return 0;
 }
@@ -175,6 +175,23 @@ ws_status_t wippersnapper::networkStatus() {
   WS_DEBUG_PRINTLN("wippersnapper::networkStatus");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return WS_IDLE;
+}
+
+/*!
+    @brief    Determines whether the current WipperSnapper instance is backed
+              by a WiFi-capable adapter implementation. Call before connect()
+    @returns  True if this instance supports networking, False otherwise.
+*/
+bool wippersnapper::isWiFiAdapterInstance() {
+  // assert not "BASE" class
+  if (strcmp(connectionType(), "BASE") == 0) {
+    WS_DEBUG_PRINTLN("Base class connectionType() should be overridden by "
+                     "adapter implementation!");
+  } else {
+    WS_DEBUG_PRINT("Connection type: ");
+    WS_DEBUG_PRINTLNVAR(connectionType());
+  }
+  return strcmp(connectionType(), "WS-OFFLINE-PICO") != 0;
 }
 
 /*!
@@ -337,7 +354,7 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   case ws_signal_BrokerToDevice_digitalio_tag:
     return Ws->digital_io_controller->Router(stream);
   case ws_signal_BrokerToDevice_analogin_tag:
-    return Ws->analogin_controller->Router(stream);
+    return Ws->analog_controller->Router(stream);
   case ws_signal_BrokerToDevice_pixels_tag:
     return Ws->_pixels_controller->Router(stream);
   case ws_signal_BrokerToDevice_pwm_tag:
@@ -1003,6 +1020,15 @@ void wippersnapper::connect() {
     setStatusLEDColor(0x000000, Ws->status_pixel_brightnessV2 * 255.0);
     return;
   } else {
+    // If SD init failed during provisioning and we're not offline,
+    // we can only proceed if this instance supports networking.
+    if ((!Ws->_sdCardV2 || !Ws->_sdCardV2->isSDCardInitialized()) &&
+        !isWiFiAdapterInstance()) {
+      haltErrorV2("SD initialization failed, offline mode failure; cannot "
+                  "fallback to online mode on a non-network adapter.\nCheck SD "
+                  "wiring/CS pin and config.json.");
+    }
+
     WS_DEBUG_PRINTLN("Running in online mode...");
   }
 
@@ -1112,7 +1138,7 @@ void wippersnapper::loop() {
   Ws->digital_io_controller->update();
 
   // Process all analog input events
-  Ws->analogin_controller->update();
+  Ws->analog_controller->update();
 
   // Process all DS18x20 sensor events
   Ws->_ds18x20_controller->update();
@@ -1166,8 +1192,8 @@ void wippersnapper::loopSleep() {
     all_controllers_complete = false;
   }
 
-  if (!Ws->analogin_controller->UpdateComplete()) {
-    Ws->analogin_controller->update(true);
+  if (!Ws->analog_controller->UpdateComplete()) {
+    Ws->analog_controller->update(true);
     all_controllers_complete = false;
   }
 
@@ -1254,7 +1280,7 @@ void wippersnapper::loopSleep() {
 */
 void wippersnapper::ResetAllControllerFlags() {
   Ws->digital_io_controller->ResetFlags();
-  Ws->analogin_controller->ResetFlags();
+  Ws->analog_controller->ResetFlags();
   Ws->_ds18x20_controller->ResetFlags();
   Ws->_i2c_controller->ResetFlags();
   Ws->_uart_controller->ResetFlags();

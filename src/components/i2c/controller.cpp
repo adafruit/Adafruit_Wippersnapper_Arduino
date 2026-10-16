@@ -785,6 +785,23 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
     bus->ClearMuxChannel();
   }
 
+  // The MAX44009 component was briefly published with a "light"
+  // subcomponent before moving to "lux". The driver still serves T_LIGHT so
+  // those devices keep publishing, but nudge the user to re-add it.
+  if (strcmp(name, "max44009") == 0) {
+    for (size_t i = 0; i < msg->types_count; i++) {
+      if (msg->types[i].value == ws_sensor_Type_T_LIGHT) {
+        Ws->error_handler->publishComponentError(
+            descriptor,
+            "You're using an older component configuration for the MAX44009 "
+            "(light instead of lux). Delete and re-add the component to "
+            "switch to lux - warning: the old light feed's data will not "
+            "carry over to the new lux feed.");
+        break;
+      }
+    }
+  }
+
   return true;
 }
 
@@ -1074,10 +1091,14 @@ void I2cController::update(bool force) {
     for (size_t i = 0; i < sensor_count; i++) {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
-      if (!drv->GetSensorEvent(drv->_sensors[i].value, &event)) {
-        // Metric unavailable this pass (e.g. still warming up) - publish the
-        // metrics that did read rather than dropping the whole device event.
-        WS_DEBUG_PRINT("[i2c] WARNING: Failed to read sensor type=");
+      if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
+        // Metric unavailable this pass (e.g. still warming up, or an override
+        // didn't recognize entry.key) - publish the metrics that did read
+        // rather than dropping the whole device event. Print key as well as
+        // type since a device may carry multiple entries of the same type.
+        WS_DEBUG_PRINT("[i2c] WARNING: Failed to read sensor key=");
+        WS_DEBUG_PRINTVAR(drv->_sensors[i].key);
+        WS_DEBUG_PRINT(" type=");
         WS_DEBUG_PRINTLNVAR(drv->_sensors[i].value);
         continue;
       }

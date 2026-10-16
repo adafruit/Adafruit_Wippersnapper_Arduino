@@ -127,7 +127,7 @@
 #endif
 
 // Components (API v2)
-#include "components/analogIn/controller.h"
+#include "components/analog/controller.h"
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/display/controller.h"
@@ -180,7 +180,7 @@ class ExpanderController;
 class SensorModel;
 class DigitalIOController;
 class DisplayController;
-class AnalogInController;
+class AnalogController;
 class DS18X20Controller;
 class GPSController;
 class I2cController;
@@ -201,6 +201,15 @@ public:
   virtual ~wippersnapper();
   void provision();
   void run();
+
+  // Adapter capability helpers
+  bool isWiFiAdapterInstance();
+  /*!
+  @brief  Returns the type of network connection used by Wippersnapper,
+          overridden by adapter implementations.
+  @return BASE
+  */
+  virtual const char *connectionType() { return "BASE"; }
 
   // Global flags for the status led
   bool
@@ -270,8 +279,8 @@ public:
   SensorModel *sensor_model = nullptr;   ///< Instance of SensorModel class
   DigitalIOController *digital_io_controller =
       nullptr; ///< Instance of DigitalIO controller class
-  AnalogInController *analogin_controller =
-      nullptr; ///< Instance of AnalogIn controller
+  AnalogController *analog_controller =
+      nullptr; ///< Instance of Analog controller
   DisplayController *_display_controller =
       nullptr; ///< Instance of Display controller
   DS18X20Controller *_ds18x20_controller =
@@ -297,6 +306,7 @@ public:
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
   char sUIDV2[13];        /*!< Unique hardware identifier */
   const char *_boardIdV2; /*!< Adafruit IO+ board string */
+  const char *_airlift_version = "unknown"; /*!< AirLift Firmware version */
   Adafruit_MQTT *_mqttV2; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   // TODO: Audit this, does it need to be here?

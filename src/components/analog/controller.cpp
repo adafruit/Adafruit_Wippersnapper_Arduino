@@ -1,5 +1,5 @@
 /*!
- * @file src/components/analogIn/controller.cpp
+ * @file src/components/analog/controller.cpp
  *
  * Controller for the analogin.proto API
  *
@@ -16,18 +16,45 @@
 #include "../expander/controller.h"
 #include "hardware.h"
 
+namespace {
 /*!
-    @brief  AnalogIn controller constructor
+    @brief  Reports an analog pin error. In offline (SD card) mode there is
+            no broker, so the error is only printed to the debug serial.
+            Otherwise, it is published to the broker via the error handler
+            (which also prints it).
+    @param  pin_name
+            The name of the pin that the error occurred on.
+    @param  error_msg
+            The error message.
+    @return Always false, so callers can `return reportPinError(...)` from
+            a failing handler.
 */
-AnalogInController::AnalogInController() {
-  _analogin_model = new AnalogInModel();
+bool reportPinError(const char *pin_name, const char *error_msg) {
+  if (Ws->_sdCardV2->isModeOffline()) {
+    WS_DEBUG_PRINT("[analog] ERROR on ");
+    WS_DEBUG_PRINTVAR(pin_name);
+    WS_DEBUG_PRINT(": ");
+    WS_DEBUG_PRINTLNVAR(error_msg);
+    return false;
+  }
+
+  Ws->error_handler->publishComponentError(pin_name, error_msg);
+  return false;
+}
+} // namespace
+
+/*!
+    @brief  Analog controller constructor
+*/
+AnalogController::AnalogController() {
+  _analogin_model = new AnalogModel();
   _mcu_ref_voltage = DEFAULT_MCU_VREF;
 }
 
 /*!
-    @brief  AnalogIn controller destructor
+    @brief  Analog controller destructor
 */
-AnalogInController::~AnalogInController() {
+AnalogController::~AnalogController() {
   for (size_t i = 0; i < _pins.size(); i++)
     delete _pins[i];
   delete _analogin_model;
@@ -38,7 +65,7 @@ AnalogInController::~AnalogInController() {
     @param  voltage
             The reference voltage.
 */
-void AnalogInController::SetRefVoltage(float voltage) {
+void AnalogController::SetRefVoltage(float voltage) {
   _mcu_ref_voltage = voltage;
 }
 
@@ -47,7 +74,7 @@ void AnalogInController::SetRefVoltage(float voltage) {
     @param  max_analog_pins
             The hardware's maximum number of analog pins.
 */
-void AnalogInController::SetMaxAnalogPins(uint8_t max_analog_pins) {
+void AnalogController::SetMaxAnalogPins(uint8_t max_analog_pins) {
   _pins.reserve(max_analog_pins);
 }
 
@@ -58,12 +85,11 @@ void AnalogInController::SetMaxAnalogPins(uint8_t max_analog_pins) {
             The nanopb input stream.
     @return True if the message was successfully routed, False otherwise.
 */
-bool AnalogInController::Router(pb_istream_t *stream) {
+bool AnalogController::Router(pb_istream_t *stream) {
   // Attempt to decode the AnalogIn B2D envelope
   ws_analogin_B2D b2d = ws_analogin_B2D_init_zero;
   if (!ws_pb_decode(stream, ws_analogin_B2D_fields, &b2d)) {
-    WS_DEBUG_PRINTLN(
-        "[analogin] ERROR: Unable to decode AnalogIn B2D envelope");
+    WS_DEBUG_PRINTLN("[analog] ERROR: Unable to decode AnalogIn B2D envelope");
     return false;
   }
 
@@ -77,7 +103,7 @@ bool AnalogInController::Router(pb_istream_t *stream) {
     res = Handle_AnalogInRemove(&b2d.payload.remove);
     break;
   default:
-    WS_DEBUG_PRINTLN("[analogin] WARNING: Unsupported AnalogIn payload");
+    WS_DEBUG_PRINTLN("[analog] WARNING: Unsupported AnalogIn payload");
     res = false;
     break;
   }
@@ -92,11 +118,10 @@ bool AnalogInController::Router(pb_istream_t *stream) {
             The pin number to remove.
     @return True if the pin was found and removed.
 */
-bool AnalogInController::RemovePin(uint8_t pin_num,
-                                   ExpanderHardware *expander) {
+bool AnalogController::RemovePin(uint8_t pin_num, ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
-    if (_pins[i]->GetPinNum() == pin_num &&
-        _pins[i]->GetExpanderDriver() == expander) {
+    if (_pins[i]->getPinNum() == pin_num &&
+        _pins[i]->getExpander() == expander) {
       delete _pins[i];
       _pins.erase(_pins.begin() + i);
       return true;
@@ -111,11 +136,10 @@ bool AnalogInController::RemovePin(uint8_t pin_num,
             The pin's number.
     @return Pointer to the analog pin, or nullptr if not found.
 */
-AnalogInHardware *AnalogInController::GetPin(uint8_t pin_num,
-                                             ExpanderHardware *expander) {
+AnalogHardware *AnalogController::GetPin(uint8_t pin_num,
+                                         ExpanderHardware *expander) {
   for (size_t i = 0; i < _pins.size(); i++) {
-    if (_pins[i]->GetPinNum() == pin_num &&
-        _pins[i]->GetExpanderDriver() == expander)
+    if (_pins[i]->getPinNum() == pin_num && _pins[i]->getExpander() == expander)
       return _pins[i];
   }
   return nullptr;
@@ -128,27 +152,24 @@ AnalogInHardware *AnalogInController::GetPin(uint8_t pin_num,
             The AnalogInAdd message.
     @return True if the pin was successfully added, False otherwise.
 */
-bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
-  WS_DEBUG_PRINTLN("[analogin] Handle_AnalogInAdd MESSAGE...");
+bool AnalogController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
+  WS_DEBUG_PRINTLN("[analog] Handle_AnalogInAdd MESSAGE...");
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
                                                 &expander_drv)) {
-    WS_DEBUG_PRINTLN("[analogin] ERROR: Unable to resolve pin name!");
-    return false;
+    return reportPinError(msg->pin_name, "Unable to resolve pin name");
   }
 
   // Validate the read mode
   if (msg->read_mode != ws_sensor_Type_T_RAW &&
       msg->read_mode != ws_sensor_Type_T_VOLTAGE) {
-    WS_DEBUG_PRINTLN("[analogin] ERROR: Invalid read mode in message!");
-    return false;
+    return reportPinError(msg->pin_name, "Invalid read mode");
   }
   // Validate the sample mode
   if (msg->sample_mode != ws_analogin_SampleMode_SM_TIMER &&
       msg->sample_mode != ws_analogin_SampleMode_SM_EVENT) {
-    WS_DEBUG_PRINTLN("[analogin] ERROR: Invalid sample mode in message!");
-    return false;
+    return reportPinError(msg->pin_name, "Invalid sample mode");
   }
 
   // If pin is being updated, remove the existing pin first
@@ -162,21 +183,21 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
   }
 
   // Create a new analog input pin
-  AnalogInHardware *new_pin = new AnalogInHardware(
-      pin_num, msg->read_mode, msg->sample_mode, (ulong)(msg->period * 1000.0f),
-      ref_voltage, expander_drv);
+  AnalogHardware *new_pin = new AnalogHardware(
+      msg->pin_name, pin_num, msg->read_mode, msg->sample_mode,
+      (ulong)(msg->period * 1000.0f), ref_voltage, expander_drv);
 
   // Add the pin to the controller's list
   _pins.push_back(new_pin);
 
   // Print out the pin's details
-  WS_DEBUG_PRINTLN("[analogin] Added new pin:");
+  WS_DEBUG_PRINTLN("[analog] Added new pin:");
   WS_DEBUG_PRINT("Pin Name: ");
-  WS_DEBUG_PRINTLNVAR(new_pin->GetPinNum());
+  WS_DEBUG_PRINTLNVAR(new_pin->getPinName());
   WS_DEBUG_PRINT("Period: ");
   WS_DEBUG_PRINTLNVAR(msg->period * 1000.0f);
   WS_DEBUG_PRINT("Read Mode: ");
-  ws_sensor_Type pin_read_mode = new_pin->GetReadMode();
+  ws_sensor_Type pin_read_mode = new_pin->getReadMode();
   WS_DEBUG_PRINTLNVAR(pin_read_mode);
 
   return true;
@@ -189,21 +210,19 @@ bool AnalogInController::Handle_AnalogInAdd(ws_analogin_Add *msg) {
             The AnalogInRemove message.
     @return True if the pin was successfully removed, False otherwise.
 */
-bool AnalogInController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
+bool AnalogController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin_name, pin_num,
                                                 &expander_drv)) {
-    WS_DEBUG_PRINTLN("[analogin] ERROR: Unable to resolve pin name!");
-    return false;
+    return reportPinError(msg->pin_name, "Unable to resolve pin name");
   }
 
   if (!RemovePin(pin_num, expander_drv)) {
-    WS_DEBUG_PRINTLN("[analogin] ERROR: Unable to find requested pin!");
-    return false;
+    return reportPinError(msg->pin_name, "Failed to find pin");
   }
 
-  WS_DEBUG_PRINT("[analogin] Removed pin: ");
+  WS_DEBUG_PRINT("[analog] Removed pin: ");
   WS_DEBUG_PRINTLNVAR(msg->pin_name);
   return true;
 }
@@ -215,18 +234,12 @@ bool AnalogInController::Handle_AnalogInRemove(ws_analogin_Remove *msg) {
             Pointer to the analog pin hardware object.
     @return True if the message was successfully recorded.
 */
-bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
-  uint8_t pin_num = pin->GetPinNum();
-  float value = pin->GetValue();
-  ws_sensor_Type read_type = pin->GetReadMode();
-
-  if (Ws->_sdCardV2->isModeOffline()) {
-    return Ws->_sdCardV2->LogGPIOSensorEventToSD(pin_num, value, read_type);
-  }
-
-  // Format pin name: expander pins use "EXP_0xNN_P", native pins use "AN"
+bool AnalogController::EncodePublishPinEvent(AnalogHardware *pin) {
+  float value = pin->getValue();
+  ws_sensor_Type read_type = pin->getReadMode();
+  uint8_t pin_num = pin->getPinNum();
   char c_pin_name[20];
-  ExpanderHardware *expander = pin->GetExpanderDriver();
+  ExpanderHardware *expander = pin->getExpander();
   if (expander != nullptr) {
     ExpanderHardware::FormatPinName(c_pin_name, sizeof(c_pin_name),
                                     expander->getAddress(), pin_num);
@@ -234,25 +247,28 @@ bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
     snprintf(c_pin_name, sizeof(c_pin_name), "A%d", pin_num);
   }
 
+  if (Ws->_sdCardV2->isModeOffline()) {
+    return Ws->_sdCardV2->LogGPIOSensorEventToSD(c_pin_name, value, read_type);
+  }
+
   if (read_type == ws_sensor_Type_T_RAW) {
-    if (!_analogin_model->EncodeAnalogInEventRaw(c_pin_name, value)) {
+    if (!_analogin_model->encodeAnalogInEventRaw(c_pin_name, value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIn raw adc message!");
       return false;
     }
   } else if (read_type == ws_sensor_Type_T_VOLTAGE) {
-    if (!_analogin_model->EncodeAnalogInEventVoltage(c_pin_name, value)) {
+    if (!_analogin_model->encodeAnalogInEventVoltage(c_pin_name, value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIn voltage message!");
       return false;
     }
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Invalid read type for AnalogInEvent message!");
-    return false;
+    return reportPinError(c_pin_name, "Invalid read type specified!");
   }
 
   // Publish the AnalogIn message to the broker
   WS_DEBUG_PRINT("Publishing AnalogInEvent...");
   if (!Ws->PublishD2b(ws_signal_DeviceToBroker_analogin_tag,
-                      _analogin_model->GetAnalogInD2B())) {
+                      _analogin_model->getAnalogInD2b())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analogin voltage event message, "
                      "moving onto the next pin!");
     return false;
@@ -263,41 +279,46 @@ bool AnalogInController::EncodePublishPinEvent(AnalogInHardware *pin) {
 }
 
 /*!
-    @brief  Update/polling loop for the AnalogIn controller.
+    @brief  Update/polling loop for the Analog controller.
     @param  force
             If true, forces a read on all pins regardless of period.
 */
-void AnalogInController::update(bool force) {
+void AnalogController::update(bool force) {
   // Bail-out if the vector is empty
   if (_pins.empty())
     return;
 
   for (size_t i = 0; i < _pins.size(); i++) {
-    AnalogInHardware *pin = _pins[i];
+    AnalogHardware *pin = _pins[i];
+    ws_sensor_Type read_mode = pin->getReadMode();
+    bool invalid_read_type = read_mode != ws_sensor_Type_T_RAW &&
+                             read_mode != ws_sensor_Type_T_VOLTAGE;
 
     // Is the pin ready for a new reading?
     if (!force) {
       bool ready;
-      if (pin->GetSampleMode() == ws_analogin_SampleMode_SM_EVENT) {
-        ready = pin->CheckEvent();
+      if (pin->getSampleMode() == ws_analogin_SampleMode_SM_EVENT) {
+        ready = pin->checkEvent();
       } else {
-        ready = pin->CheckTimer();
+        ready = pin->checkTimer();
       }
       if (!ready)
         continue;
     } else {
       // Sleep wake - force a new reading
-      if (pin->DidReadSend())
+      if (pin->didReadSend())
         continue;
-      pin->ReadValue();
+      pin->readValue();
     }
 
     if (!EncodePublishPinEvent(pin)) {
-      WS_DEBUG_PRINTLN("[analogin] ERROR: Unable to record pin value!");
-      pin->ResetSendFlag();
+      if (!invalid_read_type) {
+        reportPinError(pin->getPinName(), "Unable to record pin value!");
+      }
+      pin->resetSendFlag();
       continue;
     }
-    pin->MarkSent();
+    pin->markSent();
   }
 }
 
@@ -305,9 +326,9 @@ void AnalogInController::update(bool force) {
     @brief  Checks if all analog pins have been read and their values sent.
     @return True if all pins have been read and sent, False otherwise.
 */
-bool AnalogInController::UpdateComplete() {
+bool AnalogController::UpdateComplete() {
   for (size_t i = 0; i < _pins.size(); i++) {
-    if (!_pins[i]->DidReadSend()) {
+    if (!_pins[i]->didReadSend()) {
       return false;
     }
   }
@@ -317,8 +338,8 @@ bool AnalogInController::UpdateComplete() {
 /*!
     @brief  Resets all analog pins' did_read_send flags to false.
 */
-void AnalogInController::ResetFlags() {
+void AnalogController::ResetFlags() {
   for (size_t i = 0; i < _pins.size(); i++) {
-    _pins[i]->ResetSendFlag();
+    _pins[i]->resetSendFlag();
   }
 }
