@@ -642,13 +642,22 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
         haltErrorV2("ERROR: Unable to find WiFi network, rebooting soon...",
                     WS_LED_STATUS_WIFI_CONNECTING);
         break;
-      default:
+      case WS_SSID_SCAN_NO_IFACE:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
           _sleep_controller->HandleNetFSMFailure();
         }
 #endif
         haltErrorV2("ERROR: No network interface defined, rebooting soon...",
+                    WS_LED_STATUS_WIFI_CONNECTING);
+        break;
+      default:
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+        if (handle_sleep_mode_error) {
+          _sleep_controller->HandleNetFSMFailure();
+        }
+#endif
+        haltErrorV2("ERROR: Unknown WiFi scan result, rebooting soon...",
                     WS_LED_STATUS_WIFI_CONNECTING);
         break;
       }
