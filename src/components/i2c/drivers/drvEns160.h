@@ -57,11 +57,11 @@ public:
   bool begin() override {
     _ens160 = new ScioSense_ENS160((TwoWire *)_i2c, (uint8_t)_address);
 
-    // attempt to initialize ENS160
+    // attempt to initialize ENS160/161
     if (!_ens160->begin())
       return false;
 
-    // Set the mode to standard
+    // Set the mode to standard - In future 161 has ULP mode
     if (!_ens160->setMode(ENS160_OPMODE_STD))
       return false;
     return true;
@@ -118,9 +118,10 @@ public:
   }
 
   void ConfigureDefaultSensorTypes() override {
-    _default_sensor_types_count = 2;
+    _default_sensor_types_count = 3;
     _default_sensor_types[0] = wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
     _default_sensor_types[1] = wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC;
+    _default_sensor_types[2] = wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2;
   }
 
 protected:
