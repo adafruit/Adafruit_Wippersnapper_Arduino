@@ -218,12 +218,12 @@ void wippersnapper::set_ssid_pass() {
 
 /*!
 @brief   Performs a scan of local WiFi networks.
-@returns True if `_network_ssid` is found, False otherwise.
+@returns ws_ssid_scan_t result of the SSID scan.
 */
-bool wippersnapper::check_valid_ssid() {
+ws_ssid_scan_t wippersnapper::check_valid_ssid() {
   WS_DEBUG_PRINTLN("wippersnapper::check_valid_ssid");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
-  return false;
+  return WS_SSID_SCAN_NO_IFACE;
 }
 
 /*!
@@ -621,7 +621,19 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
-      if (!check_valid_ssid()) {
+      switch (check_valid_ssid()) {
+      case WS_SSID_SCAN_SSID_FOUND:
+        break;
+      case WS_SSID_SCAN_NO_NETWORKS:
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+        if (handle_sleep_mode_error) {
+          _sleep_controller->HandleNetFSMFailure();
+        }
+#endif
+        haltErrorV2("ERROR: No WiFi networks found, rebooting soon...",
+                    WS_LED_STATUS_WIFI_CONNECTING);
+        break;
+      case WS_SSID_SCAN_SSID_NOT_FOUND:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
           _sleep_controller->HandleNetFSMFailure();
@@ -629,6 +641,16 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
 #endif
         haltErrorV2("ERROR: Unable to find WiFi network, rebooting soon...",
                     WS_LED_STATUS_WIFI_CONNECTING);
+        break;
+      default:
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+        if (handle_sleep_mode_error) {
+          _sleep_controller->HandleNetFSMFailure();
+        }
+#endif
+        haltErrorV2("ERROR: No network interface defined, rebooting soon...",
+                    WS_LED_STATUS_WIFI_CONNECTING);
+        break;
       }
       // Attempt to connect to wireless network
       maxAttempts = 5;
@@ -991,6 +1013,8 @@ void wippersnapper::connect() {
   if (!generateDeviceUID()) {
     haltErrorV2("Unable to generate Device UID");
   }
+  WS_DEBUG_PRINT("Device UID: ");
+  WS_DEBUG_PRINTLNVAR(_device_uidV2);
 
   // If we are running in offline mode, we skip the network setup
   // and MQTT connection process and jump to the offline device config process

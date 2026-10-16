@@ -224,7 +224,7 @@ public:
   virtual void set_user_key();
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
   virtual void set_ssid_pass();
-  virtual bool check_valid_ssid();
+  virtual ws_ssid_scan_t check_valid_ssid();
   virtual void _connect();
   virtual void _disconnect(bool wifi_off = true);
   void connect();

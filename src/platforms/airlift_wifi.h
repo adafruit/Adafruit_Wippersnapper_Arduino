@@ -106,9 +106,9 @@ public:
 
   /*!
   @brief   Performs a scan of local WiFi networks.
-  @returns True if `_network_ssid` is found, False otherwise.
+  @returns ws_ssid_scan_t result of the SSID scan.
   */
-  bool check_valid_ssid() {
+  ws_ssid_scan_t check_valid_ssid() {
     // Disconnect WiFi from an AP if it was previously connected
     WiFi.disconnect();
     delay(100);
@@ -117,7 +117,7 @@ public:
     int n = WiFi.scanNetworks();
     if (n == 0) {
       WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
-      return false;
+      return WS_SSID_SCAN_NO_NETWORKS;
     }
 
     // Was the network within secrets.json found?
@@ -125,7 +125,7 @@ public:
       if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
         WS_DEBUG_PRINT("SSID found! RSSI: ");
         WS_DEBUG_PRINTLNVAR(WiFi.RSSI(i));
-        return true;
+        return WS_SSID_SCAN_SSID_FOUND;
       }
     }
 
@@ -139,7 +139,7 @@ public:
       WS_DEBUG_PRINTLN("dB");
     }
 
-    return false;
+    return WS_SSID_SCAN_SSID_NOT_FOUND;
   }
 
   /*!
