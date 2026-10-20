@@ -79,7 +79,9 @@ int ws_wdt::enable(int timeout_ms) {
 #ifdef ARDUINO_ARCH_ESP32
   // The first successful enable() subscribes this task to the TWDT; feed()
   // is a no-op until then unless the task is already subscribed.
-  _isEsp32WdtSet = (rc != 0);
+  // Watchdog.enable() returns the timeout in ms (0 on failure) rather than
+  // an esp_err_t, so confirm the subscription with the TWDT itself.
+  _isEsp32WdtSet = (esp_task_wdt_status(NULL) == ESP_OK);
 #endif
   return rc;
 #endif
