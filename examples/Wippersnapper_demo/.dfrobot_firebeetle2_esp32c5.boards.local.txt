@@ -1,0 +1,14 @@
+# Per-platform boards.local.txt override for the dfrobot_firebeetle2_esp32c5 CI target.
+#
+# ci-arduino's build_platform.py (--boards-local-txt) installs the most specific match as
+# <platform dir>/boards.local.txt before building this example:
+#   <example>/.<platform>.boards.local.txt > <example>/boards.local.txt > repo-root file > none
+#
+# The FireBeetle 2 ESP32-C5 has its own board entry (and ARDUINO_DFROBOT_FIREBEETLE_2_ESP32C5
+# define), but its PartitionScheme menu only offers default (1.2MB app), defaultffat,
+# rainmaker, rainmaker_4MB (no filesystem) and custom. WipperSnapper needs a ~1.9MB app plus a
+# LittleFS partition, matching the Wippersnapper_Boards definition (littlefs at 0x3D0000), so
+# the CI target selects PartitionScheme=default and this file points it at min_spiffs.
+# Drop this once arduino-esp32 ships a min_spiffs option for this board.
+dfrobot_firebeetle2_esp32c5.menu.PartitionScheme.default.build.partitions=min_spiffs
+dfrobot_firebeetle2_esp32c5.menu.PartitionScheme.default.upload.maximum_size=1966080

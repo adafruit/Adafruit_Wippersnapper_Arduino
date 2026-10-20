@@ -252,6 +252,15 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#elif defined(ARDUINO_DFROBOT_FIREBEETLE_2_ESP32C5)
+#define BOARD_ID "dfrobot-firebeetle2-esp32c5" ///< Board ID
+#define USE_LITTLEFS               ///< Use LittleFS for provisioning
+#define USE_STATUS_LED             ///< Single-colour onboard LED
+#define STATUS_LED_PIN LED_BUILTIN ///< GPIO15/D13, shared with GDI LCD_BL
+#define BOOT_BUTTON 28             ///< BOOT button (GPIO28)
+#ifdef BOARD_HAS_PSRAM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#endif
 #elif defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666)
 #define BOARD_ID "qualia-s3-rgb666"
 #define USE_TINYUSB
