@@ -114,10 +114,14 @@ public:
   /*!
       @brief  Sets the backlight control pin.
       @param  pin  Pin number for the backlight (-1 to disable).
+      @param  active_low  True if the backlight is active-low (driven LOW = on).
       @note   Move backlight pin into proto Add message instead of board
               defines.
   */
-  void setBacklightPin(int16_t pin) { _pin_bl = pin; }
+  void setBacklightPin(int16_t pin, bool active_low = false) {
+    _pin_bl = pin;
+    _bl_active_low = active_low;
+  }
 
   /*! @brief Shows the display splash screen, if supported. */
   virtual void showSplash() {}
@@ -194,19 +198,20 @@ protected:
     return false;
   }
 
-  int16_t _pin_cs;           ///< Chip Select pin
-  int16_t _pin_dc;           ///< Data/Command pin
-  int16_t _pin_mosi = -1;    ///< MOSI pin (TFT only)
-  int16_t _pin_sck = -1;     ///< SCK pin (TFT only)
-  int16_t _pin_rst;          ///< Reset pin
-  int16_t _pin_miso = -1;    ///< MISO pin (TFT only)
-  int16_t _pin_sram_cs = -1; ///< SRAM Chip Select pin (EPD only)
-  int16_t _pin_busy = -1;    ///< Busy pin (EPD only)
-  int16_t _pin_bl = -1;      ///< Backlight pin (-1 = not set)
-  uint8_t _text_sz = 1;      ///< Text size multiplier
-  int16_t _width;            ///< Display width
-  int16_t _height;           ///< Display height
-  uint8_t _rotation;         ///< Display rotation (0-3)
+  int16_t _pin_cs;             ///< Chip Select pin
+  int16_t _pin_dc;             ///< Data/Command pin
+  int16_t _pin_mosi = -1;      ///< MOSI pin (TFT only)
+  int16_t _pin_sck = -1;       ///< SCK pin (TFT only)
+  int16_t _pin_rst;            ///< Reset pin
+  int16_t _pin_miso = -1;      ///< MISO pin (TFT only)
+  int16_t _pin_sram_cs = -1;   ///< SRAM Chip Select pin (EPD only)
+  int16_t _pin_busy = -1;      ///< Busy pin (EPD only)
+  int16_t _pin_bl = -1;        ///< Backlight pin (-1 = not set)
+  bool _bl_active_low = false; ///< True if the backlight is active-low
+  uint8_t _text_sz = 1;        ///< Text size multiplier
+  int16_t _width;              ///< Display width
+  int16_t _height;             ///< Display height
+  uint8_t _rotation;           ///< Display rotation (0-3)
 
   /*! @brief Cached status bar layout and state. */
   int _statusbar_icons_y;         ///< Y position of status bar icons
