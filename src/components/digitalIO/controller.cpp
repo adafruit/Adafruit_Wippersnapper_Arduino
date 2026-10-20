@@ -126,16 +126,19 @@ bool DigitalIOController::Handle_DigitalIO_Add(ws_digitalio_Add *msg) {
                                              "Invalid GPIO direction");
     return false;
   }
-  if (msg->sample_mode == ws_digitalio_SampleMode_SM_UNSPECIFIED) {
-    Ws->error_handler->publishComponentError(msg->pin_name,
-                                             "Invalid sample mode");
-    return false;
-  }
-  if (msg->sample_mode == ws_digitalio_SampleMode_SM_TIMER &&
-      msg->period <= 0) {
-    Ws->error_handler->publishComponentError(msg->pin_name,
-                                             "Invalid period for timer mode");
-    return false;
+  // Output pins never hold a sample mode, only validate it for input pins
+  if (msg->gpio_direction != ws_digitalio_Direction_D_OUTPUT) {
+    if (msg->sample_mode == ws_digitalio_SampleMode_SM_UNSPECIFIED) {
+      Ws->error_handler->publishComponentError(msg->pin_name,
+                                               "Invalid sample mode");
+      return false;
+    }
+    if (msg->sample_mode == ws_digitalio_SampleMode_SM_TIMER &&
+        msg->period <= 0) {
+      Ws->error_handler->publishComponentError(msg->pin_name,
+                                               "Invalid period for timer mode");
+      return false;
+    }
   }
 
   // Resolve the pin number and owning expander driver (if any)

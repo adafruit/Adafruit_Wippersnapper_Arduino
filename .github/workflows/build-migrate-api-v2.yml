@@ -340,6 +340,7 @@ jobs:
             "itsybitsy_esp32",
             "wippersnapper_qtpy_esp32c3",
             "dfrobot_firebeetle2_esp32c5",
+            "lilygo_t_dongle_c5",
             "wippersnapper_feather_esp32c6"
           ]
         include:
@@ -348,6 +349,8 @@ jobs:
             arduino-platform: "wippersnapper_qtpy_esp32c3"
           - offset: "0x2000"
             arduino-platform: "dfrobot_firebeetle2_esp32c5"
+          - offset: "0x2000"
+            arduino-platform: "lilygo_t_dongle_c5"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
@@ -807,11 +810,14 @@ jobs:
         arduino-platform:
           [
             "wippersnapper_feather_esp32c6_debug",
+            "lilygo_t_dongle_c5_debug",
           ]
         include:
           - offset: "0x1000"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
+          - offset: "0x2000"
+            arduino-platform: "lilygo_t_dongle_c5_debug"
     steps:
       - uses: actions/setup-python@v7
         with:
@@ -872,7 +878,7 @@ jobs:
         run: |
           pip3 install esptool==5.6.0
       - name: build ESP32 platforms
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --boards-local-txt
       - name: Check artifacts
         run: |
           ls examples/wippersnapper_debug/build/*

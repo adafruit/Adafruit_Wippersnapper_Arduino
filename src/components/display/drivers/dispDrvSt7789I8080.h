@@ -91,7 +91,7 @@ public:
     // TODO: once the backlight routes through the digitalio/pwm controllers
     // (see begin()), release it there instead of driving the pin directly.
     if (_pin_bl >= 0)
-      digitalWrite(_pin_bl, LOW);
+      digitalWrite(_pin_bl, _bl_active_low ? HIGH : LOW);
     // Release the owned power rail (display Remove/replace deletes the driver,
     // so the panel powers down with it). Pass-through pins never reach here.
     if (_pin_power >= 0)
@@ -173,7 +173,7 @@ public:
     // controller and have this driver stop owning the pin.
     if (_pin_bl >= 0) {
       pinMode(_pin_bl, OUTPUT);
-      digitalWrite(_pin_bl, HIGH);
+      digitalWrite(_pin_bl, _bl_active_low ? LOW : HIGH);
       WS_DEBUG_PRINTLN("[display] Backlight ON");
     }
 

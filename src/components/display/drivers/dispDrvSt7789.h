@@ -48,7 +48,7 @@ public:
       _display = nullptr;
     }
     if (_pin_bl >= 0)
-      digitalWrite(_pin_bl, LOW);
+      digitalWrite(_pin_bl, _bl_active_low ? HIGH : LOW);
   }
 
   /*!
@@ -71,10 +71,10 @@ public:
     _display->setTextWrap(false);
     _display->setTextSize(_text_sz);
 
-    // Turn on backlight
+    // Turn on backlight (honor active-low panels)
     if (_pin_bl >= 0) {
       pinMode(_pin_bl, OUTPUT);
-      digitalWrite(_pin_bl, HIGH);
+      digitalWrite(_pin_bl, _bl_active_low ? LOW : HIGH);
       WS_DEBUG_PRINTLN("[display] Backlight ON");
     }
 

@@ -1,0 +1,17 @@
+# Per-platform boards.local.txt override for the lilygo_t_dongle_c5_debug CI target.
+#
+# ci-arduino's build_platform.py (--boards-local-txt) installs the most specific match as
+# <platform dir>/boards.local.txt before building this example:
+#   <example>/.<platform>.boards.local.txt > <example>/boards.local.txt > repo-root file > none
+#
+# Use it to give boards that reuse a generic BSP definition a unique define. The name should
+# match the Board ID in ws_boards.h, uppercased with underscores for dashes:
+# "lilygo-t-dongle-c5" -> -DWS_LILYGO_T_DONGLE_C5. Mirror it in platformio.ini build_flags.
+#
+# The LilyGO T-Dongle C5 has no boards.txt entry of its own, so it builds with the generic
+# Espressif esp32c5 board (ARDUINO_ESP32C5_DEV). That board's PSRAM menu sets build.defines,
+# and the menu value wins over the board key, so override both PSRAM menu keys (keeping
+# -DBOARD_HAS_PSRAM) as well as the board key:
+esp32c5.build.defines=-DWS_LILYGO_T_DONGLE_C5
+esp32c5.menu.PSRAM.disabled.build.defines=-DWS_LILYGO_T_DONGLE_C5
+esp32c5.menu.PSRAM.enabled.build.defines=-DBOARD_HAS_PSRAM -DWS_LILYGO_T_DONGLE_C5

@@ -962,6 +962,17 @@ public:
   virtual bool getEventLight(sensors_event_t *lightEvent) { return false; }
 
   /*!
+      @brief    Base implementation - Reads a light sensor and converts the
+                reading into lux. Only override this for drivers that report
+                a calibrated lux value (not raw counts).
+      @param    luxEvent
+                Light sensor reading, in lux (stored in luxEvent->light).
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventLux(sensors_event_t *luxEvent) { return false; }
+
+  /*!
       @brief    Base implementation - Reads a object pm10 std. sensor and
                 converts the reading into the expected SI unit.
       @param    pm10StdEvent
@@ -1190,6 +1201,10 @@ public:
       {ws_sensor_Type_T_LIGHT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventLight(event);
+       }},
+      {ws_sensor_Type_T_LUX,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventLux(event);
        }},
       {ws_sensor_Type_T_PRESSURE,
        [this](sensors_event_t *event) -> bool {
