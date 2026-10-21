@@ -61,6 +61,32 @@ bool ExpanderController::Router(pb_istream_t *stream) {
   case ws_expander_B2D_remove_tag:
     res = Handle_Remove(&b2d.payload.remove);
     break;
+  case ws_expander_B2D_modify_tag: {
+    // Modify = Remove the old component, then Add the new one. Decoded
+    // standalone so the nested Add's i2c settings callback survives.
+    ws_expander_Modify modify = ws_expander_Modify_init_zero;
+    Ws->_i2c_controller->SetupAddDecodeCallbacks(&modify.add.cfg_i2c);
+    if (!ws_pb_decode_oneof_submsg(&saved_stream, ws_expander_B2D_modify_tag,
+                                   ws_expander_Modify_fields, &modify)) {
+      WS_DEBUG_PRINTLN(
+          "[expander] ERROR: Failed to decode modify with settings");
+      return false;
+    }
+    // Bail before removing anything if there is no Add to replace it with.
+    if (!modify.has_add) {
+      Ws->error_handler->publishComponentError(
+          modify.has_remove && modify.remove.has_cfg_i2c
+              ? modify.remove.cfg_i2c.descriptor
+              : ws_i2c_Descriptor{},
+          "Modify requires an Add, nothing was removed");
+      return false;
+    }
+    if (modify.has_remove) {
+      (void)Handle_Remove(&modify.remove);
+    }
+    res = Handle_Add(&modify.add);
+    break;
+  }
   default:
     WS_DEBUG_PRINTLN("[expander] WARNING: Unsupported expander payload");
     res = false;

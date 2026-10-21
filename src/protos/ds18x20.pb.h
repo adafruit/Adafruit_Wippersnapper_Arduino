@@ -31,12 +31,23 @@ typedef struct _ws_ds18x20_Remove {
 } ws_ds18x20_Remove;
 
 /* *
+ A combined Remove/Add message, for when a user updates an existing component. Allows the user to change
+ deep settings and keeps protobuf traffic to a single message. */
+typedef struct _ws_ds18x20_Modify {
+    bool has_remove;
+    ws_ds18x20_Remove remove; /* * Specifies the old component/settings to remove */
+    bool has_add;
+    ws_ds18x20_Add add; /* * Specifies the new component/settings to configure after removal */
+} ws_ds18x20_Modify;
+
+/* *
  BrokerToDevice message envelope */
 typedef struct _ws_ds18x20_B2D {
     pb_size_t which_payload;
     union {
         ws_ds18x20_Add add;
         ws_ds18x20_Remove remove;
+        ws_ds18x20_Modify modify;
     } payload;
 } ws_ds18x20_B2D;
 
@@ -67,11 +78,13 @@ extern "C" {
 #define ws_ds18x20_D2B_init_default              {0, {ws_ds18x20_Event_init_default}}
 #define ws_ds18x20_Add_init_default              {"", 0, 0, 0, {_ws_sensor_Type_MIN, _ws_sensor_Type_MIN}}
 #define ws_ds18x20_Remove_init_default           {""}
+#define ws_ds18x20_Modify_init_default           {false, ws_ds18x20_Remove_init_default, false, ws_ds18x20_Add_init_default}
 #define ws_ds18x20_Event_init_default            {"", 0, {ws_sensor_Event_init_default, ws_sensor_Event_init_default}}
 #define ws_ds18x20_B2D_init_zero                 {0, {ws_ds18x20_Add_init_zero}}
 #define ws_ds18x20_D2B_init_zero                 {0, {ws_ds18x20_Event_init_zero}}
 #define ws_ds18x20_Add_init_zero                 {"", 0, 0, 0, {_ws_sensor_Type_MIN, _ws_sensor_Type_MIN}}
 #define ws_ds18x20_Remove_init_zero              {""}
+#define ws_ds18x20_Modify_init_zero              {false, ws_ds18x20_Remove_init_zero, false, ws_ds18x20_Add_init_zero}
 #define ws_ds18x20_Event_init_zero               {"", 0, {ws_sensor_Event_init_zero, ws_sensor_Event_init_zero}}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -80,8 +93,11 @@ extern "C" {
 #define ws_ds18x20_Add_period_tag                3
 #define ws_ds18x20_Add_types_tag                 4
 #define ws_ds18x20_Remove_onewire_pin_tag        1
+#define ws_ds18x20_Modify_remove_tag             1
+#define ws_ds18x20_Modify_add_tag                2
 #define ws_ds18x20_B2D_add_tag                   1
 #define ws_ds18x20_B2D_remove_tag                2
+#define ws_ds18x20_B2D_modify_tag                3
 #define ws_ds18x20_Event_onewire_pin_tag         1
 #define ws_ds18x20_Event_events_tag              2
 #define ws_ds18x20_D2B_event_tag                 1
@@ -89,11 +105,13 @@ extern "C" {
 /* Struct field encoding specification for nanopb */
 #define ws_ds18x20_B2D_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,add,payload.add),   1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,modify,payload.modify),   3)
 #define ws_ds18x20_B2D_CALLBACK NULL
 #define ws_ds18x20_B2D_DEFAULT NULL
 #define ws_ds18x20_B2D_payload_add_MSGTYPE ws_ds18x20_Add
 #define ws_ds18x20_B2D_payload_remove_MSGTYPE ws_ds18x20_Remove
+#define ws_ds18x20_B2D_payload_modify_MSGTYPE ws_ds18x20_Modify
 
 #define ws_ds18x20_D2B_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,event,payload.event),   1)
@@ -114,6 +132,14 @@ X(a, STATIC,   SINGULAR, STRING,   onewire_pin,       1)
 #define ws_ds18x20_Remove_CALLBACK NULL
 #define ws_ds18x20_Remove_DEFAULT NULL
 
+#define ws_ds18x20_Modify_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  remove,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  add,               2)
+#define ws_ds18x20_Modify_CALLBACK NULL
+#define ws_ds18x20_Modify_DEFAULT NULL
+#define ws_ds18x20_Modify_remove_MSGTYPE ws_ds18x20_Remove
+#define ws_ds18x20_Modify_add_MSGTYPE ws_ds18x20_Add
+
 #define ws_ds18x20_Event_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   onewire_pin,       1) \
 X(a, STATIC,   REPEATED, MESSAGE,  events,            2)
@@ -125,6 +151,7 @@ extern const pb_msgdesc_t ws_ds18x20_B2D_msg;
 extern const pb_msgdesc_t ws_ds18x20_D2B_msg;
 extern const pb_msgdesc_t ws_ds18x20_Add_msg;
 extern const pb_msgdesc_t ws_ds18x20_Remove_msg;
+extern const pb_msgdesc_t ws_ds18x20_Modify_msg;
 extern const pb_msgdesc_t ws_ds18x20_Event_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
@@ -132,6 +159,7 @@ extern const pb_msgdesc_t ws_ds18x20_Event_msg;
 #define ws_ds18x20_D2B_fields &ws_ds18x20_D2B_msg
 #define ws_ds18x20_Add_fields &ws_ds18x20_Add_msg
 #define ws_ds18x20_Remove_fields &ws_ds18x20_Remove_msg
+#define ws_ds18x20_Modify_fields &ws_ds18x20_Modify_msg
 #define ws_ds18x20_Event_fields &ws_ds18x20_Event_msg
 
 /* Maximum encoded size of messages (where known) */
@@ -139,7 +167,8 @@ extern const pb_msgdesc_t ws_ds18x20_Event_msg;
 #endif
 #define WS_DS18X20_DS18X20_PB_H_MAX_SIZE         ws_ds18x20_B2D_size
 #define ws_ds18x20_Add_size                      27
-#define ws_ds18x20_B2D_size                      29
+#define ws_ds18x20_B2D_size                      39
+#define ws_ds18x20_Modify_size                   37
 #define ws_ds18x20_Remove_size                   6
 #if defined(ws_sensor_Event_size)
 #define ws_ds18x20_D2B_size                      (24 + 2*ws_sensor_Event_size)

@@ -15,4 +15,7 @@ PB_BIND(ws_expander_Add, ws_expander_Add, 2)
 PB_BIND(ws_expander_Remove, ws_expander_Remove, AUTO)
 
 
+PB_BIND(ws_expander_Modify, ws_expander_Modify, 2)
+
+
 

@@ -64,6 +64,23 @@ bool UARTController::Router(pb_istream_t *stream) {
   case ws_uart_B2D_remove_tag:
     res = Handle_UartRemove(&b2d.payload.remove);
     break;
+  case ws_uart_B2D_modify_tag: {
+    // Modify = Remove the old component, then Add the new one. Bail before
+    // removing anything if there is no Add to replace it with.
+    auto &m = b2d.payload.modify;
+    if (!m.has_add) {
+      Ws->error_handler->publishComponentError(
+          m.has_remove ? m.remove.descriptor : ws_uart_Descriptor{},
+          "Modify requires an Add, nothing was removed");
+      res = false;
+      break;
+    }
+    if (m.has_remove) {
+      (void)Handle_UartRemove(&m.remove);
+    }
+    res = Handle_UartAdd(&m.add);
+    break;
+  }
   case ws_uart_B2D_write_tag:
     res = Handle_UartWrite(&b2d.payload.write);
     break;

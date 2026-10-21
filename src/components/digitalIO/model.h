@@ -1,7 +1,7 @@
 /*!
  * @file src/components/digitalIO/model.h
  *
- * Model for the digitalio.proto message.
+ * Model for the digital.proto message.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -18,7 +18,7 @@
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
-            messages from digitalio.proto.
+            messages from digital.proto.
 */
 class DigitalIOModel {
 public:
@@ -26,22 +26,22 @@ public:
   ~DigitalIOModel();
   // DigitalIOAdd
   bool DecodeDigitalIOAdd(pb_istream_t *stream);
-  ws_digitalio_Add *GetDigitalIOAddMsg();
+  ws_digital_Add *GetDigitalIOAddMsg();
   // DigitalIORemove
   bool DecodeDigitalIORemove(pb_istream_t *stream);
   // DigitalIOWrite
   bool DecodeDigitalIOWrite(pb_istream_t *stream);
-  ws_digitalio_Write *GetDigitalIOWriteMsg();
+  ws_digital_Write *GetDigitalIOWriteMsg();
   // DigitalIOEvent
   bool EncodeDigitalIOEvent(char *pin_name, bool value);
-  ws_digitalio_Event *GetDigitalIOEventMsg();
-  ws_digitalio_D2B *GetDigitalIOD2B();
+  ws_digital_Event *GetDigitalIOEventMsg();
+  ws_digital_D2B *GetDigitalIOD2B();
 
 private:
-  ws_digitalio_Add _msg_dio_add;       ///< Add message object
-  ws_digitalio_Remove _msg_dio_remove; ///< Remove message object
-  ws_digitalio_Event _msg_dio_event;   ///< Event message object
-  ws_digitalio_Write _msg_dio_write;   ///< Write message object
-  ws_digitalio_D2B _msg_dio_d2b;       ///< DigitalIO DeviceToBroker wrapper
+  ws_digital_Add _msg_dio_add;       ///< Add message object
+  ws_digital_Remove _msg_dio_remove; ///< Remove message object
+  ws_digital_Event _msg_dio_event;   ///< Event message object
+  ws_digital_Write _msg_dio_write;   ///< Write message object
+  ws_digital_D2B _msg_dio_d2b;       ///< DigitalIO DeviceToBroker wrapper
 };
 #endif // WS_DIGITALIO_MODEL_H

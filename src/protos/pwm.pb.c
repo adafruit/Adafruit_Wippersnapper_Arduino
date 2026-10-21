@@ -15,6 +15,9 @@ PB_BIND(ws_pwm_Add, ws_pwm_Add, AUTO)
 PB_BIND(ws_pwm_Remove, ws_pwm_Remove, AUTO)
 
 
+PB_BIND(ws_pwm_Modify, ws_pwm_Modify, AUTO)
+
+
 PB_BIND(ws_pwm_Write, ws_pwm_Write, AUTO)
 
 

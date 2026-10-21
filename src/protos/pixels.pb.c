@@ -15,6 +15,9 @@ PB_BIND(ws_pixels_Add, ws_pixels_Add, AUTO)
 PB_BIND(ws_pixels_Remove, ws_pixels_Remove, AUTO)
 
 
+PB_BIND(ws_pixels_Modify, ws_pixels_Modify, AUTO)
+
+
 PB_BIND(ws_pixels_Write, ws_pixels_Write, AUTO)
 
 

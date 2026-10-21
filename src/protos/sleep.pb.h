@@ -43,7 +43,7 @@ typedef struct _ws_sleep_TimerConfig {
 /* *
  Pin configuration for ext0 RTC wakeup source. */
 typedef struct _ws_sleep_Ext0Config {
-    char pin_name[32]; /* * Pin to wake up from. */
+    char pin[32]; /* * Pin to wake up from. */
     bool level; /* * Input level which will trigger wakeup (False = low, True = high) */
     bool pull; /* * Enable internal pull-up or pull-down resistors */
 } ws_sleep_Ext0Config;
@@ -103,7 +103,7 @@ extern "C" {
 /* Field tags (for use in manual encoding/decoding) */
 #define ws_sleep_D2B_goodnight_tag               1
 #define ws_sleep_TimerConfig_duration_tag        1
-#define ws_sleep_Ext0Config_pin_name_tag         1
+#define ws_sleep_Ext0Config_pin_tag              1
 #define ws_sleep_Ext0Config_level_tag            2
 #define ws_sleep_Ext0Config_pull_tag             3
 #define ws_sleep_SleepConfig_mode_tag            1
@@ -135,7 +135,7 @@ X(a, STATIC,   SINGULAR, UINT32,   duration,          1)
 #define ws_sleep_TimerConfig_DEFAULT NULL
 
 #define ws_sleep_Ext0Config_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, STRING,   pin_name,          1) \
+X(a, STATIC,   SINGULAR, STRING,   pin,               1) \
 X(a, STATIC,   SINGULAR, BOOL,     level,             2) \
 X(a, STATIC,   SINGULAR, BOOL,     pull,              3)
 #define ws_sleep_Ext0Config_CALLBACK NULL

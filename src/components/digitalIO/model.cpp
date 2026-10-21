@@ -1,7 +1,7 @@
 /*!
  * @file src/components/digitalIO/model.cpp
  *
- * Model for the digitalio.proto message.
+ * Model for the digital.proto message.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -39,7 +39,7 @@ DigitalIOModel::~DigitalIOModel() {
     @brief  Parses a DigitalIOAdd message.
     @return DigitalIOAdd message object.
 */
-ws_digitalio_Add *DigitalIOModel::GetDigitalIOAddMsg() { return &_msg_dio_add; }
+ws_digital_Add *DigitalIOModel::GetDigitalIOAddMsg() { return &_msg_dio_add; }
 
 /*!
     @brief  Parses a DigitalIORemove message.
@@ -53,14 +53,14 @@ bool DigitalIOModel::DecodeDigitalIORemove(pb_istream_t *stream) {
   memset(&_msg_dio_remove, 0, sizeof(_msg_dio_remove));
 
   // Decode the stream into a DigitalIORemove message
-  return pb_decode(stream, ws_digitalio_Remove_fields, &_msg_dio_remove);
+  return pb_decode(stream, ws_digital_Remove_fields, &_msg_dio_remove);
 }
 
 /*!
     @brief  Gets a DigitalIOWrite message.
     @return DigitalIOWrite message object.
 */
-ws_digitalio_Write *DigitalIOModel::GetDigitalIOWriteMsg() {
+ws_digital_Write *DigitalIOModel::GetDigitalIOWriteMsg() {
   return &_msg_dio_write;
 }
 
@@ -68,7 +68,7 @@ ws_digitalio_Write *DigitalIOModel::GetDigitalIOWriteMsg() {
     @brief  Gets a DigitalIOEvent message.
     @return DigitalIOEvent message object.
 */
-ws_digitalio_Event *DigitalIOModel::GetDigitalIOEventMsg() {
+ws_digital_Event *DigitalIOModel::GetDigitalIOEventMsg() {
   return &_msg_dio_event;
 }
 
@@ -76,7 +76,7 @@ ws_digitalio_Event *DigitalIOModel::GetDigitalIOEventMsg() {
     @brief  Gets a DigitalIO DeviceToBroker message struct.
     @return Pointer to a DigitalIO D2B message struct.
 */
-ws_digitalio_D2B *DigitalIOModel::GetDigitalIOD2B() { return &_msg_dio_d2b; }
+ws_digital_D2B *DigitalIOModel::GetDigitalIOD2B() { return &_msg_dio_d2b; }
 
 /*!
     @brief  Decodes a DigitalIOAdd message into the _msg_dio_add object
@@ -91,7 +91,7 @@ bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
   memset(&_msg_dio_add, 0, sizeof(_msg_dio_add));
 
   // Decode the stream into a DigitalIOAdd message
-  return pb_decode(stream, ws_digitalio_Add_fields, &_msg_dio_add);
+  return pb_decode(stream, ws_digital_Add_fields, &_msg_dio_add);
 }
 
 /*!
@@ -106,7 +106,7 @@ bool DigitalIOModel::DecodeDigitalIOWrite(pb_istream_t *stream) {
   // data
   memset(&_msg_dio_write, 0, sizeof(_msg_dio_write));
   // Decode the stream into a DigitalIOWrite message
-  return pb_decode(stream, ws_digitalio_Write_fields, &_msg_dio_write);
+  return pb_decode(stream, ws_digital_Write_fields, &_msg_dio_write);
 }
 
 /*!
@@ -123,7 +123,7 @@ bool DigitalIOModel::EncodeDigitalIOEvent(char *pin_name, bool value) {
   // Initialize the DigitalIOEvent
   memset(&_msg_dio_event, 0, sizeof(_msg_dio_event));
   // Fill the DigitalIOEvent
-  strncpy(_msg_dio_event.pin_name, pin_name, sizeof(_msg_dio_event.pin_name));
+  strncpy(_msg_dio_event.pin, pin_name, sizeof(_msg_dio_event.pin));
   _msg_dio_event.has_value = true;
   // Fill the DigitalIOEvent's SensorEvent sub-message
   _msg_dio_event.value.type = ws_sensor_Type_T_BOOLEAN;
@@ -132,7 +132,7 @@ bool DigitalIOModel::EncodeDigitalIOEvent(char *pin_name, bool value) {
 
   // Wrap the event in the D2B envelope
   memset(&_msg_dio_d2b, 0, sizeof(_msg_dio_d2b));
-  _msg_dio_d2b.which_payload = ws_digitalio_D2B_event_tag;
+  _msg_dio_d2b.which_payload = ws_digital_D2B_event_tag;
   _msg_dio_d2b.payload.event = _msg_dio_event;
 
   return true;

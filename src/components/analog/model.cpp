@@ -1,7 +1,7 @@
 /*!
  * @file src/components/analog/model.cpp
  *
- * Interfaces for the analogin.proto API
+ * Interfaces for the analog.proto API
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -45,14 +45,14 @@ bool AnalogModel::decodeAnalogInAdd(pb_istream_t *stream) {
   // data
   memset(&_msg_AnalogInAdd, 0, sizeof(_msg_AnalogInAdd));
   // Decode the stream into a AnalogInAdd message
-  return pb_decode(stream, ws_analogin_Add_fields, &_msg_AnalogInAdd);
+  return pb_decode(stream, ws_analog_Add_fields, &_msg_AnalogInAdd);
 }
 
 /*!
     @brief  Gets an AnalogInAdd message struct.
     @return Pointer to an AnalogInAdd message struct.
 */
-ws_analogin_Add *AnalogModel::getAnalogInAddMsg() { return &_msg_AnalogInAdd; }
+ws_analog_Add *AnalogModel::getAnalogInAddMsg() { return &_msg_AnalogInAdd; }
 
 /*!
     @brief  Decodes an AnalogInRemove message from a stream into an
@@ -66,14 +66,14 @@ bool AnalogModel::decodeAnalogInRemove(pb_istream_t *stream) {
   // data
   memset(&_msg_AnalogInRemove, 0, sizeof(_msg_AnalogInRemove));
   // Decode the stream into a AnalogInRemove message
-  return pb_decode(stream, ws_analogin_Remove_fields, &_msg_AnalogInRemove);
+  return pb_decode(stream, ws_analog_Remove_fields, &_msg_AnalogInRemove);
 }
 
 /*!
     @brief  Gets an AnalogInRemove message struct.
     @return Pointer to an AnalogInRemove message struct.
 */
-ws_analogin_Remove *AnalogModel::GetAnalogInRemoveMsg() {
+ws_analog_Remove *AnalogModel::GetAnalogInRemoveMsg() {
   return &_msg_AnalogInRemove;
 }
 
@@ -81,15 +81,13 @@ ws_analogin_Remove *AnalogModel::GetAnalogInRemoveMsg() {
     @brief  Gets an AnalogInEvent message struct.
     @return Pointer to an AnalogInEvent message struct.
 */
-ws_analogin_Event *AnalogModel::getAnalogInEvent() {
-  return &_msg_AnalogInEvent;
-}
+ws_analog_Event *AnalogModel::getAnalogInEvent() { return &_msg_AnalogInEvent; }
 
 /*!
     @brief  Gets an AnalogIn DeviceToBroker message struct.
     @return Pointer to an AnalogIn D2B message struct.
 */
-ws_analogin_D2B *AnalogModel::getAnalogInD2b() { return &_msg_AnalogInD2B; }
+ws_analog_D2B *AnalogModel::getAnalogInD2b() { return &_msg_AnalogInD2B; }
 
 /*!
     @brief  Encodes an AnalogInEvent message.
@@ -106,8 +104,7 @@ bool AnalogModel::encodeAnalogInEvent(const char *pin_name, float pin_value,
   // Initialize the AnalogInEvent message to default values
   memset(&_msg_AnalogInEvent, 0, sizeof(_msg_AnalogInEvent));
   // Fill the AnalogInEvent message's fields
-  strncpy(_msg_AnalogInEvent.pin_name, pin_name,
-          sizeof(_msg_AnalogInEvent.pin_name));
+  strncpy(_msg_AnalogInEvent.pin, pin_name, sizeof(_msg_AnalogInEvent.pin));
   _msg_AnalogInEvent.has_value = true;
   _msg_AnalogInEvent.value.type = read_type;
   _msg_AnalogInEvent.value.which_value = ws_sensor_Event_float_value_tag;
@@ -115,7 +112,7 @@ bool AnalogModel::encodeAnalogInEvent(const char *pin_name, float pin_value,
 
   // Wrap the event in the D2B envelope
   memset(&_msg_AnalogInD2B, 0, sizeof(_msg_AnalogInD2B));
-  _msg_AnalogInD2B.which_payload = ws_analogin_D2B_event_tag;
+  _msg_AnalogInD2B.which_payload = ws_analog_D2B_event_tag;
   _msg_AnalogInD2B.payload.event = _msg_AnalogInEvent;
 
   return true;
