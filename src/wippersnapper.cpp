@@ -1047,7 +1047,7 @@ void wippersnapper::connect() {
   if (!generateDeviceUID()) {
     haltErrorV2("Unable to generate Device UID");
   }
-  WS_DEBUG_PRINT("Device UID: ");
+  WS_DEBUG_PRINT("Device UID: io-wipper-");
   WS_DEBUG_PRINTLNVAR(_device_uidV2);
 
   // If we are running in offline mode, we skip the network setup
