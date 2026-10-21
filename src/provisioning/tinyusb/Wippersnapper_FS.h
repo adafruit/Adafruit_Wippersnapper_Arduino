@@ -61,5 +61,4 @@ private:
                             WipperSnapper, False otherwise. */
 };
 
-extern Wippersnapper WS;
 #endif // WIPPERSNAPPER_FS_H
