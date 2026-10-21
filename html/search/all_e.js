@@ -21,7 +21,7 @@ var searchData=
   ['provision',['provision',['../class_wippersnapper.html#ac85607d165af964fbf68f484cbcaa8b4',1,'Wippersnapper']]],
   ['prvperiod',['prvPeriod',['../structanalog_input_pin.html#ab852b1c695230fc21fb3b05b812269a0',1,'analogInputPin::prvPeriod()'],['../structdigital_input_pin.html#a15a04cb811efa54bb861d26e0809ed90',1,'digitalInputPin::prvPeriod()']]],
   ['prvpinval',['prvPinVal',['../structanalog_input_pin.html#ac240f200690bfdcee2b01c1602eadf89',1,'analogInputPin::prvPinVal()'],['../structdigital_input_pin.html#a84786dcb6d77cf4544bee328e0fb32d3',1,'digitalInputPin::prvPinVal()']]],
-  ['publish',['publish',['../class_wippersnapper.html#af9e242b83be299ce25ca28844d69f16b',1,'Wippersnapper']]],
+  ['publish',['publish',['../class_wippersnapper.html#ae303bcb034be173b5a45db83b285d219',1,'Wippersnapper']]],
   ['publishaddstrandresponse',['publishAddStrandResponse',['../classws__pixels.html#a0b4e384032b30f6d788bf1fb7f0f73e0',1,'ws_pixels']]],
   ['publishi2cresponse',['publishI2CResponse',['../_wippersnapper_8cpp.html#a800b48f16a16420ea0386810a30562c5',1,'Wippersnapper.cpp']]],
   ['publishpinconfigcomplete',['publishPinConfigComplete',['../class_wippersnapper.html#a54de9fcc48e4e39bbc7ec934d65cebcd',1,'Wippersnapper']]]
