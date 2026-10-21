@@ -24,7 +24,7 @@
 #include <map>
 #include <protos/i2c.pb.h>
 
-struct DecodedSetting;    ///< Forward declaration
+struct DecodedSetting;   ///< Forward declaration
 #define NO_MUX_CH 0xFFFF ///< No MUX channel specified
 
 /*! Size of the device name buffer, exactly matches ws_i2c_Add.name in
