@@ -127,6 +127,9 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memitem:aec23e93c65b322318d59c3ce232a8d22 inherit pub_methods_classdisp_drv_base"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_base.html#aec23e93c65b322318d59c3ce232a8d22">setTextSize</a> (uint8_t s)</td></tr>
 <tr class="memdesc:aec23e93c65b322318d59c3ce232a8d22 inherit pub_methods_classdisp_drv_base"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the text size for the display.  <a href="classdisp_drv_base.html#aec23e93c65b322318d59c3ce232a8d22">More...</a><br /></td></tr>
 <tr class="separator:aec23e93c65b322318d59c3ce232a8d22 inherit pub_methods_classdisp_drv_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba38593403c6a7f8bb686260a76df748 inherit pub_methods_classdisp_drv_base"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_base.html#aba38593403c6a7f8bb686260a76df748">drawBatteryIcon</a> (uint8_t bat)</td></tr>
+<tr class="memdesc:aba38593403c6a7f8bb686260a76df748 inherit pub_methods_classdisp_drv_base"><td class="mdescLeft">&#160;</td><td class="mdescRight">Draws the battery icon based on the current battery level.  <a href="classdisp_drv_base.html#aba38593403c6a7f8bb686260a76df748">More...</a><br /></td></tr>
+<tr class="separator:aba38593403c6a7f8bb686260a76df748 inherit pub_methods_classdisp_drv_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -200,8 +203,8 @@ int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <tr class="memdesc:a7d25022259f4f2329826c1145ccce124 inherit pro_attribs_classdisp_drv_base"><td class="mdescLeft">&#160;</td><td class="mdescRight">RSSI value for status bar. <br /></td></tr>
 <tr class="separator:a7d25022259f4f2329826c1145ccce124 inherit pro_attribs_classdisp_drv_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9aae1150e903dc1bcd55fc701a60247 inherit pro_attribs_classdisp_drv_base"><td class="memItemLeft" align="right" valign="top"><a id="af9aae1150e903dc1bcd55fc701a60247"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_base.html#af9aae1150e903dc1bcd55fc701a60247">_statusbar_bat</a></td></tr>
-<tr class="memdesc:af9aae1150e903dc1bcd55fc701a60247 inherit pro_attribs_classdisp_drv_base"><td class="mdescLeft">&#160;</td><td class="mdescRight">Battery level, as a percentage, for the status bar. <br /></td></tr>
+uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_base.html#af9aae1150e903dc1bcd55fc701a60247">_statusbar_bat</a> = 100</td></tr>
+<tr class="memdesc:af9aae1150e903dc1bcd55fc701a60247 inherit pro_attribs_classdisp_drv_base"><td class="mdescLeft">&#160;</td><td class="mdescRight">Battery level (%) for the status bar. <br /></td></tr>
 <tr class="separator:af9aae1150e903dc1bcd55fc701a60247 inherit pro_attribs_classdisp_drv_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1783ee0afa00df46a436d7d5fbe9cb28 inherit pro_attribs_classdisp_drv_base"><td class="memItemLeft" align="right" valign="top"><a id="a1783ee0afa00df46a436d7d5fbe9cb28"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_base.html#a1783ee0afa00df46a436d7d5fbe9cb28">_statusbar_mqtt_connected</a></td></tr>

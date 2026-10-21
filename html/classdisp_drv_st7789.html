@@ -60,6 +60,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classdisp_drv_st7789-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">dispDrvSt7789 Class Reference</div>  </div>
@@ -92,6 +93,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae0d4d117e7a5307840305df29ab047d5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_st7789.html#ae0d4d117e7a5307840305df29ab047d5">begin</a> () override</td></tr>
 <tr class="memdesc:ae0d4d117e7a5307840305df29ab047d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to initialize the ST7789 TFT driver.  <a href="#ae0d4d117e7a5307840305df29ab047d5">More...</a><br /></td></tr>
 <tr class="separator:ae0d4d117e7a5307840305df29ab047d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e44d615a643c12ffc086e38853b6fe3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_st7789.html#a8e44d615a643c12ffc086e38853b6fe3">drawBatteryIcon</a> (uint8_t bat) override</td></tr>
+<tr class="memdesc:a8e44d615a643c12ffc086e38853b6fe3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Draws the battery icon based on the current battery level.  <a href="#a8e44d615a643c12ffc086e38853b6fe3">More...</a><br /></td></tr>
+<tr class="separator:a8e44d615a643c12ffc086e38853b6fe3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac63dbd902d4ba42a19d81b5b02252aad"><td class="memItemLeft" align="right" valign="top"><a id="ac63dbd902d4ba42a19d81b5b02252aad"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_st7789.html#ac63dbd902d4ba42a19d81b5b02252aad">showSplash</a> () override</td></tr>
 <tr class="memdesc:ac63dbd902d4ba42a19d81b5b02252aad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Displays the splash screen on the display. <br /></td></tr>
@@ -131,6 +135,12 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memitem:aec23e93c65b322318d59c3ce232a8d22 inherit pub_methods_classdisp_drv_base"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_base.html#aec23e93c65b322318d59c3ce232a8d22">setTextSize</a> (uint8_t s)</td></tr>
 <tr class="memdesc:aec23e93c65b322318d59c3ce232a8d22 inherit pub_methods_classdisp_drv_base"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the text size for the display.  <a href="classdisp_drv_base.html#aec23e93c65b322318d59c3ce232a8d22">More...</a><br /></td></tr>
 <tr class="separator:aec23e93c65b322318d59c3ce232a8d22 inherit pub_methods_classdisp_drv_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a0146512d22e94f63e11cf6cb20fb351a"><td class="memItemLeft" align="right" valign="top">static const unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_st7789.html#a0146512d22e94f63e11cf6cb20fb351a">batteryIcon</a> (uint8_t bat)</td></tr>
+<tr class="memdesc:a0146512d22e94f63e11cf6cb20fb351a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Selects the battery icon for a battery level.  <a href="#a0146512d22e94f63e11cf6cb20fb351a">More...</a><br /></td></tr>
+<tr class="separator:a0146512d22e94f63e11cf6cb20fb351a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -204,8 +214,8 @@ int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <tr class="memdesc:a7d25022259f4f2329826c1145ccce124 inherit pro_attribs_classdisp_drv_base"><td class="mdescLeft">&#160;</td><td class="mdescRight">RSSI value for status bar. <br /></td></tr>
 <tr class="separator:a7d25022259f4f2329826c1145ccce124 inherit pro_attribs_classdisp_drv_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9aae1150e903dc1bcd55fc701a60247 inherit pro_attribs_classdisp_drv_base"><td class="memItemLeft" align="right" valign="top"><a id="af9aae1150e903dc1bcd55fc701a60247"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_base.html#af9aae1150e903dc1bcd55fc701a60247">_statusbar_bat</a></td></tr>
-<tr class="memdesc:af9aae1150e903dc1bcd55fc701a60247 inherit pro_attribs_classdisp_drv_base"><td class="mdescLeft">&#160;</td><td class="mdescRight">Battery level, as a percentage, for the status bar. <br /></td></tr>
+uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_base.html#af9aae1150e903dc1bcd55fc701a60247">_statusbar_bat</a> = 100</td></tr>
+<tr class="memdesc:af9aae1150e903dc1bcd55fc701a60247 inherit pro_attribs_classdisp_drv_base"><td class="mdescLeft">&#160;</td><td class="mdescRight">Battery level (%) for the status bar. <br /></td></tr>
 <tr class="separator:af9aae1150e903dc1bcd55fc701a60247 inherit pro_attribs_classdisp_drv_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1783ee0afa00df46a436d7d5fbe9cb28 inherit pro_attribs_classdisp_drv_base"><td class="memItemLeft" align="right" valign="top"><a id="a1783ee0afa00df46a436d7d5fbe9cb28"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdisp_drv_base.html#a1783ee0afa00df46a436d7d5fbe9cb28">_statusbar_mqtt_connected</a></td></tr>
@@ -316,6 +326,77 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <dl class="section return"><dt>Returns</dt><dd>True if the display was initialized successfully, false otherwise. </dd></dl>
 
 <p>Reimplemented from <a class="el" href="classdisp_drv_base.html#aaa14fa81c2c8c9fddfad678d37692895">dispDrvBase</a>.</p>
+
+</div>
+</div>
+<a id="a0146512d22e94f63e11cf6cb20fb351a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0146512d22e94f63e11cf6cb20fb351a">&#9670;&nbsp;</a></span>batteryIcon()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const unsigned char* dispDrvSt7789::batteryIcon </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>bat</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Selects the battery icon for a battery level. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bat</td><td>The battery level as a percentage (0-100). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the matching battery icon bitmap. </dd></dl>
+
+</div>
+</div>
+<a id="a8e44d615a643c12ffc086e38853b6fe3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e44d615a643c12ffc086e38853b6fe3">&#9670;&nbsp;</a></span>drawBatteryIcon()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void dispDrvSt7789::drawBatteryIcon </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>bat</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Draws the battery icon based on the current battery level. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bat</td><td>The current battery level as a percentage (0-100). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Reimplemented from <a class="el" href="classdisp_drv_base.html#aba38593403c6a7f8bb686260a76df748">dispDrvBase</a>.</p>
 
 </div>
 </div>

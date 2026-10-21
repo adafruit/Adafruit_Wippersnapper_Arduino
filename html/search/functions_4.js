@@ -24,6 +24,7 @@ var searchData=
   ['displaycontroller',['DisplayController',['../class_display_controller.html#a94b98744869e3f53296228a7d13f126f',1,'DisplayController']]],
   ['displaydeviceeventmessage',['displayDeviceEventMessage',['../class_wipper_snapper___component___i2_c.html#a7cf30fab3855a7d2cea10376ccc4be9f',1,'WipperSnapper_Component_I2C']]],
   ['displayhardware',['DisplayHardware',['../class_display_hardware.html#a2d72f6c8480925fc38026db833028ac2',1,'DisplayHardware']]],
+  ['drawbatteryicon',['drawBatteryIcon',['../classdisp_drv_base.html#aba38593403c6a7f8bb686260a76df748',1,'dispDrvBase::drawBatteryIcon()'],['../classdisp_drv_st7789.html#a8e44d615a643c12ffc086e38853b6fe3',1,'dispDrvSt7789::drawBatteryIcon()']]],
   ['drawstatusbar',['drawStatusBar',['../classdisp_drv_base.html#a3c33f07808ee898103e52f9f7ee99def',1,'dispDrvBase::drawStatusBar()'],['../classdisp_drv_st7789.html#aa32360e151c3b1f9a111bd189353e159',1,'dispDrvSt7789::drawStatusBar()'],['../classdrv_disp_think_ink_grayscale4_eaamfgn.html#af33beb4391bbed2163c56a714cbcb8f4',1,'drvDispThinkInkGrayscale4Eaamfgn::drawStatusBar()'],['../classdisp_drv_think_ink_grayscale4_t5.html#a5d09a3c92390e008a2dae37fa10a72f1',1,'dispDrvThinkInkGrayscale4T5::drawStatusBar()'],['../class_display_hardware.html#aee1d2cc09dbf2f0c7155616374c4696b',1,'DisplayHardware::drawStatusBar()']]],
   ['drvdispthinkinkgrayscale4eaamfgn',['drvDispThinkInkGrayscale4Eaamfgn',['../classdrv_disp_think_ink_grayscale4_eaamfgn.html#a6238518864b71a2a85ba718ce3b12299',1,'drvDispThinkInkGrayscale4Eaamfgn']]]
 ];

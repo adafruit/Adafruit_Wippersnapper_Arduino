@@ -1,6 +1,10 @@
 var searchData=
 [
   ['enabled',['enabled',['../structanalog_input_pin.html#a1dab202dc16a4a1d4a3e5da940a525da',1,'analogInputPin']]],
+  ['epd_5fbmp_5fbat_5f25',['epd_bmp_bat_25',['../icons_8h.html#a97a60c3a8a2783898b6b269a89e2ea00',1,'icons.h']]],
+  ['epd_5fbmp_5fbat_5f50',['epd_bmp_bat_50',['../icons_8h.html#abf3823dbc2b07f3b1218b38f2b21c961',1,'icons.h']]],
+  ['epd_5fbmp_5fbat_5f75',['epd_bmp_bat_75',['../icons_8h.html#a0b6557dcc2da53f02ea3ced9a8df35ce',1,'icons.h']]],
+  ['epd_5fbmp_5fbat_5fempty',['epd_bmp_bat_empty',['../icons_8h.html#ae6104aadab0389416901ebd40d4d4e61',1,'icons.h']]],
   ['epd_5fbmp_5fbat_5ffull',['epd_bmp_bat_full',['../icons_8h.html#a2fe2aa43f2979052037c219ec1819e65',1,'icons.h']]],
   ['epd_5fbmp_5fcloud_5foffline',['epd_bmp_cloud_offline',['../icons_8h.html#a6e97380ba8eb7e8c45923a09ad408d13',1,'icons.h']]],
   ['epd_5fbmp_5fcloud_5fonline',['epd_bmp_cloud_online',['../icons_8h.html#acf61edeac770a7ba7bc9a1ae730e781d',1,'icons.h']]],
