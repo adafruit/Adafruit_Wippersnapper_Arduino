@@ -959,7 +959,10 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
     }
     // Removing a device on the bare bus
   } else {
-    if (!RemoveDriver(msg->descriptor.address)) {
+    // Match the mux channel the Add stored on the driver (0 for a bare-bus
+    // device), as Handle_Add's pre-remove does; the default ANY never matched.
+    if (!RemoveDriver(msg->descriptor.address,
+                      msg->descriptor.address_space.mux_channel)) {
       Ws->error_handler->publishComponentError(
           msg->descriptor, "Failed to remove I2C device from bus");
       return false;
@@ -1246,7 +1249,8 @@ bool I2cController::RemoveDriver(uint32_t address, uint32_t mux_channel) {
       continue;
     if (driver->GetAddress() != address)
       continue;
-    if (driver->GetMuxChannel() != mux_channel)
+    if (mux_channel != WS_I2C_MUX_CHANNEL_ANY &&
+        driver->GetMuxChannel() != mux_channel)
       continue;
 
     std::vector<drvBase *>::iterator it =
