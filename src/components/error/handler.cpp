@@ -133,6 +133,18 @@ bool ErrorHandler::HandleThrottle(const ws_error_ThrottleError &throttle) {
   return true;
 }
 
+bool ErrorHandler::publishDeviceError(const char *error_msg) {
+  // memset, not init_zero assignment - see note in ErrorHandler()
+  memset(&_d2b_msg, 0, sizeof(_d2b_msg));
+  _d2b_msg.which_payload = ws_error_D2B_device_tag;
+
+  ws_error_DeviceError *dev = &_d2b_msg.payload.device;
+  dev->message.funcs.encode = encode_string_callback;
+  dev->message.arg = (void *)error_msg;
+
+  return publishD2B();
+}
+
 /*!
     @brief  Publishes a component error for a pin-based component.
     @param  pin
