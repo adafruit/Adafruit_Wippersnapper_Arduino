@@ -53,7 +53,10 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
           WS_VERSION="unknown"
           if git describe --dirty --tags >/dev/null 2>&1; then
             WS_VERSION=$(git describe --dirty --tags)
@@ -271,7 +274,10 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
           WS_VERSION="unknown"
           if git describe --dirty --tags >/dev/null 2>&1; then
             WS_VERSION=$(git describe --dirty --tags)
@@ -382,7 +388,10 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
           WS_VERSION="unknown"
           if git describe --dirty --tags >/dev/null 2>&1; then
             WS_VERSION=$(git describe --dirty --tags)
@@ -524,7 +533,10 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
           WS_VERSION="unknown"
           if git describe --dirty --tags >/dev/null 2>&1; then
             WS_VERSION=$(git describe --dirty --tags)
@@ -617,7 +629,10 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
           WS_VERSION="unknown"
           if git describe --dirty --tags >/dev/null 2>&1; then
             WS_VERSION=$(git describe --dirty --tags)
@@ -699,7 +714,10 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
           WS_VERSION="unknown"
           if git describe --dirty --tags >/dev/null 2>&1; then
             WS_VERSION=$(git describe --dirty --tags)
@@ -797,7 +815,10 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
           WS_VERSION="unknown"
           if git describe --dirty --tags >/dev/null 2>&1; then
             WS_VERSION=$(git describe --dirty --tags)
@@ -898,7 +919,10 @@ jobs:
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
-          git fetch --prune --unshallow --all --tags
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
           WS_VERSION="unknown"
           if git describe --dirty --tags >/dev/null 2>&1; then
             WS_VERSION=$(git describe --dirty --tags)
