@@ -10,7 +10,7 @@ on:
   pull_request:
     # 'edited' covers PRs retargeted to migrate-api-v2 after opening; each
     # build job skips edits that leave the base unchanged (title/body edits),
-    # and membrowse is skipped with them.
+    # and the merge/membrowse jobs are skipped with them.
     # No branch filter: PRs stacked on v2 feature branches need this build too
     # (only PRs whose merge result contains this file can run it, so v1 PRs
     # into main are unaffected).
