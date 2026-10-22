@@ -1,0 +1,281 @@
+# Hardware-in-the-loop (HIL) test suite.
+#
+# Compares two firmware builds on REAL hardware via the usbip-hil-controller and
+# posts the result to the PR. The headline case (#926/#927): a v1
+# ws.signal.pixelWrite to an uninitialised NeoPixel strand (pin D0, colour 200)
+# CRASHES + reboots release 1.0.0-beta.127, but the #927 fix logs
+# "Pixel strand not found" and continues with no reset.
+#
+# CONTRACT: low_ref = a published RELEASE, high_ref = THIS PR's build. Any other
+# combination routes to a custom-script note instead of the standard matrix.
+#
+# TRIGGER: it DEPENDS ON the build job. Three entry points:
+#   * `pull_request`  — runs from THIS branch's copy of the file (the only event
+#                       that does); waits for "WipperSnapper Build CI" on the head
+#                       SHA to succeed, then flashes that run's artifacts as HIGH.
+#   * `workflow_run`  — fires after "WipperSnapper Build CI" completes (engages
+#                       once this file is on the DEFAULT branch, i.e. post-merge).
+#   * `workflow_dispatch` — manual; pass build_run_id to pick the build artifacts.
+# (GitHub reads workflow_run/workflow_dispatch only from the DEFAULT branch, so on
+# a feature branch use the pull_request path to exercise it before merge.)
+# It runs only for board(s) the controller reports available — today only
+# qtpy_esp32s3_n4r2; the rest of the bench is skipped + listed in the comment.
+#
+# Required repo secrets:  TAILSCALE_AUTHKEY_TYETH, HIL_API_KEY_TYETH
+#                         (+ HIL_IO_USERNAME/HIL_IO_KEY/HIL_WIFI_SSID/HIL_WIFI_PASSWORD)
+# Optional repo vars:     HIL_API_BASE (default below), HIL_LOW_REF (release tag),
+#                         HIL_TARGETS (space-separated build targets; default qtpy)
+#
+# NOTE: the broker host:port the device's secrets.json points at is supplied by
+# the CONTROLLER — the write_secrets_msc stage fills io_url/io_port from the
+# per-session protomq it launches — so CI never passes a protomq address.
+name: HIL test suite
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: ["WipperSnapper Build CI"]   # the build job we depend on
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      low_ref:
+        description: "LOW ref — a published release tag (e.g. 1.0.0-beta.127)"
+        required: true
+        default: "1.0.0-beta.127"
+      high_ref:
+        description: "HIGH ref — informational; the HIGH build comes from build_run_id"
+        required: false
+        default: ""
+      build_run_id:
+        description: "WipperSnapper Build CI run id whose artifacts to flash as HIGH"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  actions: read          # download build artifacts from the triggering run
+  pull-requests: write   # post the result comment
+
+concurrency:
+  group: hil-${{ github.event.workflow_run.head_branch || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  hil:
+    # Run on a PR, on manual dispatch, or when the depended-on build succeeded.
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'pull_request')
+    runs-on: ubuntu-latest
+    timeout-minutes: 150   # generous: build wait (~95m) + flash/inject for 2 builds
+    env:
+      HIL_API_BASE: ${{ vars.HIL_API_BASE || 'http://tachyon-16ee27b8.ostrich-escalator.ts.net:8080' }}
+      HIL_API_TOKEN: ${{ secrets.HIL_API_KEY_TYETH }}
+      LOW_REF: ${{ github.event.inputs.low_ref || vars.HIL_LOW_REF || '1.0.0-beta.127' }}
+      TARGETS: ${{ vars.HIL_TARGETS || 'qtpy_esp32s3_n4r2' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fast, hardware-free gate: unit-test the host-reboot-tolerance helpers
+      # (wait_for_target_available / is_host_offline_failure) before the long
+      # build-wait so a broken driver helper fails in seconds, not after ~95 min.
+      - name: Unit-test HIL driver helpers
+        run: bash .github/workflows/hil-lib.test.sh
+
+      # Resolve which build's artifacts are HIGH, per trigger. For a PR this WAITS
+      # for "WipperSnapper Build CI" on the head SHA to finish (depends-on-build),
+      # then exports BUILD_RUN_ID for the fetch step.
+      - name: Resolve build run id
+        run: |
+          set -euo pipefail
+          case "${{ github.event_name }}" in
+            workflow_run)
+              echo "BUILD_RUN_ID=${{ github.event.workflow_run.id }}" >> "$GITHUB_ENV" ;;
+            workflow_dispatch)
+              echo "BUILD_RUN_ID=${{ github.event.inputs.build_run_id }}" >> "$GITHUB_ENV" ;;
+            pull_request)
+              SHA="${{ github.event.pull_request.head.sha }}"
+              # The build matrix can take 30+ min (occasionally up to ~1.5 h), so
+              # wait generously: 190 polls x 30 s ≈ 95 min.
+              ATTEMPTS=190; INTERVAL=30
+              echo "Waiting up to ~$((ATTEMPTS*INTERVAL/60)) min for 'WipperSnapper Build CI' for $SHA ..."
+              for i in $(seq 1 $ATTEMPTS); do
+                ROW=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "WipperSnapper Build CI" \
+                      --limit 50 --json databaseId,headSha,status,conclusion 2>/dev/null \
+                      | jq -c --arg sha "$SHA" 'map(select(.headSha==$sha)) | .[0] // empty' || echo "")
+                if [ -n "$ROW" ]; then
+                  ST=$(echo "$ROW" | jq -r .status); CC=$(echo "$ROW" | jq -r .conclusion)
+                  RID=$(echo "$ROW" | jq -r .databaseId)
+                  echo "  build run $RID: status=$ST conclusion=$CC ($((i*INTERVAL/60)) min elapsed)"
+                  if [ "$ST" = "completed" ]; then
+                    [ "$CC" = "success" ] || { echo "::error::WipperSnapper Build CI did not succeed ($CC)"; exit 1; }
+                    echo "BUILD_RUN_ID=$RID" >> "$GITHUB_ENV"; exit 0
+                  fi
+                else
+                  echo "  no build run yet for $SHA ($((i*INTERVAL/60)) min elapsed)"
+                fi
+                sleep $INTERVAL
+              done
+              echo "::error::timed out (~$((ATTEMPTS*INTERVAL/60)) min) waiting for WipperSnapper Build CI on $SHA"; exit 1 ;;
+          esac
+
+      # The contract: low=release, high=this PR. Manual runs with a high_ref that
+      # isn't this PR fall back to a custom run (handled out of band).
+      - name: Validate ref contract
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.high_ref }}" ]; then
+            echo "::warning::high_ref override given — not the standard (release-low, PR-high) matrix; consider a custom script run."
+          fi
+          gh release view "$LOW_REF" --repo "$GITHUB_REPOSITORY" >/dev/null \
+            || { echo "::error::LOW_REF '$LOW_REF' is not a published release (contract: low must be a release)"; exit 1; }
+
+      - name: Join Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY_TYETH }}
+          args: --hostname=gitlab-${{ github.run_id }} --accept-routes
+
+      # Initial availability snapshot (informational). Each driver RE-POLLS
+      # /v1/targets via wait_for_target_available before submitting every job, so a
+      # DUT host that wedges/reboots mid-suite is waited out (retry_after) rather
+      # than hard-failing the remaining tests — this snapshot is just for the log.
+      - name: Query controller target availability
+        id: avail
+        run: |
+          set -euo pipefail
+          curl -fsS -H "Authorization: Bearer $HIL_API_TOKEN" "$HIL_API_BASE/v1/targets" > targets.json
+          echo "Controller targets:"; jq -r '.targets[] | "  \(.target)\t\(.status)\t\(.reason // "")"' targets.json
+
+      - name: Fetch + extract firmware (release LOW, PR-build HIGH)
+        run: |
+          set -euo pipefail
+          mkdir -p fw
+          # HIGH source: the build matrix uploads per-platform 'build-files-<plat>-zip'
+          # artifacts, then a merge-job combines them into ONE 'build-files' artifact
+          # (deleting the per-platform ones). So pull that single artifact once; it
+          # contains wippersnapper.<plat>.fatfs.<ver>.zip for every target.
+          if [ -n "${BUILD_RUN_ID:-}" ]; then
+            gh run download "$BUILD_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+              --name build-files --dir fw/high-all || echo "::warning::no 'build-files' artifact on run $BUILD_RUN_ID"
+          fi
+          for T in $TARGETS; do
+            # LOW: release fatfs zip (contains the combined.bin)
+            gh release download "$LOW_REF" --repo "$GITHUB_REPOSITORY" \
+              --pattern "*${T}*fatfs*.zip" --dir "fw/low-$T" || echo "::warning::no LOW fatfs zip for $T"
+            if ls "fw/low-$T/"*.zip >/dev/null 2>&1; then
+              unzip -o "fw/low-$T/"*.zip -d "fw/low-$T" >/dev/null
+            fi
+            # HIGH: this target's fatfs zip lives inside the merged build-files artifact.
+            HZ=$(find fw/high-all -name "wippersnapper.${T}.fatfs.*.zip" 2>/dev/null | head -1 || true)
+            if [ -n "$HZ" ]; then
+              unzip -o "$HZ" -d "fw/high-$T" >/dev/null
+            else
+              echo "::warning::no HIGH fatfs zip for $T inside build-files"
+            fi
+          done
+          echo "Extracted combined.bins:"; find fw -name '*combined.bin' -printf '  %p\n' || true
+
+      # ── HIL test array ────────────────────────────────────────────────────
+      # Each test is its own driver script; it appends a section (+ per-test
+      # assets + an inline serial.log excerpt as proof) to the shared
+      # hil-out/comment.md, which the workflow owns (header written once here).
+      # A NEW comment is posted per run (not sticky) so each run is trackable.
+      # Tests run with if:always() so one failing test still lets the others run
+      # and report; the job still fails if any test fails. Add a test by adding a
+      # driver + a step here.
+      - name: Init PR summary
+        run: |
+          mkdir -p hil-out
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          {
+            echo "## 🔌 HIL test results — run [#${GITHUB_RUN_NUMBER}](${RUN_URL})"
+            echo
+            echo "commit \`${GITHUB_SHA:0:7}\` · $(date -u '+%Y-%m-%d %H:%M:%SZ') · full logs (serial.log / protomq.log / flash.log) in the **[\`hil-assets\` artifact](${RUN_URL}#artifacts)**"
+          } > hil-out/comment.md
+
+      # Test 1 — default gate: prove the end-to-end path (flash → secrets → checkin).
+      - name: "HIL test: check-in smoke test"
+        id: test_checkin
+        if: always()
+        env:
+          HIL_IO_USERNAME: ${{ secrets.HIL_IO_USERNAME }}
+          HIL_IO_KEY: ${{ secrets.HIL_IO_KEY }}
+          HIL_WIFI_SSID: ${{ secrets.HIL_WIFI_SSID }}
+          HIL_WIFI_PASSWORD: ${{ secrets.HIL_WIFI_PASSWORD }}
+        run: bash .github/workflows/hil-checkin-run.sh
+
+      # Test 2 — pixelWrite uninitialised-strand regression (#926, fixed by #927).
+      - name: "HIL test: pixelWrite regression (#926)"
+        id: test_pixelwrite_926
+        if: always()
+        env:
+          HIL_IO_USERNAME: ${{ secrets.HIL_IO_USERNAME }}
+          HIL_IO_KEY: ${{ secrets.HIL_IO_KEY }}
+          HIL_WIFI_SSID: ${{ secrets.HIL_WIFI_SSID }}
+          HIL_WIFI_PASSWORD: ${{ secrets.HIL_WIFI_PASSWORD }}
+        run: bash .github/workflows/hil-pixelwrite-run.sh
+
+      # Per-log artifacts — each log type is its own download entry in the run's
+      # Artifacts list (the PR comment links here). Files inside are named
+      # <target>-<test>-<type>.log so a specific test/target log is easy to find.
+      - name: Upload serial logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-serial-logs
+          path: hil-out/*-serial.log
+          if-no-files-found: ignore
+      - name: Upload protomq logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-protomq-logs
+          path: hil-out/*-protomq.log
+          if-no-files-found: ignore
+      - name: Upload flash logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-flash-logs
+          path: hil-out/*-flash.log
+          if-no-files-found: ignore
+      - name: Upload events logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-events-logs
+          path: hil-out/*.events.log
+          if-no-files-found: ignore
+      # Full bundle (comment.md + every log) as a one-stop fallback.
+      - name: Upload all HIL assets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-assets
+          path: hil-out/**
+          if-no-files-found: ignore
+
+      - name: Comment results on the PR
+        if: always() && github.event_name != 'workflow_dispatch'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          PR="${PR_NUMBER:-}"
+          if [ -z "$PR" ] && [ -n "${PR_HEAD:-}" ]; then
+            PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$PR_HEAD" --json number --jq '.[0].number' || true)
+          fi
+          if [ -n "${PR:-}" ] && [ -f hil-out/comment.md ]; then
+            # A NEW comment per run (not sticky) — each run is independently
+            # trackable; the header carries the run number/commit/link.
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file hil-out/comment.md
+            echo "posted new comment on PR #$PR"
+          else
+            echo "No PR (number='$PR', head='${PR_HEAD:-}') or no comment produced; skipping."
+          fi
