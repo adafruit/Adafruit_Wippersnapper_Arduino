@@ -78,6 +78,7 @@ bool CheckinModel::Checkin(const char *hardware_uid,
     @brief  Decodes a ws_checkin_Response message from the broker.
     @param  stream
             Incoming data stream from buffer.
+            Publishes a DeviceError to the broker on failure.
     @returns True if decoded successfully and the payload is a Response,
              False otherwise.
 */
@@ -93,15 +94,19 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
 
   // Decode the B2D wrapper message
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
-    WS_DEBUG_PRINTLN(
-        "[checkin] ERROR: Unable to decode CheckinB2D message from broker!");
+    const char *decode_error =
+        "[checkin] ERROR: Unable to decode CheckinB2D message from broker!";
+    WS_DEBUG_PRINTLN(decode_error);
+    Ws->error_handler->publishDeviceError(decode_error);
     return false;
   }
 
   // Validate the response message type
   if (_CheckinB2D.which_payload != ws_checkin_B2D_response_tag) {
-    WS_DEBUG_PRINTLN(
-        "[checkin] ERROR: CheckinB2D message from broker is not a Response!");
+    const char *payload_error =
+        "[checkin] ERROR: CheckinB2D message from broker is not a Response!";
+    WS_DEBUG_PRINTLN(payload_error);
+    Ws->error_handler->publishDeviceError(payload_error);
     return false;
   }
 

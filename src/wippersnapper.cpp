@@ -304,8 +304,7 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
   if (!Ws->CheckInModel->ProcessResponse(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response message");
-    return false;
+    Ws->haltErrorV2("Unable to decode checkin response, rebooting soon...");
   }
 
   // Validate the broker's response code, halt and reboot if invalid
