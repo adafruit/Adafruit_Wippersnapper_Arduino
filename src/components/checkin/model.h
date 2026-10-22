@@ -32,6 +32,9 @@ public:
   bool GotResponse();
   bool Complete();
   void configureSleep();
+  int32_t GetTotalGPIOPins();
+  int32_t GetTotalAnalogPins();
+  float GetReferenceVoltage();
 
 private:
   static bool
