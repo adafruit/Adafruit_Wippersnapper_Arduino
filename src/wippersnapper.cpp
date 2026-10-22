@@ -315,11 +315,11 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   // Configure controller settings using Response
   WS_DEBUG_PRINTLN("[checkin] Configuring controllers");
   WS_DEBUG_PRINT("[checkin] Total GPIO pins: ");
-  WS_DEBUG_PRINTLN(Ws->CheckInModel->GetTotalGPIOPins());
+  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalGPIOPins());
   WS_DEBUG_PRINT("[checkin] Total analog pins: ");
-  WS_DEBUG_PRINTLN(Ws->CheckInModel->GetTotalAnalogPins());
+  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalAnalogPins());
   WS_DEBUG_PRINT("[checkin] Reference voltage: ");
-  WS_DEBUG_PRINTLN(Ws->CheckInModel->GetReferenceVoltage());
+  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetReferenceVoltage());
   Ws->CheckInModel->ConfigureControllers();
   WS_DEBUG_PRINTLN("[checkin] Controllers configured");
   Ws->NetworkFSM();
