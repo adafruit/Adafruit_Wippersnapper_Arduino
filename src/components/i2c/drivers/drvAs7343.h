@@ -24,7 +24,8 @@
             Every spectral channel is a "light" subcomponent (raw ADC counts,
             not lux), so the device carries many TypesEntry of the same
             sensor type; GetSensorEvent() switches on the broker-assigned
-            entry.key to pick the channel.
+            entry.key to pick the channel. The detected flicker frequency
+            (0, 100 or 120 Hz) is a "raw" subcomponent.
 */
 /**************************************************************************/
 class drvAs7343 : public drvBase {
@@ -85,6 +86,9 @@ public:
     ok &= _as7343->setATIME(_atime);
     ok &= _as7343->setASTEP(kAstep);
     ok &= _as7343->setSMUXMode(AS7343_SMUX_18CH);
+    // Flicker detection runs on its own ADC (ADC5) alongside the spectral
+    // reads; the VIS channel is taken from a slot that ADC5 doesn't share.
+    ok &= _as7343->enableFlickerDetection(true);
     // TODO: expose the onboard LED (enableLED/setLEDCurrent) as a setting
     ok &= _as7343->enableLED(false);
     return ok;
@@ -158,7 +162,9 @@ public:
                 library starts the measurement and blocks until all three
                 SMUX cycles complete (~3x the integration time). Rejected
                 when the analog front end saturated: the gain is too high for
-                the light level.
+                the light level. Also caches the flicker result when a new,
+                unsaturated flicker measurement has completed, then clears
+                the latched FD_STATUS bits (write 1 to clear).
       @returns  True if the cache holds a valid sample, False otherwise.
   */
   bool ReadSensorData() override {
@@ -166,6 +172,25 @@ public:
     if (!_as7343->readAllChannels(readings) || _as7343->isAnalogSaturated())
       return false;
     memcpy(_readings, readings, sizeof(_readings));
+
+    uint8_t fd = _as7343->getFlickerStatus();
+    _flicker_valid = (fd & kFdMeasValid) && !(fd & kFdSaturated);
+    if (_flicker_valid) {
+      // Same decode as Adafruit_AS7343::getFlickerFrequency(): a frequency
+      // counts only when its "calculation valid" bit is set too
+      if ((fd & kFd120Valid) && (fd & kFd120))
+        _flicker_hz = 120;
+      else if ((fd & kFd100Valid) && (fd & kFd100))
+        _flicker_hz = 100;
+      else
+        _flicker_hz = 0;
+    }
+    if (fd != 0) {
+      _i2c->beginTransmission((uint8_t)_address);
+      _i2c->write(AS7343_FD_STATUS);
+      _i2c->write(fd);
+      _i2c->endTransmission();
+    }
     return true;
   }
 
@@ -173,22 +198,23 @@ public:
       @brief    Reads one spectral channel, selected by the broker-assigned
                 entry.key (the subcomponent's index in the component
                 definition), as a light event holding the channel's raw ADC
-                counts. Falls back to the base handler for anything that is
-                not a known light channel.
+                counts, or the flicker frequency in Hz for the raw entry.
+                Falls back to the base handler for anything else.
       @param    entry
                 The TypesEntry to read.
       @param    sensors_event
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the sensor event was obtained successfully, False
-                otherwise (including a digitally saturated channel).
+                otherwise (a digitally saturated channel, or no new valid
+                flicker measurement this pass).
   */
   bool GetSensorEvent(const ws_i2c_Add_TypesEntry &entry,
                       sensors_event_t *sensors_event) override {
     // Spectral channel for each entry.key, in the same order as the
     // subcomponents in Wippersnapper_Components i2c/as7343/definition.json -
-    // keep the two in sync.
-    // TODO: the flicker (FD) channel and the duplicate VIS readings from SMUX
-    // cycles 2 and 3 are not exposed.
+    // keep the two in sync. The flicker entry follows the light channels.
+    // TODO: the duplicate VIS readings from SMUX cycles 2 and 3 are not
+    // exposed.
     static const as7343_channel_t kKeyChannels[] = {
         AS7343_CHANNEL_F1,       AS7343_CHANNEL_F2,  AS7343_CHANNEL_FZ,
         AS7343_CHANNEL_F3,       AS7343_CHANNEL_F4,  AS7343_CHANNEL_F5,
@@ -196,8 +222,14 @@ public:
         AS7343_CHANNEL_F7,       AS7343_CHANNEL_F8,  AS7343_CHANNEL_NIR,
         AS7343_CHANNEL_VIS_TL_0,
     };
-    if (entry.value != ws_sensor_Type_T_LIGHT ||
-        entry.key >= sizeof(kKeyChannels) / sizeof(kKeyChannels[0]))
+    const size_t flicker_key = sizeof(kKeyChannels) / sizeof(kKeyChannels[0]);
+    if (entry.value == ws_sensor_Type_T_RAW && entry.key == flicker_key) {
+      if (!AttemptRead() || !_flicker_valid)
+        return false;
+      sensors_event->data[0] = _flicker_hz;
+      return true;
+    }
+    if (entry.value != ws_sensor_Type_T_LIGHT || entry.key >= flicker_key)
       return drvBase::GetSensorEvent(entry, sensors_event);
     if (!AttemptRead())
       return false;
@@ -217,6 +249,15 @@ protected:
   uint16_t _readings[18] = {0};           ///< Last 18-channel auto-SMUX sample
   uint8_t _atime = 29;                    ///< Current ATIME (integration steps)
   static constexpr uint16_t kAstep = 599; ///< ASTEP: 600 x 2.78us = 1.67ms
+  bool _flicker_valid = false; ///< Cached sample has a valid flicker result
+  uint8_t _flicker_hz = 0;     ///< Detected flicker: 0, 100 or 120 Hz
+  // FD_STATUS (0xE3) bits, datasheet Figure 49
+  static constexpr uint8_t kFdMeasValid = 0x20; ///< Measurement complete
+  static constexpr uint8_t kFdSaturated = 0x10; ///< Saturated, result invalid
+  static constexpr uint8_t kFd120Valid = 0x08;  ///< 120 Hz calculation valid
+  static constexpr uint8_t kFd100Valid = 0x04;  ///< 100 Hz calculation valid
+  static constexpr uint8_t kFd120 = 0x02;       ///< 120 Hz flicker detected
+  static constexpr uint8_t kFd100 = 0x01;       ///< 100 Hz flicker detected
 };
 
 #endif // DRV_AS7343_H
