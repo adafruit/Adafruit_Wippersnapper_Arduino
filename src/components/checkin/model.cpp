@@ -78,7 +78,8 @@ bool CheckinModel::Checkin(const char *hardware_uid,
     @brief  Decodes a ws_checkin_Response message from the broker.
     @param  stream
             Incoming data stream from buffer.
-    @returns True if decoded successfully, False otherwise.
+    @returns True if decoded successfully and the payload is a Response,
+             False otherwise.
 */
 bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   // Zero-out the B2D wrapper message
@@ -104,16 +105,36 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
     return false;
   }
 
-  // Validate the response content
-  if (_CheckinB2D.payload.response.response !=
-      ws_checkin_Response_Response_R_OK) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Invalid checkin_Response!");
-    return false;
-  }
-
-  // Set flag to indicate response received
-  _got_response = true;
   return true;
+}
+
+/*!
+    @brief  Validates the decoded ws_checkin_Response from the broker.
+            Must be called after ProcessResponse() returns true. If the
+            response is invalid, publishes a DeviceError to the broker.
+    @returns True if the response is R_OK, False otherwise.
+*/
+bool CheckinModel::ValidateResponse() {
+  _got_response = false;
+  const char *checkin_error = nullptr;
+  switch (_CheckinB2D.payload.response.response) {
+  case ws_checkin_Response_Response_R_OK:
+    // Set flag to indicate a valid response was received
+    _got_response = true;
+    return true;
+  case ws_checkin_Response_Response_R_BOARD_NOT_FOUND:
+    checkin_error = "[checkin] ERROR: Board not found in definition index";
+    break;
+  case ws_checkin_Response_Response_R_UNSPECIFIED:
+    checkin_error = "[checkin] ERROR: Unspecified checkin response from broker";
+    break;
+  default:
+    checkin_error = "[checkin] ERROR: Unknown checkin response from broker";
+    break;
+  }
+  WS_DEBUG_PRINTLN(checkin_error);
+  Ws->error_handler->publishDeviceError(checkin_error);
+  return false;
 }
 
 /*!

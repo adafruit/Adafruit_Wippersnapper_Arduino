@@ -28,6 +28,7 @@ public:
   ~CheckinModel();
   bool Checkin(const char *hardware_uid, const char *firmware_version);
   bool ProcessResponse(pb_istream_t *stream);
+  bool ValidateResponse();
   void ConfigureControllers();
   bool GotResponse();
   bool Complete();
