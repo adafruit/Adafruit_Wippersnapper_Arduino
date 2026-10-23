@@ -8,7 +8,9 @@ on:
     branches:
       - migrate-api-v2
   pull_request:
-    # 'edited' covers PRs retargeted to migrate-api-v2 after opening.
+    # 'edited' covers PRs retargeted to migrate-api-v2 after opening; each
+    # build job skips edits that leave the base unchanged (title/body edits),
+    # and membrowse is skipped with them.
     # No branch filter: PRs stacked on v2 feature branches need this build too
     # (only PRs whose merge result contains this file can run it, so v1 PRs
     # into main are unaffected).
@@ -26,6 +28,7 @@ jobs:
   # boot_app0 + app) using the board's definition.json from Wippersnapper_Boards.
   build-esp32sx-esptool:
     name: 🏗️ESP32-Sx
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -256,6 +259,7 @@ jobs:
   # (mirrors the rump `build-esp32sx` job in the v1 workflow).
   build-esp32sx:
     name: 🏗️ESP32-Sx
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -355,6 +359,7 @@ jobs:
 
   build-esp32:
     name: 🏗️ESP32/Cx
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -515,6 +520,7 @@ jobs:
 
   build-samd:
     name: 🏗️SAMD
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -607,6 +613,7 @@ jobs:
 
   build-rp2040:
     name: 🏗️RP2040
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -701,6 +708,7 @@ jobs:
 
   build-esp8266:
     name: 🏗️ESP8266
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -792,6 +800,7 @@ jobs:
 
   build-esp32sx-dev:
     name: 🏗️ESP32-Sx(DEV)
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -896,6 +905,7 @@ jobs:
 
   build-esp32-dev:
     name: 🏗️ESP32/Cx(DEV)
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -1049,6 +1059,7 @@ jobs:
   # which is dropped on migrate-api-v2. Doxygen only deploys from main/master.
   clang_and_doxy:
     name: 🔎Clang & Doxygen
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v7
