@@ -26,11 +26,17 @@
 */
 static bool encode_string_callback(pb_ostream_t *stream,
                                    const pb_field_t *field, void *const *arg) {
+  // encode the tag for the string field first
+  if (!pb_encode_tag_for_field(stream, field))
+    return false;
+
+  // get the string to encode
   const char *str = (const char *)*arg;
   if (!str) {
     return pb_encode_string(stream, (const uint8_t *)"", 0);
   }
 
+  // encode the string length and data
   size_t len = strlen(str);
   return pb_encode_string(stream, (const uint8_t *)str, len);
 }
