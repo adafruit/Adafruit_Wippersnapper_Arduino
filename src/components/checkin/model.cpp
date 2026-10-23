@@ -96,7 +96,7 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
     const char *decode_error =
         "[checkin] ERROR: Unable to decode CheckinB2D message from broker!";
-    WS_DEBUG_PRINTLN(decode_error);
+    WS_DEBUG_PRINTLNVAR(decode_error);
     Ws->error_handler->publishDeviceError(decode_error);
     return false;
   }
@@ -105,7 +105,7 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   if (_CheckinB2D.which_payload != ws_checkin_B2D_response_tag) {
     const char *payload_error =
         "[checkin] ERROR: CheckinB2D message from broker is not a Response!";
-    WS_DEBUG_PRINTLN(payload_error);
+    WS_DEBUG_PRINTLNVAR(payload_error);
     Ws->error_handler->publishDeviceError(payload_error);
     return false;
   }
@@ -137,7 +137,7 @@ bool CheckinModel::ValidateResponse() {
     checkin_error = "[checkin] ERROR: Unknown checkin response from broker";
     break;
   }
-  WS_DEBUG_PRINTLN(checkin_error);
+  WS_DEBUG_PRINTLNVAR(checkin_error);
   Ws->error_handler->publishDeviceError(checkin_error);
   return false;
 }
