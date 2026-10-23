@@ -146,12 +146,9 @@ bool CheckinModel::ValidateResponse() {
     @brief  Configures controllers limits based on board definition
 */
 void CheckinModel::ConfigureControllers() {
-  Ws->digital_io_controller->SetMaxDigitalPins(
-      _CheckinB2D.payload.response.total_gpio_pins);
-  Ws->analog_controller->SetRefVoltage(
-      _CheckinB2D.payload.response.reference_voltage);
-  Ws->analog_controller->SetMaxAnalogPins(
-      _CheckinB2D.payload.response.total_analog_pins);
+  Ws->digital_io_controller->SetMaxDigitalPins(GetTotalGPIOPins());
+  Ws->analog_controller->SetMaxAnalogPins(GetTotalAnalogPins());
+  Ws->analog_controller->SetRefVoltage(GetReferenceVoltage());
 }
 
 /*!
@@ -377,6 +374,30 @@ ws_sleep_SleepConfig *CheckinModel::GetSleepConfig() {
     return &_CheckinB2D.payload.response.sleep_config;
   }
   return nullptr;
+}
+
+/*!
+    @brief  Returns the total number of GPIO pins from the checkin response.
+    @returns Total GPIO pins.
+*/
+int32_t CheckinModel::GetTotalGPIOPins() {
+  return _CheckinB2D.payload.response.total_gpio_pins;
+}
+
+/*!
+    @brief  Returns the total number of analog pins from the checkin response.
+    @returns Total analog pins.
+*/
+int32_t CheckinModel::GetTotalAnalogPins() {
+  return _CheckinB2D.payload.response.total_analog_pins;
+}
+
+/*!
+    @brief  Returns the reference voltage from the checkin response.
+    @returns Reference voltage.
+*/
+float CheckinModel::GetReferenceVoltage() {
+  return _CheckinB2D.payload.response.reference_voltage;
 }
 
 /*!

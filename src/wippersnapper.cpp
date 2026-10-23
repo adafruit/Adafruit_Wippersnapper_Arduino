@@ -314,12 +314,18 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   Ws->NetworkFSM();
 
   // Configure sleep settings if enabled
-  WS_DEBUG_PRINTLN("[app] Configuring sleep...");
   Ws->CheckInModel->configureSleep();
 
   // Configure controller settings using Response
-  WS_DEBUG_PRINTLN("[app] Configuring controllers...");
+  WS_DEBUG_PRINTLN("[checkin] Configuring controllers");
+  WS_DEBUG_PRINT("[checkin] Total GPIO pins: ");
+  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalGPIOPins());
+  WS_DEBUG_PRINT("[checkin] Total analog pins: ");
+  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalAnalogPins());
+  WS_DEBUG_PRINT("[checkin] Reference voltage: ");
+  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetReferenceVoltage());
   Ws->CheckInModel->ConfigureControllers();
+  WS_DEBUG_PRINTLN("[checkin] Controllers configured");
   Ws->NetworkFSM();
 
   // Publish the complete response message to indicate the checkin
