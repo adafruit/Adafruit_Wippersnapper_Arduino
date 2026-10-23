@@ -36,7 +36,7 @@
     defined(ARDUINO_RASPBERRY_PI_PICO_2W) ||                                   \
     defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040) ||                                \
-    defined(ARDUINO_ARCH_RP2040)
+    defined(ARDUINO_XIAO_ESP32S3) || defined(ARDUINO_ARCH_RP2040)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
