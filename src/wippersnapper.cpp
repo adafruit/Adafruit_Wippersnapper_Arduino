@@ -33,6 +33,17 @@
 
 #include "wippersnapper.h"
 
+// Build metadata from generate_ws_version.py (CI / PlatformIO); kept out of
+// wippersnapper.h so a new commit only rebuilds the files that print it
+#if defined(__has_include)
+#if __has_include("ws_version.h")
+#include "ws_version.h"
+#endif
+#endif
+#ifndef WS_BUILD
+#define WS_BUILD "" ///< No generated build metadata (e.g. Arduino IDE builds)
+#endif
+
 wippersnapper *Ws;
 
 /*!
@@ -984,8 +995,7 @@ void wippersnapper::ProcessPackets() {
 */
 void PrintDeviceInfo() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
-  WS_DEBUG_PRINT("Firmware Version: ");
-  WS_DEBUG_PRINTLNVAR(WS_VERSION);
+  WS_DEBUG_PRINTLN("Firmware Version: " WS_VERSION WS_BUILD);
   WS_DEBUG_PRINTLN("API: Version 2");
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLNVAR(BOARD_ID);
@@ -1035,6 +1045,8 @@ void wippersnapper::connect() {
   delay(5 * ONE_SECOND_IN_MS); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON
                                // HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
+  // Tagged build line for HIL / log parsers - keep the format stable
+  WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
   // Dump device info to the serial monitor
   PrintDeviceInfo();
 
