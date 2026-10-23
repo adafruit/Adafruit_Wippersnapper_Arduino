@@ -134,7 +134,7 @@ bool ErrorHandler::HandleThrottle(const ws_error_ThrottleError &throttle) {
 }
 
 /*!
-    @brief  Publishes a device-level error, not tied to a component.
+    @brief  Publishes a device-level error not tied to a specific component.
     @param  error_msg
             The error message string.
     @return True if the error was published successfully, False otherwise.
