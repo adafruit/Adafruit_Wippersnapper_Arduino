@@ -135,7 +135,7 @@
 // Components (API v2)
 #include "components/analog/controller.h"
 #include "components/checkin/model.h"
-#include "components/digitalIO/controller.h"
+#include "components/digital/controller.h"
 #include "components/display/controller.h"
 #include "components/ds18x20/controller.h"
 #include "components/error/handler.h"
