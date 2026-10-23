@@ -58,7 +58,7 @@ private:
   void setAdcResolutionNative();
   void setAdcResolution(uint8_t resolution);
   void getScaleFactor();
-  uint8_t _name;                              ///< The pin's number.
+  uint8_t _pin_num;                           ///< The pin's number.
   char _pin_name[sizeof(ws_analog_Add::pin)]; ///< Broker-provided pin name.
   ws_sensor_Type _read_mode;         ///< Type of analog read (RAW or VOLTAGE)
   ws_analog_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)

@@ -1,5 +1,5 @@
 /*!
- * @file src/components/digitalIO/model.h
+ * @file src/components/digital/model.h
  *
  * Model for the digital.proto message.
  *
@@ -12,36 +12,36 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_DIGITALIO_MODEL_H
-#define WS_DIGITALIO_MODEL_H
+#ifndef WS_DIGITAL_MODEL_H
+#define WS_DIGITAL_MODEL_H
 #include "wippersnapper.h"
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from digital.proto.
 */
-class DigitalIOModel {
+class DigitalModel {
 public:
-  DigitalIOModel();
-  ~DigitalIOModel();
-  // DigitalIOAdd
-  bool DecodeDigitalIOAdd(pb_istream_t *stream);
-  ws_digital_Add *GetDigitalIOAddMsg();
-  // DigitalIORemove
-  bool DecodeDigitalIORemove(pb_istream_t *stream);
-  // DigitalIOWrite
-  bool DecodeDigitalIOWrite(pb_istream_t *stream);
-  ws_digital_Write *GetDigitalIOWriteMsg();
-  // DigitalIOEvent
-  bool EncodeDigitalIOEvent(char *pin_name, bool value);
-  ws_digital_Event *GetDigitalIOEventMsg();
-  ws_digital_D2B *GetDigitalIOD2B();
+  DigitalModel();
+  ~DigitalModel();
+  // DigitalAdd
+  bool DecodeDigitalAdd(pb_istream_t *stream);
+  ws_digital_Add *GetDigitalAddMsg();
+  // DigitalRemove
+  bool DecodeDigitalRemove(pb_istream_t *stream);
+  // DigitalWrite
+  bool DecodeDigitalWrite(pb_istream_t *stream);
+  ws_digital_Write *GetDigitalWriteMsg();
+  // DigitalEvent
+  bool EncodeDigitalEvent(char *pin_name, bool value);
+  ws_digital_Event *GetDigitalEventMsg();
+  ws_digital_D2B *GetDigitalD2B();
 
 private:
-  ws_digital_Add _msg_dio_add;       ///< Add message object
-  ws_digital_Remove _msg_dio_remove; ///< Remove message object
-  ws_digital_Event _msg_dio_event;   ///< Event message object
-  ws_digital_Write _msg_dio_write;   ///< Write message object
-  ws_digital_D2B _msg_dio_d2b;       ///< DigitalIO DeviceToBroker wrapper
+  ws_digital_Add _msg_digital_add;       ///< Add message object
+  ws_digital_Remove _msg_digital_remove; ///< Remove message object
+  ws_digital_Event _msg_digital_event;   ///< Event message object
+  ws_digital_Write _msg_digital_write;   ///< Write message object
+  ws_digital_D2B _msg_digital_d2b;       ///< Digital DeviceToBroker wrapper
 };
-#endif // WS_DIGITALIO_MODEL_H
+#endif // WS_DIGITAL_MODEL_H

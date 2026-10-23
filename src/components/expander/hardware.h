@@ -2,7 +2,7 @@
  * @file src/components/expander/hardware.h
  *
  * Base class hardware abstraction for WipperSnapper's I/O expander
- * component. Mirrors the Arduino/Wiring GPIO API so that digitalIO
+ * component. Mirrors the Arduino/Wiring GPIO API so that digital
  * can treat expander pins the same as native pins.
  *
  * Adafruit invests time and resources providing this open source code,

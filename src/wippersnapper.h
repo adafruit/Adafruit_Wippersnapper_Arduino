@@ -184,7 +184,7 @@ class CheckinModel;
 class ErrorHandler;
 class ExpanderController;
 class SensorModel;
-class DigitalIOController;
+class DigitalController;
 class DisplayController;
 class AnalogController;
 class DS18X20Controller;
@@ -283,8 +283,8 @@ public:
   CheckinModel *CheckInModel = nullptr;  ///< Instance of CheckinModel class
   ErrorHandler *error_handler = nullptr; ///< Instance of ErrorHandler class
   SensorModel *sensor_model = nullptr;   ///< Instance of SensorModel class
-  DigitalIOController *digital_io_controller =
-      nullptr; ///< Instance of DigitalIO controller class
+  DigitalController *digital_controller =
+      nullptr; ///< Instance of Digital controller class
   AnalogController *analog_controller =
       nullptr; ///< Instance of Analog controller
   DisplayController *_display_controller =
