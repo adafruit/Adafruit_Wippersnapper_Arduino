@@ -252,6 +252,9 @@ void wippersnapper::set_user_key() {
               configuration and Adafruit IO credentials.
 */
 void wippersnapper::provision() {
+  // Tagged build line, early so a board that halts while provisioning still
+  // reports it (may be missed on native USB; connect() prints it again)
+  WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
   // Publish the global Ws pointer and create the controllers
   _init();
 
