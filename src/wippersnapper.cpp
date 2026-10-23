@@ -40,7 +40,7 @@ wippersnapper *Ws;
 */
 wippersnapper::wippersnapper()
     : _mqttV2(nullptr), sensor_model(nullptr), error_handler(nullptr),
-      digital_io_controller(nullptr), analog_controller(nullptr),
+      digital_controller(nullptr), analog_controller(nullptr),
       _display_controller(nullptr), _ds18x20_controller(nullptr),
       _expander_controller(nullptr), _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
@@ -67,7 +67,7 @@ void wippersnapper::_init() {
   sensor_model = new SensorModel();
 
   // Initialize controller classes
-  digital_io_controller = new DigitalIOController();
+  digital_controller = new DigitalController();
   analog_controller = new AnalogController();
   _display_controller = new DisplayController();
   _ds18x20_controller = new DS18X20Controller();
@@ -92,7 +92,7 @@ wippersnapper::~wippersnapper() {
   delete this->_wdt;
   delete this->sensor_model;
   delete this->error_handler;
-  delete this->digital_io_controller;
+  delete this->digital_controller;
   delete this->_display_controller;
   delete this->analog_controller;
   delete this->_ds18x20_controller;
@@ -356,7 +356,7 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   case ws_signal_BrokerToDevice_checkin_tag:
     return handleCheckinResponse(stream);
   case ws_signal_BrokerToDevice_digital_tag:
-    return Ws->digital_io_controller->Router(stream);
+    return Ws->digital_controller->Router(stream);
   case ws_signal_BrokerToDevice_analog_tag:
     return Ws->analog_controller->Router(stream);
   case ws_signal_BrokerToDevice_pixels_tag:
@@ -1198,7 +1198,7 @@ void wippersnapper::loop() {
   }
 
   // Process all digital events
-  Ws->digital_io_controller->update();
+  Ws->digital_controller->update();
 
   // Process all analog input events
   Ws->analog_controller->update();
@@ -1250,8 +1250,8 @@ void wippersnapper::loopSleep() {
   // Track completion of all controllers
   bool all_controllers_complete = true;
 
-  if (!Ws->digital_io_controller->UpdateComplete()) {
-    Ws->digital_io_controller->update(true);
+  if (!Ws->digital_controller->UpdateComplete()) {
+    Ws->digital_controller->update(true);
     all_controllers_complete = false;
   }
 
@@ -1342,7 +1342,7 @@ void wippersnapper::loopSleep() {
             in the next loopsleep() cycle.
 */
 void wippersnapper::ResetAllControllerFlags() {
-  Ws->digital_io_controller->ResetFlags();
+  Ws->digital_controller->ResetFlags();
   Ws->analog_controller->ResetFlags();
   Ws->_ds18x20_controller->ResetFlags();
   Ws->_i2c_controller->ResetFlags();

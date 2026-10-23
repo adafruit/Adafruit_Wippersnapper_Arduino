@@ -47,7 +47,7 @@ bool reportPinError(const char *pin_name, const char *error_msg) {
     @brief  Analog controller constructor
 */
 AnalogController::AnalogController() {
-  _analogin_model = new AnalogModel();
+  _analog_model = new AnalogModel();
   _mcu_ref_voltage = DEFAULT_MCU_VREF;
 }
 
@@ -57,7 +57,7 @@ AnalogController::AnalogController() {
 AnalogController::~AnalogController() {
   for (size_t i = 0; i < _pins.size(); i++)
     delete _pins[i];
-  delete _analogin_model;
+  delete _analog_model;
 }
 
 /*!
@@ -86,10 +86,10 @@ void AnalogController::SetMaxAnalogPins(uint8_t max_analog_pins) {
     @return True if the message was successfully routed, False otherwise.
 */
 bool AnalogController::Router(pb_istream_t *stream) {
-  // Attempt to decode the AnalogIn B2D envelope
+  // Attempt to decode the Analog B2D envelope
   ws_analog_B2D b2d = ws_analog_B2D_init_zero;
   if (!ws_pb_decode(stream, ws_analog_B2D_fields, &b2d)) {
-    WS_DEBUG_PRINTLN("[analog] ERROR: Unable to decode AnalogIn B2D envelope");
+    WS_DEBUG_PRINTLN("[analog] ERROR: Unable to decode Analog B2D envelope");
     return false;
   }
 
@@ -97,10 +97,10 @@ bool AnalogController::Router(pb_istream_t *stream) {
   bool res = false;
   switch (b2d.which_payload) {
   case ws_analog_B2D_add_tag:
-    res = Handle_AnalogInAdd(&b2d.payload.add);
+    res = Handle_Analog_Add(&b2d.payload.add);
     break;
   case ws_analog_B2D_remove_tag:
-    res = Handle_AnalogInRemove(&b2d.payload.remove);
+    res = Handle_Analog_Remove(&b2d.payload.remove);
     break;
   case ws_analog_B2D_modify_tag: {
     // Modify = Remove the old component, then Add the new one. Bail before
@@ -114,13 +114,13 @@ bool AnalogController::Router(pb_istream_t *stream) {
       break;
     }
     if (m.has_remove) {
-      (void)Handle_AnalogInRemove(&m.remove);
+      (void)Handle_Analog_Remove(&m.remove);
     }
-    res = Handle_AnalogInAdd(&m.add);
+    res = Handle_Analog_Add(&m.add);
     break;
   }
   default:
-    WS_DEBUG_PRINTLN("[analog] WARNING: Unsupported AnalogIn payload");
+    WS_DEBUG_PRINTLN("[analog] WARNING: Unsupported Analog payload");
     res = false;
     break;
   }
@@ -163,14 +163,14 @@ AnalogHardware *AnalogController::GetPin(uint8_t pin_num,
 }
 
 /*!
-    @brief  Handles an AnalogInAdd message from the broker and adds a
+    @brief  Handles an AnalogAdd message from the broker and adds a
             new analog pin to the controller.
     @param  msg
-            The AnalogInAdd message.
+            The AnalogAdd message.
     @return True if the pin was successfully added, False otherwise.
 */
-bool AnalogController::Handle_AnalogInAdd(ws_analog_Add *msg) {
-  WS_DEBUG_PRINTLN("[analog] Handle_AnalogInAdd MESSAGE...");
+bool AnalogController::Handle_Analog_Add(ws_analog_Add *msg) {
+  WS_DEBUG_PRINTLN("[analog] Handle_Analog_Add MESSAGE...");
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin_num,
@@ -221,13 +221,13 @@ bool AnalogController::Handle_AnalogInAdd(ws_analog_Add *msg) {
 }
 
 /*!
-    @brief  Handles an AnalogInRemove message from the broker and removes
+    @brief  Handles an AnalogRemove message from the broker and removes
             the requested analog pin from the controller.
     @param  msg
-            The AnalogInRemove message.
+            The AnalogRemove message.
     @return True if the pin was successfully removed, False otherwise.
 */
-bool AnalogController::Handle_AnalogInRemove(ws_analog_Remove *msg) {
+bool AnalogController::Handle_Analog_Remove(ws_analog_Remove *msg) {
   uint8_t pin_num = 0;
   ExpanderHardware *expander_drv = nullptr;
   if (!Ws->_expander_controller->ResolvePinName(msg->pin, pin_num,
@@ -245,7 +245,7 @@ bool AnalogController::Handle_AnalogInRemove(ws_analog_Remove *msg) {
 }
 
 /*!
-    @brief  Encodes and publishes an AnalogInEvent message to the broker
+    @brief  Encodes and publishes an AnalogEvent message to the broker
             or logs to SD card if offline.
     @param  pin
             Pointer to the analog pin hardware object.
@@ -269,23 +269,23 @@ bool AnalogController::EncodePublishPinEvent(AnalogHardware *pin) {
   }
 
   if (read_type == ws_sensor_Type_T_RAW) {
-    if (!_analogin_model->encodeAnalogInEventRaw(c_pin_name, value)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIn raw adc message!");
+    if (!_analog_model->encodeAnalogEventRaw(c_pin_name, value)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode Analog raw adc message!");
       return false;
     }
   } else if (read_type == ws_sensor_Type_T_VOLTAGE) {
-    if (!_analogin_model->encodeAnalogInEventVoltage(c_pin_name, value)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIn voltage message!");
+    if (!_analog_model->encodeAnalogEventVoltage(c_pin_name, value)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode Analog voltage message!");
       return false;
     }
   } else {
     return reportPinError(c_pin_name, "Invalid read type specified!");
   }
 
-  // Publish the AnalogIn message to the broker
-  WS_DEBUG_PRINT("Publishing AnalogInEvent...");
+  // Publish the Analog message to the broker
+  WS_DEBUG_PRINT("Publishing AnalogEvent...");
   if (!Ws->PublishD2b(ws_signal_DeviceToBroker_analog_tag,
-                      _analogin_model->getAnalogInD2b())) {
+                      _analog_model->getAnalogD2b())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analog voltage event message, "
                      "moving onto the next pin!");
     return false;
