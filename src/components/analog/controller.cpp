@@ -269,12 +269,12 @@ bool AnalogController::EncodePublishPinEvent(AnalogHardware *pin) {
   }
 
   if (read_type == ws_sensor_Type_T_RAW) {
-    if (!_analog_model->encodeAnalogEventRaw(c_pin_name, value)) {
+    if (!_analog_model->EncodeAnalogEventRaw(c_pin_name, value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode Analog raw adc message!");
       return false;
     }
   } else if (read_type == ws_sensor_Type_T_VOLTAGE) {
-    if (!_analog_model->encodeAnalogEventVoltage(c_pin_name, value)) {
+    if (!_analog_model->EncodeAnalogEventVoltage(c_pin_name, value)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode Analog voltage message!");
       return false;
     }
@@ -285,7 +285,7 @@ bool AnalogController::EncodePublishPinEvent(AnalogHardware *pin) {
   // Publish the Analog message to the broker
   WS_DEBUG_PRINT("Publishing AnalogEvent...");
   if (!Ws->PublishD2b(ws_signal_DeviceToBroker_analog_tag,
-                      _analog_model->getAnalogD2b())) {
+                      _analog_model->GetAnalogD2b())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analog voltage event message, "
                      "moving onto the next pin!");
     return false;

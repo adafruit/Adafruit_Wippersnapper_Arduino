@@ -25,18 +25,18 @@ public:
   AnalogModel();
   ~AnalogModel();
   // AnalogAdd
-  bool decodeAnalogAdd(pb_istream_t *stream);
-  ws_analog_Add *getAnalogAddMsg();
+  bool DecodeAnalogAdd(pb_istream_t *stream);
+  ws_analog_Add *GetAnalogAddMsg();
   // AnalogRemove
-  bool decodeAnalogRemove(pb_istream_t *stream);
+  bool DecodeAnalogRemove(pb_istream_t *stream);
   ws_analog_Remove *GetAnalogRemoveMsg();
   // AnalogEvent
-  bool encodeAnalogEvent(const char *pin_name, float pin_value,
+  bool EncodeAnalogEvent(const char *pin_name, float pin_value,
                          ws_sensor_Type read_type);
-  bool encodeAnalogEventVoltage(const char *pin_name, float pin_value);
-  bool encodeAnalogEventRaw(const char *pin_name, float pin_value);
-  ws_analog_Event *getAnalogEvent();
-  ws_analog_D2B *getAnalogD2b();
+  bool EncodeAnalogEventVoltage(const char *pin_name, float pin_value);
+  bool EncodeAnalogEventRaw(const char *pin_name, float pin_value);
+  ws_analog_Event *GetAnalogEvent();
+  ws_analog_D2B *GetAnalogD2b();
 
 private:
   ws_analog_Add _msg_AnalogAdd;       ///< AnalogAdd message

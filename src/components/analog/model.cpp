@@ -40,7 +40,7 @@ AnalogModel::~AnalogModel() {
            The pb_istream_t stream to decode.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::decodeAnalogAdd(pb_istream_t *stream) {
+bool AnalogModel::DecodeAnalogAdd(pb_istream_t *stream) {
   // Zero-out the AnalogAdd message struct. to ensure we don't have any old
   // data
   memset(&_msg_AnalogAdd, 0, sizeof(_msg_AnalogAdd));
@@ -52,7 +52,7 @@ bool AnalogModel::decodeAnalogAdd(pb_istream_t *stream) {
     @brief  Gets an AnalogAdd message struct.
     @return Pointer to an AnalogAdd message struct.
 */
-ws_analog_Add *AnalogModel::getAnalogAddMsg() { return &_msg_AnalogAdd; }
+ws_analog_Add *AnalogModel::GetAnalogAddMsg() { return &_msg_AnalogAdd; }
 
 /*!
     @brief  Decodes an AnalogRemove message from a stream into an
@@ -61,7 +61,7 @@ ws_analog_Add *AnalogModel::getAnalogAddMsg() { return &_msg_AnalogAdd; }
            The pb_istream_t stream to decode.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::decodeAnalogRemove(pb_istream_t *stream) {
+bool AnalogModel::DecodeAnalogRemove(pb_istream_t *stream) {
   // Zero-out the AnalogRemove message struct. to ensure we don't have any old
   // data
   memset(&_msg_AnalogRemove, 0, sizeof(_msg_AnalogRemove));
@@ -81,13 +81,13 @@ ws_analog_Remove *AnalogModel::GetAnalogRemoveMsg() {
     @brief  Gets an AnalogEvent message struct.
     @return Pointer to an AnalogEvent message struct.
 */
-ws_analog_Event *AnalogModel::getAnalogEvent() { return &_msg_AnalogEvent; }
+ws_analog_Event *AnalogModel::GetAnalogEvent() { return &_msg_AnalogEvent; }
 
 /*!
     @brief  Gets an Analog DeviceToBroker message struct.
     @return Pointer to an Analog D2B message struct.
 */
-ws_analog_D2B *AnalogModel::getAnalogD2b() { return &_msg_AnalogD2B; }
+ws_analog_D2B *AnalogModel::GetAnalogD2b() { return &_msg_AnalogD2B; }
 
 /*!
     @brief  Encodes an AnalogEvent message.
@@ -99,7 +99,7 @@ ws_analog_D2B *AnalogModel::getAnalogD2b() { return &_msg_AnalogD2B; }
            The type of sensor event to encode.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::encodeAnalogEvent(const char *pin_name, float pin_value,
+bool AnalogModel::EncodeAnalogEvent(const char *pin_name, float pin_value,
                                     ws_sensor_Type read_type) {
   // Initialize the AnalogEvent message to default values
   memset(&_msg_AnalogEvent, 0, sizeof(_msg_AnalogEvent));
@@ -126,12 +126,12 @@ bool AnalogModel::encodeAnalogEvent(const char *pin_name, float pin_value,
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::encodeAnalogEventRaw(const char *pin_name, float pin_value) {
+bool AnalogModel::EncodeAnalogEventRaw(const char *pin_name, float pin_value) {
   WS_DEBUG_PRINT("[analog] Pin: ");
   WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Raw Value: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
-  return encodeAnalogEvent(pin_name, pin_value, ws_sensor_Type_T_RAW);
+  return EncodeAnalogEvent(pin_name, pin_value, ws_sensor_Type_T_RAW);
 }
 
 /*!
@@ -142,11 +142,11 @@ bool AnalogModel::encodeAnalogEventRaw(const char *pin_name, float pin_value) {
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::encodeAnalogEventVoltage(const char *pin_name,
+bool AnalogModel::EncodeAnalogEventVoltage(const char *pin_name,
                                            float pin_value) {
   WS_DEBUG_PRINT("[analog] Pin: ");
   WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Voltage: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
-  return encodeAnalogEvent(pin_name, pin_value, ws_sensor_Type_T_VOLTAGE);
+  return EncodeAnalogEvent(pin_name, pin_value, ws_sensor_Type_T_VOLTAGE);
 }
