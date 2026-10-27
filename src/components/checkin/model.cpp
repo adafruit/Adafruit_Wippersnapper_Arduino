@@ -146,7 +146,7 @@ bool CheckinModel::ValidateResponse() {
     @brief  Configures controllers limits based on board definition
 */
 void CheckinModel::ConfigureControllers() {
-  Ws->digital_io_controller->SetMaxDigitalPins(GetTotalGPIOPins());
+  Ws->digital_controller->SetMaxDigitalPins(GetTotalGPIOPins());
   Ws->analog_controller->SetMaxAnalogPins(GetTotalAnalogPins());
   Ws->analog_controller->SetRefVoltage(GetReferenceVoltage());
 }
