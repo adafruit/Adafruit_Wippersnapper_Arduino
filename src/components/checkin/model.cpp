@@ -78,7 +78,9 @@ bool CheckinModel::Checkin(const char *hardware_uid,
     @brief  Decodes a ws_checkin_Response message from the broker.
     @param  stream
             Incoming data stream from buffer.
-    @returns True if decoded successfully, False otherwise.
+            Publishes a DeviceError to the broker on failure.
+    @returns True if decoded successfully and the payload is a Response,
+             False otherwise.
 */
 bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   // Zero-out the B2D wrapper message
@@ -92,28 +94,52 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
 
   // Decode the B2D wrapper message
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
-    WS_DEBUG_PRINTLN(
-        "[checkin] ERROR: Unable to decode CheckinB2D message from broker!");
+    const char *decode_error =
+        "[checkin] ERROR: Unable to decode CheckinB2D message from broker!";
+    WS_DEBUG_PRINTLNVAR(decode_error);
+    Ws->error_handler->publishDeviceError(decode_error);
     return false;
   }
 
   // Validate the response message type
   if (_CheckinB2D.which_payload != ws_checkin_B2D_response_tag) {
-    WS_DEBUG_PRINTLN(
-        "[checkin] ERROR: CheckinB2D message from broker is not a Response!");
+    const char *payload_error =
+        "[checkin] ERROR: CheckinB2D message from broker is not a Response!";
+    WS_DEBUG_PRINTLNVAR(payload_error);
+    Ws->error_handler->publishDeviceError(payload_error);
     return false;
   }
 
-  // Validate the response content
-  if (_CheckinB2D.payload.response.response !=
-      ws_checkin_Response_Response_R_OK) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Invalid checkin_Response!");
-    return false;
-  }
-
-  // Set flag to indicate response received
-  _got_response = true;
   return true;
+}
+
+/*!
+    @brief  Validates the decoded ws_checkin_Response from the broker.
+            Must be called after ProcessResponse() returns true. If the
+            response is invalid, publishes a DeviceError to the broker.
+    @returns True if the response is R_OK, False otherwise.
+*/
+bool CheckinModel::ValidateResponse() {
+  _got_response = false;
+  const char *checkin_error = nullptr;
+  switch (_CheckinB2D.payload.response.response) {
+  case ws_checkin_Response_Response_R_OK:
+    // Set flag to indicate a valid response was received
+    _got_response = true;
+    return true;
+  case ws_checkin_Response_Response_R_BOARD_NOT_FOUND:
+    checkin_error = "[checkin] ERROR: Board not found in definition index";
+    break;
+  case ws_checkin_Response_Response_R_UNSPECIFIED:
+    checkin_error = "[checkin] ERROR: Unspecified checkin response from broker";
+    break;
+  default:
+    checkin_error = "[checkin] ERROR: Unknown checkin response from broker";
+    break;
+  }
+  WS_DEBUG_PRINTLNVAR(checkin_error);
+  Ws->error_handler->publishDeviceError(checkin_error);
+  return false;
 }
 
 /*!
@@ -145,10 +171,10 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   CheckinModel *model = (CheckinModel *)*arg;
 
   // Set up callbacks for ALL component types
-  response->component_adds.digital_adds.funcs.decode = &cbDigitalIOAdds;
+  response->component_adds.digital_adds.funcs.decode = &cbDigitalAdds;
   response->component_adds.digital_adds.arg = model;
 
-  response->component_adds.analog_adds.funcs.decode = &cbAnalogInAdds;
+  response->component_adds.analog_adds.funcs.decode = &cbAnalogAdds;
   response->component_adds.analog_adds.arg = model;
 
   response->component_adds.servo_adds.funcs.decode = &cbServoAdds;
@@ -178,37 +204,37 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
 }
 
 /*!
-    @brief    Callback for decoding DigitalIO Add messages.
+    @brief    Callback for decoding Digital Add messages.
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
     @returns  True if decoded and executed successfully, False otherwise.
 */
-bool CheckinModel::cbDigitalIOAdds(pb_istream_t *stream,
-                                   const pb_field_t *field, void **arg) {
+bool CheckinModel::cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
+                                 void **arg) {
   ws_digital_Add add_msg = ws_digital_Add_init_zero;
   if (!pb_decode(stream, ws_digital_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digital add");
     return false;
   }
-  return Ws->digital_io_controller->Handle_DigitalIO_Add(&add_msg);
+  return Ws->digital_controller->Handle_Digital_Add(&add_msg);
 }
 
 /*!
-    @brief    Callback for decoding AnalogIn Add messages.
+    @brief    Callback for decoding Analog Add messages.
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
     @returns  True if decoded and executed successfully, False otherwise.
 */
-bool CheckinModel::cbAnalogInAdds(pb_istream_t *stream, const pb_field_t *field,
-                                  void **arg) {
+bool CheckinModel::cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
+                                void **arg) {
   ws_analog_Add add_msg = ws_analog_Add_init_zero;
   if (!pb_decode(stream, ws_analog_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analog add");
     return false;
   }
-  return Ws->analog_controller->Handle_AnalogInAdd(&add_msg);
+  return Ws->analog_controller->Handle_Analog_Add(&add_msg);
 }
 
 /*!

@@ -27,6 +27,7 @@ public:
   ErrorHandler();
   ~ErrorHandler();
   bool Router(pb_istream_t *stream);
+  bool publishDeviceError(const char *error_msg);
   bool publishComponentError(const char *pin, const char *error_msg);
   bool publishComponentError(ws_i2c_Descriptor i2c, const char *error_msg);
   bool publishComponentError(ws_spi_Descriptor spi, const char *error_msg);
