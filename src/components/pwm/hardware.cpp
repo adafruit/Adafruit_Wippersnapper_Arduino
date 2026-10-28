@@ -189,8 +189,6 @@ ExpanderHardware *PWMHardware::GetExpanderDriver() { return _expander_drv; }
     @param  value The value to write
     @return true if the value was successfully written, false otherwise
 */
-bool PWMHardware::analogWrite(uint32_t value) {
-  return ledcWrite(_pin, value);
-}
+bool PWMHardware::analogWrite(uint32_t value) { return ledcWrite(_pin, value); }
 
 #endif // ARDUINO_ARCH_ESP32
