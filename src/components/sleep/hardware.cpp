@@ -281,6 +281,29 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
   // we fall back to light sleep for other pins Check if pin is RTC-capable for
   // deep sleep GPIO wakeup
   if (esp_sleep_is_valid_wakeup_gpio(pin)) {
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+    // ESP32-P4 has no ext0 or deep sleep GPIO wakeup, its LP IOs (GPIO0-15)
+    // wake from deep sleep via ext1, with pulls set through the RTC GPIO API
+    if (pin_pull) {
+      if (pin_level) {
+        rtc_gpio_pullup_dis(pin);
+        rtc_gpio_pulldown_en(pin);
+      } else {
+        rtc_gpio_pulldown_dis(pin);
+        rtc_gpio_pullup_en(pin);
+      }
+    } else {
+      rtc_gpio_pullup_dis(pin);
+      rtc_gpio_pulldown_dis(pin);
+    }
+    rc = esp_sleep_enable_ext1_wakeup_io(1ULL << pin,
+                                         pin_level ? ESP_EXT1_WAKEUP_ANY_HIGH
+                                                   : ESP_EXT1_WAKEUP_ANY_LOW);
+    if (rc != ESP_OK) {
+      WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable ext1 wakeup");
+      return false;
+    }
+#else
     // RTC-capable, use deep sleep GPIO wakeup
     esp_deepsleep_gpio_wake_up_mode_t wakeup_mode =
         pin_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW;
@@ -290,6 +313,7 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
           "[sleep] ERROR: Failed to enable deep sleep GPIO wakeup");
       return false;
     }
+#endif
   } else {
     // Not RTC-capable, fall back to light sleep GPIO wakeup
     WS_DEBUG_PRINTLN(
