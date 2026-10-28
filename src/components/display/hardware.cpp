@@ -636,7 +636,7 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
   // carried as a full ws.digital.Add so it composes like any other pin
   // (direction/inversion/initial write).
   //
-  // Ownership rules: if the pin is already registered with the digitalio
+  // Ownership rules: if the pin is already registered with the digital
   // controller (added by the user as a component), the display must not
   // claim, drive, or release it — pass through only when it is already an
   // OUTPUT driving the panel's enable level, else fail the Add. Otherwise
@@ -648,11 +648,10 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
       bool enable_level = !msg->power.is_inverted;
       ws_digital_Direction dir;
       bool value;
-      if (Ws->digital_io_controller->QueryPinState((uint8_t)power, &dir,
-                                                   &value)) {
+      if (Ws->digital_controller->QueryPinState((uint8_t)power, &dir, &value)) {
         if (dir == ws_digital_Direction_D_OUTPUT && value == enable_level) {
           WS_DEBUG_PRINTLN("[display] Power-enable pin already driven by "
-                           "digitalio at the enable level - passing through "
+                           "digital at the enable level - passing through "
                            "(display does not take ownership)");
         } else {
           publishAndLogError(

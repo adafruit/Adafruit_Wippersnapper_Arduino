@@ -57,7 +57,7 @@ jobs:
         run: ${{ matrix.setup_cmd }}
 
       - name: Run Membrowse Onboard Action
-        uses: membrowse/membrowse-action/onboard-action@v1
+        uses: membrowse/membrowse-action/onboard-action@1c76611a52b08b316352dbe51c3209b23262b01a  # v1.2.17
         with:
           target_name: ${{ matrix.target_name }}
           num_commits: ${{ github.event.inputs.num_commits }}

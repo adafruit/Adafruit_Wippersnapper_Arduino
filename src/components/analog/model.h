@@ -24,24 +24,24 @@ class AnalogModel {
 public:
   AnalogModel();
   ~AnalogModel();
-  // AnalogInAdd
-  bool decodeAnalogInAdd(pb_istream_t *stream);
-  ws_analog_Add *getAnalogInAddMsg();
-  // AnalogInRemove
-  bool decodeAnalogInRemove(pb_istream_t *stream);
-  ws_analog_Remove *GetAnalogInRemoveMsg();
-  // AnalogInEvent
-  bool encodeAnalogInEvent(const char *pin_name, float pin_value,
-                           ws_sensor_Type read_type);
-  bool encodeAnalogInEventVoltage(const char *pin_name, float pin_value);
-  bool encodeAnalogInEventRaw(const char *pin_name, float pin_value);
-  ws_analog_Event *getAnalogInEvent();
-  ws_analog_D2B *getAnalogInD2b();
+  // AnalogAdd
+  bool DecodeAnalogAdd(pb_istream_t *stream);
+  ws_analog_Add *GetAnalogAddMsg();
+  // AnalogRemove
+  bool DecodeAnalogRemove(pb_istream_t *stream);
+  ws_analog_Remove *GetAnalogRemoveMsg();
+  // AnalogEvent
+  bool EncodeAnalogEvent(const char *pin_name, float pin_value,
+                         ws_sensor_Type read_type);
+  bool EncodeAnalogEventVoltage(const char *pin_name, float pin_value);
+  bool EncodeAnalogEventRaw(const char *pin_name, float pin_value);
+  ws_analog_Event *GetAnalogEvent();
+  ws_analog_D2B *GetAnalogD2b();
 
 private:
-  ws_analog_Add _msg_AnalogInAdd;       ///< AnalogInAdd message
-  ws_analog_Remove _msg_AnalogInRemove; ///< AnalogInRemove message
-  ws_analog_Event _msg_AnalogInEvent;   ///< AnalogInEvent message
-  ws_analog_D2B _msg_AnalogInD2B;       ///< AnalogIn DeviceToBroker wrapper
+  ws_analog_Add _msg_AnalogAdd;       ///< AnalogAdd message
+  ws_analog_Remove _msg_AnalogRemove; ///< AnalogRemove message
+  ws_analog_Event _msg_AnalogEvent;   ///< AnalogEvent message
+  ws_analog_D2B _msg_AnalogD2B;       ///< Analog DeviceToBroker wrapper
 };
 #endif // WS_ANALOG_MODEL_H

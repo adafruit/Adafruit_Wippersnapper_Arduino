@@ -8,10 +8,13 @@ on:
     branches:
       - migrate-api-v2
   pull_request:
-    # 'edited' covers PRs retargeted to migrate-api-v2 after opening
+    # 'edited' covers PRs retargeted to migrate-api-v2 after opening; each
+    # build job skips edits that leave the base unchanged (title/body edits),
+    # and membrowse is skipped with them.
+    # No branch filter: PRs stacked on v2 feature branches need this build too
+    # (only PRs whose merge result contains this file can run it, so v1 PRs
+    # into main are unaffected).
     types: [opened, synchronize, reopened, edited]
-    branches:
-      - migrate-api-v2
   # Manual runs, and the target for the nightly cron dispatcher
   # (nightly-migrate-api-v2.yml, which must live on the default branch --
   # GitHub only fires `schedule` crons from there, so it dispatches this
@@ -25,6 +28,7 @@ jobs:
   # boot_app0 + app) using the board's definition.json from Wippersnapper_Boards.
   build-esp32sx-esptool:
     name: 🏗️ESP32-Sx
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -51,9 +55,22 @@ jobs:
       - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
+          WS_VERSION="unknown"
+          if git describe --dirty --tags >/dev/null 2>&1; then
+            WS_VERSION=$(git describe --dirty --tags)
+          else
+            # Fallback for forks: 2.0.0-alpha-{owner}-{short-sha}
+            REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            WS_VERSION="2.0.0-alpha-${REPO_OWNER}-${SHORT_SHA}"
+          fi
+          echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
+          echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
       - name: Generate build ID
@@ -90,7 +107,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -98,8 +115,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -107,11 +124,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -248,6 +265,7 @@ jobs:
   # (mirrors the rump `build-esp32sx` job in the v1 workflow).
   build-esp32sx:
     name: 🏗️ESP32-Sx
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -265,9 +283,22 @@ jobs:
       - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
+          WS_VERSION="unknown"
+          if git describe --dirty --tags >/dev/null 2>&1; then
+            WS_VERSION=$(git describe --dirty --tags)
+          else
+            # Fallback for forks: 2.0.0-alpha-{owner}-{short-sha}
+            REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            WS_VERSION="2.0.0-alpha-${REPO_OWNER}-${SHORT_SHA}"
+          fi
+          echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
+          echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
       - name: Generate build ID
@@ -295,7 +326,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -303,8 +334,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -312,11 +343,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -340,6 +371,7 @@ jobs:
 
   build-esp32:
     name: 🏗️ESP32/Cx
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -372,9 +404,22 @@ jobs:
       - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
+          WS_VERSION="unknown"
+          if git describe --dirty --tags >/dev/null 2>&1; then
+            WS_VERSION=$(git describe --dirty --tags)
+          else
+            # Fallback for forks: 2.0.0-alpha-{owner}-{short-sha}
+            REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            WS_VERSION="2.0.0-alpha-${REPO_OWNER}-${SHORT_SHA}"
+          fi
+          echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
+          echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
       - name: Generate build ID
@@ -402,7 +447,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -410,8 +455,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -419,11 +464,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -438,6 +483,8 @@ jobs:
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
+          ## We manually merge our own binary instead of relying on the arduino-cli auto-merged one. Uncomment to diagnose differences.
+          # mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.merged.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.auto-merge.bin
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.elf
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin
@@ -461,24 +508,23 @@ jobs:
           board_name=${board_name%_noota}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
+          # Remove 'espressif_' prefix if present
+          board_name=${board_name#espressif_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
-      - name: Create combined binary using Esptool merge_bin
+      - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
           python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
-            --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+            --flash-mode keep --flash-freq keep --flash-size keep \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
-            0xe000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin \
             0x10000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
       - name: Zip build artifacts
         run: |
@@ -492,6 +538,7 @@ jobs:
 
   build-samd:
     name: 🏗️SAMD
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -509,9 +556,22 @@ jobs:
       - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
+          WS_VERSION="unknown"
+          if git describe --dirty --tags >/dev/null 2>&1; then
+            WS_VERSION=$(git describe --dirty --tags)
+          else
+            # Fallback for forks: 2.0.0-alpha-{owner}-{short-sha}
+            REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            WS_VERSION="2.0.0-alpha-${REPO_OWNER}-${SHORT_SHA}"
+          fi
+          echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
+          echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
       - name: Generate build ID
@@ -536,7 +596,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -544,8 +604,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -553,11 +613,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -577,6 +637,7 @@ jobs:
 
   build-rp2040:
     name: 🏗️RP2040
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -598,9 +659,22 @@ jobs:
       - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
+          WS_VERSION="unknown"
+          if git describe --dirty --tags >/dev/null 2>&1; then
+            WS_VERSION=$(git describe --dirty --tags)
+          else
+            # Fallback for forks: 2.0.0-alpha-{owner}-{short-sha}
+            REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            WS_VERSION="2.0.0-alpha-${REPO_OWNER}-${SHORT_SHA}"
+          fi
+          echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
+          echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
       - name: Generate build ID
@@ -619,13 +693,13 @@ jobs:
         run: |
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/brentru/Adafruit_SPIFlash.git /home/runner/Arduino/libraries/Adafruit_SPIFlash
+          git clone --quiet https://github.com/adafruit/Adafruit_SPIFlash.git /home/runner/Arduino/libraries/Adafruit_SPIFlash
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -633,8 +707,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -642,11 +716,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -664,6 +738,7 @@ jobs:
 
   build-esp8266:
     name: 🏗️ESP8266
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -676,9 +751,22 @@ jobs:
       - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
+          WS_VERSION="unknown"
+          if git describe --dirty --tags >/dev/null 2>&1; then
+            WS_VERSION=$(git describe --dirty --tags)
+          else
+            # Fallback for forks: 2.0.0-alpha-{owner}-{short-sha}
+            REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            WS_VERSION="2.0.0-alpha-${REPO_OWNER}-${SHORT_SHA}"
+          fi
+          echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
+          echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
       - name: Generate build ID
@@ -700,7 +788,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -708,8 +796,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -717,11 +805,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -748,6 +836,7 @@ jobs:
 
   build-esp32sx-dev:
     name: 🏗️ESP32-Sx(DEV)
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -770,9 +859,22 @@ jobs:
       - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
+          WS_VERSION="unknown"
+          if git describe --dirty --tags >/dev/null 2>&1; then
+            WS_VERSION=$(git describe --dirty --tags)
+          else
+            # Fallback for forks: 2.0.0-alpha-{owner}-{short-sha}
+            REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            WS_VERSION="2.0.0-alpha-${REPO_OWNER}-${SHORT_SHA}"
+          fi
+          echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
+          echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
       - name: Generate build ID
@@ -800,7 +902,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -808,8 +910,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -817,11 +919,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -845,6 +947,7 @@ jobs:
 
   build-esp32-dev:
     name: 🏗️ESP32/Cx(DEV)
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -867,9 +970,22 @@ jobs:
       - uses: actions/checkout@v7
       - name: Get WipperSnapper version
         run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+          git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
+          # Unshallow from origin explicitly: `--unshallow --all` leaves the clone
+          # shallow, so describe finds no tags. Then pull upstream tags for forks.
+          git fetch --prune --unshallow --tags origin
+          git fetch --prune --tags adafruit
+          WS_VERSION="unknown"
+          if git describe --dirty --tags >/dev/null 2>&1; then
+            WS_VERSION=$(git describe --dirty --tags)
+          else
+            # Fallback for forks: 2.0.0-alpha-{owner}-{short-sha}
+            REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            WS_VERSION="2.0.0-alpha-${REPO_OWNER}-${SHORT_SHA}"
+          fi
+          echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
+          echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
       - name: Generate build ID
@@ -897,7 +1013,7 @@ jobs:
         id: download-nanopb
         continue-on-error: true
         run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
@@ -905,8 +1021,8 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
@@ -914,11 +1030,11 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
-          tar -xf nanopb-0.4.8.tar.gz
+          tar -xf nanopb-0.4.9.2.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
@@ -933,6 +1049,7 @@ jobs:
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
+          mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.merged.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.auto-merge.bin
           mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.elf wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.elf
           mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
           mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin
@@ -958,24 +1075,23 @@ jobs:
           board_name=${board_name%_debug}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
+          # Remove 'espressif_' prefix if present
+          board_name=${board_name#espressif_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
-      - name: Create combined binary using Esptool merge_bin
+      - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
           python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
-            --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+            --flash-mode keep --flash-freq keep --flash-size keep \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
-            0xe000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin \
             0x10000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
       - name: Zip build artifacts
         run: |
@@ -986,6 +1102,35 @@ jobs:
           name: build-files-dev-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
+
+  # Moved here from this branch's copy of the v1 workflow (build-clang-doxy.yml),
+  # which is dropped on migrate-api-v2. Doxygen only deploys from main/master.
+  clang_and_doxy:
+    name: 🔎Clang & Doxygen
+    if: github.event.action != 'edited' || github.event.changes.base != null
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+      - uses: actions/checkout@v7
+
+      - uses: actions/checkout@v7
+        with:
+          repository: adafruit/ci-arduino
+          ref: ci-wippersnapper
+          path: ci
+      - name: pre-install
+        run: bash ci/actions_install.sh
+
+      - name: clang
+        run: python3 ci/run-clang-format.py -r -e "ci/*" -e "bin/*" -e src/nanopb -e src/protos -e src/wippersnapper -e src/pb.h -e src/provisioning/tinyusb  src/
+
+      - name: doxygen
+        env:
+          GH_REPO_TOKEN: ${{ secrets.GH_REPO_TOKEN }}
+          PRETTYNAME: "Adafruit.io WipperSnapper Library"
+        run: bash ci/doxy_gen_and_deploy.sh
 
   membrowse:
     # Wait for every release and development build group before reporting.

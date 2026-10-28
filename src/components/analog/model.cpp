@@ -18,9 +18,9 @@
     @brief  AnalogModel constructor
 */
 AnalogModel::AnalogModel() {
-  memset(&_msg_AnalogInAdd, 0, sizeof(_msg_AnalogInAdd));
-  memset(&_msg_AnalogInRemove, 0, sizeof(_msg_AnalogInRemove));
-  memset(&_msg_AnalogInEvent, 0, sizeof(_msg_AnalogInEvent));
+  memset(&_msg_AnalogAdd, 0, sizeof(_msg_AnalogAdd));
+  memset(&_msg_AnalogRemove, 0, sizeof(_msg_AnalogRemove));
+  memset(&_msg_AnalogEvent, 0, sizeof(_msg_AnalogEvent));
   // no-op
 }
 
@@ -28,69 +28,69 @@ AnalogModel::AnalogModel() {
     @brief  AnalogModel destructor
 */
 AnalogModel::~AnalogModel() {
-  memset(&_msg_AnalogInAdd, 0, sizeof(_msg_AnalogInAdd));
-  memset(&_msg_AnalogInRemove, 0, sizeof(_msg_AnalogInRemove));
-  memset(&_msg_AnalogInEvent, 0, sizeof(_msg_AnalogInEvent));
+  memset(&_msg_AnalogAdd, 0, sizeof(_msg_AnalogAdd));
+  memset(&_msg_AnalogRemove, 0, sizeof(_msg_AnalogRemove));
+  memset(&_msg_AnalogEvent, 0, sizeof(_msg_AnalogEvent));
 }
 
 /*!
-    @brief  Decodes an AnalogInAdd message from a stream into an
-            AnalogInAdd message struct.
+    @brief  Decodes an AnalogAdd message from a stream into an
+            AnalogAdd message struct.
     @param stream
            The pb_istream_t stream to decode.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::decodeAnalogInAdd(pb_istream_t *stream) {
-  // Zero-out the AnalogInAdd message struct. to ensure we don't have any old
+bool AnalogModel::DecodeAnalogAdd(pb_istream_t *stream) {
+  // Zero-out the AnalogAdd message struct. to ensure we don't have any old
   // data
-  memset(&_msg_AnalogInAdd, 0, sizeof(_msg_AnalogInAdd));
-  // Decode the stream into a AnalogInAdd message
-  return pb_decode(stream, ws_analog_Add_fields, &_msg_AnalogInAdd);
+  memset(&_msg_AnalogAdd, 0, sizeof(_msg_AnalogAdd));
+  // Decode the stream into a AnalogAdd message
+  return pb_decode(stream, ws_analog_Add_fields, &_msg_AnalogAdd);
 }
 
 /*!
-    @brief  Gets an AnalogInAdd message struct.
-    @return Pointer to an AnalogInAdd message struct.
+    @brief  Gets an AnalogAdd message struct.
+    @return Pointer to an AnalogAdd message struct.
 */
-ws_analog_Add *AnalogModel::getAnalogInAddMsg() { return &_msg_AnalogInAdd; }
+ws_analog_Add *AnalogModel::GetAnalogAddMsg() { return &_msg_AnalogAdd; }
 
 /*!
-    @brief  Decodes an AnalogInRemove message from a stream into an
-            AnalogInRemove message struct.
+    @brief  Decodes an AnalogRemove message from a stream into an
+            AnalogRemove message struct.
     @param stream
            The pb_istream_t stream to decode.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::decodeAnalogInRemove(pb_istream_t *stream) {
-  // Zero-out the AnalogInRemove message struct. to ensure we don't have any old
+bool AnalogModel::DecodeAnalogRemove(pb_istream_t *stream) {
+  // Zero-out the AnalogRemove message struct. to ensure we don't have any old
   // data
-  memset(&_msg_AnalogInRemove, 0, sizeof(_msg_AnalogInRemove));
-  // Decode the stream into a AnalogInRemove message
-  return pb_decode(stream, ws_analog_Remove_fields, &_msg_AnalogInRemove);
+  memset(&_msg_AnalogRemove, 0, sizeof(_msg_AnalogRemove));
+  // Decode the stream into a AnalogRemove message
+  return pb_decode(stream, ws_analog_Remove_fields, &_msg_AnalogRemove);
 }
 
 /*!
-    @brief  Gets an AnalogInRemove message struct.
-    @return Pointer to an AnalogInRemove message struct.
+    @brief  Gets an AnalogRemove message struct.
+    @return Pointer to an AnalogRemove message struct.
 */
-ws_analog_Remove *AnalogModel::GetAnalogInRemoveMsg() {
-  return &_msg_AnalogInRemove;
+ws_analog_Remove *AnalogModel::GetAnalogRemoveMsg() {
+  return &_msg_AnalogRemove;
 }
 
 /*!
-    @brief  Gets an AnalogInEvent message struct.
-    @return Pointer to an AnalogInEvent message struct.
+    @brief  Gets an AnalogEvent message struct.
+    @return Pointer to an AnalogEvent message struct.
 */
-ws_analog_Event *AnalogModel::getAnalogInEvent() { return &_msg_AnalogInEvent; }
+ws_analog_Event *AnalogModel::GetAnalogEvent() { return &_msg_AnalogEvent; }
 
 /*!
-    @brief  Gets an AnalogIn DeviceToBroker message struct.
-    @return Pointer to an AnalogIn D2B message struct.
+    @brief  Gets an Analog DeviceToBroker message struct.
+    @return Pointer to an Analog D2B message struct.
 */
-ws_analog_D2B *AnalogModel::getAnalogInD2b() { return &_msg_AnalogInD2B; }
+ws_analog_D2B *AnalogModel::GetAnalogD2b() { return &_msg_AnalogD2B; }
 
 /*!
-    @brief  Encodes an AnalogInEvent message.
+    @brief  Encodes an AnalogEvent message.
     @param pin_name
            The pin's name string (e.g. "A0" or "EXP_0x48_0").
     @param pin_value
@@ -99,55 +99,54 @@ ws_analog_D2B *AnalogModel::getAnalogInD2b() { return &_msg_AnalogInD2B; }
            The type of sensor event to encode.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::encodeAnalogInEvent(const char *pin_name, float pin_value,
-                                      ws_sensor_Type read_type) {
-  // Initialize the AnalogInEvent message to default values
-  memset(&_msg_AnalogInEvent, 0, sizeof(_msg_AnalogInEvent));
-  // Fill the AnalogInEvent message's fields
-  strncpy(_msg_AnalogInEvent.pin, pin_name, sizeof(_msg_AnalogInEvent.pin));
-  _msg_AnalogInEvent.has_value = true;
-  _msg_AnalogInEvent.value.type = read_type;
-  _msg_AnalogInEvent.value.which_value = ws_sensor_Event_float_value_tag;
-  _msg_AnalogInEvent.value.value.float_value = pin_value;
+bool AnalogModel::EncodeAnalogEvent(const char *pin_name, float pin_value,
+                                    ws_sensor_Type read_type) {
+  // Initialize the AnalogEvent message to default values
+  memset(&_msg_AnalogEvent, 0, sizeof(_msg_AnalogEvent));
+  // Fill the AnalogEvent message's fields
+  strncpy(_msg_AnalogEvent.pin, pin_name, sizeof(_msg_AnalogEvent.pin));
+  _msg_AnalogEvent.has_value = true;
+  _msg_AnalogEvent.value.type = read_type;
+  _msg_AnalogEvent.value.which_value = ws_sensor_Event_float_value_tag;
+  _msg_AnalogEvent.value.value.float_value = pin_value;
 
   // Wrap the event in the D2B envelope
-  memset(&_msg_AnalogInD2B, 0, sizeof(_msg_AnalogInD2B));
-  _msg_AnalogInD2B.which_payload = ws_analog_D2B_event_tag;
-  _msg_AnalogInD2B.payload.event = _msg_AnalogInEvent;
+  memset(&_msg_AnalogD2B, 0, sizeof(_msg_AnalogD2B));
+  _msg_AnalogD2B.which_payload = ws_analog_D2B_event_tag;
+  _msg_AnalogD2B.payload.event = _msg_AnalogEvent;
 
   return true;
 }
 
 /*!
-    @brief  Encodes an AnalogInEvent message with a raw pin value.
+    @brief  Encodes an AnalogEvent message with a raw pin value.
     @param pin_name
            The pin's name string.
     @param pin_value
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::encodeAnalogInEventRaw(const char *pin_name,
-                                         float pin_value) {
+bool AnalogModel::EncodeAnalogEventRaw(const char *pin_name, float pin_value) {
   WS_DEBUG_PRINT("[analog] Pin: ");
   WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Raw Value: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
-  return encodeAnalogInEvent(pin_name, pin_value, ws_sensor_Type_T_RAW);
+  return EncodeAnalogEvent(pin_name, pin_value, ws_sensor_Type_T_RAW);
 }
 
 /*!
-    @brief  Encodes an AnalogInEvent message with a voltage pin value.
+    @brief  Encodes an AnalogEvent message with a voltage pin value.
     @param pin_name
            The pin's name string.
     @param pin_value
            The value of the pin.
     @return True if successful, False otherwise.
 */
-bool AnalogModel::encodeAnalogInEventVoltage(const char *pin_name,
-                                             float pin_value) {
+bool AnalogModel::EncodeAnalogEventVoltage(const char *pin_name,
+                                           float pin_value) {
   WS_DEBUG_PRINT("[analog] Pin: ");
   WS_DEBUG_PRINTVAR(pin_name);
   WS_DEBUG_PRINT(" | Voltage: ");
   WS_DEBUG_PRINTLNVAR(pin_value);
-  return encodeAnalogInEvent(pin_name, pin_value, ws_sensor_Type_T_VOLTAGE);
+  return EncodeAnalogEvent(pin_name, pin_value, ws_sensor_Type_T_VOLTAGE);
 }
