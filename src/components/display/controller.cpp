@@ -45,6 +45,21 @@ bool DisplayController::Router(pb_istream_t *stream) {
     return Handle_Display_Add(&b2d.payload.add);
   case ws_display_B2D_remove_tag:
     return Handle_Display_Remove(&b2d.payload.remove);
+  case ws_display_B2D_modify_tag: {
+    // Modify = Remove the old component, then Add the new one. Bail before
+    // removing anything if there is no Add to replace it with.
+    auto &m = b2d.payload.modify;
+    if (!m.has_add) {
+      Ws->error_handler->publishComponentError(
+          m.has_remove ? m.remove.name : "",
+          "Modify requires an Add, nothing was removed");
+      return false;
+    }
+    if (m.has_remove) {
+      (void)Handle_Display_Remove(&m.remove);
+    }
+    return Handle_Display_Add(&m.add);
+  }
   case ws_display_B2D_write_tag:
     return Handle_Display_Write(&b2d.payload.write);
   default:

@@ -69,12 +69,12 @@ public:
 
   /*!
   @brief   Performs a scan of local WiFi networks.
-  @returns True if `_network_ssid` is found, False otherwise.
+  @returns ws_ssid_scan_t result of the SSID scan.
   */
-  bool check_valid_ssid() {
+  ws_ssid_scan_t check_valid_ssid() {
     WS_DEBUG_PRINTLN("[pico_offline] Error: check_valid_ssid() is not "
                      "supported in this implementation!");
-    return false; // return an invalid value
+    return WS_SSID_SCAN_NO_IFACE;
   }
 
   /*!

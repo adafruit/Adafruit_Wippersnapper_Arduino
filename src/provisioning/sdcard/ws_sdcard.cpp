@@ -15,6 +15,21 @@
 #include "ws_sdcard.h"
 
 /*!
+    @brief  Gets a component's pin from its JSON object, preferring the "pin"
+            key and falling back to the legacy "pinName" key.
+    @param  component
+            The component's JSON object.
+    @returns The pin string, or UNKNOWN_VALUE if neither key is present.
+*/
+static const char *GetComponentPin(JsonObject component) {
+  const char *pin = component["pin"];
+  if (pin == nullptr) {
+    pin = component["pinName"];
+  }
+  return pin != nullptr ? pin : UNKNOWN_VALUE;
+}
+
+/*!
     @brief    Constructs an instance of the Wippersnapper SD card class.
 */
 ws_sdcard::ws_sdcard()
@@ -324,7 +339,7 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
 */
 void ws_sdcard::CheckIn(const JsonObject &exported_from_device) {
   // Configure controllers
-  Ws->digital_io_controller->SetMaxDigitalPins(
+  Ws->digital_controller->SetMaxDigitalPins(
       exported_from_device["maxDigitalPins"] | 0);
   Ws->analog_controller->SetMaxAnalogPins(
       exported_from_device["maxAnalogPins"] | 0);
@@ -436,9 +451,9 @@ bool ws_sdcard::ValidateJSONKey(const char *key, const char *error_msg) {
 }
 
 /*!
-    @brief  Parses a DigitalIOAdd message from the JSON configuration file.
-    @param  msg_DigitalIOAdd
-            The DigitalIOAdd message to populate.
+    @brief  Parses a DigitalAdd message from the JSON configuration file.
+    @param  msg_DigitalAdd
+            The DigitalAdd message to populate.
     @param  pin
             The GPIO pin name.
     @param  period
@@ -451,27 +466,27 @@ bool ws_sdcard::ValidateJSONKey(const char *key, const char *error_msg) {
             The GPIO pin direction.
     @param  pull
             The GPIO pin pull.
-    @returns True if the DigitalIOAdd message was successfully parsed,
+    @returns True if the DigitalAdd message was successfully parsed,
              False otherwise.
 */
-bool ws_sdcard::ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
-                                  const char *pin, float period, bool value,
-                                  const char *sample_mode,
-                                  const char *direction, const char *pull) {
+bool ws_sdcard::ParseDigitalAdd(ws_digital_Add &msg_DigitalAdd, const char *pin,
+                                float period, bool value,
+                                const char *sample_mode, const char *direction,
+                                const char *pull) {
   if (!ValidateJSONKey(pin, "[SD] Parsing Error: Digital pin name not found!"))
     return false;
-  strcpy(msg_DigitalIOAdd.pin_name, pin);
+  strcpy(msg_DigitalAdd.pin, pin);
 
   if (period == 0.0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Invalid pin period!");
     return false;
   }
-  msg_DigitalIOAdd.period = period;
+  msg_DigitalAdd.period = period;
   // Set up the write submessage with the initial value
-  msg_DigitalIOAdd.has_write = true;
-  msg_DigitalIOAdd.write.has_value = true;
-  msg_DigitalIOAdd.write.value.which_value = ws_sensor_Event_bool_value_tag;
-  msg_DigitalIOAdd.write.value.value.bool_value = value;
+  msg_DigitalAdd.has_write = true;
+  msg_DigitalAdd.write.has_value = true;
+  msg_DigitalAdd.write.value.which_value = ws_sensor_Event_bool_value_tag;
+  msg_DigitalAdd.write.value.value.bool_value = value;
 
   // Determine the sample mode
   if (!ValidateJSONKey(
@@ -479,9 +494,9 @@ bool ws_sdcard::ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
           "[SD] Parsing Error: Digital pin's sample mode not found!")) {
     return false;
   } else if (strcmp(sample_mode, "TIMER") == 0) {
-    msg_DigitalIOAdd.sample_mode = ws_digitalio_SampleMode_SM_TIMER;
+    msg_DigitalAdd.sample_mode = ws_digital_SampleMode_SM_TIMER;
   } else if (strcmp(sample_mode, "EVENT") == 0) {
-    msg_DigitalIOAdd.sample_mode = ws_digitalio_SampleMode_SM_EVENT;
+    msg_DigitalAdd.sample_mode = ws_digital_SampleMode_SM_EVENT;
   } else {
     WS_DEBUG_PRINT("[SD] Parsing Error: Unknown sample mode found: ");
     WS_DEBUG_PRINTLNVAR(sample_mode);
@@ -494,9 +509,9 @@ bool ws_sdcard::ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
     return false;
   } else if (strcmp(direction, "INPUT") == 0) {
     if (pull != nullptr) {
-      msg_DigitalIOAdd.gpio_direction = ws_digitalio_Direction_D_INPUT_PULL_UP;
+      msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT_PULL_UP;
     } else {
-      msg_DigitalIOAdd.gpio_direction = ws_digitalio_Direction_D_INPUT;
+      msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT;
     }
   } else if (strcmp(direction, "OUTPUT") == 0) {
     WS_DEBUG_PRINTLN(
@@ -511,38 +526,37 @@ bool ws_sdcard::ParseDigitalIOAdd(ws_digitalio_Add &msg_DigitalIOAdd,
 }
 
 /*!
-    @brief  Parses an AnalogInAdd message from the JSON configuration file.
-    @param  msg_AnalogInAdd
-            The AnalogInAdd message to populate.
+    @brief  Parses an AnalogAdd message from the JSON configuration file.
+    @param  msg_AnalogAdd
+            The AnalogAdd message to populate.
     @param  pin
             The GPIO pin name.
     @param  period
             The desired period to read the sensor, in seconds.
     @param  mode
             The sensor read mode.
-    @returns True if the AnalogInAdd message was successfully parsed,
+    @returns True if the AnalogAdd message was successfully parsed,
              False otherwise.
 */
-bool ws_sdcard::ParseAnalogInAdd(ws_analogin_Add &msg_AnalogInAdd,
-                                 const char *pin, float period,
-                                 const char *mode) {
+bool ws_sdcard::ParseAnalogAdd(ws_analog_Add &msg_AnalogAdd, const char *pin,
+                               float period, const char *mode) {
 
   if (!ValidateJSONKey(pin, "[SD] Parsing Error: Analog pin name not found!"))
     return false;
-  strcpy(msg_AnalogInAdd.pin_name, pin);
+  strcpy(msg_AnalogAdd.pin, pin);
 
   if (period == 0.0) {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Analog pin period less than 1.0 "
                      "seconds or not found!");
     return false;
   }
-  msg_AnalogInAdd.period = period;
+  msg_AnalogAdd.period = period;
 
   if (!ValidateJSONKey(mode,
                        "[SD] Parsing Error: Analog pin read mode not found!"))
     return false;
-  msg_AnalogInAdd.read_mode = ParseSensorType(mode);
-  if (msg_AnalogInAdd.read_mode == ws_sensor_Type_T_UNSPECIFIED) {
+  msg_AnalogAdd.read_mode = ParseSensorType(mode);
+  if (msg_AnalogAdd.read_mode == ws_sensor_Type_T_UNSPECIFIED) {
     WS_DEBUG_PRINT("[SD] Parsing Error: Unknown read mode found: ");
     WS_DEBUG_PRINTLNVAR(mode);
     return false;
@@ -977,44 +991,45 @@ bool ws_sdcard::parseConfigFile() {
     }
 
     // Determine the component type and parse it into a PB message
-    if (strcmp(component_api_type, "digitalio") == 0) {
-      WS_DEBUG_PRINTLN(
-          "[SD] DigitalIO component found, decoding JSON to PB...");
-      ws_digitalio_Add msg_DigitalIOAdd = ws_digitalio_Add_init_default;
-      if (!ParseDigitalIOAdd(
-              msg_DigitalIOAdd, component["pinName"] | UNKNOWN_VALUE,
-              component["period"] | 0.0, component["value"],
-              component["sampleMode"] | UNKNOWN_VALUE,
-              component["direction"] | UNKNOWN_VALUE, component["pull"])) {
+    // "digitalio" / "analogin" are the legacy names, still accepted.
+    if (strcmp(component_api_type, "digital") == 0 ||
+        strcmp(component_api_type, "digitalio") == 0) {
+      WS_DEBUG_PRINTLN("[SD] Digital component found, decoding JSON to PB...");
+      ws_digital_Add msg_DigitalAdd = ws_digital_Add_init_default;
+      if (!ParseDigitalAdd(msg_DigitalAdd, GetComponentPin(component),
+                           component["period"] | 0.0, component["value"],
+                           component["sampleMode"] | UNKNOWN_VALUE,
+                           component["direction"] | UNKNOWN_VALUE,
+                           component["pull"])) {
         WS_DEBUG_PRINT(
-            "[SD] Runtime Error: Unable to parse DigitalIO Component, Pin: ");
-        WS_DEBUG_PRINTLNVAR(component["pinName"] | UNKNOWN_VALUE);
+            "[SD] Runtime Error: Unable to parse Digital Component, Pin: ");
+        WS_DEBUG_PRINTLNVAR(GetComponentPin(component));
         return false;
       }
       // Configure the message envelope
-      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_digitalio_tag;
-      msg_signal_b2d.payload.digitalio.payload.add = msg_DigitalIOAdd;
-      msg_signal_b2d.payload.digitalio.which_payload = ws_digitalio_B2D_add_tag;
-    } else if (strcmp(component_api_type, "analogin") == 0) {
-      WS_DEBUG_PRINTLN("[SD] AnalogIn component found, decoding JSON to PB...");
-      ws_analogin_Add msg_AnalogInAdd = ws_analogin_Add_init_default;
-      if (!ParseAnalogInAdd(msg_AnalogInAdd,
-                            component["pinName"] | UNKNOWN_VALUE,
-                            component["period"] | 0.0,
-                            component["analogReadMode"] | UNKNOWN_VALUE)) {
+      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_digital_tag;
+      msg_signal_b2d.payload.digital.payload.add = msg_DigitalAdd;
+      msg_signal_b2d.payload.digital.which_payload = ws_digital_B2D_add_tag;
+    } else if (strcmp(component_api_type, "analog") == 0 ||
+               strcmp(component_api_type, "analogin") == 0) {
+      WS_DEBUG_PRINTLN("[SD] Analog component found, decoding JSON to PB...");
+      ws_analog_Add msg_AnalogAdd = ws_analog_Add_init_default;
+      if (!ParseAnalogAdd(msg_AnalogAdd, GetComponentPin(component),
+                          component["period"] | 0.0,
+                          component["analogReadMode"] | UNKNOWN_VALUE)) {
         WS_DEBUG_PRINTLN(
-            "[SD] Runtime Error: Unable to parse AnalogIn Component, Pin: ");
-        WS_DEBUG_PRINTLNVAR(component["pinName"] | UNKNOWN_VALUE);
+            "[SD] Runtime Error: Unable to parse Analog Component, Pin: ");
+        WS_DEBUG_PRINTLNVAR(GetComponentPin(component));
         return false;
       }
 
-      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_analogin_tag;
-      msg_signal_b2d.payload.analogin.payload.add = msg_AnalogInAdd;
-      msg_signal_b2d.payload.analogin.which_payload = ws_analogin_B2D_add_tag;
+      msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_analog_tag;
+      msg_signal_b2d.payload.analog.payload.add = msg_AnalogAdd;
+      msg_signal_b2d.payload.analog.which_payload = ws_analog_B2D_add_tag;
     } else if (strcmp(component_api_type, "ds18x20") == 0) {
       WS_DEBUG_PRINTLN("[SD] Ds18x20 component found, decoding JSON to PB...");
       ws_ds18x20_Add msg_DS18X20Add = ws_ds18x20_Add_init_default;
-      if (!ParseDS18X20Add(msg_DS18X20Add, component["pinName"] | UNKNOWN_VALUE,
+      if (!ParseDS18X20Add(msg_DS18X20Add, GetComponentPin(component),
                            component["sensorResolution"] | 0,
                            component["period"] | 0.0,
                            component["sensorTypeCount"] | 0,
@@ -1022,7 +1037,7 @@ bool ws_sdcard::parseConfigFile() {
                            component["sensorType2"] | UNKNOWN_VALUE)) {
         WS_DEBUG_PRINTLN(
             "[SD] Runtime Error: Unable to parse DS18X20 Component, Pin: ");
-        WS_DEBUG_PRINTLNVAR(component["pinName"] | UNKNOWN_VALUE);
+        WS_DEBUG_PRINTLNVAR(GetComponentPin(component));
         return false;
       }
       msg_signal_b2d.which_payload = ws_signal_BrokerToDevice_ds18x20_tag;
@@ -1493,9 +1508,9 @@ void ws_sdcard::waitForSerialConfig() {
                    "},"
                    "\"components\": ["
                    "{"
-                   "\"componentAPI\": \"analogin\","
+                   "\"componentAPI\": \"analog\","
                    "\"name\": \"Analog Pin\","
-                   "\"pinName\": \"D14\","
+                   "\"pin\": \"D14\","
                    "\"type\": \"analog_pin\","
                    "\"mode\": \"ANALOG\","
                    "\"direction\": \"INPUT\","
@@ -1505,9 +1520,9 @@ void ws_sdcard::waitForSerialConfig() {
                    "\"isPin\": true"
                    "},"
                    "{"
-                   "\"componentAPI\": \"analogin\","
+                   "\"componentAPI\": \"analog\","
                    "\"name\": \"Analog Pin\","
-                   "\"pinName\": \"D27\","
+                   "\"pin\": \"D27\","
                    "\"type\": \"analog_pin\","
                    "\"mode\": \"ANALOG\","
                    "\"direction\": \"INPUT\","
@@ -1517,9 +1532,9 @@ void ws_sdcard::waitForSerialConfig() {
                    "\"isPin\": true"
                    "},"
                    "{"
-                   "\"componentAPI\": \"digitalio\","
+                   "\"componentAPI\": \"digital\","
                    "\"name\": \"Button (D4)\","
-                   "\"pinName\": \"D4\","
+                   "\"pin\": \"D4\","
                    "\"type\": \"push_button\","
                    "\"mode\": \"DIGITAL\","
                    "\"sampleMode\": \"EVENT\","
@@ -1534,7 +1549,7 @@ void ws_sdcard::waitForSerialConfig() {
                    "\"sensorTypeCount\": 2,"
                    "\"sensorType1\": \"object-temp-fahrenheit\","
                    "\"sensorType2\": \"object-temp\","
-                   "\"pinName\": \"D12\","
+                   "\"pin\": \"D12\","
                    "\"sensorResolution\": 12,"
                    "\"period\": 5"
                    "},"
@@ -1544,7 +1559,7 @@ void ws_sdcard::waitForSerialConfig() {
                    "\"sensorTypeCount\": 2,"
                    "\"sensorType1\": \"object-temp-fahrenheit\","
                    "\"sensorType2\": \"object-temp\","
-                   "\"pinName\": \"D25\","
+                   "\"pin\": \"D25\","
                    "\"sensorResolution\": 12,"
                    "\"period\": 5"
                    "}"

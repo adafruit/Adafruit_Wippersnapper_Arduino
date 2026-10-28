@@ -155,6 +155,8 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
 
   if (strcmp(msg->driver, "ST7789") == 0) {
     _drvDisp = new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
+  } else if (strcmp(msg->driver, "ST7735") == 0) {
+    _drvDisp = new dispDrvSt7735(cs, dc, mosi, sck, rst, miso);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported TFT driver: ");
     WS_DEBUG_PRINTLNVAR(msg->driver);
@@ -171,6 +173,28 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
 #elif defined(TFT_BACKLIGHT)
   _drvDisp->setBacklightPin(TFT_BACKLIGHT);
 #endif
+
+  // Backlight pin from the display Add proto (shared BacklightConfig).
+  // Overrides any board-level TFT_BACKLITE/TFT_BACKLIGHT define when present,
+  // so boards without a hardcoded backlight define (e.g. LilyGO T-Dongle C5)
+  // still work.
+  if (msg->has_backlight) {
+    int16_t bl_pin = -1;
+    bool bl_active_low = false;
+    if (msg->backlight.which_backlight_add ==
+        ws_display_BacklightConfig_backlight_digital_tag) {
+      bl_pin = parsePin(msg->backlight.backlight_add.backlight_digital.pin);
+      // Active-low backlight (e.g. LilyGO T-Dongle C5 drives LCD_BL LOW = on)
+      bl_active_low =
+          msg->backlight.backlight_add.backlight_digital.is_inverted;
+    } else if (msg->backlight.which_backlight_add ==
+               ws_display_BacklightConfig_backlight_pwm_tag) {
+      bl_pin = parsePin(msg->backlight.backlight_add.backlight_pwm.pin);
+    }
+    if (bl_pin >= 0) {
+      _drvDisp->setBacklightPin(bl_pin, bl_active_low);
+    }
+  }
 
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
@@ -590,41 +614,44 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
     return false;
   }
 
-  // Backlight comes from the Add's shared BacklightConfig (digitalio or pwm
-  // pin). TODO: route it through the digitalio/pwm controllers so it stays
+  // Backlight comes from the Add's shared BacklightConfig (digital or pwm
+  // pin). TODO: route it through the digital/pwm controllers so it stays
   // runtime-controllable; for now the driver drives the pin directly.
   if (msg->has_backlight) {
     int16_t bl = -1;
+    bool bl_active_low = false;
     if (msg->backlight.which_backlight_add ==
-        ws_display_BacklightConfig_backlight_digital_tag)
-      bl = parsePin(msg->backlight.backlight_add.backlight_digital.pin_name);
-    else if (msg->backlight.which_backlight_add ==
-             ws_display_BacklightConfig_backlight_pwm_tag)
+        ws_display_BacklightConfig_backlight_digital_tag) {
+      bl = parsePin(msg->backlight.backlight_add.backlight_digital.pin);
+      bl_active_low =
+          msg->backlight.backlight_add.backlight_digital.is_inverted;
+    } else if (msg->backlight.which_backlight_add ==
+               ws_display_BacklightConfig_backlight_pwm_tag) {
       bl = parsePin(msg->backlight.backlight_add.backlight_pwm.pin);
+    }
     if (bl >= 0)
-      _drvDisp->setBacklightPin(bl);
+      _drvDisp->setBacklightPin(bl, bl_active_low);
   }
   // Optional prerequisite digital output — a panel power-enable rail —
-  // carried as a full ws.digitalio.Add so it composes like any other pin
+  // carried as a full ws.digital.Add so it composes like any other pin
   // (direction/inversion/initial write).
   //
-  // Ownership rules: if the pin is already registered with the digitalio
+  // Ownership rules: if the pin is already registered with the digital
   // controller (added by the user as a component), the display must not
   // claim, drive, or release it — pass through only when it is already an
   // OUTPUT driving the panel's enable level, else fail the Add. Otherwise
   // the DISPLAY owns the rail: the driver drives it to the enable level
   // before init and releases it in its destructor (display Remove/replace).
   if (msg->has_power) {
-    int16_t power = parsePin(msg->power.pin_name);
+    int16_t power = parsePin(msg->power.pin);
     if (power >= 0) {
       bool enable_level = !msg->power.is_inverted;
-      ws_digitalio_Direction dir;
+      ws_digital_Direction dir;
       bool value;
-      if (Ws->digital_io_controller->QueryPinState((uint8_t)power, &dir,
-                                                   &value)) {
-        if (dir == ws_digitalio_Direction_D_OUTPUT && value == enable_level) {
+      if (Ws->digital_controller->QueryPinState((uint8_t)power, &dir, &value)) {
+        if (dir == ws_digital_Direction_D_OUTPUT && value == enable_level) {
           WS_DEBUG_PRINTLN("[display] Power-enable pin already driven by "
-                           "digitalio at the enable level - passing through "
+                           "digital at the enable level - passing through "
                            "(display does not take ownership)");
         } else {
           publishAndLogError(

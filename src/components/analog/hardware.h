@@ -1,7 +1,7 @@
 /*!
  * @file src/components/analog/hardware.h
  *
- * Hardware implementation for the analogin.proto message.
+ * Hardware implementation for the analog.proto message.
  * Each instance represents a single analog input pin and
  * carries its own ADC configuration as instance members.
  *
@@ -33,7 +33,7 @@ class ExpanderHardware;
 class AnalogHardware {
 public:
   AnalogHardware(const char *pin_name, uint8_t pin_num,
-                 ws_sensor_Type read_mode, ws_analogin_SampleMode sample_mode,
+                 ws_sensor_Type read_mode, ws_analog_SampleMode sample_mode,
                  ulong period, float ref_voltage,
                  ExpanderHardware *expander_drv);
   ~AnalogHardware();
@@ -43,7 +43,7 @@ public:
   uint8_t getPinNum() const;
   const char *getPinName() const;
   ws_sensor_Type getReadMode() const;
-  ws_analogin_SampleMode getSampleMode() const;
+  ws_analog_SampleMode getSampleMode() const;
   float getValue() const;
   ExpanderHardware *getExpander() const;
   bool didReadSend() const;
@@ -58,16 +58,15 @@ private:
   void setAdcResolutionNative();
   void setAdcResolution(uint8_t resolution);
   void getScaleFactor();
-  uint8_t _name; ///< The pin's number.
-  char _pin_name[sizeof(
-      ws_analogin_Add::pin_name)];     ///< Broker-provided pin name.
-  ws_sensor_Type _read_mode;           ///< Type of analog read (RAW or VOLTAGE)
-  ws_analogin_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)
-  ulong _period;                       ///< The pin's period, in milliseconds.
-  ulong _prv_time;                     ///< Last read timestamp.
-  bool _did_read_send;             ///< True if the last read was sent to IO.
-  uint32_t _value_raw;             ///< Last raw ADC reading.
-  float _value_voltage;            ///< Last voltage reading.
+  uint8_t _pin_num;                           ///< The pin's number.
+  char _pin_name[sizeof(ws_analog_Add::pin)]; ///< Broker-provided pin name.
+  ws_sensor_Type _read_mode;         ///< Type of analog read (RAW or VOLTAGE)
+  ws_analog_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)
+  ulong _period;                     ///< The pin's period, in milliseconds.
+  ulong _prv_time;                   ///< Last read timestamp.
+  bool _did_read_send;               ///< True if the last read was sent to IO.
+  uint32_t _value_raw;               ///< Last raw ADC reading.
+  float _value_voltage;              ///< Last voltage reading.
   uint32_t _prv_value_raw;         ///< Previous raw value for event detection.
   uint8_t _native_adc_resolution;  ///< Hardware's native ADC resolution.
   uint8_t _desired_adc_resolution; ///< Desired (final) ADC resolution.

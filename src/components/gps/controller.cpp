@@ -57,6 +57,31 @@ bool GPSController::Router(pb_istream_t *stream) {
   case ws_gps_B2D_remove_tag:
     res = Handle_GpsDeviceRemove(&b2d.payload.remove);
     break;
+  case ws_gps_B2D_modify_tag: {
+    // Modify = Remove the old component, then Add the new one. Bail before
+    // removing anything if there is no Add to replace it with.
+    auto &m = b2d.payload.modify;
+    if (!m.has_add) {
+      if (m.has_remove && m.remove.has_remove_uart) {
+        Ws->error_handler->publishComponentError(
+            m.remove.remove_uart.descriptor,
+            "Modify requires an Add, nothing was removed");
+      } else {
+        Ws->error_handler->publishComponentError(
+            m.has_remove && m.remove.has_remove_i2c
+                ? m.remove.remove_i2c.descriptor
+                : ws_i2c_Descriptor{},
+            "Modify requires an Add, nothing was removed");
+      }
+      res = false;
+      break;
+    }
+    if (m.has_remove) {
+      (void)Handle_GpsDeviceRemove(&m.remove);
+    }
+    res = Handle_GpsDeviceAddOrReplace(&m.add);
+    break;
+  }
   default:
     WS_DEBUG_PRINTLN("[gps] WARNING: Unsupported GPS payload");
     res = false;

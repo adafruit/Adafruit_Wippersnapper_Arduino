@@ -36,6 +36,9 @@ PB_BIND(ws_i2c_Add_TypesEntry, ws_i2c_Add_TypesEntry, AUTO)
 PB_BIND(ws_i2c_Remove, ws_i2c_Remove, AUTO)
 
 
+PB_BIND(ws_i2c_Modify, ws_i2c_Modify, 2)
+
+
 PB_BIND(ws_i2c_Event, ws_i2c_Event, 2)
 
 

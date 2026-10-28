@@ -4,8 +4,8 @@
 #ifndef PB_WS_CHECKIN_CHECKIN_PB_H_INCLUDED
 #define PB_WS_CHECKIN_CHECKIN_PB_H_INCLUDED
 #include <pb.h>
-#include "analogin.pb.h"
-#include "digitalio.pb.h"
+#include "analog.pb.h"
+#include "digital.pb.h"
 #include "ds18x20.pb.h"
 #include "expander.pb.h"
 #include "i2c.pb.h"
@@ -41,8 +41,8 @@ typedef struct _ws_checkin_Request {
 /* *
  Generic component add message, could contain any *Add message from component protos */
 typedef struct _ws_checkin_ComponentAdds {
-    pb_callback_t digitalio_adds;
-    pb_callback_t analogin_adds;
+    pb_callback_t digital_adds;
+    pb_callback_t analog_adds;
     pb_callback_t servo_adds;
     pb_callback_t pwm_adds;
     pb_callback_t pixels_adds;
@@ -130,8 +130,8 @@ extern "C" {
 /* Field tags (for use in manual encoding/decoding) */
 #define ws_checkin_Request_hardware_uid_tag      1
 #define ws_checkin_Request_firmware_version_tag  2
-#define ws_checkin_ComponentAdds_digitalio_adds_tag 1
-#define ws_checkin_ComponentAdds_analogin_adds_tag 2
+#define ws_checkin_ComponentAdds_digital_adds_tag 1
+#define ws_checkin_ComponentAdds_analog_adds_tag 2
 #define ws_checkin_ComponentAdds_servo_adds_tag  3
 #define ws_checkin_ComponentAdds_pwm_adds_tag    4
 #define ws_checkin_ComponentAdds_pixels_adds_tag 5
@@ -187,8 +187,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  sleep_config,      7)
 #define ws_checkin_Response_sleep_config_MSGTYPE ws_sleep_SleepConfig
 
 #define ws_checkin_ComponentAdds_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, MESSAGE,  digitalio_adds,    1) \
-X(a, CALLBACK, REPEATED, MESSAGE,  analogin_adds,     2) \
+X(a, CALLBACK, REPEATED, MESSAGE,  digital_adds,      1) \
+X(a, CALLBACK, REPEATED, MESSAGE,  analog_adds,       2) \
 X(a, CALLBACK, REPEATED, MESSAGE,  servo_adds,        3) \
 X(a, CALLBACK, REPEATED, MESSAGE,  pwm_adds,          4) \
 X(a, CALLBACK, REPEATED, MESSAGE,  pixels_adds,       5) \
@@ -200,8 +200,8 @@ X(a, CALLBACK, REPEATED, MESSAGE,  expander_adds,    10) \
 X(a, CALLBACK, REPEATED, MESSAGE,  telemetry_adds,   11)
 #define ws_checkin_ComponentAdds_CALLBACK pb_default_field_callback
 #define ws_checkin_ComponentAdds_DEFAULT NULL
-#define ws_checkin_ComponentAdds_digitalio_adds_MSGTYPE ws_digitalio_Add
-#define ws_checkin_ComponentAdds_analogin_adds_MSGTYPE ws_analogin_Add
+#define ws_checkin_ComponentAdds_digital_adds_MSGTYPE ws_digital_Add
+#define ws_checkin_ComponentAdds_analog_adds_MSGTYPE ws_analog_Add
 #define ws_checkin_ComponentAdds_servo_adds_MSGTYPE ws_servo_Add
 #define ws_checkin_ComponentAdds_pwm_adds_MSGTYPE ws_pwm_Add
 #define ws_checkin_ComponentAdds_pixels_adds_MSGTYPE ws_pixels_Add

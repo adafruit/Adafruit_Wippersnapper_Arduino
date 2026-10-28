@@ -57,6 +57,23 @@ bool TelemetryController::Router(pb_istream_t *stream) {
   case ws_telemetry_B2D_remove_tag:
     res = Handle_TelemetryRemove(&b2d.payload.remove);
     break;
+  case ws_telemetry_B2D_modify_tag: {
+    // Modify = Remove the old component, then Add the new one. Bail before
+    // removing anything if there is no Add to replace it with.
+    auto &m = b2d.payload.modify;
+    if (!m.has_add) {
+      Ws->error_handler->publishComponentError(
+          m.has_remove ? TelemetryTypeName(m.remove.type) : "",
+          "Modify requires an Add, nothing was removed");
+      res = false;
+      break;
+    }
+    if (m.has_remove) {
+      (void)Handle_TelemetryRemove(&m.remove);
+    }
+    res = Handle_TelemetryAdd(&m.add);
+    break;
+  }
   default:
     WS_DEBUG_PRINTLN("[telemetry] WARNING: Unsupported telemetry payload");
     res = false;

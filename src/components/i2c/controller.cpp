@@ -154,11 +154,6 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvBme680(i2c, addr, mux_channel, driver_name);
      }},
-    {"BMP280",
-     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
-        const char *driver_name) -> drvBase * {
-       return new drvBmp3xx(i2c, addr, mux_channel, driver_name);
-     }},
     {"bmp388",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -616,6 +611,20 @@ bool I2cController::Router(pb_istream_t *stream) {
   case ws_i2c_B2D_remove_tag:
     res = Handle_Remove(&b2d.payload.remove);
     break;
+  case ws_i2c_B2D_modify_tag: {
+    // Decode the Modify as a standalone message so the callbacks on the nested
+    // Add's settings map survive (same reason as the Add case above).
+    ws_i2c_Modify modify = ws_i2c_Modify_init_zero;
+    _i2c_model->SetupAddDecodeCallbacks(&modify.add);
+    if (!ws_pb_decode_oneof_submsg(&saved_stream, ws_i2c_B2D_modify_tag,
+                                   ws_i2c_Modify_fields, &modify)) {
+      Ws->error_handler->publishComponentError(
+          modify.add.descriptor, "Failed to decode I2C modify message!");
+      return false;
+    }
+    res = Handle_Modify(&modify);
+    break;
+  }
   default:
     WS_DEBUG_PRINTLN("[i2c] WARNING: Unsupported I2C payload");
     res = false;
@@ -623,6 +632,33 @@ bool I2cController::Router(pb_istream_t *stream) {
   }
 
   return res;
+}
+
+/*!
+    @brief    Implements handling for an I2C Modify message, a Remove of the
+              old component followed by an Add of the new one.
+    @param    msg
+              Pointer to the I2C Modify message.
+    @returns  True if the new component was added, False otherwise. A failed
+              Remove is reported but does not prevent the Add, since the old
+              component may no longer exist (e.g. after a reboot).
+*/
+bool I2cController::Handle_Modify(ws_i2c_Modify *msg) {
+  if (msg == nullptr) {
+    return false;
+  }
+  // Bail before removing anything if there is no Add to replace it with.
+  if (!msg->has_add) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C modify message has no add!");
+    Ws->error_handler->publishComponentError(
+        msg->has_remove ? msg->remove.descriptor : ws_i2c_Descriptor{},
+        "Modify requires an Add, nothing was removed");
+    return false;
+  }
+  if (msg->has_remove && !Handle_Remove(&msg->remove)) {
+    WS_DEBUG_PRINTLN("[i2c] WARNING: Remove failed in modify, adding anyway");
+  }
+  return Handle_Add(&msg->add);
 }
 
 /*!
@@ -959,7 +995,10 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
     }
     // Removing a device on the bare bus
   } else {
-    if (!RemoveDriver(msg->descriptor.address)) {
+    // Match the mux channel the Add stored on the driver (0 for a bare-bus
+    // device), as Handle_Add's pre-remove does; the default ANY never matched.
+    if (!RemoveDriver(msg->descriptor.address,
+                      msg->descriptor.address_space.mux_channel)) {
       Ws->error_handler->publishComponentError(
           msg->descriptor, "Failed to remove I2C device from bus");
       return false;
@@ -1246,7 +1285,8 @@ bool I2cController::RemoveDriver(uint32_t address, uint32_t mux_channel) {
       continue;
     if (driver->GetAddress() != address)
       continue;
-    if (driver->GetMuxChannel() != mux_channel)
+    if (mux_channel != WS_I2C_MUX_CHANNEL_ANY &&
+        driver->GetMuxChannel() != mux_channel)
       continue;
 
     std::vector<drvBase *>::iterator it =

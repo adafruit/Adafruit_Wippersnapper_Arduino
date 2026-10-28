@@ -18,6 +18,9 @@ PB_BIND(ws_telemetry_Add, ws_telemetry_Add, AUTO)
 PB_BIND(ws_telemetry_Remove, ws_telemetry_Remove, AUTO)
 
 
+PB_BIND(ws_telemetry_Modify, ws_telemetry_Modify, AUTO)
+
+
 PB_BIND(ws_telemetry_Event, ws_telemetry_Event, AUTO)
 
 

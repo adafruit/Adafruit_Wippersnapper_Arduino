@@ -26,12 +26,23 @@ typedef struct _ws_expander_Remove {
 } ws_expander_Remove;
 
 /* *
+ A combined Remove/Add message, for when a user updates an existing component. Allows the user to change
+ deep settings and keeps protobuf traffic to a single message. */
+typedef struct _ws_expander_Modify {
+    bool has_remove;
+    ws_expander_Remove remove; /* * Specifies the old component/settings to remove */
+    bool has_add;
+    ws_expander_Add add; /* * Specifies the new component/settings to configure after removal */
+} ws_expander_Modify;
+
+/* *
  BrokerToDevice message envelope */
 typedef struct _ws_expander_B2D {
     pb_size_t which_payload;
     union {
         ws_expander_Add add;
         ws_expander_Remove remove;
+        ws_expander_Modify modify;
     } payload;
 } ws_expander_B2D;
 
@@ -44,24 +55,31 @@ extern "C" {
 #define ws_expander_B2D_init_default             {0, {ws_expander_Add_init_default}}
 #define ws_expander_Add_init_default             {false, ws_i2c_Add_init_default}
 #define ws_expander_Remove_init_default          {false, ws_i2c_Remove_init_default}
+#define ws_expander_Modify_init_default          {false, ws_expander_Remove_init_default, false, ws_expander_Add_init_default}
 #define ws_expander_B2D_init_zero                {0, {ws_expander_Add_init_zero}}
 #define ws_expander_Add_init_zero                {false, ws_i2c_Add_init_zero}
 #define ws_expander_Remove_init_zero             {false, ws_i2c_Remove_init_zero}
+#define ws_expander_Modify_init_zero             {false, ws_expander_Remove_init_zero, false, ws_expander_Add_init_zero}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define ws_expander_Add_cfg_i2c_tag              1
 #define ws_expander_Remove_cfg_i2c_tag           1
+#define ws_expander_Modify_remove_tag            1
+#define ws_expander_Modify_add_tag               2
 #define ws_expander_B2D_add_tag                  1
 #define ws_expander_B2D_remove_tag               2
+#define ws_expander_B2D_modify_tag               3
 
 /* Struct field encoding specification for nanopb */
 #define ws_expander_B2D_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,add,payload.add),   1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,remove,payload.remove),   2) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,modify,payload.modify),   3)
 #define ws_expander_B2D_CALLBACK NULL
 #define ws_expander_B2D_DEFAULT NULL
 #define ws_expander_B2D_payload_add_MSGTYPE ws_expander_Add
 #define ws_expander_B2D_payload_remove_MSGTYPE ws_expander_Remove
+#define ws_expander_B2D_payload_modify_MSGTYPE ws_expander_Modify
 
 #define ws_expander_Add_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  cfg_i2c,           1)
@@ -75,24 +93,37 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  cfg_i2c,           1)
 #define ws_expander_Remove_DEFAULT NULL
 #define ws_expander_Remove_cfg_i2c_MSGTYPE ws_i2c_Remove
 
+#define ws_expander_Modify_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  remove,            1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  add,               2)
+#define ws_expander_Modify_CALLBACK NULL
+#define ws_expander_Modify_DEFAULT NULL
+#define ws_expander_Modify_remove_MSGTYPE ws_expander_Remove
+#define ws_expander_Modify_add_MSGTYPE ws_expander_Add
+
 extern const pb_msgdesc_t ws_expander_B2D_msg;
 extern const pb_msgdesc_t ws_expander_Add_msg;
 extern const pb_msgdesc_t ws_expander_Remove_msg;
+extern const pb_msgdesc_t ws_expander_Modify_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define ws_expander_B2D_fields &ws_expander_B2D_msg
 #define ws_expander_Add_fields &ws_expander_Add_msg
 #define ws_expander_Remove_fields &ws_expander_Remove_msg
+#define ws_expander_Modify_fields &ws_expander_Modify_msg
 
 /* Maximum encoded size of messages (where known) */
-#if defined(ws_i2c_Add_size)
-union ws_expander_B2D_payload_size_union {char f1[(12 + ws_i2c_Add_size)]; char f0[92];};
+#if defined(ws_i2c_Add_size) && defined(ws_i2c_Add_size)
+union ws_expander_B2D_payload_size_union {char f1[(12 + ws_i2c_Add_size)]; char f3[(110 + ws_i2c_Add_size)]; char f0[92];};
 #endif
-#if defined(ws_i2c_Add_size)
-#define ws_expander_Add_size                     (6 + ws_i2c_Add_size)
+#if defined(ws_i2c_Add_size) && defined(ws_i2c_Add_size)
 #define ws_expander_B2D_size                     (0 + sizeof(union ws_expander_B2D_payload_size_union))
 #endif
-#define WS_EXPANDER_EXPANDER_PB_H_MAX_SIZE       ws_expander_Remove_size
+#if defined(ws_i2c_Add_size)
+#define WS_EXPANDER_EXPANDER_PB_H_MAX_SIZE       ws_expander_Modify_size
+#define ws_expander_Add_size                     (6 + ws_i2c_Add_size)
+#define ws_expander_Modify_size                  (104 + ws_i2c_Add_size)
+#endif
 #define ws_expander_Remove_size                  90
 
 #ifdef __cplusplus

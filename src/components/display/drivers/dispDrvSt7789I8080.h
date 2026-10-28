@@ -88,10 +88,10 @@ public:
       delete _bus;
       _bus = nullptr;
     }
-    // TODO: once the backlight routes through the digitalio/pwm controllers
+    // TODO: once the backlight routes through the digital/pwm controllers
     // (see begin()), release it there instead of driving the pin directly.
     if (_pin_bl >= 0)
-      digitalWrite(_pin_bl, LOW);
+      digitalWrite(_pin_bl, _bl_active_low ? HIGH : LOW);
     // Release the owned power rail (display Remove/replace deletes the driver,
     // so the panel powers down with it). Pass-through pins never reach here.
     if (_pin_power >= 0)
@@ -103,7 +103,7 @@ public:
               driven to its enable level during begin() and released (driven to
               its disable level) in the destructor — i.e. on display Remove or
               replace. Only call this when no other component owns the pin; a
-              pin already driven by the digitalio controller is passed through
+              pin already driven by the digital controller is passed through
               upstream instead (see DisplayHardware::beginI8080).
       @param  pin          Pin number (-1 to disable).
       @param  active_high  True (default) when HIGH enables the panel;
@@ -165,15 +165,15 @@ public:
     _display->setTextSize(_text_sz);
 
     // Turn on backlight.
-    // TODO: route the backlight through the digitalio/pwm controllers instead
+    // TODO: route the backlight through the digital/pwm controllers instead
     // of raw digitalWrite, so it is runtime-controllable (on/off + PWM
     // brightness) from the broker. The v2 proto already carries the hook:
     // ws_display_Add.backlight (ws_display_BacklightConfig, a oneof of
-    // ws_digitalio_Add / ws_pwm_Add) — wire that config into the respective
+    // ws_digital_Add / ws_pwm_Add) — wire that config into the respective
     // controller and have this driver stop owning the pin.
     if (_pin_bl >= 0) {
       pinMode(_pin_bl, OUTPUT);
-      digitalWrite(_pin_bl, HIGH);
+      digitalWrite(_pin_bl, _bl_active_low ? LOW : HIGH);
       WS_DEBUG_PRINTLN("[display] Backlight ON");
     }
 

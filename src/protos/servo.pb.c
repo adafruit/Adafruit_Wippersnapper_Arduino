@@ -15,6 +15,9 @@ PB_BIND(ws_servo_Add, ws_servo_Add, AUTO)
 PB_BIND(ws_servo_Remove, ws_servo_Remove, AUTO)
 
 
+PB_BIND(ws_servo_Modify, ws_servo_Modify, AUTO)
+
+
 PB_BIND(ws_servo_Write, ws_servo_Write, AUTO)
 
 

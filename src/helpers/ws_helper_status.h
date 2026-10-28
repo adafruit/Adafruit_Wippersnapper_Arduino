@@ -57,4 +57,12 @@ typedef enum {
   FSM_NET_ESTABLISH_MQTT,
 } fsm_net_t;
 
+/** Defines the result of a network interface's SSID scan */
+typedef enum {
+  WS_SSID_SCAN_NO_IFACE,       // No network interface defined
+  WS_SSID_SCAN_NO_NETWORKS,    // Scan completed, no networks found
+  WS_SSID_SCAN_SSID_NOT_FOUND, // Requested SSID not within scan results
+  WS_SSID_SCAN_SSID_FOUND      // Requested SSID found
+} ws_ssid_scan_t;
+
 #endif // WS_HELPER_STATUS_H

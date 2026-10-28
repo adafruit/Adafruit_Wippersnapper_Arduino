@@ -106,9 +106,9 @@ public:
 
   /*!
   @brief   Performs a scan of local WiFi networks.
-  @returns True if `_network_ssid` is found, False otherwise.
+  @returns ws_ssid_scan_t result of the SSID scan.
   */
-  bool check_valid_ssid() {
+  ws_ssid_scan_t check_valid_ssid() {
     // Set WiFi to station mode and disconnect from an AP if it was previously
     // connected
     WiFi.mode(WIFI_STA);
@@ -119,7 +119,7 @@ public:
     int n = WiFi.scanNetworks();
     if (n == 0) {
       WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
-      return false;
+      return WS_SSID_SCAN_NO_NETWORKS;
     }
 
     // Was the network within secrets.json found?
@@ -129,7 +129,7 @@ public:
         WS_DEBUG_PRINTVAR(_ssid);
         WS_DEBUG_PRINT(") found! RSSI: ");
         WS_DEBUG_PRINTLNVAR(WiFi.RSSI(i));
-        return true;
+        return WS_SSID_SCAN_SSID_FOUND;
       }
       if (Ws->_isWiFiMultiV2) {
         // multi network mode
@@ -139,7 +139,7 @@ public:
             WS_DEBUG_PRINTVAR(Ws->_multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLNVAR(WiFi.RSSI(i));
-            return true;
+            return WS_SSID_SCAN_SSID_FOUND;
           }
         }
       }
@@ -155,7 +155,7 @@ public:
       WS_DEBUG_PRINTLN("dB");
     }
 
-    return false;
+    return WS_SSID_SCAN_SSID_NOT_FOUND;
   }
 
   /*!

@@ -36,6 +36,9 @@ PB_BIND(ws_uart_Add, ws_uart_Add, 2)
 PB_BIND(ws_uart_Remove, ws_uart_Remove, AUTO)
 
 
+PB_BIND(ws_uart_Modify, ws_uart_Modify, 2)
+
+
 PB_BIND(ws_uart_Write, ws_uart_Write, AUTO)
 
 

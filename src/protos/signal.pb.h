@@ -8,8 +8,8 @@
 #include "expander.pb.h"
 #include "checkin.pb.h"
 #include "telemetry.pb.h"
-#include "analogin.pb.h"
-#include "digitalio.pb.h"
+#include "analog.pb.h"
+#include "digital.pb.h"
 #include "display.pb.h"
 #include "ds18x20.pb.h"
 #include "i2c.pb.h"
@@ -39,8 +39,8 @@ typedef struct _ws_signal_BrokerToDevice {
         ws_checkin_B2D checkin;
         ws_sleep_B2D sleep;
         /* Component Interactions */
-        ws_digitalio_B2D digitalio;
-        ws_analogin_B2D analogin;
+        ws_digital_B2D digital;
+        ws_analog_B2D analog;
         ws_servo_B2D servo;
         ws_pwm_B2D pwm;
         ws_pixels_B2D pixels;
@@ -69,8 +69,8 @@ typedef struct _ws_signal_DeviceToBroker {
         ws_sleep_D2B sleep;
         ws_telemetry_D2B telemetry;
         /* Component Interactions */
-        ws_digitalio_D2B digitalio;
-        ws_analogin_D2B analogin;
+        ws_digital_D2B digital;
+        ws_analog_D2B analog;
         ws_ds18x20_D2B ds18x20;
         ws_uart_D2B uart;
         ws_i2c_D2B i2c;
@@ -93,8 +93,8 @@ extern "C" {
 #define ws_signal_BrokerToDevice_error_tag       10
 #define ws_signal_BrokerToDevice_checkin_tag     20
 #define ws_signal_BrokerToDevice_sleep_tag       21
-#define ws_signal_BrokerToDevice_digitalio_tag   30
-#define ws_signal_BrokerToDevice_analogin_tag    31
+#define ws_signal_BrokerToDevice_digital_tag     30
+#define ws_signal_BrokerToDevice_analog_tag      31
 #define ws_signal_BrokerToDevice_servo_tag       32
 #define ws_signal_BrokerToDevice_pwm_tag         33
 #define ws_signal_BrokerToDevice_pixels_tag      34
@@ -109,8 +109,8 @@ extern "C" {
 #define ws_signal_DeviceToBroker_checkin_tag     20
 #define ws_signal_DeviceToBroker_sleep_tag       21
 #define ws_signal_DeviceToBroker_telemetry_tag   22
-#define ws_signal_DeviceToBroker_digitalio_tag   30
-#define ws_signal_DeviceToBroker_analogin_tag    31
+#define ws_signal_DeviceToBroker_digital_tag     30
+#define ws_signal_DeviceToBroker_analog_tag      31
 #define ws_signal_DeviceToBroker_ds18x20_tag     32
 #define ws_signal_DeviceToBroker_uart_tag        33
 #define ws_signal_DeviceToBroker_i2c_tag         34
@@ -121,8 +121,8 @@ extern "C" {
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,error,payload.error),  10) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,checkin,payload.checkin),  20) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,sleep,payload.sleep),  21) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,digitalio,payload.digitalio),  30) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,analogin,payload.analogin),  31) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,digital,payload.digital),  30) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,analog,payload.analog),  31) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,servo,payload.servo),  32) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,pwm,payload.pwm),  33) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,pixels,payload.pixels),  34) \
@@ -138,8 +138,8 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,telemetry,payload.telemetry),  41)
 #define ws_signal_BrokerToDevice_payload_error_MSGTYPE ws_error_B2D
 #define ws_signal_BrokerToDevice_payload_checkin_MSGTYPE ws_checkin_B2D
 #define ws_signal_BrokerToDevice_payload_sleep_MSGTYPE ws_sleep_B2D
-#define ws_signal_BrokerToDevice_payload_digitalio_MSGTYPE ws_digitalio_B2D
-#define ws_signal_BrokerToDevice_payload_analogin_MSGTYPE ws_analogin_B2D
+#define ws_signal_BrokerToDevice_payload_digital_MSGTYPE ws_digital_B2D
+#define ws_signal_BrokerToDevice_payload_analog_MSGTYPE ws_analog_B2D
 #define ws_signal_BrokerToDevice_payload_servo_MSGTYPE ws_servo_B2D
 #define ws_signal_BrokerToDevice_payload_pwm_MSGTYPE ws_pwm_B2D
 #define ws_signal_BrokerToDevice_payload_pixels_MSGTYPE ws_pixels_B2D
@@ -156,8 +156,8 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,error,payload.error),  10) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,checkin,payload.checkin),  20) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,sleep,payload.sleep),  21) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,telemetry,payload.telemetry),  22) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,digitalio,payload.digitalio),  30) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,analogin,payload.analogin),  31) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,digital,payload.digital),  30) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,analog,payload.analog),  31) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,ds18x20,payload.ds18x20),  32) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,uart,payload.uart),  33) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c,payload.i2c),  34) \
@@ -168,8 +168,8 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,gps,payload.gps),  35)
 #define ws_signal_DeviceToBroker_payload_checkin_MSGTYPE ws_checkin_D2B
 #define ws_signal_DeviceToBroker_payload_sleep_MSGTYPE ws_sleep_D2B
 #define ws_signal_DeviceToBroker_payload_telemetry_MSGTYPE ws_telemetry_D2B
-#define ws_signal_DeviceToBroker_payload_digitalio_MSGTYPE ws_digitalio_D2B
-#define ws_signal_DeviceToBroker_payload_analogin_MSGTYPE ws_analogin_D2B
+#define ws_signal_DeviceToBroker_payload_digital_MSGTYPE ws_digital_D2B
+#define ws_signal_DeviceToBroker_payload_analog_MSGTYPE ws_analog_D2B
 #define ws_signal_DeviceToBroker_payload_ds18x20_MSGTYPE ws_ds18x20_D2B
 #define ws_signal_DeviceToBroker_payload_uart_MSGTYPE ws_uart_D2B
 #define ws_signal_DeviceToBroker_payload_i2c_MSGTYPE ws_i2c_D2B
@@ -183,17 +183,17 @@ extern const pb_msgdesc_t ws_signal_DeviceToBroker_msg;
 #define ws_signal_DeviceToBroker_fields &ws_signal_DeviceToBroker_msg
 
 /* Maximum encoded size of messages (where known) */
-#if defined(ws_checkin_B2D_size) && defined(ws_digitalio_B2D_size) && defined(ws_display_B2D_size) && defined(ws_uart_B2D_size) && defined(ws_i2c_B2D_size) && defined(ws_gps_B2D_size) && defined(ws_expander_B2D_size)
-union ws_signal_BrokerToDevice_payload_size_union {char f20[(7 + ws_checkin_B2D_size)]; char f30[(7 + ws_digitalio_B2D_size)]; char f36[(7 + ws_display_B2D_size)]; char f37[(7 + ws_uart_B2D_size)]; char f38[(7 + ws_i2c_B2D_size)]; char f39[(7 + ws_gps_B2D_size)]; char f40[(7 + ws_expander_B2D_size)]; char f0[85];};
+#if defined(ws_checkin_B2D_size) && defined(ws_digital_B2D_size) && defined(ws_display_B2D_size) && defined(ws_uart_B2D_size) && defined(ws_i2c_B2D_size) && defined(ws_gps_B2D_size) && defined(ws_expander_B2D_size)
+union ws_signal_BrokerToDevice_payload_size_union {char f20[(7 + ws_checkin_B2D_size)]; char f30[(7 + ws_digital_B2D_size)]; char f36[(7 + ws_display_B2D_size)]; char f37[(7 + ws_uart_B2D_size)]; char f38[(7 + ws_i2c_B2D_size)]; char f39[(7 + ws_gps_B2D_size)]; char f40[(7 + ws_expander_B2D_size)]; char f0[156];};
 #endif
-#if defined(ws_error_D2B_size) && defined(ws_telemetry_D2B_size) && defined(ws_digitalio_D2B_size) && defined(ws_analogin_D2B_size) && defined(ws_ds18x20_D2B_size) && defined(ws_uart_D2B_size) && defined(ws_i2c_D2B_size)
-union ws_signal_DeviceToBroker_payload_size_union {char f10[(6 + ws_error_D2B_size)]; char f22[(7 + ws_telemetry_D2B_size)]; char f30[(7 + ws_digitalio_D2B_size)]; char f31[(7 + ws_analogin_D2B_size)]; char f32[(7 + ws_ds18x20_D2B_size)]; char f33[(7 + ws_uart_D2B_size)]; char f34[(7 + ws_i2c_D2B_size)]; char f0[3137];};
+#if defined(ws_error_D2B_size) && defined(ws_telemetry_D2B_size) && defined(ws_digital_D2B_size) && defined(ws_analog_D2B_size) && defined(ws_ds18x20_D2B_size) && defined(ws_uart_D2B_size) && defined(ws_i2c_D2B_size)
+union ws_signal_DeviceToBroker_payload_size_union {char f10[(6 + ws_error_D2B_size)]; char f22[(7 + ws_telemetry_D2B_size)]; char f30[(7 + ws_digital_D2B_size)]; char f31[(7 + ws_analog_D2B_size)]; char f32[(7 + ws_ds18x20_D2B_size)]; char f33[(7 + ws_uart_D2B_size)]; char f34[(7 + ws_i2c_D2B_size)]; char f0[3137];};
 #endif
-#if defined(ws_checkin_B2D_size) && defined(ws_digitalio_B2D_size) && defined(ws_display_B2D_size) && defined(ws_uart_B2D_size) && defined(ws_i2c_B2D_size) && defined(ws_gps_B2D_size) && defined(ws_expander_B2D_size)
+#if defined(ws_checkin_B2D_size) && defined(ws_digital_B2D_size) && defined(ws_display_B2D_size) && defined(ws_uart_B2D_size) && defined(ws_i2c_B2D_size) && defined(ws_gps_B2D_size) && defined(ws_expander_B2D_size)
 #define WS_SIGNAL_SIGNAL_PB_H_MAX_SIZE           ws_signal_BrokerToDevice_size
 #define ws_signal_BrokerToDevice_size            (0 + sizeof(union ws_signal_BrokerToDevice_payload_size_union))
 #endif
-#if defined(ws_error_D2B_size) && defined(ws_telemetry_D2B_size) && defined(ws_digitalio_D2B_size) && defined(ws_analogin_D2B_size) && defined(ws_ds18x20_D2B_size) && defined(ws_uart_D2B_size) && defined(ws_i2c_D2B_size)
+#if defined(ws_error_D2B_size) && defined(ws_telemetry_D2B_size) && defined(ws_digital_D2B_size) && defined(ws_analog_D2B_size) && defined(ws_ds18x20_D2B_size) && defined(ws_uart_D2B_size) && defined(ws_i2c_D2B_size)
 #define ws_signal_DeviceToBroker_size            (0 + sizeof(union ws_signal_DeviceToBroker_payload_size_union))
 #endif
 
