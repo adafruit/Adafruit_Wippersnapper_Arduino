@@ -71,6 +71,12 @@ jobs:
           fi
           echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
           echo "WS_VERSION: $WS_VERSION"
+      # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
+      # PRs report their head commit, not the merge commit checkout builds.
+      - name: Generate build ID
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -293,6 +299,12 @@ jobs:
           fi
           echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
           echo "WS_VERSION: $WS_VERSION"
+      # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
+      # PRs report their head commit, not the merge commit checkout builds.
+      - name: Generate build ID
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -408,6 +420,12 @@ jobs:
           fi
           echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
           echo "WS_VERSION: $WS_VERSION"
+      # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
+      # PRs report their head commit, not the merge commit checkout builds.
+      - name: Generate build ID
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -554,6 +572,12 @@ jobs:
           fi
           echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
           echo "WS_VERSION: $WS_VERSION"
+      # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
+      # PRs report their head commit, not the merge commit checkout builds.
+      - name: Generate build ID
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -651,6 +675,12 @@ jobs:
           fi
           echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
           echo "WS_VERSION: $WS_VERSION"
+      # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
+      # PRs report their head commit, not the merge commit checkout builds.
+      - name: Generate build ID
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -737,6 +767,12 @@ jobs:
           fi
           echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
           echo "WS_VERSION: $WS_VERSION"
+      # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
+      # PRs report their head commit, not the merge commit checkout builds.
+      - name: Generate build ID
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -839,6 +875,12 @@ jobs:
           fi
           echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
           echo "WS_VERSION: $WS_VERSION"
+      # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
+      # PRs report their head commit, not the merge commit checkout builds.
+      - name: Generate build ID
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -944,6 +986,12 @@ jobs:
           fi
           echo >>$GITHUB_ENV WS_VERSION=$WS_VERSION
           echo "WS_VERSION: $WS_VERSION"
+      # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
+      # PRs report their head commit, not the merge commit checkout builds.
+      - name: Generate build ID
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
