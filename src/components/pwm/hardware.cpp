@@ -190,10 +190,7 @@ ExpanderHardware *PWMHardware::GetExpanderDriver() { return _expander_drv; }
     @return true if the value was successfully written, false otherwise
 */
 bool PWMHardware::analogWrite(uint32_t value) {
-  // Calculate duty cycle for the `value`
-  uint32_t dutyCycle =
-      (uint32_t)(((double)_resolution / 255.0) * min(value, (uint32_t)255));
-  return ledcWrite(_pin, dutyCycle);
+  return ledcWrite(_pin, value);
 }
 
 #endif // ARDUINO_ARCH_ESP32
