@@ -39,6 +39,15 @@
     defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040) || defined(ARDUINO_ARCH_RP2040)
 #include "Wippersnapper_FS.h"
+// Build metadata from generate_ws_version.py, see wippersnapper.cpp
+#if defined(__has_include)
+#if __has_include("../../ws_version.h")
+#include "../../ws_version.h"
+#endif
+#endif
+#ifndef WS_BUILD
+#define WS_BUILD "" ///< No generated build metadata (e.g. Arduino IDE builds)
+#endif
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
 // - EXTERNAL_FLASH_USE_QSPI
@@ -312,7 +321,7 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.println("Adafruit.io WipperSnapper");
 
     bootFile.print("Firmware Version: ");
-    bootFile.println(WS_VERSION);
+    bootFile.println(WS_VERSION WS_BUILD);
 
     bootFile.print("Board ID: ");
     bootFile.println(BOARD_ID);
