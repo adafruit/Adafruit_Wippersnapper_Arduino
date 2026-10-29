@@ -385,6 +385,7 @@ jobs:
             "wippersnapper_qtpy_esp32c3",
             "dfrobot_firebeetle2_esp32c5",
             "lilygo_t_dongle_c5",
+            "espressif_esp32c5_devkitc_1_n8r4",
             "wippersnapper_feather_esp32c6"
           ]
         include:
@@ -395,6 +396,8 @@ jobs:
             arduino-platform: "dfrobot_firebeetle2_esp32c5"
           - offset: "0x2000"
             arduino-platform: "lilygo_t_dongle_c5"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32c5_devkitc_1_n8r4"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
@@ -956,6 +959,7 @@ jobs:
           [
             "wippersnapper_feather_esp32c6_debug",
             "lilygo_t_dongle_c5_debug",
+            "espressif_esp32c5_devkitc_1_n8r4_debug",
           ]
         include:
           - offset: "0x1000"
@@ -963,6 +967,8 @@ jobs:
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
           - offset: "0x2000"
             arduino-platform: "lilygo_t_dongle_c5_debug"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32c5_devkitc_1_n8r4_debug"
     steps:
       - uses: actions/setup-python@v7
         with:
