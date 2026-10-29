@@ -359,11 +359,8 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[checkin] Controllers configured");
   Ws->NetworkFSM();
 
-  // Publish the complete response message to indicate the checkin
-  // routine is done and the device is ready for use
-  if (!Ws->CheckInModel->Complete())
-    return false;
-  Ws->CheckInModel->SaveResponseHash();
+  // Complete is published by the checkin caller, not from inside this MQTT
+  // callback where it could consume another packet's reply
   return true;
 }
 
@@ -1208,6 +1205,16 @@ void wippersnapper::checkin() {
     Ws->_mqttV2->processPackets(
         WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
     pingBrokerV2();               // Keep MQTT connection alive
+  }
+  // Publish the complete response message to indicate the checkin routine is
+  // done and the device is ready for use. Done here rather than in the
+  // response callback, which may run inside pingBrokerV2() while it waits for
+  // a PINGRESP: publishing there consumed the PINGRESP while waiting for the
+  // PUBACK ("Dropped a packet"), failing the ping and forcing a reconnect.
+  if (!Ws->CheckInModel->Complete()) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish checkin complete message");
+  } else {
+    Ws->CheckInModel->SaveResponseHash();
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
