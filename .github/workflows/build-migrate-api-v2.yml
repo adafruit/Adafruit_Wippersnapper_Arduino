@@ -382,6 +382,7 @@ jobs:
             "qtpy_esp32",
             "feather_esp32_v2",
             "itsybitsy_esp32",
+            "dfrobot_beetle_esp32c3",
             "wippersnapper_qtpy_esp32c3",
             "dfrobot_firebeetle2_esp32c5",
             "lilygo_t_dongle_c5",
@@ -389,6 +390,8 @@ jobs:
           ]
         include:
           - offset: "0x1000"
+          - offset: "0x0"
+            arduino-platform: "dfrobot_beetle_esp32c3"
           - offset: "0x0"
             arduino-platform: "wippersnapper_qtpy_esp32c3"
           - offset: "0x2000"
