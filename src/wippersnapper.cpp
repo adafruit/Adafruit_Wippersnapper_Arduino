@@ -321,6 +321,14 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     return false;
   }
 
+  // Hash the raw response before decoding, decoding applies component adds
+  // TODO: Skip re-applying an unchanged response on a light sleep wake (#1048)
+  if (Ws->CheckInModel->ResponseChanged(stream)) {
+    WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
+  } else {
+    WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
+  }
+
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
   if (!Ws->CheckInModel->ProcessResponse(stream)) {
@@ -349,7 +357,10 @@ bool handleCheckinResponse(pb_istream_t *stream) {
 
   // Publish the complete response message to indicate the checkin
   // routine is done and the device is ready for use
-  return Ws->CheckInModel->Complete();
+  if (!Ws->CheckInModel->Complete())
+    return false;
+  Ws->CheckInModel->SaveResponseHash();
+  return true;
 }
 
 // Decoders //
