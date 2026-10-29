@@ -82,6 +82,10 @@ static int findComponent(pb_size_t type, const std::vector<uint8_t> &remove) {
             The component's controller.
     @param  handler
             The controller's Remove handler.
+    @tparam T
+            The component's nanopb Remove message type.
+    @tparam C
+            The component's controller type.
 */
 template <typename T, typename C>
 static void removeComponent(const CheckinComponent &component,
@@ -642,8 +646,9 @@ void CheckinModel::SaveResponseHash() {
             nanopb fields of the component's Remove message.
     @param  remove_msg
             Remove message identifying the component, built from the Add.
-    @returns CHECKIN_SKIP if the component is unchanged, CHECKIN_REPLACE if
-             it exists with a different Add, CHECKIN_ADD otherwise.
+    @returns CHECKIN_SKIP if the component is unchanged (or in the
+             RemoveStaleComponents() mark pass), CHECKIN_REPLACE if it exists
+             with a different Add, CHECKIN_ADD otherwise.
 */
 CheckinAction CheckinModel::ReconcileAdd(const pb_istream_t *raw,
                                          pb_size_t type,
@@ -651,22 +656,31 @@ CheckinAction CheckinModel::ReconcileAdd(const pb_istream_t *raw,
                                          const void *remove_msg) {
   _has_pending = false;
   _pending.type = type;
-  _pending.seen = true;
+  _pending.seen = false;
   size_t sz = 0;
-  if (!sha256((const uint8_t *)raw->state, raw->bytes_left, _pending.add_sha) ||
-      !pb_get_encoded_size(&sz, remove_fields, remove_msg))
-    return CHECKIN_ADD;
-  _pending.remove.resize(sz);
-  pb_ostream_t stream = pb_ostream_from_buffer(_pending.remove.data(), sz);
-  if (!pb_encode(&stream, remove_fields, remove_msg))
+  bool keyed =
+      sha256((const uint8_t *)raw->state, raw->bytes_left, _pending.add_sha) &&
+      pb_get_encoded_size(&sz, remove_fields, remove_msg);
+  if (keyed) {
+    _pending.remove.resize(sz);
+    pb_ostream_t stream = pb_ostream_from_buffer(_pending.remove.data(), sz);
+    keyed = pb_encode(&stream, remove_fields, remove_msg);
+  }
+  _pending_idx = keyed ? findComponent(type, _pending.remove) : -1;
+
+  // Mark pass: only record which components are still present
+  if (_mark_only) {
+    if (_pending_idx >= 0)
+      checkin_components[_pending_idx].seen = true;
+    return CHECKIN_SKIP;
+  }
+  if (!keyed)
     return CHECKIN_ADD;
   _has_pending = true;
 
-  _pending_idx = findComponent(type, _pending.remove);
   if (_pending_idx < 0)
     return CHECKIN_ADD;
   CheckinComponent &existing = checkin_components[_pending_idx];
-  existing.seen = true;
   if (memcmp(existing.add_sha, _pending.add_sha, CHECKIN_SHA_LEN) == 0) {
     _has_pending = false;
     WS_DEBUG_PRINTLN("[checkin] Component unchanged, skipping");
@@ -703,14 +717,35 @@ bool CheckinModel::CommitAdd(bool added) {
 
 /*!
     @brief  Removes components applied from earlier checkin responses that
-            are not in the response just decoded. Call after every decoded
-            response.
+            are not in this response. Call before ProcessResponse(), so a
+            stale component never tears down a pin a new one has taken.
+    @param  stream
+            Incoming data stream positioned at the start of the checkin
+            message. Not consumed.
 */
-void CheckinModel::RemoveStaleComponents() {
+void CheckinModel::RemoveStaleComponents(pb_istream_t *stream) {
+  if (checkin_components.empty())
+    return;
+
+  // Mark pass: decode a copy of the response without applying any component
+  for (size_t i = 0; i < checkin_components.size(); i++)
+    checkin_components[i].seen = false;
+  pb_istream_t mark_stream = *stream;
+  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+  _CheckinB2D.cb_payload.funcs.decode = &cbSetupResponse;
+  _CheckinB2D.cb_payload.arg = this;
+  _mark_only = true;
+  bool decoded = pb_decode(&mark_stream, ws_checkin_B2D_fields, &_CheckinB2D);
+  _mark_only = false;
+  // ProcessResponse() reports invalid responses, never remove on one
+  if (!decoded || _CheckinB2D.which_payload != ws_checkin_B2D_response_tag ||
+      _CheckinB2D.payload.response.response !=
+          ws_checkin_Response_Response_R_OK)
+    return;
+
   for (size_t i = 0; i < checkin_components.size();) {
     CheckinComponent &c = checkin_components[i];
     if (c.seen) {
-      c.seen = false;
       i++;
       continue;
     }
