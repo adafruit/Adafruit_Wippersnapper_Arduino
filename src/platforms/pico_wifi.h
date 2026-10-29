@@ -97,6 +97,7 @@ public:
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(100);
+    set_wifi_country();
     _hiddenSsid = NULL;
     _hiddenPass = NULL;
 
@@ -174,6 +175,53 @@ public:
     // User-set network not found
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     return WS_SSID_SCAN_SSID_NOT_FOUND;
+  }
+
+  /*!
+  @brief   Sets the WiFi regulatory country from secrets.json.
+  @note    arduino-pico only takes a country at build time (WIFICC), so
+           this sends the "country" iovar the CYW43 driver itself sends
+           when the radio powers on, then reads it back. The core never
+           powers the radio off, so it holds until reset. Unset keeps
+           the build-time default, which is RAM-only.
+  */
+  void set_wifi_country() {
+#if defined(PICO_CYW43_SUPPORTED)
+    if (strlen(Ws->_configV2.network_country) != 2)
+      return;
+    // The iovar needs the radio on, as scanNetworks() would do
+    if ((cyw43_state.itf_state & (1 << CYW43_ITF_STA)) == 0)
+      cyw43_arch_enable_sta_mode();
+
+    // Layout matches cyw43_ll_wifi_on(): abbrev, revision (-1 = any), code
+    uint32_t country = CYW43_COUNTRY(Ws->_configV2.network_country[0],
+                                     Ws->_configV2.network_country[1], 0);
+    uint32_t rev = (uint32_t)-1;
+    uint8_t buf[20] = "country";
+    memcpy(buf + 8, &country, 4);
+    memcpy(buf + 12, &rev, 4);
+    memcpy(buf + 16, &country, 4);
+    if (cyw43_ioctl(&cyw43_state, CYW43_IOCTL_SET_VAR, sizeof(buf), buf,
+                    CYW43_ITF_STA) != 0) {
+      WS_DEBUG_PRINT("ERROR: Unable to set WiFi country: ");
+      WS_DEBUG_PRINTLNVAR(Ws->_configV2.network_country);
+      return;
+    }
+    delay(50); // the driver waits the same after setting it
+
+    // Read back: char abbrev[4], int32 rev, char ccode[4]
+    uint8_t readback[20] = "country";
+    if (cyw43_ioctl(&cyw43_state, CYW43_IOCTL_GET_VAR, sizeof(readback),
+                    readback, CYW43_ITF_STA) == 0) {
+      char ccode[3] = {(char)readback[8], (char)readback[9], '\0'};
+      int32_t ccrev;
+      memcpy(&ccrev, readback + 4, 4);
+      WS_DEBUG_PRINT("WiFi country set to: ");
+      WS_DEBUG_PRINTVAR(ccode);
+      WS_DEBUG_PRINT(" rev ");
+      WS_DEBUG_PRINTLNVAR(ccrev);
+    }
+#endif
   }
 
   /*!
