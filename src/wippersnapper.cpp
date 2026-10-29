@@ -1245,10 +1245,11 @@ bool wippersnapper::checkin(uint32_t timeout_ms) {
       pingBrokerV2();               // Keep MQTT connection alive
     }
     got_response = Ws->CheckInModel->GotResponse();
-    if (got_response)
+    if (got_response) {
       WS_DEBUG_PRINTLN("Completed checkin process!");
-    else
+    } else {
       WS_DEBUG_PRINTLN("ERROR: Timed out waiting for checkin response");
+    }
   }
   // Perform cleanup for checkin process, we don't need it anymore
   delete Ws->CheckInModel;
