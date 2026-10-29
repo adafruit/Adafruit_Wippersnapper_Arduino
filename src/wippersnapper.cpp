@@ -1441,7 +1441,7 @@ void wippersnapper::loopSleep() {
     NetworkFSM(true);
     // Sync with IO before sleeping again, an unchanged response is skipped
     WS_DEBUG_PRINTLN("[app] Checking in after light sleep wake...");
-    if (checkin(WS_WAKE_CHECKIN_MS))
+    if (checkin(WS_TIMEOUT_WAKE_CHECKIN))
       break;
     // Save battery: sleep again with the existing config, retry on next wake
     WS_DEBUG_PRINTLN("[app] Wake checkin failed, going back to sleep...");

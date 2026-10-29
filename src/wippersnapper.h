@@ -168,8 +168,8 @@
 #define WS_DEVICE_PING_MS                                                      \
   5000 ///< Interval at which device sends ping to broker, in milliseconds
 #define WS_TIMEOUT_WDT 60000 ///< App WDT timeout, in milliseconds
-#define WS_WAKE_CHECKIN_MS                                                     \
-  15000 ///< Max wait for a checkin response after a light sleep wake, in
+#define WS_TIMEOUT_WAKE_CHECKIN                                                \
+  30000 ///< Max wait for a checkin response after a light sleep wake, in
         ///< milliseconds. Must be below WS_TIMEOUT_WDT.
 #define WS_MQTT_POLL_TIMEOUT_MS                                                \
   10 ///< MQTT polling (processPackets()) timeout, in milliseconds
