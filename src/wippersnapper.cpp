@@ -315,6 +315,12 @@ void wippersnapper::provision() {
               False otherwise.
 */
 bool handleCheckinResponse(pb_istream_t *stream) {
+  // A response outside of checkin() has no model to decode into
+  if (Ws->CheckInModel == nullptr) {
+    WS_DEBUG_PRINTLN("[app] WARNING: Unexpected Checkin Response, ignoring");
+    return false;
+  }
+
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
   if (!Ws->CheckInModel->ProcessResponse(stream)) {
@@ -1151,8 +1157,24 @@ void wippersnapper::connect() {
   Ws->_wdt->feed();
   WS_DEBUG_PRINTLN("Connected to Adafruit IO");
 
-  // TODO: Possibly refactor checkin process into its own function
-  // or component class for clarity
+  checkin();
+
+  // Set the status LED to green to indicate successful configuration
+  setStatusLEDColor(0x00A300, Ws->status_pixel_brightnessV2);
+  delay(100);
+  // Set the status LED to off during app runtime
+  setStatusLEDColor(0x000000, Ws->status_pixel_brightnessV2);
+
+  WS_DEBUG_PRINTLN("Running app loop...");
+}
+
+/*!
+    @brief    Publishes a CheckinRequest and blocks until the broker's
+              CheckinResponse has been handled.
+*/
+void wippersnapper::checkin() {
+  // TODO: Possibly refactor checkin process into a component class
+  // for clarity
   // TODO: Remove logging from checkin process,
   // but only after we test on staging
   Ws->CheckInModel = new CheckinModel();
@@ -1176,14 +1198,6 @@ void wippersnapper::connect() {
   // Perform cleanup for checkin process, we don't need it anymore
   delete Ws->CheckInModel;
   Ws->CheckInModel = nullptr;
-
-  // Set the status LED to green to indicate successful configuration
-  setStatusLEDColor(0x00A300, Ws->status_pixel_brightnessV2);
-  delay(100);
-  // Set the status LED to off during app runtime
-  setStatusLEDColor(0x000000, Ws->status_pixel_brightnessV2);
-
-  WS_DEBUG_PRINTLN("Running app loop...");
 }
 
 /*!
