@@ -340,6 +340,9 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     Ws->haltErrorV2("Invalid checkin response, rebooting soon...");
   }
 
+  // Remove components applied from an earlier response but not in this one
+  Ws->CheckInModel->RemoveStaleComponents();
+
   // Configure sleep settings if enabled
   Ws->CheckInModel->configureSleep();
 
