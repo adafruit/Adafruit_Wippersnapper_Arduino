@@ -112,7 +112,10 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
-          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          # TEMPORARY HIL build: P4 FS-port descriptor fix (512-byte bulk EPs on
+          # the FS controller stall SET_CONFIGURATION) until it is upstream
+          git clone --quiet --depth 1 --branch fix/esp32p4-fs-port-ep-size https://github.com/tyeth/adafruit-Adafruit_TinyUSB_Arduino.git /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          git -C /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino log --oneline -1
       - name: Install Dependencies (esptool)
         run: |
           pip3 install esptool==5.6.0
