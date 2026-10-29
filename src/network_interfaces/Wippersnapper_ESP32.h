@@ -116,28 +116,37 @@ public:
     WiFi.setTxPower(WIFI_POWER_15dBm);
 #endif
 
-    // Perform a network scan
-    int n = WiFi.scanNetworks();
+    // Perform a network scan, including hidden networks
+    int n = WiFi.scanNetworks(false, true);
     if (n == 0) {
       WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
       return false;
     }
 
     bool foundNetwork = false;
+    bool foundHidden = false;
 
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
     for (uint8_t i = 0; i < n; i++) {
-      if (!foundNetwork && strcmp(WiFi.SSID(i).c_str(), _ssid) == 0) {
+      if (WiFi.SSID(i).length() == 0) {
+        // hidden networks don't broadcast their SSID
+        foundHidden = true;
+      } else if (!foundNetwork && strcmp(WiFi.SSID(i).c_str(), _ssid) == 0) {
         foundNetwork = true;
       } else if (!foundNetwork && WS._isWiFiMulti) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+          if (strlen(WS._multiNetworks[j].ssid) > 0 &&
+              strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
             foundNetwork = true;
           }
         }
       }
-      WS_DEBUG_PRINT(WiFi.SSID(i));
+      if (WiFi.SSID(i).length() == 0) {
+        WS_DEBUG_PRINT("<hidden>");
+      } else {
+        WS_DEBUG_PRINT(WiFi.SSID(i));
+      }
       WS_DEBUG_PRINT(" (");
       uint8_t BSSID[WL_MAC_ADDR_LENGTH];
       WiFi.BSSID(i, BSSID);
@@ -153,10 +162,58 @@ public:
       WS_DEBUG_PRINTLN(")");
     }
 
+    // Hidden networks only reveal their SSID in reply to a directed probe
+    _hiddenSsid = NULL;
+    _hiddenPass = NULL;
+    if (!foundNetwork && foundHidden) {
+      if (scan_hidden_ssid(_ssid)) {
+        _hiddenSsid = _ssid;
+        _hiddenPass = _pass;
+      } else if (WS._isWiFiMulti) {
+        for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
+          if (scan_hidden_ssid(WS._multiNetworks[j].ssid)) {
+            _hiddenSsid = WS._multiNetworks[j].ssid;
+            _hiddenPass = WS._multiNetworks[j].pass;
+            break;
+          }
+        }
+      }
+      foundNetwork = (_hiddenSsid != NULL);
+    }
+
     if (!foundNetwork) {
       WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     }
     return foundNetwork;
+  }
+
+  /***********************************************************/
+  /*!
+  @brief   Performs a directed scan (probe request) for a hidden network.
+  @param   ssid
+           The SSID of the hidden network to scan for.
+  @returns True if an access point responded to `ssid`, False otherwise.
+  */
+  /***********************************************************/
+  bool scan_hidden_ssid(const char *ssid) {
+    if (ssid == NULL || strlen(ssid) == 0)
+      return false;
+
+    WS_DEBUG_PRINT("Scanning for hidden WiFi network: ");
+    WS_DEBUG_PRINTLNVAR(ssid);
+    WS.feedWDT();
+    int n = WiFi.scanNetworks(false, true, false, 300, 0, ssid);
+    WS.feedWDT();
+    for (int i = 0; i < n; i++) {
+      // directed scans only report APs answering to `ssid`
+      if (WiFi.SSID(i).length() == 0 ||
+          strcmp(WiFi.SSID(i).c_str(), ssid) == 0) {
+        WS_DEBUG_PRINT("Found hidden WiFi network on ch");
+        WS_DEBUG_PRINTLNVAR(WiFi.channel(i));
+        return true;
+      }
+    }
+    return false;
   }
 
   /********************************************************/
@@ -250,6 +307,8 @@ protected:
   NetworkClient
       *_mqtt_client_insecure; ///< Pointer to an insecure network client object
   WiFiMulti _wifiMulti;       ///< WiFiMulti object for multi-network mode
+  const char *_hiddenSsid = NULL; ///< Hidden SSID found by a directed scan
+  const char *_hiddenPass = NULL; ///< Password for `_hiddenSsid`
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
@@ -329,7 +388,7 @@ protected:
       WiFi.setAutoReconnect(false);
       _disconnect();
       delay(100);
-      if (WS._isWiFiMulti) {
+      if (WS._isWiFiMulti && _hiddenSsid == NULL) {
         // multi network mode
         _wifiMulti.APlistClean();
         _wifiMulti.setAllowOpenAP(false);
@@ -347,6 +406,12 @@ protected:
         } else {
           _status = WS_NET_DISCONNECTED;
         }
+      } else if (_hiddenSsid != NULL) {
+        // hidden network found by check_valid_ssid(), WiFiMulti can't see it
+        WiFi.begin(_hiddenSsid, _hiddenPass);
+        _status = WS_NET_DISCONNECTED;
+        WS.feedWDT();
+        delay(5000);
       } else {
         // single network mode
         WiFi.begin(_ssid, _pass);
