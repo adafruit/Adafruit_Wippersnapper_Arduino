@@ -47,6 +47,7 @@ jobs:
             "qtpy_esp32s2",
             "qtpy_esp32s3_n4r2",
             "lilygo_t_display_s3",
+            "xiao_esp32s3",
           ]
     steps:
       - uses: actions/setup-python@v7
