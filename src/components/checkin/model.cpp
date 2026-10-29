@@ -629,18 +629,18 @@ bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
 }
 
 /*!
-    @brief  Consumes an unchanged checkin response without applying it and
-            publishes Complete, as the response is already applied.
+    @brief  Consumes an unchanged checkin response without applying it, as
+            it is already applied. The checkin caller publishes Complete.
     @param  stream
             Incoming data stream positioned at the start of the checkin
             message.
-    @returns True if skipped and Complete published, False otherwise.
+    @returns True if skipped, False otherwise.
 */
 bool CheckinModel::SkipResponse(pb_istream_t *stream) {
   if (!pb_read(stream, nullptr, stream->bytes_left))
     return false;
   _got_response = true;
-  return Complete();
+  return true;
 }
 
 /*!
