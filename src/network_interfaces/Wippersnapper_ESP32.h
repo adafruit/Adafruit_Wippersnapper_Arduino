@@ -25,6 +25,7 @@
 #include "Arduino.h"
 #include "WiFi.h"
 #include "WiFiMulti.h"
+#include "esp_wifi.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
 
@@ -104,6 +105,7 @@ public:
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(100);
+    set_wifi_country();
 
 // For boards with a "3D Antenna", we need to reduce the TX power
 // to prevent flaky operation.
@@ -185,6 +187,33 @@ public:
       WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     }
     return foundNetwork;
+  }
+
+  /***********************************************************/
+  /*!
+  @brief   Sets the WiFi regulatory country from secrets.json, which
+           decides the channels scanned and joined (e.g. 12-13 in "GB").
+  @note    ESP-IDF stores the country in flash, so it is reset to the
+           default "01" (world safe, channels 1-11) when unset.
+  */
+  /***********************************************************/
+  void set_wifi_country() {
+    const char *country = strlen(WS._config.network_country) > 0
+                              ? WS._config.network_country
+                              : "01";
+    char current[4] = {0}; // IDF doesn't state its write size, allow cc[3]
+    if (esp_wifi_get_country_code(current) == ESP_OK &&
+        strncmp(current, country, 2) == 0)
+      return;
+
+    // 802.11d stays on, so a connected AP's country info still applies
+    if (esp_wifi_set_country_code(country, true) == ESP_OK) {
+      WS_DEBUG_PRINT("WiFi country set to: ");
+      WS_DEBUG_PRINTLNVAR(country);
+    } else {
+      WS_DEBUG_PRINT("ERROR: Unsupported WiFi country code: ");
+      WS_DEBUG_PRINTLNVAR(country);
+    }
   }
 
   /***********************************************************/

@@ -121,6 +121,7 @@ public:
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(100);
+    set_wifi_country();
 
     // Perform a network scan, including hidden networks
     int n = WiFi.scanNetworks(false, true);
@@ -182,6 +183,39 @@ public:
       WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     }
     return foundNetwork;
+  }
+
+  /***********************************************************/
+  /*!
+  @brief   Sets the WiFi regulatory country from secrets.json.
+  @note    The SDK default is "CN" (channels 1-13) and isn't stored in
+           flash, so there's nothing to restore when unset.
+  */
+  /***********************************************************/
+  void set_wifi_country() {
+    if (strlen(WS._config.network_country) == 0)
+      return;
+
+    wifi_country_t country = {};
+    strlcpy(country.cc, WS._config.network_country, sizeof(country.cc));
+    country.schan = 1;
+    // The SDK takes a channel range rather than looking the country up
+    if (strcmp(country.cc, "US") == 0 || strcmp(country.cc, "CA") == 0) {
+      country.nchan = 11;
+    } else if (strcmp(country.cc, "JP") == 0) {
+      country.nchan = 14;
+    } else {
+      country.nchan = 13;
+    }
+    country.policy = WIFI_COUNTRY_POLICY_AUTO;
+
+    if (wifi_set_country(&country)) {
+      WS_DEBUG_PRINT("WiFi country set to: ");
+      WS_DEBUG_PRINTLNVAR(country.cc);
+    } else {
+      WS_DEBUG_PRINT("ERROR: Unable to set WiFi country: ");
+      WS_DEBUG_PRINTLNVAR(country.cc);
+    }
   }
 
   /***********************************************************/
