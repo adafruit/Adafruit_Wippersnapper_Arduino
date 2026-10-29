@@ -234,6 +234,7 @@ public:
   virtual void _connect();
   virtual void _disconnect(bool wifi_off = true);
   void connect();
+  void checkin();
   void disconnect(bool wifi_off = true);
   virtual void getMacAddr();
   virtual int32_t getRSSI();
