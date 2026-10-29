@@ -198,5 +198,17 @@ bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
     return false;
   }
 
+  WS_DEBUG_PRINT("[pwm] Wrote to pin: ");
+  WS_DEBUG_PRINTVAR(msg->pin);
+  WS_DEBUG_PRINT("[pwm] Message type: ");
+  WS_DEBUG_PRINTVAR(msg->which_payload);
+  WS_DEBUG_PRINT("[pwm] Payload value: ");
+  if (msg->which_payload == ws_pwm_Write_duty_cycle_tag) {
+    WS_DEBUG_PRINTVAR(msg->payload.duty_cycle);
+  } else if (msg->which_payload == ws_pwm_Write_frequency_tag) {
+    WS_DEBUG_PRINTVAR(msg->payload.frequency);
+  }
+  WS_DEBUG_PRINTLN("");
+
   return true;
 }
