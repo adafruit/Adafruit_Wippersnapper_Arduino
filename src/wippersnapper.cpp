@@ -663,7 +663,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       case WS_SSID_SCAN_NO_NETWORKS:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: No WiFi networks found, rebooting soon...",
@@ -672,7 +676,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       case WS_SSID_SCAN_SSID_NOT_FOUND:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: Unable to find WiFi network, rebooting soon...",
@@ -681,7 +689,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       case WS_SSID_SCAN_NO_IFACE:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: No network interface defined, rebooting soon...",
@@ -690,7 +702,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       default:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: Unknown WiFi scan result, rebooting soon...",
@@ -721,7 +737,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
         WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: Unable to connect to WiFi, rebooting soon...",
@@ -762,7 +782,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2(
