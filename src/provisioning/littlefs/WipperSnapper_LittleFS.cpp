@@ -17,6 +17,9 @@
     defined(ARDUINO_ADAFRUIT_ITSYBITSY_ESP32) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2) ||                              \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
+    defined(ARDUINO_SPARKLEMOTION_ESP32) ||                                    \
+    defined(ARDUINO_SPARKLEMOTIONMINI_ESP32) ||                                \
+    defined(ARDUINO_SPARKLEMOTIONSTICK_ESP32) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || defined(ARDUINO_ESP32_DEV) ||    \
     defined(ESP32_DEV) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) ||         \
     defined(ARDUINO_DFROBOT_FIREBEETLE_2_ESP32C5) ||                           \
