@@ -56,7 +56,7 @@ public:
   bool ResponseChanged(pb_istream_t *stream);
   bool SkipResponse(pb_istream_t *stream);
   void SaveResponseHash();
-  void RemoveStaleComponents();
+  void RemoveStaleComponents(pb_istream_t *stream);
   bool Complete();
   void configureSleep();
   int32_t GetTotalGPIOPins();
@@ -101,6 +101,7 @@ private:
   CheckinComponent _pending;      ///< Component Add being applied
   int _pending_idx = -1;          ///< Index of _pending's existing entry, or -1
   bool _has_pending = false;      ///< True if _pending awaits CommitAdd()
+  bool _mark_only = false;        ///< True while RemoveStaleComponents() marks
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
 #endif                    // WS_CHECKIN_H

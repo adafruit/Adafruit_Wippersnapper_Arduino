@@ -329,6 +329,10 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   }
   WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
 
+  // Remove components applied from an earlier response but not in this one,
+  // before adding new ones that may reuse their pins
+  Ws->CheckInModel->RemoveStaleComponents(stream);
+
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
   if (!Ws->CheckInModel->ProcessResponse(stream)) {
@@ -339,9 +343,6 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   if (!Ws->CheckInModel->ValidateResponse()) {
     Ws->haltErrorV2("Invalid checkin response, rebooting soon...");
   }
-
-  // Remove components applied from an earlier response but not in this one
-  Ws->CheckInModel->RemoveStaleComponents();
 
   // Configure sleep settings if enabled
   Ws->CheckInModel->configureSleep();
