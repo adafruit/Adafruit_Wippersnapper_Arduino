@@ -107,12 +107,22 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   if (!did_attach) {
     Ws->error_handler->publishComponentError(msg->pin, "Failed to attach pin");
     delete new_pin;
-  } else {
-    _pins.push_back(new_pin);
+    return false;
   }
+  _pins.push_back(new_pin);
 
   WS_DEBUG_PRINT("[pwm] Attached pin: ");
   WS_DEBUG_PRINTVAR(msg->pin);
+
+  // Handle optional initial write
+  if (msg->has_write) {
+    WS_DEBUG_PRINTLN("[pwm] Processing initial write...");
+    if (!new_pin->write(&msg->write)) {
+      Ws->error_handler->publishComponentError(msg->pin,
+                                               "Failed to write to pin");
+      return false;
+    }
+  }
   return true;
 }
 
