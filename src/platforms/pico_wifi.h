@@ -206,6 +206,8 @@ public:
     uint32_t start = millis();
     while (cyw43_wifi_scan_active(&cyw43_state) &&
            millis() - start < TEN_SECONDS_IN_MS) {
+      // RP2040/RP2350 hardware WDT maxes out at ~8.3s
+      Ws->_wdt->feed();
       delay(10);
     }
     Ws->_wdt->feed();
