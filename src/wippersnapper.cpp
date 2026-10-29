@@ -1219,15 +1219,19 @@ void wippersnapper::checkin() {
 */
 void wippersnapper::run() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
-  // Sleep mode may be enabled during runtime
-  while (!Ws->_sleep_controller->isSleepEnabled()) {
-    loop();
-  }
-  // Sleep is enabled: feed the TWDT and hand control to the sleep-aware loop.
-  WS_DEBUG_PRINTLN("[app] Sleep enabled, entering loopSleep()");
-  Ws->_wdt->feed();
   while (true) {
-    loopSleep();
+    // Sleep mode may be enabled during runtime
+    while (!Ws->_sleep_controller->isSleepEnabled()) {
+      loop();
+    }
+    // Sleep is enabled: feed the TWDT and hand control to loopSleep()
+    WS_DEBUG_PRINTLN("[app] Sleep enabled, entering loopSleep()");
+    Ws->_wdt->feed();
+    // A checkin after a light sleep wake may disable sleep again
+    while (Ws->_sleep_controller->isSleepEnabled()) {
+      loopSleep();
+    }
+    WS_DEBUG_PRINTLN("[app] Sleep disabled, entering loop()");
   }
 #else
   while (true) {
