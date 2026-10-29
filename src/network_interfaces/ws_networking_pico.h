@@ -211,6 +211,8 @@ public:
     }
     uint32_t start = millis();
     while (cyw43_wifi_scan_active(&cyw43_state) && millis() - start < 10000) {
+      // RP2040 WDT maxes out at ~8.3s, shorter than this wait
+      WS.feedWDT();
       delay(10);
     }
     WS.feedWDT();
