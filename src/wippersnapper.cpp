@@ -1022,6 +1022,7 @@ void wippersnapper::pingBrokerV2() {
   // if it's past time to send the next ping
   if (millis() > (_prv_pingV2 + WS_DEVICE_PING_MS)) {
     WS_DEBUG_PRINT("Sending MQTT PING: ");
+    WS_PRINTER.flush(); // HIL diag: out before the network call
     if (Ws->_mqttV2->ping()) {
       WS_DEBUG_PRINTLN("SUCCESS!");
     } else {
@@ -1031,6 +1032,7 @@ void wippersnapper::pingBrokerV2() {
     }
     _prv_pingV2 = millis();
     WS_DEBUG_PRINT("WiFi RSSI: ");
+    WS_PRINTER.flush(); // HIL diag: out before the hosted-WiFi call
     WS_DEBUG_PRINTLNVAR(getRSSI());
   }
   // Blink the status LED to indicate that the device is still alive

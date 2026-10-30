@@ -395,6 +395,7 @@ public:
                            DSI_STATUSBAR_ICON_SZ, 0x0000);
       _statusbar_rssi = rssi;
     }
+    DSI_STEP("status bar: cache sync");
     _display->flush();
   }
 
@@ -431,6 +432,7 @@ public:
       }
       _display->print(message[i]);
     }
+    DSI_STEP("message: cache sync");
     _display->flush();
   }
 
