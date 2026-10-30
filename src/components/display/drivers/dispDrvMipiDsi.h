@@ -472,9 +472,9 @@ private:
   */
   bool sendInit() {
     for (size_t i = 0;
-         i < sizeof(ili9881c_init_rpi_td2) / sizeof(ili9881c_init_rpi_td2[0]);
+         i < sizeof(ili9881c_init_espressif_default) / sizeof(ili9881c_init_espressif_default[0]);
          i++) {
-      const ili9881c_init_reg_t *e = &ili9881c_init_rpi_td2[i];
+      const ili9881c_init_reg_t *e = &ili9881c_init_espressif_default[i];
       if (e->reg == DSI_ILI9881C_PAGE) {
         if (!selectPage(e->value))
           return false;
