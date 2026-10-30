@@ -19,6 +19,9 @@ on:
       GH_REPO_TOKEN:
         required: true
 
+env:
+  CI_ARDUINO_REF: ci-bsp-reuse-shallow # TEMP: revert before merge (adafruit/ci-arduino#243)
+
 jobs:
   nanopb-warm:
     name: Warm nanopb cache
@@ -42,9 +45,68 @@ jobs:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
 
+  bsp-resolve:
+    name: Resolve BSP refs
+    runs-on: ubuntu-latest
+    outputs:
+      refs: ${{ steps.resolve.outputs.refs }}
+      keys: ${{ steps.resolve.outputs.keys }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - uses: actions/checkout@v4
+        with:
+          repository: adafruit/ci-arduino
+          ref: ${{ env.CI_ARDUINO_REF }}
+          path: ci
+      - name: Resolve the BSP ref of every build target
+        id: resolve
+        run: |
+          yq -o=json .github/workflows/build-clang-doxy.yml > workflow.json
+          python3 .github/scripts/resolve_bsp_refs.py workflow.json ci/all_platforms.py >> "$GITHUB_OUTPUT"
+
+  bsp-warm:
+    name: Warm BSP cache (${{ matrix.bsp.owner }}/${{ matrix.bsp.branch }})
+    needs: bsp-resolve
+    if: ${{ !cancelled() && needs.bsp-resolve.outputs.refs != '' && needs.bsp-resolve.outputs.refs != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        bsp: ${{ fromJSON(needs.bsp-resolve.outputs.refs) }}
+    steps:
+      - name: Check BSP cache
+        id: cache-bsp
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ matrix.bsp.key }}
+          lookup-only: true
+      - name: Shallow fetch BSP at the resolved commit
+        if: steps.cache-bsp.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /home/runner/Arduino/hardware/espressif/esp32
+          cd /home/runner/Arduino/hardware/espressif/esp32
+          git init -q
+          git remote add origin https://github.com/${{ matrix.bsp.owner }}/arduino-esp32.git
+          for attempt in 1 2 3; do
+            git fetch -q --depth 1 origin ${{ matrix.bsp.sha }} && break
+            [ $attempt -eq 3 ] && exit 1
+            sleep $((attempt * 30))
+          done
+          # build_platform.py reuses the checkout when its branch and owner match
+          git checkout -q -B ${{ matrix.bsp.branch }} FETCH_HEAD
+      - name: Save BSP to cache
+        if: steps.cache-bsp.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ matrix.bsp.key }}
+
   build-esp32sx-esptool:
     name: 🏗️ESP32-Sx
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -102,7 +164,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
@@ -111,6 +173,12 @@ jobs:
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet --branch 2.2.54 https://github.com/adafruit/SdFat.git /home/runner/Arduino/libraries/SdFat
@@ -271,7 +339,7 @@ jobs:
 
   build-esp32sx:
     name: 🏗️ESP32-Sx
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -315,10 +383,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
@@ -365,7 +439,7 @@ jobs:
 
   build-esp32:
     name: 🏗️ESP32/Cx
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -427,7 +501,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
@@ -436,6 +510,12 @@ jobs:
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
@@ -566,7 +646,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -648,7 +728,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -728,7 +808,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -775,7 +855,7 @@ jobs:
 
   build-esp32sx-dev:
     name: 🏗️ESP32-Sx(DEV)
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -825,10 +905,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
@@ -875,7 +961,7 @@ jobs:
 
   build-esp32-dev:
     name: 🏗️ESP32/Cx(DEV)
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -925,7 +1011,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
@@ -934,6 +1020,12 @@ jobs:
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
@@ -1057,7 +1149,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: pre-install
         run: bash ci/actions_install.sh
