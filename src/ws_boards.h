@@ -328,10 +328,13 @@
 #define BOARD_ID "dfrobot-firebeetle2-esp32p4"
 #define USE_TINYUSB
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
-#elif defined(ARDUINO_ESP32P4_DEV)
-// Generic ESP32-P4 Dev Module entry (Adafruit Metro ESP32-P4)
-#define BOARD_ID "metroesp32p4"
-#define USE_LITTLEFS
+#elif defined(ARDUINO_ADAFRUIT_METRO_ESP32P4)
+#define BOARD_ID "adafruit-metro-esp32p4"
+#define USE_TINYUSB
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
+#define BOOT_BUTTON PIN_BUTTON1 ///< Normalized boot button pin
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666)
 #define BOARD_ID "qualia-s3-rgb666"
