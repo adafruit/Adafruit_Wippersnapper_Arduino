@@ -54,6 +54,7 @@ public:
   void ConfigureControllers();
   bool GotResponse();
   bool ResponseChanged(pb_istream_t *stream);
+  bool SkipResponse(pb_istream_t *stream);
   void SaveResponseHash();
   void RemoveStaleComponents(pb_istream_t *stream);
   bool Complete();

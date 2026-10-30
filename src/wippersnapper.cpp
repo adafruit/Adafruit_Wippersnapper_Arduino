@@ -321,13 +321,13 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     return false;
   }
 
-  // Hash the raw response before decoding, decoding applies component adds
-  // TODO: Skip re-applying an unchanged response on a light sleep wake (#1048)
-  if (Ws->CheckInModel->ResponseChanged(stream)) {
-    WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
-  } else {
+  // Hash the raw response before decoding, decoding applies component adds.
+  // An unchanged response (e.g. after a light sleep wake) is already applied.
+  if (!Ws->CheckInModel->ResponseChanged(stream)) {
     WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
+    return Ws->CheckInModel->SkipResponse(stream);
   }
+  WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
 
   // Remove components applied from an earlier response but not in this one,
   // before adding new ones that may reuse their pins
@@ -1399,6 +1399,9 @@ void wippersnapper::loopSleep() {
   if (!Ws->_sdCardV2->isModeOffline()) {
     WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
     NetworkFSM(true);
+    // Sync with IO before sleeping again, an unchanged response is skipped
+    WS_DEBUG_PRINTLN("[app] Checking in after light sleep wake...");
+    checkin();
   }
   // For light sleep, this allows the next loopSleep() cycle to begin
 }
