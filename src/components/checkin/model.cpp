@@ -24,6 +24,69 @@
 // nothing is configured yet and the response must always be applied.
 static uint8_t last_response_sha[CHECKIN_SHA_LEN];
 static bool has_last_response_sha = false;
+// Components applied from checkin responses, same RAM lifetime as above
+static std::vector<CheckinComponent> checkin_components;
+
+/*!
+    @brief  Computes the SHA-256 of a buffer.
+    @param  data
+            Buffer to hash.
+    @param  len
+            Length of the buffer.
+    @param  out
+            CHECKIN_SHA_LEN byte digest output.
+    @returns True if hashed, False if hashing is unsupported or failed.
+*/
+static bool sha256(const uint8_t *data, size_t len, uint8_t *out) {
+#if defined(ARDUINO_ARCH_ESP32)
+  return mbedtls_sha256(data, len, out, 0) == 0;
+#elif defined(ARDUINO_ARCH_RP2350)
+  br_sha256_context ctx;
+  br_sha256_init(&ctx);
+  br_sha256_update(&ctx, data, len);
+  br_sha256_out(&ctx, out);
+  return true;
+#else
+  (void)data;
+  (void)len;
+  (void)out;
+  return false;
+#endif
+}
+
+/*!
+    @brief  Finds a component in the checkin component list.
+    @param  type
+            BrokerToDevice payload tag of the component.
+    @param  remove
+            Encoded Remove message identifying the component.
+    @returns Index of the component, or -1 if not found.
+*/
+static int findComponent(pb_size_t type, const std::vector<uint8_t> &remove) {
+  for (size_t i = 0; i < checkin_components.size(); i++) {
+    if (checkin_components[i].type == type &&
+        checkin_components[i].remove == remove)
+      return (int)i;
+  }
+  return -1;
+}
+
+/*!
+    @brief  Decodes a component's stored Remove message.
+    @param  component
+            The component to remove.
+    @param  fields
+            nanopb fields of the Remove message.
+    @param  msg
+            Zero-initialised Remove message to decode into.
+    @returns True if decoded, False otherwise.
+*/
+static bool decodeRemove(const CheckinComponent &component,
+                         const pb_msgdesc_t *fields, void *msg) {
+  pb_istream_t stream =
+      pb_istream_from_buffer(component.remove.data(), component.remove.size());
+  return pb_decode(&stream, fields, msg);
+}
 
 // TODO: Remove all debug prints after we are confident during testing
 
@@ -223,12 +286,21 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
 */
 bool CheckinModel::cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
                                  void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  pb_istream_t raw = *stream;
   ws_digital_Add add_msg = ws_digital_Add_init_zero;
   if (!pb_decode(stream, ws_digital_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digital add");
     return false;
   }
-  return Ws->digital_controller->Handle_Digital_Add(&add_msg);
+  ws_digital_Remove remove_msg = ws_digital_Remove_init_zero;
+  strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
+  // Digital Add replaces an existing pin itself
+  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_digital_tag,
+                          ws_digital_Remove_fields,
+                          &remove_msg) == CHECKIN_SKIP)
+    return true;
+  return model->CommitAdd(Ws->digital_controller->Handle_Digital_Add(&add_msg));
 }
 
 /*!
@@ -240,12 +312,20 @@ bool CheckinModel::cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
                                 void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  pb_istream_t raw = *stream;
   ws_analog_Add add_msg = ws_analog_Add_init_zero;
   if (!pb_decode(stream, ws_analog_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analog add");
     return false;
   }
-  return Ws->analog_controller->Handle_Analog_Add(&add_msg);
+  ws_analog_Remove remove_msg = ws_analog_Remove_init_zero;
+  strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
+  // Analog Add replaces an existing pin itself
+  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_analog_tag,
+                          ws_analog_Remove_fields, &remove_msg) == CHECKIN_SKIP)
+    return true;
+  return model->CommitAdd(Ws->analog_controller->Handle_Analog_Add(&add_msg));
 }
 
 /*!
@@ -257,12 +337,25 @@ bool CheckinModel::cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
                                void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  pb_istream_t raw = *stream;
   ws_servo_Add add_msg = ws_servo_Add_init_zero;
   if (!pb_decode(stream, ws_servo_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode servo add");
     return false;
   }
-  return Ws->_servo_controller->Handle_Servo_Add(&add_msg);
+  ws_servo_Remove remove_msg = ws_servo_Remove_init_zero;
+  strncpy(remove_msg.servo_pin, add_msg.servo_pin,
+          sizeof(remove_msg.servo_pin) - 1);
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_servo_tag,
+                          ws_servo_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
+    return true;
+  // Servo Add does not replace an existing servo, remove it first
+  if (action == CHECKIN_REPLACE)
+    (void)Ws->_servo_controller->Handle_Servo_Remove(&remove_msg);
+  return model->CommitAdd(Ws->_servo_controller->Handle_Servo_Add(&add_msg));
 }
 
 /*!
@@ -274,12 +367,20 @@ bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  pb_istream_t raw = *stream;
   ws_pwm_Add add_msg = ws_pwm_Add_init_zero;
   if (!pb_decode(stream, ws_pwm_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pwm add");
     return false;
   }
-  return Ws->_pwm_controller->Handle_PWM_Add(&add_msg);
+  ws_pwm_Remove remove_msg = ws_pwm_Remove_init_zero;
+  strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
+  // PWM Add replaces an existing pin itself
+  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_pwm_tag,
+                          ws_pwm_Remove_fields, &remove_msg) == CHECKIN_SKIP)
+    return true;
+  return model->CommitAdd(Ws->_pwm_controller->Handle_PWM_Add(&add_msg));
 }
 
 /*!
@@ -291,12 +392,25 @@ bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
                                 void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  pb_istream_t raw = *stream;
   ws_pixels_Add add_msg = ws_pixels_Add_init_zero;
   if (!pb_decode(stream, ws_pixels_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pixels add");
     return false;
   }
-  return Ws->_pixels_controller->Handle_Pixels_Add(&add_msg);
+  ws_pixels_Remove remove_msg = ws_pixels_Remove_init_zero;
+  strncpy(remove_msg.pin_data, add_msg.pin_data,
+          sizeof(remove_msg.pin_data) - 1);
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_pixels_tag,
+                          ws_pixels_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
+    return true;
+  // Pixels Add does not replace an existing strand, remove it first
+  if (action == CHECKIN_REPLACE)
+    (void)Ws->_pixels_controller->Handle_Pixels_Remove(&remove_msg);
+  return model->CommitAdd(Ws->_pixels_controller->Handle_Pixels_Add(&add_msg));
 }
 
 /*!
@@ -308,12 +422,25 @@ bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
                                  void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  pb_istream_t raw = *stream;
   ws_ds18x20_Add add_msg = ws_ds18x20_Add_init_zero;
   if (!pb_decode(stream, ws_ds18x20_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode ds18x20 add");
     return false;
   }
-  return Ws->_ds18x20_controller->Handle_Ds18x20Add(&add_msg);
+  ws_ds18x20_Remove remove_msg = ws_ds18x20_Remove_init_zero;
+  strncpy(remove_msg.onewire_pin, add_msg.onewire_pin,
+          sizeof(remove_msg.onewire_pin) - 1);
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_ds18x20_tag,
+                          ws_ds18x20_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
+    return true;
+  // DS18x20 Add does not replace an existing sensor, remove it first
+  if (action == CHECKIN_REPLACE)
+    (void)Ws->_ds18x20_controller->Handle_Ds18x20Remove(&remove_msg);
+  return model->CommitAdd(Ws->_ds18x20_controller->Handle_Ds18x20Add(&add_msg));
 }
 
 /*!
@@ -325,12 +452,25 @@ bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
                               void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  pb_istream_t raw = *stream;
   ws_uart_Add add_msg = ws_uart_Add_init_zero;
   if (!pb_decode(stream, ws_uart_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode uart add");
     return false;
   }
-  return Ws->_uart_controller->Handle_UartAdd(&add_msg);
+  ws_uart_Remove remove_msg = ws_uart_Remove_init_zero;
+  remove_msg.has_descriptor = add_msg.has_descriptor;
+  remove_msg.descriptor = add_msg.descriptor;
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_uart_tag,
+                          ws_uart_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
+    return true;
+  // UART Add rejects a port already in use, remove it first
+  if (action == CHECKIN_REPLACE)
+    (void)Ws->_uart_controller->Handle_UartRemove(&remove_msg);
+  return model->CommitAdd(Ws->_uart_controller->Handle_UartAdd(&add_msg));
 }
 
 /*!
@@ -342,13 +482,23 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  pb_istream_t raw = *stream;
   ws_i2c_Add add_msg = ws_i2c_Add_init_zero;
   Ws->_i2c_controller->SetupAddDecodeCallbacks(&add_msg);
   if (!pb_decode(stream, ws_i2c_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode i2c add");
     return false;
   }
-  return Ws->_i2c_controller->Handle_Add(&add_msg);
+  ws_i2c_Remove remove_msg = ws_i2c_Remove_init_zero;
+  remove_msg.has_descriptor = add_msg.has_descriptor;
+  remove_msg.descriptor = add_msg.descriptor;
+  // I2C Add replaces an existing driver itself. An explicit Remove would also
+  // tear down every device behind a MUX when the MUX itself changes.
+  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_i2c_tag,
+                          ws_i2c_Remove_fields, &remove_msg) == CHECKIN_SKIP)
+    return true;
+  return model->CommitAdd(Ws->_i2c_controller->Handle_Add(&add_msg));
 }
 
 /*!
@@ -360,12 +510,22 @@ bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
 */
 bool CheckinModel::cbTelemetryAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  pb_istream_t raw = *stream;
   ws_telemetry_Add add_msg = ws_telemetry_Add_init_zero;
   if (!pb_decode(stream, ws_telemetry_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode telemetry add");
     return false;
   }
-  return Ws->_telemetry_controller->Handle_TelemetryAdd(&add_msg);
+  ws_telemetry_Remove remove_msg = ws_telemetry_Remove_init_zero;
+  remove_msg.type = add_msg.type;
+  // Telemetry Add updates an existing metric itself
+  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_telemetry_tag,
+                          ws_telemetry_Remove_fields,
+                          &remove_msg) == CHECKIN_SKIP)
+    return true;
+  return model->CommitAdd(
+      Ws->_telemetry_controller->Handle_TelemetryAdd(&add_msg));
 }
 
 /*!
@@ -446,20 +606,8 @@ bool CheckinModel::GotResponse() { return _got_response; }
 */
 bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
   // A buffer stream's state points at its next unread byte
-  const uint8_t *data = (const uint8_t *)stream->state;
-  size_t len = stream->bytes_left;
-#if defined(ARDUINO_ARCH_ESP32)
-  _has_response_sha = mbedtls_sha256(data, len, _response_sha, 0) == 0;
-#elif defined(ARDUINO_ARCH_RP2350)
-  br_sha256_context ctx;
-  br_sha256_init(&ctx);
-  br_sha256_update(&ctx, data, len);
-  br_sha256_out(&ctx, _response_sha);
-  _has_response_sha = true;
-#else
-  (void)data;
-  (void)len;
-#endif
+  _has_response_sha =
+      sha256((const uint8_t *)stream->state, stream->bytes_left, _response_sha);
   if (!_has_response_sha || !has_last_response_sha)
     return true;
   return memcmp(_response_sha, last_response_sha, CHECKIN_SHA_LEN) != 0;
@@ -474,6 +622,184 @@ void CheckinModel::SaveResponseHash() {
     return;
   memcpy(last_response_sha, _response_sha, CHECKIN_SHA_LEN);
   has_last_response_sha = true;
+}
+
+/*!
+    @brief  Decides how to apply a component Add from a checkin response by
+            comparing it against the components applied from earlier
+            responses. Follow with CommitAdd() unless CHECKIN_SKIP.
+    @param  raw
+            Copy of the Add's buffer stream, taken before it was decoded.
+    @param  type
+            BrokerToDevice payload tag of the component.
+    @param  remove_fields
+            nanopb fields of the component's Remove message.
+    @param  remove_msg
+            Remove message identifying the component, built from the Add.
+    @returns CHECKIN_SKIP if the component is unchanged (or in the
+             RemoveStaleComponents() mark pass), CHECKIN_REPLACE if it exists
+             with a different Add, CHECKIN_ADD otherwise.
+*/
+CheckinAction CheckinModel::ReconcileAdd(const pb_istream_t *raw,
+                                         pb_size_t type,
+                                         const pb_msgdesc_t *remove_fields,
+                                         const void *remove_msg) {
+  _has_pending = false;
+  _pending.type = type;
+  _pending.seen = false;
+  size_t sz = 0;
+  bool keyed =
+      sha256((const uint8_t *)raw->state, raw->bytes_left, _pending.add_sha) &&
+      pb_get_encoded_size(&sz, remove_fields, remove_msg);
+  if (keyed) {
+    _pending.remove.resize(sz);
+    pb_ostream_t stream = pb_ostream_from_buffer(_pending.remove.data(), sz);
+    keyed = pb_encode(&stream, remove_fields, remove_msg);
+  }
+  _pending_idx = keyed ? findComponent(type, _pending.remove) : -1;
+
+  // Mark pass: only record which components are still present
+  if (_mark_only) {
+    if (_pending_idx >= 0)
+      checkin_components[_pending_idx].seen = true;
+    return CHECKIN_SKIP;
+  }
+  if (!keyed)
+    return CHECKIN_ADD;
+  _has_pending = true;
+
+  if (_pending_idx < 0)
+    return CHECKIN_ADD;
+  CheckinComponent &existing = checkin_components[_pending_idx];
+  if (memcmp(existing.add_sha, _pending.add_sha, CHECKIN_SHA_LEN) == 0) {
+    _has_pending = false;
+    WS_DEBUG_PRINTLN("[checkin] Component unchanged, skipping");
+    return CHECKIN_SKIP;
+  }
+  WS_DEBUG_PRINTLN("[checkin] Component changed, replacing");
+  return CHECKIN_REPLACE;
+}
+
+/*!
+    @brief  Records the outcome of applying the component Add passed to the
+            last ReconcileAdd(), so later checkin responses reconcile
+            against it.
+    @param  added
+            Result of the controller's Add handler.
+    @returns added, so callbacks can return it directly.
+*/
+bool CheckinModel::CommitAdd(bool added) {
+  if (!_has_pending)
+    return added;
+  _has_pending = false;
+  if (_pending_idx < 0) {
+    if (added)
+      checkin_components.push_back(_pending);
+  } else if (added) {
+    memcpy(checkin_components[_pending_idx].add_sha, _pending.add_sha,
+           CHECKIN_SHA_LEN);
+  } else {
+    // The old component was removed and its replacement failed
+    checkin_components.erase(checkin_components.begin() + _pending_idx);
+  }
+  return added;
+}
+
+/*!
+    @brief  Removes components applied from earlier checkin responses that
+            are not in this response. Call before ProcessResponse(), so a
+            stale component never tears down a pin a new one has taken.
+    @param  stream
+            Incoming data stream positioned at the start of the checkin
+            message. Not consumed.
+*/
+void CheckinModel::RemoveStaleComponents(pb_istream_t *stream) {
+  if (checkin_components.empty())
+    return;
+
+  // Mark pass: decode a copy of the response without applying any component
+  for (size_t i = 0; i < checkin_components.size(); i++)
+    checkin_components[i].seen = false;
+  pb_istream_t mark_stream = *stream;
+  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+  _CheckinB2D.cb_payload.funcs.decode = &cbSetupResponse;
+  _CheckinB2D.cb_payload.arg = this;
+  _mark_only = true;
+  bool decoded = pb_decode(&mark_stream, ws_checkin_B2D_fields, &_CheckinB2D);
+  _mark_only = false;
+  // ProcessResponse() reports invalid responses, never remove on one
+  if (!decoded || _CheckinB2D.which_payload != ws_checkin_B2D_response_tag ||
+      _CheckinB2D.payload.response.response !=
+          ws_checkin_Response_Response_R_OK)
+    return;
+
+  for (size_t i = 0; i < checkin_components.size();) {
+    CheckinComponent &c = checkin_components[i];
+    if (c.seen) {
+      i++;
+      continue;
+    }
+    WS_DEBUG_PRINTLN("[checkin] Removing component no longer in checkin");
+    switch (c.type) {
+    case ws_signal_BrokerToDevice_digital_tag: {
+      ws_digital_Remove msg = ws_digital_Remove_init_zero;
+      if (decodeRemove(c, ws_digital_Remove_fields, &msg))
+        (void)Ws->digital_controller->Handle_Digital_Remove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_analog_tag: {
+      ws_analog_Remove msg = ws_analog_Remove_init_zero;
+      if (decodeRemove(c, ws_analog_Remove_fields, &msg))
+        (void)Ws->analog_controller->Handle_Analog_Remove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_servo_tag: {
+      ws_servo_Remove msg = ws_servo_Remove_init_zero;
+      if (decodeRemove(c, ws_servo_Remove_fields, &msg))
+        (void)Ws->_servo_controller->Handle_Servo_Remove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_pwm_tag: {
+      ws_pwm_Remove msg = ws_pwm_Remove_init_zero;
+      if (decodeRemove(c, ws_pwm_Remove_fields, &msg))
+        (void)Ws->_pwm_controller->Handle_PWM_Remove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_pixels_tag: {
+      ws_pixels_Remove msg = ws_pixels_Remove_init_zero;
+      if (decodeRemove(c, ws_pixels_Remove_fields, &msg))
+        (void)Ws->_pixels_controller->Handle_Pixels_Remove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_ds18x20_tag: {
+      ws_ds18x20_Remove msg = ws_ds18x20_Remove_init_zero;
+      if (decodeRemove(c, ws_ds18x20_Remove_fields, &msg))
+        (void)Ws->_ds18x20_controller->Handle_Ds18x20Remove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_uart_tag: {
+      ws_uart_Remove msg = ws_uart_Remove_init_zero;
+      if (decodeRemove(c, ws_uart_Remove_fields, &msg))
+        (void)Ws->_uart_controller->Handle_UartRemove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_i2c_tag: {
+      ws_i2c_Remove msg = ws_i2c_Remove_init_zero;
+      if (decodeRemove(c, ws_i2c_Remove_fields, &msg))
+        (void)Ws->_i2c_controller->Handle_Remove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_telemetry_tag: {
+      ws_telemetry_Remove msg = ws_telemetry_Remove_init_zero;
+      if (decodeRemove(c, ws_telemetry_Remove_fields, &msg))
+        (void)Ws->_telemetry_controller->Handle_TelemetryRemove(&msg);
+      break;
+    }
+    default:
+      break;
+    }
+    checkin_components.erase(checkin_components.begin() + i);
+  }
 }
 
 /*!

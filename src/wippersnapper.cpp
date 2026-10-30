@@ -329,6 +329,10 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
   }
 
+  // Remove components applied from an earlier response but not in this one,
+  // before adding new ones that may reuse their pins
+  Ws->CheckInModel->RemoveStaleComponents(stream);
+
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
   if (!Ws->CheckInModel->ProcessResponse(stream)) {
