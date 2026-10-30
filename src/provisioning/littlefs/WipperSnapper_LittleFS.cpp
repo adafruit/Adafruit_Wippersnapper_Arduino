@@ -20,7 +20,8 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || defined(ARDUINO_ESP32_DEV) ||    \
     defined(ESP32_DEV) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) ||         \
     defined(ARDUINO_DFROBOT_FIREBEETLE_2_ESP32C5) ||                           \
-    defined(WS_LILYGO_T_DONGLE_C5) || defined(ARDUINO_ESP32C5_DEV)
+    defined(WS_LILYGO_T_DONGLE_C5) || defined(ARDUINO_ESP32C5_DEV) ||          \
+    defined(WS_WAVESHARE_ESP32P4_WIFI6_STICK)
 #include "WipperSnapper_LittleFS.h"
 
 /*!

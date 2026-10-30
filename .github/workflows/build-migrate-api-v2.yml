@@ -48,6 +48,12 @@ jobs:
             "qtpy_esp32s3_n4r2",
             "lilygo_t_display_s3",
           ]
+        include:
+          # The BSP's tinyuf2 partition scheme already merges the tinyuf2
+          # bootloader, partitions, boot_app0, app and tinyuf2.bin from the
+          # variant folder, so its merged.bin is the from-blank combined.bin
+          - arduino-platform: "adafruit_metro_esp32p4"
+            bsp-merged-bin: true
     steps:
       - uses: actions/setup-python@v7
         with:
@@ -147,6 +153,7 @@ jobs:
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.merged.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.merged_auto.bin
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin
       - name: Get Board Flash Parameters
+        if: ${{ !matrix.bsp-merged-bin }}
         id: get_board_json
         run: |
           board_name=${{ matrix.arduino-platform }}
@@ -163,6 +170,7 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
       - name: fetch tinyuf2 combined.bin
+        if: ${{ !matrix.bsp-merged-bin }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -196,6 +204,7 @@ jobs:
           done
           set -e
       - name: move partition and bootloader files for tinyuf2 (to match flash_args)
+        if: ${{ !matrix.bsp-merged-bin }}
         run: |
           # Copy files where they're expected to make flash_args happy
           mkdir bootloader
@@ -204,6 +213,7 @@ jobs:
           cp partition-table.bin partition_table/partition-table.bin
 
       - name: Create new_flash_args file from flash_args with added app bin + output file
+        if: ${{ !matrix.bsp-merged-bin }}
         run: |
           # Create new_flash_args with esptool parameters first and output file
           echo "--flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" > new_flash_args
@@ -218,30 +228,37 @@ jobs:
           # Append main app to flash_args file
           echo "0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin" >> new_flash_args
       - name: Check boot_app0 file existence (esp32sx built from core, not-source)
+        if: ${{ !matrix.bsp-merged-bin }}
         id: check_files
         uses: andstor/file-existence-action@v3
         with:
           files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
       - name: list arduino esp32 core files
-        if: steps.check_files.outputs.files_exists == 'true'
+        if: ${{ !matrix.bsp-merged-bin && (steps.check_files.outputs.files_exists == 'true') }}
         run: |
           ls /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions
       - name: list arduino esp32 bsp core files
-        if: steps.check_files.outputs.files_exists == 'false'
+        if: ${{ !matrix.bsp-merged-bin && (steps.check_files.outputs.files_exists == 'false') }}
         run: |
           ls /home/runner/Arduino/hardware/espressif/esp32/tools/partitions
       - name: boot_app0 file from arduino-cli core
-        if: steps.check_files.outputs.files_exists == 'true'
+        if: ${{ !matrix.bsp-merged-bin && (steps.check_files.outputs.files_exists == 'true') }}
         run: cp /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
       - name: boot_app0 file from esp32 source bsp
-        if: steps.check_files.outputs.files_exists == 'false'
+        if: ${{ !matrix.bsp-merged-bin && (steps.check_files.outputs.files_exists == 'false') }}
         run: cp /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
       - name: Copy boot_app0 file to ota_data_initial.bin (overwrite tinyuf2 boot preference)
+        if: ${{ !matrix.bsp-merged-bin }}
         run: cp wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin ota_data_initial.bin
       - name: Create combined binary using Esptool merge-bin
+        if: ${{ !matrix.bsp-merged-bin }}
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin @new_flash_args
+      - name: Use the BSP merged.bin as the combined binary
+        if: ${{ matrix.bsp-merged-bin }}
+        run: |
+          mv wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.merged_auto.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin
       - name: Zip build artifacts
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.*
