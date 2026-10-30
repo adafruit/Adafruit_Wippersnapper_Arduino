@@ -13,11 +13,7 @@
  *
  */
 #include "model.h"
-#if defined(ARDUINO_ARCH_ESP32)
-#include "mbedtls/sha256.h"
-#elif defined(ARDUINO_ARCH_RP2350)
-#include <bearssl/bearssl_hash.h>
-#endif
+#include "../../helpers/sha256/sha256.h"
 
 // SHA-256 of the last fully handled checkin response. Plain RAM on purpose:
 // it survives light sleep, but is cleared by a reset or deep sleep wake, where
@@ -441,25 +437,12 @@ bool CheckinModel::GotResponse() { return _got_response; }
             message. Must be a buffer stream (pb_istream_from_buffer), as
             used for both MQTT and SD card messages. Not consumed.
     @returns True if the response differs from the last one (or there is no
-             previous response, or hashing is unsupported), False if it is
-             identical.
+             previous response), False if it is identical.
 */
 bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
   // A buffer stream's state points at its next unread byte
-  const uint8_t *data = (const uint8_t *)stream->state;
-  size_t len = stream->bytes_left;
-#if defined(ARDUINO_ARCH_ESP32)
-  _has_response_sha = mbedtls_sha256(data, len, _response_sha, 0) == 0;
-#elif defined(ARDUINO_ARCH_RP2350)
-  br_sha256_context ctx;
-  br_sha256_init(&ctx);
-  br_sha256_update(&ctx, data, len);
-  br_sha256_out(&ctx, _response_sha);
+  sha256_easy_hash(stream->state, stream->bytes_left, _response_sha);
   _has_response_sha = true;
-#else
-  (void)data;
-  (void)len;
-#endif
   if (!_has_response_sha || !has_last_response_sha)
     return true;
   return memcmp(_response_sha, last_response_sha, CHECKIN_SHA_LEN) != 0;
