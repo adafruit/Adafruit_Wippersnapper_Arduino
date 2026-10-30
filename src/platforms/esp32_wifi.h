@@ -125,7 +125,7 @@ public:
     _hiddenPass = NULL;
 
     // Perform a network scan, including hidden networks
-    int n = WiFi.scanNetworks(false, true);
+    int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true);
     if (n == 0) {
       WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
       return WS_SSID_SCAN_NO_NETWORKS;
@@ -204,6 +204,11 @@ public:
 
   /*!
   @brief   Performs a directed scan (probe request) for a hidden network.
+  @note    A `show_hidden` scan only reports hidden networks with an empty
+           SSID, so it can't tell which hidden network (if any) is ours.
+           A directed scan puts `ssid` in the probe request, and only an
+           AP with that SSID answers. This keeps a wrong SSID failing at
+           scan time, and picks which multi-network credentials to join.
   @param   ssid
            The SSID of the hidden network to scan for.
   @returns True if an access point responded to `ssid`, False otherwise.
@@ -215,7 +220,9 @@ public:
     WS_DEBUG_PRINT("Scanning for hidden WiFi network: ");
     WS_DEBUG_PRINTLNVAR(ssid);
     Ws->_wdt->feed();
-    int n = WiFi.scanNetworks(false, true, false, 300, 0, ssid);
+    int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true,
+                              /*passive=*/false, /*max_ms_per_chan=*/300,
+                              /*channel=*/0, ssid);
     Ws->_wdt->feed();
     for (int i = 0; i < n; i++) {
       // directed scans only report APs answering to `ssid`
