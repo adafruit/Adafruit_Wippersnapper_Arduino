@@ -304,36 +304,6 @@ void wippersnapper::provision() {
   setStatusLEDBrightness(Ws->_configV2.status_pixel_brightness);
   // Set device's wireless credentials
   set_ssid_pass();
-
-#ifdef ARDUINO_ADAFRUIT_METRO_ESP32P4
-  // TEMPORARY HIL self-test (throwaway branch only): add the Touch Display 2
-  // over DSI at boot and write a message, for a camera proof without IO.
-  {
-    static ws_display_Add add = ws_display_Add_init_zero;
-    snprintf(add.name, sizeof(add.name), "hil-dsi-td2");
-    add.type = ws_display_DisplayClass_DISPLAY_CLASS_TFT;
-    snprintf(add.driver, sizeof(add.driver), "ILI9881C");
-    snprintf(add.panel, sizeof(add.panel), "rpi-touch-display-2-7in");
-    add.has_interface_type = true;
-    add.interface_type.which_descriptor =
-        ws_display_InterfaceDescriptor_dsi_tag;
-    add.interface_type.descriptor.dsi.bus = 0;
-    add.which_config = ws_display_Add_config_display_tag;
-    add.config.config_display.width = 720;
-    add.config.config_display.height = 1280;
-    add.config.config_display.rotation = 0;
-    add.config.config_display.text_size = 6;
-    add.config.config_display.status_bar = true;
-    add.has_write = true;
-    snprintf(add.write.name, sizeof(add.write.name), "hil-dsi-td2");
-    snprintf(add.write.message, sizeof(add.write.message),
-             "Metro ESP32-P4\\nDSI OK\\n" WS_VERSION);
-    WS_DEBUG_PRINTLN("[hil] DSI self-test: adding Touch Display 2");
-    bool ok = Ws->_display_controller->Handle_Display_Add(&add);
-    WS_DEBUG_PRINT("[hil] DSI self-test result: ");
-    WS_DEBUG_PRINTLNVAR(ok ? "PASS" : "FAIL");
-  }
-#endif
 }
 
 /*!
