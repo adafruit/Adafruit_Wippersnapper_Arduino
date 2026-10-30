@@ -57,6 +57,8 @@ volatile const char *g_ws_diag_step = "boot"; ///< HIL diag: last step started
 #include <esp_heap_caps.h>
 #include <esp_log.h>
 #include <esp_rom_sys.h>
+#include <soc/mipi_dsi_bridge_struct.h>
+#include <soc/mipi_dsi_host_struct.h>
 #if __has_include(<driver/temperature_sensor.h>)
 #include <driver/temperature_sensor.h>
 #define WS_HB_TSENS 1 ///< Die temperature available
@@ -110,16 +112,27 @@ static void wsHeartbeatTask(void *arg) {
       temperature_sensor_get_celsius(ts, &temp);
 #endif
     uint32_t frames = g_ws_dsi_frames;
-    char line[192];
+    // DSI debug: host error status (clear-on-read, so errors since the last
+    // beat) and the bridge DPI underrun flag + FIFO depth. Only read once
+    // frames are flowing, as the blocks are unclocked before display add.
+    uint32_t st0 = 0, st1 = 0, urun = 0, depth = 0;
+    if (frames) {
+      st0 = MIPI_DSI_HOST.int_st0.val;
+      st1 = MIPI_DSI_HOST.int_st1.val;
+      urun = MIPI_DSI_BRIDGE.int_raw.val;
+      depth = MIPI_DSI_BRIDGE.fifo_flow_status.raw_buf_depth;
+    }
+    char line[256];
     snprintf(
         line, sizeof(line),
         "[hb] up=%lus heap=%u min=%u psram=%u temp=%.1fC dsi_fps=%.1f "
-        "loop_age=%lums step=%s\n",
+        "loop_age=%lums step=%s dsi_st0=%08lx st1=%08lx urun=%lu fifo=%lu\n",
         (unsigned long)(millis() / 1000), (unsigned)esp_get_free_heap_size(),
         (unsigned)esp_get_minimum_free_heap_size(),
         (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM), temp,
         (frames - last_frames) / 2.0f, (unsigned long)(millis() - g_ws_loop_ms),
-        (const char *)g_ws_diag_step);
+        (const char *)g_ws_diag_step, (unsigned long)st0, (unsigned long)st1,
+        (unsigned long)urun, (unsigned long)depth);
     esp_rom_printf("%s", line); // UART0 debug TX, survives a USB drop
     WS_PRINTER.print(line);
     WS_PRINTER.flush();

@@ -161,7 +161,7 @@ extern volatile const char *g_ws_diag_step; ///< HIL diag: last step started
 #endif
 
 #define WS_VERSION                                                             \
-  "2.0.0-alpha.5" ///< WipperSnapper app. version (semver-formatted)
+  "2.0.0-alpha.6" ///< WipperSnapper app. version (semver-formatted)
 
 // Timeouts and intervals
 #define WS_BROKER_KEEPALIVE_MS                                                 \
