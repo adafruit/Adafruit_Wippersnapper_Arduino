@@ -260,19 +260,6 @@ public:
     _display->flush();
     if (!ok(esp_lcd_panel_init(_panel), "DPI video start"))
       return false;
-    // TEMPORARY HIL bar test (throwaway branch only): show the DSI host's
-    // pattern generator with the backlight on, to tell "panel takes no video"
-    // apart from "frame buffer path is wrong"
-    writeMcu(DSI_TD2_MCU_REG_BL, DSI_TD2_BL_ON);
-    WS_DEBUG_PRINTLN("[hil] DSI bars: vertical for 6s");
-    ok(esp_lcd_dpi_panel_set_pattern(_panel, MIPI_DSI_PATTERN_BAR_VERTICAL),
-       "vertical bars");
-    delay(6000);
-    WS_DEBUG_PRINTLN("[hil] DSI bars: horizontal for 6s");
-    ok(esp_lcd_dpi_panel_set_pattern(_panel, MIPI_DSI_PATTERN_BAR_HORIZONTAL),
-       "horizontal bars");
-    delay(6000);
-    WS_DEBUG_PRINTLN("[hil] DSI bars: done, frame buffer");
     // Route the bridge's DPI stream from the frame buffer rather than the DSI
     // host's pattern generator (the panel otherwise shows a flat colour)
     if (!ok(esp_lcd_dpi_panel_set_pattern(_panel, MIPI_DSI_PATTERN_NONE),
