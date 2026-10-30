@@ -25,6 +25,17 @@
 #ifndef SHA256_H
 #define SHA256_H
 
+/* WipperSnapper: prefix the exported symbols, the ESP8266 SDK's libcrypto.a
+   also defines sha256_init etc. sha256.c includes this header, so the
+   definitions are renamed too. */
+#define sha256_init ws_sha256_init
+#define sha256_update ws_sha256_update
+#define sha256_finalize ws_sha256_finalize
+#define sha256_read ws_sha256_read
+#define sha256_read_hex ws_sha256_read_hex
+#define sha256_easy_hash ws_sha256_easy_hash
+#define sha256_easy_hash_hex ws_sha256_easy_hash_hex
+
 #ifdef __cplusplus
 extern "C" {
 #endif
