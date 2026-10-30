@@ -103,6 +103,16 @@ jobs:
           rm -rf /home/runner/Arduino/libraries/Adafruit_SPIFlash
           git clone --depth 1 --branch fix/esp32-idf6-flash-id https://github.com/adafruit/Adafruit_SPIFlash.git /home/runner/Arduino/libraries/Adafruit_SPIFlash
           git -C /home/runner/Arduino/libraries/Adafruit_SPIFlash log --oneline -1
+      # TEMPORARY HIL build: ESP32-P4 1200-baud touch / esptool reset into the ROM
+      # (adafruit/arduino-esp32#25). ci-arduino clones adafruit/arduino-esp32 -b master,
+      # so redirect that URL to a local mirror whose master is the fix branch.
+      - name: Use the arduino-esp32 BSP with the P4 usb_persist_restart fix
+        if: ${{ matrix.arduino-platform == 'adafruit_metro_esp32p4' }}
+        run: |
+          git clone --bare --single-branch --branch fix/esp32p4-usb-persist-restart https://github.com/tyeth/arduino-esp32.git /home/runner/bsp-p4-fix.git
+          git -C /home/runner/bsp-p4-fix.git branch -f master fix/esp32p4-usb-persist-restart
+          git -C /home/runner/bsp-p4-fix.git log --oneline -2 master
+          git config --global url."file:///home/runner/bsp-p4-fix.git".insteadOf "https://github.com/adafruit/arduino-esp32.git"
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
