@@ -16,6 +16,8 @@
 #define WS_CHECKIN_MODEL_H
 #include "wippersnapper.h"
 
+#define CHECKIN_SHA_LEN 32 ///< SHA-256 digest length of a checkin response
+
 class wippersnapper; ///< Forward declaration
 
 /*!
@@ -31,6 +33,8 @@ public:
   bool ValidateResponse();
   void ConfigureControllers();
   bool GotResponse();
+  bool ResponseChanged(pb_istream_t *stream);
+  void SaveResponseHash();
   bool Complete();
   void configureSleep();
   int32_t GetTotalGPIOPins();
@@ -66,6 +70,8 @@ private:
   ws_checkin_D2B _CheckinD2B =
       ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;           ///< Flag indicating if response was received
+  uint8_t _response_sha[CHECKIN_SHA_LEN]; ///< SHA-256 of this response
+  bool _has_response_sha = false; ///< True if _response_sha was computed
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
 #endif                    // WS_CHECKIN_H
