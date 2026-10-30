@@ -81,7 +81,8 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
   WS_DEBUG_PRINTLNVAR(addMsg->panel);
 
   switch (addMsg->interface_type.which_descriptor) {
-  // DSI todo
+  case ws_display_InterfaceDescriptor_dsi_tag:
+    return beginDsi(addMsg);
   case ws_display_InterfaceDescriptor_spi_tft_tag:
     return beginSpiTft(addMsg);
   case ws_display_InterfaceDescriptor_spi_epd_tag:
@@ -548,6 +549,53 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   return true;
 #else
   WS_DEBUG_PRINTLN("[display] ERROR: TTL RGB666 not supported on this board!");
+  return false;
+#endif
+}
+
+/*!
+    @brief  Initializes a MIPI DSI display (ESP32-P4, e.g. Raspberry Pi Touch
+            Display 2 on the Metro ESP32-P4) from an Add message.
+    @param  msg  The Display Add message with DSI interface and config.
+    @return True on success, False on failure or when unsupported on this
+            board.
+*/
+bool DisplayHardware::beginDsi(ws_display_Add *msg) {
+#ifdef CONFIG_IDF_TARGET_ESP32P4
+  if (msg->which_config != ws_display_Add_config_display_tag) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Expected display config for DSI!");
+    return false;
+  }
+  ws_display_DisplayProperties *config = &msg->config.config_display;
+
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
+
+  WS_DEBUG_PRINT("[display] DSI panel: ");
+  WS_DEBUG_PRINTLNVAR(msg->panel);
+
+  _drvDisp = new dispDrvMipiDsi(msg->interface_type.descriptor.dsi.bus);
+  if (!_drvDisp)
+    return false;
+
+  // The panel is 720x1280 native; width/height only steer the rotation
+  _drvDisp->setRotation(config->rotation);
+  if (config->text_size > 0)
+    _drvDisp->setTextSize(config->text_size);
+
+  if (!_drvDisp->begin()) {
+    WS_DEBUG_PRINTLN("[display] ERROR: Failed to begin DSI driver!");
+    delete _drvDisp;
+    _drvDisp = nullptr;
+    return false;
+  }
+
+  WS_DEBUG_PRINTLN("[display] MIPI DSI initialized successfully!");
+  return true;
+#else
+  WS_DEBUG_PRINTLN("[display] ERROR: MIPI DSI not supported on this board!");
   return false;
 #endif
 }

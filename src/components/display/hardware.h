@@ -29,6 +29,9 @@
 #ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
 #include "drivers/dispDrvRgb666.h"
 #endif
+#ifdef CONFIG_IDF_TARGET_ESP32P4
+#include "drivers/dispDrvMipiDsi.h"
+#endif
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
 #include "drivers/dispDrvThinkInkGrayscale4MFGN.h"
 #include "drivers/dispDrvThinkInkGrayscale4T5.h"
@@ -71,6 +74,7 @@ protected:
   bool beginTtlRgb666(ws_display_Add *msg);
   bool beginI8080(ws_display_Add *msg);
   bool beginI2cDisplay(ws_display_Add *msg);
+  bool beginDsi(ws_display_Add *msg);
   static int16_t parsePin(const char *pinStr);
   static uint8_t EpdBitBangReadRegister(uint8_t cmd,
                                         ws_display_EpdSpiDescriptor *config);
