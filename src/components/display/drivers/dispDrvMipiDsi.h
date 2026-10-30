@@ -6,7 +6,9 @@
  *
  * The panel's on-board MCU (I2C 0x45) owns panel reset and backlight; the
  * ILI9881C is configured over DSI command mode, then driven in DPI video mode
- * from a single RGB565 frame buffer in PSRAM that an Adafruit_GFX renders to.
+ * from a single RGB888 (packed B,G,R) frame buffer in PSRAM that an
+ * Adafruit_GFX renders to. RGB888 input matches the bring-up proven on the
+ * Metro; with RGB565 input the panel only showed flat blue.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -53,18 +55,19 @@
 
 /*!
     @brief  Adafruit_GFX target that renders straight into a DPI frame buffer
-            (RGB565, native panel orientation). Call flush() after drawing so
-            the DMA sees the CPU cache contents.
+            (RGB888 stored as packed B,G,R bytes, native panel orientation).
+            GFX colours are RGB565 and are expanded per pixel. Call flush()
+            after drawing so the DMA sees the CPU cache contents.
 */
 class DsiFramebufferGFX : public Adafruit_GFX {
 public:
   /*!
       @brief  Constructor.
-      @param  fb  RGB565 frame buffer of w x h pixels.
+      @param  fb  RGB888 (B,G,R) frame buffer of w x h pixels.
       @param  w   Native panel width in pixels.
       @param  h   Native panel height in pixels.
   */
-  DsiFramebufferGFX(uint16_t *fb, int16_t w, int16_t h)
+  DsiFramebufferGFX(uint8_t *fb, int16_t w, int16_t h)
       : Adafruit_GFX(w, h), _fb(fb) {}
 
   /*!
@@ -93,7 +96,7 @@ public:
       y = HEIGHT - 1 - t;
       break;
     }
-    _fb[(int32_t)y * WIDTH + x] = color;
+    putPixel(_fb + ((int32_t)y * WIDTH + x) * 3, color);
   }
 
   /*!
@@ -102,11 +105,11 @@ public:
   */
   void fillScreen(uint16_t color) override {
     size_t n = (size_t)WIDTH * HEIGHT;
-    if ((color >> 8) == (color & 0xFF)) {
-      memset(_fb, color & 0xFF, n * sizeof(uint16_t));
+    if (color == 0x0000 || color == 0xFFFF) {
+      memset(_fb, color ? 0xFF : 0x00, n * 3);
     } else {
       for (size_t i = 0; i < n; i++)
-        _fb[i] = color;
+        putPixel(_fb + i * 3, color);
     }
   }
 
@@ -115,12 +118,24 @@ public:
               frame.
   */
   void flush() {
-    esp_cache_msync(_fb, (size_t)WIDTH * HEIGHT * sizeof(uint16_t),
+    esp_cache_msync(_fb, (size_t)WIDTH * HEIGHT * 3,
                     ESP_CACHE_MSYNC_FLAG_DIR_C2M);
   }
 
 private:
-  uint16_t *_fb; ///< DPI frame buffer
+  /*!
+      @brief  Stores an RGB565 colour as packed B,G,R bytes.
+      @param  p      Destination pixel (3 bytes).
+      @param  color  RGB565 colour.
+  */
+  static void putPixel(uint8_t *p, uint16_t color) {
+    uint8_t r = (color >> 11) & 0x1F, g = (color >> 5) & 0x3F, b = color & 0x1F;
+    p[0] = (b << 3) | (b >> 2);
+    p[1] = (g << 2) | (g >> 4);
+    p[2] = (r << 3) | (r >> 2);
+  }
+
+  uint8_t *_fb; ///< DPI frame buffer (B,G,R)
 };
 
 /*!
@@ -215,7 +230,7 @@ public:
     esp_lcd_dpi_panel_config_t dpi_cfg = {};
     dpi_cfg.dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT;
     dpi_cfg.dpi_clock_freq_mhz = 69.444f;
-    dpi_cfg.in_color_format = LCD_COLOR_FMT_RGB565;
+    dpi_cfg.in_color_format = LCD_COLOR_FMT_RGB888;
     dpi_cfg.out_color_format = LCD_COLOR_FMT_RGB888;
     dpi_cfg.num_fbs = 1;
     dpi_cfg.video_timing.h_size = DSI_TD2_NATIVE_W;
@@ -234,7 +249,7 @@ public:
             "frame buffer") ||
         !fb)
       return false;
-    _display = new DsiFramebufferGFX((uint16_t *)fb, DSI_TD2_NATIVE_W,
+    _display = new DsiFramebufferGFX((uint8_t *)fb, DSI_TD2_NATIVE_W,
                                      DSI_TD2_NATIVE_H);
     if (!_display)
       return false;
