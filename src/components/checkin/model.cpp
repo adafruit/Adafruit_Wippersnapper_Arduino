@@ -583,6 +583,11 @@ void CheckinModel::configureSleep() {
       WS_DEBUG_PRINTLN("[app] Processing sleep configuration from checkin");
       Ws->_sleep_controller->handleSleepConfig(sleep_cfg, true);
     }
+  } else if (Ws->_sleep_controller->isSleepEnabled()) {
+    // Sleep was turned off while asleep, resume regular operation
+    WS_DEBUG_PRINTLN("[app] Sleep disabled by checkin");
+    ws_sleep_SleepConfig sleep_cfg = ws_sleep_SleepConfig_init_zero;
+    Ws->_sleep_controller->handleSleepConfig(&sleep_cfg, false);
   }
 #endif
 }
