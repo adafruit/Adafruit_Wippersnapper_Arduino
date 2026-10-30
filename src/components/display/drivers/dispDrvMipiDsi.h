@@ -46,7 +46,7 @@
 #define DSI_TD2_MCU_REG_BL 0x03    ///< MCU backlight register
 #define DSI_TD2_RESET_ASSERT 0     ///< Hold LCD and touch in reset
 #define DSI_TD2_RESET_RELEASE 3    ///< Release LCD and touch resets
-#define DSI_TD2_BL_ON 0x9F         ///< Backlight enable + full brightness
+#define DSI_TD2_BL_ON 0x88 ///< Backlight enable + brightness 8/31 (USB-safe)
 
 #define DSI_PHY_LDO_CHAN 3      ///< LDO channel feeding VDD_MIPI_DPHY
 #define DSI_PHY_LDO_MV 2500     ///< MIPI D-PHY supply voltage
