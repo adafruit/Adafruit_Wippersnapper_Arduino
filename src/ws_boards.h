@@ -272,7 +272,7 @@
 #define USE_TINYUSB
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_METRO_ESP32P4)
-#define BOARD_ID "adafruit_metro_esp32p4"
+#define BOARD_ID "adafruit-metro-esp32p4"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
