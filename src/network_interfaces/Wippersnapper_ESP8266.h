@@ -124,7 +124,7 @@ public:
     set_wifi_country();
 
     // Perform a network scan, including hidden networks
-    int n = WiFi.scanNetworks(false, true);
+    int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true);
     if (n == 0) {
       WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
       return false;
@@ -233,7 +233,8 @@ public:
     WS_DEBUG_PRINT("Scanning for hidden WiFi network: ");
     WS_DEBUG_PRINTLNVAR(ssid);
     WS.feedWDT();
-    int n = WiFi.scanNetworks(false, true, 0, (uint8 *)ssid);
+    int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true,
+                              /*channel=*/0, (uint8 *)ssid);
     WS.feedWDT();
     for (int i = 0; i < n; i++) {
       // directed scans only report APs answering to `ssid`

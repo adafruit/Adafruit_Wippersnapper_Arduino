@@ -157,22 +157,19 @@ public:
 
     // Hidden networks only reveal their SSID in reply to a directed probe.
     // Not gated on seeing a hidden network above, CYW43 support is unverified.
-    _hiddenSsid = NULL;
-    _hiddenPass = NULL;
+    _hiddenIdx = -1;
     if (!foundNetwork) {
       if (scan_hidden_ssid(_ssid)) {
-        _hiddenSsid = _ssid;
-        _hiddenPass = _pass;
+        _hiddenIdx = 0;
       } else if (WS._isWiFiMulti) {
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
           if (scan_hidden_ssid(WS._multiNetworks[j].ssid)) {
-            _hiddenSsid = WS._multiNetworks[j].ssid;
-            _hiddenPass = WS._multiNetworks[j].pass;
+            _hiddenIdx = j + 1;
             break;
           }
         }
       }
-      foundNetwork = (_hiddenSsid != NULL);
+      foundNetwork = (_hiddenIdx >= 0);
     }
 
     if (!foundNetwork) {
@@ -356,10 +353,10 @@ protected:
   WiFiClient
       *_mqtt_client_insecure; ///< Pointer to an insecure WiFi client object
   WiFiClientSecure
-      *_mqtt_client_secure;       ///< Pointer to a secure WiFi client object
-  WiFiMulti _wifiMulti;           ///< WiFiMulti object for multi-network mode
-  const char *_hiddenSsid = NULL; ///< Hidden SSID found by a directed scan
-  const char *_hiddenPass = NULL; ///< Password for `_hiddenSsid`
+      *_mqtt_client_secure; ///< Pointer to a secure WiFi client object
+  WiFiMulti _wifiMulti;     ///< WiFiMulti object for multi-network mode
+  int8_t _hiddenIdx = -1;   ///< Hidden network found by a directed scan: -1
+                            ///< none, 0 `_ssid`, n `WS._multiNetworks[n-1]`
 
 #if defined(PICO_CYW43_SUPPORTED)
   /** Directed scan state, written from the CYW43 scan callback */
@@ -474,7 +471,7 @@ protected:
       _disconnect();
       delay(5000);
       WS.feedWDT();
-      if (WS._isWiFiMulti && _hiddenSsid == NULL) {
+      if (WS._isWiFiMulti && _hiddenIdx < 0) {
         // multi network mode
         _wifiMulti.clearAPList();
         // add default network
@@ -495,10 +492,13 @@ protected:
         }
         WS.feedWDT();
       } else {
-        if (_hiddenSsid != NULL) {
-          // hidden network found by check_valid_ssid(), WiFiMulti can't see it
-          WiFi.begin(_hiddenSsid, _hiddenPass);
+        if (_hiddenIdx > 0) {
+          // hidden alternative network found by check_valid_ssid(), WiFiMulti
+          // can't see it
+          WiFi.begin(WS._multiNetworks[_hiddenIdx - 1].ssid,
+                     WS._multiNetworks[_hiddenIdx - 1].pass);
         } else {
+          // single network mode, or the hidden default network
           WiFi.begin(_ssid, _pass);
         }
 
