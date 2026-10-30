@@ -21,6 +21,7 @@ struct networkConfig {
 
 struct secretsConfig {
   networkConfig network;
+  char network_country[3]; // ISO 3166 alpha-2 WiFi country, "" = core default
   char aio_url[64];
   char aio_user[31];
   char aio_key[41];

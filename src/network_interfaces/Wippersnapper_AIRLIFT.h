@@ -127,6 +127,12 @@ public:
     WiFi.disconnect();
     delay(100);
 
+    // nina-fw has no command to set the WiFi country
+    if (strlen(WS._config.network_country) > 0) {
+      WS_DEBUG_PRINTLN("WARNING: network_country isn't supported on AirLift, "
+                       "ignoring it.");
+    }
+
     // Perform a network scan
     int n = WiFi.scanNetworks();
     if (n <= 0) {
