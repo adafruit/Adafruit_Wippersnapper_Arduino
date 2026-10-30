@@ -54,12 +54,6 @@ WRITE_SETTLE = 1
 # Pulse width range a servo.Modify changes the servo to, in us.
 MODIFY_MIN_PULSE_WIDTH = 1000
 MODIFY_MAX_PULSE_WIDTH = 2000
-# Skips the tests that hit Handle_Servo_Add()'s missing return after a
-# failed attach, which crashes the DUT, until the firmware fix lands;
-# remove it then.
-ADD_FAILURE_CRASHES = pytest.mark.skip(
-    reason="firmware: Handle_Servo_Add() calls ServoWrite() on a nullptr "
-           "after a failed attach and crashes")
 # Lines the DUT prints when it crashes or reboots.
 CRASH_RE = re.compile(r"Guru Meditation|Backtrace:|rst:0x|ESP Reset Reason")
 
@@ -162,7 +156,6 @@ def _assert_quiet(pulse_probe, pin, level):
         f"{pin} should read {'HIGH' if level else 'LOW'}")
 
 
-@ADD_FAILURE_CRASHES
 @pytest.mark.parametrize("secrets_name", ["good"], indirect=True)
 @pytest.mark.parametrize("frequency", [0, MAX_LEDC_FREQ])
 def test_servo_add_rejected(board, board_definition, secrets_name,
