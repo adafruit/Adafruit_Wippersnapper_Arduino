@@ -117,7 +117,9 @@ public:
   /***********************************************************/
   /*!
     @brief   Performs a scan of local WiFi networks.
-    @returns True if `_network_ssid` is found, False otherwise.
+    @note    nina-fw's scan never reports hidden networks, so a
+             missing `_network_ssid` is not treated as fatal.
+    @returns True, a connection is always attempted.
   */
   /***********************************************************/
   bool check_valid_ssid() {
@@ -127,9 +129,10 @@ public:
 
     // Perform a network scan
     int n = WiFi.scanNetworks();
-    if (n == 0) {
-      WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
-      return false;
+    if (n <= 0) {
+      WS_DEBUG_PRINTLN("WARNING: No visible WiFi networks found, the "
+                       "network may be hidden. Attempting to connect...");
+      return true;
     }
 
     bool foundNetwork = false;
@@ -156,9 +159,11 @@ public:
     }
 
     if (!foundNetwork) {
-      WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
+      // nina-fw can't scan for hidden networks, so try connecting anyway
+      WS_DEBUG_PRINTLN("WARNING: Your requested WiFi network was not found, "
+                       "it may be hidden. Attempting to connect...");
     }
-    return foundNetwork;
+    return true;
   }
 
   /********************************************************/
