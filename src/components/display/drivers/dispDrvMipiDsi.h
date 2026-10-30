@@ -35,6 +35,34 @@
 #include <esp_ldo_regulator.h>
 #include <hal/efuse_hal.h>
 
+extern volatile uint32_t g_ws_dsi_frames; ///< HIL diag: DPI refreshes done
+
+/// HIL diag: log a bring-up step and flush the CDC console before a risky
+/// hardware call, so the last step survives a sudden power loss
+#define DSI_STEP(msg)                                                          \
+  do {                                                                         \
+    WS_PRINTER.println("[dsi] " msg);                                          \
+    WS_PRINTER.flush();                                                        \
+    delay(20);                                                                 \
+  } while (0)
+
+/*!
+    @brief  HIL diag: counts completed DPI refreshes (ISR context).
+    @param  panel  Unused panel handle.
+    @param  edata  Unused event data.
+    @param  ctx    Unused user context.
+    @return false, no higher-priority task woken.
+*/
+static bool IRAM_ATTR dsiRefreshDone(esp_lcd_panel_handle_t panel,
+                                     esp_lcd_dpi_panel_event_data_t *edata,
+                                     void *ctx) {
+  (void)panel;
+  (void)edata;
+  (void)ctx;
+  g_ws_dsi_frames = g_ws_dsi_frames + 1;
+  return false;
+}
+
 #define DSI_STATUSBAR_HEIGHT 40      ///< Status bar height in pixels
 #define DSI_STATUSBAR_ICON_SZ 16     ///< Status bar icon size in pixels
 #define DSI_STATUSBAR_ICON_SPACING 8 ///< Spacing between icons
@@ -186,9 +214,11 @@ public:
     }
     // The panel MCU shares the main I2C bus (STEMMA QT); begin() is a no-op
     // when the bus is already running on these pins.
+    DSI_STEP("I2C + panel MCU id");
     Wire.begin();
     if (!identifyMcu())
       return false;
+    DSI_STEP("panel MCU: backlight off, reset assert");
     if (!writeMcu(DSI_TD2_MCU_REG_BL, 0) ||
         !writeMcu(DSI_TD2_MCU_REG_RESET, DSI_TD2_RESET_ASSERT)) {
       WS_DEBUG_PRINTLN("[display] ERROR: Panel MCU reset failed!");
@@ -199,6 +229,7 @@ public:
     esp_ldo_channel_config_t ldo_cfg = {};
     ldo_cfg.chan_id = DSI_PHY_LDO_CHAN;
     ldo_cfg.voltage_mv = DSI_PHY_LDO_MV;
+    DSI_STEP("LDO: MIPI PHY supply on");
     if (!ok(esp_ldo_acquire_channel(&ldo_cfg, &_phy_ldo), "MIPI PHY power"))
       return false;
 
@@ -211,21 +242,25 @@ public:
                               ? MIPI_DSI_PHY_PLLREF_CLK_SRC_DEFAULT_LEGACY
                               : MIPI_DSI_PHY_PLLREF_CLK_SRC_DEFAULT;
     bus_cfg.lane_bit_rate_mbps = 1000;
+    DSI_STEP("DSI bus + PHY PLL");
     if (!ok(esp_lcd_new_dsi_bus(&bus_cfg, &_dsi_bus), "DSI bus"))
       return false;
 
     esp_lcd_dbi_io_config_t io_cfg = {};
     io_cfg.lcd_cmd_bits = 8;
     io_cfg.lcd_param_bits = 8;
+    DSI_STEP("DBI command IO");
     if (!ok(esp_lcd_new_panel_io_dbi(_dsi_bus, &io_cfg, &_io),
             "DSI command interface"))
       return false;
 
+    DSI_STEP("panel MCU: reset release");
     if (!writeMcu(DSI_TD2_MCU_REG_RESET, DSI_TD2_RESET_RELEASE)) {
       WS_DEBUG_PRINTLN("[display] ERROR: Panel MCU reset release failed!");
       return false;
     }
     delay(20);
+    DSI_STEP("ILI9881C init table");
     if (!sendInit())
       return false;
 
@@ -243,8 +278,14 @@ public:
     dpi_cfg.video_timing.vsync_pulse_width = 2;
     dpi_cfg.video_timing.vsync_back_porch = 30;
     dpi_cfg.video_timing.vsync_front_porch = 20;
+    DSI_STEP("DPI panel + frame buffer alloc");
     if (!ok(esp_lcd_new_panel_dpi(_dsi_bus, &dpi_cfg, &_panel), "DPI panel"))
       return false;
+    // HIL diag: count refreshes for the heartbeat's frame rate
+    esp_lcd_dpi_panel_event_callbacks_t cbs = {};
+    cbs.on_refresh_done = dsiRefreshDone;
+    ok(esp_lcd_dpi_panel_register_event_callbacks(_panel, &cbs, nullptr),
+       "DPI refresh callback");
 
     void *fb = nullptr;
     if (!ok(esp_lcd_dpi_panel_get_frame_buffer(_panel, 1, &fb),
@@ -258,10 +299,12 @@ public:
     _display->setRotation(_rotation);
     _display->fillScreen(0x0000);
     _display->flush();
+    DSI_STEP("DPI video start");
     if (!ok(esp_lcd_panel_init(_panel), "DPI video start"))
       return false;
     // Route the bridge's DPI stream from the frame buffer rather than the DSI
     // host's pattern generator (the panel otherwise shows a flat colour)
+    DSI_STEP("DPI pattern off (frame buffer)");
     if (!ok(esp_lcd_dpi_panel_set_pattern(_panel, MIPI_DSI_PATTERN_NONE),
             "frame buffer mode"))
       return false;
@@ -269,10 +312,12 @@ public:
     _display->setTextColor(0xFFFF);
     _display->setTextWrap(false);
     _display->setTextSize(_text_sz);
+    DSI_STEP("panel MCU: backlight on");
     if (!writeMcu(DSI_TD2_MCU_REG_BL, DSI_TD2_BL_ON)) {
       WS_DEBUG_PRINTLN("[display] ERROR: Backlight enable failed!");
       return false;
     }
+    DSI_STEP("streaming");
     WS_DEBUG_PRINTLN("[display] MIPI DSI panel initialized");
     return true;
   }
@@ -406,6 +451,8 @@ private:
     WS_DEBUG_PRINTVAR(what);
     WS_DEBUG_PRINT(" failed: ");
     WS_DEBUG_PRINTLNVAR(esp_err_to_name(err));
+    WS_PRINTER.flush(); // HIL diag: get the error out before anything else
+    delay(20);
     return false;
   }
 

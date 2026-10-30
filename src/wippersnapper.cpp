@@ -46,6 +46,73 @@
 
 wippersnapper *Ws;
 
+volatile uint32_t g_ws_dsi_frames = 0; ///< HIL diag: DPI refreshes done
+volatile uint32_t g_ws_loop_ms = 0;    ///< HIL diag: last main-loop WDT feed
+
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+// HIL diag (Metro P4 power drop hunt): ESP-IDF logs onto the USB CDC console
+// and a 2 s heartbeat from its own task, so the last lines before a drop show
+// heap, die temperature, DSI frame rate and whether the main loop stalled.
+#include <esp_heap_caps.h>
+#include <esp_log.h>
+#if __has_include(<driver/temperature_sensor.h>)
+#include <driver/temperature_sensor.h>
+#define WS_HB_TSENS 1 ///< Die temperature available
+#endif
+
+/*!
+    @brief  vprintf hook sending ESP-IDF log output to the CDC console.
+    @param  fmt   printf format.
+    @param  args  Format arguments.
+    @return Characters formatted.
+*/
+static int wsLogToCdc(const char *fmt, va_list args) {
+  char buf[256];
+  int n = vsnprintf(buf, sizeof(buf), fmt, args);
+  if (n > 0)
+    WS_PRINTER.write((const uint8_t *)buf,
+                     n < (int)sizeof(buf) ? n : (int)sizeof(buf) - 1);
+  WS_PRINTER.flush(); // warnings/errors only, so flush each one
+  return n;
+}
+
+/*!
+    @brief  Heartbeat task: prints uptime, heap, PSRAM, die temperature, DSI
+            frame rate and main-loop age every 2 seconds.
+    @param  arg  Unused.
+*/
+static void wsHeartbeatTask(void *arg) {
+  (void)arg;
+#ifdef WS_HB_TSENS
+  temperature_sensor_handle_t ts = nullptr;
+  temperature_sensor_config_t ts_cfg =
+      TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
+  if (temperature_sensor_install(&ts_cfg, &ts) == ESP_OK)
+    temperature_sensor_enable(ts);
+#endif
+  uint32_t last_frames = g_ws_dsi_frames;
+  for (;;) {
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    float temp = -99.0f;
+#ifdef WS_HB_TSENS
+    if (ts)
+      temperature_sensor_get_celsius(ts, &temp);
+#endif
+    uint32_t frames = g_ws_dsi_frames;
+    WS_PRINTER.printf("[hb] up=%lus heap=%u min=%u psram=%u temp=%.1fC "
+                      "dsi_fps=%.1f loop_age=%lums\n",
+                      (unsigned long)(millis() / 1000),
+                      (unsigned)esp_get_free_heap_size(),
+                      (unsigned)esp_get_minimum_free_heap_size(),
+                      (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+                      temp, (frames - last_frames) / 2.0f,
+                      (unsigned long)(millis() - g_ws_loop_ms));
+    WS_PRINTER.flush();
+    last_frames = frames;
+  }
+}
+#endif
+
 /*!
     @brief    wippersnapper constructor
 */
@@ -255,6 +322,12 @@ void wippersnapper::provision() {
   // Tagged build line, early so a board that halts while provisioning still
   // reports it (may be missed on native USB; connect() prints it again)
   WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+  // HIL diag: IDF warnings/errors to CDC, plus the heartbeat task
+  esp_log_set_vprintf(wsLogToCdc);
+  esp_log_level_set("*", ESP_LOG_WARN);
+  xTaskCreate(wsHeartbeatTask, "ws_hb", 4096, nullptr, 1, nullptr);
+#endif
   // Publish the global Ws pointer and create the controllers
   _init();
 
@@ -945,6 +1018,7 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
 */
 void wippersnapper::pingBrokerV2() {
   Ws->_wdt->feed();
+  g_ws_loop_ms = millis(); // HIL diag: main loop alive
   // if it's past time to send the next ping
   if (millis() > (_prv_pingV2 + WS_DEVICE_PING_MS)) {
     WS_DEBUG_PRINT("Sending MQTT PING: ");
