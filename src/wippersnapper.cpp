@@ -315,6 +315,20 @@ void wippersnapper::provision() {
               False otherwise.
 */
 bool handleCheckinResponse(pb_istream_t *stream) {
+  // A response outside of checkin() has no model to decode into
+  if (Ws->CheckInModel == nullptr) {
+    WS_DEBUG_PRINTLN("[app] WARNING: Unexpected Checkin Response, ignoring");
+    return false;
+  }
+
+  // Hash the raw response before decoding, decoding applies component adds
+  // TODO: Skip re-applying an unchanged response on a light sleep wake (#1048)
+  if (Ws->CheckInModel->ResponseChanged(stream)) {
+    WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
+  } else {
+    WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
+  }
+
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
   if (!Ws->CheckInModel->ProcessResponse(stream)) {
@@ -341,9 +355,9 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[checkin] Controllers configured");
   Ws->NetworkFSM();
 
-  // Publish the complete response message to indicate the checkin
-  // routine is done and the device is ready for use
-  return Ws->CheckInModel->Complete();
+  // Complete is published by the checkin caller, not from inside this MQTT
+  // callback where it could consume another packet's reply
+  return true;
 }
 
 // Decoders //
@@ -1151,8 +1165,24 @@ void wippersnapper::connect() {
   Ws->_wdt->feed();
   WS_DEBUG_PRINTLN("Connected to Adafruit IO");
 
-  // TODO: Possibly refactor checkin process into its own function
-  // or component class for clarity
+  checkin();
+
+  // Set the status LED to green to indicate successful configuration
+  setStatusLEDColor(0x00A300, Ws->status_pixel_brightnessV2);
+  delay(100);
+  // Set the status LED to off during app runtime
+  setStatusLEDColor(0x000000, Ws->status_pixel_brightnessV2);
+
+  WS_DEBUG_PRINTLN("Running app loop...");
+}
+
+/*!
+    @brief    Publishes a CheckinRequest and blocks until the broker's
+              CheckinResponse has been handled.
+*/
+void wippersnapper::checkin() {
+  // TODO: Possibly refactor checkin process into a component class
+  // for clarity
   // TODO: Remove logging from checkin process,
   // but only after we test on staging
   Ws->CheckInModel = new CheckinModel();
@@ -1172,18 +1202,20 @@ void wippersnapper::connect() {
         WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
     pingBrokerV2();               // Keep MQTT connection alive
   }
+  // Publish the complete response message to indicate the checkin routine is
+  // done and the device is ready for use. Done here rather than in the
+  // response callback, which may run inside pingBrokerV2() while it waits for
+  // a PINGRESP: publishing there consumed the PINGRESP while waiting for the
+  // PUBACK ("Dropped a packet"), failing the ping and forcing a reconnect.
+  if (!Ws->CheckInModel->Complete()) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish checkin complete message");
+  } else {
+    Ws->CheckInModel->SaveResponseHash();
+  }
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
   delete Ws->CheckInModel;
   Ws->CheckInModel = nullptr;
-
-  // Set the status LED to green to indicate successful configuration
-  setStatusLEDColor(0x00A300, Ws->status_pixel_brightnessV2);
-  delay(100);
-  // Set the status LED to off during app runtime
-  setStatusLEDColor(0x000000, Ws->status_pixel_brightnessV2);
-
-  WS_DEBUG_PRINTLN("Running app loop...");
 }
 
 /*!
