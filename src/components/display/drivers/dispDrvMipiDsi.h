@@ -41,6 +41,7 @@ extern volatile uint32_t g_ws_dsi_frames; ///< HIL diag: DPI refreshes done
 /// hardware call, so the last step survives a sudden power loss
 #define DSI_STEP(msg)                                                          \
   do {                                                                         \
+    g_ws_diag_step = "dsi: " msg;                                              \
     WS_PRINTER.println("[dsi] " msg);                                          \
     WS_PRINTER.flush();                                                        \
     delay(20);                                                                 \

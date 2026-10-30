@@ -22,6 +22,7 @@
 // Debug Flags
 #define WS_DEBUG          /**< Define to enable debugging to serial terminal */
 #define WS_PRINTER Serial /**< Where debug messages will be printed */
+extern volatile const char *g_ws_diag_step; ///< HIL diag: last step started
 // Set WS_DEBUG_PROTO to 1 (e.g. -DWS_DEBUG_PROTO=1, requires WS_DEBUG) to
 // hex-dump the raw protobuf payload of every incoming BrokerToDevice message
 // and every outgoing DeviceToBroker message to the serial port.
@@ -160,7 +161,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "2.0.0-alpha.4" ///< WipperSnapper app. version (semver-formatted)
+  "2.0.0-alpha.5" ///< WipperSnapper app. version (semver-formatted)
 
 // Timeouts and intervals
 #define WS_BROKER_KEEPALIVE_MS                                                 \

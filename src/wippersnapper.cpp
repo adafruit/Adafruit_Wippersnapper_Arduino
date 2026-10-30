@@ -48,6 +48,7 @@ wippersnapper *Ws;
 
 volatile uint32_t g_ws_dsi_frames = 0; ///< HIL diag: DPI refreshes done
 volatile uint32_t g_ws_loop_ms = 0;    ///< HIL diag: last main-loop WDT feed
+volatile const char *g_ws_diag_step = "boot"; ///< HIL diag: last step started
 
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
 // HIL diag (Metro P4 power drop hunt): ESP-IDF logs onto the USB CDC console
@@ -55,6 +56,7 @@ volatile uint32_t g_ws_loop_ms = 0;    ///< HIL diag: last main-loop WDT feed
 // heap, die temperature, DSI frame rate and whether the main loop stalled.
 #include <esp_heap_caps.h>
 #include <esp_log.h>
+#include <esp_rom_sys.h>
 #if __has_include(<driver/temperature_sensor.h>)
 #include <driver/temperature_sensor.h>
 #define WS_HB_TSENS 1 ///< Die temperature available
@@ -66,7 +68,16 @@ volatile uint32_t g_ws_loop_ms = 0;    ///< HIL diag: last main-loop WDT feed
     @param  args  Format arguments.
     @return Characters formatted.
 */
+static vprintf_like_t s_uart_vprintf = nullptr; ///< IDF default (UART0) sink
+
 static int wsLogToCdc(const char *fmt, va_list args) {
+  // Tee: keep the UART0 console copy, which survives a USB drop
+  if (s_uart_vprintf) {
+    va_list uart_args;
+    va_copy(uart_args, args);
+    s_uart_vprintf(fmt, uart_args);
+    va_end(uart_args);
+  }
   char buf[256];
   int n = vsnprintf(buf, sizeof(buf), fmt, args);
   if (n > 0)
@@ -99,14 +110,18 @@ static void wsHeartbeatTask(void *arg) {
       temperature_sensor_get_celsius(ts, &temp);
 #endif
     uint32_t frames = g_ws_dsi_frames;
-    WS_PRINTER.printf("[hb] up=%lus heap=%u min=%u psram=%u temp=%.1fC "
-                      "dsi_fps=%.1f loop_age=%lums\n",
-                      (unsigned long)(millis() / 1000),
-                      (unsigned)esp_get_free_heap_size(),
-                      (unsigned)esp_get_minimum_free_heap_size(),
-                      (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-                      temp, (frames - last_frames) / 2.0f,
-                      (unsigned long)(millis() - g_ws_loop_ms));
+    char line[192];
+    snprintf(
+        line, sizeof(line),
+        "[hb] up=%lus heap=%u min=%u psram=%u temp=%.1fC dsi_fps=%.1f "
+        "loop_age=%lums step=%s\n",
+        (unsigned long)(millis() / 1000), (unsigned)esp_get_free_heap_size(),
+        (unsigned)esp_get_minimum_free_heap_size(),
+        (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM), temp,
+        (frames - last_frames) / 2.0f, (unsigned long)(millis() - g_ws_loop_ms),
+        (const char *)g_ws_diag_step);
+    esp_rom_printf("%s", line); // UART0 debug TX, survives a USB drop
+    WS_PRINTER.print(line);
     WS_PRINTER.flush();
     last_frames = frames;
   }
@@ -324,7 +339,7 @@ void wippersnapper::provision() {
   WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
 #if defined(CONFIG_IDF_TARGET_ESP32P4)
   // HIL diag: IDF warnings/errors to CDC, plus the heartbeat task
-  esp_log_set_vprintf(wsLogToCdc);
+  s_uart_vprintf = esp_log_set_vprintf(wsLogToCdc);
   esp_log_level_set("*", ESP_LOG_WARN);
   xTaskCreate(wsHeartbeatTask, "ws_hb", 4096, nullptr, 1, nullptr);
 #endif
@@ -1023,7 +1038,9 @@ void wippersnapper::pingBrokerV2() {
   if (millis() > (_prv_pingV2 + WS_DEVICE_PING_MS)) {
     WS_DEBUG_PRINT("Sending MQTT PING: ");
     WS_PRINTER.flush(); // HIL diag: out before the network call
+    g_ws_diag_step = "mqtt ping";
     if (Ws->_mqttV2->ping()) {
+      g_ws_diag_step = "mqtt ping done";
       WS_DEBUG_PRINTLN("SUCCESS!");
     } else {
       WS_DEBUG_PRINTLN("FAILURE! Running network FSM...");
@@ -1033,7 +1050,9 @@ void wippersnapper::pingBrokerV2() {
     _prv_pingV2 = millis();
     WS_DEBUG_PRINT("WiFi RSSI: ");
     WS_PRINTER.flush(); // HIL diag: out before the hosted-WiFi call
+    g_ws_diag_step = "rssi";
     WS_DEBUG_PRINTLNVAR(getRSSI());
+    g_ws_diag_step = "rssi done";
   }
   // Blink the status LED to indicate that the device is still alive
   BlinkKATStatus();

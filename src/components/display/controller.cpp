@@ -393,7 +393,9 @@ void DisplayController::update(int32_t rssi, bool is_connected) {
       WS_DEBUG_PRINTLN("[display] Updating status bar...");
       WS_PRINTER.flush(); // HIL diag: out before the redraw
       delay(5);
+      g_ws_diag_step = "status bar";
       _displays[i]->updateStatusBar(rssi, battery_charge_level, is_connected);
+      g_ws_diag_step = "status bar done";
     }
   }
 }
