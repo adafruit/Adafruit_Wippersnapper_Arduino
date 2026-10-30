@@ -20,7 +20,7 @@ on:
         required: true
 
 env:
-  CI_ARDUINO_REF: ci-wippersnapper
+  CI_ARDUINO_REF: ci-bsp-reuse-shallow # TEMP: revert before merge (adafruit/ci-arduino#243)
 
 jobs:
   nanopb-warm:
