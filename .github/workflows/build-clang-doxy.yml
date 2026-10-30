@@ -20,8 +20,32 @@ on:
         required: true
 
 jobs:
+  nanopb-warm:
+    name: Warm nanopb cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check nanopb cache
+        id: cache-nanopb
+        uses: actions/cache/restore@v4
+        with:
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
+          lookup-only: true
+      - name: Download stable Nanopb
+        if: steps.cache-nanopb.outputs.cache-hit != 'true'
+        run: |
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
+      - name: Save nanopb to cache
+        if: steps.cache-nanopb.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ./nanopb-0.4.9.2.tar.gz
+          key: nanopb-0.4.9.2.tar.gz
+
   build-esp32sx-esptool:
     name: 🏗️ESP32-Sx
+    needs: nanopb-warm
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -98,29 +122,16 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
+      - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
         with:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.9.2.tar.gz
-          key: nanopb-0.4.9.2.tar.gz
+      - name: Download stable Nanopb (cache miss)
+        if: steps.cache-nanopb-restore.outputs.cache-hit != 'true'
+        run: |
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
           tar -xf nanopb-0.4.9.2.tar.gz
@@ -260,6 +271,8 @@ jobs:
 
   build-esp32sx:
     name: 🏗️ESP32-Sx
+    needs: nanopb-warm
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -316,29 +329,16 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
+      - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
         with:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.9.2.tar.gz
-          key: nanopb-0.4.9.2.tar.gz
+      - name: Download stable Nanopb (cache miss)
+        if: steps.cache-nanopb-restore.outputs.cache-hit != 'true'
+        run: |
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
           tar -xf nanopb-0.4.9.2.tar.gz
@@ -365,6 +365,8 @@ jobs:
 
   build-esp32:
     name: 🏗️ESP32/Cx
+    needs: nanopb-warm
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -438,29 +440,16 @@ jobs:
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
+      - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
         with:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.9.2.tar.gz
-          key: nanopb-0.4.9.2.tar.gz
+      - name: Download stable Nanopb (cache miss)
+        if: steps.cache-nanopb-restore.outputs.cache-hit != 'true'
+        run: |
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
           tar -xf nanopb-0.4.9.2.tar.gz
@@ -533,6 +522,8 @@ jobs:
 
   build-samd:
     name: 🏗️SAMD
+    needs: nanopb-warm
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -586,29 +577,16 @@ jobs:
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
+      - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
         with:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.9.2.tar.gz
-          key: nanopb-0.4.9.2.tar.gz
+      - name: Download stable Nanopb (cache miss)
+        if: steps.cache-nanopb-restore.outputs.cache-hit != 'true'
+        run: |
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
           tar -xf nanopb-0.4.9.2.tar.gz
@@ -631,6 +609,8 @@ jobs:
 
   build-rp2040:
     name: 🏗️RP2040
+    needs: nanopb-warm
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -679,29 +659,16 @@ jobs:
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
+      - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
         with:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.9.2.tar.gz
-          key: nanopb-0.4.9.2.tar.gz
+      - name: Download stable Nanopb (cache miss)
+        if: steps.cache-nanopb-restore.outputs.cache-hit != 'true'
+        run: |
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
           tar -xf nanopb-0.4.9.2.tar.gz
@@ -722,6 +689,8 @@ jobs:
 
   build-esp8266:
     name: 🏗️ESP8266
+    needs: nanopb-warm
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -767,29 +736,16 @@ jobs:
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
+      - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
         with:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.9.2.tar.gz
-          key: nanopb-0.4.9.2.tar.gz
+      - name: Download stable Nanopb (cache miss)
+        if: steps.cache-nanopb-restore.outputs.cache-hit != 'true'
+        run: |
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
           tar -xf nanopb-0.4.9.2.tar.gz
@@ -819,6 +775,8 @@ jobs:
 
   build-esp32sx-dev:
     name: 🏗️ESP32-Sx(DEV)
+    needs: nanopb-warm
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -881,29 +839,16 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
+      - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
         with:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.9.2.tar.gz
-          key: nanopb-0.4.9.2.tar.gz
+      - name: Download stable Nanopb (cache miss)
+        if: steps.cache-nanopb-restore.outputs.cache-hit != 'true'
+        run: |
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
           tar -xf nanopb-0.4.9.2.tar.gz
@@ -930,6 +875,8 @@ jobs:
 
   build-esp32-dev:
     name: 🏗️ESP32/Cx(DEV)
+    needs: nanopb-warm
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -991,29 +938,16 @@ jobs:
         run: |
           git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
+      - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
         with:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.9.2.tar.gz
-          key: nanopb-0.4.9.2.tar.gz
+      - name: Download stable Nanopb (cache miss)
+        if: steps.cache-nanopb-restore.outputs.cache-hit != 'true'
+        run: |
+          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Install stable Nanopb
         run: |
           tar -xf nanopb-0.4.9.2.tar.gz
