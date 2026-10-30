@@ -25,6 +25,7 @@
 #include "Arduino.h"
 #include "WiFi.h"
 #include "WiFiMulti.h"
+#include "esp_wifi.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
 extern wippersnapper *Ws; ///< Wippersnapper client instance
@@ -71,6 +72,7 @@ public:
     strncpy(_configV2.aio_user, aioUsername, sizeof(_configV2.aio_user));
     strncpy(_configV2.aio_url, brokerURL, sizeof(_configV2.aio_url));
     _configV2.io_port = brokerPort;
+    _configV2.network_country[0] = '\0';
   }
 
   /*!
@@ -121,6 +123,7 @@ public:
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(100);
+    set_wifi_country();
     _hiddenIdx = -1;
 
     // Perform a network scan, including hidden networks
@@ -197,6 +200,31 @@ public:
     // User-set network not found
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     return WS_SSID_SCAN_SSID_NOT_FOUND;
+  }
+
+  /*!
+  @brief   Sets the WiFi regulatory country from secrets.json, which
+           decides the channels scanned and joined (e.g. 12-13 in "GB").
+  @note    ESP-IDF stores the country in flash, so it is reset to the
+           default "01" (world safe, channels 1-11) when unset.
+  */
+  void set_wifi_country() {
+    const char *country = strlen(Ws->_configV2.network_country) > 0
+                              ? Ws->_configV2.network_country
+                              : "01";
+    char current[4] = {0}; // IDF doesn't state its write size, allow cc[3]
+    if (esp_wifi_get_country_code(current) == ESP_OK &&
+        strncmp(current, country, 2) == 0)
+      return;
+
+    // 802.11d stays on, so a connected AP's country info still applies
+    if (esp_wifi_set_country_code(country, true) == ESP_OK) {
+      WS_DEBUG_PRINT("WiFi country set to: ");
+      WS_DEBUG_PRINTLNVAR(country);
+    } else {
+      WS_DEBUG_PRINT("ERROR: Unsupported WiFi country code: ");
+      WS_DEBUG_PRINTLNVAR(country);
+    }
   }
 
   /*!

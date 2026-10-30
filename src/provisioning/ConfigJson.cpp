@@ -31,6 +31,8 @@ void convertToJson(const secretsConfig &src, JsonVariant dst) {
   dst["io_username"] = src.aio_user;
   dst["io_key"] = src.aio_key;
   dst["network_type_wifi"] = src.network;
+  if (strlen(src.network_country) > 0)
+    dst["network_type_wifi"]["network_country"] = src.network_country;
   dst["status_pixel_brightness"] = src.status_pixel_brightness;
 }
 
@@ -38,6 +40,11 @@ void convertToJson(const secretsConfig &src, JsonVariant dst) {
 void convertFromJson(JsonVariantConst src, secretsConfig &dst) {
   // Parse network credentials from secrets
   dst.network = src["network_type_wifi"];
+  // Parse optional WiFi regulatory country, e.g. "GB", stored uppercase
+  strlcpy(dst.network_country, src["network_type_wifi"]["network_country"] | "",
+          sizeof(dst.network_country));
+  for (size_t i = 0; i < strlen(dst.network_country); i++)
+    dst.network_country[i] = toupper(dst.network_country[i]);
   // Parse IO credentials from secrets
   strlcpy(dst.aio_user, src["io_username"] | "YOUR_IO_USERNAME_HERE",
           sizeof(dst.aio_user));
