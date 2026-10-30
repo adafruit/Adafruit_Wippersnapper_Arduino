@@ -97,8 +97,7 @@ public:
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(100);
-    _hiddenSsid = NULL;
-    _hiddenPass = NULL;
+    _hiddenIdx = -1;
 
     // Perform a network scan, CYW43 reports hidden networks with no SSID
     int n = WiFi.scanNetworks();
@@ -153,18 +152,16 @@ public:
     // Hidden networks only reveal their SSID in reply to a directed probe.
     // Not gated on seeing a hidden network above, CYW43 support is unverified.
     if (scan_hidden_ssid(_ssid)) {
-      _hiddenSsid = _ssid;
-      _hiddenPass = _pass;
+      _hiddenIdx = 0;
     } else if (Ws->_isWiFiMultiV2) {
       for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
         if (scan_hidden_ssid(Ws->_multiNetworksV2[j].ssid)) {
-          _hiddenSsid = Ws->_multiNetworksV2[j].ssid;
-          _hiddenPass = Ws->_multiNetworksV2[j].pass;
+          _hiddenIdx = j + 1;
           break;
         }
       }
     }
-    if (_hiddenSsid != NULL)
+    if (_hiddenIdx >= 0)
       return WS_SSID_SCAN_SSID_FOUND;
 
     if (n <= 0) {
@@ -294,10 +291,10 @@ protected:
   WiFiClient
       *_mqtt_client_insecure; ///< Pointer to an insecure WiFi client object
   WiFiClientSecure
-      *_mqtt_client_secure;       ///< Pointer to a secure WiFi client object
-  WiFiMulti _wifiMulti;           ///< WiFiMulti object for multi-network mode
-  const char *_hiddenSsid = NULL; ///< Hidden SSID found by a directed scan
-  const char *_hiddenPass = NULL; ///< Password for `_hiddenSsid`
+      *_mqtt_client_secure; ///< Pointer to a secure WiFi client object
+  WiFiMulti _wifiMulti;     ///< WiFiMulti object for multi-network mode
+  int8_t _hiddenIdx = -1;   ///< Hidden network found by a directed scan: -1
+                            ///< none, 0 `_ssid`, n `_multiNetworksV2[n-1]`
 
 #if defined(PICO_CYW43_SUPPORTED)
   /** Directed scan state, written from the CYW43 scan callback */
@@ -408,7 +405,7 @@ protected:
       _disconnect();
       delay(5 * ONE_SECOND_IN_MS);
       Ws->_wdt->feed();
-      if (Ws->_isWiFiMultiV2 && _hiddenSsid == NULL) {
+      if (Ws->_isWiFiMultiV2 && _hiddenIdx < 0) {
         // multi network mode
         _wifiMulti.clearAPList();
         // add default network
@@ -429,10 +426,13 @@ protected:
         }
         Ws->_wdt->feed();
       } else {
-        if (_hiddenSsid != NULL) {
-          // hidden network found by check_valid_ssid(), WiFiMulti can't see it
-          WiFi.begin(_hiddenSsid, _hiddenPass);
+        if (_hiddenIdx > 0) {
+          // hidden alternative network found by check_valid_ssid(), WiFiMulti
+          // can't see it
+          WiFi.begin(Ws->_multiNetworksV2[_hiddenIdx - 1].ssid,
+                     Ws->_multiNetworksV2[_hiddenIdx - 1].pass);
         } else {
+          // single network mode, or the hidden default network
           WiFi.begin(_ssid, _pass);
         }
 
