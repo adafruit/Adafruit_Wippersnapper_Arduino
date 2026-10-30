@@ -72,30 +72,20 @@ static int findComponent(pb_size_t type, const std::vector<uint8_t> &remove) {
 }
 
 /*!
-    @brief  Decodes a component's stored Remove message and passes it to the
-            controller's Remove handler.
+    @brief  Decodes a component's stored Remove message.
     @param  component
             The component to remove.
     @param  fields
             nanopb fields of the Remove message.
-    @param  controller
-            The component's controller.
-    @param  handler
-            The controller's Remove handler.
-    @tparam T
-            The component's nanopb Remove message type.
-    @tparam C
-            The component's controller type.
+    @param  msg
+            Zero-initialised Remove message to decode into.
+    @returns True if decoded, False otherwise.
 */
-template <typename T, typename C>
-static void removeComponent(const CheckinComponent &component,
-                            const pb_msgdesc_t *fields, C *controller,
-                            bool (C::*handler)(T *)) {
-  T msg = {};
+static bool decodeRemove(const CheckinComponent &component,
+                         const pb_msgdesc_t *fields, void *msg) {
   pb_istream_t stream =
       pb_istream_from_buffer(component.remove.data(), component.remove.size());
-  if (pb_decode(&stream, fields, &msg))
-    (void)(controller->*handler)(&msg);
+  return pb_decode(&stream, fields, msg);
 }
 
 // TODO: Remove all debug prints after we are confident during testing
@@ -751,42 +741,60 @@ void CheckinModel::RemoveStaleComponents(pb_istream_t *stream) {
     }
     WS_DEBUG_PRINTLN("[checkin] Removing component no longer in checkin");
     switch (c.type) {
-    case ws_signal_BrokerToDevice_digital_tag:
-      removeComponent(c, ws_digital_Remove_fields, Ws->digital_controller,
-                      &DigitalController::Handle_Digital_Remove);
+    case ws_signal_BrokerToDevice_digital_tag: {
+      ws_digital_Remove msg = ws_digital_Remove_init_zero;
+      if (decodeRemove(c, ws_digital_Remove_fields, &msg))
+        (void)Ws->digital_controller->Handle_Digital_Remove(&msg);
       break;
-    case ws_signal_BrokerToDevice_analog_tag:
-      removeComponent(c, ws_analog_Remove_fields, Ws->analog_controller,
-                      &AnalogController::Handle_Analog_Remove);
+    }
+    case ws_signal_BrokerToDevice_analog_tag: {
+      ws_analog_Remove msg = ws_analog_Remove_init_zero;
+      if (decodeRemove(c, ws_analog_Remove_fields, &msg))
+        (void)Ws->analog_controller->Handle_Analog_Remove(&msg);
       break;
-    case ws_signal_BrokerToDevice_servo_tag:
-      removeComponent(c, ws_servo_Remove_fields, Ws->_servo_controller,
-                      &ServoController::Handle_Servo_Remove);
+    }
+    case ws_signal_BrokerToDevice_servo_tag: {
+      ws_servo_Remove msg = ws_servo_Remove_init_zero;
+      if (decodeRemove(c, ws_servo_Remove_fields, &msg))
+        (void)Ws->_servo_controller->Handle_Servo_Remove(&msg);
       break;
-    case ws_signal_BrokerToDevice_pwm_tag:
-      removeComponent(c, ws_pwm_Remove_fields, Ws->_pwm_controller,
-                      &PWMController::Handle_PWM_Remove);
+    }
+    case ws_signal_BrokerToDevice_pwm_tag: {
+      ws_pwm_Remove msg = ws_pwm_Remove_init_zero;
+      if (decodeRemove(c, ws_pwm_Remove_fields, &msg))
+        (void)Ws->_pwm_controller->Handle_PWM_Remove(&msg);
       break;
-    case ws_signal_BrokerToDevice_pixels_tag:
-      removeComponent(c, ws_pixels_Remove_fields, Ws->_pixels_controller,
-                      &PixelsController::Handle_Pixels_Remove);
+    }
+    case ws_signal_BrokerToDevice_pixels_tag: {
+      ws_pixels_Remove msg = ws_pixels_Remove_init_zero;
+      if (decodeRemove(c, ws_pixels_Remove_fields, &msg))
+        (void)Ws->_pixels_controller->Handle_Pixels_Remove(&msg);
       break;
-    case ws_signal_BrokerToDevice_ds18x20_tag:
-      removeComponent(c, ws_ds18x20_Remove_fields, Ws->_ds18x20_controller,
-                      &DS18X20Controller::Handle_Ds18x20Remove);
+    }
+    case ws_signal_BrokerToDevice_ds18x20_tag: {
+      ws_ds18x20_Remove msg = ws_ds18x20_Remove_init_zero;
+      if (decodeRemove(c, ws_ds18x20_Remove_fields, &msg))
+        (void)Ws->_ds18x20_controller->Handle_Ds18x20Remove(&msg);
       break;
-    case ws_signal_BrokerToDevice_uart_tag:
-      removeComponent(c, ws_uart_Remove_fields, Ws->_uart_controller,
-                      &UARTController::Handle_UartRemove);
+    }
+    case ws_signal_BrokerToDevice_uart_tag: {
+      ws_uart_Remove msg = ws_uart_Remove_init_zero;
+      if (decodeRemove(c, ws_uart_Remove_fields, &msg))
+        (void)Ws->_uart_controller->Handle_UartRemove(&msg);
       break;
-    case ws_signal_BrokerToDevice_i2c_tag:
-      removeComponent(c, ws_i2c_Remove_fields, Ws->_i2c_controller,
-                      &I2cController::Handle_Remove);
+    }
+    case ws_signal_BrokerToDevice_i2c_tag: {
+      ws_i2c_Remove msg = ws_i2c_Remove_init_zero;
+      if (decodeRemove(c, ws_i2c_Remove_fields, &msg))
+        (void)Ws->_i2c_controller->Handle_Remove(&msg);
       break;
-    case ws_signal_BrokerToDevice_telemetry_tag:
-      removeComponent(c, ws_telemetry_Remove_fields, Ws->_telemetry_controller,
-                      &TelemetryController::Handle_TelemetryRemove);
+    }
+    case ws_signal_BrokerToDevice_telemetry_tag: {
+      ws_telemetry_Remove msg = ws_telemetry_Remove_init_zero;
+      if (decodeRemove(c, ws_telemetry_Remove_fields, &msg))
+        (void)Ws->_telemetry_controller->Handle_TelemetryRemove(&msg);
       break;
+    }
     default:
       break;
     }
