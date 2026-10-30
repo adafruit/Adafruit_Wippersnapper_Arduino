@@ -22,6 +22,8 @@
 
 #include "dispDrvBase.h"
 #include "dispDrvMipiDsiIli9881cInit.h"
+// TEMPORARY HIL comparison: Touch Display 2 init (GPL-2.0-only header)
+#include "dispDrvMipiDsiIli9881cInitRpiTd2.h"
 #include <Adafruit_GFX.h>
 #include <Wire.h>
 #include <esp_cache.h>
@@ -247,14 +249,14 @@ public:
     // pattern generator with the backlight on, to tell "panel takes no video"
     // apart from "frame buffer path is wrong"
     writeMcu(DSI_TD2_MCU_REG_BL, DSI_TD2_BL_ON);
-    WS_DEBUG_PRINTLN("[hil] DSI bars: vertical for 15s");
+    WS_DEBUG_PRINTLN("[hil] DSI bars: vertical for 6s");
     ok(esp_lcd_dpi_panel_set_pattern(_panel, MIPI_DSI_PATTERN_BAR_VERTICAL),
        "vertical bars");
-    delay(15000);
-    WS_DEBUG_PRINTLN("[hil] DSI bars: horizontal for 15s");
+    delay(6000);
+    WS_DEBUG_PRINTLN("[hil] DSI bars: horizontal for 6s");
     ok(esp_lcd_dpi_panel_set_pattern(_panel, MIPI_DSI_PATTERN_BAR_HORIZONTAL),
        "horizontal bars");
-    delay(15000);
+    delay(6000);
     WS_DEBUG_PRINTLN("[hil] DSI bars: done, frame buffer");
     // Route the bridge's DPI stream from the frame buffer rather than the DSI
     // host's pattern generator (the panel otherwise shows a flat colour)
@@ -467,10 +469,10 @@ private:
       @return True on success.
   */
   bool sendInit() {
-    for (size_t i = 0; i < sizeof(ili9881c_init_espressif_default) /
-                               sizeof(ili9881c_init_espressif_default[0]);
+    for (size_t i = 0;
+         i < sizeof(ili9881c_init_rpi_td2) / sizeof(ili9881c_init_rpi_td2[0]);
          i++) {
-      const ili9881c_init_reg_t *e = &ili9881c_init_espressif_default[i];
+      const ili9881c_init_reg_t *e = &ili9881c_init_rpi_td2[i];
       if (e->reg == DSI_ILI9881C_PAGE) {
         if (!selectPage(e->value))
           return false;
