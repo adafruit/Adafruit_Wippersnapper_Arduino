@@ -243,6 +243,11 @@ public:
     _display->flush();
     if (!ok(esp_lcd_panel_init(_panel), "DPI video start"))
       return false;
+    // Route the bridge's DPI stream from the frame buffer rather than the DSI
+    // host's pattern generator (the panel otherwise shows a flat colour)
+    if (!ok(esp_lcd_dpi_panel_set_pattern(_panel, MIPI_DSI_PATTERN_NONE),
+            "frame buffer mode"))
+      return false;
 
     _display->setTextColor(0xFFFF);
     _display->setTextWrap(false);
