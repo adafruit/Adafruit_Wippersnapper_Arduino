@@ -576,9 +576,27 @@ bool DisplayHardware::beginDsi(ws_display_Add *msg) {
   WS_DEBUG_PRINT("[display] DSI panel: ");
   WS_DEBUG_PRINTLNVAR(msg->panel);
 
-  _drvDisp = new dispDrvMipiDsi(msg->interface_type.descriptor.dsi.bus);
+  dispDrvMipiDsi *dsi =
+      new dispDrvMipiDsi(msg->interface_type.descriptor.dsi.bus);
+  _drvDisp = dsi;
   if (!_drvDisp)
     return false;
+
+  // Brightness from the shared BacklightConfig: the panel MCU owns the
+  // backlight (no pin), so a PWM duty cycle, scaled by its resolution, maps
+  // onto the MCU's 0-31 steps. A Modify re-Adds at the new level.
+  if (msg->has_backlight && msg->backlight.which_backlight_add ==
+                                ws_display_BacklightConfig_backlight_pwm_tag) {
+    ws_pwm_Add *pwm = &msg->backlight.backlight_add.backlight_pwm;
+    if (pwm->has_write &&
+        pwm->write.which_payload == ws_pwm_Write_duty_cycle_tag) {
+      int32_t res =
+          (pwm->resolution > 0 && pwm->resolution <= 16) ? pwm->resolution : 8;
+      int32_t max = (1 << res) - 1;
+      int32_t duty = constrain(pwm->write.payload.duty_cycle, 0, max);
+      dsi->setBrightness((uint8_t)((duty * DSI_TD2_BL_MAX + max / 2) / max));
+    }
+  }
 
   // The panel is 720x1280 native; width/height only steer the rotation
   _drvDisp->setRotation(config->rotation);

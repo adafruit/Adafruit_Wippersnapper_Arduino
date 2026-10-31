@@ -75,7 +75,9 @@ static bool IRAM_ATTR dsiRefreshDone(esp_lcd_panel_handle_t panel,
 #define DSI_TD2_MCU_REG_BL 0x03    ///< MCU backlight register
 #define DSI_TD2_RESET_ASSERT 0     ///< Hold LCD and touch in reset
 #define DSI_TD2_RESET_RELEASE 3    ///< Release LCD and touch resets
-#define DSI_TD2_BL_ON 0x84 ///< Backlight enable + brightness 4/31 (USB-safe)
+#define DSI_TD2_BL_EN 0x80         ///< Backlight register enable bit
+#define DSI_TD2_BL_MAX 31          ///< Brightness steps (PWM duty 0-31)
+#define DSI_TD2_BL_DFLT 4          ///< Default brightness 4/31 (USB-safe)
 
 #define DSI_PHY_LDO_CHAN 3      ///< LDO channel feeding VDD_MIPI_DPHY
 #define DSI_PHY_LDO_MV 2500     ///< MIPI D-PHY supply voltage
@@ -180,6 +182,14 @@ public:
       @param  bus  DSI bus index (0 on the ESP32-P4).
   */
   dispDrvMipiDsi(uint32_t bus = 0) : dispDrvBase(), _bus(bus) {}
+
+  /*!
+      @brief  Sets the backlight level applied by begin().
+      @param  level  Brightness 0 (off) to 31 (full); clamped.
+  */
+  void setBrightness(uint8_t level) {
+    _bl_level = level > DSI_TD2_BL_MAX ? DSI_TD2_BL_MAX : level;
+  }
 
   /*!
       @brief  Destructor. Blanks the backlight and releases the DSI panel,
@@ -314,7 +324,11 @@ public:
     _display->setTextWrap(false);
     _display->setTextSize(_text_sz);
     DSI_STEP("panel MCU: backlight on");
-    if (!writeMcu(DSI_TD2_MCU_REG_BL, DSI_TD2_BL_ON)) {
+    WS_DEBUG_PRINT("[display] Backlight level: ");
+    WS_DEBUG_PRINTVAR(_bl_level);
+    WS_DEBUG_PRINTLN("/31");
+    if (!writeMcu(DSI_TD2_MCU_REG_BL,
+                  _bl_level ? (DSI_TD2_BL_EN | _bl_level) : 0)) {
       WS_DEBUG_PRINTLN("[display] ERROR: Backlight enable failed!");
       return false;
     }
@@ -547,6 +561,7 @@ private:
   }
 
   uint32_t _bus;                               ///< DSI bus index
+  uint8_t _bl_level = DSI_TD2_BL_DFLT;         ///< Backlight level (0-31)
   bool _mcu_found = false;                     ///< Panel MCU answered
   esp_ldo_channel_handle_t _phy_ldo = nullptr; ///< MIPI PHY supply
   esp_lcd_dsi_bus_handle_t _dsi_bus = nullptr; ///< DSI bus
