@@ -44,6 +44,8 @@ public:
   // Sleep Mode
   bool UpdateComplete();
   void ResetFlags();
+  bool getPinPullDirection(uint8_t pin_num,
+                           ws_digital_Direction *pull_direction);
 
 private:
   bool EncodePublishPinEvent(AnalogHardware *pin);

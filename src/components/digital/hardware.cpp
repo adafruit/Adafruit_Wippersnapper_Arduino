@@ -107,6 +107,14 @@ bool DigitalHardware::SetMode() {
     } else {
       _expander_drv->pinMode(_pin_num, INPUT_PULLUP);
     }
+#if defined(INPUT_PULLDOWN)
+  } else if (_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+    if (!has_expander) {
+      pinMode(_pin_num, INPUT_PULLDOWN);
+    } else {
+      _expander_drv->pinMode(_pin_num, INPUT_PULLDOWN);
+    }
+#endif
   } else {
     return false;
   }
@@ -218,6 +226,19 @@ bool DigitalHardware::GetPinValue() const { return _value; }
 */
 ws_digital_Direction DigitalHardware::GetDirection() const {
   return _direction;
+}
+
+/*!
+    @brief  Gets the pin's internal pull resistor direction.
+    @return D_INPUT_PULL_UP or D_INPUT_PULL_DOWN if the pin has an internal
+            pull resistor enabled, D_INPUT otherwise (no pull).
+*/
+ws_digital_Direction DigitalHardware::getPullDirection() const {
+  if (_direction == ws_digital_Direction_D_INPUT_PULL_UP ||
+      _direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+    return _direction;
+  }
+  return ws_digital_Direction_D_INPUT;
 }
 
 /*!
