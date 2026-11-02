@@ -30,7 +30,7 @@ namespace {
             a failing handler.
 */
 bool reportPinError(const char *pin_name, const char *error_msg) {
-  if (Ws->_sdCardV2->isModeOffline()) {
+  if (ws_sdcard::isModeOffline()) {
     WS_DEBUG_PRINT("[analog] ERROR on ");
     WS_DEBUG_PRINTVAR(pin_name);
     WS_DEBUG_PRINT(": ");
@@ -282,7 +282,7 @@ bool AnalogController::EncodePublishPinEvent(AnalogHardware *pin) {
     snprintf(c_pin_name, sizeof(c_pin_name), "A%d", pin_num);
   }
 
-  if (Ws->_sdCardV2->isModeOffline()) {
+  if (ws_sdcard::isModeOffline()) {
     return Ws->_sdCardV2->LogGPIOSensorEventToSD(c_pin_name, value, read_type);
   }
 

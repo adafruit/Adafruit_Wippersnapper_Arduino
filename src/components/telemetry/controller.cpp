@@ -268,7 +268,7 @@ void TelemetryController::update(bool force) {
     switch (metric.GetType()) {
     case ws_telemetry_Type_TM_RSSI: {
       float value = (float)metric.ReadRSSI();
-      if (Ws->_sdCardV2->isModeOffline()) {
+      if (ws_sdcard::isModeOffline()) {
         delivered = Ws->_sdCardV2->LogTelemetryEventToSD(
             metric.GetName(), value, ws_sensor_Type_T_RAW);
       } else {
@@ -278,7 +278,7 @@ void TelemetryController::update(bool force) {
     }
     case ws_telemetry_Type_TM_BOOT_REASON: {
       const char *value = metric.ReadBootReason();
-      if (Ws->_sdCardV2->isModeOffline()) {
+      if (ws_sdcard::isModeOffline()) {
         delivered =
             Ws->_sdCardV2->LogTelemetryEventToSD(metric.GetName(), value);
       } else {

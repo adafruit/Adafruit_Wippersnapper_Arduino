@@ -49,9 +49,6 @@ ws_sdcard::ws_sdcard()
 
   // delay(6000); // DEBUG ONLY: Wait for everything to settle
 
-  if (Ws->pin_sd_cs == PIN_SD_CS_ERROR)
-    return;
-
   if (!_sd.begin(_sd_spi_cfg)) {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: SD initialization failed.\nDo not reformat the "
@@ -130,9 +127,6 @@ bool ws_sdcard::IsBatteryLow() const { return _is_battery_low; }
    otherwise.
 */
 bool ws_sdcard::begin() {
-  if (Ws->pin_sd_cs == PIN_SD_CS_ERROR)
-    return false;
-
   // Restore SPI pins from input state
   pinMode(SCK, OUTPUT);
   pinMode(MOSI, OUTPUT);

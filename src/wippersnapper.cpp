@@ -50,8 +50,9 @@ wippersnapper *Ws;
     @brief    wippersnapper constructor
 */
 wippersnapper::wippersnapper()
-    : _mqttV2(nullptr), sensor_model(nullptr), error_handler(nullptr),
-      digital_controller(nullptr), analog_controller(nullptr),
+    : _sdCardV2(nullptr), _mqttV2(nullptr), sensor_model(nullptr),
+      error_handler(nullptr), digital_controller(nullptr),
+      analog_controller(nullptr),
       _display_controller(nullptr), _ds18x20_controller(nullptr),
       _expander_controller(nullptr), _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
@@ -271,27 +272,23 @@ void wippersnapper::provision() {
   _littleFSV2 = new WipperSnapper_LittleFS();
 #endif
 
-// Determine if app is in SDLogger mode
+#ifdef BUILD_OFFLINE_MODE
+// Offline build: load config.json, then bring up the SD card on SD_CS_PIN
 #ifdef USE_TINYUSB
   _fileSystemV2->GetSDCSPin();
 #elif defined(USE_LITTLEFS)
   _littleFSV2->GetSDCSPin();
-#elif defined(OFFLINE_MODE_WOKWI)
-  WS_DEBUG_PRINTLN("Wokwi offline mode detected, setting SD CS pin to 15");
-  Ws->pin_sd_cs = 15;
 #endif
+  Ws->pin_sd_cs = SD_CS_PIN;
   Ws->_sdCardV2 = new ws_sdcard();
-  if (Ws->_sdCardV2->isSDCardInitialized()) {
-    return; // SD card initialized, cede control back to loop()
-  } else {
-#ifdef BUILD_OFFLINE_ONLY
+  if (!Ws->_sdCardV2->isSDCardInitialized()) {
     haltErrorV2("SD initialization failed.\nDo not reformat the card!\nIs the "
                 "card correctly inserted?\nIs there a wiring/soldering "
                 "problem\nIs the config.json file malformed?");
-#endif
-    // SD card not initialized, so just continue with online-mode provisioning
   }
-
+  // SD card initialized, cede control back to loop()
+#else
+// Online build: provision network credentials
 #ifdef USE_TINYUSB
   _fileSystemV2->parseSecrets();
 #elif defined(USE_LITTLEFS)
@@ -304,6 +301,7 @@ void wippersnapper::provision() {
   setStatusLEDBrightness(Ws->_configV2.status_pixel_brightness);
   // Set device's wireless credentials
   set_ssid_pass();
+#endif // BUILD_OFFLINE_MODE
 }
 
 /*!
@@ -1082,7 +1080,7 @@ void wippersnapper::connect() {
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
   // TODO: This is kinda gnarly, refactor into its own function?
-  if (Ws->_sdCardV2->isModeOffline() == true) {
+  if (ws_sdcard::isModeOffline() == true) {
     WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
 // If debug mode, wait for serial config
 #ifdef OFFLINE_MODE_DEBUG
@@ -1112,13 +1110,10 @@ void wippersnapper::connect() {
     setStatusLEDColor(0x000000, Ws->status_pixel_brightnessV2 * 255.0);
     return;
   } else {
-    // If SD init failed during provisioning and we're not offline,
-    // we can only proceed if this instance supports networking.
-    if ((!Ws->_sdCardV2 || !Ws->_sdCardV2->isSDCardInitialized()) &&
-        !isWiFiAdapterInstance()) {
-      haltErrorV2("SD initialization failed, offline mode failure; cannot "
-                  "fallback to online mode on a non-network adapter.\nCheck SD "
-                  "wiring/CS pin and config.json.");
+    // Online builds can only proceed if this instance supports networking.
+    if (!isWiFiAdapterInstance()) {
+      haltErrorV2("Online build on a non-network adapter; rebuild with "
+                  "BUILD_OFFLINE_MODE and SD_CS_PIN.");
     }
 
     WS_DEBUG_PRINTLN("Running in online mode...");
@@ -1216,7 +1211,7 @@ void wippersnapper::run() {
 
 void wippersnapper::loop() {
   Ws->_wdt->feed();
-  if (!Ws->_sdCardV2->isModeOffline()) {
+  if (!ws_sdcard::isModeOffline()) {
     // Handle networking functions
     NetworkFSM();
     pingBrokerV2();
@@ -1270,7 +1265,7 @@ void wippersnapper::loopSleep() {
 
   Ws->_wdt->feed();
 
-  if (!Ws->_sdCardV2->isModeOffline()) {
+  if (!ws_sdcard::isModeOffline()) {
     // Handle networking functions
     NetworkFSM();
     pingBrokerV2();
@@ -1351,7 +1346,7 @@ void wippersnapper::loopSleep() {
 
   // Disconnect from MQTT Broker and WiFi before sleep to prevent issues with
   // connection state on-wake
-  if (!Ws->_sdCardV2->isModeOffline() && Ws->_mqttV2 != nullptr)
+  if (!ws_sdcard::isModeOffline() && Ws->_mqttV2 != nullptr)
     Ws->_mqttV2->disconnect();
   disconnect(true);
 
@@ -1366,7 +1361,7 @@ void wippersnapper::loopSleep() {
   // For light sleep, we woke up here
   Ws->_sleep_controller->WakeFromLightSleep();
   // Reconnect WiFi/MQTT after light sleep wake
-  if (!Ws->_sdCardV2->isModeOffline()) {
+  if (!ws_sdcard::isModeOffline()) {
     WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
     NetworkFSM(true);
   }

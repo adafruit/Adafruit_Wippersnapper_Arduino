@@ -347,7 +347,7 @@ bool DigitalController::EncodePublishPinEvent(DigitalHardware *pin) {
     snprintf(c_pin_name, sizeof(c_pin_name), "D%d", pin_num);
   }
 
-  if (!Ws->_sdCardV2->isModeOffline()) {
+  if (!ws_sdcard::isModeOffline()) {
     WS_DEBUG_PRINT("[digital] Publish Event: ");
     WS_DEBUG_PRINTVAR(c_pin_name);
     WS_DEBUG_PRINT(" | value: ");

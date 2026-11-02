@@ -189,7 +189,7 @@ void SleepController::WakeFromLightSleep() {
   }
 
   // Re-initialize SD card if it was previously initialized
-  if (Ws->_sdCardV2->isModeOffline()) {
+  if (ws_sdcard::isModeOffline()) {
     if (!Ws->_sdCardV2->begin()) {
       Ws->haltErrorV2(
           "[sleep] ERROR: Failed to re-initialize SD card after wake");
