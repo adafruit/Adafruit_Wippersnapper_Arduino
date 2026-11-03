@@ -20,7 +20,8 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || defined(ARDUINO_ESP32_DEV) ||    \
     defined(ESP32_DEV) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) ||         \
     defined(ARDUINO_DFROBOT_FIREBEETLE_2_ESP32C5) ||                           \
-    defined(WS_LILYGO_T_DONGLE_C5) || defined(ARDUINO_ESP32C5_DEV)
+    defined(WS_LILYGO_T_DONGLE_C5) || defined(ARDUINO_ESP32C5_DEV) ||          \
+    defined(WS_ESPRESSIF_ESP32S31_COREBOARD_1)
 #include "WipperSnapper_LittleFS.h"
 
 /*!
@@ -64,6 +65,20 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt(String("ERROR: deserializeJson() failed with code ") +
            error.c_str());
   }
+
+  // WiFi credential problems only halt boards without another network
+  // interface. Ethernet boards log them and carry on without WiFi.
+  auto wifiConfigError = [this](const char *msg) {
+#ifdef USE_ETHERNET
+    WS_DEBUG_PRINTLNVAR(msg);
+    WS_DEBUG_PRINTLN("WARNING: No usable WiFi credentials stored, using "
+                     "Ethernet only");
+    Ws->_isWiFiMultiV2 = false;
+#else
+    fsHalt(msg);
+#endif
+  };
+
   if (doc.containsKey("network_type_wifi")) {
     // set default network config
     convertFromJson(doc["network_type_wifi"], Ws->_configV2.network);
@@ -82,8 +97,9 @@ void WipperSnapper_LittleFS::parseSecrets() {
       WS_DEBUG_PRINT("Network count: ");
       WS_DEBUG_PRINTLNVAR(altNetworkCount);
       if (altNetworkCount == 0) {
-        fsHalt("ERROR: No alternative network entries found under "
-               "network_type_wifi.alternative_networks in secrets.json!");
+        wifiConfigError(
+            "ERROR: No alternative network entries found under "
+            "network_type_wifi.alternative_networks in secrets.json!");
       }
       // check if over 3, warn user and take first three
       for (int i = 0; i < altNetworkCount; i++) {
@@ -100,13 +116,14 @@ void WipperSnapper_LittleFS::parseSecrets() {
         WS_DEBUG_PRINT("PASS: ");
         WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].pass);
       }
-      Ws->_isWiFiMultiV2 = true;
+      Ws->_isWiFiMultiV2 = altNetworkCount > 0;
     } else {
-      fsHalt("ERROR: Unrecognised value type for "
-             "network_type_wifi.alternative_networks in secrets.json!");
+      wifiConfigError("ERROR: Unrecognised value type for "
+                      "network_type_wifi.alternative_networks in "
+                      "secrets.json!");
     }
   } else {
-    fsHalt("ERROR: Could not find network_type_wifi in secrets.json!");
+    wifiConfigError("ERROR: Could not find network_type_wifi in secrets.json!");
   }
 
   // Extract a config struct from the JSON document
@@ -122,10 +139,22 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
   if (strcmp(Ws->_configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
       strcmp(Ws->_configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
-    fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
-           "change network_ssid and network_password to match your Adafruit IO "
-           "credentials!\n");
+    wifiConfigError(
+        "ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
+        "change network_ssid and network_password to match your Adafruit IO "
+        "credentials!\n");
+#ifdef USE_ETHERNET
+    // don't try to join the placeholder network
+    Ws->_configV2.network.ssid[0] = '\0';
+    Ws->_configV2.network.pass[0] = '\0';
+#endif
   }
+#ifdef USE_ETHERNET
+  if (strlen(Ws->_configV2.network.ssid) == 0 && !Ws->_isWiFiMultiV2) {
+    WS_DEBUG_PRINTLN("No WiFi network details stored in secrets.json, "
+                     "connecting over Ethernet only");
+  }
+#endif
 
   // Close the file
   secretsFile.close();

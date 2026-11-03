@@ -169,8 +169,10 @@ jobs:
           board_name=${board_name%_noota}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
-          # Remove 'espressif_' prefix if present
-          board_name=${board_name#espressif_}
+          # Remove 'espressif_' prefix if present, unless the board ID keeps it
+          if [ ! -d "ws-boards/boards/${board_name//_/-}" ]; then
+            board_name=${board_name#espressif_}
+          fi
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
@@ -402,7 +404,8 @@ jobs:
             "wippersnapper_qtpy_esp32c3",
             "dfrobot_firebeetle2_esp32c5",
             "lilygo_t_dongle_c5",
-            "wippersnapper_feather_esp32c6"
+            "wippersnapper_feather_esp32c6",
+            "espressif_esp32s31_coreboard_1"
           ]
         include:
           - offset: "0x1000"
@@ -414,6 +417,8 @@ jobs:
             arduino-platform: "lilygo_t_dongle_c5"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32s31_coreboard_1"
     steps:
       - uses: actions/setup-python@v7
         with:
@@ -527,8 +532,10 @@ jobs:
           board_name=${board_name%_noota}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
-          # Remove 'espressif_' prefix if present
-          board_name=${board_name#espressif_}
+          # Remove 'espressif_' prefix if present, unless the board ID keeps it
+          if [ ! -d "ws-boards/boards/${board_name//_/-}" ]; then
+            board_name=${board_name#espressif_}
+          fi
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
@@ -1104,8 +1111,10 @@ jobs:
           board_name=${board_name%_debug}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
-          # Remove 'espressif_' prefix if present
-          board_name=${board_name#espressif_}
+          # Remove 'espressif_' prefix if present, unless the board ID keeps it
+          if [ ! -d "ws-boards/boards/${board_name//_/-}" ]; then
+            board_name=${board_name#espressif_}
+          fi
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'

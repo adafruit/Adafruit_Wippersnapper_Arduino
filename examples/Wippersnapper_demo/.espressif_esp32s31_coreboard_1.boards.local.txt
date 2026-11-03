@@ -1,0 +1,15 @@
+# Per-platform boards.local.txt override for the espressif_esp32s31_coreboard_1 CI target.
+#
+# ci-arduino's build_platform.py (--boards-local-txt) installs the most specific match as
+# <platform dir>/boards.local.txt before building this example:
+#   <example>/.<platform>.boards.local.txt > <example>/boards.local.txt > repo-root file > none
+#
+# The Espressif ESP32-S31-Function-CoreBoard-1 has no boards.txt entry of its own, so it builds
+# with the generic Espressif esp32s31 board (ARDUINO_ESP32S31_DEV), whose variant already holds
+# this board's Ethernet pins. Add the unique define (keeping -DBOARD_HAS_PSRAM), mirrored in
+# platformio.ini build_flags:
+esp32s31.build.defines=-DBOARD_HAS_PSRAM -DWS_ESPRESSIF_ESP32S31_COREBOARD_1
+# The esp32s31 PartitionScheme menu has no 16MB spiffs/LittleFS layout, so point the default
+# entry at default_16MB.csv (6.25MB OTA apps, 3.4MB LittleFS), matching platformio.ini:
+esp32s31.menu.PartitionScheme.default.build.partitions=default_16MB
+esp32s31.menu.PartitionScheme.default.upload.maximum_size=6553600

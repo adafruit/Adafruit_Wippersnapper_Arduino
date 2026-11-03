@@ -304,6 +304,20 @@
 #ifdef BOARD_HAS_PSRAM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #endif
+#elif defined(WS_ESPRESSIF_ESP32S31_COREBOARD_1)
+// Builds with the generic Espressif esp32s31 board (ARDUINO_ESP32S31_DEV), so
+// WS_ESPRESSIF_ESP32S31_COREBOARD_1 comes from boards.local.txt (Arduino) or
+// build_flags (PlatformIO). Ethernet pins come from the BSP's esp32s31 variant.
+#define BOARD_ID "espressif-esp32s31-coreboard-1" ///< Board ID
+#define USE_LITTLEFS           ///< Use LittleFS for provisioning
+#define USE_ETHERNET           ///< Onboard YT8531DC RGMII Ethernet PHY
+#define USE_STATUS_NEOPIXEL    ///< Onboard WS2812 RGB LED
+#define STATUS_NEOPIXEL_PIN 60 ///< RGB LED data (GPIO60)
+#define STATUS_NEOPIXEL_NUM 1  ///< Number of NeoPixels
+#define BOOT_BUTTON 61         ///< BOOT button (GPIO61)
+#ifdef BOARD_HAS_PSRAM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#endif
 #else
 #warning "Board type not identified within ws_boards.h!"
 #endif

@@ -644,7 +644,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
     case FSM_NET_CHECK_NETWORK:
       // WS_DEBUG_PRINTLN("Checking network connection...");
       if (networkStatus() == WS_NET_CONNECTED) {
+#ifdef USE_ETHERNET
+        WS_DEBUG_PRINTLN("Connected to network!");
+#else
         WS_DEBUG_PRINTLN("Connected to WiFi!");
+#endif
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
@@ -654,6 +658,29 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
     case FSM_NET_ESTABLISH_NETWORK:
       // WS_DEBUG_PRINTLN("Establishing network connection...");
       WS_PRINTER.flush();
+#ifdef USE_ETHERNET
+      // Ethernet boards never halt here: _connect() waits for an Ethernet
+      // link, and scans for and joins WiFi itself when credentials are
+      // stored, so keep retrying until either interface is up
+      statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
+      _wdt->feed();
+      _connect();
+      _wdt->feed();
+      if (networkStatus() != WS_NET_CONNECTED) {
+        WS_DEBUG_PRINTLN("No network connection yet, retrying...");
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+        if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
+          _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
+        }
+#endif
+      }
+      fsmNetwork = FSM_NET_CHECK_NETWORK;
+      break;
+#endif
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
@@ -788,6 +815,14 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           continue;
         }
+#endif
+#ifdef USE_ETHERNET
+        // Ethernet boards keep retrying: the link may have dropped mid-way,
+        // and CHECK_MQTT re-checks the network before reconnecting
+        WS_DEBUG_PRINTLN("Unable to connect to Adafruit.IO MQTT, retrying...");
+        _wdt->feed();
+        fsmNetwork = FSM_NET_CHECK_MQTT;
+        continue;
 #endif
         haltErrorV2(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
@@ -1045,7 +1080,15 @@ void PrintDeviceInfo() {
     WS_DEBUG_PRINTLNVAR(Ws->_configV2.io_port);
   }
   WS_DEBUG_PRINT("WiFi Network: ");
+#ifdef USE_ETHERNET
+  if (strlen(Ws->_configV2.network.ssid) == 0) {
+    WS_DEBUG_PRINTLN("None stored, using Ethernet only");
+  } else {
+    WS_DEBUG_PRINTLNVAR(Ws->_configV2.network.ssid);
+  }
+#else
   WS_DEBUG_PRINTLNVAR(Ws->_configV2.network.ssid);
+#endif
 
   char sMAC[18] = {0};
   sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", Ws->_macAddrV2[0],
