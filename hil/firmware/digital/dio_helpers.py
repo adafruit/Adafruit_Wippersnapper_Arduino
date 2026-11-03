@@ -11,4 +11,4 @@ CHECKIN_TIMEOUT = 30
 def remove(serial, protomq, uid, pin):
     """Send a digital.Remove for pin and expect the DUT to remove it."""
     protomq.publish(uid, {"digital": {"remove": {"pin": pin}}})
-    serial.expect(rf"^\[dio\] Pin removed: {pin.lstrip('D')}$", timeout=5)
+    serial.expect(rf"^\[digital\] Pin removed: {pin.lstrip('D')}$", timeout=5)

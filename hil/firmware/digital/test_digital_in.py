@@ -89,7 +89,7 @@ def _event_re(pin, value=None):
     """Matches EncodePublishPinEvent()'s log line for pin, with value if
     given."""
     value = r"[01]" if value is None else int(value)
-    return re.compile(rf"^\[dio\] Publish Event: {pin} \| value: {value}$")
+    return re.compile(rf"^\[digital\] Publish Event: {pin} \| value: {value}$")
 
 
 def _serial_events(serial, pin, since):
@@ -108,7 +108,7 @@ def _input_add(pin, direction, sample_mode, period):
 
 def _expect_added(serial, pin, direction):
     """Expect Handle_DigitalIO_Add() to log adding pin as direction."""
-    serial.expect(r"^\[dio\] Added new pin:$", timeout=CHECKIN_TIMEOUT)
+    serial.expect(r"^\[digital\] Added new pin:$", timeout=CHECKIN_TIMEOUT)
     serial.expect(rf"^Pin Name: {pin.lstrip('D')}$", timeout=5)
     serial.expect(rf"^Direction: {DIRECTIONS[direction]}$", timeout=5)
 
@@ -137,7 +137,7 @@ def _expect_event(serial, protomq, uid, pin, value, timeout):
     """Expect the DUT to log and publish an event of value for pin, and
     that the next digital.Event the broker gets is that one."""
     serial.expect(_event_re(pin, value), timeout=timeout)
-    serial.expect(r"^\[dio\] Published!$", timeout=timeout)
+    serial.expect(r"^\[digital\] Published!$", timeout=timeout)
 
     # No match: the next event of any pin or value, so a stray one fails
     event = protomq.expect_d2b_message(uid, "digital.event", timeout=timeout)

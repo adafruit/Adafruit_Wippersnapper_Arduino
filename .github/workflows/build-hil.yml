@@ -298,37 +298,21 @@ jobs:
         env:
           BOARD: ${{ matrix.board }}
         run: ./run_firmware_suite.sh system
-      - name: Summarize HIL results
-        if: always()
-        run: |
-          python3 - "$LOG_DIR" >> "$GITHUB_STEP_SUMMARY" <<'EOF'
-          import sys
-          import xml.etree.ElementTree as ET
-          from pathlib import Path
-          suites = []
-          for path in sorted(Path(sys.argv[1]).glob("junit-*.xml")):
-              try:
-                  root = ET.parse(path).getroot()
-              except ET.ParseError:
-                  continue
-              suites += [root] if root.tag == "testsuite" else root.findall("testsuite")
-          if not suites:
-              print("### HIL ${{ matrix.board }}: no results (junit-*.xml missing)")
-              sys.exit()
-          n = {k: sum(int(s.get(k, 0)) for s in suites)
-               for k in ("tests", "failures", "errors", "skipped")}
-          print(f"### HIL ${{ matrix.board }}\n")
-          print("| tests | failures | errors | skipped |\n|---|---|---|---|")
-          print(f"| {n['tests']} | {n['failures']} | {n['errors']} | {n['skipped']} |")
-          for s in suites:
-              for case in s.iter("testcase"):
-                  if case.find("failure") is not None or case.find("error") is not None:
-                      print(f"- ❌ `{case.get('classname')}::{case.get('name')}`")
-          EOF
       - name: Upload HIL logs
+        id: upload
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: hil-logs-${{ matrix.board }}
           path: ${{ env.LOG_DIR }}
           if-no-files-found: ignore
+      - name: Summarize HIL results
+        if: always()
+        env:
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          JOB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ job.check_run_id }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: >-
+          python3 .github/scripts/hil_junit_summary.py "$LOG_DIR" "${{ matrix.board }}"
+          >> "$GITHUB_STEP_SUMMARY"

@@ -29,7 +29,7 @@ def _add_output(serial, protomq, uid, pin, value=None):
     protomq.expect_b2d_message(uid, "digital.add", match=add, timeout=5)
 
     # DUT adds the pin as an output (D_OUTPUT = 3)
-    serial.expect(r"^\[dio\] Added new pin:$", timeout=CHECKIN_TIMEOUT)
+    serial.expect(r"^\[digital\] Added new pin:$", timeout=CHECKIN_TIMEOUT)
     serial.expect(rf"^Pin Name: {pin.lstrip('D')}$", timeout=5)
     serial.expect(r"^Direction: 3$", timeout=5)
 
@@ -54,7 +54,7 @@ def _write(serial, protomq, probe, uid, pin, value):
     with probe.expect_digitalout_transition(
             pin, not value, value, timeout=PIN_TRANSITION_TIMEOUT):
         protomq.publish(uid, {"digital": {"write": write}})
-        serial.expect(rf"^\[dio\] Writing: {int(value)} to Pin {pin.lstrip('D')}$",
+        serial.expect(rf"^\[digital\] Writing: {int(value)} to Pin {pin.lstrip('D')}$",
                       timeout=5)
 
 
