@@ -1,6 +1,7 @@
 pyserial~=3.5
 pytest>=8
 pytest-rerunfailures>=14
+pytest-timeout>=2.3
 adafruit-circuitpython-mcp230xx
 gpiod
 lgpio

@@ -28,7 +28,8 @@ venv/bin/pytest firmware --suite "$suite" \
   "${fw_args[@]}" \
   --serial-log-dir "$LOG_DIR" \
   --junitxml "$LOG_DIR/junit-$suite.xml" \
-  --log-cli-level=INFO
+  --log-cli-level=INFO \
+  --timeout=600
 rc=$?
 if [ "$rc" -eq 5 ]; then
   echo "No $suite tests selected for $BOARD"
