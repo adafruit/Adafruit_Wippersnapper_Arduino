@@ -282,7 +282,7 @@ jobs:
         id: venv
         working-directory: hil
         run: |
-          python3 -m venv venv
+          python3 -m venv --system-site-packages venv
           venv/bin/pip install -q -r requirements.txt
       # The board's hil-boards.json entry lists which tests are in each
       # suite (api_tests, system_tests); add folders there, not here.
