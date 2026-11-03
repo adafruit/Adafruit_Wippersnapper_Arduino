@@ -171,6 +171,24 @@
 #define USE_LITTLEFS
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
+#elif defined(ARDUINO_SPARKLEMOTION_ESP32)
+#define BOARD_ID "sparklemotion-esp32"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
+#elif defined(ARDUINO_SPARKLEMOTIONMINI_ESP32)
+#define BOARD_ID "sparklemotionmini-esp32"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
+#elif defined(ARDUINO_SPARKLEMOTIONSTICK_ESP32)
+#define BOARD_ID "sparklemotionstick-esp32"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
 #elif defined(ARDUINO_ESP32_DEV) || defined(ESP32_DEV)
 #define BOARD_ID "feather-esp32"
 #define USE_STATUS_LED
