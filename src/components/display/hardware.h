@@ -26,7 +26,8 @@
 #include "drivers/dispDrvSt7789.h"
 #include "drivers/dispDrvSt7789I8080.h"
 #include "wippersnapper.h"
-#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+#if defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666) ||                              \
+    defined(WS_ESPRESSIF_ESP32S31_KORVO_1)
 #include "drivers/dispDrvRgb666.h"
 #endif
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"

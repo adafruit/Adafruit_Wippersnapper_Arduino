@@ -2,7 +2,10 @@
  * @file src/components/display/drivers/dispDrvRgb666.h
  *
  * Driver for RGB666 dotclock displays via Arduino_GFX (V2).
- * Targets the Adafruit Qualia ESP32-S3 board with ST7701S-based panels.
+ * Targets the Adafruit Qualia ESP32-S3 board with ST7701S-based panels, and
+ * the Espressif ESP32-S31-Korvo-1 with its 4.3" ST7262E43 RGB565 sub-board.
+ * The dotclock pins are fixed by the board (TFT_* from the Qualia variant or
+ * ws_boards.h); see adafruit/Wippersnapper_Protobuf#226.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -16,7 +19,8 @@
 #ifndef WS_DISP_DRV_RGB666_H
 #define WS_DISP_DRV_RGB666_H
 
-#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+#if defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666) ||                              \
+    defined(WS_ESPRESSIF_ESP32S31_KORVO_1)
 
 #include "dispDrvBase.h"
 #include <Arduino_GFX_Library.h>
@@ -27,20 +31,19 @@
 #define RGB666_STATUSBAR_ICON_MARGIN 5  ///< Margin from edge of display
 
 /*!
-    @brief  Driver for RGB666 dotclock displays on Qualia ESP32-S3.
+    @brief  Driver for RGB dotclock displays on boards with fixed panel wiring
+            (Qualia ESP32-S3, ESP32-S31-Korvo-1).
 */
 class dispDrvRgb666 : public dispDrvBaseRgb666 {
 public:
   /*!
       @brief  Constructor — panel selection by name string.
-      @param  panel  Panel identifier (e.g. "TL021WVC02", "TL032FWV01").
+      @param  panel  Panel identifier (e.g. "TL021WVC02", "TL032FWV01",
+                     "esp32-s3-lcd-ev-board-sub3").
   */
   dispDrvRgb666(const char *panel)
       : dispDrvBaseRgb666("dispDrvRgb666", panel), _display(nullptr),
-        _expander(nullptr), _rgbpanel(nullptr) {
-    strncpy(_panel, panel, sizeof(_panel) - 1);
-    _panel[sizeof(_panel) - 1] = '\0';
-  }
+        _expander(nullptr), _rgbpanel(nullptr) {}
 
   ~dispDrvRgb666() {
     // rgbpanel and expander are owned by display, cleaned up by its destructor
@@ -49,30 +52,40 @@ public:
       delete _display;
       _display = nullptr;
     }
+#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
     if (_expander) {
       _expander->digitalWrite(PCA_TFT_BACKLIGHT, LOW);
     }
+#endif
+#ifdef TFT_DISP
+    digitalWrite(TFT_DISP, LOW);
+#endif
   }
 
   bool begin() override {
+#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+    // Qualia panels are initialised over SPI bit-banged through a PCA9554
     Wire.setClock(400000);
 
     _expander = new Arduino_XCA9554SWSPI(PCA_TFT_RESET, PCA_TFT_CS, PCA_TFT_SCK,
                                          PCA_TFT_MOSI, &Wire, 0x3F);
     if (!_expander)
       return false;
+#endif
 
     // Select init operations and dotclock timings per panel.
     // Timings from CircuitPython dotclockframebuffer configs.
     // Accepts both panel part numbers and Adafruit PIDs.
     const uint8_t *init_ops = nullptr;
     size_t init_ops_len = 0;
-    uint16_t h_fp, h_pw, h_bp, v_fp, v_pw, v_bp;
+    uint16_t h_fp = 0, h_pw = 0, h_bp = 0, v_fp = 0, v_pw = 0, v_bp = 0;
     uint16_t pclk_active_neg = 0;
     int32_t prefer_speed = 16000000;
 
-    if (strcmp(_panel, "TL021WVC02") == 0 ||
-        strcmp(_panel, "adafruit-5792") == 0) {
+    if (false) {
+#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+    } else if (strcmp(_panel, "TL021WVC02") == 0 ||
+               strcmp(_panel, "adafruit-5792") == 0) {
       // 2.1" round 480x480
       init_ops = TL021WVC02_init_operations;
       init_ops_len = sizeof(TL021WVC02_init_operations);
@@ -95,6 +108,21 @@ public:
       v_pw = 6;
       v_bp = 90;
       pclk_active_neg = 1; // pclk_active_high = False
+#endif
+#ifdef WS_ESPRESSIF_ESP32S31_KORVO_1
+    } else if (strcmp(_panel, "esp32-s3-lcd-ev-board-sub3") == 0 ||
+               strcmp(_panel, "ST7262E43") == 0) {
+      // 4.3" 800x480 ESP32-S3-LCD-EV-Board-SUB3, no init sequence needed.
+      // Timings from Espressif's esp-bsp (esp32_s31_korvo_1, ~35Hz).
+      h_fp = 48;
+      h_pw = 40;
+      h_bp = 40;
+      v_fp = 13;
+      v_pw = 23;
+      v_bp = 32;
+      pclk_active_neg = 1; // data clocked out on the falling edge
+      prefer_speed = 18000000;
+#endif
     } else {
       WS_DEBUG_PRINT("[display] ERROR: Unknown RGB666 panel: ");
       WS_DEBUG_PRINTLNVAR(_panel);
@@ -109,6 +137,12 @@ public:
         prefer_speed);
     if (!_rgbpanel)
       return false;
+
+#ifdef TFT_DISP
+    // Display enable (LCD_DISP) must be high before the panel is driven
+    pinMode(TFT_DISP, OUTPUT);
+    digitalWrite(TFT_DISP, HIGH);
+#endif
 
     _display = new Arduino_RGB_Display(
         _width, _height, _rgbpanel, _rotation, true /* auto_flush */, _expander,
@@ -126,9 +160,11 @@ public:
     _display->setTextWrap(false);
     _display->setTextSize(_text_sz);
 
+#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
     // Enable backlight via IO expander
     _expander->pinMode(PCA_TFT_BACKLIGHT, OUTPUT);
     _expander->digitalWrite(PCA_TFT_BACKLIGHT, HIGH);
+#endif
 
     WS_DEBUG_PRINT("[display] RGB666 panel '");
     WS_DEBUG_PRINTVAR(_panel);
@@ -266,11 +302,10 @@ public:
 
 private:
   Arduino_RGB_Display *_display;
-  Arduino_XCA9554SWSPI *_expander;
-  Arduino_ESP32RGBPanel *_rgbpanel;
-  char _panel[20];
+  Arduino_XCA9554SWSPI *_expander;  ///< Qualia panel-init expander, else null
+  Arduino_ESP32RGBPanel *_rgbpanel; ///< Dotclock panel bus
 };
 
-#endif // ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+#endif // ARDUINO_ADAFRUIT_QUALIA_S3_RGB666 || WS_ESPRESSIF_ESP32S31_KORVO_1
 
 #endif // WS_DISP_DRV_RGB666_H
