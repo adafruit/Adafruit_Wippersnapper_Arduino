@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['scan_5fhidden_5fssid',['scan_hidden_ssid',['../class_wippersnapper___e_s_p32.html#a6d3befeed47530c116c0e9e4ab211e8c',1,'Wippersnapper_ESP32']]],
   ['scanaddresses',['scanAddresses',['../class_wipper_snapper___component___i2_c.html#a19937e439840bb1586721fbf975bbccc',1,'WipperSnapper_Component_I2C']]],
   ['send_5fdata',['send_data',['../classws__uart__drv.html#ac28d61fda2c6a560a92e9ec36f9df8c1',1,'ws_uart_drv::send_data()'],['../classws__uart__drv__pm25aqi.html#a9eeeefa3a53716b846c50c05ecae4387',1,'ws_uart_drv_pm25aqi::send_data()']]],
   ['sensoreventread',['sensorEventRead',['../class_wipper_snapper___component___i2_c.html#ad920d609d60a86b2a447611e423a7207',1,'WipperSnapper_Component_I2C']]],

@@ -84,6 +84,7 @@ var searchData=
   ['_5fhasserial',['_hasSerial',['../class_wipper_snapper___i2_c___driver___s_g_p41.html#a7411984bd8ebc29217d286275d3444b5',1,'WipperSnapper_I2C_Driver_SGP41']]],
   ['_5fhdc302x',['_hdc302x',['../class_wipper_snapper___i2_c___driver___h_d_c302_x.html#a2d4b2790f79260e9b50fa579cdf487d8',1,'WipperSnapper_I2C_Driver_HDC302X']]],
   ['_5fheight',['_height',['../classdisp_drv_base.html#aefe52d41964308057fbacae4cde67212',1,'dispDrvBase::_height()'],['../class_wipper_snapper___i2_c___driver___out___s_h1107.html#a673a47f7bd2bcd3021efc6355b6a6bf1',1,'WipperSnapper_I2C_Driver_Out_SH1107::_height()'],['../class_wipper_snapper___i2_c___driver___out___ssd1306.html#aa2b68f6d2385e89aa9600ebbafb1673e',1,'WipperSnapper_I2C_Driver_Out_Ssd1306::_height()']]],
+  ['_5fhiddenidx',['_hiddenIdx',['../class_wippersnapper___e_s_p32.html#abf1378d7db0d7492be3b242869f7489a',1,'Wippersnapper_ESP32']]],
   ['_5fhts221',['_hts221',['../class_wipper_snapper___i2_c___driver___h_t_s221.html#a320a872badb15671875577eef70a2f2f',1,'WipperSnapper_I2C_Driver_HTS221']]],
   ['_5fhts221_5fhumidity',['_hts221_humidity',['../class_wipper_snapper___i2_c___driver___h_t_s221.html#a98446affcc4f147c7a102d3440615268',1,'WipperSnapper_I2C_Driver_HTS221']]],
   ['_5fhts221_5ftemp',['_hts221_temp',['../class_wipper_snapper___i2_c___driver___h_t_s221.html#aac9314f51fb5623f65456a2584261e69',1,'WipperSnapper_I2C_Driver_HTS221']]],

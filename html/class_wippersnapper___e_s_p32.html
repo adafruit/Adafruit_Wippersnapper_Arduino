@@ -102,6 +102,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a36994b82d22db88f67777aaf4e097f1b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a36994b82d22db88f67777aaf4e097f1b">check_valid_ssid</a> ()</td></tr>
 <tr class="memdesc:a36994b82d22db88f67777aaf4e097f1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a scan of local WiFi networks.  <a href="#a36994b82d22db88f67777aaf4e097f1b">More...</a><br /></td></tr>
 <tr class="separator:a36994b82d22db88f67777aaf4e097f1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d3befeed47530c116c0e9e4ab211e8c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a6d3befeed47530c116c0e9e4ab211e8c">scan_hidden_ssid</a> (const char *ssid)</td></tr>
+<tr class="memdesc:a6d3befeed47530c116c0e9e4ab211e8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a directed scan (probe request) for a hidden network.  <a href="#a6d3befeed47530c116c0e9e4ab211e8c">More...</a><br /></td></tr>
+<tr class="separator:a6d3befeed47530c116c0e9e4ab211e8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab57f54dbcff0e24dbf9263100b887070"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#ab57f54dbcff0e24dbf9263100b887070">getMacAddr</a> ()</td></tr>
 <tr class="memdesc:ab57f54dbcff0e24dbf9263100b887070"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the ESP32's unique client identifier.  <a href="#ab57f54dbcff0e24dbf9263100b887070">More...</a><br /></td></tr>
 <tr class="separator:ab57f54dbcff0e24dbf9263100b887070"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -243,6 +246,8 @@ NetworkClient *&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 WiFiMulti&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a3bb14b42e597e2ac2a78df5fd32ea6c4">_wifiMulti</a></td></tr>
 <tr class="memdesc:a3bb14b42e597e2ac2a78df5fd32ea6c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">WiFiMulti object for multi-network mode. <br /></td></tr>
 <tr class="separator:a3bb14b42e597e2ac2a78df5fd32ea6c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf1378d7db0d7492be3b242869f7489a"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#abf1378d7db0d7492be3b242869f7489a">_hiddenIdx</a> = -1</td></tr>
+<tr class="separator:abf1378d7db0d7492be3b242869f7489a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a867f26fbfd6660048972a89618c77c89"><td class="memItemLeft" align="right" valign="top"><a id="a867f26fbfd6660048972a89618c77c89"></a>
 const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a867f26fbfd6660048972a89618c77c89">_aio_root_ca_staging</a></td></tr>
 <tr class="memdesc:a867f26fbfd6660048972a89618c77c89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root certificate for io.adafruit.us. <br /></td></tr>
@@ -552,6 +557,42 @@ wippersnapper_signal_v1_DisplayRequest&#160;</td><td class="memItemRight" valign
 
 </div>
 </div>
+<a id="a6d3befeed47530c116c0e9e4ab211e8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d3befeed47530c116c0e9e4ab211e8c">&#9670;&nbsp;</a></span>scan_hidden_ssid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Wippersnapper_ESP32::scan_hidden_ssid </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>ssid</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Performs a directed scan (probe request) for a hidden network. </p>
+<dl class="section note"><dt>Note</dt><dd>A <code>show_hidden</code> scan only reports hidden networks with an empty SSID, so it can't tell which hidden network (if any) is ours. A directed scan puts <code>ssid</code> in the probe request, and only an AP with that SSID answers. This keeps a wrong SSID failing at scan time, and picks which multi-network credentials to join. </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ssid</td><td>The SSID of the hidden network to scan for. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if an access point responded to <code>ssid</code>, False otherwise. </dd></dl>
+
+</div>
+</div>
 <a id="ab57f54dbcff0e24dbf9263100b887070"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab57f54dbcff0e24dbf9263100b887070">&#9670;&nbsp;</a></span>getMacAddr()</h2>
 
@@ -707,6 +748,29 @@ wippersnapper_signal_v1_DisplayRequest&#160;</td><td class="memItemRight" valign
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="abf1378d7db0d7492be3b242869f7489a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf1378d7db0d7492be3b242869f7489a">&#9670;&nbsp;</a></span>_hiddenIdx</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int8_t Wippersnapper_ESP32::_hiddenIdx = -1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Hidden network found by a directed scan: -1 none, 0 <code>_ssid</code>, n <code>WS._multiNetworks[n-1]</code> </p>
+
+</div>
+</div>
 <a id="a4f4517dcc59821de2acfe7d14284bcaf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4f4517dcc59821de2acfe7d14284bcaf">&#9670;&nbsp;</a></span>_aio_root_ca_prod</h2>
 

@@ -580,7 +580,8 @@ wippersnapper_signal_v1_DisplayRequest&#160;</td><td class="memItemRight" valign
 </div><div class="memdoc">
 
 <p>Performs a scan of local WiFi networks. </p>
-<dl class="section return"><dt>Returns</dt><dd>True if <code>_network_ssid</code> is found, False otherwise. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>nina-fw's scan never reports hidden networks, so a missing <code>_network_ssid</code> is not treated as fatal. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>True, a connection is always attempted. </dd></dl>
 
 <p>Reimplemented from <a class="el" href="class_wippersnapper.html#a288ccdd64ddcec63c3cd2b7a74182a66">Wippersnapper</a>.</p>
 
