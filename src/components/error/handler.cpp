@@ -26,11 +26,17 @@
 */
 static bool encode_string_callback(pb_ostream_t *stream,
                                    const pb_field_t *field, void *const *arg) {
+  // encode the tag for the string field first
+  if (!pb_encode_tag_for_field(stream, field))
+    return false;
+
+  // get the string to encode
   const char *str = (const char *)*arg;
   if (!str) {
     return pb_encode_string(stream, (const uint8_t *)"", 0);
   }
 
+  // encode the string length and data
   size_t len = strlen(str);
   return pb_encode_string(stream, (const uint8_t *)str, len);
 }
@@ -133,6 +139,12 @@ bool ErrorHandler::HandleThrottle(const ws_error_ThrottleError &throttle) {
   return true;
 }
 
+/*!
+    @brief  Publishes a device-level error not tied to a specific component.
+    @param  error_msg
+            The error message string.
+    @return True if the error was published successfully, False otherwise.
+*/
 bool ErrorHandler::publishDeviceError(const char *error_msg) {
   // memset, not init_zero assignment - see note in ErrorHandler()
   memset(&_d2b_msg, 0, sizeof(_d2b_msg));

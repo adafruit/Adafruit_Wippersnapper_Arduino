@@ -33,6 +33,17 @@
 
 #include "wippersnapper.h"
 
+// Build metadata from generate_ws_version.py (CI / PlatformIO); kept out of
+// wippersnapper.h so a new commit only rebuilds the files that print it
+#if defined(__has_include)
+#if __has_include("ws_version.h")
+#include "ws_version.h"
+#endif
+#endif
+#ifndef WS_BUILD
+#define WS_BUILD "" ///< No generated build metadata (e.g. Arduino IDE builds)
+#endif
+
 wippersnapper *Ws;
 
 /*!
@@ -40,7 +51,7 @@ wippersnapper *Ws;
 */
 wippersnapper::wippersnapper()
     : _mqttV2(nullptr), sensor_model(nullptr), error_handler(nullptr),
-      digital_io_controller(nullptr), analog_controller(nullptr),
+      digital_controller(nullptr), analog_controller(nullptr),
       _display_controller(nullptr), _ds18x20_controller(nullptr),
       _expander_controller(nullptr), _gps_controller(nullptr),
       _i2c_controller(nullptr), _uart_controller(nullptr),
@@ -67,7 +78,7 @@ void wippersnapper::_init() {
   sensor_model = new SensorModel();
 
   // Initialize controller classes
-  digital_io_controller = new DigitalIOController();
+  digital_controller = new DigitalController();
   analog_controller = new AnalogController();
   _display_controller = new DisplayController();
   _ds18x20_controller = new DS18X20Controller();
@@ -92,7 +103,7 @@ wippersnapper::~wippersnapper() {
   delete this->_wdt;
   delete this->sensor_model;
   delete this->error_handler;
-  delete this->digital_io_controller;
+  delete this->digital_controller;
   delete this->_display_controller;
   delete this->analog_controller;
   delete this->_ds18x20_controller;
@@ -241,6 +252,9 @@ void wippersnapper::set_user_key() {
               configuration and Adafruit IO credentials.
 */
 void wippersnapper::provision() {
+  // Tagged build line, early so a board that halts while provisioning still
+  // reports it (may be missed on native USB; connect() prints it again)
+  WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
   // Publish the global Ws pointer and create the controllers
   _init();
 
@@ -311,20 +325,25 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   if (!Ws->CheckInModel->ValidateResponse()) {
     Ws->haltErrorV2("Invalid checkin response, rebooting soon...");
   }
-  Ws->NetworkFSM();
 
   // Configure sleep settings if enabled
-  WS_DEBUG_PRINTLN("[app] Configuring sleep...");
   Ws->CheckInModel->configureSleep();
 
   // Configure controller settings using Response
-  WS_DEBUG_PRINTLN("[app] Configuring controllers...");
+  WS_DEBUG_PRINTLN("[checkin] Configuring controllers");
+  WS_DEBUG_PRINT("[checkin] Total GPIO pins: ");
+  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalGPIOPins());
+  WS_DEBUG_PRINT("[checkin] Total analog pins: ");
+  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalAnalogPins());
+  WS_DEBUG_PRINT("[checkin] Reference voltage: ");
+  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetReferenceVoltage());
   Ws->CheckInModel->ConfigureControllers();
+  WS_DEBUG_PRINTLN("[checkin] Controllers configured");
   Ws->NetworkFSM();
 
-  // Publish the complete response message to indicate the checkin
-  // routine is done and the device is ready for use
-  return Ws->CheckInModel->Complete();
+  // Complete is published by the checkin caller, not from inside this MQTT
+  // callback where it could consume another packet's reply
+  return true;
 }
 
 // Decoders //
@@ -356,7 +375,7 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   case ws_signal_BrokerToDevice_checkin_tag:
     return handleCheckinResponse(stream);
   case ws_signal_BrokerToDevice_digital_tag:
-    return Ws->digital_io_controller->Router(stream);
+    return Ws->digital_controller->Router(stream);
   case ws_signal_BrokerToDevice_analog_tag:
     return Ws->analog_controller->Router(stream);
   case ws_signal_BrokerToDevice_pixels_tag:
@@ -646,7 +665,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       case WS_SSID_SCAN_NO_NETWORKS:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: No WiFi networks found, rebooting soon...",
@@ -655,7 +678,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       case WS_SSID_SCAN_SSID_NOT_FOUND:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: Unable to find WiFi network, rebooting soon...",
@@ -664,7 +691,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       case WS_SSID_SCAN_NO_IFACE:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: No network interface defined, rebooting soon...",
@@ -673,7 +704,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       default:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: Unknown WiFi scan result, rebooting soon...",
@@ -704,7 +739,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
         WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2("ERROR: Unable to connect to WiFi, rebooting soon...",
@@ -745,7 +784,11 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
         if (handle_sleep_mode_error) {
+          // Returns only after a light sleep wake, retry the connection
           _sleep_controller->HandleNetFSMFailure();
+          _wdt->feed();
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          continue;
         }
 #endif
         haltErrorV2(
@@ -864,6 +907,10 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   case ws_signal_DeviceToBroker_telemetry_tag:
     msg->which_payload = ws_signal_DeviceToBroker_telemetry_tag;
     msg->payload.telemetry = *(ws_telemetry_D2B *)payload;
+    break;
+  case ws_signal_DeviceToBroker_sleep_tag:
+    msg->which_payload = ws_signal_DeviceToBroker_sleep_tag;
+    msg->payload.sleep = *(ws_sleep_D2B *)payload;
     break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
@@ -986,8 +1033,7 @@ void wippersnapper::ProcessPackets() {
 */
 void PrintDeviceInfo() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
-  WS_DEBUG_PRINT("Firmware Version: ");
-  WS_DEBUG_PRINTLNVAR(WS_VERSION);
+  WS_DEBUG_PRINTLN("Firmware Version: " WS_VERSION WS_BUILD);
   WS_DEBUG_PRINTLN("API: Version 2");
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLNVAR(BOARD_ID);
@@ -1037,6 +1083,8 @@ void wippersnapper::connect() {
   delay(5 * ONE_SECOND_IN_MS); // ENABLE FOR TROUBLESHOOTING THIS CLASS ON
                                // HARDWARE ONLY
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
+  // Tagged build line for HIL / log parsers - keep the format stable
+  WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
   // Dump device info to the serial monitor
   PrintDeviceInfo();
 
@@ -1150,6 +1198,14 @@ void wippersnapper::connect() {
         WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
     pingBrokerV2();               // Keep MQTT connection alive
   }
+  // Publish the complete response message to indicate the checkin routine is
+  // done and the device is ready for use. Done here rather than in the
+  // response callback, which may run inside pingBrokerV2() while it waits for
+  // a PINGRESP: publishing there consumed the PINGRESP while waiting for the
+  // PUBACK ("Dropped a packet"), failing the ping and forcing a reconnect.
+  if (!Ws->CheckInModel->Complete()) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish checkin complete message");
+  }
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
   delete Ws->CheckInModel;
@@ -1169,16 +1225,15 @@ void wippersnapper::connect() {
 */
 void wippersnapper::run() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
-  if (!Ws->_sleep_controller->isSleepEnabled()) {
-    while (true) {
-      loop();
-    }
-  } else {
-    // Feed TWDT and enter loopSleep()
-    Ws->_wdt->feed();
-    while (true) {
-      loopSleep();
-    }
+  // Sleep mode may be enabled during runtime
+  while (!Ws->_sleep_controller->isSleepEnabled()) {
+    loop();
+  }
+  // Sleep is enabled: feed the TWDT and hand control to the sleep-aware loop.
+  WS_DEBUG_PRINTLN("[app] Sleep enabled, entering loopSleep()");
+  Ws->_wdt->feed();
+  while (true) {
+    loopSleep();
   }
 #else
   while (true) {
@@ -1200,7 +1255,7 @@ void wippersnapper::loop() {
   }
 
   // Process all digital events
-  Ws->digital_io_controller->update();
+  Ws->digital_controller->update();
 
   // Process all analog input events
   Ws->analog_controller->update();
@@ -1230,8 +1285,8 @@ void wippersnapper::loop() {
    a global timer for run duration and entrypoints for sleep management.
 */
 void wippersnapper::loopSleep() {
-  // NOTE: It is assumed that loopSleep() will eventually lead to sleep entry,
-  // whether by global timestamp expiry or component-driven sleep readiness.
+  // NOTE: loopSleep() will eventually lead to sleep entry, either by
+  // component-driven sleep readiness or by global timestamp expiration.
 
   // Track when the loop started for run duration timeout
   static unsigned long loop_start_time = 0;
@@ -1240,6 +1295,8 @@ void wippersnapper::loopSleep() {
     loop_start_time = millis();
     loop_timer_started = true;
   }
+
+  Ws->_wdt->feed();
 
   if (!Ws->_sdCardV2->isModeOffline()) {
     // Handle networking functions
@@ -1252,8 +1309,8 @@ void wippersnapper::loopSleep() {
   // Track completion of all controllers
   bool all_controllers_complete = true;
 
-  if (!Ws->digital_io_controller->UpdateComplete()) {
-    Ws->digital_io_controller->update(true);
+  if (!Ws->digital_controller->UpdateComplete()) {
+    Ws->digital_controller->update(true);
     all_controllers_complete = false;
   }
 
@@ -1287,56 +1344,61 @@ void wippersnapper::loopSleep() {
     all_controllers_complete = false;
   }
 
-  // Check if all controllers have completed their updates
-  if (all_controllers_complete) {
-    // Reset all flags and variables for use in the next loopsleep() cycle (if
-    // light sleep)
-    ResetAllControllerFlags();
-    loop_start_time = 0;
-    loop_timer_started = false;
-    // Disconnect from MQTT broker before sleep to prevent issues with
-    // connection state on wake
+  // Has this wake cycle's loopSleep() duration expired? If it has, it's a
+  // hard-deadline and the MCU sleeps regardless of controller status
+  bool has_deadline_expired = false;
+  if (Ws->_sleep_controller->getRunDurationMs() > 0 &&
+      (millis() - loop_start_time) >=
+          Ws->_sleep_controller->getRunDurationMs()) {
+    has_deadline_expired = true;
+  }
+
+  // Controllers haven't completed and the deadline hasn't expired, so hold off
+  // sleep and exec. loopSleep() again
+  if (!all_controllers_complete && !has_deadline_expired) {
+    return;
+  }
+
+  // Let's begin the sleep process. All controllers are complete or the deadline
+  // has expired, so we can enter sleep mode.
+  if (!Ws->_sleep_controller->publishMsgGoodnight()) {
+    if (!has_deadline_expired) {
+      WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, holding off "
+                       "sleep to retry...");
+      return;
+    }
+    WS_DEBUG_PRINTLN("[app] Failed to publish Goodnight message, sleeping "
+                     "anyway (deadline reached)!");
+  }
+
+  // Reset all flags and variables for use in the next loopsleep() (for light
+  // sleep mode)
+  ResetAllControllerFlags();
+  loop_start_time = 0;
+  loop_timer_started = false;
+
+  // Disconnect from MQTT Broker and WiFi before sleep to prevent issues with
+  // connection state on-wake
+  if (!Ws->_sdCardV2->isModeOffline() && Ws->_mqttV2 != nullptr)
     Ws->_mqttV2->disconnect();
-    // Forcibly disconnect from WiFi network and turn off WiFi radio before
-    // sleep to save power and prevent issues with connection state on wake
-    disconnect(true);
-    // Enter sleep
+  disconnect(true);
+
+  // Enter sleep
+  if (all_controllers_complete) {
     WS_DEBUG_PRINTLN("[app] All components updated, entering sleep...");
-    Ws->_sleep_controller->StartSleep();
-
-    // For light sleep, we woke up here
-    Ws->_sleep_controller->WakeFromLightSleep();
-    // Reconnect WiFi/MQTT after light sleep wake
-    if (!Ws->_sdCardV2->isModeOffline()) {
-      WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
-      NetworkFSM(true);
-    }
-    // For light sleep, this allows the next loopSleep() cycle to begin
-    return;
-  }
-
-  // Check if run duration timeout exceeded
-  unsigned long run_duration_ms = Ws->_sleep_controller->getRunDurationMs();
-  if (run_duration_ms > 0 && (millis() - loop_start_time) >= run_duration_ms) {
-    // Reset all flags and variables for use in the next loopsleep() cycle (if
-    // light sleep)
-    ResetAllControllerFlags();
-    loop_start_time = 0;
-    loop_timer_started = false;
-    // Enter sleep
+  } else {
     WS_DEBUG_PRINTLN("[app] loopSleep() duration elapsed, entering sleep...");
-    Ws->_sleep_controller->StartSleep();
-    // For light sleep, we woke up here
-    Ws->_sleep_controller->WakeFromLightSleep();
-    // Reconnect WiFi/MQTT after light sleep wake (uses 'this' for proper
-    // virtual dispatch)
-    if (!Ws->_sdCardV2->isModeOffline()) {
-      WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
-      NetworkFSM(true);
-    }
-    // For light sleep, this allows the next loopSleep() cycle to begin
-    return;
   }
+  Ws->_sleep_controller->StartSleep();
+
+  // For light sleep, we woke up here
+  Ws->_sleep_controller->WakeFromLightSleep();
+  // Reconnect WiFi/MQTT after light sleep wake
+  if (!Ws->_sdCardV2->isModeOffline()) {
+    WS_DEBUG_PRINTLN("[app] Reconnecting network after light sleep wake...");
+    NetworkFSM(true);
+  }
+  // For light sleep, this allows the next loopSleep() cycle to begin
 }
 
 /*!
@@ -1344,7 +1406,7 @@ void wippersnapper::loopSleep() {
             in the next loopsleep() cycle.
 */
 void wippersnapper::ResetAllControllerFlags() {
-  Ws->digital_io_controller->ResetFlags();
+  Ws->digital_controller->ResetFlags();
   Ws->analog_controller->ResetFlags();
   Ws->_ds18x20_controller->ResetFlags();
   Ws->_i2c_controller->ResetFlags();

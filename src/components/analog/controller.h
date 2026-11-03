@@ -1,7 +1,7 @@
 /*!
  * @file src/components/analog/controller.h
  *
- * Controller for the AnalogIn API
+ * Controller for the analog.proto API
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -33,8 +33,8 @@ public:
   ~AnalogController();
   // Routing
   bool Router(pb_istream_t *stream);
-  bool Handle_AnalogInAdd(ws_analog_Add *msg);
-  bool Handle_AnalogInRemove(ws_analog_Remove *msg);
+  bool Handle_Analog_Add(ws_analog_Add *msg);
+  bool Handle_Analog_Remove(ws_analog_Remove *msg);
   void update(bool force = false);
 
   // Called by CheckinModel
@@ -50,7 +50,7 @@ private:
   bool RemovePin(uint8_t pin_num, ExpanderHardware *expander);
   AnalogHardware *GetPin(uint8_t pin_num, ExpanderHardware *expander);
   std::vector<AnalogHardware *> _pins; ///< Vector of analog pin objects
-  AnalogModel *_analogin_model;        ///< Analog model
+  AnalogModel *_analog_model;          ///< Analog model
   float _mcu_ref_voltage; ///< MCU/board reference voltage, used for native pins
                           ///< (expander pins use their own message ref_voltage)
 };

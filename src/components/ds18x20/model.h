@@ -51,4 +51,4 @@ private:
   ws_ds18x20_Remove _msg_DS18x20Remove; ///< Remove message
   ws_ds18x20_Event _msg_DS18x20Event;   ///< Event message
 };
-#endif // WS_DIGITALIO_MODEL_H
+#endif // WS_DIGITAL_MODEL_H

@@ -118,6 +118,7 @@ bool ServoController::Handle_Servo_Add(ws_servo_Add *msg) {
                                              "Failed to attach servo");
     delete _servo_hardware[_active_servo_pins];
     _servo_hardware[_active_servo_pins] = nullptr;
+    return false; // Bail out if servo attach failed
   }
 
   _servo_hardware[_active_servo_pins]->ServoWrite((int)msg->min_pulse_width);

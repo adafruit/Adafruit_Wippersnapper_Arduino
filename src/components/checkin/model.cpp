@@ -96,7 +96,7 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
     const char *decode_error =
         "[checkin] ERROR: Unable to decode CheckinB2D message from broker!";
-    WS_DEBUG_PRINTLN(decode_error);
+    WS_DEBUG_PRINTLNVAR(decode_error);
     Ws->error_handler->publishDeviceError(decode_error);
     return false;
   }
@@ -105,7 +105,7 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   if (_CheckinB2D.which_payload != ws_checkin_B2D_response_tag) {
     const char *payload_error =
         "[checkin] ERROR: CheckinB2D message from broker is not a Response!";
-    WS_DEBUG_PRINTLN(payload_error);
+    WS_DEBUG_PRINTLNVAR(payload_error);
     Ws->error_handler->publishDeviceError(payload_error);
     return false;
   }
@@ -137,7 +137,7 @@ bool CheckinModel::ValidateResponse() {
     checkin_error = "[checkin] ERROR: Unknown checkin response from broker";
     break;
   }
-  WS_DEBUG_PRINTLN(checkin_error);
+  WS_DEBUG_PRINTLNVAR(checkin_error);
   Ws->error_handler->publishDeviceError(checkin_error);
   return false;
 }
@@ -146,12 +146,9 @@ bool CheckinModel::ValidateResponse() {
     @brief  Configures controllers limits based on board definition
 */
 void CheckinModel::ConfigureControllers() {
-  Ws->digital_io_controller->SetMaxDigitalPins(
-      _CheckinB2D.payload.response.total_gpio_pins);
-  Ws->analog_controller->SetRefVoltage(
-      _CheckinB2D.payload.response.reference_voltage);
-  Ws->analog_controller->SetMaxAnalogPins(
-      _CheckinB2D.payload.response.total_analog_pins);
+  Ws->digital_controller->SetMaxDigitalPins(GetTotalGPIOPins());
+  Ws->analog_controller->SetMaxAnalogPins(GetTotalAnalogPins());
+  Ws->analog_controller->SetRefVoltage(GetReferenceVoltage());
 }
 
 /*!
@@ -174,10 +171,10 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   CheckinModel *model = (CheckinModel *)*arg;
 
   // Set up callbacks for ALL component types
-  response->component_adds.digital_adds.funcs.decode = &cbDigitalIOAdds;
+  response->component_adds.digital_adds.funcs.decode = &cbDigitalAdds;
   response->component_adds.digital_adds.arg = model;
 
-  response->component_adds.analog_adds.funcs.decode = &cbAnalogInAdds;
+  response->component_adds.analog_adds.funcs.decode = &cbAnalogAdds;
   response->component_adds.analog_adds.arg = model;
 
   response->component_adds.servo_adds.funcs.decode = &cbServoAdds;
@@ -207,37 +204,37 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
 }
 
 /*!
-    @brief    Callback for decoding DigitalIO Add messages.
+    @brief    Callback for decoding Digital Add messages.
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
     @returns  True if decoded and executed successfully, False otherwise.
 */
-bool CheckinModel::cbDigitalIOAdds(pb_istream_t *stream,
-                                   const pb_field_t *field, void **arg) {
+bool CheckinModel::cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
+                                 void **arg) {
   ws_digital_Add add_msg = ws_digital_Add_init_zero;
   if (!pb_decode(stream, ws_digital_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digital add");
     return false;
   }
-  return Ws->digital_io_controller->Handle_DigitalIO_Add(&add_msg);
+  return Ws->digital_controller->Handle_Digital_Add(&add_msg);
 }
 
 /*!
-    @brief    Callback for decoding AnalogIn Add messages.
+    @brief    Callback for decoding Analog Add messages.
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
     @returns  True if decoded and executed successfully, False otherwise.
 */
-bool CheckinModel::cbAnalogInAdds(pb_istream_t *stream, const pb_field_t *field,
-                                  void **arg) {
+bool CheckinModel::cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
+                                void **arg) {
   ws_analog_Add add_msg = ws_analog_Add_init_zero;
   if (!pb_decode(stream, ws_analog_Add_fields, &add_msg)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analog add");
     return false;
   }
-  return Ws->analog_controller->Handle_AnalogInAdd(&add_msg);
+  return Ws->analog_controller->Handle_Analog_Add(&add_msg);
 }
 
 /*!
@@ -377,6 +374,30 @@ ws_sleep_SleepConfig *CheckinModel::GetSleepConfig() {
     return &_CheckinB2D.payload.response.sleep_config;
   }
   return nullptr;
+}
+
+/*!
+    @brief  Returns the total number of GPIO pins from the checkin response.
+    @returns Total GPIO pins.
+*/
+int32_t CheckinModel::GetTotalGPIOPins() {
+  return _CheckinB2D.payload.response.total_gpio_pins;
+}
+
+/*!
+    @brief  Returns the total number of analog pins from the checkin response.
+    @returns Total analog pins.
+*/
+int32_t CheckinModel::GetTotalAnalogPins() {
+  return _CheckinB2D.payload.response.total_analog_pins;
+}
+
+/*!
+    @brief  Returns the reference voltage from the checkin response.
+    @returns Reference voltage.
+*/
+float CheckinModel::GetReferenceVoltage() {
+  return _CheckinB2D.payload.response.reference_voltage;
 }
 
 /*!

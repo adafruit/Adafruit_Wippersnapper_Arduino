@@ -39,6 +39,7 @@ public:
   // PB API Accessors
   SleepModel *GetModel();
   // Sleep API
+  bool publishMsgGoodnight();
   void WakeFromLightSleep();
   void StartSleep();
   bool isSleepEnabled();

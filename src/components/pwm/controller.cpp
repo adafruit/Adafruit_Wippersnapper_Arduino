@@ -107,12 +107,22 @@ bool PWMController::Handle_PWM_Add(ws_pwm_Add *msg) {
   if (!did_attach) {
     Ws->error_handler->publishComponentError(msg->pin, "Failed to attach pin");
     delete new_pin;
-  } else {
-    _pins.push_back(new_pin);
+    return false;
   }
+  _pins.push_back(new_pin);
 
   WS_DEBUG_PRINT("[pwm] Attached pin: ");
   WS_DEBUG_PRINTVAR(msg->pin);
+
+  // Handle optional initial write
+  if (msg->has_write) {
+    WS_DEBUG_PRINTLN("[pwm] Processing initial write...");
+    if (!new_pin->write(&msg->write)) {
+      Ws->error_handler->publishComponentError(msg->pin,
+                                               "Failed to write to pin");
+      return false;
+    }
+  }
   return true;
 }
 
@@ -197,6 +207,18 @@ bool PWMController::Handle_PWM_Write(ws_pwm_Write *msg) {
                                              "Failed to write to pin");
     return false;
   }
+
+  WS_DEBUG_PRINT("[pwm] Wrote to pin: ");
+  WS_DEBUG_PRINTVAR(msg->pin);
+  WS_DEBUG_PRINT("[pwm] Message type: ");
+  WS_DEBUG_PRINTVAR(msg->which_payload);
+  WS_DEBUG_PRINT("[pwm] Payload value: ");
+  if (msg->which_payload == ws_pwm_Write_duty_cycle_tag) {
+    WS_DEBUG_PRINTVAR(msg->payload.duty_cycle);
+  } else if (msg->which_payload == ws_pwm_Write_frequency_tag) {
+    WS_DEBUG_PRINTVAR(msg->payload.frequency);
+  }
+  WS_DEBUG_PRINTLN("");
 
   return true;
 }

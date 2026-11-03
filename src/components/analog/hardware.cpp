@@ -29,12 +29,12 @@ AnalogHardware::AnalogHardware(const char *pin_name, uint8_t pin_num,
                                ws_analog_SampleMode sample_mode, ulong period,
                                float ref_voltage,
                                ExpanderHardware *expander_drv)
-    : _name(pin_num), _read_mode(read_mode), _sample_mode(sample_mode),
+    : _pin_num(pin_num), _read_mode(read_mode), _sample_mode(sample_mode),
       _period(period), _prv_time(0), _did_read_send(false), _value_raw(0),
-      _value_voltage(0.0f), _prv_value_raw(0), _native_adc_resolution(0),
-      _desired_adc_resolution(0), _max_scale_resolution_desired(0),
-      _max_scale_resolution_native(0), _ref_voltage(ref_voltage),
-      _expander_drv(expander_drv) {
+      _value_voltage(0.0f), _prv_value_raw(0), _prv_value_voltage(0.0f),
+      _native_adc_resolution(0), _desired_adc_resolution(0),
+      _max_scale_resolution_desired(0), _max_scale_resolution_native(0),
+      _ref_voltage(ref_voltage), _expander_drv(expander_drv) {
   strncpy(_pin_name, pin_name, sizeof(_pin_name) - 1);
   _pin_name[sizeof(_pin_name) - 1] = '\0';
   if (_expander_drv != nullptr) {
@@ -56,9 +56,9 @@ AnalogHardware::~AnalogHardware() { deinit(); }
 */
 void AnalogHardware::init() {
   if (_expander_drv != nullptr) {
-    _expander_drv->pinMode(_name, INPUT);
+    _expander_drv->pinMode(_pin_num, INPUT);
   } else {
-    pinMode(_name, INPUT);
+    pinMode(_pin_num, INPUT);
   }
 }
 
@@ -68,9 +68,9 @@ void AnalogHardware::init() {
 */
 void AnalogHardware::deinit() {
   if (_expander_drv != nullptr) {
-    _expander_drv->pinMode(_name, INPUT);
+    _expander_drv->pinMode(_pin_num, INPUT);
   } else {
-    pinMode(_name, INPUT); // set to a hi-z floating pin
+    pinMode(_pin_num, INPUT); // set to a hi-z floating pin
   }
 }
 
@@ -130,11 +130,11 @@ void AnalogHardware::getScaleFactor() {
 */
 uint32_t AnalogHardware::readValueRaw() {
   if (_expander_drv != nullptr) {
-    _value_raw = (uint32_t)(((uint64_t)_expander_drv->analogRead(_name) *
+    _value_raw = (uint32_t)(((uint64_t)_expander_drv->analogRead(_pin_num) *
                              _max_scale_resolution_desired) /
                             _max_scale_resolution_native);
   } else {
-    _value_raw = (uint32_t)(((uint64_t)analogRead(_name) *
+    _value_raw = (uint32_t)(((uint64_t)analogRead(_pin_num) *
                              _max_scale_resolution_desired) /
                             _max_scale_resolution_native);
   }
@@ -152,7 +152,7 @@ float AnalogHardware::readVoltage() {
     return _value_voltage;
   }
 #ifdef ARDUINO_ARCH_ESP32
-  _value_voltage = analogReadMilliVolts(_name) / 1000.0;
+  _value_voltage = analogReadMilliVolts(_pin_num) / 1000.0;
 #else
   _value_voltage =
       (readValueRaw() * _ref_voltage) / _max_scale_resolution_desired;
@@ -161,16 +161,27 @@ float AnalogHardware::readVoltage() {
 }
 
 /*!
-    @brief  Checks if the pin's raw value has changed since last check.
-    @return True if the value changed.
+    @brief  Checks if the pin's value (raw or voltage, per read_mode)
+            has changed since last check.
+    @return True if the value changed, False if unchanged or the
+            read mode is unknown.
 */
 bool AnalogHardware::checkEvent() {
   readValue();
 
-  if (_value_raw == _prv_value_raw)
+  if (_read_mode == ws_sensor_Type_T_RAW) {
+    if (_value_raw == _prv_value_raw)
+      return false;
+    _prv_value_raw = _value_raw;
+    return true;
+  } else if (_read_mode == ws_sensor_Type_T_VOLTAGE) {
+    if (_value_voltage == _prv_value_voltage)
+      return false;
+    _prv_value_voltage = _value_voltage;
+    return true;
+  } else {
     return false;
-  _prv_value_raw = _value_raw;
-  return true;
+  }
 }
 
 /*!
@@ -180,8 +191,11 @@ bool AnalogHardware::checkEvent() {
 float AnalogHardware::readValue() {
   if (_read_mode == ws_sensor_Type_T_RAW) {
     return (float)readValueRaw();
+  } else if (_read_mode == ws_sensor_Type_T_VOLTAGE) {
+    return readVoltage();
+  } else {
+    return 0.0f;
   }
-  return readVoltage();
 }
 
 /*!
@@ -202,7 +216,7 @@ bool AnalogHardware::checkTimer() {
     @brief  Gets the pin's number.
     @return The pin's number.
 */
-uint8_t AnalogHardware::getPinNum() const { return _name; }
+uint8_t AnalogHardware::getPinNum() const { return _pin_num; }
 
 /*!
     @brief  Gets the broker-provided pin name.
