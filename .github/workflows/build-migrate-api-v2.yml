@@ -405,7 +405,8 @@ jobs:
             "dfrobot_firebeetle2_esp32c5",
             "lilygo_t_dongle_c5",
             "wippersnapper_feather_esp32c6",
-            "espressif_esp32s31_coreboard_1"
+            "espressif_esp32s31_coreboard_1",
+            "espressif_esp32s31_korvo_1"
           ]
         include:
           - offset: "0x1000"
@@ -419,6 +420,8 @@ jobs:
             arduino-platform: "wippersnapper_feather_esp32c6"
           - offset: "0x2000"
             arduino-platform: "espressif_esp32s31_coreboard_1"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32s31_korvo_1"
     steps:
       - uses: actions/setup-python@v7
         with:
@@ -467,7 +470,7 @@ jobs:
         run: |
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           # TODO: drop the S31 fork once pstolarz/OneWireNg#83 (ESP32-S31 support) is merged
-          if [ "${{ matrix.arduino-platform }}" = "espressif_esp32s31_coreboard_1" ]; then
+          if [[ "${{ matrix.arduino-platform }}" == espressif_esp32s31_* ]]; then
             git clone --quiet -b esp32s31-support https://github.com/tyeth/pstolarz_OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           else
             git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
