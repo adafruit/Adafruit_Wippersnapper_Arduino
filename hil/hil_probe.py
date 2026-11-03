@@ -51,6 +51,7 @@ DacProbe is made, so this module imports on hosts without them.
 """
 
 import contextlib
+import functools
 import logging
 import re
 import statistics
@@ -410,6 +411,9 @@ class PulseInProbe:
     # stalls the capture helper for a few ms (AO-00 saw it in 1 of ~1,400
     # captures), and no edge was missed at 5 kHz otherwise.
     STALL_RETRIES = 2
+    # How long to wait for the PulseIn helper to answer one len() or [i].
+    # It answers in well under 1ms when it's healthy.
+    REPLY_TIMEOUT = 2
 
     def __init__(self, config):
         _check_type("pwm_input", config)
@@ -441,8 +445,40 @@ class PulseInProbe:
                 pulses.deinit()
             pulses = self._pulseio.PulseIn(self.pin_map[dut_pin],
                                            maxlen=maxlen, idle_state=False)
+            # Blinka waits on the helper's replies (len(), [i]) with no
+            # timeout, so a helper that dies mid-read hangs the test forever
+            pulses._wait_receive_msg = functools.partial(
+                self._wait_reply, dut_pin, pulses)
             self._pulses[dut_pin] = pulses
         return pulses
+
+    def _wait_reply(self, dut_pin, pulses, timeout=0, type=2):  # pylint: disable=redefined-builtin
+        """Stands in for pulses._wait_receive_msg: waits at most timeout
+        (REPLY_TIMEOUT if 0) for the helper's reply, raising ProbeError if
+        it doesn't come or the helper exits. A dead PulseIn is dropped, so
+        the next call on dut_pin starts a new helper."""
+        import sysv_ipc
+
+        deadline = time.monotonic() + (timeout or self.REPLY_TIMEOUT)
+        while True:
+            try:
+                return pulses._mq.receive(block=False, type=type)
+            except sysv_ipc.BusyError:
+                pass
+            process = pulses._process
+            if process is None or process.poll() is not None:
+                problem = (f"PulseIn's helper process exited (code "
+                           f"{None if process is None else process.returncode})")
+            elif time.monotonic() > deadline:
+                problem = (f"PulseIn's helper didn't reply within "
+                           f"{timeout or self.REPLY_TIMEOUT}s")
+            else:
+                time.sleep(0.0001)
+                continue
+            if self._pulses.get(dut_pin) is pulses:
+                del self._pulses[dut_pin]
+            pulses.deinit()
+            raise ProbeError(f"{dut_pin}: {problem}")
 
     def capture(self, dut_pin, count, timeout=2):
         """Capture count pulse lengths of dut_pin, an active high signal, in
@@ -523,10 +559,6 @@ class PulseInProbe:
         """Stop the recording start_record() began and return its pulse
         lengths, in us, high first."""
         pulses = self._pulses[dut_pin]
-        # Blinka's PulseIn blocks forever on a reply from a dead helper
-        if pulses._process is None or pulses._process.poll() is not None:
-            raise ProbeError(f"{dut_pin}: PulseIn's helper process exited "
-                             f"during the recording")
         pulses.pause()
         count = len(pulses)
         if count >= pulses.maxlen:
