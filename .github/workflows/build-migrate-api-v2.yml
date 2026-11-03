@@ -466,7 +466,12 @@ jobs:
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          # TODO: drop the S31 fork once pstolarz/OneWireNg#83 (ESP32-S31 support) is merged
+          if [ "${{ matrix.arduino-platform }}" = "espressif_esp32s31_coreboard_1" ]; then
+            git clone --quiet -b esp32s31-support https://github.com/tyeth/pstolarz_OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          else
+            git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          fi
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true

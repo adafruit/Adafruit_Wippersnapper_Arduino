@@ -819,8 +819,14 @@ void wippersnapper::NetworkFSM(bool initial_connect) {
 #ifdef USE_ETHERNET
         // Ethernet boards keep retrying: the link may have dropped mid-way,
         // and CHECK_MQTT re-checks the network before reconnecting
-        WS_DEBUG_PRINTLN("Unable to connect to Adafruit.IO MQTT, retrying...");
-        _wdt->feed();
+        // Back off for 30s between rounds so bad credentials don't hammer
+        // the broker
+        WS_DEBUG_PRINTLN(
+            "Unable to connect to Adafruit.IO MQTT, retrying in 30 seconds...");
+        for (int i = 0; i < 30; i++) {
+          _wdt->feed();
+          delay(ONE_SECOND_IN_MS);
+        }
         fsmNetwork = FSM_NET_CHECK_MQTT;
         continue;
 #endif

@@ -23,7 +23,7 @@
 
 /// How long one _connect() call waits for an Ethernet IP before falling
 /// back to WiFi (or returning, when no WiFi credentials are stored)
-#define ETH_CONNECT_WAIT_MS (5 * ONE_SECOND_IN_MS)
+#define WS_ETH_WAIT_MS (5 * ONE_SECOND_IN_MS)
 
 /*!
     @brief  Class for using an ESP32's onboard Ethernet and WiFi together.
@@ -41,11 +41,23 @@ public:
   @return WS_NET_CONNECTED if either interface has an IP address.
   */
   ws_status_t networkStatus() {
-    if (ETH.hasIP())
+    if (ethConnected())
       return WS_NET_CONNECTED;
     if (!hasWiFiCredentials())
       return WS_NET_DISCONNECTED;
     return esp32_wifi::networkStatus();
+  }
+
+  /*!
+  @brief  Gets the WiFi RSSI value.
+  @return The RSSI in dBm, or 0 when WiFi isn't connected (e.g. Ethernet
+          only, where WiFi is never started).
+  */
+  int32_t getRSSI() {
+    // TODO: report Ethernet/WiFi latency in telemetry too
+    if (WiFi.status() != WL_CONNECTED)
+      return 0;
+    return WiFi.RSSI();
   }
 
   /*!
@@ -106,7 +118,7 @@ protected:
       break;
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
       // keep Ethernet as the default route while it is up
-      if (ETH.hasIP())
+      if (ethConnected())
         ETH.setDefault();
       break;
     case ARDUINO_EVENT_ETH_LOST_IP:
@@ -124,6 +136,14 @@ protected:
       break;
     }
   }
+
+  /*!
+  @brief  Checks if Ethernet can carry traffic.
+  @note   Checks the link as well as the IP: the IP can outlive a pulled
+          cable until the lost-IP timer runs out.
+  @return True if the Ethernet link is up with an IP address.
+  */
+  static bool ethConnected() { return ETH.linkUp() && ETH.hasIP(); }
 
   /*!
   @brief  Starts the Ethernet interface, once.
@@ -148,11 +168,11 @@ protected:
   bool waitForEthernet(uint32_t timeout_ms) {
     // covers link negotiation after ETH.begin() or a replug, then DHCP
     uint32_t start = millis();
-    while (!ETH.hasIP() && millis() - start < timeout_ms) {
+    while (!ethConnected() && millis() - start < timeout_ms) {
       Ws->_wdt->feed();
       delay(100);
     }
-    return ETH.hasIP();
+    return ethConnected();
   }
 
   /*!
@@ -162,7 +182,7 @@ protected:
   */
   void _connect() {
     startEthernet();
-    bool ethUp = waitForEthernet(ETH_CONNECT_WAIT_MS);
+    bool ethUp = waitForEthernet(WS_ETH_WAIT_MS);
 
     if (!hasWiFiCredentials()) {
       if (!_noWiFiLogged) {
