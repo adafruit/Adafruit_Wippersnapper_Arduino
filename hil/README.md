@@ -43,7 +43,8 @@ wired to the DUT's pins, one probe per role, each with a hardware `type`:
 "probes": {
   "digital_gpio": { "type": "mcp23017_gpio", "address": "0x20", "pin_map": { "D14": "GPA0" } },
   "pwm_input": { "type": "pi_gpio", "pin_map": { "D27": "D16" } },
-  "analog_input": { "type": "mcp4728_dac", "address": "0x60", "pin_map": { "A34": "A" } }
+  "analog_input": { "type": "mcp4728_dac", "address": "0x60", "pin_map": { "A34": "A" } },
+  "onewire_sensor": { "type": "ds18b20", "pin": "D33" }
 }
 ```
 
@@ -67,6 +68,9 @@ wired to the DUT's pins, one probe per role, each with a hardware `type`:
   to stay within the DUT's logic level. Every firmware test ends with all
   four channels powered down at 0V, saved to the DAC's EEPROM, whether or
   not the board has this probe.
+- `onewire_sensor` (`ds18b20`): the `ds18x20/` tests talk to a DS18B20
+  wired to the DUT, not to this host. `pin` is the DUT pin its data line is
+  on, the name the broker sends (e.g. `D33`), with a 4.7k pull-up to 3V.
 
 Tests that need a probe are skipped on boards without one.
 

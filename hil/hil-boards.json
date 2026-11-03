@@ -6,12 +6,13 @@
   "read_baud": 115200,
   "location": { "hub": "1-1.3", "port": 1 },
   "firmware_dir": "/home/pi/firmware/feather_esp32_v2",
-  "api_tests": ["checkin/", "digital/", "pwm/", "analog/", "servo/"],
+  "api_tests": ["checkin/", "digital/", "pwm/", "analog/", "servo/", "ds18x20/"],
   "system_tests": ["provisioning/", "network/", "mqtt/"],
   "skip_tests": [],
   "probes": {
     "digital_gpio": { "type": "mcp23017_gpio", "address": "0x20", "pin_map": { "D14": "GPA0", "D32": "GPA1" } },
     "pwm_input": { "type": "pi_gpio", "pin_map": { "D27": "D16" } },
-    "analog_input": { "type": "mcp4728_dac", "address": "0x60", "pin_map": { "A34": "A" } }
+    "analog_input": { "type": "mcp4728_dac", "address": "0x60", "pin_map": { "A34": "A" } },
+    "onewire_sensor": { "type": "ds18b20", "pin": "D33" }
   }
 }

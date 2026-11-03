@@ -9,7 +9,8 @@ The board entry's probes describe the wiring, one per role:
                        "pin_map": {"D14": "GPA0", "D32": "GPA1"}},
       "pwm_input": {"type": "pi_gpio", "pin_map": {"D27": "D16"}},
       "analog_input": {"type": "mcp4728_dac", "address": "0x60",
-                       "pin_map": {"A34": "A"}}
+                       "pin_map": {"A34": "A"}},
+      "onewire_sensor": {"type": "ds18b20", "pin": "D33"}
     }
 
 digital_gpio is a Probe: pin_map maps a DUT pin name to the expander pin
@@ -28,8 +29,9 @@ damage both, so all 16 expander pins are made inputs with no pull when a
 Probe is made, by release() with no pin, and by close().
 
 pwm_input is a PulseInProbe: it times the DUT's PWM output on a host GPIO
-wired to the DUT pin, with pulseio.PulseIn (an I2C expander can't time
-edges). pin_map maps a DUT pin name to the host's Blinka board pin name.
+wired to the DUT pin, from the kernel's gpiod edge timestamps (an I2C
+expander can't time edges). pin_map maps a DUT pin name to the host's
+Blinka board pin name.
 
     pulse_probe = PulseInProbe(entry["probes"]["pwm_input"])
     duty, period_us = pulse_probe.measure("D27", periods=100)
@@ -46,12 +48,17 @@ within the DUT's logic level.
     dac_probe.set_voltage("A34", 1.65)       # or .write("A34", 2048)
     dac_probe.release()                      # all 4 channels to 0V, powered down
 
+onewire_sensor isn't driven from the host: it's a DS18B20 wired to the
+DUT, with its 4.7k pull-up. pin is the DUT pin its data line is on, the
+name the broker sends.
+
+    pin = onewire_sensor_pin(entry["probes"]["onewire_sensor"])   # "D33"
+
 Blinka and adafruit_mcp230xx are imported when a Probe, PulseInProbe or
 DacProbe is made, so this module imports on hosts without them.
 """
 
 import contextlib
-import functools
 import logging
 import re
 import statistics
@@ -61,9 +68,13 @@ import time
 # The probe roles a board entry's probes may have, and the hardware types
 # each supports.
 PROBE_TYPES = {"digital_gpio": ("mcp23017_gpio",), "pwm_input": ("pi_gpio",),
-               "analog_input": ("mcp4728_dac",)}
+               "analog_input": ("mcp4728_dac",),
+               "onewire_sensor": ("ds18b20",)}
 EXPANDER_PINS = 16
 EXPANDER_PIN_RE = re.compile(r"^GP([AB])([0-7])$")
+# A DUT digital pin name as the broker sends it; the firmware's
+# Handle_Ds18x20Add() takes the GPIO number after the "D"
+DUT_DIGITAL_PIN_RE = re.compile(r"^D\d+$")
 TRACE_SAMPLES = 10  # samples shown when a transition times out
 
 log = logging.getLogger("hil.probe")
@@ -93,6 +104,16 @@ def _check_type(role, config):
         raise ProbeError(f"{role} probe 'type' must be one of "
                          f"{PROBE_TYPES[role]}, got {probe_type!r}")
     return probe_type
+
+
+def onewire_sensor_pin(config):
+    """The DUT pin an onewire_sensor probe's sensor is on, e.g. "D33"."""
+    _check_type("onewire_sensor", config)
+    pin = config.get("pin")
+    if not isinstance(pin, str) or not DUT_DIGITAL_PIN_RE.match(pin):
+        raise ProbeError(f"onewire_sensor probe 'pin' must be a DUT digital "
+                         f"pin like 'D33', got {pin!r}")
+    return pin
 
 
 class Probe:
@@ -399,21 +420,102 @@ def missed_edges(lengths, period_us):
     return max(round(2 * sum(lengths) / period_us) - len(lengths), 0)
 
 
-class PulseInProbe:
-    """Time the DUT's PWM output on host GPIOs with pulseio.PulseIn. The
-    host pins are only ever inputs, so they never drive the DUT."""
+class _EdgeRecorder:
+    """Records a host GPIO's edges as the kernel timestamps them, through a
+    gpiod v2 line request read by a background thread, until stop().
+    Nothing is buffered in a helper process, so a recording is only bounded
+    by max_edges."""
 
-    # Extra PulseIn capacity over what capture() needs, so pulses that
-    # arrive between its last len() and pause() don't drop the oldest and
-    # lose track of which pulses are high. 10ms of a 100 kHz signal.
-    SLACK = 2048
-    # Times measure() recaptures after one misses edges. The OS rarely
-    # stalls the capture helper for a few ms (AO-00 saw it in 1 of ~1,400
-    # captures), and no edge was missed at 5 kHz otherwise.
+    # The kernel's queue of edges not yet read, the most it allows: about
+    # 100ms of a 5 kHz PWM signal, against reader thread stalls
+    EVENT_BUFFER = 1024
+    # How long the reader thread waits for edges before checking stop
+    POLL = 0.01
+
+    def __init__(self, chip_path, line, max_edges):
+        import gpiod
+        from gpiod.line import Clock, Direction, Edge
+
+        self._rising = gpiod.EdgeEvent.Type.RISING_EDGE
+        self._max_edges = max_edges
+        self._request = gpiod.request_lines(
+            chip_path, consumer="hil-pulse-probe",
+            event_buffer_size=self.EVENT_BUFFER,
+            config={line: gpiod.LineSettings(
+                direction=Direction.INPUT, edge_detection=Edge.BOTH,
+                event_clock=Clock.MONOTONIC)})
+        # (timestamp_ns, rising, line_seqno) of each edge, oldest first
+        self.edges = []
+        self.overflowed = False
+        self._error = None
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True,
+                                        name=f"pulse-probe-{line}")
+        self._thread.start()
+
+    def _read(self, timeout):
+        if not self._request.wait_edge_events(timeout):
+            return False
+        for e in self._request.read_edge_events(self.EVENT_BUFFER):
+            if len(self.edges) >= self._max_edges:
+                self.overflowed = True
+                continue
+            self.edges.append((e.timestamp_ns, e.event_type == self._rising,
+                               e.line_seqno))
+        return True
+
+    def _run(self):
+        try:
+            while not self._stop.is_set():
+                self._read(self.POLL)
+            while self._read(0):  # the edges up to stop()
+                pass
+        except Exception as e:  # pylint: disable=broad-except
+            self._error = e
+
+    def stop(self):
+        """Stop recording and release the line; returns edges. Raises
+        ProbeError if the reader thread failed."""
+        self._stop.set()
+        self._thread.join(timeout=2)
+        try:
+            self._request.release()
+        except Exception:  # pylint: disable=broad-except
+            pass  # the reader thread's error, if any, says more
+        if self._thread.is_alive():
+            raise ProbeError("edge reader thread didn't stop")
+        if self._error is not None:
+            raise ProbeError(f"edge reader failed: {self._error!r}")
+        return self.edges
+
+    def dropped(self):
+        """How many edges the kernel dropped, from gaps in line_seqno."""
+        return sum(b[2] - a[2] - 1 for a, b in zip(self.edges, self.edges[1:]))
+
+    def lengths(self):
+        """The pulse lengths, in us, between the edges from the first rising
+        one: high first."""
+        start = next((i for i, e in enumerate(self.edges) if e[1]), None)
+        if start is None:
+            return []
+        edges = self.edges[start:]
+        return [(b[0] - a[0]) / 1000 for a, b in zip(edges, edges[1:])]
+
+
+class PulseInProbe:
+    """Time the DUT's PWM output on host GPIOs from the kernel's edge
+    timestamps (gpiod v2 edge events). The host pins are only ever inputs,
+    so they never drive the DUT.
+
+    This used to be Blinka's pulseio.PulseIn, whose libgpiod_pulsein helper
+    stores pulses in a fixed 1,000-entry array without checking maxlen
+    against it, so longer captures overran it and the helper segfaulted."""
+
+    # The host's GPIO chip the pin_map's board pins are lines of
+    CHIP = "/dev/gpiochip0"
+    # Times measure() recaptures after one misses edges, in case the
+    # reader thread stalls past the kernel's EVENT_BUFFER
     STALL_RETRIES = 2
-    # How long to wait for the PulseIn helper to answer one len() or [i].
-    # It answers in well under 1ms when it's healthy.
-    REPLY_TIMEOUT = 2
 
     def __init__(self, config):
         _check_type("pwm_input", config)
@@ -423,88 +525,64 @@ class PulseInProbe:
                              "e.g. {\"D27\": \"D16\"}")
 
         import board
-        import pulseio
 
-        self._pulseio = pulseio
         self.pin_map = {}
         for dut, host in pin_map.items():
             if not hasattr(board, host):
                 raise ProbeError(f"pwm_input probe pin {host!r} for {dut!r} "
                                  f"isn't a board pin")
             self.pin_map[dut] = getattr(board, host)
-        self._pulses = {}
+        # DUT pin -> the _EdgeRecorder start_record() began on it
+        self._recordings = {}
         log.info("pulse probe: %s", pin_map)
 
-    def _pulse_in(self, dut_pin, maxlen):
-        pulses = self._pulses.get(dut_pin)
-        if pulses is None or pulses.maxlen < maxlen:
-            if dut_pin not in self.pin_map:
-                raise ProbeError(f"DUT pin {dut_pin!r} isn't in the pulse "
-                                 f"probe's pin_map {sorted(self.pin_map)}")
-            if pulses is not None:
-                pulses.deinit()
-            pulses = self._pulseio.PulseIn(self.pin_map[dut_pin],
-                                           maxlen=maxlen, idle_state=False)
-            # Blinka waits on the helper's replies (len(), [i]) with no
-            # timeout, so a helper that dies mid-read hangs the test forever
-            pulses._wait_receive_msg = functools.partial(
-                self._wait_reply, dut_pin, pulses)
-            self._pulses[dut_pin] = pulses
-        return pulses
+    def _line(self, dut_pin):
+        if dut_pin not in self.pin_map:
+            raise ProbeError(f"DUT pin {dut_pin!r} isn't in the pulse "
+                             f"probe's pin_map {sorted(self.pin_map)}")
+        return self.pin_map[dut_pin].id
 
-    def _wait_reply(self, dut_pin, pulses, timeout=0, type=2):  # pylint: disable=redefined-builtin
-        """Stands in for pulses._wait_receive_msg: waits at most timeout
-        (REPLY_TIMEOUT if 0) for the helper's reply, raising ProbeError if
-        it doesn't come or the helper exits. A dead PulseIn is dropped, so
-        the next call on dut_pin starts a new helper."""
-        import sysv_ipc
+    def _record(self, dut_pin, max_edges):
+        """A new _EdgeRecorder on dut_pin's host line, ending any recording
+        start_record() began on it."""
+        line = self._line(dut_pin)
+        self._end_recording(dut_pin)
+        try:
+            return _EdgeRecorder(self.CHIP, line, max_edges)
+        except OSError as e:
+            raise ProbeError(f"{dut_pin}: can't watch {self.CHIP} line "
+                             f"{line}: {e}") from e
 
-        deadline = time.monotonic() + (timeout or self.REPLY_TIMEOUT)
-        while True:
-            try:
-                return pulses._mq.receive(block=False, type=type)
-            except sysv_ipc.BusyError:
-                pass
-            process = pulses._process
-            if process is None or process.poll() is not None:
-                problem = (f"PulseIn's helper process exited (code "
-                           f"{None if process is None else process.returncode})")
-            elif time.monotonic() > deadline:
-                problem = (f"PulseIn's helper didn't reply within "
-                           f"{timeout or self.REPLY_TIMEOUT}s")
-            else:
-                time.sleep(0.0001)
-                continue
-            if self._pulses.get(dut_pin) is pulses:
-                del self._pulses[dut_pin]
-            pulses.deinit()
-            raise ProbeError(f"{dut_pin}: {problem}")
+    def _end_recording(self, dut_pin):
+        recording = self._recordings.pop(dut_pin, None)
+        if recording is not None:
+            recording.stop()
+
+    def _check_dropped(self, dut_pin, recording):
+        dropped = recording.dropped()
+        if dropped:
+            log.warning("%s: the kernel dropped %d edges", dut_pin, dropped)
 
     def capture(self, dut_pin, count, timeout=2):
         """Capture count pulse lengths of dut_pin, an active high signal, in
         us. The first is a high pulse, so even indexes are high pulses and
         odd ones low, as long as no edge was missed."""
-        needed = count + 2  # the first pair may be partial
-        pulses = self._pulse_in(dut_pin, needed + self.SLACK)
-        pulses.pause()
-        pulses.clear()
-        # After resume() the first pulse recorded is the active (high) one
-        pulses.resume()
+        # count pulses take count + 1 edges from the first rising one, which
+        # may be the second edge
+        recording = self._record(dut_pin, count + 2)
         start = time.monotonic()
-        while len(pulses) < needed:
-            if time.monotonic() - start > timeout:
-                got = len(pulses)
-                pulses.pause()
-                raise ProbeTimeout(
-                    f"{dut_pin}: only {got} of {needed} pulses within "
-                    f"{timeout}s, is it toggling?")
-            time.sleep(0.01)
-        pulses.pause()
-        got = len(pulses)
-        if got >= pulses.maxlen:
-            raise ProbeError(f"{dut_pin}: PulseIn filled ({got}), which "
-                             f"pulses are high is unknown")
-        return [pulses[i] for i in range(2, needed)]
+        try:
+            while len(recording.lengths()) < count:
+                if time.monotonic() - start > timeout:
+                    got = len(recording.lengths())
+                    raise ProbeTimeout(
+                        f"{dut_pin}: only {got} of {count} pulses within "
+                        f"{timeout}s, is it toggling?")
+                time.sleep(0.005)
+        finally:
+            recording.stop()
+        self._check_dropped(dut_pin, recording)
+        return recording.lengths()[:count]
 
     def measure(self, dut_pin, periods=100, timeout=2):
         """Capture periods full high+low periods of dut_pin, an active high
@@ -528,62 +606,51 @@ class PulseInProbe:
         period_lengths = [h + l for h, l in zip(high, low)]
         duty = sum(high) / sum(period_lengths)
         period_us = statistics.mean(period_lengths)
-        log.info("%s duty %.2f%%, period %.1fus (min %d, max %d) over %d "
+        log.info("%s duty %.2f%%, period %.1fus (min %.1f, max %.1f) over %d "
                  "periods", dut_pin, duty * 100, period_us,
                  min(period_lengths), max(period_lengths), periods)
         return duty, period_us
 
     def count_pulses(self, dut_pin, window):
-        """How many pulses dut_pin had over window seconds: 0 if it held
+        """How many edges dut_pin had over window seconds: 0 if it held
         one level throughout."""
-        pulses = self._pulse_in(dut_pin, 2 + self.SLACK)
-        pulses.pause()
-        pulses.clear()
-        pulses.resume()
-        time.sleep(window)
-        pulses.pause()
-        return len(pulses)
+        recording = self._record(dut_pin, 1_000_000)
+        try:
+            time.sleep(window)
+        finally:
+            edges = recording.stop()
+        return len(edges)
 
     def start_record(self, dut_pin, max_pulses):
         """Start recording dut_pin's pulses, at most max_pulses of them,
         and return the time.time() the recording started, the clock
         SerialMonitor stamps lines with. The first pulse recorded is the
         first high one starting after that, within one period."""
-        pulses = self._pulse_in(dut_pin, max_pulses + self.SLACK)
-        pulses.pause()
-        pulses.clear()
-        pulses.resume()
+        recording = self._record(dut_pin, max_pulses + 2)
+        self._recordings[dut_pin] = recording
         return time.time()
 
     def stop_record(self, dut_pin):
         """Stop the recording start_record() began and return its pulse
         lengths, in us, high first."""
-        pulses = self._pulses[dut_pin]
-        pulses.pause()
-        count = len(pulses)
-        if count >= pulses.maxlen:
-            raise ProbeError(f"{dut_pin}: recording filled PulseIn ({count}), "
-                             f"its start is lost")
-        start = time.monotonic()
-        lengths = [pulses[i] for i in range(count)]
-        log.info("%s recorded %d pulses, read in %.2fs", dut_pin, count,
-                 time.monotonic() - start)
+        recording = self._recordings.pop(dut_pin)
+        recording.stop()
+        if recording.overflowed:
+            raise ProbeError(f"{dut_pin}: recording filled "
+                             f"({len(recording.edges)} edges), its end is "
+                             f"lost")
+        self._check_dropped(dut_pin, recording)
+        lengths = recording.lengths()
+        log.info("%s recorded %d pulses", dut_pin, len(lengths))
         return lengths
 
     def level(self, dut_pin):
         """dut_pin's level now, read with the host pin's pull-down on, so
-        an undriven DUT pin reads low. Stops any PulseIn on the pin."""
-        if dut_pin not in self.pin_map:
-            raise ProbeError(f"DUT pin {dut_pin!r} isn't in the pulse "
-                             f"probe's pin_map {sorted(self.pin_map)}")
-        pulses = self._pulses.pop(dut_pin, None)
-        if pulses is not None:
-            pulses.deinit()
-        # lgpio, not digitalio: Blinka's deinit() keeps the line claimed,
-        # so the next PulseIn couldn't take it
+        an undriven DUT pin reads low. Ends any recording on the pin."""
+        line = self._line(dut_pin)
+        self._end_recording(dut_pin)
         import lgpio
         chip = lgpio.gpiochip_open(0)
-        line = self.pin_map[dut_pin].id
         try:
             lgpio.gpio_claim_input(chip, line, lgpio.SET_PULL_DOWN)
             try:
@@ -595,7 +662,9 @@ class PulseInProbe:
             lgpio.gpiochip_close(chip)
 
     def close(self):
-        """Stop every PulseIn and its helper process."""
-        for pulses in self._pulses.values():
-            pulses.deinit()
-        self._pulses.clear()
+        """End every recording."""
+        for dut_pin in list(self._recordings):
+            try:
+                self._end_recording(dut_pin)
+            except ProbeError as e:
+                log.warning("%s: %s", dut_pin, e)

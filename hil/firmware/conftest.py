@@ -488,6 +488,17 @@ def release_dac():
 
 
 @pytest.fixture
+def onewire_pin(board):
+    """The DUT pin the board entry's onewire_sensor probe says a DS18B20
+    is wired to, e.g. "D33"; skips the test if the entry has none."""
+    config = _probe_config(board, "onewire_sensor")
+    try:
+        return hil_probe.onewire_sensor_pin(config)
+    except hil_probe.ProbeError as e:
+        pytest.fail(f"board '{board.name}': {e}", pytrace=False)
+
+
+@pytest.fixture
 def pulse_probe(board):
     """A hil_probe.PulseInProbe timing the DUT's PWM outputs through the
     board entry's pwm_input probe; skips the test if the entry has none."""
