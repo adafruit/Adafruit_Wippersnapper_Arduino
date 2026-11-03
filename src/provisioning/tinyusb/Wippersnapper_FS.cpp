@@ -23,7 +23,7 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) ||                          \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) ||                           \
-    defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                    \
+    defined(ARDUINO_ESP32S3_DEV) || defined(ARDUINO_RASPBERRY_PI_PICO_W) ||    \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
