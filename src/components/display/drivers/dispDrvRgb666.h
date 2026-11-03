@@ -265,17 +265,16 @@ public:
     if (!_display)
       return;
 
-    if (clear_first) {
-      _display->fillRect(0, RGB666_STATUSBAR_HEIGHT, _display->width(),
-                         _display->height() - RGB666_STATUSBAR_HEIGHT,
-                         RGB565_BLACK);
-    }
+    // Clear only below status bar, start text below status bar
+    _display->fillRect(0, RGB666_STATUSBAR_HEIGHT, _display->width(),
+                       _display->height() - RGB666_STATUSBAR_HEIGHT,
+                       RGB565_BLACK);
 
-    int16_t y_idx = (cursor_y > 0) ? cursor_y : RGB666_STATUSBAR_HEIGHT + 5;
+    int16_t y_idx = RGB666_STATUSBAR_HEIGHT + 5;
     int16_t line_height = 8 * _text_sz;
 
     _display->setTextSize(_text_sz);
-    _display->setCursor(cursor_x, y_idx);
+    _display->setCursor(0, y_idx);
 
     size_t msg_len = strlen(message);
     for (size_t i = 0; i < msg_len; i++) {
