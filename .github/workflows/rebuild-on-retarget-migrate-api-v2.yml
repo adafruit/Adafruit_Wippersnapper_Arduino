@@ -6,21 +6,81 @@
 # retargets onto migrate-api-v2 once its parent merges. The merge result changes
 # with the base, so the build has to run again.
 #
-# This lives apart from build-migrate-api-v2.yml on purpose. A workflow
-# triggered by `edited` starts a run on every title/body edit too, and a job
-# `if:` can only skip that run's jobs, not stop the run being created. If the
-# build workflow listened for `edited`, that newest, all-skipped run would hide
-# the commit's real build results in the PR's checks. Here, the skipped runs
-# show up under this workflow's name and leave the build results alone.
+# Why this is a separate workflow that dispatches the build:
+# - A workflow triggered by `edited` starts a run on every title/body edit, and
+#   a job `if:` only skips that run's jobs, it can't stop the run existing. The
+#   newest run of a workflow on a commit is what the PR's checks show, so an
+#   all-skipped run hides the real results. Build CI therefore doesn't listen
+#   for `edited`.
+# - Calling the build as a reusable workflow from here would put its results in
+#   this workflow's run, and the next title/body edit would hide them the same
+#   way. Instead this dispatches Build CI on the PR's head branch, which gives
+#   the rebuild a Build CI run of its own on the PR head commit. Edits never
+#   start Build CI runs, so nothing can supersede it except a new push.
+#
+# pull_request_target runs this file from the base branch with a token that can
+# dispatch workflows. It never checks out or runs the PR's code, and event
+# values reach the script only through env.
 name: Rebuild on retarget (migrate-api-v2)
 
 on:
-  pull_request:
+  pull_request_target:
     types: [edited]
 
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
 jobs:
-  rebuild:
-    name: Retarget
+  dispatch:
+    name: Dispatch retarget rebuild
     if: github.event.changes.base != null
-    uses: ./.github/workflows/build-migrate-api-v2.yml
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch Build CI on the PR head branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          if [ "$HEAD_REPO" != "$REPO" ]; then
+            echo "::warning::PR #$PR comes from $HEAD_REPO, and a fork's branch can't be dispatched here. Push a commit (or close and reopen the PR) to rebuild against $BASE_REF."
+            exit 0
+          fi
+
+          # GitHub recomputes refs/pull/<n>/merge in the background after a
+          # retarget. Wait until its merge commit sits on the new base's tip
+          # (a test merge commit's first parent is the base).
+          merge_base="" base_tip="unknown"
+          for attempt in $(seq 1 24); do
+            if [ "$attempt" -gt 1 ]; then sleep 5; fi
+            read -r mergeable merge_sha < <(gh api "repos/$REPO/pulls/$PR" --jq '"\(.mergeable) \(.merge_commit_sha)"')
+            if [ "$mergeable" = "false" ]; then
+              echo "::error::PR #$PR conflicts with $BASE_REF, so GitHub has no merge ref to build. Resolve the conflicts and push."
+              exit 1
+            fi
+            [ "$mergeable" = "true" ] || continue
+            base_tip=$(gh api "repos/$REPO/branches/$BASE_REF" --jq '.commit.sha')
+            merge_base=$(gh api "repos/$REPO/commits/$merge_sha" --jq '.parents[0].sha')
+            if [ "$merge_base" = "$base_tip" ]; then
+              echo "refs/pull/$PR/merge is $merge_sha, on $BASE_REF at $base_tip"
+              break
+            fi
+          done
+          if [ "$merge_base" != "$base_tip" ]; then
+            echo "::error::refs/pull/$PR/merge didn't move onto $BASE_REF within 2 minutes. Push a commit (or close and reopen the PR) to rebuild."
+            exit 1
+          fi
+
+          # Runs the head branch's copy of build-migrate-api-v2.yml. A branch
+          # whose copy predates the `ref` input rejects the dispatch (HTTP 422).
+          if ! gh api "repos/$REPO/actions/workflows/build-migrate-api-v2.yml/dispatches" \
+            -f ref="$HEAD_REF" -f "inputs[ref]=refs/pull/$PR/merge"; then
+            echo "::error::Couldn't dispatch Build CI on $HEAD_REF. If its build-migrate-api-v2.yml has no 'ref' input, merge $BASE_REF into the branch and push."
+            exit 1
+          fi
+          echo "Dispatched Build CI on $HEAD_REF for refs/pull/$PR/merge: https://github.com/$REPO/actions/workflows/build-migrate-api-v2.yml?query=branch%3A$HEAD_REF"
