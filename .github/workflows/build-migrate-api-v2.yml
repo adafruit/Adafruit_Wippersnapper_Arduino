@@ -45,6 +45,11 @@ on:
         type: string
         required: false
         default: ""
+      # Unused by callers today; declared so inputs.pr_sha is "" here too.
+      pr_sha:
+        type: string
+        required: false
+        default: ""
 
 jobs:
   # Mirrors `build-esp32sx-esptool` in the v1 workflow (build-clang-doxy.yml on
