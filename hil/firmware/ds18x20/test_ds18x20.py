@@ -14,7 +14,7 @@ Exercises:
 - `src/components/ds18x20/controller.cpp::Handle_Ds18x20Add()`
 - `src/components/ds18x20/controller.cpp::Handle_Ds18x20Remove()`
 - `src/components/ds18x20/controller.cpp::update()`
-- `src/components/ds18x20/hardware.cpp::GetSensor()`
+- `src/components/ds18x20/hardware.cpp::GetSensor()` (and with no sensor)
 - `src/components/ds18x20/hardware.cpp::SetPeriod()`
 - `src/components/ds18x20/hardware.cpp::IsTimerExpired()`
 - `src/components/ds18x20/hardware.cpp::ReadTemperatureC()`
@@ -30,6 +30,9 @@ import pytest
 
 log = logging.getLogger("hil.ds18x20")
 
+# A DUT pin with nothing wired to it (no sensor, no pull-up), for adding a
+# sensor where there's none
+EMPTY_PIN = "D15"
 # ws.sensor.Type values for each unit
 CELSIUS = "T_OBJECT_TEMPERATURE"
 FAHRENHEIT = "T_OBJECT_TEMPERATURE_FAHRENHEIT"
@@ -292,3 +295,26 @@ def test_ds18x20_modify_without_add(board, secrets_name, flashed_board,
     # ...so the sensor keeps publishing at its period
     _expect_event(protomq, uid, onewire_pin,
                   MODIFIED_PERIOD + INTERVAL_LATE + 5)
+
+
+@pytest.mark.parametrize("secrets_name", ["good"], indirect=True)
+def test_ds18x20_add_no_sensor(board, secrets_name, flashed_board, serial,
+                               protomq, checkin):
+    # --- Arrange ------------------------------------------------------
+    uid = checkin()
+    add = _add_msg(EMPTY_PIN, PERIOD)
+
+    # --- Act ----------------------------------------------------------
+    protomq.publish(uid, {"ds18x20": {"add": add}})
+
+    # --- Assert -------------------------------------------------------
+    # Handle_Ds18x20Add() finds no sensor on the bus and rejects the Add
+    protomq.expect_b2d_message(uid, "ds18x20.add", match=add, timeout=5)
+    serial.expect(r"^\[ds18x20\] Handle_Ds18x20Add MESSAGE\.\.\.$",
+                  timeout=CHECKIN_TIMEOUT)
+    _expect_component_error(protomq, uid, EMPTY_PIN,
+                            "Unable to initialize sensor on OneWire bus")
+    serial.assert_none(r"^\[ds18x\] New Sensor Added!$")
+    # ...so it never publishes an event for it
+    protomq.assert_no_d2b_message(uid, "ds18x20.event",
+                                  within=REMOVED_PERIODS * PERIOD)
