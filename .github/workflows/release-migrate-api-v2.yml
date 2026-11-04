@@ -67,6 +67,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
+      id: ${{ steps.draft.outputs.id }}
       sha: ${{ steps.tag.outputs.sha }}
     env:
       GH_TOKEN: ${{ github.token }}
@@ -120,8 +121,12 @@ jobs:
             gh api "repos/$GH_REPO/git/refs" -f ref="refs/tags/$TAG" -f sha="$sha" > /dev/null
             echo "Created tag $TAG at $sha ($DRAFT_TARGET)"
           fi
-          # Pin the draft to the built commit, not wherever the branch moves to
-          gh api -X PATCH "repos/$GH_REPO/releases/$RELEASE_ID" -f target_commitish="$sha" > /dev/null
+          # Pin the draft to the built commit, not wherever the branch moves to.
+          # Re-sending tag_name links the draft to the tag that now exists
+          # (what re-saving it in the Edit release page does).
+          gh api -X PATCH "repos/$GH_REPO/releases/$RELEASE_ID" \
+            -f tag_name="$TAG" -f target_commitish="$sha" \
+            --jq '"Draft \(.id): tag_name=\(.tag_name) target_commitish=\(.target_commitish) draft=\(.draft)"'
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
   build:
@@ -142,6 +147,10 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       TAG: ${{ inputs.tag }}
+      # Address the draft by ID: once its tag exists, gh's tag lookup
+      # (`gh release upload/edit TAG`) can no longer find the draft and fails
+      # with "release not found".
+      RELEASE_ID: ${{ needs.prepare.outputs.id }}
     steps:
       - name: Download build artifacts from build-platform steps
         uses: actions/download-artifact@v8
@@ -158,14 +167,33 @@ jobs:
             echo "::error::No firmware assets found in build-files; not publishing $TAG"
             exit 1
           fi
-          gh release upload "$TAG" "${files[@]}" --clobber
-          echo "Attached ${#files[@]} assets to $TAG"
+          # Replace same-named assets left by an earlier attempt (--clobber)
+          declare -A existing
+          while IFS=$'\t' read -r id name; do
+            existing["$name"]=$id
+          done < <(gh api "repos/$GH_REPO/releases/$RELEASE_ID/assets" --paginate \
+            --jq '.[] | "\(.id)\t\(.name)"')
+          for f in "${files[@]}"; do
+            name=$(basename "$f")
+            if [ -n "${existing[$name]:-}" ]; then
+              gh api -X DELETE "repos/$GH_REPO/releases/assets/${existing[$name]}"
+            fi
+            curl --fail-with-body --silent --show-error --retry 3 --output /dev/null \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@$f" \
+              "https://uploads.github.com/repos/$GH_REPO/releases/$RELEASE_ID/assets?name=$name"
+          done
+          echo "Attached ${#files[@]} assets to $TAG (release $RELEASE_ID)"
       - name: Publish the release
         if: inputs.publish
         run: |
-          gh release edit "$TAG" --draft=false \
-            --prerelease=${{ inputs.prerelease }} --latest=${{ inputs.make_latest }}
-          echo "Published $TAG (commit ${{ needs.prepare.outputs.sha }})"
+          gh api -X PATCH "repos/$GH_REPO/releases/$RELEASE_ID" \
+            -F draft=false -F prerelease=${{ inputs.prerelease }} \
+            -f make_latest=${{ inputs.make_latest }} \
+            --jq '"Published \(.tag_name) at \(.html_url)"'
+          echo "Commit ${{ needs.prepare.outputs.sha }}"
 
   manual-publish-guard:
     name: 🛑 Check manually published release
