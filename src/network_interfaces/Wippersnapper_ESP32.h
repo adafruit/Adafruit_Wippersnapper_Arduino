@@ -210,6 +210,9 @@ public:
     } else {
       WS_DEBUG_PRINT("ERROR: Unsupported WiFi country code: ");
       WS_DEBUG_PRINTLNVAR(country);
+      // Don't keep a country left in flash by an earlier boot
+      if (strncmp(current, "01", 2) != 0)
+        esp_wifi_set_country_code("01", true);
     }
   }
 
