@@ -8,7 +8,8 @@
 # IO trusts the `release: published` webhook, so a v2 release must only be
 # published once every firmware asset is attached to it:
 #   1. (Optional) Draft the release in the GitHub UI: new tag (e.g.
-#      2.0.0-alpha.1), target migrate-api-v2, write the notes, then
+#      2.0.0-alpha.1), target migrate-api-v2 (the UI defaults to main; the
+#      pipeline refuses any commit not on migrate-api-v2), write the notes, then
 #      "Save draft" -- do NOT press "Publish release".
 #   2. Dispatch this workflow on the migrate-api-v2 ref with that tag:
 #        gh workflow run release-migrate-api-v2.yml --ref migrate-api-v2 -f tag=2.0.0-alpha.1
@@ -111,13 +112,27 @@ jobs:
           RELEASE_ID: ${{ steps.draft.outputs.id }}
           DRAFT_TARGET: ${{ steps.draft.outputs.target }}
         run: |
+          # Refuse commits outside migrate-api-v2's history: a draft made in
+          # the UI targets main by default, which builds v1 code as a v2 release.
+          require_v2_commit() {
+            status=$(gh api "repos/$GH_REPO/compare/migrate-api-v2...$1" --jq .status)
+            if [ "$status" != "identical" ] && [ "$status" != "behind" ]; then
+              echo "::error::$2 ($1) is not on migrate-api-v2 (compare: $status)."
+              echo "::error::$3"
+              exit 1
+            fi
+          }
           # A draft's tag is normally only created on publish, but the build
           # needs it now so `git describe` (WS_VERSION) reports the release.
           if gh api "repos/$GH_REPO/git/ref/tags/$TAG" > /dev/null 2>&1; then
             sha=$(gh api "repos/$GH_REPO/commits/tags/$TAG" --jq .sha)
+            require_v2_commit "$sha" "Existing tag $TAG" \
+              "Delete the tag (gh api -X DELETE repos/$GH_REPO/git/refs/tags/$TAG), set the draft's target to migrate-api-v2, then re-run."
             echo "Tag $TAG already exists at $sha"
           else
             sha=$(gh api "repos/$GH_REPO/commits/$DRAFT_TARGET" --jq .sha)
+            require_v2_commit "$sha" "Draft target '$DRAFT_TARGET'" \
+              "Edit the draft release and set its target to migrate-api-v2, then re-run."
             gh api "repos/$GH_REPO/git/refs" -f ref="refs/tags/$TAG" -f sha="$sha" > /dev/null
             echo "Created tag $TAG at $sha ($DRAFT_TARGET)"
           fi
