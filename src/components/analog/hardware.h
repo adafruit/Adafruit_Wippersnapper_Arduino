@@ -46,6 +46,7 @@ public:
   ws_analog_SampleMode getSampleMode() const;
   float getValue() const;
   ExpanderHardware *getExpander() const;
+  ws_digital_Direction getPullDirection() const;
   bool didReadSend() const;
   void markSent();
   void resetSendFlag();

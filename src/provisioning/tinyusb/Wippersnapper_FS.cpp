@@ -170,8 +170,8 @@ Wippersnapper_FS::~Wippersnapper_FS() {
 }
 
 /*!
-    @brief    Attempts to obtain the hardware's CS pin from the
-              config.json file.
+    @brief    Loads the config.json file into Ws->_config_doc for
+              offline mode.
 */
 void Wippersnapper_FS::GetSDCSPin() {
   File32 file_cfg;
@@ -179,20 +179,15 @@ void Wippersnapper_FS::GetSDCSPin() {
   // Attempt to open and deserialize the config.json file
   file_cfg = wipperFatFs_v2.open("/config.json");
   if (!file_cfg) {
-    Ws->pin_sd_cs = 255;
     return;
   }
 
   error = deserializeJson(Ws->_config_doc, file_cfg);
   if (error) {
     file_cfg.close();
-    Ws->pin_sd_cs = 255;
     return;
   }
 
-  // Parse config.json and save the SD CS pin
-  JsonObject exportedFromDevice = Ws->_config_doc["exportedFromDevice"];
-  Ws->pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
   file_cfg.close();
 }
 

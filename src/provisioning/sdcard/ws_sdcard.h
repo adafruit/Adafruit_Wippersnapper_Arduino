@@ -32,8 +32,11 @@
 #define SPI_SD_CLOCK SD_SCK_MHZ(50) ///< Default SPI clock speed
 #endif
 
+#if defined(BUILD_OFFLINE_MODE) && !defined(SD_CS_PIN)
+#error "BUILD_OFFLINE_MODE requires SD_CS_PIN, add -DSD_CS_PIN=<pin> to the env"
+#endif
+
 #define SD_FAT_TYPE 3           ///< SD type (3 = FAT16/FAT32 and exFAT)
-#define PIN_SD_CS_ERROR 255     ///< Error code for invalid SD card CS pin
 #define UNKNOWN_VALUE "unknown" ///< Default unknown JSON field value
 #define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
 #define MAX_LEN_CFG_JSON                                                       \
@@ -56,8 +59,17 @@ public:
   void end();
   bool isSDCardInitialized() { return is_mode_offline; }
   bool parseConfigFile();
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  bool ApplySleepConfig();
+#endif
   bool CreateNewLogFile();
-  bool isModeOffline() { return is_mode_offline; }
+  static bool isModeOffline() {
+#ifdef BUILD_OFFLINE_MODE
+    return true;
+#else
+    return false;
+#endif
+  }
   uint32_t getHeartbeatIntervalMs();
   uint32_t getPreviousHeartbeatIntervalMs();
   void setPreviousHeartbeatIntervalMs(uint32_t timestamp);
@@ -131,7 +143,7 @@ private:
                              ///< the SD card
   int _sd_cur_log_files; ///< Current number of log files that can fit on the SD
                          ///< card
-  bool is_mode_offline;  ///< True if offline mode is enabled, False otherwise
+  bool is_mode_offline;  ///< True if the SD card is mounted, False otherwise
   uint32_t _heartbeat_interval_ms; ///< Offline mode heartbeat interval, in ms
   uint32_t _prv_heartbeat_interval_ms; ///< Previous heartbeat timestamp, in ms
   String _serialInput;                 ///< Serial input buffer
@@ -144,6 +156,8 @@ private:
   uint32_t _soft_rtc_counter; ///< Holds the counter for a "soft rtc"
   bool _use_test_data;        ///< True if sample data is being used for testing
   bool _is_battery_low;       ///< True if battery < LOW_SD_WRITE_BATT_THRESH
+  bool _has_sleep_config = false; ///< True if config.json held a sleep config
+                                  ///< that ApplySleepConfig() must apply
 };
 extern wippersnapper *Ws;
 #endif // WS_SDCARD_H

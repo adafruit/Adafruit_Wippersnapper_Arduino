@@ -1017,7 +1017,7 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
     @returns  True if published successfully, False otherwise.
 */
 bool I2cController::publishProbed() {
-  if (Ws->_sdCardV2->isModeOffline())
+  if (ws_sdcard::isModeOffline())
     return true;
 
   if (!_i2c_model->EncodeProbed()) {
@@ -1167,7 +1167,7 @@ void I2cController::update(bool force) {
         drv->GetMuxAddress(), drv->GetMuxChannel());
     _i2c_model->EncodeI2cDeviceEvent();
 
-    if (!Ws->_sdCardV2->isModeOffline()) {
+    if (!ws_sdcard::isModeOffline()) {
       // Online: wrap the device event in the i2c D2B envelope and publish it to
       // IO (mirrors publishProbed()'s D2B publish path).
       if (!_i2c_model->EncodeI2cDeviceEventD2B() ||

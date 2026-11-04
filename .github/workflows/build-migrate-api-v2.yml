@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - migrate-api-v2
+      - offline-mode-compile-time
   pull_request:
     # 'edited' covers PRs retargeted to migrate-api-v2 after opening; each
     # build job skips edits that leave the base unchanged (title/body edits),

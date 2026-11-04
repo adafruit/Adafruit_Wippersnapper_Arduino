@@ -179,7 +179,8 @@ bool DigitalController::Handle_Digital_Add(ws_digital_Add *msg) {
 
   // Add the pin to the controller's list of pins
   if (msg->gpio_direction == ws_digital_Direction_D_INPUT ||
-      msg->gpio_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
+      msg->gpio_direction == ws_digital_Direction_D_INPUT_PULL_UP ||
+      msg->gpio_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
     _pins_input.push_back(new_pin);
   } else if (msg->gpio_direction == ws_digital_Direction_D_OUTPUT) {
     _pins_output.push_back(new_pin);
@@ -264,6 +265,25 @@ bool DigitalController::QueryPinState(uint8_t pin_num,
 }
 
 /*!
+    @brief  Reports whether a host-MCU pin is registered with this controller
+            and, if so, its internal pull resistor direction. Used by the
+            sleep controller to configure an ext0 wakeup pin's pull.
+    @param  pin_num         The pin's number.
+    @param  pull_direction  Out: D_INPUT_PULL_UP, D_INPUT_PULL_DOWN, or
+                            D_INPUT (no pull).
+    @return True if the pin is registered with this controller, else False.
+*/
+bool DigitalController::getPinPullDirection(
+    uint8_t pin_num, ws_digital_Direction *pull_direction) {
+  DigitalHardware *pin = GetPin(pin_num, nullptr);
+  if (!pin)
+    return false;
+  if (pull_direction)
+    *pull_direction = pin->getPullDirection();
+  return true;
+}
+
+/*!
     @brief  Write a digital pin
     @param  msg
             Pointer to the Digital write message.
@@ -327,7 +347,7 @@ bool DigitalController::EncodePublishPinEvent(DigitalHardware *pin) {
     snprintf(c_pin_name, sizeof(c_pin_name), "D%d", pin_num);
   }
 
-  if (!Ws->_sdCardV2->isModeOffline()) {
+  if (!ws_sdcard::isModeOffline()) {
     WS_DEBUG_PRINT("[digital] Publish Event: ");
     WS_DEBUG_PRINTVAR(c_pin_name);
     WS_DEBUG_PRINT(" | value: ");

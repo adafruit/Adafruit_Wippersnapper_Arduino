@@ -278,7 +278,7 @@ void DS18X20Controller::update(bool force) {
     ws_ds18x20_Event *event_msg = _DS18X20_model->GetDS18x20EventMsg();
     pb_size_t event_count = event_msg->events_count;
 
-    if (!Ws->_sdCardV2->isModeOffline()) {
+    if (!ws_sdcard::isModeOffline()) {
       // Encode the Ds18x20Event message
       if (!_DS18X20_model->EncodeDs18x20Event()) {
         WS_DEBUG_PRINTLN(

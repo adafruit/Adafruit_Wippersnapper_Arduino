@@ -21,6 +21,8 @@
 SleepModel::SleepModel() {
   memset(&_msg_sleep_goodnight, 0, sizeof(_msg_sleep_goodnight));
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
+  memset(&_ext0_config, 0, sizeof(_ext0_config));
+  _has_ext0 = false;
 }
 
 /*!
@@ -29,6 +31,8 @@ SleepModel::SleepModel() {
 SleepModel::~SleepModel() {
   memset(&_msg_sleep_goodnight, 0, sizeof(_msg_sleep_goodnight));
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
+  memset(&_ext0_config, 0, sizeof(_ext0_config));
+  _has_ext0 = false;
 }
 
 /*!
@@ -36,6 +40,20 @@ SleepModel::~SleepModel() {
     @return Sleep Enter message object.
 */
 ws_sleep_SleepConfig *SleepModel::GetSleepConfig() { return &_msg_sleep_enter; }
+
+/*!
+    @brief  Returns whether an ext0 wakeup config has been set.
+    @return True if an ext0 wakeup config is present, False otherwise.
+*/
+bool SleepModel::HasExt0() { return _has_ext0; }
+
+/*!
+    @brief  Gets the ext0 wakeup config.
+    @return Pointer to the ext0 wakeup config. Only valid if HasExt0().
+*/
+const ws_sleep_Ext0Config *SleepModel::GetExt0Config() {
+  return &_ext0_config;
+}
 
 /*!
     @brief  Gets a Sleep Goodnight message object.
@@ -61,6 +79,8 @@ uint32_t SleepModel::getRunDurationMs() { return _run_duration; }
 bool SleepModel::DecodeSleepConfig(pb_istream_t *stream) {
   // Zero-out the Sleep Enter message struct to ensure a clean decode
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
+  // ext0s is an undecoded callback field, drop any previously set ext0 config
+  _has_ext0 = false;
 
   // Decode the stream into a Sleep Enter message
   return pb_decode(stream, ws_sleep_SleepConfig_fields, &_msg_sleep_enter);
@@ -92,8 +112,9 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode,
   _msg_sleep_enter.mode = mode_enum;
 
   // Configure timer-specific fields
-  _msg_sleep_enter.which_config = ws_sleep_SleepConfig_timer_tag;
-  _msg_sleep_enter.config.timer.duration = timer_duration;
+  _msg_sleep_enter.has_timer = true;
+  _msg_sleep_enter.timer.duration = timer_duration;
+  _has_ext0 = false;
 }
 
 /*!
@@ -108,12 +129,13 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode,
             Name of the pin to wake from.
     @param  pin_level
             Input level to trigger wakeup (false=low, true=high).
-    @param  pin_pull
-            Enable internal pull resistor.
+    @note   The pin's pull direction is not set here, it is taken from the
+            Digital/Analog component that owns the pin when sleep is
+            configured.
 */
 void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
                                    uint32_t run_duration, const char *pin_name,
-                                   bool pin_level, bool pin_pull) {
+                                   bool pin_level) {
   // Clear the message
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
@@ -126,13 +148,11 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
   _msg_sleep_enter.mode = mode_enum;
 
   // Configure pin-specific fields
-  _msg_sleep_enter.which_config = ws_sleep_SleepConfig_ext0_tag;
-  strncpy(_msg_sleep_enter.config.ext0.pin, pin_name,
-          sizeof(_msg_sleep_enter.config.ext0.pin) - 1);
-  _msg_sleep_enter.config.ext0
-      .pin[sizeof(_msg_sleep_enter.config.ext0.pin) - 1] = '\0';
-  _msg_sleep_enter.config.ext0.level = pin_level;
-  _msg_sleep_enter.config.ext0.pull = pin_pull;
+  memset(&_ext0_config, 0, sizeof(_ext0_config));
+  strncpy(_ext0_config.pin, pin_name, sizeof(_ext0_config.pin) - 1);
+  _ext0_config.pin[sizeof(_ext0_config.pin) - 1] = '\0';
+  _ext0_config.level = pin_level;
+  _has_ext0 = true;
 }
 
 /*!

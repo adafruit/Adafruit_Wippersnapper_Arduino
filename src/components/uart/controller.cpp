@@ -292,7 +292,7 @@ void UARTController::update(bool force) {
     // Encode the UART input event message
     if (_uart_model->EncodeUartInputEvent()) {
       // Handle the UartInputEvent message
-      if (Ws->_sdCardV2->isModeOffline()) {
+      if (ws_sdcard::isModeOffline()) {
         // TODO: This is UNIMPLEMENTED!
         // In offline mode, log to SD card
         /* if

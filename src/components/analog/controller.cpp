@@ -30,7 +30,7 @@ namespace {
             a failing handler.
 */
 bool reportPinError(const char *pin_name, const char *error_msg) {
-  if (Ws->_sdCardV2->isModeOffline()) {
+  if (ws_sdcard::isModeOffline()) {
     WS_DEBUG_PRINT("[analog] ERROR on ");
     WS_DEBUG_PRINTVAR(pin_name);
     WS_DEBUG_PRINT(": ");
@@ -163,6 +163,24 @@ AnalogHardware *AnalogController::GetPin(uint8_t pin_num,
 }
 
 /*!
+    @brief  Reports whether a host-MCU pin is registered with this controller
+            and, if so, its internal pull resistor direction. Used by the
+            sleep controller to configure an ext0 wakeup pin's pull.
+    @param  pin_num         The pin's number.
+    @param  pull_direction  Out: always D_INPUT (analog pins have no pull).
+    @return True if the pin is registered with this controller, else False.
+*/
+bool AnalogController::getPinPullDirection(
+    uint8_t pin_num, ws_digital_Direction *pull_direction) {
+  AnalogHardware *pin = GetPin(pin_num, nullptr);
+  if (!pin)
+    return false;
+  if (pull_direction)
+    *pull_direction = pin->getPullDirection();
+  return true;
+}
+
+/*!
     @brief  Handles an AnalogAdd message from the broker and adds a
             new analog pin to the controller.
     @param  msg
@@ -264,7 +282,7 @@ bool AnalogController::EncodePublishPinEvent(AnalogHardware *pin) {
     snprintf(c_pin_name, sizeof(c_pin_name), "A%d", pin_num);
   }
 
-  if (Ws->_sdCardV2->isModeOffline()) {
+  if (ws_sdcard::isModeOffline()) {
     return Ws->_sdCardV2->LogGPIOSensorEventToSD(c_pin_name, value, read_type);
   }
 
