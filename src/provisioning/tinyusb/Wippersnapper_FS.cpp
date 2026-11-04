@@ -370,6 +370,7 @@ void Wippersnapper_FS::createSecretsFile() {
   strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
   strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
   strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
+  secretsConfig.network_country[0] = '\0';
   secretsConfig.status_pixel_brightness = 0.2;
 
   // Create and fill JSON document from secretsConfig
