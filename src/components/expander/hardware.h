@@ -56,6 +56,12 @@ public:
        @param  mode The mode (INPUT, OUTPUT, etc.). */
   virtual void pinMode(uint8_t pin, uint8_t mode) {};
 
+  /*!  @brief  Reports whether the expander's pins have internal pull-down
+               resistors (INPUT_PULLDOWN). Most expanders only have
+               pull-ups, so the default is false.
+       @return True if pinMode(pin, INPUT_PULLDOWN) is supported. */
+  virtual bool supportsPullDown() { return false; }
+
   /*!  @brief  Writes a digital value to a pin on the expander.
        @param  pin   The pin number.
        @param  value HIGH or LOW. */

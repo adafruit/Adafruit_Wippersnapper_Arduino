@@ -163,6 +163,15 @@ bool DigitalController::Handle_Digital_Add(ws_digital_Add *msg) {
     return false;
   }
 
+  // Reject pull-down on pins/expanders without an internal pull-down,
+  // rather than leaving the pin silently floating
+  if (msg->gpio_direction == ws_digital_Direction_D_INPUT_PULL_DOWN &&
+      !DigitalHardware::GetPullDownMode(pin_num, expander_drv, nullptr)) {
+    Ws->error_handler->publishComponentError(
+        msg->pin, "Pull-down resistor not supported on this pin");
+    return false;
+  }
+
   // Remove existing pin if re-adding (destructor deinits hardware)
   RemovePin(pin_num, expander_drv);
 

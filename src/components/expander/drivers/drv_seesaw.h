@@ -56,6 +56,12 @@ public:
   void pinMode(uint8_t pin, uint8_t mode) override { _ss.pinMode(pin, mode); }
 
   /*!
+   * @brief Seesaw GPIO pins have internal pull-down resistors.
+   * @return True.
+   */
+  bool supportsPullDown() override { return true; }
+
+  /*!
    * @brief Writes a digital value to a specific pin on the Seesaw.
    * @param pin The pin number to write to.
    * @param value The value to write (HIGH or LOW).

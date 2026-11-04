@@ -107,17 +107,59 @@ bool DigitalHardware::SetMode() {
     } else {
       _expander_drv->pinMode(_pin_num, INPUT_PULLUP);
     }
-#if defined(INPUT_PULLDOWN)
   } else if (_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+    uint8_t mode;
+    if (!GetPullDownMode(_pin_num, _expander_drv, &mode))
+      return false;
     if (!has_expander) {
-      pinMode(_pin_num, INPUT_PULLDOWN);
+      pinMode(_pin_num, mode);
     } else {
-      _expander_drv->pinMode(_pin_num, INPUT_PULLDOWN);
+      _expander_drv->pinMode(_pin_num, mode);
     }
-#endif
   } else {
     return false;
   }
+  return true;
+}
+
+/*!
+    @brief  Resolves the pinMode() value that enables a pin's internal
+            pull-down resistor, if the pin has one.
+    @note   INPUT_PULLDOWN is a macro on the ESP32 and SAMD cores but an
+            enum value on arduino-pico (RP2040/RP2350), so it can't be
+            detected with #ifdef alone. Adafruit_seesaw.h also #defines
+            INPUT_PULLDOWN as 0x03 when the core lacks it, which on ESP8266
+            is OUTPUT_OPEN_DRAIN, so ESP8266 is checked first: it only has
+            a pull-down on GPIO16 (INPUT_PULLDOWN_16). RP2350 chip revisions
+            before A4 have a pull-down erratum (E9) that can latch the pin
+            high.
+    @param  pin_num       The pin's number.
+    @param  expander_drv  The pin's expander driver, or nullptr for a
+                          host MCU pin.
+    @param  mode          Out: the pinMode() value to use. May be nullptr
+                          to only check for support.
+    @return True if the pin supports an internal pull-down, else False.
+*/
+bool DigitalHardware::GetPullDownMode(uint8_t pin_num,
+                                      ExpanderHardware *expander_drv,
+                                      uint8_t *mode) {
+  uint8_t pull_down_mode;
+#if defined(ARDUINO_ARCH_ESP8266)
+  if (expander_drv != nullptr || pin_num != 16)
+    return false;
+  pull_down_mode = INPUT_PULLDOWN_16;
+#elif defined(INPUT_PULLDOWN) || defined(ARDUINO_ARCH_RP2040)
+  (void)pin_num;
+  if (expander_drv != nullptr && !expander_drv->supportsPullDown())
+    return false;
+  pull_down_mode = INPUT_PULLDOWN;
+#else
+  (void)pin_num;
+  (void)expander_drv;
+  return false;
+#endif
+  if (mode != nullptr)
+    *mode = pull_down_mode;
   return true;
 }
 
