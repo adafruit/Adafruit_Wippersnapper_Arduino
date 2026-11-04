@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: Tyeth Gundry for Adafruit Industries, 2026
+#
+# SPDX-License-Identifier: MIT
+#
+# Rebuilds a PR when its base branch changes, e.g. a stacked PR that GitHub
+# retargets onto migrate-api-v2 once its parent merges. The merge result changes
+# with the base, so the build has to run again.
+#
+# This lives apart from build-migrate-api-v2.yml on purpose. A workflow
+# triggered by `edited` starts a run on every title/body edit too, and a job
+# `if:` can only skip that run's jobs, not stop the run being created. If the
+# build workflow listened for `edited`, that newest, all-skipped run would hide
+# the commit's real build results in the PR's checks. Here, the skipped runs
+# show up under this workflow's name and leave the build results alone.
+name: Rebuild on retarget (migrate-api-v2)
+
+on:
+  pull_request:
+    types: [edited]
+
+jobs:
+  rebuild:
+    name: Retarget
+    if: github.event.changes.base != null
+    uses: ./.github/workflows/build-migrate-api-v2.yml
+    secrets: inherit
