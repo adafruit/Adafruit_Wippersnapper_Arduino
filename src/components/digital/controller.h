@@ -1,7 +1,7 @@
 /*!
- * @file src/components/digitalIO/controller.h
+ * @file src/components/digital/controller.h
  *
- * Controller for the digital API
+ * Controller for the digital.proto API
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -12,29 +12,29 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_DIGITALIO_CONTROLLER_H
-#define WS_DIGITALIO_CONTROLLER_H
+#ifndef WS_DIGITAL_CONTROLLER_H
+#define WS_DIGITAL_CONTROLLER_H
 #include "model.h"
 #include "wippersnapper.h"
 
 class wippersnapper;
-class DigitalIOModel;
-class DigitalIOHardware;
+class DigitalModel;
+class DigitalHardware;
 class ExpanderHardware;
 
 /*!
     @brief  Routes messages using the digital.proto API to the
             appropriate hardware and model classes, controls and tracks
-            the state of the hardware's digital I/O pins.
+            the state of the hardware's digital pins.
 */
-class DigitalIOController {
+class DigitalController {
 public:
-  DigitalIOController();
-  ~DigitalIOController();
+  DigitalController();
+  ~DigitalController();
   bool Router(pb_istream_t *stream);
-  bool Handle_DigitalIO_Add(ws_digital_Add *msg);
-  bool Handle_DigitalIO_Remove(ws_digital_Remove *msg);
-  bool Handle_DigitalIO_Write(ws_digital_Write *msg);
+  bool Handle_Digital_Add(ws_digital_Add *msg);
+  bool Handle_Digital_Remove(ws_digital_Remove *msg);
+  bool Handle_Digital_Write(ws_digital_Write *msg);
   void update(bool force = false);
   bool UpdateComplete();
   void ResetFlags();
@@ -43,12 +43,12 @@ public:
                      bool *value);
 
 private:
-  bool EncodePublishPinEvent(DigitalIOHardware *pin);
+  bool EncodePublishPinEvent(DigitalHardware *pin);
   bool RemovePin(uint8_t pin_num, ExpanderHardware *expander);
-  DigitalIOHardware *GetPin(uint8_t pin_num, ExpanderHardware *expander);
-  std::vector<DigitalIOHardware *> _pins_input;
-  std::vector<DigitalIOHardware *> _pins_output;
-  DigitalIOModel *_dio_model;
+  DigitalHardware *GetPin(uint8_t pin_num, ExpanderHardware *expander);
+  std::vector<DigitalHardware *> _pins_input;
+  std::vector<DigitalHardware *> _pins_output;
+  DigitalModel *_digital_model;
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
-#endif                    // WS_DIGITALIO_CONTROLLER_H
+#endif                    // WS_DIGITAL_CONTROLLER_H

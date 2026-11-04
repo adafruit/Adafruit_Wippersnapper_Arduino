@@ -58,7 +58,7 @@ private:
   void setAdcResolutionNative();
   void setAdcResolution(uint8_t resolution);
   void getScaleFactor();
-  uint8_t _name;                              ///< The pin's number.
+  uint8_t _pin_num;                           ///< The pin's number.
   char _pin_name[sizeof(ws_analog_Add::pin)]; ///< Broker-provided pin name.
   ws_sensor_Type _read_mode;         ///< Type of analog read (RAW or VOLTAGE)
   ws_analog_SampleMode _sample_mode; ///< Sample mode (TIMER or EVENT)
@@ -68,6 +68,7 @@ private:
   uint32_t _value_raw;               ///< Last raw ADC reading.
   float _value_voltage;              ///< Last voltage reading.
   uint32_t _prv_value_raw;         ///< Previous raw value for event detection.
+  float _prv_value_voltage;        ///< Previous voltage for event detection.
   uint8_t _native_adc_resolution;  ///< Hardware's native ADC resolution.
   uint8_t _desired_adc_resolution; ///< Desired (final) ADC resolution.
   uint32_t _max_scale_resolution_desired; ///< Maximum scale resolution desired.

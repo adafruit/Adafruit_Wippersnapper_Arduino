@@ -186,20 +186,9 @@ ExpanderHardware *PWMHardware::GetExpanderDriver() { return _expander_drv; }
 /*!
     @brief  Mocks the Arduino analogWrite() function for the Arduino-ESP32
             LEDC API
-    @param  value The value to write (0-255)
+    @param  value The value to write
     @return true if the value was successfully written, false otherwise
 */
-bool PWMHardware::analogWrite(uint32_t value) {
-  // clamp
-  if (value > 255 || value < 0) {
-    WS_DEBUG_PRINTLN("[pwm] Value out of range!");
-    return false;
-  }
-
-  // Calculate duty cycle for the `value`
-  uint32_t dutyCycle =
-      (uint32_t)(((double)_resolution / 255.0) * min(value, (uint32_t)255));
-  return ledcWrite(_pin, dutyCycle);
-}
+bool PWMHardware::analogWrite(uint32_t value) { return ledcWrite(_pin, value); }
 
 #endif // ARDUINO_ARCH_ESP32

@@ -1,5 +1,5 @@
 /*!
- * @file src/components/digitalIO/hardware.h
+ * @file src/components/digital/hardware.h
  *
  * Hardware for the digital.proto message.
  *
@@ -12,24 +12,24 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_DIGITALIO_HARDWARE_H
-#define WS_DIGITALIO_HARDWARE_H
+#ifndef WS_DIGITAL_HARDWARE_H
+#define WS_DIGITAL_HARDWARE_H
 #include "wippersnapper.h"
 
 class ExpanderHardware;
 
 /*!
-    @brief  Represents a single digital I/O pin and provides
+    @brief  Represents a single digital pin and provides
             hardware-level operations for reading, writing,
             and polling its state.
 */
-class DigitalIOHardware {
+class DigitalHardware {
 public:
-  DigitalIOHardware(uint8_t pin_name, ws_digital_Direction direction,
-                    ws_digital_SampleMode sample_mode, bool initial_value,
-                    ulong period, ExpanderHardware *expander_drv,
-                    bool is_inverted = false);
-  ~DigitalIOHardware();
+  DigitalHardware(uint8_t pin_num, ws_digital_Direction direction,
+                  ws_digital_SampleMode sample_mode, bool initial_value,
+                  ulong period, ExpanderHardware *expander_drv,
+                  bool is_inverted = false);
+  ~DigitalHardware();
 
   // Pin operations
   void Write(bool value);
@@ -57,7 +57,7 @@ private:
   bool IsPinTimerExpired(ulong cur_time);
   bool IsStatusLEDPin() const;
 
-  uint8_t _name;
+  uint8_t _pin_num;
   ws_digital_Direction _direction;
   ws_digital_SampleMode _sample_mode;
   bool _value;
@@ -73,4 +73,4 @@ private:
   bool _did_read_send;
   ExpanderHardware *_expander_drv;
 };
-#endif // WS_DIGITALIO_HARDWARE_H
+#endif // WS_DIGITAL_HARDWARE_H

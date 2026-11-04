@@ -28,19 +28,23 @@ public:
   ~CheckinModel();
   bool Checkin(const char *hardware_uid, const char *firmware_version);
   bool ProcessResponse(pb_istream_t *stream);
+  bool ValidateResponse();
   void ConfigureControllers();
   bool GotResponse();
   bool Complete();
   void configureSleep();
+  int32_t GetTotalGPIOPins();
+  int32_t GetTotalAnalogPins();
+  float GetReferenceVoltage();
 
 private:
   static bool
   cbSetupResponse(pb_istream_t *stream, const pb_field_t *field,
                   void **arg); //< Pre-decode callback to set up component_adds
-  static bool cbDigitalIOAdds(pb_istream_t *stream, const pb_field_t *field,
-                              void **arg);
-  static bool cbAnalogInAdds(pb_istream_t *stream, const pb_field_t *field,
-                             void **arg);
+  static bool cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
+                            void **arg);
+  static bool cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
+                           void **arg);
   static bool cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
                           void **arg);
   static bool cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,

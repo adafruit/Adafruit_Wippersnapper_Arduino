@@ -161,11 +161,11 @@ ExpanderHardware *ExpanderController::GetDriver(uint8_t addr) {
 /*!
  * @brief Resolves a pin name to a pin number and, for expander pin names
  *        ("EXP_0xNN_P"), the owning expander driver. Handles BOTH pin
- *        domains so callers (digitalio, analog, pwm, ...) need a single
+ *        domains so callers (digital, analog, pwm, ...) need a single
  *        call and no knowledge of the expander addressing scheme: a native
  *        name ("D5", "A0") resolves successfully with expander_drv left
  *        nullptr, an expander name must reference a registered expander.
- *        Analogous to DigitalIOController::QueryPinState() for pin-in-use
+ *        Analogous to DigitalController::QueryPinState() for pin-in-use
  *        queries.
  * @param pin_name     The pin name string, native ("D5", "A0") or expander
  *                     ("EXP_0x48_3").

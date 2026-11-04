@@ -1,5 +1,5 @@
 /*!
- * @file src/components/digitalIO/hardware.cpp
+ * @file src/components/digital/hardware.cpp
  *
  * Hardware driver for the digital.proto API
  *
@@ -15,8 +15,8 @@
 #include "hardware.h"
 
 /*!
-    @brief  DigitalIOHardware constructor
-    @param  pin_name      The pin number.
+    @brief  DigitalHardware constructor
+    @param  pin_num       The pin number.
     @param  direction     The pin's direction.
     @param  sample_mode   The pin's sample mode.
     @param  initial_value The pin's initial value.
@@ -24,13 +24,13 @@
     @param  expander_drv  Pointer to expander driver, or nullptr.
     @param  is_inverted   True if the pin's logic is active-low (inverted).
 */
-DigitalIOHardware::DigitalIOHardware(uint8_t pin_name,
-                                     ws_digital_Direction direction,
-                                     ws_digital_SampleMode sample_mode,
-                                     bool initial_value, ulong period,
-                                     ExpanderHardware *expander_drv,
-                                     bool is_inverted)
-    : _name(pin_name), _direction(direction), _sample_mode(sample_mode),
+DigitalHardware::DigitalHardware(uint8_t pin_num,
+                                 ws_digital_Direction direction,
+                                 ws_digital_SampleMode sample_mode,
+                                 bool initial_value, ulong period,
+                                 ExpanderHardware *expander_drv,
+                                 bool is_inverted)
+    : _pin_num(pin_num), _direction(direction), _sample_mode(sample_mode),
       _value(initial_value), _prv_value(initial_value), _first_read(true),
       _is_inverted(is_inverted), _period(period), _prv_time(0),
       _did_read_send(false), _expander_drv(expander_drv) {
@@ -38,17 +38,17 @@ DigitalIOHardware::DigitalIOHardware(uint8_t pin_name,
 }
 
 /*!
-    @brief  DigitalIOHardware destructor. Resets pin to floating INPUT state.
+    @brief  DigitalHardware destructor. Resets pin to floating INPUT state.
 */
-DigitalIOHardware::~DigitalIOHardware() {
+DigitalHardware::~DigitalHardware() {
   bool has_expander = (_expander_drv != nullptr);
 
   if (!has_expander) {
-    digitalWrite(_name, LOW);
-    pinMode(_name, INPUT);
+    digitalWrite(_pin_num, LOW);
+    pinMode(_pin_num, INPUT);
   } else {
-    _expander_drv->digitalWrite(_name, LOW);
-    _expander_drv->pinMode(_name, INPUT);
+    _expander_drv->digitalWrite(_pin_num, LOW);
+    _expander_drv->pinMode(_pin_num, INPUT);
   }
 
   if (IsStatusLEDPin())
@@ -63,7 +63,7 @@ DigitalIOHardware::~DigitalIOHardware() {
     @param  logical_value  The logical value from the broker's perspective.
     @return HIGH or LOW, the electrical level to apply to the pin.
 */
-uint8_t DigitalIOHardware::GetElectricalLevel(bool logical_value) {
+uint8_t DigitalHardware::GetElectricalLevel(bool logical_value) {
   bool level = logical_value;
   if (_is_inverted)
     level = !logical_value;
@@ -76,7 +76,7 @@ uint8_t DigitalIOHardware::GetElectricalLevel(bool logical_value) {
     @brief  Configures the pin's mode based on its direction.
     @return True if the pin was successfully configured.
 */
-bool DigitalIOHardware::SetMode() {
+bool DigitalHardware::SetMode() {
   if (IsStatusLEDPin())
     ReleaseStatusPixel();
 
@@ -85,27 +85,27 @@ bool DigitalIOHardware::SetMode() {
   if (_direction == ws_digital_Direction_D_OUTPUT) {
     uint8_t level = GetElectricalLevel(_value);
     if (!has_expander) {
-      pinMode(_name, OUTPUT);
-      digitalWrite(_name, level);
+      pinMode(_pin_num, OUTPUT);
+      digitalWrite(_pin_num, level);
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
       if (level == LOW)
-        digitalWrite(_name, HIGH);
+        digitalWrite(_pin_num, HIGH);
 #endif
     } else {
-      _expander_drv->pinMode(_name, OUTPUT);
-      _expander_drv->digitalWrite(_name, level);
+      _expander_drv->pinMode(_pin_num, OUTPUT);
+      _expander_drv->digitalWrite(_pin_num, level);
     }
   } else if (_direction == ws_digital_Direction_D_INPUT) {
     if (!has_expander) {
-      pinMode(_name, INPUT);
+      pinMode(_pin_num, INPUT);
     } else {
-      _expander_drv->pinMode(_name, INPUT);
+      _expander_drv->pinMode(_pin_num, INPUT);
     }
   } else if (_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
     if (!has_expander) {
-      pinMode(_name, INPUT_PULLUP);
+      pinMode(_pin_num, INPUT_PULLUP);
     } else {
-      _expander_drv->pinMode(_name, INPUT_PULLUP);
+      _expander_drv->pinMode(_pin_num, INPUT_PULLUP);
     }
   } else {
     return false;
@@ -117,15 +117,15 @@ bool DigitalIOHardware::SetMode() {
     @brief  Writes a value to the pin and updates internal state.
     @param  value  The value to write.
 */
-void DigitalIOHardware::Write(bool value) {
+void DigitalHardware::Write(bool value) {
   if (_value == value)
     return;
 
   uint8_t level = GetElectricalLevel(value);
   if (_expander_drv != nullptr) {
-    _expander_drv->digitalWrite(_name, level);
+    _expander_drv->digitalWrite(_pin_num, level);
   } else {
-    digitalWrite(_name, level);
+    digitalWrite(_pin_num, level);
   }
   _value = value;
 }
@@ -135,12 +135,12 @@ void DigitalIOHardware::Write(bool value) {
             internal state.
     @return The pin's current value.
 */
-bool DigitalIOHardware::ReadValue() {
+bool DigitalHardware::ReadValue() {
   bool raw;
   if (_expander_drv != nullptr) {
-    raw = _expander_drv->digitalRead(_name);
+    raw = _expander_drv->digitalRead(_pin_num);
   } else {
-    raw = digitalRead(_name);
+    raw = digitalRead(_pin_num);
   }
 
   // Report the logical value: is_inverted (active-low) pins read as the
@@ -155,7 +155,7 @@ bool DigitalIOHardware::ReadValue() {
     @brief  Checks if the pin's value has changed since last check.
     @return True if the value changed.
 */
-bool DigitalIOHardware::CheckEvent() {
+bool DigitalHardware::CheckEvent() {
   ReadValue();
 
   // First read after add: _prv_value was only a guess (the Add's
@@ -181,7 +181,7 @@ bool DigitalIOHardware::CheckEvent() {
     @brief  Checks if the pin's timer has expired and reads the value.
     @return True if the timer expired.
 */
-bool DigitalIOHardware::CheckTimer() {
+bool DigitalHardware::CheckTimer() {
   ulong cur_time = millis();
   if (!IsPinTimerExpired(cur_time))
     return false;
@@ -196,7 +196,7 @@ bool DigitalIOHardware::CheckTimer() {
     @param  cur_time  The current time in milliseconds.
     @return True if the timer has expired.
 */
-bool DigitalIOHardware::IsPinTimerExpired(ulong cur_time) {
+bool DigitalHardware::IsPinTimerExpired(ulong cur_time) {
   return cur_time - _prv_time > _period;
 }
 
@@ -204,19 +204,19 @@ bool DigitalIOHardware::IsPinTimerExpired(ulong cur_time) {
     @brief  Gets the pin's number.
     @return The pin's number.
 */
-uint8_t DigitalIOHardware::GetPinNum() const { return _name; }
+uint8_t DigitalHardware::GetPinNum() const { return _pin_num; }
 
 /*!
     @brief  Gets the pin's current value.
     @return The pin's current value.
 */
-bool DigitalIOHardware::GetPinValue() const { return _value; }
+bool DigitalHardware::GetPinValue() const { return _value; }
 
 /*!
     @brief  Gets the pin's direction.
     @return The pin's direction.
 */
-ws_digital_Direction DigitalIOHardware::GetDirection() const {
+ws_digital_Direction DigitalHardware::GetDirection() const {
   return _direction;
 }
 
@@ -224,7 +224,7 @@ ws_digital_Direction DigitalIOHardware::GetDirection() const {
     @brief  Gets the pin's sample mode.
     @return The pin's sample mode.
 */
-ws_digital_SampleMode DigitalIOHardware::GetSampleMode() const {
+ws_digital_SampleMode DigitalHardware::GetSampleMode() const {
   return _sample_mode;
 }
 
@@ -232,7 +232,7 @@ ws_digital_SampleMode DigitalIOHardware::GetSampleMode() const {
     @brief  Gets the expander driver, or nullptr for native pins.
     @return Pointer to the expander driver, or nullptr.
 */
-ExpanderHardware *DigitalIOHardware::GetExpanderDriver() const {
+ExpanderHardware *DigitalHardware::GetExpanderDriver() const {
   return _expander_drv;
 }
 
@@ -240,25 +240,25 @@ ExpanderHardware *DigitalIOHardware::GetExpanderDriver() const {
     @brief  Gets whether the last read was sent to IO.
     @returns  True if the last read was sent successfully, False otherwise.
 */
-bool DigitalIOHardware::DidReadSend() const { return _did_read_send; }
+bool DigitalHardware::DidReadSend() const { return _did_read_send; }
 
 /*!
     @brief  Marks that the current pin value has been sent to IO.
 */
-void DigitalIOHardware::MarkSent() { _did_read_send = true; }
+void DigitalHardware::MarkSent() { _did_read_send = true; }
 
 /*!
     @brief  Resets the pin's did_read_send flag to false.
 */
-void DigitalIOHardware::ResetSendFlag() { _did_read_send = false; }
+void DigitalHardware::ResetSendFlag() { _did_read_send = false; }
 
 /*!
     @brief  Checks if this pin is the status LED pin.
     @return True if this pin is the status LED pin.
 */
-bool DigitalIOHardware::IsStatusLEDPin() const {
+bool DigitalHardware::IsStatusLEDPin() const {
 #ifdef STATUS_LED_PIN
-  return _name == STATUS_LED_PIN;
+  return _pin_num == STATUS_LED_PIN;
 #endif
   return false;
 }
