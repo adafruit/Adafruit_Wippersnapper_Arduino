@@ -8,7 +8,7 @@
 # with the generic Espressif esp32s31 board (ARDUINO_ESP32S31_DEV). Its pins come from ws_boards.h
 # and the board definition, not that variant. Add the unique define (keeping -DBOARD_HAS_PSRAM), mirrored in
 # platformio.ini build_flags:
-esp32s31.build.defines=-DBOARD_HAS_PSRAM -DWS_ESPRESSIF_ESP32S31_KORVO_1
+esp32s31.build.defines=-DBOARD_HAS_PSRAM -DWS_ESP32S31_KORVO_1
 # The esp32s31 PartitionScheme menu has no 16MB spiffs/LittleFS layout, so point the default
 # entry at default_16MB.csv (6.25MB OTA apps, 3.4MB LittleFS), matching platformio.ini:
 esp32s31.menu.PartitionScheme.default.build.partitions=default_16MB

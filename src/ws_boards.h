@@ -304,38 +304,38 @@
 #ifdef BOARD_HAS_PSRAM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #endif
-#elif defined(WS_ESPRESSIF_ESP32S31_COREBOARD_1)
+#elif defined(WS_ESP32S31_COREBOARD_1)
 // Builds with the generic Espressif esp32s31 board (ARDUINO_ESP32S31_DEV), so
-// WS_ESPRESSIF_ESP32S31_COREBOARD_1 comes from boards.local.txt (Arduino) or
+// WS_ESP32S31_COREBOARD_1 comes from boards.local.txt (Arduino) or
 // build_flags (PlatformIO). Ethernet pins come from the BSP's esp32s31 variant.
-#define BOARD_ID "espressif-esp32s31-coreboard-1" ///< Board ID
-#define USE_LITTLEFS           ///< Use LittleFS for provisioning
-#define USE_ETHERNET           ///< Onboard YT8531DC RGMII Ethernet PHY
-#define USE_STATUS_NEOPIXEL    ///< Onboard WS2812 RGB LED
-#define STATUS_NEOPIXEL_PIN 60 ///< RGB LED data (GPIO60)
-#define STATUS_NEOPIXEL_NUM 1  ///< Number of NeoPixels
-#define BOOT_BUTTON 61         ///< BOOT button (GPIO61)
+#define BOARD_ID "esp32s31-coreboard-1" ///< Board ID
+#define USE_LITTLEFS                    ///< Use LittleFS for provisioning
+#define USE_ETHERNET                    ///< Onboard YT8531DC RGMII Ethernet PHY
+#define USE_STATUS_NEOPIXEL             ///< Onboard WS2812 RGB LED
+#define STATUS_NEOPIXEL_PIN 60          ///< RGB LED data (GPIO60)
+#define STATUS_NEOPIXEL_NUM 1           ///< Number of NeoPixels
+#define BOOT_BUTTON 61                  ///< BOOT button (GPIO61)
 #ifdef BOARD_HAS_PSRAM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #endif
-#elif defined(WS_ESPRESSIF_ESP32S31_KORVO_1)
+#elif defined(WS_ESP32S31_KORVO_1)
 // Builds with the generic Espressif esp32s31 board (ARDUINO_ESP32S31_DEV), so
-// WS_ESPRESSIF_ESP32S31_KORVO_1 comes from boards.local.txt (Arduino) or
+// WS_ESP32S31_KORVO_1 comes from boards.local.txt (Arduino) or
 // build_flags (PlatformIO). The generic variant's RGB LED, I2C and Ethernet
 // pins are the Function-CoreBoard-1's, not this board's.
-#define BOARD_ID "espressif-esp32s31-korvo-1" ///< Board ID
-#define USE_LITTLEFS                          ///< Use LittleFS for provisioning
-#define USE_STATUS_NEOPIXEL                   ///< Onboard WS2812B RGB LED
-#define STATUS_NEOPIXEL_PIN 37 ///< RGB LED data (WS2812_CTRL, GPIO37)
-#define STATUS_NEOPIXEL_NUM 1  ///< Number of NeoPixels
-#define BOOT_BUTTON 61         ///< BOOT button (GPIO61, also LCD_SCK)
+#define BOARD_ID "esp32s31-korvo-1" ///< Board ID
+#define USE_LITTLEFS                ///< Use LittleFS for provisioning
+#define USE_STATUS_NEOPIXEL         ///< Onboard WS2812B RGB LED
+#define STATUS_NEOPIXEL_PIN 37      ///< RGB LED data (WS2812_CTRL, GPIO37)
+#define STATUS_NEOPIXEL_NUM 1       ///< Number of NeoPixels
+#define BOOT_BUTTON 61              ///< BOOT button (GPIO61, also LCD_SCK)
 // 4.3" RGB565 dotclock LCD sub-board (ESP32-S3-LCD-EV-Board-SUB3). Named like
 // the Qualia variant's TFT_* pins: R1-R5/G0-G5/B1-B5 are the 5-6-5 data lines
 // LSB first (DB11-15, DB5-10, DB0-4).
-#define TFT_DE 43              ///< LCD_H_EN
-#define TFT_VSYNC 45           ///< LCD_V_SYNC
-#define TFT_HSYNC 44           ///< LCD_H_SYNC
-#define TFT_PCLK 40            ///< LCD_PCLK
+#define TFT_DE 43                   ///< LCD_H_EN
+#define TFT_VSYNC 45                ///< LCD_V_SYNC
+#define TFT_HSYNC 44                ///< LCD_H_SYNC
+#define TFT_PCLK 40                 ///< LCD_PCLK
 #define TFT_DISP 38 ///< LCD_DISP display enable (also LCD_CS, Boot Mode 0)
 #define TFT_R1 19   ///< DB11 (R3)
 #define TFT_R2 33   ///< DB12 (R4)
