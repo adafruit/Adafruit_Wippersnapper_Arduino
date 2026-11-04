@@ -22,6 +22,16 @@
 #   builds the same revision even if the PR moves while they queue. Build CI
 #   fails the run if the head branch had already moved past pr_sha when it was
 #   dispatched, since its checks would then sit on a commit it didn't build.
+# - A dispatched run's job definitions come from the head branch's copy of
+#   build-migrate-api-v2.yml, but its code from the merge commit. If those two
+#   copies differ (the base changed Build CI since the branch forked), the run
+#   could skip targets or checks the base now has, so this refuses and asks for
+#   the base to be merged in instead.
+# - Retargets of one PR are serialised (job-level concurrency, so plain edits,
+#   which skip the job, can't cancel a real retarget), and each dispatch first
+#   re-checks that the PR's base is still the one this event saw. A delayed
+#   older retarget therefore can't dispatch after a newer one and leave a build
+#   against the old base as the newest Build CI run.
 #
 # pull_request_target runs this file from the base branch with a token that can
 # dispatch workflows. It never checks out or runs the PR's code, and event
@@ -42,6 +52,9 @@ jobs:
     name: Dispatch retarget rebuild
     if: github.event.changes.base != null
     runs-on: ubuntu-latest
+    concurrency:
+      group: rebuild-on-retarget-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       - name: Dispatch Build CI on the PR head branch
         env:
@@ -51,11 +64,26 @@ jobs:
           HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
+          BUILD_WORKFLOW: build-migrate-api-v2.yml
         run: |
           if [ "$HEAD_REPO" != "$REPO" ]; then
             echo "::warning::PR #$PR comes from $HEAD_REPO, and a fork's branch can't be dispatched here. Push a commit (or close and reopen the PR) to rebuild against $BASE_REF."
             exit 0
           fi
+
+          # Reads the PR's current mergeable state, merge commit, head and base.
+          read_pr() {
+            read -r mergeable merge_sha head_sha current_base < <(gh api "repos/$REPO/pulls/$PR" \
+              --jq '"\(.mergeable) \(.merge_commit_sha) \(.head.sha) \(.base.ref)"')
+          }
+          # Exits quietly if a newer retarget has moved the PR to another base;
+          # that retarget's own run rebuilds it.
+          check_base() {
+            if [ "$current_base" != "$BASE_REF" ]; then
+              echo "::notice::PR #$PR now targets $current_base, not $BASE_REF; a newer retarget supersedes this one."
+              exit 0
+            fi
+          }
 
           # GitHub recomputes refs/pull/<n>/merge in the background after a
           # retarget. Wait until its merge commit is exactly the new base's tip
@@ -63,7 +91,8 @@ jobs:
           verified=""
           for attempt in $(seq 1 24); do
             if [ "$attempt" -gt 1 ]; then sleep 5; fi
-            read -r mergeable merge_sha head_sha < <(gh api "repos/$REPO/pulls/$PR" --jq '"\(.mergeable) \(.merge_commit_sha) \(.head.sha)"')
+            read_pr
+            check_base
             if [ "$mergeable" = "false" ]; then
               echo "::error::PR #$PR conflicts with $BASE_REF, so GitHub has no merge commit to build. Resolve the conflicts and push."
               exit 1
@@ -82,12 +111,43 @@ jobs:
             exit 1
           fi
 
-          # Runs the head branch's copy of build-migrate-api-v2.yml. A copy
-          # without the pr_sha input (one that predates this workflow) rejects
-          # the dispatch with HTTP 422 rather than running older build logic.
-          if ! gh api "repos/$REPO/actions/workflows/build-migrate-api-v2.yml/dispatches" \
-            -f ref="$HEAD_REF" -f "inputs[ref]=$merge_sha" -f "inputs[pr_sha]=$head_sha"; then
-            echo "::error::Couldn't dispatch Build CI on $HEAD_REF. If its build-migrate-api-v2.yml has no 'pr_sha' input, merge $BASE_REF into the branch and push."
+          # The dispatched run takes its jobs from the head's copy of Build CI
+          # and its code from the merge commit; they must be the same file.
+          workflow_blob() {
+            gh api "repos/$REPO/contents/.github/workflows/$BUILD_WORKFLOW?ref=$1" --jq '.sha'
+          }
+          head_blob=$(workflow_blob "$head_sha")
+          merge_blob=$(workflow_blob "$merge_sha")
+          if [ "$head_blob" != "$merge_blob" ]; then
+            echo "::error::$HEAD_REF's $BUILD_WORKFLOW differs from the one in its merge with $BASE_REF, so a run dispatched on the branch could skip targets or checks $BASE_REF has. Merge $BASE_REF into $HEAD_REF and push; that push rebuilds the PR."
             exit 1
           fi
-          echo "Dispatched Build CI on $HEAD_REF for merge commit $merge_sha (head $head_sha): https://github.com/$REPO/actions/workflows/build-migrate-api-v2.yml?query=branch%3A$HEAD_REF"
+
+          # Last check before dispatching: the base and head are still the ones
+          # just verified (a retarget or push in between would make this stale).
+          verified_merge=$merge_sha verified_head=$head_sha
+          read_pr
+          check_base
+          if [ "$head_sha" != "$verified_head" ]; then
+            echo "::notice::PR #$PR's head moved to $head_sha; its push builds it, so this rebuild isn't needed."
+            exit 0
+          fi
+
+          # Cancel earlier retarget rebuilds of this head that are still queued
+          # or running; they built against a base the PR no longer has.
+          for status in queued in_progress; do
+            gh api "repos/$REPO/actions/workflows/$BUILD_WORKFLOW/runs?event=workflow_dispatch&status=$status&head_sha=$verified_head" \
+              --jq '.workflow_runs[].id' | while read -r run_id; do
+                echo "Cancelling superseded rebuild $run_id"
+                gh api -X POST "repos/$REPO/actions/runs/$run_id/cancel" > /dev/null || true
+              done
+          done
+
+          # A head copy of Build CI without the pr_sha input rejects the
+          # dispatch with HTTP 422 rather than running older build logic.
+          if ! gh api "repos/$REPO/actions/workflows/$BUILD_WORKFLOW/dispatches" \
+            -f ref="$HEAD_REF" -f "inputs[ref]=$verified_merge" -f "inputs[pr_sha]=$verified_head"; then
+            echo "::error::Couldn't dispatch Build CI on $HEAD_REF. If its $BUILD_WORKFLOW has no 'pr_sha' input, merge $BASE_REF into the branch and push."
+            exit 1
+          fi
+          echo "Dispatched Build CI on $HEAD_REF for merge commit $verified_merge (head $verified_head): https://github.com/$REPO/actions/workflows/$BUILD_WORKFLOW?query=branch%3A$HEAD_REF"
