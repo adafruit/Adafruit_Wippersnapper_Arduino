@@ -21,12 +21,20 @@ on:
   # GitHub only fires `schedule` crons from there, so it dispatches this
   # workflow on the migrate-api-v2 ref instead). Also dispatched by
   # rebuild-on-retarget-migrate-api-v2.yml on a retargeted PR's head branch,
-  # with ref=refs/pull/<n>/merge, so the run's checks land on the PR head
-  # commit as a run of their own that later PR edits can't supersede.
+  # with ref=<that PR's merge commit SHA> and pr_sha=<its head SHA>, so the
+  # run's checks land on the PR head commit as a run of their own that later
+  # PR edits can't supersede.
   workflow_dispatch:
     inputs:
       ref:
         description: "Git ref to build (branch, tag or SHA); blank = the ref this run was dispatched on"
+        required: false
+        default: ""
+      # Declaring this is also what lets the retarget dispatcher tell a head
+      # branch with this version of the workflow from an older one: dispatching
+      # an undeclared input fails (HTTP 422) instead of running stale logic.
+      pr_sha:
+        description: "PR head SHA when ref is that PR's merge commit (used for the build ID); the run must be dispatched on a branch whose tip is this SHA"
         required: false
         default: ""
   # Called by release-migrate-api-v2.yml to build a release tag, whose
@@ -93,12 +101,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
-      # A retarget rebuild is dispatched on the PR's head branch, so there
-      # github.sha is the head commit.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha || (github.event_name == 'workflow_dispatch' && startsWith(inputs.ref, 'refs/pull/') && github.sha) || '' }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -324,12 +340,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
-      # A retarget rebuild is dispatched on the PR's head branch, so there
-      # github.sha is the head commit.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha || (github.event_name == 'workflow_dispatch' && startsWith(inputs.ref, 'refs/pull/') && github.sha) || '' }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -454,12 +478,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
-      # A retarget rebuild is dispatched on the PR's head branch, so there
-      # github.sha is the head commit.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha || (github.event_name == 'workflow_dispatch' && startsWith(inputs.ref, 'refs/pull/') && github.sha) || '' }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -609,12 +641,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
-      # A retarget rebuild is dispatched on the PR's head branch, so there
-      # github.sha is the head commit.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha || (github.event_name == 'workflow_dispatch' && startsWith(inputs.ref, 'refs/pull/') && github.sha) || '' }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -715,12 +755,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
-      # A retarget rebuild is dispatched on the PR's head branch, so there
-      # github.sha is the head commit.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha || (github.event_name == 'workflow_dispatch' && startsWith(inputs.ref, 'refs/pull/') && github.sha) || '' }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -810,12 +858,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
-      # A retarget rebuild is dispatched on the PR's head branch, so there
-      # github.sha is the head commit.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha || (github.event_name == 'workflow_dispatch' && startsWith(inputs.ref, 'refs/pull/') && github.sha) || '' }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -922,12 +978,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
-      # A retarget rebuild is dispatched on the PR's head branch, so there
-      # github.sha is the head commit.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha || (github.event_name == 'workflow_dispatch' && startsWith(inputs.ref, 'refs/pull/') && github.sha) || '' }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -1036,12 +1100,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
-      # A retarget rebuild is dispatched on the PR's head branch, so there
-      # github.sha is the head commit.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha || (github.event_name == 'workflow_dispatch' && startsWith(inputs.ref, 'refs/pull/') && github.sha) || '' }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino

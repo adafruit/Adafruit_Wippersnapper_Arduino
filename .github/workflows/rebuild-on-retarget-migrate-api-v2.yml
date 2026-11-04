@@ -17,6 +17,11 @@
 #   way. Instead this dispatches Build CI on the PR's head branch, which gives
 #   the rebuild a Build CI run of its own on the PR head commit. Edits never
 #   start Build CI runs, so nothing can supersede it except a new push.
+# - The dispatch passes immutable SHAs, not refs/pull/<n>/merge: ref=<the
+#   verified merge commit> and pr_sha=<the head it merges>, so every matrix job
+#   builds the same revision even if the PR moves while they queue. Build CI
+#   fails the run if the head branch had already moved past pr_sha when it was
+#   dispatched, since its checks would then sit on a commit it didn't build.
 #
 # pull_request_target runs this file from the base branch with a token that can
 # dispatch workflows. It never checks out or runs the PR's code, and event
@@ -53,34 +58,36 @@ jobs:
           fi
 
           # GitHub recomputes refs/pull/<n>/merge in the background after a
-          # retarget. Wait until its merge commit sits on the new base's tip
-          # (a test merge commit's first parent is the base).
-          merge_base="" base_tip="unknown"
+          # retarget. Wait until its merge commit is exactly the new base's tip
+          # (first parent) merged with the PR's current head (second parent).
+          verified=""
           for attempt in $(seq 1 24); do
             if [ "$attempt" -gt 1 ]; then sleep 5; fi
-            read -r mergeable merge_sha < <(gh api "repos/$REPO/pulls/$PR" --jq '"\(.mergeable) \(.merge_commit_sha)"')
+            read -r mergeable merge_sha head_sha < <(gh api "repos/$REPO/pulls/$PR" --jq '"\(.mergeable) \(.merge_commit_sha) \(.head.sha)"')
             if [ "$mergeable" = "false" ]; then
-              echo "::error::PR #$PR conflicts with $BASE_REF, so GitHub has no merge ref to build. Resolve the conflicts and push."
+              echo "::error::PR #$PR conflicts with $BASE_REF, so GitHub has no merge commit to build. Resolve the conflicts and push."
               exit 1
             fi
             [ "$mergeable" = "true" ] || continue
             base_tip=$(gh api "repos/$REPO/branches/$BASE_REF" --jq '.commit.sha')
-            merge_base=$(gh api "repos/$REPO/commits/$merge_sha" --jq '.parents[0].sha')
-            if [ "$merge_base" = "$base_tip" ]; then
-              echo "refs/pull/$PR/merge is $merge_sha, on $BASE_REF at $base_tip"
+            parents=$(gh api "repos/$REPO/commits/$merge_sha" --jq '[.parents[].sha] | join(" ")')
+            if [ "$parents" = "$base_tip $head_sha" ]; then
+              verified=1
+              echo "Merge commit $merge_sha = $BASE_REF at $base_tip + head $head_sha"
               break
             fi
           done
-          if [ "$merge_base" != "$base_tip" ]; then
-            echo "::error::refs/pull/$PR/merge didn't move onto $BASE_REF within 2 minutes. Push a commit (or close and reopen the PR) to rebuild."
+          if [ -z "$verified" ]; then
+            echo "::error::PR #$PR's merge commit didn't move onto $BASE_REF within 2 minutes. Push a commit (or close and reopen the PR) to rebuild."
             exit 1
           fi
 
-          # Runs the head branch's copy of build-migrate-api-v2.yml. A branch
-          # whose copy predates the `ref` input rejects the dispatch (HTTP 422).
+          # Runs the head branch's copy of build-migrate-api-v2.yml. A copy
+          # without the pr_sha input (one that predates this workflow) rejects
+          # the dispatch with HTTP 422 rather than running older build logic.
           if ! gh api "repos/$REPO/actions/workflows/build-migrate-api-v2.yml/dispatches" \
-            -f ref="$HEAD_REF" -f "inputs[ref]=refs/pull/$PR/merge"; then
-            echo "::error::Couldn't dispatch Build CI on $HEAD_REF. If its build-migrate-api-v2.yml has no 'ref' input, merge $BASE_REF into the branch and push."
+            -f ref="$HEAD_REF" -f "inputs[ref]=$merge_sha" -f "inputs[pr_sha]=$head_sha"; then
+            echo "::error::Couldn't dispatch Build CI on $HEAD_REF. If its build-migrate-api-v2.yml has no 'pr_sha' input, merge $BASE_REF into the branch and push."
             exit 1
           fi
-          echo "Dispatched Build CI on $HEAD_REF for refs/pull/$PR/merge: https://github.com/$REPO/actions/workflows/build-migrate-api-v2.yml?query=branch%3A$HEAD_REF"
+          echo "Dispatched Build CI on $HEAD_REF for merge commit $merge_sha (head $head_sha): https://github.com/$REPO/actions/workflows/build-migrate-api-v2.yml?query=branch%3A$HEAD_REF"
