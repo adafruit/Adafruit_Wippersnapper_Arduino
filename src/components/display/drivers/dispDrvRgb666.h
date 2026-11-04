@@ -19,8 +19,7 @@
 #ifndef WS_DISP_DRV_RGB666_H
 #define WS_DISP_DRV_RGB666_H
 
-#if defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666) ||                              \
-    defined(WS_ESPRESSIF_ESP32S31_KORVO_1)
+#if defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666) || defined(WS_ESP32S31_KORVO_1)
 
 #include "dispDrvBase.h"
 #include <Arduino_GFX_Library.h>
@@ -109,7 +108,7 @@ public:
       v_bp = 90;
       pclk_active_neg = 1; // pclk_active_high = False
 #endif
-#ifdef WS_ESPRESSIF_ESP32S31_KORVO_1
+#ifdef WS_ESP32S31_KORVO_1
     } else if (strcmp(_panel, "esp32-s3-lcd-ev-board-sub3") == 0 ||
                strcmp(_panel, "ST7262E43") == 0) {
       // 4.3" 800x480 ESP32-S3-LCD-EV-Board-SUB3, no init sequence needed.
@@ -305,6 +304,6 @@ private:
   Arduino_ESP32RGBPanel *_rgbpanel; ///< Dotclock panel bus
 };
 
-#endif // ARDUINO_ADAFRUIT_QUALIA_S3_RGB666 || WS_ESPRESSIF_ESP32S31_KORVO_1
+#endif // ARDUINO_ADAFRUIT_QUALIA_S3_RGB666 || WS_ESP32S31_KORVO_1
 
 #endif // WS_DISP_DRV_RGB666_H
