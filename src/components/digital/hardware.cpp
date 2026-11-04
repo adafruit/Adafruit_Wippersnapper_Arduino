@@ -45,10 +45,10 @@ DigitalHardware::~DigitalHardware() {
 
   if (!has_expander) {
     digitalWrite(_pin_num, LOW);
-    pinMode(_pin_num, INPUT);
+    pinMode(_pin_num, WS_INPUT);
   } else {
     _expander_drv->digitalWrite(_pin_num, LOW);
-    _expander_drv->pinMode(_pin_num, INPUT);
+    _expander_drv->pinMode(_pin_num, WS_INPUT);
   }
 
   if (IsStatusLEDPin())
@@ -95,71 +95,90 @@ bool DigitalHardware::SetMode() {
       _expander_drv->pinMode(_pin_num, OUTPUT);
       _expander_drv->digitalWrite(_pin_num, level);
     }
-  } else if (_direction == ws_digital_Direction_D_INPUT) {
-    if (!has_expander) {
-      pinMode(_pin_num, INPUT);
-    } else {
-      _expander_drv->pinMode(_pin_num, INPUT);
-    }
-  } else if (_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
-    if (!has_expander) {
-      pinMode(_pin_num, INPUT_PULLUP);
-    } else {
-      _expander_drv->pinMode(_pin_num, INPUT_PULLUP);
-    }
-  } else if (_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+  } else {
     uint8_t mode;
-    if (!GetPullDownMode(_pin_num, _expander_drv, &mode))
+    if (!GetInputMode(_pin_num, _expander_drv, _direction, &mode))
       return false;
     if (!has_expander) {
       pinMode(_pin_num, mode);
     } else {
       _expander_drv->pinMode(_pin_num, mode);
     }
-  } else {
-    return false;
   }
   return true;
 }
 
 /*!
-    @brief  Resolves the pinMode() value that enables a pin's internal
-            pull-down resistor, if the pin has one.
-    @note   INPUT_PULLDOWN is a macro on the ESP32 and SAMD cores but an
-            enum value on arduino-pico (RP2040/RP2350), so it can't be
-            detected with #ifdef alone. Adafruit_seesaw.h also #defines
-            INPUT_PULLDOWN as 0x03 when the core lacks it, which on ESP8266
-            is OUTPUT_OPEN_DRAIN, so ESP8266 is checked first: it only has
-            a pull-down on GPIO16 (INPUT_PULLDOWN_16). RP2350 chip revisions
-            before A4 have a pull-down erratum (E9) that can latch the pin
-            high.
+    @brief  Reports whether a host MCU pin has an internal pull resistor.
+            Mirrors the hasPullup/hasPulldown flags in the board's
+            Wippersnapper_Boards definition.json, so the broker should
+            never ask for a pull a pin doesn't have; this is the backstop.
+    @note   RP2350 chip revisions before A4 have a pull-down erratum (E9)
+            that can latch the pin high.
+    @param  pin_num  The pin's number.
+    @param  pull_up  True to check for a pull-up, False for a pull-down.
+    @return True if the pin has the requested pull resistor, else False.
+*/
+static bool HostPinHasPull(uint8_t pin_num, bool pull_up) {
+#if defined(ARDUINO_ARCH_ESP8266)
+  // GPIO16 has only a pull-down, GPIO0-15 only pull-ups
+  return pull_up ? (pin_num != 16) : (pin_num == 16);
+#elif defined(CONFIG_IDF_TARGET_ESP32)
+  // Original ESP32: input-only GPIO34-39 have no pull resistors
+  (void)pull_up;
+  return pin_num < 34 || pin_num > 39;
+#else
+  (void)pin_num;
+#if defined(WS_INPUT_PULLDOWN)
+  (void)pull_up;
+  return true;
+#else
+  return pull_up;
+#endif
+#endif
+}
+
+/*!
+    @brief  Resolves the pinMode() value for an input direction, checking
+            that the pin has the requested pull resistor.
+    @note   Returns WS_INPUT* modes from ws_boards.h, never the core's
+            INPUT* constants (see ws_boards.h for why). Expander drivers
+            translate WS_INPUT* modes in ExpanderHardware::pinMode().
     @param  pin_num       The pin's number.
     @param  expander_drv  The pin's expander driver, or nullptr for a
                           host MCU pin.
+    @param  direction     D_INPUT, D_INPUT_PULL_UP or D_INPUT_PULL_DOWN.
     @param  mode          Out: the pinMode() value to use. May be nullptr
                           to only check for support.
-    @return True if the pin supports an internal pull-down, else False.
+    @return True if the pin supports the direction, else False.
 */
-bool DigitalHardware::GetPullDownMode(uint8_t pin_num,
-                                      ExpanderHardware *expander_drv,
-                                      uint8_t *mode) {
-  uint8_t pull_down_mode;
-#if defined(ARDUINO_ARCH_ESP8266)
-  if (expander_drv != nullptr || pin_num != 16)
-    return false;
-  pull_down_mode = INPUT_PULLDOWN_16;
-#elif defined(INPUT_PULLDOWN) || defined(ARDUINO_ARCH_RP2040)
-  (void)pin_num;
-  if (expander_drv != nullptr && !expander_drv->supportsPullDown())
-    return false;
-  pull_down_mode = INPUT_PULLDOWN;
+bool DigitalHardware::GetInputMode(uint8_t pin_num,
+                                   ExpanderHardware *expander_drv,
+                                   ws_digital_Direction direction,
+                                   uint8_t *mode) {
+  uint8_t input_mode;
+  if (direction == ws_digital_Direction_D_INPUT) {
+    input_mode = WS_INPUT;
+  } else if (direction == ws_digital_Direction_D_INPUT_PULL_UP) {
+    if (expander_drv != nullptr ? !expander_drv->hasPull(pin_num, true)
+                                : !HostPinHasPull(pin_num, true))
+      return false;
+    input_mode = WS_INPUT_PULLUP;
+  } else if (direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+#if defined(WS_INPUT_PULLDOWN)
+    if (expander_drv != nullptr ? !expander_drv->hasPull(pin_num, false)
+                                : !HostPinHasPull(pin_num, false))
+      return false;
+    input_mode = WS_INPUT_PULLDOWN;
 #else
-  (void)pin_num;
-  (void)expander_drv;
-  return false;
+    // No WS_INPUT_PULLDOWN value to hand an expander driver either
+    return false;
 #endif
+  } else {
+    return false;
+  }
   if (mode != nullptr)
-    *mode = pull_down_mode;
+    *mode = input_mode;
   return true;
 }
 

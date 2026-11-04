@@ -52,6 +52,18 @@ public:
   void pinMode(uint8_t pin, uint8_t mode) override { _tca.pinMode(pin, mode); }
 
   /*!
+   * @brief Every GPIO pin has an internal pull-up, none have pull-downs
+   *        (matches the expander's definition.json).
+   * @param pin The pin number.
+   * @param pull_up True to check for a pull-up, False for a pull-down.
+   * @return True for a pull-up, False for a pull-down.
+   */
+  bool hasPull(uint8_t pin, bool pull_up) override {
+    (void)pin;
+    return pull_up;
+  }
+
+  /*!
    * @brief Writes a digital value to a specific pin on the TCA8418.
    * @param pin The pin number to write to.
    * @param value The value to write (HIGH or LOW).

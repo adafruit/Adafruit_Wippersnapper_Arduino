@@ -47,8 +47,8 @@ public:
   ws_digital_SampleMode GetSampleMode() const;
   ExpanderHardware *GetExpanderDriver() const;
 
-  static bool GetPullDownMode(uint8_t pin_num, ExpanderHardware *expander_drv,
-                              uint8_t *mode);
+  static bool GetInputMode(uint8_t pin_num, ExpanderHardware *expander_drv,
+                           ws_digital_Direction direction, uint8_t *mode);
 
   // Sleep cycle support
   bool DidReadSend() const;

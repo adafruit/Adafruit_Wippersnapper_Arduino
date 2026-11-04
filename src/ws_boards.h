@@ -308,4 +308,35 @@
 #warning "Board type not identified within ws_boards.h!"
 #endif
 
+// WipperSnapper input pin modes for host MCU pins. Use these, never the core's
+// INPUT/INPUT_PULLUP/INPUT_PULLDOWN: libraries may #define their own fallbacks
+// (Adafruit_seesaw.h defines INPUT_PULLDOWN as 0x03 when the core lacks one,
+// and on ESP8266 0x03 is OUTPUT_OPEN_DRAIN). Expander drivers translate these
+// to their library's constants in ExpanderHardware::pinMode(). Which pins
+// actually have pull resistors is decided per pin by
+// DigitalHardware::GetInputMode().
+
+// Platform overrides, where a value differs from the defaults below
+#if defined(ARDUINO_ARCH_ESP8266)
+#define WS_INPUT_PULLDOWN                                                      \
+  INPUT_PULLDOWN_16 ///< ESP8266 only has a pull-down on GPIO16
+#endif
+
+// Defaults. WS_INPUT_PULLDOWN is chosen by architecture, not by testing
+// defined(INPUT_PULLDOWN), so it can't depend on include order. arduino-pico
+// (RP2040/RP2350, both ARDUINO_ARCH_RP2040) declares INPUT_PULLDOWN as an
+// enum, not a macro. Left undefined on platforms with no pull-downs.
+#ifndef WS_INPUT
+#define WS_INPUT INPUT ///< Floating input
+#endif
+#ifndef WS_INPUT_PULLUP
+#define WS_INPUT_PULLUP INPUT_PULLUP ///< Input with internal pull-up
+#endif
+#ifndef WS_INPUT_PULLDOWN
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_SAMD) ||               \
+    defined(ARDUINO_ARCH_RP2040)
+#define WS_INPUT_PULLDOWN INPUT_PULLDOWN ///< Input with internal pull-down
+#endif
+#endif
+
 #endif // WS_BOARDS_H
