@@ -1,0 +1,62 @@
+name: MemBrowse memory report
+description: >-
+  Analyze the firmware this CI job just built with MemBrowse and upload the
+  report as a membrowse-report-<target> artifact. Does nothing for boards that
+  are not listed in .github/membrowse-targets.json.
+
+inputs:
+  board:
+    description: CI board name (the build job's matrix.arduino-platform)
+    required: true
+  api_key:
+    description: MemBrowse API key
+    required: false
+    default: ''
+  api_url:
+    description: MemBrowse API base URL
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Look up MemBrowse target
+      id: target
+      shell: bash
+      env:
+        BOARD: ${{ inputs.board }}
+      run: |
+        set -euo pipefail
+        entry=$(jq -c --arg b "$BOARD" '.[] | select(.ci_board == $b)' .github/membrowse-targets.json)
+        if [ -z "$entry" ]; then
+          echo "$BOARD is not tracked by MemBrowse"
+          exit 0
+        fi
+        # ls fails the step if a path pattern matches nothing.
+        ld_pattern=$(jq -r '.ld' <<<"$entry")
+        elf=$(ls examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.elf)
+        ld=$(ls ${ld_pattern/#\~/$HOME})
+        jq -r '"target_name=\(.target_name)", "skip_sections=\(.skip_sections // "")"' \
+          <<<"$entry" >> "$GITHUB_OUTPUT"
+        echo "elf=$elf" >> "$GITHUB_OUTPUT"
+        echo "ld=$ld" >> "$GITHUB_OUTPUT"
+
+    - name: Run MemBrowse
+      id: analyze
+      if: steps.target.outputs.target_name != ''
+      uses: membrowse/membrowse-action@v1
+      with:
+        target_name: ${{ steps.target.outputs.target_name }}
+        elf: ${{ steps.target.outputs.elf }}
+        ld: ${{ steps.target.outputs.ld }}
+        skip_sections: ${{ steps.target.outputs.skip_sections }}
+        api_key: ${{ inputs.api_key }}
+        api_url: ${{ inputs.api_url }}
+        verbose: INFO
+
+    - name: Upload report artifact
+      if: steps.target.outputs.target_name != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: membrowse-report-${{ steps.target.outputs.target_name }}
+        path: ${{ steps.analyze.outputs.report_path }}

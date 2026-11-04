@@ -132,6 +132,19 @@ jobs:
           pip3 install esptool
       - name: Build for ESP32-SX (esptool)
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      # Analyzes this build if the board is listed in .github/membrowse-targets.json.
+      # Defined once here and reused in the other build jobs via *membrowse-step.
+      - &membrowse-step
+        name: MemBrowse memory report
+        if: >-
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        continue-on-error: true
+        uses: ./.github/actions/membrowse-report
+        with:
+          board: ${{ matrix.arduino-platform }}
+          api_key: ${{ secrets.MEMBROWSE_API_KEY }}
+          api_url: ${{ vars.MEMBROWSE_API_URL }}
       - name: list files
         run: |
           ls -Rla examples/
@@ -348,6 +361,7 @@ jobs:
       - name: Build for ESP32-SX
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      - *membrowse-step
       - name: list files (tree)
         run: |
           tree
@@ -472,6 +486,7 @@ jobs:
           pip install esptool
       - name: build ESP32 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --boards-local-txt
+      - *membrowse-step
       - name: Check artifacts
         run: |
           ls examples/Wippersnapper_demo/build/*
@@ -617,6 +632,7 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build SAMD platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      - *membrowse-step
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -710,6 +726,7 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build RP2040 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      - *membrowse-step
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -798,6 +815,7 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build ESP8266 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      - *membrowse-step
       - name: list build artifacts
         run: |
           ls
@@ -1136,13 +1154,3 @@ jobs:
           GH_REPO_TOKEN: ${{ secrets.GH_REPO_TOKEN }}
           PRETTYNAME: "Adafruit.io WipperSnapper Library"
         run: bash ci/doxy_gen_and_deploy.sh
-
-  membrowse:
-    # The merge jobs depend on every release and development build group.
-    needs: [merge-job-build-files, merge-job2, clang_and_doxy]
-    if: >-
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    uses: ./.github/workflows/membrowse-report.yml
-    secrets:
-      MEMBROWSE_API_KEY: ${{ secrets.MEMBROWSE_API_KEY }}
