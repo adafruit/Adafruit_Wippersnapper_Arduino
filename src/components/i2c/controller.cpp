@@ -879,22 +879,16 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
   for (size_t i = 0; i < spaces_count; i++) {
     ws_i2c_AddressSpaceResult *result = _i2c_model->GetNextProbedResult();
     if (result == nullptr) {
-      ws_i2c_Descriptor desc = {};
-      desc.has_address_space = true;
-      desc.address_space = spaces[i];
-      Ws->error_handler->publishComponentError(
-          desc, "Too many address spaces to probe!");
+      Ws->error_handler->publishDeviceError(
+          spaces[i], "Too many address spaces to probe!");
       break;
     }
 
     // Find or create the bus for this address space
     I2cHardware *bus = findOrCreateBus(spaces[i].pin_scl, spaces[i].pin_sda);
     if (bus == nullptr) {
-      ws_i2c_Descriptor desc = {};
-      desc.has_address_space = true;
-      desc.address_space = spaces[i];
-      Ws->error_handler->publishComponentError(
-          desc, "Failed to find or create I2C bus!");
+      Ws->error_handler->publishDeviceError(
+          spaces[i], "Failed to find or create I2C bus!");
       continue;
     }
 
@@ -903,11 +897,8 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
     uint32_t *found_buf = _i2c_model->GetFoundAddressBuf(result_idx);
     size_t *found_count = _i2c_model->GetFoundAddressCount(result_idx);
     if (found_buf == nullptr || found_count == nullptr) {
-      ws_i2c_Descriptor desc = {};
-      desc.has_address_space = true;
-      desc.address_space = spaces[i];
-      Ws->error_handler->publishComponentError(
-          desc, "Internal error: probe buffer overflow!");
+      Ws->error_handler->publishDeviceError(
+          spaces[i], "Internal error: probe buffer overflow!");
       continue;
     }
 
@@ -915,11 +906,8 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
     ws_i2c_probe_err_t probe_err = bus->ProbeAddresses(
         &spaces[i], addresses, addresses_count, result, found_buf, found_count);
     if (probe_err != WS_I2C_PROBE_OK) {
-      ws_i2c_Descriptor desc = {};
-      desc.has_address_space = true;
-      desc.address_space = spaces[i];
-      Ws->error_handler->publishComponentError(
-          desc, I2cHardware::ProbeErrorToString(probe_err));
+      Ws->error_handler->publishDeviceError(
+          spaces[i], I2cHardware::ProbeErrorToString(probe_err));
       continue;
     }
 
