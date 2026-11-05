@@ -6,9 +6,13 @@ Usage: resolve_bsp_refs.py <workflow.json> <ci-arduino/all_platforms.py>
 The workflow must already be converted to JSON (e.g. `yq -o=json`). Every
 arduino-platform target in every job matrix is looked up in ci-arduino's
 ALL_PLATFORMS; the optional third field ("owner/branch") names the
-arduino-esp32 fork and branch build_platform.py clones for that target.
-Each unique ref is resolved to its commit SHA so the cache key changes
-whenever the branch moves.
+arduino-esp32 fork and branch (or tag) that build_platform.py clones for that
+target. Each unique ref is resolved to its commit SHA, so the cache key changes
+whenever the branch moves. A single matrix may mix refs, because the keys are
+per target. A ref that doesn't resolve is reported as an ::error:: annotation
+but doesn't fail the job: its targets just aren't cached and fall back to
+build_platform.py's own clone, so the other refs are still cached and
+downstream jobs aren't skipped.
 
 For each ref it also fetches package/package_esp32_index.template.json at
 that SHA (via `gh api`, so GH_TOKEN must be set) and derives the cache key of
@@ -67,7 +71,30 @@ for job in workflow.get("jobs", {}).values():
         targets += matrix.get("arduino-platform") or []
         targets += [i["arduino-platform"] for i in matrix.get("include") or [] if "arduino-platform" in i]
 
-refs, keys, bsp, failed = {}, {}, {}, False
+def ls_remote(owner, name):
+    """SHA that `git clone -b <name>` would check out: a branch, else a tag (peeled).
+    Returns None if neither exists. Network failures are retried; if they persist,
+    also None, with a warning instead of the not-found error."""
+    url = "https://github.com/%s/arduino-esp32.git" % owner
+    for attempt in range(1, 4):
+        # The peeled "^{}" line (an annotated tag's commit) is only listed when asked for
+        r = subprocess.run(["git", "ls-remote", url, name, name + "^{}"], capture_output=True, text=True)
+        if r.returncode == 0:
+            found = dict(reversed(line.split("\t")) for line in r.stdout.splitlines() if "\t" in line)
+            for ref in ("refs/heads/" + name, "refs/tags/%s^{}" % name, "refs/tags/" + name):
+                if ref in found:
+                    return found[ref]
+            print("::error::%s/%s (used by %s) is not a branch or tag of %s/arduino-esp32; "
+                  "these targets fall back to build_platform.py's own clone"
+                  % (owner, name, ", ".join(users[owner + "/" + name]), owner), file=sys.stderr)
+            return None
+        print("::warning::git ls-remote %s failed (attempt %d): %s" % (url, attempt, r.stderr.strip()), file=sys.stderr)
+        time.sleep(10 * attempt)
+    print("::warning::could not reach %s; %s/%s targets are not cached this run" % (url, owner, name), file=sys.stderr)
+    return None
+
+
+users = {}
 for target in sorted(set(targets)):
     entry = platforms.get(target)
     if entry is None:
@@ -76,22 +103,23 @@ for target in sorted(set(targets)):
     # Only "owner/branch" strings are BSP refs; ALL_PLATFORMS also holds group tuples
     if len(entry) < 3 or not isinstance(entry[2], str) or "/" not in entry[2]:
         continue
-    owner, branch = entry[2].split("/")[0], entry[2].split("/")[1]
-    if entry[2] not in refs:
-        out = subprocess.run(
-            ["git", "ls-remote", "https://github.com/%s/arduino-esp32.git" % owner, "refs/heads/" + branch],
-            capture_output=True, text=True).stdout.split()
-        if not out:
-            print("::error::%s (used by %s) does not resolve to a branch of %s/arduino-esp32"
-                  % (entry[2], target, owner), file=sys.stderr)
-            failed = True
-            continue
-        refs[entry[2]] = {"owner": owner, "branch": branch, "sha": out[0],
-                          "key": salted("bsp-arduino-esp32-%s-%s-%s" % (owner, branch, out[0])),
-                          "tools_key": tools_key(owner, out[0])}
-    if entry[2] in refs:
-        keys[target] = refs[entry[2]]["key"]
-        bsp[target] = refs[entry[2]]
+    users.setdefault(entry[2], []).append(target)
+
+# An unresolvable ref is reported, but doesn't fail the job: that would skip the
+# merge/release jobs downstream, and the other refs can still be cached.
+refs, keys, bsp = {}, {}, {}
+for ref_info, used_by in users.items():
+    # Same split as ci-arduino's manually_install_esp32_bsp()
+    owner, branch = ref_info.split("/")[0], ref_info.split("/")[1]
+    sha = ls_remote(owner, branch)
+    if not sha:
+        continue
+    refs[ref_info] = {"owner": owner, "branch": branch, "sha": sha,
+                      "key": salted("bsp-arduino-esp32-%s-%s-%s" % (owner, branch, sha)),
+                      "tools_key": tools_key(owner, sha)}
+    for target in used_by:
+        keys[target] = refs[ref_info]["key"]
+        bsp[target] = refs[ref_info]
 
 for ref, info in refs.items():
     used_by = sorted(t for t, k in keys.items() if k == info["key"])
@@ -104,4 +132,3 @@ print("refs=" + json.dumps(list(refs.values())))
 print("keys=" + json.dumps(keys))
 print("bsp=" + json.dumps(bsp))
 print("tools=" + json.dumps(list(tools.values())))
-sys.exit(1 if failed else 0)
