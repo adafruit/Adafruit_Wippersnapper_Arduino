@@ -32,11 +32,7 @@ public:
   drvStemmaSoil(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
                 const char *driver_name);
 
-  /*!
-      @brief    Destructor for a STEMMA soil sensor.
-  */
-  ~drvStemmaSoil() { _seesaw = nullptr; }
-
+  ~drvStemmaSoil();
   bool begin() override;
   bool getEventAmbientTemp(sensors_event_t *tempEvent);
   bool getEventRaw(sensors_event_t *rawEvent);

@@ -39,6 +39,16 @@ drvStemmaSoil::drvStemmaSoil(TwoWire *i2c, uint16_t sensorAddress,
 }
 
 /*!
+    @brief    Destructor for a STEMMA soil sensor. Defined here, not in the
+              header, because the header only forward-declares
+              Adafruit_seesaw and deleting an incomplete type is undefined.
+*/
+drvStemmaSoil::~drvStemmaSoil() {
+  delete _seesaw;
+  _seesaw = nullptr;
+}
+
+/*!
     @brief    Initializes the soil sensor and begins I2C.
     @returns  True if initialized successfully, False otherwise.
 */
