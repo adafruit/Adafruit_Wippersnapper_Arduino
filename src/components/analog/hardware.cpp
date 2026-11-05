@@ -31,10 +31,10 @@ AnalogHardware::AnalogHardware(const char *pin_name, uint8_t pin_num,
                                ExpanderHardware *expander_drv)
     : _pin_num(pin_num), _read_mode(read_mode), _sample_mode(sample_mode),
       _period(period), _prv_time(0), _did_read_send(false), _value_raw(0),
-      _value_voltage(0.0f), _prv_value_raw(0), _native_adc_resolution(0),
-      _desired_adc_resolution(0), _max_scale_resolution_desired(0),
-      _max_scale_resolution_native(0), _ref_voltage(ref_voltage),
-      _expander_drv(expander_drv) {
+      _value_voltage(0.0f), _prv_value_raw(0), _prv_value_voltage(0.0f),
+      _native_adc_resolution(0), _desired_adc_resolution(0),
+      _max_scale_resolution_desired(0), _max_scale_resolution_native(0),
+      _ref_voltage(ref_voltage), _expander_drv(expander_drv) {
   strncpy(_pin_name, pin_name, sizeof(_pin_name) - 1);
   _pin_name[sizeof(_pin_name) - 1] = '\0';
   if (_expander_drv != nullptr) {
@@ -161,16 +161,27 @@ float AnalogHardware::readVoltage() {
 }
 
 /*!
-    @brief  Checks if the pin's raw value has changed since last check.
-    @return True if the value changed.
+    @brief  Checks if the pin's value (raw or voltage, per read_mode)
+            has changed since last check.
+    @return True if the value changed, False if unchanged or the
+            read mode is unknown.
 */
 bool AnalogHardware::checkEvent() {
   readValue();
 
-  if (_value_raw == _prv_value_raw)
+  if (_read_mode == ws_sensor_Type_T_RAW) {
+    if (_value_raw == _prv_value_raw)
+      return false;
+    _prv_value_raw = _value_raw;
+    return true;
+  } else if (_read_mode == ws_sensor_Type_T_VOLTAGE) {
+    if (_value_voltage == _prv_value_voltage)
+      return false;
+    _prv_value_voltage = _value_voltage;
+    return true;
+  } else {
     return false;
-  _prv_value_raw = _value_raw;
-  return true;
+  }
 }
 
 /*!
@@ -180,8 +191,11 @@ bool AnalogHardware::checkEvent() {
 float AnalogHardware::readValue() {
   if (_read_mode == ws_sensor_Type_T_RAW) {
     return (float)readValueRaw();
+  } else if (_read_mode == ws_sensor_Type_T_VOLTAGE) {
+    return readVoltage();
+  } else {
+    return 0.0f;
   }
-  return readVoltage();
 }
 
 /*!
