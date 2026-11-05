@@ -87,6 +87,7 @@ jobs:
     needs: bsp-resolve
     if: ${{ !cancelled() && inputs.skip_warm != true && needs.bsp-resolve.outputs.refs != '' && needs.bsp-resolve.outputs.refs != '[]' }}
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
