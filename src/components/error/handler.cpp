@@ -158,6 +158,36 @@ bool ErrorHandler::publishDeviceError(const char *error_msg) {
 }
 
 /*!
+    @brief  Publishes a device-level error for an I2C bus (address space).
+    @param  i2c_bus
+            The I2C address space (SCL/SDA pins, optional mux) that failed.
+    @param  error_msg
+            The error message string.
+    @return True if the error was published successfully, False otherwise.
+*/
+bool ErrorHandler::publishDeviceError(ws_i2c_AddressSpace i2c_bus,
+                                      const char *error_msg) {
+  WS_DEBUG_PRINT("[error] I2C bus SCL=");
+  WS_DEBUG_PRINTVAR(i2c_bus.pin_scl);
+  WS_DEBUG_PRINT(" SDA=");
+  WS_DEBUG_PRINTVAR(i2c_bus.pin_sda);
+  WS_DEBUG_PRINT(": ");
+  WS_DEBUG_PRINTLNVAR(error_msg);
+
+  // memset, not init_zero assignment - see note in ErrorHandler()
+  memset(&_d2b_msg, 0, sizeof(_d2b_msg));
+  _d2b_msg.which_payload = ws_error_D2B_device_tag;
+
+  ws_error_DeviceError *dev = &_d2b_msg.payload.device;
+  dev->message.funcs.encode = encode_string_callback;
+  dev->message.arg = (void *)error_msg;
+  dev->which_descriptor = ws_error_DeviceError_i2c_bus_tag;
+  dev->descriptor.i2c_bus = i2c_bus;
+
+  return publishD2B();
+}
+
+/*!
     @brief  Publishes a component error for a pin-based component.
     @param  pin
             The pin name string.
