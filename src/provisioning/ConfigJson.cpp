@@ -22,8 +22,9 @@ void convertToJson(const networkConfig &src, JsonVariant dst) {
 
 // Extracts a network configuration structure from a JSON variant
 void convertFromJson(JsonVariantConst src, networkConfig &dst) {
-  strlcpy(dst.ssid, src["network_ssid"] | "testvar", sizeof(dst.ssid));
-  strlcpy(dst.pass, src["network_password"] | "testvar", sizeof(dst.pass));
+  // Missing keys leave the credentials empty, an empty SSID means no WiFi
+  strlcpy(dst.ssid, src["network_ssid"] | "", sizeof(dst.ssid));
+  strlcpy(dst.pass, src["network_password"] | "", sizeof(dst.pass));
 }
 
 // Converts a secretsConfig structure to a JSON variant
