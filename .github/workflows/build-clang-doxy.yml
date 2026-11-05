@@ -34,7 +34,7 @@ jobs:
           lookup-only: true
       - name: Download stable Nanopb
         if: steps.cache-nanopb.outputs.cache-hit != 'true'
-        timeout-minutes: 5
+        timeout-minutes: 30
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Save nanopb to cache
