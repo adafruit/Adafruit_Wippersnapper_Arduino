@@ -606,9 +606,12 @@ jobs:
         id: core-key
         if: ${{ !cancelled() }}
         run: |
-          echo "key=arduino15-staging-${{ github.job }}-$(arduino-cli core list | awk 'NR>1 {print $1 "@" $2}' | sort | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+          cores=$(arduino-cli core list | awk 'NR>1 {print $1 "@" $2}' | sort)
+          # No core installed (e.g. an earlier step failed): don't save under the empty-list key
+          [ -n "$cores" ] || exit 0
+          echo "key=arduino15-staging-${{ github.job }}-$(echo "$cores" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
       - name: Save core downloads to cache
-        if: ${{ !cancelled() && steps.core-key.outputs.key != steps.cache-core.outputs.cache-matched-key }}
+        if: ${{ !cancelled() && steps.core-key.outputs.key != '' && steps.core-key.outputs.key != steps.cache-core.outputs.cache-matched-key }}
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -707,9 +710,12 @@ jobs:
         id: core-key
         if: ${{ !cancelled() }}
         run: |
-          echo "key=arduino15-staging-${{ github.job }}-$(arduino-cli core list | awk 'NR>1 {print $1 "@" $2}' | sort | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+          cores=$(arduino-cli core list | awk 'NR>1 {print $1 "@" $2}' | sort)
+          # No core installed (e.g. an earlier step failed): don't save under the empty-list key
+          [ -n "$cores" ] || exit 0
+          echo "key=arduino15-staging-${{ github.job }}-$(echo "$cores" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
       - name: Save core downloads to cache
-        if: ${{ !cancelled() && steps.core-key.outputs.key != steps.cache-core.outputs.cache-matched-key }}
+        if: ${{ !cancelled() && steps.core-key.outputs.key != '' && steps.core-key.outputs.key != steps.cache-core.outputs.cache-matched-key }}
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -803,9 +809,12 @@ jobs:
         id: core-key
         if: ${{ !cancelled() }}
         run: |
-          echo "key=arduino15-staging-${{ github.job }}-$(arduino-cli core list | awk 'NR>1 {print $1 "@" $2}' | sort | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+          cores=$(arduino-cli core list | awk 'NR>1 {print $1 "@" $2}' | sort)
+          # No core installed (e.g. an earlier step failed): don't save under the empty-list key
+          [ -n "$cores" ] || exit 0
+          echo "key=arduino15-staging-${{ github.job }}-$(echo "$cores" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
       - name: Save core downloads to cache
-        if: ${{ !cancelled() && steps.core-key.outputs.key != steps.cache-core.outputs.cache-matched-key }}
+        if: ${{ !cancelled() && steps.core-key.outputs.key != '' && steps.core-key.outputs.key != steps.cache-core.outputs.cache-matched-key }}
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
