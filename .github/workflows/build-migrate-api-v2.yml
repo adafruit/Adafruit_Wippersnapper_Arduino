@@ -346,6 +346,19 @@ jobs:
       - name: Build for ESP32-SX
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      # Analyzes this build if the board is listed in .github/membrowse-targets.json.
+      # Defined once here and reused in the other build jobs via *membrowse-step.
+      - &membrowse-step
+        name: MemBrowse memory report
+        if: >-
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'push' && github.ref == 'refs/heads/migrate-api-v2')
+        continue-on-error: true
+        uses: ./.github/actions/membrowse-report
+        with:
+          board: ${{ matrix.arduino-platform }}
+          api_key: ${{ secrets.MEMBROWSE_API_KEY }}
+          api_url: ${{ vars.MEMBROWSE_API_URL }}
       - name: list files (tree)
         run: |
           tree
@@ -594,6 +607,7 @@ jobs:
       - name: Build for ESP32-SX
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      - *membrowse-step
       - name: list files (tree)
         run: |
           tree
@@ -755,6 +769,7 @@ jobs:
           pip3 install esptool==5.6.0
       - name: build ESP32 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --boards-local-txt
+      - *membrowse-step
       - name: Check artifacts
         run: |
           ls examples/Wippersnapper_demo/build/*
@@ -924,6 +939,7 @@ jobs:
         with:
           path: /home/runner/.arduino15/staging/packages
           key: ${{ steps.core-key.outputs.key }}
+      - *membrowse-step
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -1050,6 +1066,7 @@ jobs:
         with:
           path: /home/runner/.arduino15/staging/packages
           key: ${{ steps.core-key.outputs.key }}
+      - *membrowse-step
       - name: Rename build artifact to reflect the platform name
         run: |
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2 || mv examples/*/build/*/Wippersnapper_demo_offline.ino.uf2 wippersnapper_offline.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2 || mv examples/*/build/*/Wippersnapper_debug.ino.uf2 wippersnapper_debug.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -1162,6 +1179,7 @@ jobs:
         with:
           path: /home/runner/.arduino15/staging/packages
           key: ${{ steps.core-key.outputs.key }}
+      - *membrowse-step
       - name: list build artifacts
         run: |
           ls
@@ -1569,21 +1587,3 @@ jobs:
           name: build-files-dev
           pattern: build-files-dev-*
           delete-merged: true
-
-  membrowse:
-    # Wait for every release and development build group before reporting.
-    needs:
-      - build-esp32sx-esptool
-      - build-esp32sx
-      - build-esp32
-      - build-samd
-      - build-rp2040
-      - build-esp8266
-      - build-esp32sx-dev
-      - build-esp32-dev
-    if: >-
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/migrate-api-v2')
-    uses: ./.github/workflows/membrowse-report.yml
-    secrets:
-      MEMBROWSE_API_KEY: ${{ secrets.MEMBROWSE_API_KEY }}
