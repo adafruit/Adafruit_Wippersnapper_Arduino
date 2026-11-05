@@ -530,6 +530,9 @@ jobs:
           # TODO: drop the S31 fork once pstolarz/OneWireNg#83 (ESP32-S31 support) is merged
           if [[ "${{ matrix.arduino-platform }}" == espressif_esp32s31_* ]]; then
             git clone --quiet -b esp32s31-support https://github.com/tyeth/pstolarz_OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+            # TODO: drop once Arduino_GFX's RGB panel supports the ESP32-S31 / ESP-IDF 6.
+            # Same version as the registry release, so the dependency install keeps it.
+            git clone --quiet -b esp32s31-rgb-panel https://github.com/tyeth/Arduino_GFX.git /home/runner/Arduino/libraries/GFX_Library_for_Arduino
           else
             git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           fi

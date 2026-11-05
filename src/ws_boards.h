@@ -374,7 +374,31 @@
 #define USE_STATUS_NEOPIXEL         ///< Onboard WS2812B RGB LED
 #define STATUS_NEOPIXEL_PIN 37      ///< RGB LED data (WS2812_CTRL, GPIO37)
 #define STATUS_NEOPIXEL_NUM 1       ///< Number of NeoPixels
-#define BOOT_BUTTON 61              ///< BOOT button (GPIO61)
+#define BOOT_BUTTON 61              ///< BOOT button (GPIO61, also LCD_SCK)
+// 4.3" RGB565 dotclock LCD sub-board (ESP32-S3-LCD-EV-Board-SUB3). Named like
+// the Qualia variant's TFT_* pins: R1-R5/G0-G5/B1-B5 are the 5-6-5 data lines
+// LSB first (DB11-15, DB5-10, DB0-4).
+#define TFT_DE 43                   ///< LCD_H_EN
+#define TFT_VSYNC 45                ///< LCD_V_SYNC
+#define TFT_HSYNC 44                ///< LCD_H_SYNC
+#define TFT_PCLK 40                 ///< LCD_PCLK
+#define TFT_DISP 38 ///< LCD_DISP display enable (also LCD_CS, Boot Mode 0)
+#define TFT_R1 19   ///< DB11 (R3)
+#define TFT_R2 33   ///< DB12 (R4)
+#define TFT_R3 34   ///< DB13 (R5)
+#define TFT_R4 35   ///< DB14 (R6)
+#define TFT_R5 36   ///< DB15 (R7)
+#define TFT_G0 13   ///< DB5 (G2)
+#define TFT_G1 14   ///< DB6 (G3)
+#define TFT_G2 15   ///< DB7 (G4)
+#define TFT_G3 16   ///< DB8 (G5)
+#define TFT_G4 17   ///< DB9 (G6)
+#define TFT_G5 18   ///< DB10 (G7)
+#define TFT_B1 8    ///< DB0 (B3)
+#define TFT_B2 9    ///< DB1 (B4)
+#define TFT_B3 10   ///< DB2 (B5)
+#define TFT_B4 11   ///< DB3 (B6)
+#define TFT_B5 12   ///< DB4 (B7)
 #ifdef BOARD_HAS_PSRAM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #endif
