@@ -79,7 +79,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CACHE_SALT: ${{ inputs.cache_salt }}
         run: |
-          yq -o=json .github/workflows/build-clang-doxy.yml > workflow.json
+          yq -o=json 'explode(.)' .github/workflows/build-clang-doxy.yml > workflow.json
           python3 .github/scripts/resolve_bsp_refs.py workflow.json ci/all_platforms.py >> "$GITHUB_OUTPUT"
 
   bsp-warm:
