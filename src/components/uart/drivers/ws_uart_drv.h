@@ -45,7 +45,7 @@ public:
                 How often the UART device will be polled, in milliseconds.
   */
   /*******************************************************************************/
-  ws_uart_drv(SoftwareSerial *swSerial, int32_t interval){};
+  ws_uart_drv(SoftwareSerial *swSerial, int32_t interval) {};
 #else
   /*******************************************************************************/
   /*!
@@ -56,7 +56,7 @@ public:
                 How often the UART device will be polled, in milliseconds.
   */
   /*******************************************************************************/
-  ws_uart_drv(HardwareSerial *hwSerial, int32_t interval){};
+  ws_uart_drv(HardwareSerial *hwSerial, int32_t interval) {};
 #endif
   ~ws_uart_drv(void) {}
 
