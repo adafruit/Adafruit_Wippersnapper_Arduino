@@ -42,11 +42,12 @@ public:
   const char *GetWakeupReasonName();
 #ifdef ARDUINO_ARCH_ESP32
   bool RegisterRTCTimerWakeup(uint64_t duration);
-  bool RegisterExt0Wakeup(const char *pin_name, bool pin_level, bool pin_pull);
+  bool RegisterExt0Wakeup(const char *pin_name, bool pin_level,
+                          ws_digital_Direction pull_direction);
   esp_sleep_source_t GetEspSleepSource();
   const char *GetEspSleepExt0PinName();
   bool GetEspSleepExt0Level();
-  bool GetEspSleepExt0Pull();
+  ws_digital_Direction GetEspSleepExt0PullDirection();
 #endif
   ws_sleep_SleepMode GetSleepMode();
   void SetSleepMode(ws_sleep_SleepMode mode);
