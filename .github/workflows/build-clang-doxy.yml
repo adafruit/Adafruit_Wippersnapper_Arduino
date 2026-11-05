@@ -23,6 +23,7 @@ jobs:
   nanopb-warm:
     name: Warm nanopb cache
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Check nanopb cache
         id: cache-nanopb
