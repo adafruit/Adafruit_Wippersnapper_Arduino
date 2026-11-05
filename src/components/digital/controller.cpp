@@ -163,13 +163,12 @@ bool DigitalController::Handle_Digital_Add(ws_digital_Add *msg) {
     return false;
   }
 
-  // Reject a pull resistor the pin doesn't have, rather than leaving the
-  // pin silently floating
+  // Reject a pull this platform's core can't set (e.g. a pull-down on
+  // ESP8266), rather than leaving the pin silently floating
   if (msg->gpio_direction != ws_digital_Direction_D_OUTPUT &&
-      !DigitalHardware::GetInputMode(pin_num, expander_drv, msg->gpio_direction,
-                                     nullptr)) {
+      !DigitalHardware::GetInputMode(msg->gpio_direction, nullptr)) {
     Ws->error_handler->publishComponentError(
-        msg->pin, "Pull resistor not supported on this pin");
+        msg->pin, "Pull resistor not supported on this platform");
     return false;
   }
 

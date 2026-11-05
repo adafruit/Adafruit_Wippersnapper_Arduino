@@ -19,8 +19,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <protos/config.pb.h>
-// WS_INPUT* pin modes, needed by drivers before their own library headers
-#include "ws_boards.h"
 
 /*!
     @brief  Base class for I/O expander hardware drivers.
@@ -55,24 +53,8 @@ public:
 
   /*!  @brief  Sets the mode of a pin on the expander.
        @param  pin  The pin number.
-       @param  mode OUTPUT, or WS_INPUT / WS_INPUT_PULLUP /
-                    WS_INPUT_PULLDOWN (see ws_boards.h). Drivers translate
-                    WS_INPUT* modes to their library's constants. */
+       @param  mode The mode (INPUT, OUTPUT, etc.). */
   virtual void pinMode(uint8_t pin, uint8_t mode) {};
-
-  /*!  @brief  Reports whether a pin has an internal pull resistor. Drivers
-               override this to match the hasPullup/hasPulldown flags in
-               their Wippersnapper_Components expander definition.json.
-               Defaults to no pull resistors.
-       @param  pin      The pin number.
-       @param  pull_up  True to check for a pull-up, False for a pull-down.
-       @return True if pinMode(pin, WS_INPUT_PULLUP / WS_INPUT_PULLDOWN)
-               is supported. */
-  virtual bool hasPull(uint8_t pin, bool pull_up) {
-    (void)pin;
-    (void)pull_up;
-    return false;
-  }
 
   /*!  @brief  Writes a digital value to a pin on the expander.
        @param  pin   The pin number.

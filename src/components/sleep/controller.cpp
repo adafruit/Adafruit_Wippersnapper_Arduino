@@ -362,16 +362,15 @@ void SleepController::SetWakeEnablePin(uint8_t pin, uint8_t pull) {
 */
 bool SleepController::CheckWakeEnablePin() {
   // Configure pin with specified pull mode
-  // Falls back to a floating input if the pin lacks the requested pull
-  uint8_t mode = WS_INPUT;
+  // Falls back to a floating input if the core can't set the requested pull
+  uint8_t mode = INPUT;
   if (_wake_enable_pin_pull == 1 || _wake_enable_pin_pull == 2) {
     ws_digital_Direction pull = (_wake_enable_pin_pull == 1)
                                     ? ws_digital_Direction_D_INPUT_PULL_DOWN
                                     : ws_digital_Direction_D_INPUT_PULL_UP;
-    if (!DigitalHardware::GetInputMode(_wake_enable_pin, nullptr, pull,
-                                       &mode)) {
-      WS_DEBUG_PRINTLN("[sleep] WARNING: Wake enable pin has no internal "
-                       "pull resistor in that direction, using INPUT");
+    if (!DigitalHardware::GetInputMode(pull, &mode)) {
+      WS_DEBUG_PRINTLN("[sleep] WARNING: Wake enable pin pull not supported "
+                       "on this platform, using INPUT");
     }
   }
   pinMode(_wake_enable_pin, mode);
