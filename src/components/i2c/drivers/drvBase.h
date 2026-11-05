@@ -163,12 +163,17 @@ public:
                 Pointer to an array of TypesEntry objects.
       @param    types_count
                 The number of active sensors to read from the device.
+      @returns  True if all sensor types were valid and enabled, False if
+                any entry has an unspecified sensor type.
   */
-  void EnableSensorReads(ws_i2c_Add_TypesEntry *types, size_t types_count) {
-    _sensors_count = types_count;
-    for (size_t i = 0; i < _sensors_count; i++) {
+  bool EnableSensorReads(ws_i2c_Add_TypesEntry *types, size_t types_count) {
+    for (size_t i = 0; i < types_count; i++) {
+      if (types[i].value == ws_sensor_Type_T_UNSPECIFIED)
+        return false;
       _sensors[i] = types[i];
     }
+    _sensors_count = types_count;
+    return true;
   }
 
   /*!
@@ -1194,10 +1199,6 @@ public:
 
   // Maps SensorType to function calls
   std::map<ws_sensor_Type, fnGetEvent> SensorEventHandlers = {
-      {ws_sensor_Type_T_UNSPECIFIED,
-       [this](sensors_event_t *event) -> bool {
-         return this->getEventRaw(event);
-       }},
       {ws_sensor_Type_T_LIGHT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventLight(event);

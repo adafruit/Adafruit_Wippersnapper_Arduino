@@ -778,7 +778,15 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   }
 
   // Configure sensor driver settings
-  drv->EnableSensorReads(msg->types, msg->types_count);
+  if (!drv->EnableSensorReads(msg->types, msg->types_count)) {
+    Ws->error_handler->publishComponentError(
+        descriptor, "Unspecified sensor type in I2C device types!");
+    if (use_mux) {
+      bus->ClearMuxChannel();
+    }
+    delete drv;
+    return false;
+  }
   drv->SetSensorPeriod(msg->period);
 
   // Optionally configure the driver's MUX address
