@@ -686,6 +686,11 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
         msg->descriptor, "Invalid device address in I2C add message!");
     return false;
   }
+  if (!drvBase::ValidateSensorTypes(msg->types, msg->types_count)) {
+    Ws->error_handler->publishComponentError(
+        msg->descriptor, "Unspecified sensor type in I2C add message!");
+    return false;
+  }
 
   // Parse out device name and descriptor
   char name[16];
