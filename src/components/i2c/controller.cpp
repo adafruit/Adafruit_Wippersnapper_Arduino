@@ -686,6 +686,11 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
         msg->descriptor, "Invalid device address in I2C add message!");
     return false;
   }
+  if (!drvBase::ValidateSensorTypes(msg->types, msg->types_count)) {
+    Ws->error_handler->publishComponentError(
+        msg->descriptor, "Unspecified sensor type in I2C add message!");
+    return false;
+  }
 
   // Parse out device name and descriptor
   char name[16];
@@ -778,15 +783,7 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   }
 
   // Configure sensor driver settings
-  if (!drv->EnableSensorReads(msg->types, msg->types_count)) {
-    Ws->error_handler->publishComponentError(
-        descriptor, "Unspecified sensor type in I2C device types!");
-    if (use_mux) {
-      bus->ClearMuxChannel();
-    }
-    delete drv;
-    return false;
-  }
+  drv->EnableSensorReads(msg->types, msg->types_count);
   drv->SetSensorPeriod(msg->period);
 
   // Optionally configure the driver's MUX address
