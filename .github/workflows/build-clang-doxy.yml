@@ -35,6 +35,7 @@ jobs:
   nanopb-warm:
     name: Warm nanopb cache
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Check nanopb cache
         id: cache-nanopb
@@ -45,6 +46,7 @@ jobs:
           lookup-only: true
       - name: Download stable Nanopb
         if: steps.cache-nanopb.outputs.cache-hit != 'true'
+        timeout-minutes: 30
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.9.2.tar.gz
       - name: Save nanopb to cache

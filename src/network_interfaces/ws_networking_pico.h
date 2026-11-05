@@ -29,6 +29,9 @@
 #include "Arduino.h"
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
+#if defined(PICO_CYW43_SUPPORTED)
+#include <pico/cyw43_arch.h>
+#endif
 
 class ws_networking_pico;
 extern ws_networking_pico WS; //!< Global instance of Wippersnapper_WiFi
@@ -106,28 +109,36 @@ public:
     WiFi.disconnect();
     delay(100);
 
-    // Perform a network scan
+    // Perform a network scan, CYW43 reports hidden networks with no SSID
     int n = WiFi.scanNetworks();
     if (n == 0) {
-      WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
-      return false;
+      // a hidden network may still answer the directed scan below
+      WS_DEBUG_PRINTLN("No visible WiFi networks found!");
     }
 
     bool foundNetwork = false;
 
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
     for (uint8_t i = 0; i < n; i++) {
-      if (!foundNetwork && strcmp(WiFi.SSID(i), _ssid) == 0) {
+      const char *scanSsid = WiFi.SSID(i);
+      // hidden networks don't broadcast their SSID
+      bool hidden = (scanSsid == NULL || scanSsid[0] == '\0');
+      if (!hidden && !foundNetwork && strcmp(scanSsid, _ssid) == 0) {
         foundNetwork = true;
-      } else if (!foundNetwork && WS._isWiFiMulti) {
+      } else if (!hidden && !foundNetwork && WS._isWiFiMulti) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0) {
+          if (strlen(WS._multiNetworks[j].ssid) > 0 &&
+              strcmp(WS._multiNetworks[j].ssid, scanSsid) == 0) {
             foundNetwork = true;
           }
         }
       }
-      WS_DEBUG_PRINT(WiFi.SSID(i));
+      if (hidden) {
+        WS_DEBUG_PRINT("<hidden>");
+      } else {
+        WS_DEBUG_PRINT(scanSsid);
+      }
       WS_DEBUG_PRINT(" (");
       uint8_t BSSID[WL_MAC_ADDR_LENGTH];
       WiFi.BSSID(i, BSSID);
@@ -143,10 +154,74 @@ public:
       WS_DEBUG_PRINTLN(")");
     }
 
+    // Hidden networks only reveal their SSID in reply to a directed probe.
+    // Not gated on seeing a hidden network above, CYW43 support is unverified.
+    _hiddenIdx = -1;
+    if (!foundNetwork) {
+      if (scan_hidden_ssid(_ssid)) {
+        _hiddenIdx = 0;
+      } else if (WS._isWiFiMulti) {
+        for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
+          if (scan_hidden_ssid(WS._multiNetworks[j].ssid)) {
+            _hiddenIdx = j + 1;
+            break;
+          }
+        }
+      }
+      foundNetwork = (_hiddenIdx >= 0);
+    }
+
     if (!foundNetwork) {
       WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     }
     return foundNetwork;
+  }
+
+  /***********************************************************/
+  /*!
+  @brief   Performs a directed scan (probe request) for a hidden network.
+  @note    arduino-pico's scanNetworks() can't take an SSID, so this
+           calls the CYW43 driver directly.
+  @param   ssid
+           The SSID of the hidden network to scan for.
+  @returns True if an access point responded to `ssid`, False otherwise.
+  */
+  /***********************************************************/
+  bool scan_hidden_ssid(const char *ssid) {
+#if defined(PICO_CYW43_SUPPORTED)
+    if (ssid == NULL || strlen(ssid) == 0)
+      return false;
+
+    WS_DEBUG_PRINT("Scanning for hidden WiFi network: ");
+    WS_DEBUG_PRINTLNVAR(ssid);
+    cyw43_wifi_scan_options_t scan_options;
+    memset(&scan_options, 0, sizeof(scan_options));
+    scan_options.ssid_len = strnlen(ssid, sizeof(scan_options.ssid));
+    memcpy(scan_options.ssid, ssid, scan_options.ssid_len);
+    _hiddenScan.ssid = ssid;
+    _hiddenScan.ssid_len = scan_options.ssid_len;
+    _hiddenScan.found = false;
+    WS.feedWDT();
+    if (cyw43_wifi_scan(&cyw43_state, &scan_options, &_hiddenScan,
+                        _hiddenScanCB) != 0) {
+      return false;
+    }
+    uint32_t start = millis();
+    while (cyw43_wifi_scan_active(&cyw43_state) && millis() - start < 10000) {
+      // RP2040 WDT maxes out at ~8.3s, shorter than this wait
+      WS.feedWDT();
+      delay(10);
+    }
+    WS.feedWDT();
+    if (_hiddenScan.found) {
+      WS_DEBUG_PRINT("Found hidden WiFi network on ch");
+      WS_DEBUG_PRINTLNVAR(_hiddenScan.channel);
+    }
+    return _hiddenScan.found;
+#else
+    (void)ssid;
+    return false;
+#endif
   }
 
   /********************************************************/
@@ -230,6 +305,38 @@ protected:
   WiFiClientSecure
       *_mqtt_client_secure; ///< Pointer to a secure WiFi client object
   WiFiMulti _wifiMulti;     ///< WiFiMulti object for multi-network mode
+  int8_t _hiddenIdx = -1;   ///< Hidden network found by a directed scan: -1
+                            ///< none, 0 `_ssid`, n `WS._multiNetworks[n-1]`
+
+#if defined(PICO_CYW43_SUPPORTED)
+  /** Directed scan state, written from the CYW43 scan callback */
+  struct {
+    const char *ssid;          ///< SSID being scanned for
+    size_t ssid_len;           ///< Length of `ssid`
+    volatile bool found;       ///< True once an AP answered to `ssid`
+    volatile uint16_t channel; ///< Channel of the AP that answered
+  } _hiddenScan = {};
+
+  /**************************************************************************/
+  /*!
+  @brief  CYW43 scan callback, matches results against `_hiddenScan.ssid`.
+  @param  env
+          Pointer to `_hiddenScan`.
+  @param  result
+          A single scan result from the CYW43 driver.
+  @return 0, to keep scanning.
+  */
+  /**************************************************************************/
+  static int _hiddenScanCB(void *env, const cyw43_ev_scan_result_t *result) {
+    auto *scan = (decltype(_hiddenScan) *)env;
+    if (result && result->ssid_len == scan->ssid_len &&
+        memcmp(result->ssid, scan->ssid, scan->ssid_len) == 0) {
+      scan->found = true;
+      scan->channel = result->channel;
+    }
+    return 0;
+  }
+#endif
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
@@ -314,15 +421,18 @@ protected:
       _disconnect();
       delay(5000);
       WS.feedWDT();
-      if (WS._isWiFiMulti) {
+      if (WS._isWiFiMulti && _hiddenIdx < 0) {
         // multi network mode
         _wifiMulti.clearAPList();
         // add default network
         _wifiMulti.addAP(_ssid, _pass);
         // add array of alternative networks
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          _wifiMulti.addAP(WS._multiNetworks[i].ssid,
-                           WS._multiNetworks[i].pass);
+          // skip empty slots, they'd match hidden networks' empty SSIDs
+          if (strlen(WS._multiNetworks[i].ssid) > 0) {
+            _wifiMulti.addAP(WS._multiNetworks[i].ssid,
+                             WS._multiNetworks[i].pass);
+          }
         }
         WS.feedWDT();
         if (_wifiMulti.run(20000) == WL_CONNECTED) {
@@ -332,7 +442,15 @@ protected:
         }
         WS.feedWDT();
       } else {
-        WiFi.begin(_ssid, _pass);
+        if (_hiddenIdx > 0) {
+          // hidden alternative network found by check_valid_ssid(), WiFiMulti
+          // can't see it
+          WiFi.begin(WS._multiNetworks[_hiddenIdx - 1].ssid,
+                     WS._multiNetworks[_hiddenIdx - 1].pass);
+        } else {
+          // single network mode, or the hidden default network
+          WiFi.begin(_ssid, _pass);
+        }
 
         // Use the macro to retry the status check until connected / timed out
         int lastResult;
