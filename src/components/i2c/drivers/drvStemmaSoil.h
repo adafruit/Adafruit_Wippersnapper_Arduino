@@ -49,7 +49,10 @@ public:
   /*!
       @brief    Destructor for a STEMMA soil sensor.
   */
-  ~drvStemmaSoil() { _seesaw = nullptr; }
+  ~drvStemmaSoil() {
+    delete _seesaw;
+    _seesaw = nullptr;
+  }
 
   /*!
       @brief    Initializes the soil sensor and begins I2C.
