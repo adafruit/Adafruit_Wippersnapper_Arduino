@@ -59,6 +59,8 @@ jobs:
   bsp-resolve:
     name: Resolve BSP refs
     runs-on: ubuntu-latest
+    # Builds fall back to an uncached install without its outputs; never block merge/release jobs
+    continue-on-error: true
     outputs:
       refs: ${{ steps.resolve.outputs.refs }}
       keys: ${{ steps.resolve.outputs.keys }}
