@@ -515,9 +515,10 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: adafruit/Wippersnapper_Boards
-          # TODO: revert to api-v2 once adafruit/Wippersnapper_Boards#277 merges
-          # (the S31 definition.json only exists on that PR's branch for now)
-          ref: ${{ matrix.arduino-platform == 'espressif_esp32s31_coreboard_1' && 'add-espressif-esp32s31-coreboard-1' || 'api-v2' }}
+          # TODO: revert to api-v2 once adafruit/Wippersnapper_Boards#277 and
+          # adafruit/Wippersnapper_Boards#278 merge (the S31 definition.json
+          # files only exist on those PRs' branches for now)
+          ref: ${{ matrix.arduino-platform == 'espressif_esp32s31_coreboard_1' && 'add-espressif-esp32s31-coreboard-1' || matrix.arduino-platform == 'espressif_esp32s31_korvo_1' && 'add-espressif-esp32s31-korvo-1' || 'api-v2' }}
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
