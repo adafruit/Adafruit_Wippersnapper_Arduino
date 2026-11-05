@@ -43,6 +43,7 @@ public:
   // Ds18x20Event Message API
   bool EncodeDs18x20Event();
   ws_ds18x20_Event *GetDS18x20EventMsg();
+  ws_ds18x20_D2B *GetDS18x20D2B();
   void InitDS18x20EventMsg(const char *ow_pin_name);
   void addSensorEvent(ws_sensor_Type sensor_type, float sensor_value);
 
@@ -50,5 +51,6 @@ private:
   ws_ds18x20_Add _msg_DS18x20Add;       ///< Add message
   ws_ds18x20_Remove _msg_DS18x20Remove; ///< Remove message
   ws_ds18x20_Event _msg_DS18x20Event;   ///< Event message
+  ws_ds18x20_D2B _msg_DS18x20D2B;       ///< D2B wrapper message
 };
 #endif // WS_DIGITAL_MODEL_H
