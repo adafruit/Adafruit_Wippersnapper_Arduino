@@ -61,7 +61,7 @@ on:
         default: ""
 
 env:
-  CI_ARDUINO_REF: ci-bsp-reuse-shallow # TEMP: revert before merge (adafruit/ci-arduino#243)
+  CI_ARDUINO_REF: uat-s31-cache # UAT, DO NOT MERGE: ci-arduino#243 + #245 + #246 combined
 
 jobs:
   nanopb-warm:
@@ -631,7 +631,9 @@ jobs:
             "dfrobot_firebeetle2_esp32c5",
             "lilygo_t_dongle_c5",
             "espressif_esp32c5_devkitc_1_n8r4",
-            "wippersnapper_feather_esp32c6"
+            "wippersnapper_feather_esp32c6",
+            "espressif_esp32s31_coreboard_1",
+            "espressif_esp32s31_korvo_1"
           ]
         include:
           - offset: "0x1000"
@@ -647,6 +649,10 @@ jobs:
             arduino-platform: "espressif_esp32c5_devkitc_1_n8r4"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32s31_coreboard_1"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32s31_korvo_1"
     steps:
       - uses: actions/setup-python@v7
         with:
@@ -733,7 +739,12 @@ jobs:
         run: |
           source .github/scripts/retry.sh
           clone_retry --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          clone_retry --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          # TODO: drop the S31 fork once pstolarz/OneWireNg#83 (ESP32-S31 support) is merged
+          if [[ "${{ matrix.arduino-platform }}" == espressif_esp32s31_* ]]; then
+            clone_retry --quiet -b esp32s31-support https://github.com/tyeth/pstolarz_OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          else
+            clone_retry --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          fi
       - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v6

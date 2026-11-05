@@ -312,7 +312,7 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
   }
 
 #else
-  // Standard ESP32, S2, S3 - use RTC GPIO wakeup
+  // Standard ESP32, S2, S3 (ext0) and S31 (ext1) - use RTC GPIO wakeup
 
   // Configure pull resistor using RTC GPIO API
   if (pin_pull) {
@@ -330,7 +330,19 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
     rtc_gpio_pulldown_dis(pin);
   }
 
+#if SOC_PM_SUPPORT_EXT0_WAKEUP
   rc = esp_sleep_enable_ext0_wakeup(pin, pin_level ? 1 : 0);
+#else
+  // No ext0 on this target (e.g. ESP32-S31), ext1 with a single RTC GPIO
+  // wakes the same way
+  if (!esp_sleep_is_valid_wakeup_gpio(pin)) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Pin is not an RTC GPIO, can't wake");
+    return false;
+  }
+  rc = esp_sleep_enable_ext1_wakeup_io(1ULL << pin,
+                                       pin_level ? ESP_EXT1_WAKEUP_ANY_HIGH
+                                                 : ESP_EXT1_WAKEUP_ANY_LOW);
+#endif
   if (rc != ESP_OK) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to enable ext0 wakeup");
     return false;

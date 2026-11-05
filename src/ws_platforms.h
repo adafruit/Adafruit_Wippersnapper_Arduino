@@ -26,7 +26,13 @@ typedef esp8266_wifi ws_adapter_wifi;
 // Espressif ESP32 and ESP32x
 #elif defined(ARDUINO_ARCH_ESP32)
 #include "platforms/esp32_wifi.h"
+#if defined(USE_ETHERNET)
+// Onboard Ethernet, plus WiFi when credentials are stored
+#include "platforms/esp32_ethernet.h"
+typedef esp32_ethernet ws_adapter_wifi;
+#else
 typedef esp32_wifi ws_adapter_wifi;
+#endif
 // Raspberry Pi Pico W
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                  \
     defined(ARDUINO_RASPBERRY_PI_PICO_2W) || defined(PICO_CYW43_SUPPORTED)
