@@ -60,7 +60,7 @@ class Wippersnapper;
 /**************************************************************************/
 class ws_servo {
 public:
-  ws_servo(){};
+  ws_servo() {};
   ~ws_servo();
   bool servo_attach(int pin, int minPulseWidth, int maxPulseWidth, int freq);
   void servo_detach(int pin);
