@@ -364,6 +364,20 @@
 #ifdef BOARD_HAS_PSRAM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #endif
+#elif defined(WS_ESP32S31_KORVO_1)
+// Builds with the generic Espressif esp32s31 board (ARDUINO_ESP32S31_DEV), so
+// WS_ESP32S31_KORVO_1 comes from boards.local.txt (Arduino) or
+// build_flags (PlatformIO). The generic variant's RGB LED, I2C and Ethernet
+// pins are the Function-CoreBoard-1's, not this board's.
+#define BOARD_ID "esp32s31-korvo-1" ///< Board ID
+#define USE_LITTLEFS                ///< Use LittleFS for provisioning
+#define USE_STATUS_NEOPIXEL         ///< Onboard WS2812B RGB LED
+#define STATUS_NEOPIXEL_PIN 37      ///< RGB LED data (WS2812_CTRL, GPIO37)
+#define STATUS_NEOPIXEL_NUM 1       ///< Number of NeoPixels
+#define BOOT_BUTTON 61              ///< BOOT button (GPIO61)
+#ifdef BOARD_HAS_PSRAM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#endif
 #else
 #warning "Board type not identified within ws_boards.h!"
 #endif
