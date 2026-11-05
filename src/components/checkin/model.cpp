@@ -13,6 +13,17 @@
  *
  */
 #include "model.h"
+#if defined(ARDUINO_ARCH_ESP32)
+#include "mbedtls/sha256.h"
+#elif defined(ARDUINO_ARCH_RP2350)
+#include <bearssl/bearssl_hash.h>
+#endif
+
+// SHA-256 of the last fully handled checkin response. Plain RAM on purpose:
+// it survives light sleep, but is cleared by a reset or deep sleep wake, where
+// nothing is configured yet and the response must always be applied.
+static uint8_t last_response_sha[CHECKIN_SHA_LEN];
+static bool has_last_response_sha = false;
 
 // TODO: Remove all debug prints after we are confident during testing
 
@@ -421,6 +432,49 @@ void CheckinModel::configureSleep() {
     @returns True if response received, False otherwise.
 */
 bool CheckinModel::GotResponse() { return _got_response; }
+
+/*!
+    @brief  Hashes the raw, not yet decoded, checkin message and compares it
+            against the last fully handled checkin response.
+    @param  stream
+            Incoming data stream positioned at the start of the checkin
+            message. Must be a buffer stream (pb_istream_from_buffer), as
+            used for both MQTT and SD card messages. Not consumed.
+    @returns True if the response differs from the last one (or there is no
+             previous response, or hashing is unsupported), False if it is
+             identical.
+*/
+bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
+  // A buffer stream's state points at its next unread byte
+  const uint8_t *data = (const uint8_t *)stream->state;
+  size_t len = stream->bytes_left;
+#if defined(ARDUINO_ARCH_ESP32)
+  _has_response_sha = mbedtls_sha256(data, len, _response_sha, 0) == 0;
+#elif defined(ARDUINO_ARCH_RP2350)
+  br_sha256_context ctx;
+  br_sha256_init(&ctx);
+  br_sha256_update(&ctx, data, len);
+  br_sha256_out(&ctx, _response_sha);
+  _has_response_sha = true;
+#else
+  (void)data;
+  (void)len;
+#endif
+  if (!_has_response_sha || !has_last_response_sha)
+    return true;
+  return memcmp(_response_sha, last_response_sha, CHECKIN_SHA_LEN) != 0;
+}
+
+/*!
+    @brief  Saves the hash of this checkin response as the last fully handled
+            response. Call only once the response has been applied.
+*/
+void CheckinModel::SaveResponseHash() {
+  if (!_has_response_sha)
+    return;
+  memcpy(last_response_sha, _response_sha, CHECKIN_SHA_LEN);
+  has_last_response_sha = true;
+}
 
 /*!
     @brief  Publishes a ws_checkin_Complete message to the broker,
