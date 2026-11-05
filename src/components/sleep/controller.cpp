@@ -440,7 +440,8 @@ void SleepController::StartSleep() {
 /*!
     @brief  Handles a network FSM failure when attempting to connect to WiFi
             or Adafruit IO by putting the device into sleep mode for a fixed
-            duration instead of kicking the WDT.
+            duration instead of kicking the WDT. Returns only after a light
+            sleep wake, so the caller can retry the connection.
 */
 void SleepController::HandleNetFSMFailure() {
   // NOTE: We should only get here if NET_FSM_FAILURE was triggered
@@ -488,6 +489,9 @@ void SleepController::HandleNetFSMFailure() {
   handleSleepConfig(&msg_sleep_cfg, true);
   // Enter sleep mode
   StartSleep();
+  // Only reached after a light sleep wake: restore what StartSleep() turned
+  // off so the caller can retry the connection
+  WakeFromLightSleep();
 }
 
 /*!
