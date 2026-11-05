@@ -281,7 +281,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: adafruit/Wippersnapper_Boards
-          ref: api-v2
+          ref: uat-s31-boards # UAT, DO NOT MERGE: api-v2 + Wippersnapper_Boards#277 + #278
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -703,7 +703,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: adafruit/Wippersnapper_Boards
-          ref: api-v2
+          ref: uat-s31-boards # UAT, DO NOT MERGE: api-v2 + Wippersnapper_Boards#277 + #278
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -1405,7 +1405,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: adafruit/Wippersnapper_Boards
-          ref: api-v2
+          ref: uat-s31-boards # UAT, DO NOT MERGE: api-v2 + Wippersnapper_Boards#277 + #278
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
