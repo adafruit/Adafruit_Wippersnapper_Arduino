@@ -1,5 +1,5 @@
 /*!
- * @file drvVncl4200.h
+ * @file drvVcnl4200.h
  *
  * Device driver for the VCNL4200 light + proximity sensor.
  *
@@ -23,7 +23,7 @@
     @brief  Class that provides a driver interface for a VCNL4200 sensor.
 */
 /**************************************************************************/
-class drvVncl4200 : public drvBase {
+class drvVcnl4200 : public drvBase {
 public:
   /*******************************************************************************/
   /*!
@@ -38,7 +38,7 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvVncl4200(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+  drvVcnl4200(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // No data-ready flag: the first pass can read before the first 400ms ALS
@@ -51,7 +51,7 @@ public:
       @brief    Destructor for an VCNL4200 sensor.
   */
   /*******************************************************************************/
-  ~drvVncl4200() { delete _vcnl4200; }
+  ~drvVcnl4200() { delete _vcnl4200; }
 
   /*******************************************************************************/
   /*!

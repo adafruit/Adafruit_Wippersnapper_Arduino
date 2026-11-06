@@ -1,5 +1,5 @@
 /*!
- * @file drvVncl4020.h
+ * @file drvVcnl4020.h
  *
  * Device driver for the VCNL4020 light + proximity sensor.
  *
@@ -12,8 +12,8 @@
  * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef DRV_VNCL4020_H
-#define DRV_VNCL4020_H
+#ifndef DRV_VCNL4020_H
+#define DRV_VCNL4020_H
 
 #include "drvBase.h"
 #include <Adafruit_VCNL4020.h>
@@ -21,7 +21,7 @@
 /*!
     @brief  Class that provides a driver interface for a VCNL4020 sensor.
 */
-class drvVncl4020 : public drvBase {
+class drvVcnl4020 : public drvBase {
 public:
   /*!
       @brief    Constructor for a VCNL4020 sensor.
@@ -34,7 +34,7 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  drvVncl4020(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+  drvVcnl4020(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
@@ -43,7 +43,7 @@ public:
   /*!
       @brief    Destructor for an VCNL4020 sensor.
   */
-  ~drvVncl4020() { delete _vcnl4020; }
+  ~drvVcnl4020() { delete _vcnl4020; }
 
   /*!
       @brief    Initializes the VCNL4020 sensor and begins I2C.
@@ -102,4 +102,4 @@ protected:
   bool _prox_ready = false;     ///< Proximity result ready this pass
 };
 
-#endif // drvVncl4020
+#endif // DRV_VCNL4020_H

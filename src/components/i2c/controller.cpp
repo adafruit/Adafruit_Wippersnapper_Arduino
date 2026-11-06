@@ -127,14 +127,7 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvTmp119(i2c, addr, mux_channel, driver_name);
      }},
-    // Component id in Wippersnapper_Components is "vcnl4030"; the legacy
-    // misspelling ("vncl") is also registered to match existing sibling keys.
     {"vcnl4030",
-     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
-        const char *driver_name) -> drvBase * {
-       return new drvVcnl4030(i2c, addr, mux_channel, driver_name);
-     }},
-    {"vncl4030",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvVcnl4030(i2c, addr, mux_channel, driver_name);
@@ -447,32 +440,25 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvTsl2591(i2c, addr, mux_channel, driver_name);
      }},
-    {"vncl4020",
+    {"vcnl4020",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
-       return new drvVncl4020(i2c, addr, mux_channel, driver_name);
+       return new drvVcnl4020(i2c, addr, mux_channel, driver_name);
      }},
     {"veml7700",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvVeml7700(i2c, addr, mux_channel, driver_name);
      }},
-    {"vncl4040",
+    {"vcnl4040",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
-       return new drvVncl4040(i2c, addr, mux_channel, driver_name);
+       return new drvVcnl4040(i2c, addr, mux_channel, driver_name);
      }},
-    // Component id in Wippersnapper_Components is "vcnl4200"; the legacy
-    // misspelling ("vncl") is also registered to match existing sibling keys.
     {"vcnl4200",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
-       return new drvVncl4200(i2c, addr, mux_channel, driver_name);
-     }},
-    {"vncl4200",
-     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
-        const char *driver_name) -> drvBase * {
-       return new drvVncl4200(i2c, addr, mux_channel, driver_name);
+       return new drvVcnl4200(i2c, addr, mux_channel, driver_name);
      }},
     {"vl53l0x",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
