@@ -707,7 +707,10 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   bool use_mux = (descriptor.address_space.mux_address != 0x00);
 
   // Attempt to remove any existing driver at this address (or mux_channel).
-  RemoveDriver(descriptor.address, descriptor.address_space.mux_channel);
+  RemoveDriver(descriptor.address, descriptor.address_space.pin_scl,
+               descriptor.address_space.pin_sda,
+               descriptor.address_space.mux_address,
+               descriptor.address_space.mux_channel);
 
   // Attempt to find/create the I2C bus specified by the device descriptor
   I2cHardware *bus = findOrCreateBus(descriptor.address_space.pin_scl,
@@ -749,7 +752,11 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
   if (use_mux) {
     if (bus->HasMux()) {
       bus->ClearMuxChannel();
-      bus->SelectMuxChannel(descriptor.address_space.mux_channel);
+      if (!bus->SelectMuxChannel(descriptor.address_space.mux_channel)) {
+        Ws->error_handler->publishComponentError(
+            descriptor, "Invalid MUX channel, exceeds MUX's channel count!");
+        return false;
+      }
     } else {
       Ws->error_handler->publishComponentError(descriptor,
                                                "No MUX found on bus!");
@@ -961,19 +968,24 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
     return false;
   }
 
-  // Removing the MUX itself — tear down all devices on it first
+  // Removing the MUX itself — tear down all devices on it first. Match on
+  // each driver's stored MUX address and bus pins rather than scanning the
+  // channels: main-bus devices answer on every channel, and children that
+  // aren't responding right now would be missed by a scan.
   if (msg->descriptor.address == msg->descriptor.address_space.mux_address) {
-    for (uint8_t ch = 0; ch < bus->GetMuxMaxChannels(); ch++) {
-      ws_i2c_AddressSpace mux_space = msg->descriptor.address_space;
-      mux_space.mux_address = msg->descriptor.address;
-      mux_space.mux_channel = ch;
-      ws_i2c_AddressSpaceResult result = {};
-      uint32_t found_buf[112];
-      size_t found_count = 0;
-      bus->ProbeAddresses(&mux_space, nullptr, 0, &result, found_buf,
-                          &found_count);
-      for (size_t j = 0; j < found_count; j++) {
-        (void)RemoveDriver(found_buf[j], ch);
+    std::vector<drvBase *>::iterator it = _i2c_drivers.begin();
+    while (it != _i2c_drivers.end()) {
+      drvBase *driver = *it;
+      if (driver != nullptr &&
+          driver->GetMuxAddress() == msg->descriptor.address &&
+          strcmp(driver->GetPinSCL(),
+                 msg->descriptor.address_space.pin_scl) == 0 &&
+          strcmp(driver->GetPinSDA(),
+                 msg->descriptor.address_space.pin_sda) == 0) {
+        it = _i2c_drivers.erase(it);
+        delete driver;
+      } else {
+        ++it;
       }
     }
     bus->RemoveMux();
@@ -981,6 +993,9 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
   } else if (msg->descriptor.address_space.mux_address != 0) {
     bus->SelectMuxChannel(msg->descriptor.address_space.mux_channel);
     if (!RemoveDriver(msg->descriptor.address,
+                      msg->descriptor.address_space.pin_scl,
+                      msg->descriptor.address_space.pin_sda,
+                      msg->descriptor.address_space.mux_address,
                       msg->descriptor.address_space.mux_channel)) {
       Ws->error_handler->publishComponentError(
           msg->descriptor, "Failed to remove I2C device from MUX channel");
@@ -988,10 +1003,11 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
     }
     // Removing a device on the bare bus
   } else {
-    // Match the mux channel the Add stored on the driver (0 for a bare-bus
-    // device), as Handle_Add's pre-remove does; the default ANY never matched.
+    // mux_address is 0 here, so RemoveDriver only matches main-bus drivers
+    // and ignores the channel
     if (!RemoveDriver(msg->descriptor.address,
-                      msg->descriptor.address_space.mux_channel)) {
+                      msg->descriptor.address_space.pin_scl,
+                      msg->descriptor.address_space.pin_sda, 0)) {
       Ws->error_handler->publishComponentError(
           msg->descriptor, "Failed to remove I2C device from bus");
       return false;
@@ -1268,17 +1284,36 @@ bool I2cController::InitMux(I2cHardware *bus, const char *name,
     @brief  Removes an I2C driver from the controller and frees memory.
     @param    address
                 The desired I2C device's address.
+    @param    pin_scl
+                The SCL pin name of the bus the device is on.
+    @param    pin_sda
+                The SDA pin name of the bus the device is on.
+    @param    mux_address
+                The MUX address the device sits behind, or 0 for a device
+                on the main bus.
     @param    mux_channel
                 The MUX channel (use 0xFFFFFFFF to match any channel).
+                Ignored when mux_address is 0.
     @returns True if the driver was removed, False otherwise.
 */
-bool I2cController::RemoveDriver(uint32_t address, uint32_t mux_channel) {
+bool I2cController::RemoveDriver(uint32_t address, const char *pin_scl,
+                                 const char *pin_sda, uint32_t mux_address,
+                                 uint32_t mux_channel) {
   for (drvBase *driver : _i2c_drivers) {
     if (driver == nullptr)
       continue;
     if (driver->GetAddress() != address)
       continue;
-    if (mux_channel != WS_I2C_MUX_CHANNEL_ANY &&
+    // Only match drivers on the same bus
+    if (strcmp(driver->GetPinSCL(), pin_scl) != 0 ||
+        strcmp(driver->GetPinSDA(), pin_sda) != 0)
+      continue;
+    // Main-bus drivers store mux address 0, MUX children store the MUX's
+    // address - this keeps the two address spaces apart
+    if (driver->GetMuxAddress() != mux_address)
+      continue;
+    // The channel only means something when the device is behind a MUX
+    if (mux_address != 0 && mux_channel != WS_I2C_MUX_CHANNEL_ANY &&
         driver->GetMuxChannel() != mux_channel)
       continue;
 

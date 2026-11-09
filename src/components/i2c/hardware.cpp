@@ -275,14 +275,34 @@ TwoWire *I2cHardware::GetBus() { return _bus; }
               False otherwise.
 */
 bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
+  // Reject reserved I2C addresses (0x00-0x07 and 0x78-0x7F); 0x00 is the
+  // general-call address and would broadcast every channel select
+  if (address_register <= 0x07 || address_register >= 0x78) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: MUX address is in a reserved range!");
+    return false;
+  }
+
+  // Probe the MUX's address before committing any bus state
+  _bus->beginTransmission((uint8_t)address_register);
+  uint8_t rc = _bus->endTransmission();
+  if (rc != 0) {
+    WS_DEBUG_PRINT("[i2c] ERROR: No MUX ACK at 0x");
+    WS_DEBUG_PRINTHEX(address_register);
+    WS_DEBUG_PRINTLN("");
+    return false;
+  }
+
+  // Determine the channel count from the MUX type
+  int max_channels = 0;
   if (strcmp(name, "pca9546") == 0) {
-    _mux_max_channels = 4; // PCA9546 supports 4 channels
+    max_channels = 4; // PCA9546 supports 4 channels
   } else if (strcmp(name, "pca9548") == 0 || strcmp(name, "tca9548a") == 0) {
-    _mux_max_channels = 8; // PCA9548 supports 8 channels
+    max_channels = 8; // PCA9548 supports 8 channels
   } else {
     return false;
   }
 
+  _mux_max_channels = max_channels;
   _mux_address_register = address_register;
   _has_mux = true;
   // Put MUX in back into its default state cuz we don't know if we're about to
@@ -319,13 +339,16 @@ void I2cHardware::ClearMuxChannel() {
     @brief  Enables a specific channel on a MUX.
     @param    channel
                 The desired MUX channel to enable.
+    @returns  True if the channel was selected, False if the channel is out
+              of range for this MUX.
 */
-void I2cHardware::SelectMuxChannel(uint32_t channel) {
-  if (channel > _mux_max_channels - 1)
-    return;
+bool I2cHardware::SelectMuxChannel(uint32_t channel) {
+  if (channel >= (uint32_t)_mux_max_channels)
+    return false;
   _bus->beginTransmission((uint8_t)_mux_address_register);
   _bus->write(1 << channel);
   _bus->endTransmission();
+  return true;
 }
 
 /*!

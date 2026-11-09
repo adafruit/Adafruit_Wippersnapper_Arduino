@@ -75,7 +75,7 @@ public:
   void RemoveMux();
   bool HasMux();
   void ClearMuxChannel();
-  void SelectMuxChannel(uint32_t channel);
+  bool SelectMuxChannel(uint32_t channel);
   /*!
       @brief  Returns the max number of MUX channels.
       @returns The max number of MUX channels.

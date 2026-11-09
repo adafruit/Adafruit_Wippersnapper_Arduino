@@ -155,7 +155,7 @@ public:
       @brief    Checks if the I2C driver is attached to an I2C MUX.
       @returns  True if the I2C driver uses an I2C MUX, False otherwise.
   */
-  bool HasMux() { return _i2c_mux_channel != NO_MUX_CH; }
+  bool HasMux() { return _i2c_mux_addr != 0; }
 
   /*!
       @brief    Validates an i2c device's sensor types. Static so it can be
