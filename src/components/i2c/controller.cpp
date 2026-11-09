@@ -978,10 +978,10 @@ bool I2cController::Handle_Remove(ws_i2c_Remove *msg) {
       drvBase *driver = *it;
       if (driver != nullptr &&
           driver->GetMuxAddress() == msg->descriptor.address &&
-          strcmp(driver->GetPinSCL(),
-                 msg->descriptor.address_space.pin_scl) == 0 &&
-          strcmp(driver->GetPinSDA(),
-                 msg->descriptor.address_space.pin_sda) == 0) {
+          strcmp(driver->GetPinSCL(), msg->descriptor.address_space.pin_scl) ==
+              0 &&
+          strcmp(driver->GetPinSDA(), msg->descriptor.address_space.pin_sda) ==
+              0) {
         it = _i2c_drivers.erase(it);
         delete driver;
       } else {
