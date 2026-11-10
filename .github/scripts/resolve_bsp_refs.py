@@ -78,7 +78,13 @@ def ls_remote(owner, name):
     url = "https://github.com/%s/arduino-esp32.git" % owner
     for attempt in range(1, 4):
         # The peeled "^{}" line (an annotated tag's commit) is only listed when asked for
-        r = subprocess.run(["git", "ls-remote", url, name, name + "^{}"], capture_output=True, text=True)
+        try:
+            r = subprocess.run(["git", "ls-remote", url, name, name + "^{}"],
+                               capture_output=True, text=True, timeout=120)
+        except subprocess.TimeoutExpired:
+            print("::warning::git ls-remote %s timed out (attempt %d)" % (url, attempt), file=sys.stderr)
+            time.sleep(10 * attempt)
+            continue
         if r.returncode == 0:
             found = dict(reversed(line.split("\t")) for line in r.stdout.splitlines() if "\t" in line)
             for ref in ("refs/heads/" + name, "refs/tags/%s^{}" % name, "refs/tags/" + name):

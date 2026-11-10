@@ -110,7 +110,7 @@ jobs:
           git init -q
           git remote add origin https://github.com/${{ matrix.bsp.owner }}/arduino-esp32.git
           for attempt in 1 2 3; do
-            git fetch -q --depth 1 origin ${{ matrix.bsp.sha }} && break
+            timeout 600 git fetch -q --depth 1 origin ${{ matrix.bsp.sha }} && break
             [ $attempt -eq 3 ] && exit 1
             sleep $((attempt * 30))
           done
