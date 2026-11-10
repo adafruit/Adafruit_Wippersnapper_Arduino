@@ -253,7 +253,7 @@ public:
   void setupMQTTClient(const char *clientID) {
     Ws->_mqttV2 = new Adafruit_MQTT_Client(
         _mqtt_client, Ws->_configV2.aio_url, Ws->_configV2.io_port, clientID,
-        Ws->_configV2.aio_user, Ws->_configV2.aio_key);
+        Ws->_configV2.aio_user, Ws->_configV2.aio_key, WS_MQTT_BUFFER_SZ);
   }
 
   /*!

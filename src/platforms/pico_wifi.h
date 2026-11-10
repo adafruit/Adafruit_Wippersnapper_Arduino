@@ -253,12 +253,14 @@ public:
       }
       Ws->_mqttV2 = new Adafruit_MQTT_Client(
           _mqtt_client_secure, Ws->_configV2.aio_url, Ws->_configV2.io_port,
-          clientID, Ws->_configV2.aio_user, Ws->_configV2.aio_key);
+          clientID, Ws->_configV2.aio_user, Ws->_configV2.aio_key,
+          WS_MQTT_BUFFER_SZ);
     } else {
       _mqtt_client_insecure = new WiFiClient();
       Ws->_mqttV2 = new Adafruit_MQTT_Client(
           _mqtt_client_insecure, Ws->_configV2.aio_url, Ws->_configV2.io_port,
-          clientID, Ws->_configV2.aio_user, Ws->_configV2.aio_key);
+          clientID, Ws->_configV2.aio_user, Ws->_configV2.aio_key,
+          WS_MQTT_BUFFER_SZ);
     }
   }
 
