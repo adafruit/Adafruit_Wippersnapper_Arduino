@@ -83,16 +83,16 @@
 #include "drivers/drvTmp117.h"
 #include "drivers/drvTmp119.h"
 #include "drivers/drvTsl2591.h"
+#include "drivers/drvVcnl4020.h"
 #include "drivers/drvVcnl4030.h"
+#include "drivers/drvVcnl4040.h"
+#include "drivers/drvVcnl4200.h"
 #include "drivers/drvVeml7700.h"
 #include "drivers/drvVl53l0x.h"
 #include "drivers/drvVl53l1x.h"
 #include "drivers/drvVl53l4cd.h"
 #include "drivers/drvVl53l4cx.h"
 #include "drivers/drvVl6180x.h"
-#include "drivers/drvVncl4020.h"
-#include "drivers/drvVncl4040.h"
-#include "drivers/drvVncl4200.h"
 
 class wippersnapper;   ///< Forward declaration
 class I2cModel;        ///< Forward declaration
