@@ -937,6 +937,14 @@ void wippersnapper::haltErrorV2(const char *error,
   }
   WS_DEBUG_PRINTLNVAR(error);
   statusLEDSolid(ledStatusColor);
+#ifdef USE_TINYUSB
+  if (reboot) {
+    // Disconnect from the host before the WDT resets the device, so the host
+    // sees a clean unplug rather than a device that stops responding
+    WS_PRINTER.flush();
+    TinyUSBDevice.detach();
+  }
+#endif
   for (;;) {
     if (!reboot) {
       Ws->_wdt->feed(); // Feed the WDT indefinitely to hold the WIPPER drive
