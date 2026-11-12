@@ -194,25 +194,26 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
             component add. Must be called with a copy of the stream passed
             to ProcessResponse(), after the controllers are configured.
             A failed add is counted and skipped, it never fails the decode.
+            This pass decodes into a scratch struct, so the response from
+            ProcessResponse() is left untouched for the getters and
+            configureSleep(), even if this decode fails part way through.
     @param  stream
             Copy of the incoming data stream, positioned at the response.
-    @returns True if the response was decoded, False on a framing error.
+    @returns True if the response was decoded, False otherwise.
 */
 bool CheckinModel::ProcessComponentAdds(pb_istream_t *stream) {
   _adds_total = 0;
   _adds_failed = 0;
 
-  // Re-zero the B2D wrapper, the response fields are re-decoded with the
-  // same values so the getters remain valid after this pass
-  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+  ws_checkin_B2D adds_pass = ws_checkin_B2D_init_zero;
 
   // Set up the pre-decode callback (cb_payload) which will be called BEFORE
   // the Response submessage is decoded. This allows us to set up the
   // component_adds callback before nanopb initializes the Response struct.
-  _CheckinB2D.cb_payload.funcs.decode = &cbSetupResponse;
-  _CheckinB2D.cb_payload.arg = this;
+  adds_pass.cb_payload.funcs.decode = &cbSetupResponse;
+  adds_pass.cb_payload.arg = this;
 
-  if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
+  if (!pb_decode(stream, ws_checkin_B2D_fields, &adds_pass)) {
     WS_DEBUG_PRINT("[checkin] ERROR: Unable to decode component adds: ");
     WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(stream));
     return false;
