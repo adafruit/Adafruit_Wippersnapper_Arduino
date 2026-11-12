@@ -32,6 +32,137 @@
 #include <WiFiClientSecure.h>
 #if defined(PICO_CYW43_SUPPORTED)
 #include <pico/cyw43_arch.h>
+// UAT DEBUG: DHCP packet trace
+#include <lwip/netif.h>
+#include <lwip/pbuf.h>
+
+/*!
+    @brief  UAT DEBUG: one DHCP packet seen on the WiFi netif.
+*/
+struct WsDhcpEvent {
+  uint32_t ms;     ///< millis() when seen
+  char dir;        ///< '>' sent, '<' received
+  uint8_t type;    ///< DHCP message type (option 53)
+  uint32_t xid;    ///< Transaction ID
+  uint32_t yiaddr; ///< "Your" IP address
+};
+static WsDhcpEvent ws_dhcp_ring[32];                ///< Events not yet printed
+static volatile uint8_t ws_dhcp_head = 0;           ///< Next slot to write
+static volatile uint8_t ws_dhcp_tail = 0;           ///< Next slot to print
+static netif_input_fn ws_dhcp_orig_input = nullptr; ///< Wrapped input
+static netif_linkoutput_fn ws_dhcp_orig_linkout = nullptr; ///< Wrapped output
+
+/*!
+    @brief  UAT DEBUG: records the frame if it is a DHCP packet.
+    @param  p    Ethernet frame.
+    @param  dir  '>' sent, '<' received.
+*/
+static void wsDhcpRecord(struct pbuf *p, char dir) {
+  if (p == nullptr || p->len < 14 + 20 + 8 + 244)
+    return;
+  const uint8_t *f = (const uint8_t *)p->payload;
+  if (f[12] != 0x08 || f[13] != 0x00) // IPv4
+    return;
+  const uint8_t *ip = f + 14;
+  uint16_t ihl = (ip[0] & 0x0f) * 4;
+  if (ip[9] != 17 || p->len < 14 + ihl + 8 + 244) // UDP
+    return;
+  const uint8_t *udp = ip + ihl;
+  uint16_t sp = (udp[0] << 8) | udp[1];
+  uint16_t dp = (udp[2] << 8) | udp[3];
+  if (!((sp == 67 && dp == 68) || (sp == 68 && dp == 67)))
+    return;
+  const uint8_t *b = udp + 8;
+  uint16_t blen = p->len - (14 + ihl + 8);
+  uint8_t type = 0;
+  for (uint16_t i = 240; i + 1 < blen;) {
+    uint8_t code = b[i];
+    if (code == 255)
+      break;
+    if (code == 0) {
+      i++;
+      continue;
+    }
+    uint8_t len = b[i + 1];
+    if (code == 53 && len >= 1 && i + 2 < blen) {
+      type = b[i + 2];
+      break;
+    }
+    i += 2 + len;
+  }
+  uint8_t next = (ws_dhcp_head + 1) & 31;
+  if (next == ws_dhcp_tail)
+    return; // full, drop
+  WsDhcpEvent &e = ws_dhcp_ring[ws_dhcp_head];
+  e.ms = millis();
+  e.dir = dir;
+  e.type = type;
+  e.xid = ((uint32_t)b[4] << 24) | ((uint32_t)b[5] << 16) |
+          ((uint32_t)b[6] << 8) | b[7];
+  e.yiaddr = ((uint32_t)b[16] << 24) | ((uint32_t)b[17] << 16) |
+             ((uint32_t)b[18] << 8) | b[19];
+  ws_dhcp_head = next;
+}
+
+/*!
+    @brief  UAT DEBUG: netif input wrapper that records DHCP packets.
+    @param  p    Received frame.
+    @param  nif  Netif.
+    @return The wrapped input's result.
+*/
+static err_t wsDhcpInput(struct pbuf *p, struct netif *nif) {
+  wsDhcpRecord(p, '<');
+  return ws_dhcp_orig_input(p, nif);
+}
+
+/*!
+    @brief  UAT DEBUG: netif linkoutput wrapper that records DHCP packets.
+    @param  nif  Netif.
+    @param  p    Frame to send.
+    @return The wrapped linkoutput's result.
+*/
+static err_t wsDhcpLinkout(struct netif *nif, struct pbuf *p) {
+  wsDhcpRecord(p, '>');
+  return ws_dhcp_orig_linkout(nif, p);
+}
+
+/*!
+    @brief  UAT DEBUG: wraps the Ethernet netifs' input and linkoutput, once
+            each netif exists (after WiFi begin).
+*/
+static void wsDhcpInstall() {
+  for (struct netif *n = netif_list; n != nullptr; n = n->next) {
+    if (n->hwaddr_len != 6)
+      continue;
+    if (n->input != wsDhcpInput) {
+      ws_dhcp_orig_input = n->input;
+      n->input = wsDhcpInput;
+    }
+    if (n->linkoutput != wsDhcpLinkout) {
+      ws_dhcp_orig_linkout = n->linkoutput;
+      n->linkoutput = wsDhcpLinkout;
+    }
+  }
+}
+
+/*!
+    @brief  UAT DEBUG: prints and clears the recorded DHCP packets.
+*/
+static void wsDhcpDump() {
+  static const char *names[] = {"?",       "DISCOVER", "OFFER",
+                                "REQUEST", "DECLINE",  "ACK",
+                                "NAK",     "RELEASE",  "INFORM"};
+  while (ws_dhcp_tail != ws_dhcp_head) {
+    WsDhcpEvent e = ws_dhcp_ring[ws_dhcp_tail];
+    ws_dhcp_tail = (ws_dhcp_tail + 1) & 31;
+    WS_PRINTER.printf(
+        "[dhcp %7lu ms] %c %-8s xid=%08lx yiaddr=%u.%u.%u.%u\n",
+        (unsigned long)e.ms, e.dir, e.type <= 8 ? names[e.type] : "?",
+        (unsigned long)e.xid, (unsigned)(e.yiaddr >> 24),
+        (unsigned)(e.yiaddr >> 16) & 0xff, (unsigned)(e.yiaddr >> 8) & 0xff,
+        (unsigned)e.yiaddr & 0xff);
+  }
+}
 #endif
 extern wippersnapper *Ws;
 
@@ -88,6 +219,27 @@ public:
   }
 
   /*!
+  @brief  UAT DEBUG: logs the CYW43 connection state with a timestamp.
+  @param  tag
+          Phase being logged.
+  */
+  void logWiFiState(const char *tag) {
+    wsDhcpDump();
+    int32_t rssi = 0;
+    cyw43_wifi_get_rssi(&cyw43_state, &rssi);
+    uint32_t pm = 0;
+    cyw43_wifi_get_pm(&cyw43_state, &pm);
+    WS_PRINTER.printf(
+        "[wifi %7lu ms] %-22s status=%d link=%d tcpip=%d join=0x%04lx "
+        "rssi=%ld pm=0x%06lx ip=%s\n",
+        (unsigned long)millis(), tag, (int)WiFi.status(),
+        cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA),
+        cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA),
+        (unsigned long)cyw43_state.wifi_join_state, (long)rssi,
+        (unsigned long)pm, WiFi.localIP().toString().c_str());
+  }
+
+  /*!
   @brief   Performs a scan of local WiFi networks.
   @returns ws_ssid_scan_t result of the SSID scan.
   */
@@ -100,7 +252,9 @@ public:
     _hiddenIdx = -1;
 
     // Perform a network scan, CYW43 reports hidden networks with no SSID
+    logWiFiState("scan start");
     int n = WiFi.scanNetworks();
+    logWiFiState("scan done");
     if (n <= 0) {
       // a hidden network may still answer the directed scan below
       WS_DEBUG_PRINTLN("No visible WiFi networks found!");
@@ -395,36 +549,84 @@ protected:
 
     if (WiFi.status() == WL_CONNECTED)
       return;
+    logWiFiState("connect start");
 
     WiFi.mode(WIFI_STA);
     Ws->_wdt->feed();
-    WiFi.setTimeout(20 * ONE_SECOND_IN_MS);
+    // UAT DEBUG: 7 s join window, so a failing attempt returns and is logged
+    // before the RP2350's ~16.8 s hardware WDT (begin() waits up to 2x this)
+    WiFi.setTimeout(7 * ONE_SECOND_IN_MS);
     Ws->_wdt->feed();
 
     if (strlen(_ssid) == 0) {
       _statusV2 = WS_SSID_INVALID;
     } else {
       _disconnect();
-      delay(5 * ONE_SECOND_IN_MS);
+      logWiFiState("after disconnect");
+      delay(ONE_SECOND_IN_MS);
       Ws->_wdt->feed();
+      logWiFiState("after 1s delay");
       if (Ws->_isWiFiMultiV2 && _hiddenIdx < 0) {
-        // multi network mode
-        _wifiMulti.clearAPList();
-        // add default network
-        _wifiMulti.addAP(_ssid, _pass);
-        // add array of alternative networks
-        for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          // skip empty slots, they'd match hidden networks' empty SSIDs
-          if (strlen(Ws->_multiNetworksV2[i].ssid) > 0) {
-            _wifiMulti.addAP(Ws->_multiNetworksV2[i].ssid,
-                             Ws->_multiNetworksV2[i].pass);
+        // UAT DEBUG: WiFiMulti::run() steps done by hand, so the join and the
+        // DHCP lease can be timed separately (it blocks through both)
+        logWiFiState("multi scan start");
+        int n = WiFi.scanNetworks();
+        Ws->_wdt->feed();
+        logWiFiState("multi scan done");
+        const char *bestSsid = nullptr;
+        const char *bestPass = nullptr;
+        int32_t bestRssi = INT32_MIN;
+        for (int i = 0; i < n; i++) {
+          const char *scanSsid = WiFi.SSID(i);
+          if (scanSsid == NULL || scanSsid[0] == '\0')
+            continue;
+          for (int k = 0; k <= WS_MAX_ALT_WIFI_NETWORKS; k++) {
+            const char *ssid =
+                (k == 0) ? _ssid : Ws->_multiNetworksV2[k - 1].ssid;
+            if (strlen(ssid) > 0 && strcmp(ssid, scanSsid) == 0 &&
+                WiFi.RSSI(i) > bestRssi) {
+              bestSsid = ssid;
+              bestPass = (k == 0) ? _pass : Ws->_multiNetworksV2[k - 1].pass;
+              bestRssi = WiFi.RSSI(i);
+            }
           }
         }
-        Ws->_wdt->feed();
-        if (_wifiMulti.run(TEN_SECONDS_IN_MS) == WL_CONNECTED) {
+        if (bestSsid != nullptr) {
+          WS_PRINTER.printf("[wifi %7lu ms] joining strongest, rssi=%ld\n",
+                            (unsigned long)millis(), (long)bestRssi);
+          WiFi.beginNoBlock(bestSsid, bestPass);
+          wsDhcpInstall();
           Ws->_wdt->feed();
-          _statusV2 = WS_NET_CONNECTED;
-          return;
+          logWiFiState("join returned");
+          // Poll up to 30 s, logging every change, to see when the IP lands
+          int lastStatus = -1;
+          int lastLink = -99;
+          uint32_t lastIp = 0;
+          unsigned long t0 = millis();
+          while (millis() - t0 < 30 * ONE_SECOND_IN_MS) {
+            int st = WiFi.status();
+            int link = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
+            uint32_t ip = (uint32_t)WiFi.localIP();
+            if (st != lastStatus || link != lastLink || ip != lastIp) {
+              lastStatus = st;
+              lastLink = link;
+              lastIp = ip;
+              logWiFiState(ip != 0 ? "IP ARRIVED" : "poll change");
+            }
+            if (st == WL_CONNECTED)
+              break;
+            wsDhcpDump();
+            WS_DELAY_WITH_WDT(100);
+          }
+          logWiFiState(lastStatus == WL_CONNECTED ? "multi connected"
+                                                  : "multi gave up");
+          if (lastStatus == WL_CONNECTED) {
+            Ws->_wdt->feed();
+            _statusV2 = WS_NET_CONNECTED;
+            return;
+          }
+        } else {
+          logWiFiState("no configured network in scan");
         }
         Ws->_wdt->feed();
       } else {
@@ -435,17 +637,30 @@ protected:
                      Ws->_multiNetworksV2[_hiddenIdx - 1].pass);
         } else {
           // single network mode, or the hidden default network
+          logWiFiState("begin");
           WiFi.begin(_ssid, _pass);
         }
+        logWiFiState("begin returned");
+        Ws->_wdt->feed();
 
-        // Use the macro to retry the status check until connected / timed out
-        int lastResult = WL_DISCONNECTED;
-        RETRY_FUNCTION_UNTIL_TIMEOUT(
-            []() -> int { return WiFi.status(); }, // Function call each cycle
-            lastResult,                            // return variable
-            [](int status) { return status == WL_CONNECTED; }, // check
-            PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
-            PICO_CONNECT_RETRY_DELAY_MS); // interval between retries
+        // UAT DEBUG: same as RETRY_FUNCTION_UNTIL_TIMEOUT, logging changes
+        int lastResult = WiFi.status();
+        uint32_t lastJoin = cyw43_state.wifi_join_state;
+        int lastTcpip = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+        unsigned long startTime = millis();
+        while (millis() - startTime < PICO_CONNECT_TIMEOUT_MS) {
+          lastResult = WiFi.status();
+          int tcpip = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+          if (cyw43_state.wifi_join_state != lastJoin || tcpip != lastTcpip) {
+            lastJoin = cyw43_state.wifi_join_state;
+            lastTcpip = tcpip;
+            logWiFiState("poll change");
+          }
+          if (lastResult == WL_CONNECTED)
+            break;
+          WS_DELAY_WITH_WDT(PICO_CONNECT_RETRY_DELAY_MS);
+        }
+        logWiFiState(lastResult == WL_CONNECTED ? "connected" : "poll timeout");
 
         if (lastResult == WL_CONNECTED) {
           _statusV2 = WS_NET_CONNECTED;
@@ -465,8 +680,9 @@ protected:
   void _disconnect(bool wifi_off = true) {
     (void)wifi_off;
     Ws->_wdt->feed();
+    logWiFiState("disconnect");
     WiFi.disconnect();
-    delay(5 * ONE_SECOND_IN_MS);
+    delay(ONE_SECOND_IN_MS);
     Ws->_wdt->feed();
   }
 };

@@ -26,7 +26,7 @@
 // hex-dump the raw protobuf payload of every incoming BrokerToDevice message
 // and every outgoing DeviceToBroker message to the serial port.
 #ifndef WS_DEBUG_PROTO
-#define WS_DEBUG_PROTO 0 ///< 1 = hex-dump B2D/D2B payloads
+#define WS_DEBUG_PROTO 1 ///< 1 = hex-dump B2D/D2B payloads
 #endif
 
 #define ONE_MINUTE_IN_MS 60000     ///< One minute expressed in milliseconds
@@ -175,7 +175,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "2.0.0-alpha.1" ///< WipperSnapper app. version (semver-formatted)
+  "2.0.0-alpha.19" ///< WipperSnapper app. version (semver-formatted)
 
 // Timeouts and intervals
 #define WS_BROKER_KEEPALIVE_MS                                                 \
@@ -183,6 +183,9 @@
 #define WS_DEVICE_PING_MS                                                      \
   5000 ///< Interval at which device sends ping to broker, in milliseconds
 #define WS_TIMEOUT_WDT 60000 ///< App WDT timeout, in milliseconds
+#define WS_TIMEOUT_WAKE_CHECKIN                                                \
+  30000 ///< Max wait for a checkin response after a light sleep wake, in
+        ///< milliseconds. Must be below WS_TIMEOUT_WDT.
 #define WS_MQTT_POLL_TIMEOUT_MS                                                \
   10 ///< MQTT polling (processPackets()) timeout, in milliseconds
 #define WS_MQTT_BUFFER_SZ                                                      \
@@ -251,7 +254,7 @@ public:
   virtual void _connect();
   virtual void _disconnect(bool wifi_off = true);
   void connect();
-  void checkin();
+  bool checkin(uint32_t timeout_ms = 0, bool wake = false);
   void disconnect(bool wifi_off = true);
   virtual void getMacAddr();
   virtual int32_t getRSSI();

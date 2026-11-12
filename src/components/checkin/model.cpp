@@ -194,25 +194,26 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
             component add. Must be called with a copy of the stream passed
             to ProcessResponse(), after the controllers are configured.
             A failed add is counted and skipped, it never fails the decode.
+            This pass decodes into a scratch struct, so the response from
+            ProcessResponse() is left untouched for the getters and
+            configureSleep(), even if this decode fails part way through.
     @param  stream
             Copy of the incoming data stream, positioned at the response.
-    @returns True if the response was decoded, False on a framing error.
+    @returns True if the response was decoded, False otherwise.
 */
 bool CheckinModel::ProcessComponentAdds(pb_istream_t *stream) {
   _adds_total = 0;
   _adds_failed = 0;
 
-  // Re-zero the B2D wrapper, the response fields are re-decoded with the
-  // same values so the getters remain valid after this pass
-  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+  ws_checkin_B2D adds_pass = ws_checkin_B2D_init_zero;
 
   // Set up the pre-decode callback (cb_payload) which will be called BEFORE
   // the Response submessage is decoded. This allows us to set up the
   // component_adds callback before nanopb initializes the Response struct.
-  _CheckinB2D.cb_payload.funcs.decode = &cbSetupResponse;
-  _CheckinB2D.cb_payload.arg = this;
+  adds_pass.cb_payload.funcs.decode = &cbSetupResponse;
+  adds_pass.cb_payload.arg = this;
 
-  if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
+  if (!pb_decode(stream, ws_checkin_B2D_fields, &adds_pass)) {
     WS_DEBUG_PRINT("[checkin] ERROR: Unable to decode component adds: ");
     WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(stream));
     return false;
@@ -238,15 +239,26 @@ uint16_t CheckinModel::GetAddsFailed() { return _adds_failed; }
             not published to IO.
     @param  stream
             The add's substream, partially consumed by the failed decode.
+    @param  raw
+            Copy of stream taken before the add was decoded. Must be a
+            buffer stream (pb_istream_from_buffer) so restoring it rewinds.
     @param  add_type
             Name of the add type, for the log message.
     @returns True, so nanopb continues decoding the next add.
 */
-bool CheckinModel::SkipFailedAdd(pb_istream_t *stream, const char *add_type) {
+bool CheckinModel::SkipFailedAdd(pb_istream_t *stream, const pb_istream_t *raw,
+                                 const char *add_type) {
   WS_DEBUG_PRINT("[checkin] ERROR: Failed to decode ");
   WS_DEBUG_PRINTVAR(add_type);
   WS_DEBUG_PRINT(" add: ");
   WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(stream));
+  // A failed nested decode (packed array overflow, failed callback field)
+  // can return without closing its own substream. stream's bytes_left then
+  // already excludes that nested field while its read position hasn't moved
+  // past it, so draining bytes_left would stop short of the end of this add
+  // and the rest of the response would be misparsed. Rewind to the start of
+  // the add and drain all of it instead.
+  *stream = *raw;
   // Drain what's left of this add, otherwise nanopb calls the callback
   // again on the leftover bytes
   if (stream->bytes_left > 0) {
@@ -347,6 +359,12 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   response->component_adds.expander_adds.funcs.decode = &cbExpanderAdds;
   response->component_adds.expander_adds.arg = model;
 
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // sleep_config.ext0s is a callback field, decode it into the sleep model
+  if (Ws->_sleep_controller != nullptr)
+    Ws->_sleep_controller->GetModel()->SetupExt0Decode(&response->sleep_config);
+#endif
+
   // Return true WITHOUT consuming the stream - nanopb will continue
   // to decode the Response submessage with our callback now set up
   return true;
@@ -366,7 +384,7 @@ bool CheckinModel::cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_digital_Add add_msg = ws_digital_Add_init_zero;
   if (!pb_decode(stream, ws_digital_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "digital");
+    return model->SkipFailedAdd(stream, &raw, "digital");
   }
   ws_digital_Remove remove_msg = ws_digital_Remove_init_zero;
   strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
@@ -395,7 +413,7 @@ bool CheckinModel::cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_analog_Add add_msg = ws_analog_Add_init_zero;
   if (!pb_decode(stream, ws_analog_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "analog");
+    return model->SkipFailedAdd(stream, &raw, "analog");
   }
   ws_analog_Remove remove_msg = ws_analog_Remove_init_zero;
   strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
@@ -424,7 +442,7 @@ bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_servo_Add add_msg = ws_servo_Add_init_zero;
   if (!pb_decode(stream, ws_servo_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "servo");
+    return model->SkipFailedAdd(stream, &raw, "servo");
   }
   ws_servo_Remove remove_msg = ws_servo_Remove_init_zero;
   strncpy(remove_msg.servo_pin, add_msg.servo_pin,
@@ -457,7 +475,7 @@ bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_pwm_Add add_msg = ws_pwm_Add_init_zero;
   if (!pb_decode(stream, ws_pwm_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "pwm");
+    return model->SkipFailedAdd(stream, &raw, "pwm");
   }
   ws_pwm_Remove remove_msg = ws_pwm_Remove_init_zero;
   strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
@@ -486,7 +504,7 @@ bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_pixels_Add add_msg = ws_pixels_Add_init_zero;
   if (!pb_decode(stream, ws_pixels_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "pixels");
+    return model->SkipFailedAdd(stream, &raw, "pixels");
   }
   ws_pixels_Remove remove_msg = ws_pixels_Remove_init_zero;
   strncpy(remove_msg.pin_data, add_msg.pin_data,
@@ -519,7 +537,7 @@ bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_ds18x20_Add add_msg = ws_ds18x20_Add_init_zero;
   if (!pb_decode(stream, ws_ds18x20_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "ds18x20");
+    return model->SkipFailedAdd(stream, &raw, "ds18x20");
   }
   ws_ds18x20_Remove remove_msg = ws_ds18x20_Remove_init_zero;
   strncpy(remove_msg.onewire_pin, add_msg.onewire_pin,
@@ -552,7 +570,7 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_uart_Add add_msg = ws_uart_Add_init_zero;
   if (!pb_decode(stream, ws_uart_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "uart");
+    return model->SkipFailedAdd(stream, &raw, "uart");
   }
   ws_uart_Remove remove_msg = ws_uart_Remove_init_zero;
   remove_msg.has_descriptor = add_msg.has_descriptor;
@@ -586,7 +604,7 @@ bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
   ws_i2c_Add add_msg = ws_i2c_Add_init_zero;
   Ws->_i2c_controller->SetupAddDecodeCallbacks(&add_msg);
   if (!pb_decode(stream, ws_i2c_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "i2c");
+    return model->SkipFailedAdd(stream, &raw, "i2c");
   }
   ws_i2c_Remove remove_msg = ws_i2c_Remove_init_zero;
   remove_msg.has_descriptor = add_msg.has_descriptor;
@@ -617,7 +635,7 @@ bool CheckinModel::cbTelemetryAdds(pb_istream_t *stream,
   pb_istream_t raw = *stream;
   ws_telemetry_Add add_msg = ws_telemetry_Add_init_zero;
   if (!pb_decode(stream, ws_telemetry_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "telemetry");
+    return model->SkipFailedAdd(stream, &raw, "telemetry");
   }
   ws_telemetry_Remove remove_msg = ws_telemetry_Remove_init_zero;
   remove_msg.type = add_msg.type;
@@ -648,7 +666,7 @@ bool CheckinModel::cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   memset(&model->_display_add, 0, sizeof(model->_display_add));
   if (!pb_decode(stream, ws_display_Add_fields, &model->_display_add)) {
-    return model->SkipFailedAdd(stream, "display");
+    return model->SkipFailedAdd(stream, &raw, "display");
   }
   ws_display_Remove remove_msg = ws_display_Remove_init_zero;
   strncpy(remove_msg.name, model->_display_add.name,
@@ -682,7 +700,7 @@ bool CheckinModel::cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
   // ExpanderController::Router
   Ws->_i2c_controller->SetupAddDecodeCallbacks(&add_msg.cfg_i2c);
   if (!pb_decode(stream, ws_expander_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "expander");
+    return model->SkipFailedAdd(stream, &raw, "expander");
   }
   ws_expander_Remove remove_msg = ws_expander_Remove_init_zero;
   remove_msg.has_cfg_i2c = true;
@@ -757,6 +775,11 @@ void CheckinModel::configureSleep() {
       WS_DEBUG_PRINTLN("[app] Processing sleep configuration from checkin");
       Ws->_sleep_controller->handleSleepConfig(sleep_cfg, true);
     }
+  } else if (Ws->_sleep_controller->isSleepEnabled()) {
+    // Sleep was turned off while asleep, resume regular operation
+    WS_DEBUG_PRINTLN("[app] Sleep disabled by checkin");
+    ws_sleep_SleepConfig sleep_cfg = ws_sleep_SleepConfig_init_zero;
+    Ws->_sleep_controller->handleSleepConfig(&sleep_cfg, false);
   }
 #endif
 }
@@ -805,6 +828,21 @@ bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
     return true;
   return memcmp(_sha_checkin_response, last_sha_checkin_response,
                 CHECKIN_SHA_LEN) != 0;
+}
+
+/*!
+    @brief  Consumes an unchanged checkin response without applying it, as
+            it is already applied. The checkin caller publishes Complete.
+    @param  stream
+            Incoming data stream positioned at the start of the checkin
+            message.
+    @returns True if skipped, False otherwise.
+*/
+bool CheckinModel::SkipResponse(pb_istream_t *stream) {
+  if (!pb_read(stream, nullptr, stream->bytes_left))
+    return false;
+  _got_response = true;
+  return true;
 }
 
 /*!
