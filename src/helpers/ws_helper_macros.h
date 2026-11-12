@@ -71,7 +71,7 @@
 #define WS_FREE_HEAP() ((uint32_t)0) ///< Free heap unsupported on this arch
 #endif
 
-#define WS_DELAY_WITH_WDT(timeout)                                           \
+#define WS_DELAY_WITH_WDT(timeout)                                             \
   {                                                                            \
     unsigned long start = millis();                                            \
     while (millis() - start < timeout) {                                       \
