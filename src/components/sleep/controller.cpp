@@ -438,7 +438,17 @@ void SleepController::StartSleep() {
 #ifdef USE_STATUS_LED
     digitalWrite(STATUS_LED_PIN, LOW);
 #endif
+#ifdef USE_TINYUSB
+    // Dormant sleep stops the USB clock mid-session, which the host reports
+    // as a malfunctioning device that never re-enumerates. Disconnect from
+    // the host first, and reconnect once awake so it enumerates again.
+    WS_PRINTER.flush();
+    TinyUSBDevice.detach();
+#endif
     Ws->_wdt->startSleep();
+#ifdef USE_TINYUSB
+    TinyUSBDevice.attach();
+#endif
 #endif
   } else {
     WS_DEBUG_PRINTLN(
