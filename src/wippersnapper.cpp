@@ -331,9 +331,15 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
   }
 
-  // Remove components applied from an earlier response but not in this one,
-  // before adding new ones that may reuse their pins
-  Ws->CheckInModel->RemoveStaleComponents(stream);
+  if (Ws->CheckInModel->IsWakeCheckin()) {
+    // Remove components applied from an earlier response but not in this
+    // one, before adding new ones that may reuse their pins
+    Ws->CheckInModel->RemoveStaleComponents(stream);
+  } else {
+    // Not a light sleep wake: apply every component as before, recording
+    // them afresh so a later wake can reconcile against this response
+    Ws->CheckInModel->ForgetComponents();
+  }
 
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");

@@ -729,6 +729,26 @@ bool CheckinModel::CommitAdd(bool added) {
 }
 
 /*!
+    @brief  Forgets the components applied from earlier checkin responses,
+            so this response's adds are all applied and recorded afresh.
+*/
+void CheckinModel::ForgetComponents() { checkin_components.clear(); }
+
+/*!
+    @brief  Marks this checkin as one made after a light sleep wake, the only
+            case where a response is reconciled against earlier ones.
+    @param  wake
+            True if checking in after a light sleep wake.
+*/
+void CheckinModel::SetWakeCheckin(bool wake) { _wake_checkin = wake; }
+
+/*!
+    @brief  Returns whether this checkin was made after a light sleep wake.
+    @returns True if checking in after a light sleep wake, False otherwise.
+*/
+bool CheckinModel::IsWakeCheckin() { return _wake_checkin; }
+
+/*!
     @brief  Removes components applied from earlier checkin responses that
             are not in this response. Call before ProcessResponse(), so a
             stale component never tears down a pin a new one has taken.
