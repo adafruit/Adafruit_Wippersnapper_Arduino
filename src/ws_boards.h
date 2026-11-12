@@ -50,6 +50,15 @@
 #define STATUS_NEOPIXEL_PIN 45
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#elif defined(ARDUINO_ESP32S3_DEV)
+#define BOARD_ID "esp32s3-devkitc-1-n8"
+#define USE_TINYUSB
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN 48
+#define STATUS_NEOPIXEL_NUM 1
+#ifdef BOARD_HAS_PSRAM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#endif
 #elif defined(ARDUINO_METRO_ESP32S3)
 #define BOARD_ID "metroesp32s3"
 #define USE_TINYUSB
@@ -154,6 +163,19 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define BOOT_BUTTON 0
+#elif defined(WS_DFROBOT_BEETLE_ESP32C3)
+// Note: this board reuses a generic preprocessor define
+// espressif/arduino-esp32@fcd4799c6de6eb5a5a8eba94818adf770238ecc0
+// rather than creating one unique to the device.
+#define BOARD_ID "dfrobot-beetle-esp32c3"
+#define USE_LITTLEFS
+#define USE_STATUS_LED
+#define STATUS_LED_PIN LED_BUILTIN
+#elif defined(ARDUINO_ESP32C3_DEV)
+#define BOARD_ID "dfrobot-beetle-esp32c3"
+#define USE_LITTLEFS
+#define USE_STATUS_LED
+#define STATUS_LED_PIN LED_BUILTIN
 #elif defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
 #define BOARD_ID "feather-esp8266"
 #define USE_LITTLEFS
@@ -171,6 +193,24 @@
 #define USE_LITTLEFS
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
+#elif defined(ARDUINO_SPARKLEMOTION_ESP32)
+#define BOARD_ID "sparklemotion-esp32"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
+#elif defined(ARDUINO_SPARKLEMOTIONMINI_ESP32)
+#define BOARD_ID "sparklemotionmini-esp32"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
+#elif defined(ARDUINO_SPARKLEMOTIONSTICK_ESP32)
+#define BOARD_ID "sparklemotionstick-esp32"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
 #elif defined(ARDUINO_ESP32_DEV) || defined(ESP32_DEV)
 #define BOARD_ID "feather-esp32"
 #define USE_STATUS_LED
@@ -209,6 +249,13 @@
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 64
+#elif defined(ARDUINO_XIAO_ESP32S3)
+#define BOARD_ID "xiao-esp32s3"
+#define BOARD_HAS_PSRAM
+#define USE_PSRAM
+#define USE_TINYUSB
+#define USE_STATUS_LED
+#define STATUS_LED_PIN LED_BUILTIN
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
 #define BOARD_ID "rpi-pico"
 #define USE_TINYUSB
@@ -288,19 +335,18 @@
 #ifdef BOARD_HAS_PSRAM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #endif
-#elif defined(ARDUINO_ESP32C5_DEV)
-// Fallback: the T-Dongle C5 has no boards.txt entry and builds with the
-// generic Espressif esp32c5 board, so ARDUINO_ESP32C5_DEV is not unique to it.
-// WS_LILYGO_T_DONGLE_C5 comes from boards.local.txt (Arduino) or build_flags
-// (PlatformIO); without it, it is currently the only ESP32-C5 board we support.
-#define BOARD_ID "lilygo-t-dongle-c5" ///< Board ID
-#define USE_LITTLEFS                  ///< Use LittleFS for provisioning
-#define USE_STATUS_DOTSTAR            ///< Onboard RGB LED is an APA102/DotStar
-#define STATUS_DOTSTAR_PIN_DATA 5     ///< DotStar Data Pin (LED_DI)
-#define STATUS_DOTSTAR_PIN_CLK 4      ///< DotStar Clock Pin (LED_CI)
-#define STATUS_DOTSTAR_NUM 1          ///< Number of DotStar LEDs
-#define STATUS_DOTSTAR_COLOR_ORDER DOTSTAR_BGR ///< DotStar Color Order
-#define BOOT_BUTTON 28                         ///< Normalized boot button pin
+#elif defined(WS_ESPRESSIF_ESP32C5_DEVKITC_1_N8R4) ||                          \
+    defined(ARDUINO_ESP32C5_DEV)
+// Fallback: boards without a boards.txt entry of their own (e.g. the T-Dongle
+// C5) build with the generic Espressif esp32c5 board, so ARDUINO_ESP32C5_DEV is
+// not unique. They get a WS_ define from boards.local.txt (Arduino) or
+// build_flags (PlatformIO); without one, assume Espressif's own devkit.
+#define BOARD_ID "esp32c5-devkitc-1-n8r4"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_RGB_LED
+// PIN_RGB_LED = 27, or GPIO_NUM+27 if using RGBwrite()
+#define STATUS_NEOPIXEL_NUM 1
 #ifdef BOARD_HAS_PSRAM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #endif

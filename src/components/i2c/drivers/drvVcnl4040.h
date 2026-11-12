@@ -1,5 +1,5 @@
 /*!
- * @file drvVncl4040.h
+ * @file drvVcnl4040.h
  *
  * Device driver for the VCNL4040 light + proximity sensor.
  *
@@ -12,8 +12,8 @@
  * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef DRV_VNCL4040_H
-#define DRV_VNCL4040_H
+#ifndef DRV_VCNL4040_H
+#define DRV_VCNL4040_H
 
 #include "drvBase.h"
 #include <Adafruit_VCNL4040.h>
@@ -21,7 +21,7 @@
 /*!
     @brief  Class that provides a driver interface for a VCNL4040 sensor.
 */
-class drvVncl4040 : public drvBase {
+class drvVcnl4040 : public drvBase {
 public:
   /*!
       @brief    Constructor for a VCNL4040 sensor.
@@ -34,7 +34,7 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  drvVncl4040(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+  drvVcnl4040(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // No data-ready flag: the first pass can read before the first 80ms ALS
@@ -45,7 +45,7 @@ public:
   /*!
       @brief    Destructor for an VCNL4040 sensor.
   */
-  ~drvVncl4040() { delete _vcnl4040; }
+  ~drvVcnl4040() { delete _vcnl4040; }
 
   /*!
       @brief    Initializes the VCNL4040 sensor and begins I2C.
@@ -106,4 +106,4 @@ protected:
   Adafruit_VCNL4040 *_vcnl4040; ///< Pointer to VCNL4040 light sensor object
 };
 
-#endif // drvVncl4040
+#endif // DRV_VCNL4040_H

@@ -68,6 +68,7 @@ private:
   uint32_t _value_raw;               ///< Last raw ADC reading.
   float _value_voltage;              ///< Last voltage reading.
   uint32_t _prv_value_raw;         ///< Previous raw value for event detection.
+  float _prv_value_voltage;        ///< Previous voltage for event detection.
   uint8_t _native_adc_resolution;  ///< Hardware's native ADC resolution.
   uint8_t _desired_adc_resolution; ///< Desired (final) ADC resolution.
   uint32_t _max_scale_resolution_desired; ///< Maximum scale resolution desired.

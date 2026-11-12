@@ -1,0 +1,226 @@
+# SPDX-FileCopyrightText: Tyeth Gundry for Adafruit Industries, 2026
+#
+# SPDX-License-Identifier: MIT
+#
+# Release pipeline for the migrate-api-v2 (API v2) branch, per
+# https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/issues/938
+#
+# IO trusts the `release: published` webhook, so a v2 release must only be
+# published once every firmware asset is attached to it:
+#   1. (Optional) Draft the release in the GitHub UI: new tag (e.g.
+#      2.0.0-alpha.1), target migrate-api-v2 (the UI defaults to main; the
+#      pipeline refuses any commit not on migrate-api-v2), write the notes, then
+#      "Save draft" -- do NOT press "Publish release".
+#   2. Dispatch this workflow on the migrate-api-v2 ref with that tag:
+#        gh workflow run release-migrate-api-v2.yml --ref migrate-api-v2 -f tag=2.0.0-alpha.1
+#      (no draft for the tag yet? one is created with generated notes)
+#   3. It tags the draft's target commit, builds every board from that tag
+#      via build-migrate-api-v2.yml, attaches the assets to the draft and
+#      publishes it.
+#
+# GitHub never runs workflows for a draft release's `created` event, hence
+# the manual dispatch. Publishing with GITHUB_TOKEN still delivers the repo
+# webhook to IO, but does not start any other `release: published` workflow.
+name: Release (migrate-api-v2 branch)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, e.g. 2.0.0-alpha.1 (uses the draft release for this tag, or creates one)"
+        required: true
+      target:
+        description: "Branch or SHA to tag when neither the tag nor a draft for it exists yet"
+        required: false
+        default: migrate-api-v2
+      prerelease:
+        description: "Publish as a pre-release"
+        type: boolean
+        default: true
+      make_latest:
+        description: "Mark as the Latest release (leave off while v1 is the current line)"
+        type: boolean
+        default: false
+      publish:
+        description: "Publish once the assets are attached (off = leave the draft for review)"
+        type: boolean
+        default: true
+  # Only reached when someone publishes a v2 release by hand (the pipeline
+  # publishes with GITHUB_TOKEN, which does not trigger workflows).
+  release:
+    types: [published]
+  # No-op run (every job is skipped) so GitHub registers this workflow, which
+  # is not on the default branch, and accepts dispatches for it.
+  pull_request:
+    paths:
+      - .github/workflows/release-migrate-api-v2.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: 📝 Prepare draft release
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      id: ${{ steps.draft.outputs.id }}
+      sha: ${{ steps.tag.outputs.sha }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ inputs.tag }}
+      TARGET: ${{ inputs.target }}
+    steps:
+      - name: Validate tag
+        run: |
+          if [[ ! "$TAG" =~ ^2\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::'$TAG' is not a v2 semver tag (expected 2.x.y or 2.x.y-pre.n)"
+            exit 1
+          fi
+      - name: Find or create the draft release
+        id: draft
+        run: |
+          find_release() {
+            gh api "repos/$GH_REPO/releases" --paginate \
+              --jq ".[] | select(.tag_name == \"$TAG\") | {id, draft, target_commitish}" | head -n1
+          }
+          release=$(find_release)
+          if [ -z "$release" ]; then
+            # Generate notes from the previous v2 release, not v1's latest
+            prev=$(gh api "repos/$GH_REPO/releases" --paginate \
+              --jq '.[] | select(.draft | not) | select(.tag_name | startswith("2.")) | .tag_name' | head -n1)
+            echo "No draft release for $TAG; creating one from $TARGET (notes since ${prev:-the first commit})"
+            gh release create "$TAG" --draft --target "$TARGET" --title "$TAG" \
+              --generate-notes ${prev:+--notes-start-tag "$prev"}
+            release=$(find_release)
+          fi
+          echo "$release"
+          if [ "$(jq -r .draft <<<"$release")" != "true" ]; then
+            echo "::error::Release $TAG is already published; this workflow only publishes drafts"
+            exit 1
+          fi
+          echo "id=$(jq -r .id <<<"$release")" >> "$GITHUB_OUTPUT"
+          echo "target=$(jq -r .target_commitish <<<"$release")" >> "$GITHUB_OUTPUT"
+      - name: Tag the draft's target commit
+        id: tag
+        env:
+          RELEASE_ID: ${{ steps.draft.outputs.id }}
+          DRAFT_TARGET: ${{ steps.draft.outputs.target }}
+        run: |
+          # Refuse commits outside migrate-api-v2's history: a draft made in
+          # the UI targets main by default, which builds v1 code as a v2 release.
+          require_v2_commit() {
+            status=$(gh api "repos/$GH_REPO/compare/migrate-api-v2...$1" --jq .status)
+            if [ "$status" != "identical" ] && [ "$status" != "behind" ]; then
+              echo "::error::$2 ($1) is not on migrate-api-v2 (compare: $status)."
+              echo "::error::$3"
+              exit 1
+            fi
+          }
+          # A draft's tag is normally only created on publish, but the build
+          # needs it now so `git describe` (WS_VERSION) reports the release.
+          if gh api "repos/$GH_REPO/git/ref/tags/$TAG" > /dev/null 2>&1; then
+            sha=$(gh api "repos/$GH_REPO/commits/tags/$TAG" --jq .sha)
+            require_v2_commit "$sha" "Existing tag $TAG" \
+              "Delete the tag (gh api -X DELETE repos/$GH_REPO/git/refs/tags/$TAG), set the draft's target to migrate-api-v2, then re-run."
+            echo "Tag $TAG already exists at $sha"
+          else
+            sha=$(gh api "repos/$GH_REPO/commits/$DRAFT_TARGET" --jq .sha)
+            require_v2_commit "$sha" "Draft target '$DRAFT_TARGET'" \
+              "Edit the draft release and set its target to migrate-api-v2, then re-run."
+            gh api "repos/$GH_REPO/git/refs" -f ref="refs/tags/$TAG" -f sha="$sha" > /dev/null
+            echo "Created tag $TAG at $sha ($DRAFT_TARGET)"
+          fi
+          # Pin the draft to the built commit, not wherever the branch moves to.
+          # Re-sending tag_name links the draft to the tag that now exists
+          # (what re-saving it in the Edit release page does).
+          gh api -X PATCH "repos/$GH_REPO/releases/$RELEASE_ID" \
+            -f tag_name="$TAG" -f target_commitish="$sha" \
+            --jq '"Draft \(.id): tag_name=\(.tag_name) target_commitish=\(.target_commitish) draft=\(.draft)"'
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: 🏗️ Build
+    needs: prepare
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build-migrate-api-v2.yml
+    with:
+      ref: refs/tags/${{ inputs.tag }}
+    secrets: inherit
+
+  publish:
+    name: 🚀 Attach assets and publish
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ inputs.tag }}
+      # Address the draft by ID: once its tag exists, gh's tag lookup
+      # (`gh release upload/edit TAG`) can no longer find the draft and fails
+      # with "release not found".
+      RELEASE_ID: ${{ needs.prepare.outputs.id }}
+    steps:
+      - name: Download build artifacts from build-platform steps
+        uses: actions/download-artifact@v8
+        with:
+          name: build-files
+          path: build-files
+      - name: List Files
+        run: ls -la build-files
+      - name: Upload Assets to the draft release
+        run: |
+          shopt -s nullglob
+          files=(build-files/wippersnapper.*.uf2 build-files/wippersnapper.*.bin build-files/wippersnapper.*.zip)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No firmware assets found in build-files; not publishing $TAG"
+            exit 1
+          fi
+          # Replace same-named assets left by an earlier attempt (--clobber)
+          declare -A existing
+          while IFS=$'\t' read -r id name; do
+            existing["$name"]=$id
+          done < <(gh api "repos/$GH_REPO/releases/$RELEASE_ID/assets" --paginate \
+            --jq '.[] | "\(.id)\t\(.name)"')
+          for f in "${files[@]}"; do
+            name=$(basename "$f")
+            if [ -n "${existing[$name]:-}" ]; then
+              gh api -X DELETE "repos/$GH_REPO/releases/assets/${existing[$name]}"
+            fi
+            curl --fail-with-body --silent --show-error --retry 3 --output /dev/null \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@$f" \
+              "https://uploads.github.com/repos/$GH_REPO/releases/$RELEASE_ID/assets?name=$name"
+          done
+          echo "Attached ${#files[@]} assets to $TAG (release $RELEASE_ID)"
+      - name: Publish the release
+        if: inputs.publish
+        run: |
+          gh api -X PATCH "repos/$GH_REPO/releases/$RELEASE_ID" \
+            -F draft=false -F prerelease=${{ inputs.prerelease }} \
+            -f make_latest=${{ inputs.make_latest }} \
+            --jq '"Published \(.tag_name) at \(.html_url)"'
+          echo "Commit ${{ needs.prepare.outputs.sha }}"
+
+  manual-publish-guard:
+    name: 🛑 Check manually published release
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if the release was published without assets
+        run: |
+          count=$(jq '.release.assets | length' "$GITHUB_EVENT_PATH")
+          if [ "$count" -eq 0 ]; then
+            echo "::error::${{ github.event.release.tag_name }} was published without firmware assets, and IO has already been sent its release webhook."
+            echo "::error::Convert it back to a draft (gh release edit ${{ github.event.release.tag_name }} --draft=true), then run release-migrate-api-v2.yml with that tag."
+            exit 1
+          fi
+          echo "${{ github.event.release.tag_name }} was published with $count assets"
