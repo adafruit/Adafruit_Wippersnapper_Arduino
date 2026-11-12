@@ -61,7 +61,7 @@ on:
         default: ""
 
 env:
-  CI_ARDUINO_REF: ci-bsp-reuse-shallow # TEMP: revert before merge (adafruit/ci-arduino#243)
+  CI_ARDUINO_REF: ci-wippersnapper
 
 jobs:
   nanopb-warm:
@@ -1548,6 +1548,9 @@ jobs:
     name: Merge Artifacts for build-files
     runs-on: ubuntu-latest
     needs: [build-esp32sx-esptool, build-esp32sx, build-esp32, build-esp8266, build-samd, build-rp2040]
+    # Skipped warm-up ancestors (skip_warm, no BSP refs) would otherwise skip this job
+    # via the implicit success(); run unless a direct build failed or was skipped.
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'skipped') }}
 
     steps:
       - name: Merge Artifacts from Builds
@@ -1561,6 +1564,9 @@ jobs:
     name: Merge Artifacts for build-files-dev
     runs-on: ubuntu-latest
     needs: [build-esp32sx-dev, build-esp32-dev]
+    # Skipped warm-up ancestors (skip_warm, no BSP refs) would otherwise skip this job
+    # via the implicit success(); run unless a direct build failed or was skipped.
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'skipped') }}
 
     steps:
       - name: Merge Artifacts from Dev Builds
@@ -1581,9 +1587,12 @@ jobs:
       - build-esp8266
       - build-esp32sx-dev
       - build-esp32-dev
+    # Explicit status check so skipped warm-up ancestors don't skip this job.
     if: >-
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/migrate-api-v2')
+      !cancelled() && !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'skipped') &&
+      (github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/migrate-api-v2'))
     uses: ./.github/workflows/membrowse-report.yml
     secrets:
       MEMBROWSE_API_KEY: ${{ secrets.MEMBROWSE_API_KEY }}
