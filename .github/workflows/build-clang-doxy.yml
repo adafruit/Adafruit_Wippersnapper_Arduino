@@ -801,6 +801,13 @@ jobs:
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached core downloads
+        id: cache-core
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/.arduino15/staging/packages
+          key: arduino15-staging-${{ github.job }}-
+          restore-keys: arduino15-staging-${{ github.job }}-
         # manually install Adafruit WiFiNINA library fork
       - name: Install extra Arduino libraries
         run: |
@@ -827,6 +834,21 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build SAMD platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      - name: Key core downloads by installed core versions
+        id: core-key
+        if: ${{ !cancelled() }}
+        run: |
+          cores=$(arduino-cli core list | awk 'NR>1 {print $1 "@" $2}' | sort)
+          # No core installed (e.g. an earlier step failed): don't save under the empty-list key
+          [ -n "$cores" ] || exit 0
+          echo "key=arduino15-staging-${{ github.job }}-$(echo "$cores" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      - name: Save core downloads to cache
+        if: ${{ !cancelled() && steps.core-key.outputs.key != '' && steps.core-key.outputs.key != steps.cache-core.outputs.cache-matched-key }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/.arduino15/staging/packages
+          key: ${{ steps.core-key.outputs.key }}
       - *membrowse-step
       - name: Rename build artifacts to reflect the platform name
         run: |
@@ -885,6 +907,13 @@ jobs:
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached core downloads
+        id: cache-core
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/.arduino15/staging/packages
+          key: arduino15-staging-${{ github.job }}-
+          restore-keys: arduino15-staging-${{ github.job }}-
         # manually install OneWireNG/TempControlLib for OneWireNg (RP2040 Supported OneWire w/backwards compat.)
       - name: Install extra Arduino libraries
         run: |
@@ -911,6 +940,21 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build RP2040 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      - name: Key core downloads by installed core versions
+        id: core-key
+        if: ${{ !cancelled() }}
+        run: |
+          cores=$(arduino-cli core list | awk 'NR>1 {print $1 "@" $2}' | sort)
+          # No core installed (e.g. an earlier step failed): don't save under the empty-list key
+          [ -n "$cores" ] || exit 0
+          echo "key=arduino15-staging-${{ github.job }}-$(echo "$cores" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      - name: Save core downloads to cache
+        if: ${{ !cancelled() && steps.core-key.outputs.key != '' && steps.core-key.outputs.key != steps.cache-core.outputs.cache-matched-key }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/.arduino15/staging/packages
+          key: ${{ steps.core-key.outputs.key }}
       - *membrowse-step
       - name: Rename build artifacts to reflect the platform name
         run: |
@@ -967,6 +1011,13 @@ jobs:
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached core downloads
+        id: cache-core
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/.arduino15/staging/packages
+          key: arduino15-staging-${{ github.job }}-
+          restore-keys: arduino15-staging-${{ github.job }}-
       - name: Install extra Arduino library
         run: |
           source .github/scripts/retry.sh
@@ -990,6 +1041,21 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build ESP8266 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      - name: Key core downloads by installed core versions
+        id: core-key
+        if: ${{ !cancelled() }}
+        run: |
+          cores=$(arduino-cli core list | awk 'NR>1 {print $1 "@" $2}' | sort)
+          # No core installed (e.g. an earlier step failed): don't save under the empty-list key
+          [ -n "$cores" ] || exit 0
+          echo "key=arduino15-staging-${{ github.job }}-$(echo "$cores" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      - name: Save core downloads to cache
+        if: ${{ !cancelled() && steps.core-key.outputs.key != '' && steps.core-key.outputs.key != steps.cache-core.outputs.cache-matched-key }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/.arduino15/staging/packages
+          key: ${{ steps.core-key.outputs.key }}
       - *membrowse-step
       - name: list build artifacts
         run: |
