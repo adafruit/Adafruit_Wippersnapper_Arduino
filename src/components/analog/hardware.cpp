@@ -256,6 +256,15 @@ float AnalogHardware::getValue() const {
 ExpanderHardware *AnalogHardware::getExpander() const { return _expander_drv; }
 
 /*!
+    @brief  Gets the pin's internal pull resistor direction. Analog pins are
+            always configured as a floating INPUT, so there is never a pull.
+    @return Always D_INPUT (no pull).
+*/
+ws_digital_Direction AnalogHardware::getPullDirection() const {
+  return ws_digital_Direction_D_INPUT;
+}
+
+/*!
     @brief  Gets whether the last read was sent to IO.
     @return True if the last read was sent successfully.
 */

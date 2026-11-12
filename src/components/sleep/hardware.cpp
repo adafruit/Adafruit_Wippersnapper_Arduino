@@ -27,6 +27,10 @@ RTC_DATA_ATTR static char log_filename_rtc[64];
 RTC_DATA_ATTR static ws_sleep_Ext0Config
     ext0_config_rtc; ///< Last ext0 wakeup config that was successfully armed,
                      ///< persists across sleep cycles
+RTC_DATA_ATTR static ws_digital_Direction
+    ext0_pull_direction_rtc; ///< Pull direction of the last ext0 wakeup pin
+                             ///< that was successfully armed, persists across
+                             ///< sleep cycles
 /*!
     @brief  Sleep hardware constructor for ESP32x MCUs.
 */
@@ -231,28 +235,24 @@ bool SleepHardware::RegisterRTCTimerWakeup(uint64_t duration) {
             The GPIO pin name as a string (e.g. "D5", "A0", "5").
     @param  pin_level
             The GPIO level to trigger wakeup (true for HIGH, false for LOW).
-    @param  pin_pull
-            Whether to enable internal pull resistors (true to enable, false for
-   none).
+    @param  pull_direction
+            Internal pull resistor to enable, taken from the component that
+            owns the pin: D_INPUT_PULL_UP, D_INPUT_PULL_DOWN, or D_INPUT (no
+            pull).
     @return True if the wakeup source was successfully registered, False
    otherwise.
 */
 bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
-                                       bool pin_pull) {
+                                       ws_digital_Direction pull_direction) {
   esp_err_t rc;
   if (!pin_name) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: pin_name is null");
     return false;
   }
 
-  const char *numeric = pin_name;
-  if ((pin_name[0] == 'D' || pin_name[0] == 'A') && pin_name[1] != '\0') {
-    numeric = pin_name + 1;
-  }
-
-  char *endptr = nullptr;
-  long pin_num = strtol(numeric, &endptr, 10);
-  if (endptr == numeric || pin_num < 0) {
+  // Resolve the pin name the same way the Digital/Analog controllers do
+  int32_t pin_num = WsPinNameToNum(pin_name);
+  if (pin_num == WS_PIN_INVALID) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Invalid pin name for ext0 wakeup");
     return false;
   }
@@ -260,17 +260,13 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3) ||                                      \
     defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6)
-  // Configure pull resistor
-  if (pin_pull) {
-    if (pin_level) {
-      // Waking on HIGH, pull DOWN to keep inactive
-      gpio_pullup_dis(pin);
-      gpio_pulldown_en(pin);
-    } else {
-      // Waking on LOW, pull UP to keep inactive
-      gpio_pulldown_dis(pin);
-      gpio_pullup_en(pin);
-    }
+  // Configure pull resistor to match the owning component's configuration
+  if (pull_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
+    gpio_pulldown_dis(pin);
+    gpio_pullup_en(pin);
+  } else if (pull_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+    gpio_pullup_dis(pin);
+    gpio_pulldown_en(pin);
   } else {
     gpio_pullup_dis(pin);
     gpio_pulldown_dis(pin);
@@ -314,17 +310,14 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
 #else
   // Standard ESP32, S2, S3 - use RTC GPIO wakeup
 
-  // Configure pull resistor using RTC GPIO API
-  if (pin_pull) {
-    if (pin_level) {
-      // Waking on HIGH, pull DOWN to keep inactive
-      rtc_gpio_pullup_dis(pin);
-      rtc_gpio_pulldown_en(pin);
-    } else {
-      // Waking on LOW, pull UP to keep inactive
-      rtc_gpio_pulldown_dis(pin);
-      rtc_gpio_pullup_en(pin);
-    }
+  // Configure pull resistor using RTC GPIO API, matching the owning
+  // component's configuration
+  if (pull_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
+    rtc_gpio_pulldown_dis(pin);
+    rtc_gpio_pullup_en(pin);
+  } else if (pull_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+    rtc_gpio_pullup_dis(pin);
+    rtc_gpio_pulldown_en(pin);
   } else {
     rtc_gpio_pullup_dis(pin);
     rtc_gpio_pulldown_dis(pin);
@@ -342,7 +335,7 @@ bool SleepHardware::RegisterExt0Wakeup(const char *pin_name, bool pin_level,
   strncpy(ext0_config_rtc.pin, pin_name, sizeof(ext0_config_rtc.pin) - 1);
   ext0_config_rtc.pin[sizeof(ext0_config_rtc.pin) - 1] = '\0';
   ext0_config_rtc.level = pin_level;
-  ext0_config_rtc.pull = pin_pull;
+  ext0_pull_direction_rtc = pull_direction;
 
   return true;
 }
@@ -370,11 +363,14 @@ const char *SleepHardware::GetEspSleepExt0PinName() {
 bool SleepHardware::GetEspSleepExt0Level() { return ext0_config_rtc.level; }
 
 /*!
-    @brief  Retrieves the pull resistor setting from the last ext0 wakeup config
-            that was successfully armed, stored in RTC memory.
-    @return The stored ext0 pull setting (True if enabled, False otherwise).
+    @brief  Retrieves the pull resistor direction from the last ext0 wakeup
+            pin that was successfully armed, stored in RTC memory.
+    @return The stored ext0 pull direction (D_INPUT_PULL_UP,
+            D_INPUT_PULL_DOWN, or D_INPUT for no pull).
 */
-bool SleepHardware::GetEspSleepExt0Pull() { return ext0_config_rtc.pull; }
+ws_digital_Direction SleepHardware::GetEspSleepExt0PullDirection() {
+  return ext0_pull_direction_rtc;
+}
 #endif // ARDUINO_ARCH_ESP32
 
 /*!

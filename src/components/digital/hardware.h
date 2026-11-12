@@ -43,6 +43,7 @@ public:
   uint8_t GetPinNum() const;
   bool GetPinValue() const;
   ws_digital_Direction GetDirection() const;
+  ws_digital_Direction getPullDirection() const;
   ws_digital_SampleMode GetSampleMode() const;
   ExpanderHardware *GetExpanderDriver() const;
 
