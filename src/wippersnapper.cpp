@@ -307,14 +307,23 @@ void wippersnapper::provision() {
 }
 
 /*!
-    @brief    Handles a Checkin Response message and initializes the
-              device's GPIO classes.
+    @brief    Applies a Checkin Response message and initializes the
+              device's GPIO classes. Call outside the MQTT callback.
     @param    stream
-              Incoming data stream from buffer.
+              Buffer stream over the stored checkin response.
     @returns  True if Checkin Response decoded and parsed successfully,
               False otherwise.
 */
-bool handleCheckinResponse(pb_istream_t *stream) {
+bool applyCheckinResponse(pb_istream_t *stream) {
+  // Hash the raw response before decoding, the second decode pass applies
+  // component adds
+  // TODO: Skip re-applying an unchanged response on a light sleep wake (#1048)
+  if (Ws->CheckInModel->ResponseChanged(stream)) {
+    WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
+  } else {
+    WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
+  }
+
   // Save a copy of the stream, the component adds are decoded in a second
   // pass after the controllers are configured
   pb_istream_t adds_stream = *stream;
@@ -360,9 +369,27 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   }
   Ws->NetworkFSM();
 
-  // Complete is published by the checkin caller, not from inside this MQTT
-  // callback where it could consume another packet's reply
   return true;
+}
+
+/*!
+    @brief    Handles a Checkin Response message from inside the MQTT
+              callback. Only stores it: the checkin caller applies it with
+              applyCheckinResponse() once the callback has returned, as
+              applying it publishes (component and device errors, Complete)
+              and publishing here can consume another packet's reply, e.g.
+              an in-flight PINGRESP (#1066).
+    @param    stream
+              Incoming data stream from buffer.
+    @returns  True if the response was stored, False otherwise.
+*/
+bool handleCheckinResponse(pb_istream_t *stream) {
+  // A response outside of a checkin has no model to store into
+  if (Ws->CheckInModel == nullptr) {
+    WS_DEBUG_PRINTLN("[app] WARNING: Unexpected Checkin Response, ignoring");
+    return false;
+  }
+  return Ws->CheckInModel->StoreResponse(stream);
 }
 
 // Decoders //
@@ -1317,8 +1344,24 @@ void wippersnapper::connect() {
   Ws->_wdt->feed();
   WS_DEBUG_PRINTLN("Connected to Adafruit IO");
 
-  // TODO: Possibly refactor checkin process into its own function
-  // or component class for clarity
+  checkin();
+
+  // Set the status LED to green to indicate successful configuration
+  setStatusLEDColor(0x00A300, Ws->status_pixel_brightnessV2);
+  delay(100);
+  // Set the status LED to off during app runtime
+  setStatusLEDColor(0x000000, Ws->status_pixel_brightnessV2);
+
+  WS_DEBUG_PRINTLN("Running app loop...");
+}
+
+/*!
+    @brief    Publishes a CheckinRequest and blocks until the broker's
+              CheckinResponse has been handled.
+*/
+void wippersnapper::checkin() {
+  // TODO: Possibly refactor checkin process into a component class
+  // for clarity
   // TODO: Remove logging from checkin process,
   // but only after we test on staging
   Ws->CheckInModel = new CheckinModel();
@@ -1338,26 +1381,33 @@ void wippersnapper::connect() {
         WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
     pingBrokerV2();               // Keep MQTT connection alive
   }
+  // Apply the response now the MQTT callback has returned
+  pb_istream_t response = Ws->CheckInModel->GetStoredResponse();
+  applyCheckinResponse(&response);
   // Publish the complete response message to indicate the checkin routine is
   // done and the device is ready for use. Done here rather than in the
   // response callback, which may run inside pingBrokerV2() while it waits for
   // a PINGRESP: publishing there consumed the PINGRESP while waiting for the
   // PUBACK ("Dropped a packet"), failing the ping and forcing a reconnect.
-  if (!Ws->CheckInModel->Complete()) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to publish checkin complete message");
+  // Without Complete, IO and the device are out of sync, so retry and then
+  // reboot to check in afresh rather than run with a mismatched config.
+  bool completed = false;
+  for (int attempt = 0; attempt < 3 && !completed; attempt++) {
+    completed = Ws->CheckInModel->Complete();
+    if (!completed) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to publish checkin complete message");
+      Ws->_wdt->feed();
+    }
   }
+  if (!completed) {
+    haltErrorV2("ERROR: Unable to publish checkin complete message, rebooting "
+                "soon...");
+  }
+  Ws->CheckInModel->SaveResponseHash();
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
   delete Ws->CheckInModel;
   Ws->CheckInModel = nullptr;
-
-  // Set the status LED to green to indicate successful configuration
-  setStatusLEDColor(0x00A300, Ws->status_pixel_brightnessV2);
-  delay(100);
-  // Set the status LED to off during app runtime
-  setStatusLEDColor(0x000000, Ws->status_pixel_brightnessV2);
-
-  WS_DEBUG_PRINTLN("Running app loop...");
 }
 
 /*!

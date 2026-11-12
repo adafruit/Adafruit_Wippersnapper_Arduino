@@ -13,13 +13,27 @@
  *
  */
 #include "model.h"
+#if defined(ARDUINO_ARCH_ESP32)
+#include "mbedtls/sha256.h"
+#elif defined(ARDUINO_ARCH_RP2350)
+#include <bearssl/bearssl_hash.h>
+#endif
+
+// SHA-256 of the last fully handled checkin response. Plain RAM on purpose:
+// it survives light sleep, but is cleared by a reset or deep sleep wake, where
+// nothing is configured yet and the response must always be applied.
+// All zero until a response hash is saved.
+static uint8_t last_sha_checkin_response[CHECKIN_SHA_LEN];
 
 // TODO: Remove all debug prints after we are confident during testing
 
 /*!
     @brief  CheckinModel constructor
 */
-CheckinModel::CheckinModel() { _got_response = false; }
+CheckinModel::CheckinModel() {
+  _got_response = false;
+  memset(_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+}
 
 /*!
     @brief  CheckinModel destructor
@@ -575,6 +589,99 @@ void CheckinModel::configureSleep() {
     @returns True if response received, False otherwise.
 */
 bool CheckinModel::GotResponse() { return _got_response; }
+
+/*!
+    @brief  Checks that a checkin response hash buffer holds a hash.
+    @param  sha
+            CHECKIN_SHA_LEN byte hash buffer.
+    @returns True if the buffer is not null and not all zero, False if it is
+             missing, was never computed or hashing is unsupported.
+*/
+static bool IsShaValid(const uint8_t *sha) {
+  if (sha == nullptr)
+    return false;
+  for (size_t i = 0; i < CHECKIN_SHA_LEN; i++) {
+    if (sha[i] != 0)
+      return true;
+  }
+  return false;
+}
+
+/*!
+    @brief  Hashes the raw, not yet decoded, checkin message and compares it
+            against the last fully handled checkin response.
+    @param  stream
+            Incoming data stream positioned at the start of the checkin
+            message. Must be a buffer stream (pb_istream_from_buffer), as
+            used for both MQTT and SD card messages. Not consumed.
+    @returns True if the response differs from the last one (or there is no
+             previous response, or hashing is unsupported), False if it is
+             identical.
+*/
+bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
+  // A buffer stream's state points at its next unread byte
+  const uint8_t *data = (const uint8_t *)stream->state;
+  size_t len = stream->bytes_left;
+  memset(_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+#if defined(ARDUINO_ARCH_ESP32)
+  if (mbedtls_sha256(data, len, _sha_checkin_response, 0) != 0)
+    memset(_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+#elif defined(ARDUINO_ARCH_RP2350)
+  br_sha256_context ctx;
+  br_sha256_init(&ctx);
+  br_sha256_update(&ctx, data, len);
+  br_sha256_out(&ctx, _sha_checkin_response);
+#else
+  (void)data;
+  (void)len;
+#endif
+  if (!IsShaValid(_sha_checkin_response) ||
+      !IsShaValid(last_sha_checkin_response))
+    return true;
+  return memcmp(_sha_checkin_response, last_sha_checkin_response,
+                CHECKIN_SHA_LEN) != 0;
+}
+
+/*!
+    @brief  Saves the hash of this checkin response as the last fully handled
+            response. Call only once the response has been applied.
+*/
+void CheckinModel::SaveResponseHash() {
+  if (!IsShaValid(_sha_checkin_response))
+    return;
+  memset(last_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+  memcpy(last_sha_checkin_response, _sha_checkin_response, CHECKIN_SHA_LEN);
+}
+
+/*!
+    @brief  Copies a received checkin response so it can be applied after
+            the MQTT callback returns. Applying it publishes (device and
+            component errors), and publishing inside the callback can
+            consume another packet's reply.
+    @param  stream
+            Incoming data stream positioned at the start of the checkin
+            message. Consumed.
+    @returns True if stored, False if the stream could not be read.
+*/
+bool CheckinModel::StoreResponse(pb_istream_t *stream) {
+  _stored_response.resize(stream->bytes_left);
+  if (!pb_read(stream, _stored_response.data(), _stored_response.size())) {
+    _stored_response.clear();
+    return false;
+  }
+  _got_response = true;
+  return true;
+}
+
+/*!
+    @brief  Returns a stream over the checkin response stored by
+            StoreResponse().
+    @returns Buffer stream over the stored response.
+*/
+pb_istream_t CheckinModel::GetStoredResponse() {
+  return pb_istream_from_buffer(_stored_response.data(),
+                                _stored_response.size());
+}
 
 /*!
     @brief  Publishes a ws_checkin_Complete message to the broker,

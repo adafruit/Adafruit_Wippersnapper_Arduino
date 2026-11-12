@@ -16,6 +16,8 @@
 #define WS_CHECKIN_MODEL_H
 #include "wippersnapper.h"
 
+#define CHECKIN_SHA_LEN 32 ///< SHA-256 digest length of a checkin response
+
 class wippersnapper; ///< Forward declaration
 
 /*!
@@ -34,6 +36,10 @@ public:
   bool ValidateResponse();
   void ConfigureControllers();
   bool GotResponse();
+  bool ResponseChanged(pb_istream_t *stream);
+  void SaveResponseHash();
+  bool StoreResponse(pb_istream_t *stream);
+  pb_istream_t GetStoredResponse();
   bool Complete();
   void configureSleep();
   int32_t GetTotalGPIOPins();
@@ -74,8 +80,11 @@ private:
   ws_checkin_D2B _CheckinD2B =
       ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;           ///< Flag indicating if response was received
-  uint16_t _adds_total = 0;     ///< Component adds seen during checkin
-  uint16_t _adds_failed = 0;    ///< Component adds that failed during checkin
+  uint8_t _sha_checkin_response[CHECKIN_SHA_LEN]; ///< Response SHA-256, 0=unset
+  std::vector<uint8_t> _stored_response; ///< Raw checkin response, applied
+                                         ///< outside the MQTT callback
+  uint16_t _adds_total = 0;              ///< Component adds seen during checkin
+  uint16_t _adds_failed = 0; ///< Component adds that failed during checkin
   ws_display_Add _display_add =
       ws_display_Add_init_zero; ///< Display add decode buffer, kept off the
                                 ///< stack (~1.5KB)
