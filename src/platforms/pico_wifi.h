@@ -594,7 +594,12 @@ protected:
         if (bestSsid != nullptr) {
           WS_PRINTER.printf("[wifi %7lu ms] joining strongest, rssi=%ld\n",
                             (unsigned long)millis(), (long)bestRssi);
+          // UAT PM TEST: power saving off before the join, not only after
+          // begin() returns (arduino-pico's noLowPowerMode())
+          cyw43_wifi_pm(&cyw43_state, CYW43_NONE_PM);
+          logWiFiState("pm off before join");
           WiFi.beginNoBlock(bestSsid, bestPass);
+          cyw43_wifi_pm(&cyw43_state, CYW43_NONE_PM);
           wsDhcpInstall();
           Ws->_wdt->feed();
           logWiFiState("join returned");
