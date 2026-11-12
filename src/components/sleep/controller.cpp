@@ -142,9 +142,9 @@ void SleepController::WakeFromLightSleep() {
     return;
   WS_DEBUG_PRINTLN("[sleep] Woke up from light sleep!");
 
-#if defined(ARDUINO_ARCH_ESP32) &&                                             \
-    !(defined(CONFIG_IDF_TARGET_ESP32C3) ||                                    \
-      defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6))
+#if defined(ARDUINO_ARCH_ESP32) && !(defined(CONFIG_IDF_TARGET_ESP32C3) ||     \
+                                     defined(CONFIG_IDF_TARGET_ESP32C5) ||     \
+                                     defined(CONFIG_IDF_TARGET_ESP32C6))
   // ext0 leaves the wake pin's pad routed to RTC IO after waking. Light sleep
   // doesn't reboot, so nothing re-runs pinMode() - hand the pad back to the
   // digital GPIO matrix so the Digital component owning it can read it again.
@@ -222,9 +222,9 @@ bool SleepController::getExt0PinPullDirection(
     return false;
   }
 
-#if defined(ARDUINO_ARCH_ESP32) &&                                             \
-    !(defined(CONFIG_IDF_TARGET_ESP32C3) ||                                    \
-      defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6))
+#if defined(ARDUINO_ARCH_ESP32) && !(defined(CONFIG_IDF_TARGET_ESP32C3) ||     \
+                                     defined(CONFIG_IDF_TARGET_ESP32C5) ||     \
+                                     defined(CONFIG_IDF_TARGET_ESP32C6))
   // ext0 wakeup only works on RTC-capable GPIO pins
   if (!rtc_gpio_is_valid_gpio((gpio_num_t)pin_num)) {
     Ws->error_handler->publishComponentError(
@@ -263,8 +263,8 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
   if (msg->has_timer) {
 // Configure timer-based wakeup source
 #ifdef ARDUINO_ARCH_ESP32
-    rc = _sleep_hardware->RegisterRTCTimerWakeup(
-        (uint64_t)msg->timer.duration * ONE_SECOND_IN_US);
+    rc = _sleep_hardware->RegisterRTCTimerWakeup((uint64_t)msg->timer.duration *
+                                                 ONE_SECOND_IN_US);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }

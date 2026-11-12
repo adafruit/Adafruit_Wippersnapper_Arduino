@@ -51,9 +51,7 @@ bool SleepModel::HasExt0() { return _has_ext0; }
     @brief  Gets the ext0 wakeup config.
     @return Pointer to the ext0 wakeup config. Only valid if HasExt0().
 */
-const ws_sleep_Ext0Config *SleepModel::GetExt0Config() {
-  return &_ext0_config;
-}
+const ws_sleep_Ext0Config *SleepModel::GetExt0Config() { return &_ext0_config; }
 
 /*!
     @brief  Gets a Sleep Goodnight message object.
