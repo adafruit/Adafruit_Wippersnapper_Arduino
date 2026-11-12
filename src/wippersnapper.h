@@ -26,7 +26,7 @@
 // hex-dump the raw protobuf payload of every incoming BrokerToDevice message
 // and every outgoing DeviceToBroker message to the serial port.
 #ifndef WS_DEBUG_PROTO
-#define WS_DEBUG_PROTO 0 ///< 1 = hex-dump B2D/D2B payloads
+#define WS_DEBUG_PROTO 1 ///< 1 = hex-dump B2D/D2B payloads
 #endif
 
 #define ONE_MINUTE_IN_MS 60000     ///< One minute expressed in milliseconds
@@ -175,7 +175,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "2.0.0-alpha.1" ///< WipperSnapper app. version (semver-formatted)
+  "2.0.0-alpha.17" ///< WipperSnapper app. version (semver-formatted)
 
 // Timeouts and intervals
 #define WS_BROKER_KEEPALIVE_MS                                                 \
