@@ -21,6 +21,7 @@ DS18X20Model::DS18X20Model() {
   memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
   memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
+  memset(&_msg_DS18x20D2B, 0, sizeof(_msg_DS18x20D2B));
 }
 
 /*!
@@ -30,6 +31,7 @@ DS18X20Model::~DS18X20Model() {
   memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
   memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
+  memset(&_msg_DS18x20D2B, 0, sizeof(_msg_DS18x20D2B));
 }
 
 /*!
@@ -78,6 +80,18 @@ ws_ds18x20_Event *DS18X20Model::GetDS18x20EventMsg() {
 }
 
 /*!
+    @brief  Wraps the current Ds18x20Event in a ds18x20 D2B envelope
+            for publishing via PublishD2b().
+    @return Pointer to the populated ds18x20 D2B message.
+*/
+ws_ds18x20_D2B *DS18X20Model::GetDS18x20D2B() {
+  memset(&_msg_DS18x20D2B, 0, sizeof(_msg_DS18x20D2B));
+  _msg_DS18x20D2B.which_payload = ws_ds18x20_D2B_event_tag;
+  _msg_DS18x20D2B.payload.event = _msg_DS18x20Event;
+  return &_msg_DS18x20D2B;
+}
+
+/*!
     @brief  Encodes a Ds18x20Event message.
     @return True if the message was successfully encoded, False otherwise.
 */
@@ -100,6 +114,7 @@ bool DS18X20Model::EncodeDs18x20Event() {
 */
 void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
+  memset(&_msg_DS18x20D2B, 0, sizeof(_msg_DS18x20D2B));
   _msg_DS18x20Event.events_count = 0;
   strcpy(_msg_DS18x20Event.onewire_pin, ow_pin_name);
 }

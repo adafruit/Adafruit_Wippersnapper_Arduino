@@ -83,16 +83,16 @@
 #include "drivers/drvTmp117.h"
 #include "drivers/drvTmp119.h"
 #include "drivers/drvTsl2591.h"
+#include "drivers/drvVcnl4020.h"
 #include "drivers/drvVcnl4030.h"
+#include "drivers/drvVcnl4040.h"
+#include "drivers/drvVcnl4200.h"
 #include "drivers/drvVeml7700.h"
 #include "drivers/drvVl53l0x.h"
 #include "drivers/drvVl53l1x.h"
 #include "drivers/drvVl53l4cd.h"
 #include "drivers/drvVl53l4cx.h"
 #include "drivers/drvVl6180x.h"
-#include "drivers/drvVncl4020.h"
-#include "drivers/drvVncl4040.h"
-#include "drivers/drvVncl4200.h"
 
 class wippersnapper;   ///< Forward declaration
 class I2cModel;        ///< Forward declaration
@@ -126,7 +126,8 @@ public:
   // Helpers //
   TwoWire *GetOrCreateI2cBus(const char *pin_scl, const char *pin_sda);
   bool InitMux(I2cHardware *bus, const char *name, uint32_t address);
-  bool RemoveDriver(uint32_t address,
+  bool RemoveDriver(uint32_t address, const char *pin_scl, const char *pin_sda,
+                    uint32_t mux_address,
                     uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
   size_t GetI2cBusCount();
   TwoWire *GetI2cBusByIndex(size_t index);

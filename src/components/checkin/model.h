@@ -16,7 +16,29 @@
 #define WS_CHECKIN_MODEL_H
 #include "wippersnapper.h"
 
+#define CHECKIN_SHA_LEN 32 ///< SHA-256 digest length of a checkin response
+
 class wippersnapper; ///< Forward declaration
+
+/*!
+    @brief  How to apply a component Add from a checkin response.
+*/
+enum CheckinAction {
+  CHECKIN_ADD,     ///< New component, add it
+  CHECKIN_REPLACE, ///< Existing component changed, replace it
+  CHECKIN_SKIP     ///< Existing component unchanged, leave it alone
+};
+
+/*!
+    @brief  A component applied from a checkin response, kept to reconcile
+            later checkin responses against.
+*/
+struct CheckinComponent {
+  pb_size_t type;                   ///< BrokerToDevice payload tag
+  std::vector<uint8_t> remove;      ///< Encoded Remove message identifying it
+  uint8_t add_sha[CHECKIN_SHA_LEN]; ///< SHA-256 of its raw Add message
+  bool seen;                        ///< Present in the response being handled
+};
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -28,9 +50,20 @@ public:
   ~CheckinModel();
   bool Checkin(const char *hardware_uid, const char *firmware_version);
   bool ProcessResponse(pb_istream_t *stream);
+  bool ProcessComponentAdds(pb_istream_t *stream);
+  uint16_t GetAddsTotal();
+  uint16_t GetAddsFailed();
   bool ValidateResponse();
   void ConfigureControllers();
   bool GotResponse();
+  bool ResponseChanged(pb_istream_t *stream);
+  void SaveResponseHash();
+  void RemoveStaleComponents(pb_istream_t *stream);
+  void ForgetComponents();
+  void SetWakeCheckin(bool wake);
+  bool IsWakeCheckin();
+  bool StoreResponse(pb_istream_t *stream);
+  pb_istream_t GetStoredResponse();
   bool Complete();
   void configureSleep();
   int32_t GetTotalGPIOPins();
@@ -59,6 +92,15 @@ private:
                         void **arg);
   static bool cbTelemetryAdds(pb_istream_t *stream, const pb_field_t *field,
                               void **arg);
+  static bool cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
+                            void **arg);
+  static bool cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
+                             void **arg);
+  bool SkipFailedAdd(pb_istream_t *stream, const char *add_type);
+  CheckinAction ReconcileAdd(const pb_istream_t *raw, pb_size_t type,
+                             const pb_msgdesc_t *remove_fields,
+                             const void *remove_msg);
+  bool CommitAdd(bool added);
   bool IsSleepEnabled();
   ws_sleep_SleepConfig *GetSleepConfig();
   ws_checkin_B2D _CheckinB2D =
@@ -66,6 +108,19 @@ private:
   ws_checkin_D2B _CheckinD2B =
       ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;           ///< Flag indicating if response was received
+  uint8_t _sha_checkin_response[CHECKIN_SHA_LEN]; ///< Response SHA-256, 0=unset
+  CheckinComponent _pending;  ///< Component Add being applied
+  int _pending_idx = -1;      ///< Index of _pending's existing entry, or -1
+  bool _has_pending = false;  ///< True if _pending awaits CommitAdd()
+  bool _wake_checkin = false; ///< True if checking in after a light sleep wake
+  bool _mark_only = false;    ///< True while RemoveStaleComponents() marks
+  std::vector<uint8_t> _stored_response; ///< Raw checkin response, applied
+                                         ///< outside the MQTT callback
+  uint16_t _adds_total = 0;              ///< Component adds seen during checkin
+  uint16_t _adds_failed = 0; ///< Component adds that failed during checkin
+  ws_display_Add _display_add =
+      ws_display_Add_init_zero; ///< Display add decode buffer, kept off the
+                                ///< stack (~1.5KB)
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
 #endif                    // WS_CHECKIN_H

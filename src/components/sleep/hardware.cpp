@@ -12,8 +12,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "hardware.h"
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #ifdef ARDUINO_ARCH_ESP32
 #include <stdlib.h>
 // Stored in RTC memory to persist across sleep cycles
@@ -27,6 +27,9 @@ RTC_DATA_ATTR static char log_filename_rtc[64];
 RTC_DATA_ATTR static ws_sleep_Ext0Config
     ext0_config_rtc; ///< Last ext0 wakeup config that was successfully armed,
                      ///< persists across sleep cycles
+RTC_DATA_ATTR static uint32_t
+    timer_duration_rtc; ///< Last configured timer wakeup duration, in
+                        ///< seconds (0 = none), persists across sleep cycles
 RTC_DATA_ATTR static ws_digital_Direction
     ext0_pull_direction_rtc; ///< Pull direction of the last ext0 wakeup pin
                              ///< that was successfully armed, persists across
@@ -47,6 +50,8 @@ static uint32_t cnt_soft_rtc = 0;
 static ws_sleep_SleepMode sleep_mode = ws_sleep_SleepMode_S_DEEP;
 static uint32_t sleep_cycles = 0;
 static char log_filename_rtc[64] = {0};
+static uint32_t timer_duration_rtc =
+    0; ///< Last configured timer wakeup duration, in seconds (0 = none)
 /*!
     @brief  Sleep hardware constructor for RP2350.
 */
@@ -192,6 +197,22 @@ void SleepHardware::CalculateSleepDuration() {
     @return The sleep duration in seconds.
 */
 int SleepHardware::GetSleepDurationSecs() { return _sleep_time; }
+
+/*!
+    @brief  Stores the configured timer wakeup duration, so a failed wake
+            can sleep again for the same time.
+    @param  duration_secs
+            Timer wakeup duration, in seconds. 0 when no timer is armed.
+*/
+void SleepHardware::StoreTimerDuration(uint32_t duration_secs) {
+  timer_duration_rtc = duration_secs;
+}
+
+/*!
+    @brief  Returns the last configured timer wakeup duration.
+    @return The timer wakeup duration in seconds, 0 if no timer is armed.
+*/
+uint32_t SleepHardware::GetTimerDuration() { return timer_duration_rtc; }
 
 /*!
     @brief  Sets the sleep enter time before entering sleep mode.

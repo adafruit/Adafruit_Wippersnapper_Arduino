@@ -12,9 +12,9 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "controller.h"
 #include "components/digital/hardware.h"
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 
 /*!
     @brief  Sleep controller constructor
@@ -273,10 +273,13 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
     rc = true;
 #endif
 
+    _sleep_hardware->StoreTimerDuration(rc ? msg->timer.duration : 0);
     WS_DEBUG_PRINT("[sleep] Timer wakeup set to ");
     WS_DEBUG_PRINTVAR(msg->timer.duration);
     WS_DEBUG_PRINTLN(" seconds");
   } else if (_sleep_model->HasExt0()) {
+    // No timer wakeup armed, so a failed wake cannot re-arm one
+    _sleep_hardware->StoreTimerDuration(0);
     const ws_sleep_Ext0Config *ext0 = _sleep_model->GetExt0Config();
 
     // The wake pin must already be configured by the Digital or Analog
@@ -485,6 +488,12 @@ void SleepController::StartSleep() {
   if (sleep_mode == ws_sleep_SleepMode_S_DEEP) {
     WS_DEBUG_PRINTLN("[sleep] Entering deep sleep");
 #ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_TINYUSB
+    // Deep sleep powers USB down and wakes through a reset, disconnect from
+    // the host first so it sees a clean unplug and enumerates the wake
+    WS_PRINTER.flush();
+    TinyUSBDevice.detach();
+#endif
     esp_deep_sleep_start();
 #else
     WS_DEBUG_PRINTLN("[sleep] ERROR: RP2350 does not support deep sleep mode, "
@@ -512,7 +521,17 @@ void SleepController::StartSleep() {
 #ifdef USE_STATUS_LED
     digitalWrite(STATUS_LED_PIN, LOW);
 #endif
+#ifdef USE_TINYUSB
+    // Dormant sleep stops the USB clock mid-session, which the host reports
+    // as a malfunctioning device that never re-enumerates. Disconnect from
+    // the host first, and reconnect once awake so it enumerates again.
+    WS_PRINTER.flush();
+    TinyUSBDevice.detach();
+#endif
     Ws->_wdt->startSleep();
+#ifdef USE_TINYUSB
+    TinyUSBDevice.attach();
+#endif
 #endif
   } else {
     WS_DEBUG_PRINTLN(
@@ -523,7 +542,8 @@ void SleepController::StartSleep() {
 /*!
     @brief  Handles a network FSM failure when attempting to connect to WiFi
             or Adafruit IO by putting the device into sleep mode for a fixed
-            duration instead of kicking the WDT.
+            duration instead of kicking the WDT. Returns only after a light
+            sleep wake, so the caller can retry the connection.
 */
 void SleepController::HandleNetFSMFailure() {
   // NOTE: We should only get here if NET_FSM_FAILURE was triggered
@@ -567,16 +587,25 @@ void SleepController::HandleNetFSMFailure() {
     }
 #endif
   } else {
-    // Set the timer duration to the last known sleep duration, so we can
-    // re-enter sleep
+    // Sleep again for the configured timer duration, not the measured time
+    // slept: a GPIO wake (RP2350 has no ext0 to restore) or an early wake
+    // measures a short sleep, re-sleeping briefly (or for 0 s) in a
+    // battery-draining retry loop. With no timer to re-arm, reboot instead.
     msg_sleep_cfg.has_timer = true;
-    msg_sleep_cfg.timer.duration = _sleep_hardware->GetSleepDurationSecs();
+    msg_sleep_cfg.timer.duration = _sleep_hardware->GetTimerDuration();
+    if (msg_sleep_cfg.timer.duration == 0) {
+      Ws->haltErrorV2(
+          "[sleep] ERROR: No wakeup source to re-arm, rebooting soon...");
+    }
     // Configure sleep mode (sleep_enabled=true to re-enter sleep after FSM
     // failure)
     handleSleepConfig(&msg_sleep_cfg, true);
   }
   // Enter sleep mode
   StartSleep();
+  // Only reached after a light sleep wake: restore what StartSleep() turned
+  // off so the caller can retry the connection
+  WakeFromLightSleep();
 }
 
 /*!
