@@ -24,7 +24,7 @@
 #include <map>
 #include <protos/i2c.pb.h>
 
-struct DecodedSetting;   ///< Forward declaration
+struct DecodedSetting; ///< Forward declaration
 
 /*! Size of the device name buffer, exactly matches ws_i2c_Add.name in
     i2c.pb.h */
