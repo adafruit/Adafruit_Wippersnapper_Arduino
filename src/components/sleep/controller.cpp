@@ -402,6 +402,12 @@ void SleepController::StartSleep() {
   if (sleep_mode == ws_sleep_SleepMode_S_DEEP) {
     WS_DEBUG_PRINTLN("[sleep] Entering deep sleep");
 #ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_TINYUSB
+    // Deep sleep powers USB down and wakes through a reset, disconnect from
+    // the host first so it sees a clean unplug and enumerates the wake
+    WS_PRINTER.flush();
+    TinyUSBDevice.detach();
+#endif
     esp_deep_sleep_start();
 #else
     WS_DEBUG_PRINTLN("[sleep] ERROR: RP2350 does not support deep sleep mode, "
