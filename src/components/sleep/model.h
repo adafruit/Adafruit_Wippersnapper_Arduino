@@ -31,6 +31,7 @@ public:
   const ws_sleep_Ext0Config *GetExt0Config();
   ws_sleep_Goodnight *GetSleepGoodnight();
   bool DecodeSleepConfig(pb_istream_t *stream);
+  void SetupExt0Decode(ws_sleep_SleepConfig *msg);
   bool EncodeSleepGoodnight(const char *msg);
   void SetSleepEnterTimer(bool lock, const char *mode, uint32_t run_duration,
                           uint32_t timer_duration);
@@ -39,11 +40,13 @@ public:
   uint32_t getRunDurationMs();
 
 private:
+  static bool cbDecodeExt0(pb_istream_t *stream, const pb_field_t *field,
+                           void **arg);
   void ConvertSleepMode(const char *mode_str, ws_sleep_SleepMode &mode);
   ws_sleep_Goodnight _msg_sleep_goodnight; ///< Goodnight message object
   ws_sleep_SleepConfig _msg_sleep_enter;   ///< Enter message object
-  ws_sleep_Ext0Config _ext0_config; ///< Ext0 wakeup config (SleepConfig.ext0s
-                                    ///< is an undecoded callback field)
+  ws_sleep_Ext0Config _ext0_config; ///< Ext0 wakeup config, decoded from the
+                                    ///< SleepConfig.ext0s callback field
   bool _has_ext0 = false;           ///< True if _ext0_config holds a config
   uint32_t _run_duration = 60; ///< Duration to run before sleeping, in seconds
 };
