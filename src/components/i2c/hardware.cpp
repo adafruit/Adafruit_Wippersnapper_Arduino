@@ -339,10 +339,12 @@ void I2cHardware::ClearMuxChannel() {
     @brief  Enables a specific channel on a MUX.
     @param    channel
                 The desired MUX channel to enable.
-    @returns  True if the channel was selected, False if the channel is out
-              of range for this MUX.
+    @returns  True if the channel was selected, False if no MUX is present
+              or the channel is out of range for this MUX.
 */
 bool I2cHardware::SelectMuxChannel(uint32_t channel) {
+  if (!_has_mux)
+    return false;
   if (channel >= (uint32_t)_mux_max_channels)
     return false;
   _bus->beginTransmission((uint8_t)_mux_address_register);

@@ -90,7 +90,7 @@ private:
   uint8_t _scl;            ///< SCL pin
   uint8_t _instance; ///< I2C bus instance number (for hardware with multiple
                      ///< I2C buses)
-  uint32_t _mux_address_register; ///< I2C address for the MUX
-  int _mux_max_channels;          ///< Maximum possible number of MUX channels
+  uint32_t _mux_address_register = 0; ///< I2C address for the MUX
+  int _mux_max_channels = 0; ///< Maximum possible number of MUX channels
 };
 #endif // WS_I2C_HARDWARE_H
