@@ -88,6 +88,23 @@ public:
   }
 
   /*!
+  @brief  UAT DEBUG: logs the CYW43 connection state with a timestamp.
+  @param  tag
+          Phase being logged.
+  */
+  void logWiFiState(const char *tag) {
+    int32_t rssi = 0;
+    cyw43_wifi_get_rssi(&cyw43_state, &rssi);
+    WS_PRINTER.printf(
+        "[wifi %7lu ms] %-22s status=%d link=%d tcpip=%d join=0x%04lx "
+        "rssi=%ld\n",
+        (unsigned long)millis(), tag, (int)WiFi.status(),
+        cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA),
+        cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA),
+        (unsigned long)cyw43_state.wifi_join_state, (long)rssi);
+  }
+
+  /*!
   @brief   Performs a scan of local WiFi networks.
   @returns ws_ssid_scan_t result of the SSID scan.
   */
@@ -100,7 +117,9 @@ public:
     _hiddenIdx = -1;
 
     // Perform a network scan, CYW43 reports hidden networks with no SSID
+    logWiFiState("scan start");
     int n = WiFi.scanNetworks();
+    logWiFiState("scan done");
     if (n <= 0) {
       // a hidden network may still answer the directed scan below
       WS_DEBUG_PRINTLN("No visible WiFi networks found!");
@@ -395,18 +414,23 @@ protected:
 
     if (WiFi.status() == WL_CONNECTED)
       return;
+    logWiFiState("connect start");
 
     WiFi.mode(WIFI_STA);
     Ws->_wdt->feed();
-    WiFi.setTimeout(20 * ONE_SECOND_IN_MS);
+    // UAT DEBUG: 7 s join window, so a failing attempt returns and is logged
+    // before the RP2350's ~16.8 s hardware WDT (begin() waits up to 2x this)
+    WiFi.setTimeout(7 * ONE_SECOND_IN_MS);
     Ws->_wdt->feed();
 
     if (strlen(_ssid) == 0) {
       _statusV2 = WS_SSID_INVALID;
     } else {
       _disconnect();
+      logWiFiState("after disconnect");
       delay(5 * ONE_SECOND_IN_MS);
       Ws->_wdt->feed();
+      logWiFiState("after 5s delay");
       if (Ws->_isWiFiMultiV2 && _hiddenIdx < 0) {
         // multi network mode
         _wifiMulti.clearAPList();
@@ -421,7 +445,10 @@ protected:
           }
         }
         Ws->_wdt->feed();
-        if (_wifiMulti.run(TEN_SECONDS_IN_MS) == WL_CONNECTED) {
+        logWiFiState("wifimulti run");
+        int multiResult = _wifiMulti.run(TEN_SECONDS_IN_MS);
+        logWiFiState("wifimulti returned");
+        if (multiResult == WL_CONNECTED) {
           Ws->_wdt->feed();
           _statusV2 = WS_NET_CONNECTED;
           return;
@@ -435,17 +462,30 @@ protected:
                      Ws->_multiNetworksV2[_hiddenIdx - 1].pass);
         } else {
           // single network mode, or the hidden default network
+          logWiFiState("begin");
           WiFi.begin(_ssid, _pass);
         }
+        logWiFiState("begin returned");
+        Ws->_wdt->feed();
 
-        // Use the macro to retry the status check until connected / timed out
-        int lastResult = WL_DISCONNECTED;
-        RETRY_FUNCTION_UNTIL_TIMEOUT(
-            []() -> int { return WiFi.status(); }, // Function call each cycle
-            lastResult,                            // return variable
-            [](int status) { return status == WL_CONNECTED; }, // check
-            PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
-            PICO_CONNECT_RETRY_DELAY_MS); // interval between retries
+        // UAT DEBUG: same as RETRY_FUNCTION_UNTIL_TIMEOUT, logging changes
+        int lastResult = WiFi.status();
+        uint32_t lastJoin = cyw43_state.wifi_join_state;
+        int lastTcpip = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+        unsigned long startTime = millis();
+        while (millis() - startTime < PICO_CONNECT_TIMEOUT_MS) {
+          lastResult = WiFi.status();
+          int tcpip = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
+          if (cyw43_state.wifi_join_state != lastJoin || tcpip != lastTcpip) {
+            lastJoin = cyw43_state.wifi_join_state;
+            lastTcpip = tcpip;
+            logWiFiState("poll change");
+          }
+          if (lastResult == WL_CONNECTED)
+            break;
+          WS_DELAY_WITH_WDT(PICO_CONNECT_RETRY_DELAY_MS);
+        }
+        logWiFiState(lastResult == WL_CONNECTED ? "connected" : "poll timeout");
 
         if (lastResult == WL_CONNECTED) {
           _statusV2 = WS_NET_CONNECTED;
@@ -465,6 +505,7 @@ protected:
   void _disconnect(bool wifi_off = true) {
     (void)wifi_off;
     Ws->_wdt->feed();
+    logWiFiState("disconnect");
     WiFi.disconnect();
     delay(5 * ONE_SECOND_IN_MS);
     Ws->_wdt->feed();
