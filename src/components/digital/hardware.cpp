@@ -95,25 +95,59 @@ bool DigitalHardware::SetMode() {
       _expander_drv->pinMode(_pin_num, OUTPUT);
       _expander_drv->digitalWrite(_pin_num, level);
     }
-  } else if (_direction == ws_digital_Direction_D_INPUT) {
+  } else {
+    uint8_t mode;
+    if (!GetInputMode(_direction, mode))
+      return false;
     if (!has_expander) {
-      pinMode(_pin_num, INPUT);
+      pinMode(_pin_num, mode);
     } else {
-      _expander_drv->pinMode(_pin_num, INPUT);
+      _expander_drv->pinMode(_pin_num, mode);
     }
-  } else if (_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
-    if (!has_expander) {
-      pinMode(_pin_num, INPUT_PULLUP);
-    } else {
-      _expander_drv->pinMode(_pin_num, INPUT_PULLUP);
-    }
-#if defined(INPUT_PULLDOWN)
-  } else if (_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
-    if (!has_expander) {
-      pinMode(_pin_num, INPUT_PULLDOWN);
-    } else {
-      _expander_drv->pinMode(_pin_num, INPUT_PULLDOWN);
-    }
+  }
+  return true;
+}
+
+/*!
+    @brief  Checks whether this platform can set up a pin for an input
+            direction (e.g. ESP8266 has no pull-down).
+    @param  direction  D_INPUT, D_INPUT_PULL_UP or D_INPUT_PULL_DOWN.
+    @return True if the direction is supported, else False.
+*/
+bool DigitalHardware::IsInputModeSupported(ws_digital_Direction direction) {
+  uint8_t mode;
+  return GetInputMode(direction, mode);
+}
+
+/*!
+    @brief  Resolves the pinMode() value for an input direction.
+    @note   Which pins have pull resistors comes from the board and expander
+            definitions (hasPullup/hasPulldown), which the broker uses to
+            filter pins; it isn't checked again here.
+    @note   INPUT_PULLDOWN is a macro on cores that have it (ESP32, SAMD)
+            and a PinMode enum value on ArduinoCore-API cores
+            (arduino-pico), which define ARDUINO_API_VERSION. Elsewhere
+            (ESP8266) a pull-down is rejected. This only holds while no
+            header included here pulls in Adafruit_seesaw.h, which #defines
+            its own INPUT_PULLDOWN fallback (see drv_seesaw.h).
+    @note   RP2350 chip revisions before A4 have a pull-down erratum (E9)
+            that can latch the pin high.
+    @param  direction  D_INPUT, D_INPUT_PULL_UP or D_INPUT_PULL_DOWN.
+    @param  mode       Out: the pinMode() value to use. Left unchanged if
+                       the direction isn't supported.
+    @return True if this platform supports the direction, else False.
+*/
+bool DigitalHardware::GetInputMode(ws_digital_Direction direction,
+                                   uint8_t &mode) {
+  if (direction == ws_digital_Direction_D_INPUT) {
+    mode = INPUT;
+  } else if (direction == ws_digital_Direction_D_INPUT_PULL_UP) {
+    mode = INPUT_PULLUP;
+  } else if (direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+#if defined(INPUT_PULLDOWN) || defined(ARDUINO_API_VERSION)
+    mode = INPUT_PULLDOWN;
+#else
+    return false;
 #endif
   } else {
     return false;

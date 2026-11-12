@@ -508,10 +508,18 @@ bool ws_sdcard::ParseDigitalAdd(ws_digital_Add &msg_DigitalAdd, const char *pin,
           "[SD] Parsing Error: Digital pin's direction not found!")) {
     return false;
   } else if (strcmp(direction, "INPUT") == 0) {
-    if (pull != nullptr) {
-      msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT_PULL_UP;
-    } else {
+    // "pull" is optional: the config schema only defines "UP" and "DOWN",
+    // so no "pull" key means an input with no pull resistor (D_INPUT)
+    if (pull == nullptr) {
       msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT;
+    } else if (strcmp(pull, "UP") == 0) {
+      msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT_PULL_UP;
+    } else if (strcmp(pull, "DOWN") == 0) {
+      msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT_PULL_DOWN;
+    } else {
+      WS_DEBUG_PRINT("[SD] Parsing Error: Unknown pull found: ");
+      WS_DEBUG_PRINTLNVAR(pull);
+      return false;
     }
   } else if (strcmp(direction, "OUTPUT") == 0) {
     WS_DEBUG_PRINTLN(

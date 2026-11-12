@@ -14,6 +14,7 @@
  */
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "controller.h"
+#include "components/digital/hardware.h"
 
 /*!
     @brief  Sleep controller constructor
@@ -59,26 +60,14 @@ SleepModel *SleepController::GetModel() { return _sleep_model; }
     @return True if the message was successfully routed, False otherwise.
 */
 bool SleepController::Router(pb_istream_t *stream) {
-  // Attempt to decode the Sleep B2D envelope
-  ws_sleep_B2D b2d = ws_sleep_B2D_init_zero;
-  if (!ws_pb_decode(stream, ws_sleep_B2D_fields, &b2d)) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to decode Sleep B2D envelope");
+  // SleepConfig is the only Sleep B2D payload. Decoded by the model, which
+  // keeps the ext0s callback field's decode callback.
+  if (!_sleep_model->DecodeSleepConfig(stream)) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to decode Sleep B2D SleepConfig");
     return false;
   }
-
-  // Route based on payload type
-  bool res = false;
-  switch (b2d.which_payload) {
-  case ws_sleep_B2D_sleep_config_tag:
-    // Lock is always true when receiving a standalone sleep config command
-    res = handleSleepConfig(&b2d.payload.sleep_config, true);
-    break;
-  default:
-    WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported Sleep payload");
-    break;
-  }
-
-  return res;
+  // Lock is always true when receiving a standalone sleep config command
+  return handleSleepConfig(_sleep_model->GetSleepConfig(), true);
 }
 
 /*!
@@ -153,9 +142,9 @@ void SleepController::WakeFromLightSleep() {
     return;
   WS_DEBUG_PRINTLN("[sleep] Woke up from light sleep!");
 
-#if defined(ARDUINO_ARCH_ESP32) &&                                             \
-    !(defined(CONFIG_IDF_TARGET_ESP32C3) ||                                    \
-      defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6))
+#if defined(ARDUINO_ARCH_ESP32) && !(defined(CONFIG_IDF_TARGET_ESP32C3) ||     \
+                                     defined(CONFIG_IDF_TARGET_ESP32C5) ||     \
+                                     defined(CONFIG_IDF_TARGET_ESP32C6))
   // ext0 leaves the wake pin's pad routed to RTC IO after waking. Light sleep
   // doesn't reboot, so nothing re-runs pinMode() - hand the pad back to the
   // digital GPIO matrix so the Digital component owning it can read it again.
@@ -233,9 +222,9 @@ bool SleepController::getExt0PinPullDirection(
     return false;
   }
 
-#if defined(ARDUINO_ARCH_ESP32) &&                                             \
-    !(defined(CONFIG_IDF_TARGET_ESP32C3) ||                                    \
-      defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6))
+#if defined(ARDUINO_ARCH_ESP32) && !(defined(CONFIG_IDF_TARGET_ESP32C3) ||     \
+                                     defined(CONFIG_IDF_TARGET_ESP32C5) ||     \
+                                     defined(CONFIG_IDF_TARGET_ESP32C6))
   // ext0 wakeup only works on RTC-capable GPIO pins
   if (!rtc_gpio_is_valid_gpio((gpio_num_t)pin_num)) {
     Ws->error_handler->publishComponentError(
@@ -274,8 +263,8 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
   if (msg->has_timer) {
 // Configure timer-based wakeup source
 #ifdef ARDUINO_ARCH_ESP32
-    rc = _sleep_hardware->RegisterRTCTimerWakeup(
-        (uint64_t)msg->timer.duration * ONE_SECOND_IN_US);
+    rc = _sleep_hardware->RegisterRTCTimerWakeup((uint64_t)msg->timer.duration *
+                                                 ONE_SECOND_IN_US);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }
@@ -360,18 +349,22 @@ void SleepController::SetWakeEnablePin(uint8_t pin, uint8_t pull) {
             For pull-down/no pull: active = HIGH (button pressed to VCC)
 */
 bool SleepController::CheckWakeEnablePin() {
-  // Configure pin with specified pull mode
-  switch (_wake_enable_pin_pull) {
-  case 1:
-    pinMode(_wake_enable_pin, INPUT_PULLDOWN);
-    break;
-  case 2:
-    pinMode(_wake_enable_pin, INPUT_PULLUP);
-    break;
-  default:
-    pinMode(_wake_enable_pin, INPUT);
-    break;
+  // Map the pull setting (0 = none, 1 = pull-down, 2 = pull-up) to a
+  // digital direction
+  ws_digital_Direction direction = ws_digital_Direction_D_INPUT;
+  if (_wake_enable_pin_pull == 1) {
+    direction = ws_digital_Direction_D_INPUT_PULL_DOWN;
+  } else if (_wake_enable_pin_pull == 2) {
+    direction = ws_digital_Direction_D_INPUT_PULL_UP;
   }
+
+  // Fall back to a floating input if the core can't set the requested pull
+  uint8_t mode = INPUT;
+  if (!DigitalHardware::GetInputMode(direction, mode)) {
+    WS_DEBUG_PRINTLN("[sleep] WARNING: Wake enable pin pull not supported "
+                     "on this platform, using INPUT");
+  }
+  pinMode(_wake_enable_pin, mode);
   int pinState = digitalRead(_wake_enable_pin);
 
   // Return whether pin state indicates "active" based on pull mode
