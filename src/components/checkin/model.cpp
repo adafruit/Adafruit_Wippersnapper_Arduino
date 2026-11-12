@@ -198,6 +198,12 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   response->component_adds.telemetry_adds.funcs.decode = &cbTelemetryAdds;
   response->component_adds.telemetry_adds.arg = model;
 
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // sleep_config.ext0s is a callback field, decode it into the sleep model
+  if (Ws->_sleep_controller != nullptr)
+    Ws->_sleep_controller->GetModel()->SetupExt0Decode(&response->sleep_config);
+#endif
+
   // Return true WITHOUT consuming the stream - nanopb will continue
   // to decode the Response submessage with our callback now set up
   return true;

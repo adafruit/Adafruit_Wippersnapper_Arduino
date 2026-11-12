@@ -70,20 +70,62 @@ ws_sleep_Goodnight *SleepModel::GetSleepGoodnight() {
 uint32_t SleepModel::getRunDurationMs() { return _run_duration; }
 
 /*!
-    @brief  Decodes a Sleep Enter message into the _msg_sleep_enter
-            object from a nanopb stream.
+    @brief  Decodes the SleepConfig of a Sleep B2D message into the
+            _msg_sleep_enter object, and its ext0s into _ext0_config.
     @param  stream
-            The nanopb input stream.
-    @return True if the Sleep Enter message was successfully decoded.
+            The nanopb input stream of the Sleep B2D envelope.
+    @return True if a SleepConfig was found and decoded.
 */
 bool SleepModel::DecodeSleepConfig(pb_istream_t *stream) {
   // Zero-out the Sleep Enter message struct to ensure a clean decode
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
-  // ext0s is an undecoded callback field, drop any previously set ext0 config
-  _has_ext0 = false;
+  SetupExt0Decode(&_msg_sleep_enter);
 
-  // Decode the stream into a Sleep Enter message
-  return pb_decode(stream, ws_sleep_SleepConfig_fields, &_msg_sleep_enter);
+  // Decode the SleepConfig on its own: decoding the B2D envelope would zero
+  // the oneof member, and with it the ext0s decode callback
+  return ws_pb_decode_oneof_submsg(stream, ws_sleep_B2D_sleep_config_tag,
+                                   ws_sleep_SleepConfig_fields,
+                                   &_msg_sleep_enter);
+}
+
+/*!
+    @brief  Sets up a SleepConfig's ext0s callback field to decode into this
+            model, dropping any previously decoded ext0 config. Call before
+            decoding the message that holds the SleepConfig.
+    @param  msg
+            The SleepConfig to decode, e.g. a checkin response's.
+*/
+void SleepModel::SetupExt0Decode(ws_sleep_SleepConfig *msg) {
+  _has_ext0 = false;
+  msg->ext0s.funcs.decode = &cbDecodeExt0;
+  msg->ext0s.arg = this;
+}
+
+/*!
+    @brief  Decodes one entry of a SleepConfig's repeated ext0s field.
+    @param  stream
+            The Ext0Config submessage stream.
+    @param  field
+            Field descriptor of the ext0s field.
+    @param  arg
+            Pointer to the SleepModel to decode into.
+    @return True if decoded, False otherwise.
+*/
+bool SleepModel::cbDecodeExt0(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg) {
+  (void)field;
+  SleepModel *model = (SleepModel *)*arg;
+  ws_sleep_Ext0Config ext0 = ws_sleep_Ext0Config_init_zero;
+  if (!pb_decode(stream, ws_sleep_Ext0Config_fields, &ext0))
+    return false;
+  // ext0 wakes on a single pin, use the first
+  if (model->_has_ext0) {
+    WS_DEBUG_PRINTLN("[sleep] WARNING: Only one ext0 pin is used, ignoring");
+    return true;
+  }
+  model->_ext0_config = ext0;
+  model->_has_ext0 = true;
+  return true;
 }
 
 /*!

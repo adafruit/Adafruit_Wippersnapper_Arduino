@@ -60,26 +60,14 @@ SleepModel *SleepController::GetModel() { return _sleep_model; }
     @return True if the message was successfully routed, False otherwise.
 */
 bool SleepController::Router(pb_istream_t *stream) {
-  // Attempt to decode the Sleep B2D envelope
-  ws_sleep_B2D b2d = ws_sleep_B2D_init_zero;
-  if (!ws_pb_decode(stream, ws_sleep_B2D_fields, &b2d)) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to decode Sleep B2D envelope");
+  // SleepConfig is the only Sleep B2D payload. Decoded by the model, which
+  // keeps the ext0s callback field's decode callback.
+  if (!_sleep_model->DecodeSleepConfig(stream)) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to decode Sleep B2D SleepConfig");
     return false;
   }
-
-  // Route based on payload type
-  bool res = false;
-  switch (b2d.which_payload) {
-  case ws_sleep_B2D_sleep_config_tag:
-    // Lock is always true when receiving a standalone sleep config command
-    res = handleSleepConfig(&b2d.payload.sleep_config, true);
-    break;
-  default:
-    WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported Sleep payload");
-    break;
-  }
-
-  return res;
+  // Lock is always true when receiving a standalone sleep config command
+  return handleSleepConfig(_sleep_model->GetSleepConfig(), true);
 }
 
 /*!
