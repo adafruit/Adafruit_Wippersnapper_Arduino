@@ -121,6 +121,7 @@ public:
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(100);
+    set_wifi_country();
 
     // Perform a network scan, including hidden networks
     int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true);
@@ -185,6 +186,58 @@ public:
   }
 
   /***********************************************************/
+  /*!
+  @brief   Sets the WiFi regulatory country from secrets.json.
+  @note    The SDK default is "CN" (channels 1-13) and isn't stored in
+           flash, so there's nothing to restore when unset.
+  */
+  /***********************************************************/
+  void set_wifi_country() {
+    if (strlen(WS._config.network_country) == 0)
+      return;
+
+    wifi_country_t country = {};
+    strlcpy(country.cc, WS._config.network_country, sizeof(country.cc));
+    country.schan = 1;
+    country.nchan = country_channels(country.cc);
+    country.policy = WIFI_COUNTRY_POLICY_AUTO;
+
+    if (wifi_set_country(&country)) {
+      WS_DEBUG_PRINT("WiFi country set to: ");
+      WS_DEBUG_PRINTLNVAR(country.cc);
+    } else {
+      WS_DEBUG_PRINT("ERROR: Unable to set WiFi country: ");
+      WS_DEBUG_PRINTLNVAR(country.cc);
+    }
+  }
+
+  /***********************************************************/
+  /*!
+  @brief   Gets the 2.4GHz channel count for a country, starting at 1.
+  @note    The SDK takes this range as given rather than looking the
+           country up, so only countries known to allow channels 12-13
+           get them: those in ESP-IDF's country list other than US, CA,
+           MX and TW. JP gets 14, and any other code (including US
+           territories such as PR and GU) gets the world safe 1-11.
+  @param   cc
+           Uppercase ISO 3166 alpha-2 country code.
+  @returns The number of channels to use, 11, 13 or 14.
+  */
+  /***********************************************************/
+  uint8_t country_channels(const char *cc) {
+    static const char ch13[] PROGMEM = "ATAUBEBGBRCHCNCYCZDEDKEEESFIFRGBGRHK"
+                                       "HRHUIEINISITKRLILTLULVMTNLNONZPLPT"
+                                       "ROSESISK";
+    if (strcmp(cc, "JP") == 0)
+      return 14;
+    for (size_t i = 0; i + 1 < sizeof(ch13); i += 2) {
+      if (pgm_read_byte(&ch13[i]) == cc[0] &&
+          pgm_read_byte(&ch13[i + 1]) == cc[1])
+        return 13;
+    }
+    return 11;
+  }
+
   /*!
   @brief   Performs a directed scan (probe request) for a hidden network.
   @param   ssid
