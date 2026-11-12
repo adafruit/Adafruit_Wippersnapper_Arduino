@@ -14,6 +14,7 @@
  */
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "controller.h"
+#include "components/digital/hardware.h"
 
 /*!
     @brief  Sleep controller constructor
@@ -59,26 +60,14 @@ SleepModel *SleepController::GetModel() { return _sleep_model; }
     @return True if the message was successfully routed, False otherwise.
 */
 bool SleepController::Router(pb_istream_t *stream) {
-  // Attempt to decode the Sleep B2D envelope
-  ws_sleep_B2D b2d = ws_sleep_B2D_init_zero;
-  if (!ws_pb_decode(stream, ws_sleep_B2D_fields, &b2d)) {
-    WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to decode Sleep B2D envelope");
+  // SleepConfig is the only Sleep B2D payload. Decoded by the model, which
+  // keeps the ext0s callback field's decode callback.
+  if (!_sleep_model->DecodeSleepConfig(stream)) {
+    WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to decode Sleep B2D SleepConfig");
     return false;
   }
-
-  // Route based on payload type
-  bool res = false;
-  switch (b2d.which_payload) {
-  case ws_sleep_B2D_sleep_config_tag:
-    // Lock is always true when receiving a standalone sleep config command
-    res = handleSleepConfig(&b2d.payload.sleep_config, true);
-    break;
-  default:
-    WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported Sleep payload");
-    break;
-  }
-
-  return res;
+  // Lock is always true when receiving a standalone sleep config command
+  return handleSleepConfig(_sleep_model->GetSleepConfig(), true);
 }
 
 /*!
@@ -153,6 +142,25 @@ void SleepController::WakeFromLightSleep() {
     return;
   WS_DEBUG_PRINTLN("[sleep] Woke up from light sleep!");
 
+#if defined(ARDUINO_ARCH_ESP32) &&                                             \
+    !(defined(CONFIG_IDF_TARGET_ESP32C3) ||                                    \
+      defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6))
+  // ext0 leaves the wake pin's pad routed to RTC IO after waking. Light sleep
+  // doesn't reboot, so nothing re-runs pinMode() - hand the pad back to the
+  // digital GPIO matrix so the Digital component owning it can read it again.
+  // Analog pins are left alone, the ADC reads through the RTC/analog pad.
+  const char *ext0_pin_name = _sleep_hardware->GetEspSleepExt0PinName();
+  if (ext0_pin_name != nullptr) {
+    int32_t ext0_pin = WsPinNameToNum(ext0_pin_name);
+    if (ext0_pin != WS_PIN_INVALID &&
+        Ws->digital_controller->getPinPullDirection((uint8_t)ext0_pin,
+                                                    nullptr)) {
+      rtc_gpio_deinit((gpio_num_t)ext0_pin);
+      WS_DEBUG_PRINTLN("[sleep] Released ext0 wake pin back to digital GPIO");
+    }
+  }
+#endif
+
   // Recalculate sleep duration
   _sleep_hardware->CalculateSleepDuration();
   WS_DEBUG_PRINT("Slept for ");
@@ -186,6 +194,59 @@ void SleepController::WakeFromLightSleep() {
 }
 
 /*!
+    @brief  Checks that an ext0 wakeup pin is already configured by the
+            Digital or Analog controller and retrieves its pull direction.
+            Publishes a component error if the pin can not be used.
+    @param  pin_name
+            The ext0 wakeup pin's name (e.g. "D5", "A0").
+    @param  pull_direction
+            Out: the pin's pull direction (D_INPUT_PULL_UP,
+            D_INPUT_PULL_DOWN, or D_INPUT for no pull).
+    @return True if the pin is configured by a component, False otherwise.
+*/
+bool SleepController::getExt0PinPullDirection(
+    const char *pin_name, ws_digital_Direction *pull_direction) {
+  uint8_t pin_num = 0;
+  ExpanderHardware *expander_drv = nullptr;
+  if (!Ws->_expander_controller->ResolvePinName(pin_name, pin_num,
+                                                &expander_drv)) {
+    Ws->error_handler->publishComponentError(pin_name,
+                                             "Unable to resolve pin name");
+    return false;
+  }
+
+  // ext0 can only wake from a native GPIO pin
+  if (expander_drv != nullptr) {
+    Ws->error_handler->publishComponentError(pin_name,
+                                             "Wake pin must be a native GPIO");
+    return false;
+  }
+
+#if defined(ARDUINO_ARCH_ESP32) &&                                             \
+    !(defined(CONFIG_IDF_TARGET_ESP32C3) ||                                    \
+      defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6))
+  // ext0 wakeup only works on RTC-capable GPIO pins
+  if (!rtc_gpio_is_valid_gpio((gpio_num_t)pin_num)) {
+    Ws->error_handler->publishComponentError(
+        pin_name, "Wake pin is not an RTC GPIO, can not be used for ext0");
+    return false;
+  }
+#endif
+
+  // The pin must already be configured by the Digital or Analog controller
+  if (Ws->digital_controller->getPinPullDirection(pin_num, pull_direction)) {
+    return true;
+  }
+  if (Ws->analog_controller->getPinPullDirection(pin_num, pull_direction)) {
+    return true;
+  }
+
+  Ws->error_handler->publishComponentError(
+      pin_name, "Wake pin is not configured as a digital or analog component");
+  return false;
+}
+
+/*!
     @brief  Configures the sleep mode based on the provided Enter message.
     @param  msg
             Pointer to the Sleep Enter message containing config union.
@@ -193,56 +254,74 @@ void SleepController::WakeFromLightSleep() {
 */
 bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
   bool rc = false;
-  switch (msg->which_config) {
-  case ws_sleep_SleepConfig_timer_tag:
+#ifdef ARDUINO_ARCH_ESP32
+  // Wakeup sources are NOT disabled automatically after waking, clear any
+  // source left armed by a previous sleep cycle so only this config applies.
+  // ESP_ERR_INVALID_STATE (nothing armed yet) is expected and ignored.
+  esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+#endif
+  if (msg->has_timer) {
 // Configure timer-based wakeup source
 #ifdef ARDUINO_ARCH_ESP32
     rc = _sleep_hardware->RegisterRTCTimerWakeup(
-        (uint64_t)msg->config.timer.duration * ONE_SECOND_IN_US);
+        (uint64_t)msg->timer.duration * ONE_SECOND_IN_US);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set timer wakeup");
     }
 #else
-    Ws->_wdt->registerTimerWakeup(msg->config.timer.duration * 1000);
+    Ws->_wdt->registerTimerWakeup(msg->timer.duration * 1000);
     rc = true;
 #endif
 
-    _sleep_hardware->StoreTimerDuration(rc ? msg->config.timer.duration : 0);
+    _sleep_hardware->StoreTimerDuration(rc ? msg->timer.duration : 0);
     WS_DEBUG_PRINT("[sleep] Timer wakeup set to ");
-    WS_DEBUG_PRINTVAR(msg->config.timer.duration);
+    WS_DEBUG_PRINTVAR(msg->timer.duration);
     WS_DEBUG_PRINTLN(" seconds");
-    break;
-  case ws_sleep_SleepConfig_ext0_tag:
+  } else if (_sleep_model->HasExt0()) {
     // No timer wakeup armed, so a failed wake cannot re-arm one
     _sleep_hardware->StoreTimerDuration(0);
+    const ws_sleep_Ext0Config *ext0 = _sleep_model->GetExt0Config();
+
+    // The wake pin must already be configured by the Digital or Analog
+    // controller, its pull direction is taken from that component
+    ws_digital_Direction pull_direction = ws_digital_Direction_D_INPUT;
+    if (!getExt0PinPullDirection(ext0->pin, &pull_direction)) {
+      return false;
+    }
+
 #ifdef ARDUINO_ARCH_ESP32
-    rc = _sleep_hardware->RegisterExt0Wakeup(
-        msg->config.ext0.pin, msg->config.ext0.level, msg->config.ext0.pull);
+    rc = _sleep_hardware->RegisterExt0Wakeup(ext0->pin, ext0->level,
+                                             pull_direction);
     if (!rc) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set ext0 wakeup");
     }
 #else
-  {
-    // Convert pin name string to numeric GPIO pin
-    const char *pin_num = msg->config.ext0.pin;
-    if ((pin_num[0] == 'D' || pin_num[0] == 'A') && pin_num[1] != '\0') {
-      pin_num = pin_num + 1;
+    {
+      // Resolve the pin name the same way the Digital/Analog controllers do,
+      // already validated by getExt0PinPullDirection()
+      uint gpio_pin = (uint)WsPinNameToNum(ext0->pin);
+      Ws->_wdt->registerGPIOWakeup(gpio_pin, true, ext0->level);
+      rc = true;
     }
-    uint gpio_pin = (uint)strtol(pin_num, nullptr, 10);
-    Ws->_wdt->registerGPIOWakeup(gpio_pin, true, msg->config.ext0.level);
-    rc = true;
-  }
 #endif
     WS_DEBUG_PRINT("[sleep] EXT0 wakeup set on pin ");
-    WS_DEBUG_PRINTVAR(msg->config.ext0.pin);
+    WS_DEBUG_PRINTVAR(ext0->pin);
     WS_DEBUG_PRINT(" | Level ");
-    WS_DEBUG_PRINTVAR(msg->config.ext0.level ? "HIGH" : "LOW");
+    if (ext0->level) {
+      WS_DEBUG_PRINTVAR("HIGH");
+    } else {
+      WS_DEBUG_PRINTVAR("LOW");
+    }
     WS_DEBUG_PRINT(" | Pull: ");
-    WS_DEBUG_PRINTLNVAR(msg->config.ext0.pull ? "ENABLED" : "DISABLED");
-    break;
-  default:
+    if (pull_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
+      WS_DEBUG_PRINTLNVAR("UP");
+    } else if (pull_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+      WS_DEBUG_PRINTLNVAR("DOWN");
+    } else {
+      WS_DEBUG_PRINTLNVAR("NONE");
+    }
+  } else {
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unknown sleep config type");
-    break;
   }
 
 #ifdef USE_STATUS_LED
@@ -274,17 +353,18 @@ void SleepController::SetWakeEnablePin(uint8_t pin, uint8_t pull) {
 */
 bool SleepController::CheckWakeEnablePin() {
   // Configure pin with specified pull mode
-  switch (_wake_enable_pin_pull) {
-  case 1:
-    pinMode(_wake_enable_pin, INPUT_PULLDOWN);
-    break;
-  case 2:
-    pinMode(_wake_enable_pin, INPUT_PULLUP);
-    break;
-  default:
-    pinMode(_wake_enable_pin, INPUT);
-    break;
+  // Falls back to a floating input if the core can't set the requested pull
+  uint8_t mode = INPUT;
+  if (_wake_enable_pin_pull == 1 || _wake_enable_pin_pull == 2) {
+    ws_digital_Direction pull = (_wake_enable_pin_pull == 1)
+                                    ? ws_digital_Direction_D_INPUT_PULL_DOWN
+                                    : ws_digital_Direction_D_INPUT_PULL_UP;
+    if (!DigitalHardware::GetInputMode(pull, &mode)) {
+      WS_DEBUG_PRINTLN("[sleep] WARNING: Wake enable pin pull not supported "
+                       "on this platform, using INPUT");
+    }
   }
+  pinMode(_wake_enable_pin, mode);
   int pinState = digitalRead(_wake_enable_pin);
 
   // Return whether pin state indicates "active" based on pull mode
@@ -469,32 +549,39 @@ void SleepController::HandleNetFSMFailure() {
   const char *ext0_pin_name = nullptr;
 #endif
   if (ext0_pin_name != nullptr) {
-    // Set the ext0 pin, level, and pull to the last known ext0 configuration
-    msg_sleep_cfg.which_config = ws_sleep_SleepConfig_ext0_tag;
-    strncpy(msg_sleep_cfg.config.ext0.pin, ext0_pin_name,
-            sizeof(msg_sleep_cfg.config.ext0.pin) - 1);
-    msg_sleep_cfg.config.ext0.pin[sizeof(msg_sleep_cfg.config.ext0.pin) - 1] =
-        '\0';
 #ifdef ARDUINO_ARCH_ESP32
-    msg_sleep_cfg.config.ext0.level = _sleep_hardware->GetEspSleepExt0Level();
-    msg_sleep_cfg.config.ext0.pull = _sleep_hardware->GetEspSleepExt0Pull();
+    // Re-arm the last known ext0 configuration directly from RTC memory. No
+    // Digital/Analog pins are configured yet (we never checked in), so the
+    // component lookup in ConfigureSleep() would fail and leave the device
+    // asleep without a wakeup source.
+    // Copy out of RTC memory first - RegisterExt0Wakeup() writes the pin name
+    // back into the same RTC buffer, so the strncpy must not overlap
+    char ext0_pin[sizeof(ws_sleep_Ext0Config::pin)];
+    strncpy(ext0_pin, ext0_pin_name, sizeof(ext0_pin) - 1);
+    ext0_pin[sizeof(ext0_pin) - 1] = '\0';
+    _sleep_enabled = true;
+    _sleep_hardware->SetSleepMode(msg_sleep_cfg.mode);
+    if (!_sleep_hardware->RegisterExt0Wakeup(
+            ext0_pin, _sleep_hardware->GetEspSleepExt0Level(),
+            _sleep_hardware->GetEspSleepExt0PullDirection())) {
+      WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to re-arm ext0 wakeup");
+    }
 #endif
   } else {
-    msg_sleep_cfg.which_config = ws_sleep_SleepConfig_timer_tag;
     // Sleep again for the configured timer duration, not the measured time
     // slept: a GPIO wake (RP2350 has no ext0 to restore) or an early wake
     // measures a short sleep, re-sleeping briefly (or for 0 s) in a
     // battery-draining retry loop. With no timer to re-arm, reboot instead.
-    msg_sleep_cfg.config.timer.duration = _sleep_hardware->GetTimerDuration();
-    if (msg_sleep_cfg.config.timer.duration == 0) {
+    msg_sleep_cfg.has_timer = true;
+    msg_sleep_cfg.timer.duration = _sleep_hardware->GetTimerDuration();
+    if (msg_sleep_cfg.timer.duration == 0) {
       Ws->haltErrorV2(
           "[sleep] ERROR: No wakeup source to re-arm, rebooting soon...");
     }
+    // Configure sleep mode (sleep_enabled=true to re-enter sleep after FSM
+    // failure)
+    handleSleepConfig(&msg_sleep_cfg, true);
   }
-
-  // Configure sleep mode (sleep_enabled=true to re-enter sleep after FSM
-  // failure)
-  handleSleepConfig(&msg_sleep_cfg, true);
   // Enter sleep mode
   StartSleep();
   // Only reached after a light sleep wake: restore what StartSleep() turned

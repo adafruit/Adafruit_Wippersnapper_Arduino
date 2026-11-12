@@ -63,6 +63,8 @@ private:
   // Sleep configuration
   bool ConfigureSleep(const ws_sleep_SleepConfig *msg);
   bool ConfigureLightSleep(const ws_sleep_SleepConfig *msg);
+  bool getExt0PinPullDirection(const char *pin_name,
+                               ws_digital_Direction *pull_direction);
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
   bool _wake_enable_pin_state;    ///< Value of BOOT button during class
