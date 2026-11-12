@@ -152,7 +152,10 @@ bool CheckinModel::Checkin(const char *hardware_uid,
 }
 
 /*!
-    @brief  Decodes a ws_checkin_Response message from the broker.
+    @brief  Decodes a ws_checkin_Response message from the broker, without
+            executing any component adds. No component_adds callbacks are
+            set, so nanopb skips them. Component adds are executed later by
+            ProcessComponentAdds(), after the controllers are configured.
     @param  stream
             Incoming data stream from buffer.
             Publishes a DeviceError to the broker on failure.
@@ -163,16 +166,12 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   // Zero-out the B2D wrapper message
   memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
 
-  // Set up the pre-decode callback (cb_payload) which will be called BEFORE
-  // the Response submessage is decoded. This allows us to set up the
-  // component_adds callback before nanopb initializes the Response struct.
-  _CheckinB2D.cb_payload.funcs.decode = &cbSetupResponse;
-  _CheckinB2D.cb_payload.arg = this;
-
   // Decode the B2D wrapper message
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
-    const char *decode_error =
-        "[checkin] ERROR: Unable to decode CheckinB2D message from broker!";
+    char decode_error[128];
+    snprintf(decode_error, sizeof(decode_error),
+             "[checkin] ERROR: Unable to decode CheckinB2D message: %s",
+             PB_GET_ERROR(stream));
     WS_DEBUG_PRINTLNVAR(decode_error);
     Ws->error_handler->publishDeviceError(decode_error);
     return false;
@@ -187,6 +186,73 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
     return false;
   }
 
+  return true;
+}
+
+/*!
+    @brief  Decodes the checkin response a second time, executing each
+            component add. Must be called with a copy of the stream passed
+            to ProcessResponse(), after the controllers are configured.
+            A failed add is counted and skipped, it never fails the decode.
+    @param  stream
+            Copy of the incoming data stream, positioned at the response.
+    @returns True if the response was decoded, False on a framing error.
+*/
+bool CheckinModel::ProcessComponentAdds(pb_istream_t *stream) {
+  _adds_total = 0;
+  _adds_failed = 0;
+
+  // Re-zero the B2D wrapper, the response fields are re-decoded with the
+  // same values so the getters remain valid after this pass
+  memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
+
+  // Set up the pre-decode callback (cb_payload) which will be called BEFORE
+  // the Response submessage is decoded. This allows us to set up the
+  // component_adds callback before nanopb initializes the Response struct.
+  _CheckinB2D.cb_payload.funcs.decode = &cbSetupResponse;
+  _CheckinB2D.cb_payload.arg = this;
+
+  if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
+    WS_DEBUG_PRINT("[checkin] ERROR: Unable to decode component adds: ");
+    WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(stream));
+    return false;
+  }
+  return true;
+}
+
+/*!
+    @brief  Returns the number of component adds seen during checkin.
+    @returns Total component adds.
+*/
+uint16_t CheckinModel::GetAddsTotal() { return _adds_total; }
+
+/*!
+    @brief  Returns the number of component adds that failed during checkin.
+    @returns Failed component adds.
+*/
+uint16_t CheckinModel::GetAddsFailed() { return _adds_failed; }
+
+/*!
+    @brief  Skips a component add whose submessage failed to decode, so the
+            remaining adds can still be decoded. Logs only, the failure is
+            not published to IO.
+    @param  stream
+            The add's substream, partially consumed by the failed decode.
+    @param  add_type
+            Name of the add type, for the log message.
+    @returns True, so nanopb continues decoding the next add.
+*/
+bool CheckinModel::SkipFailedAdd(pb_istream_t *stream, const char *add_type) {
+  WS_DEBUG_PRINT("[checkin] ERROR: Failed to decode ");
+  WS_DEBUG_PRINTVAR(add_type);
+  WS_DEBUG_PRINT(" add: ");
+  WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(stream));
+  // Drain what's left of this add, otherwise nanopb calls the callback
+  // again on the leftover bytes
+  if (stream->bytes_left > 0) {
+    pb_read(stream, NULL, stream->bytes_left);
+  }
+  _adds_failed++;
   return true;
 }
 
@@ -275,6 +341,12 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   response->component_adds.telemetry_adds.funcs.decode = &cbTelemetryAdds;
   response->component_adds.telemetry_adds.arg = model;
 
+  response->component_adds.display_adds.funcs.decode = &cbDisplayAdds;
+  response->component_adds.display_adds.arg = model;
+
+  response->component_adds.expander_adds.funcs.decode = &cbExpanderAdds;
+  response->component_adds.expander_adds.arg = model;
+
   // Return true WITHOUT consuming the stream - nanopb will continue
   // to decode the Response submessage with our callback now set up
   return true;
@@ -285,25 +357,28 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True, a failed add is counted and skipped.
 */
 bool CheckinModel::cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
                                  void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
+  model->_adds_total++;
   pb_istream_t raw = *stream;
   ws_digital_Add add_msg = ws_digital_Add_init_zero;
   if (!pb_decode(stream, ws_digital_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode digital add");
-    return false;
+    return model->SkipFailedAdd(stream, "digital");
   }
   ws_digital_Remove remove_msg = ws_digital_Remove_init_zero;
   strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
   // Digital Add replaces an existing pin itself
-  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_digital_tag,
-                          ws_digital_Remove_fields,
-                          &remove_msg) == CHECKIN_SKIP)
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_digital_tag,
+                          ws_digital_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
     return true;
-  return model->CommitAdd(Ws->digital_controller->Handle_Digital_Add(&add_msg));
+  if (!model->CommitAdd(Ws->digital_controller->Handle_Digital_Add(&add_msg)))
+    model->_adds_failed++;
+  return true;
 }
 
 /*!
@@ -311,24 +386,28 @@ bool CheckinModel::cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True, a failed add is counted and skipped.
 */
 bool CheckinModel::cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
                                 void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
+  model->_adds_total++;
   pb_istream_t raw = *stream;
   ws_analog_Add add_msg = ws_analog_Add_init_zero;
   if (!pb_decode(stream, ws_analog_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode analog add");
-    return false;
+    return model->SkipFailedAdd(stream, "analog");
   }
   ws_analog_Remove remove_msg = ws_analog_Remove_init_zero;
   strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
   // Analog Add replaces an existing pin itself
-  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_analog_tag,
-                          ws_analog_Remove_fields, &remove_msg) == CHECKIN_SKIP)
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_analog_tag,
+                          ws_analog_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
     return true;
-  return model->CommitAdd(Ws->analog_controller->Handle_Analog_Add(&add_msg));
+  if (!model->CommitAdd(Ws->analog_controller->Handle_Analog_Add(&add_msg)))
+    model->_adds_failed++;
+  return true;
 }
 
 /*!
@@ -336,30 +415,32 @@ bool CheckinModel::cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True, a failed add is counted and skipped.
 */
 bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
                                void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
+  model->_adds_total++;
   pb_istream_t raw = *stream;
   ws_servo_Add add_msg = ws_servo_Add_init_zero;
   if (!pb_decode(stream, ws_servo_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode servo add");
-    return false;
+    return model->SkipFailedAdd(stream, "servo");
   }
   ws_servo_Remove remove_msg = ws_servo_Remove_init_zero;
   strncpy(remove_msg.servo_pin, add_msg.servo_pin,
           sizeof(remove_msg.servo_pin) - 1);
+  // Servo Add does not replace an existing servo, remove it first
   CheckinAction action =
       model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_servo_tag,
                           ws_servo_Remove_fields, &remove_msg);
   if (action == CHECKIN_SKIP)
     return true;
-  // Servo Add does not replace an existing servo, remove it first
   if (action == CHECKIN_REPLACE &&
       !Ws->_servo_controller->Handle_Servo_Remove(&remove_msg))
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
-  return model->CommitAdd(Ws->_servo_controller->Handle_Servo_Add(&add_msg));
+  if (!model->CommitAdd(Ws->_servo_controller->Handle_Servo_Add(&add_msg)))
+    model->_adds_failed++;
+  return true;
 }
 
 /*!
@@ -367,24 +448,28 @@ bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True, a failed add is counted and skipped.
 */
 bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
+  model->_adds_total++;
   pb_istream_t raw = *stream;
   ws_pwm_Add add_msg = ws_pwm_Add_init_zero;
   if (!pb_decode(stream, ws_pwm_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pwm add");
-    return false;
+    return model->SkipFailedAdd(stream, "pwm");
   }
   ws_pwm_Remove remove_msg = ws_pwm_Remove_init_zero;
   strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
   // PWM Add replaces an existing pin itself
-  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_pwm_tag,
-                          ws_pwm_Remove_fields, &remove_msg) == CHECKIN_SKIP)
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_pwm_tag,
+                          ws_pwm_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
     return true;
-  return model->CommitAdd(Ws->_pwm_controller->Handle_PWM_Add(&add_msg));
+  if (!model->CommitAdd(Ws->_pwm_controller->Handle_PWM_Add(&add_msg)))
+    model->_adds_failed++;
+  return true;
 }
 
 /*!
@@ -392,30 +477,32 @@ bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True, a failed add is counted and skipped.
 */
 bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
                                 void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
+  model->_adds_total++;
   pb_istream_t raw = *stream;
   ws_pixels_Add add_msg = ws_pixels_Add_init_zero;
   if (!pb_decode(stream, ws_pixels_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode pixels add");
-    return false;
+    return model->SkipFailedAdd(stream, "pixels");
   }
   ws_pixels_Remove remove_msg = ws_pixels_Remove_init_zero;
   strncpy(remove_msg.pin_data, add_msg.pin_data,
           sizeof(remove_msg.pin_data) - 1);
+  // Pixels Add does not replace an existing strand, remove it first
   CheckinAction action =
       model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_pixels_tag,
                           ws_pixels_Remove_fields, &remove_msg);
   if (action == CHECKIN_SKIP)
     return true;
-  // Pixels Add does not replace an existing strand, remove it first
   if (action == CHECKIN_REPLACE &&
       !Ws->_pixels_controller->Handle_Pixels_Remove(&remove_msg))
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
-  return model->CommitAdd(Ws->_pixels_controller->Handle_Pixels_Add(&add_msg));
+  if (!model->CommitAdd(Ws->_pixels_controller->Handle_Pixels_Add(&add_msg)))
+    model->_adds_failed++;
+  return true;
 }
 
 /*!
@@ -423,30 +510,32 @@ bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True, a failed add is counted and skipped.
 */
 bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
                                  void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
+  model->_adds_total++;
   pb_istream_t raw = *stream;
   ws_ds18x20_Add add_msg = ws_ds18x20_Add_init_zero;
   if (!pb_decode(stream, ws_ds18x20_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode ds18x20 add");
-    return false;
+    return model->SkipFailedAdd(stream, "ds18x20");
   }
   ws_ds18x20_Remove remove_msg = ws_ds18x20_Remove_init_zero;
   strncpy(remove_msg.onewire_pin, add_msg.onewire_pin,
           sizeof(remove_msg.onewire_pin) - 1);
+  // DS18x20 Add does not replace an existing sensor, remove it first
   CheckinAction action =
       model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_ds18x20_tag,
                           ws_ds18x20_Remove_fields, &remove_msg);
   if (action == CHECKIN_SKIP)
     return true;
-  // DS18x20 Add does not replace an existing sensor, remove it first
   if (action == CHECKIN_REPLACE &&
       !Ws->_ds18x20_controller->Handle_Ds18x20Remove(&remove_msg))
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
-  return model->CommitAdd(Ws->_ds18x20_controller->Handle_Ds18x20Add(&add_msg));
+  if (!model->CommitAdd(Ws->_ds18x20_controller->Handle_Ds18x20Add(&add_msg)))
+    model->_adds_failed++;
+  return true;
 }
 
 /*!
@@ -454,30 +543,32 @@ bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True, a failed add is counted and skipped.
 */
 bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
                               void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
+  model->_adds_total++;
   pb_istream_t raw = *stream;
   ws_uart_Add add_msg = ws_uart_Add_init_zero;
   if (!pb_decode(stream, ws_uart_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode uart add");
-    return false;
+    return model->SkipFailedAdd(stream, "uart");
   }
   ws_uart_Remove remove_msg = ws_uart_Remove_init_zero;
   remove_msg.has_descriptor = add_msg.has_descriptor;
   remove_msg.descriptor = add_msg.descriptor;
+  // UART Add rejects a port already in use, remove it first
   CheckinAction action =
       model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_uart_tag,
                           ws_uart_Remove_fields, &remove_msg);
   if (action == CHECKIN_SKIP)
     return true;
-  // UART Add rejects a port already in use, remove it first
   if (action == CHECKIN_REPLACE &&
       !Ws->_uart_controller->Handle_UartRemove(&remove_msg))
     WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
-  return model->CommitAdd(Ws->_uart_controller->Handle_UartAdd(&add_msg));
+  if (!model->CommitAdd(Ws->_uart_controller->Handle_UartAdd(&add_msg)))
+    model->_adds_failed++;
+  return true;
 }
 
 /*!
@@ -485,27 +576,31 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True, a failed add is counted and skipped.
 */
 bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
+  model->_adds_total++;
   pb_istream_t raw = *stream;
   ws_i2c_Add add_msg = ws_i2c_Add_init_zero;
   Ws->_i2c_controller->SetupAddDecodeCallbacks(&add_msg);
   if (!pb_decode(stream, ws_i2c_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode i2c add");
-    return false;
+    return model->SkipFailedAdd(stream, "i2c");
   }
   ws_i2c_Remove remove_msg = ws_i2c_Remove_init_zero;
   remove_msg.has_descriptor = add_msg.has_descriptor;
   remove_msg.descriptor = add_msg.descriptor;
   // I2C Add replaces an existing driver itself. An explicit Remove would also
   // tear down every device behind a MUX when the MUX itself changes.
-  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_i2c_tag,
-                          ws_i2c_Remove_fields, &remove_msg) == CHECKIN_SKIP)
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_i2c_tag,
+                          ws_i2c_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
     return true;
-  return model->CommitAdd(Ws->_i2c_controller->Handle_Add(&add_msg));
+  if (!model->CommitAdd(Ws->_i2c_controller->Handle_Add(&add_msg)))
+    model->_adds_failed++;
+  return true;
 }
 
 /*!
@@ -513,26 +608,85 @@ bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
     @param    stream  Incoming data stream from buffer.
     @param    field   Protobuf message's tag type.
     @param    arg     Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True, a failed add is counted and skipped.
 */
 bool CheckinModel::cbTelemetryAdds(pb_istream_t *stream,
                                    const pb_field_t *field, void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
+  model->_adds_total++;
   pb_istream_t raw = *stream;
   ws_telemetry_Add add_msg = ws_telemetry_Add_init_zero;
   if (!pb_decode(stream, ws_telemetry_Add_fields, &add_msg)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to decode telemetry add");
-    return false;
+    return model->SkipFailedAdd(stream, "telemetry");
   }
   ws_telemetry_Remove remove_msg = ws_telemetry_Remove_init_zero;
   remove_msg.type = add_msg.type;
   // Telemetry Add updates an existing metric itself
-  if (model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_telemetry_tag,
-                          ws_telemetry_Remove_fields,
-                          &remove_msg) == CHECKIN_SKIP)
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_telemetry_tag,
+                          ws_telemetry_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
     return true;
-  return model->CommitAdd(
-      Ws->_telemetry_controller->Handle_TelemetryAdd(&add_msg));
+  if (!model->CommitAdd(
+          Ws->_telemetry_controller->Handle_TelemetryAdd(&add_msg)))
+    model->_adds_failed++;
+  return true;
+}
+
+/*!
+    @brief    Callback for decoding Display Add messages. Decodes into the
+              _display_add member rather than the stack, the struct is large.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True, a failed add is counted and skipped.
+*/
+bool CheckinModel::cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
+                                 void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  // Not tracked for light sleep reconcile, so the mark pass only skips it
+  // TODO: Track display and expander adds too, a changed wake checkin
+  // re-adds them
+  if (model->_mark_only)
+    return pb_read(stream, NULL, stream->bytes_left);
+  model->_adds_total++;
+  memset(&model->_display_add, 0, sizeof(model->_display_add));
+  if (!pb_decode(stream, ws_display_Add_fields, &model->_display_add)) {
+    return model->SkipFailedAdd(stream, "display");
+  }
+  if (!Ws->_display_controller->Handle_Display_Add(&model->_display_add)) {
+    model->_adds_failed++;
+  }
+  return true;
+}
+
+/*!
+    @brief    Callback for decoding Expander Add messages.
+    @param    stream  Incoming data stream from buffer.
+    @param    field   Protobuf message's tag type.
+    @param    arg     Optional arguments from decoder calling function.
+    @returns  True, a failed add is counted and skipped.
+*/
+bool CheckinModel::cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
+                                  void **arg) {
+  CheckinModel *model = (CheckinModel *)*arg;
+  // Not tracked for light sleep reconcile, so the mark pass only skips it
+  // TODO: Track display and expander adds too, a changed wake checkin
+  // re-adds them
+  if (model->_mark_only)
+    return pb_read(stream, NULL, stream->bytes_left);
+  model->_adds_total++;
+  ws_expander_Add add_msg = ws_expander_Add_init_zero;
+  // Set up the nested i2c cfg's settings callback before decoding, same as
+  // ExpanderController::Router
+  Ws->_i2c_controller->SetupAddDecodeCallbacks(&add_msg.cfg_i2c);
+  if (!pb_decode(stream, ws_expander_Add_fields, &add_msg)) {
+    return model->SkipFailedAdd(stream, "expander");
+  }
+  if (!Ws->_expander_controller->Handle_Add(&add_msg)) {
+    model->_adds_failed++;
+  }
+  return true;
 }
 
 /*!
@@ -771,8 +925,8 @@ bool CheckinModel::IsWakeCheckin() { return _wake_checkin; }
 
 /*!
     @brief  Removes components applied from earlier checkin responses that
-            are not in this response. Call before ProcessResponse(), so a
-            stale component never tears down a pin a new one has taken.
+            are not in this response. Call before ProcessComponentAdds(), so
+            a stale component never tears down a pin a new one has taken.
     @param  stream
             Incoming data stream positioned at the start of the checkin
             message. Not consumed.
