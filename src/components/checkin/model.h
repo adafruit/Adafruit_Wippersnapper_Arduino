@@ -62,6 +62,8 @@ public:
   void ForgetComponents();
   void SetWakeCheckin(bool wake);
   bool IsWakeCheckin();
+  bool StoreResponse(pb_istream_t *stream);
+  pb_istream_t GetStoredResponse();
   bool Complete();
   void configureSleep();
   int32_t GetTotalGPIOPins();
@@ -112,8 +114,10 @@ private:
   bool _has_pending = false;  ///< True if _pending awaits CommitAdd()
   bool _wake_checkin = false; ///< True if checking in after a light sleep wake
   bool _mark_only = false;    ///< True while RemoveStaleComponents() marks
-  uint16_t _adds_total = 0;   ///< Component adds seen during checkin
-  uint16_t _adds_failed = 0;  ///< Component adds that failed during checkin
+  std::vector<uint8_t> _stored_response; ///< Raw checkin response, applied
+                                         ///< outside the MQTT callback
+  uint16_t _adds_total = 0;              ///< Component adds seen during checkin
+  uint16_t _adds_failed = 0; ///< Component adds that failed during checkin
   ws_display_Add _display_add =
       ws_display_Add_init_zero; ///< Display add decode buffer, kept off the
                                 ///< stack (~1.5KB)

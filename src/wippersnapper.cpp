@@ -307,22 +307,14 @@ void wippersnapper::provision() {
 }
 
 /*!
-    @brief    Handles a Checkin Response message and initializes the
-              device's GPIO classes.
+    @brief    Applies a Checkin Response message and initializes the
+              device's GPIO classes. Call outside the MQTT callback.
     @param    stream
-              Incoming data stream from buffer.
+              Buffer stream over the stored checkin response.
     @returns  True if Checkin Response decoded and parsed successfully,
               False otherwise.
 */
-bool handleCheckinResponse(pb_istream_t *stream) {
-  // A response outside of checkin() has no model to decode into. Logged only:
-  // this runs inside the MQTT callback, where publishing (e.g. to the Error
-  // API) can consume an in-flight PINGRESP and force a reconnect (#1066).
-  if (Ws->CheckInModel == nullptr) {
-    WS_DEBUG_PRINTLN("[app] WARNING: Unexpected Checkin Response, ignoring");
-    return false;
-  }
-
+bool applyCheckinResponse(pb_istream_t *stream) {
   // Hash the raw response before decoding, the second decode pass applies
   // component adds
   // TODO: Skip re-applying an unchanged response on a light sleep wake (#1048)
@@ -387,9 +379,27 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   }
   Ws->NetworkFSM();
 
-  // Complete is published by the checkin caller, not from inside this MQTT
-  // callback where it could consume another packet's reply
   return true;
+}
+
+/*!
+    @brief    Handles a Checkin Response message from inside the MQTT
+              callback. Only stores it: the checkin caller applies it with
+              applyCheckinResponse() once the callback has returned, as
+              applying it publishes (component and device errors, Complete)
+              and publishing here can consume another packet's reply, e.g.
+              an in-flight PINGRESP (#1066).
+    @param    stream
+              Incoming data stream from buffer.
+    @returns  True if the response was stored, False otherwise.
+*/
+bool handleCheckinResponse(pb_istream_t *stream) {
+  // A response outside of a checkin has no model to store into
+  if (Ws->CheckInModel == nullptr) {
+    WS_DEBUG_PRINTLN("[app] WARNING: Unexpected Checkin Response, ignoring");
+    return false;
+  }
+  return Ws->CheckInModel->StoreResponse(stream);
 }
 
 // Decoders //
@@ -1258,6 +1268,9 @@ void wippersnapper::checkin() {
         WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
     pingBrokerV2();               // Keep MQTT connection alive
   }
+  // Apply the response now the MQTT callback has returned
+  pb_istream_t response = Ws->CheckInModel->GetStoredResponse();
+  applyCheckinResponse(&response);
   // Publish the complete response message to indicate the checkin routine is
   // done and the device is ready for use. Done here rather than in the
   // response callback, which may run inside pingBrokerV2() while it waits for
