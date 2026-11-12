@@ -10,6 +10,15 @@ on:
         description: 'Build ONLY this board (must match a matrix entry exactly, or leave empty for all)'
         required: false
         default: ''
+      cache_salt:
+        description: 'Appended to the BSP and ESP32 tools cache keys, to force a cold cache'
+        required: false
+        default: ''
+      skip_warm:
+        description: 'Skip the BSP/tools warm jobs, so builds take the cache-miss fallback paths'
+        type: boolean
+        required: false
+        default: false
   pull_request:
   push:
     branches:
@@ -18,6 +27,9 @@ on:
     secrets:
       GH_REPO_TOKEN:
         required: true
+
+env:
+  CI_ARDUINO_REF: ci-wippersnapper
 
 jobs:
   nanopb-warm:
@@ -44,9 +56,124 @@ jobs:
           path: ./nanopb-0.4.9.2.tar.gz
           key: nanopb-0.4.9.2.tar.gz
 
+  bsp-resolve:
+    name: Resolve BSP refs
+    runs-on: ubuntu-latest
+    # Builds fall back to an uncached install without its outputs; never block merge/release jobs
+    continue-on-error: true
+    outputs:
+      refs: ${{ steps.resolve.outputs.refs }}
+      keys: ${{ steps.resolve.outputs.keys }}
+      bsp: ${{ steps.resolve.outputs.bsp }}
+      tools: ${{ steps.resolve.outputs.tools }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - uses: actions/checkout@v4
+        with:
+          repository: adafruit/ci-arduino
+          ref: ${{ env.CI_ARDUINO_REF }}
+          path: ci
+      - name: Resolve the BSP ref of every build target
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CACHE_SALT: ${{ inputs.cache_salt }}
+        run: |
+          yq -o=json 'explode(.)' .github/workflows/build-clang-doxy.yml > workflow.json
+          python3 .github/scripts/resolve_bsp_refs.py workflow.json ci/all_platforms.py >> "$GITHUB_OUTPUT"
+
+  bsp-warm:
+    name: Warm BSP cache (${{ matrix.bsp.owner }}/${{ matrix.bsp.branch }})
+    needs: bsp-resolve
+    if: ${{ !cancelled() && inputs.skip_warm != true && needs.bsp-resolve.outputs.refs != '' && needs.bsp-resolve.outputs.refs != '[]' }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        bsp: ${{ fromJSON(needs.bsp-resolve.outputs.refs) }}
+    steps:
+      - name: Check BSP cache
+        id: cache-bsp
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ matrix.bsp.key }}
+          lookup-only: true
+      - name: Shallow fetch BSP at the resolved commit
+        if: steps.cache-bsp.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /home/runner/Arduino/hardware/espressif/esp32
+          cd /home/runner/Arduino/hardware/espressif/esp32
+          git init -q
+          git remote add origin https://github.com/${{ matrix.bsp.owner }}/arduino-esp32.git
+          for attempt in 1 2 3; do
+            timeout 600 git fetch -q --depth 1 origin ${{ matrix.bsp.sha }} && break
+            [ $attempt -eq 3 ] && exit 1
+            sleep $((attempt * 30))
+          done
+          # build_platform.py reuses the checkout when its branch and owner match
+          git checkout -q -B ${{ matrix.bsp.branch }} FETCH_HEAD
+      - name: Save BSP to cache
+        if: steps.cache-bsp.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ matrix.bsp.key }}
+
+  # tools/get.py skips any archive already in tools/dist that passes its sha256
+  # check, so caching the archives (not the extracted toolchains) is enough.
+  esp32-tools-warm:
+    name: Warm ESP32 tools cache (${{ matrix.tools.owner }}/${{ matrix.tools.branch }})
+    needs: bsp-resolve
+    if: ${{ !cancelled() && inputs.skip_warm != true && needs.bsp-resolve.outputs.tools != '' && needs.bsp-resolve.outputs.tools != '[]' }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        tools: ${{ fromJSON(needs.bsp-resolve.outputs.tools) }}
+    steps:
+      - name: Check ESP32 tools cache
+        id: cache-tools
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/esp32-tools-dist
+          key: ${{ matrix.tools.tools_key }}
+          lookup-only: true
+      - uses: actions/checkout@v4
+        if: steps.cache-tools.outputs.cache-hit != 'true'
+        with:
+          sparse-checkout: .github
+      - name: Download and verify the tool archives
+        if: steps.cache-tools.outputs.cache-hit != 'true'
+        timeout-minutes: 60
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in 1 2 3; do
+            gh api -H "Accept: application/vnd.github.raw" \
+              "repos/${{ matrix.tools.owner }}/arduino-esp32/contents/package/package_esp32_index.template.json?ref=${{ matrix.tools.sha }}" \
+              > template.json && break
+            [ $attempt -eq 3 ] && exit 1
+            sleep $((attempt * 15))
+          done
+          # Exits non-zero unless every archive is present and passes sha256,
+          # so an incomplete set is never saved under the immutable key
+          python3 .github/scripts/esp32_tools.py fetch template.json /home/runner/esp32-tools-dist
+          du -sh /home/runner/esp32-tools-dist
+      - name: Save ESP32 tools to cache
+        if: steps.cache-tools.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/esp32-tools-dist
+          key: ${{ matrix.tools.tools_key }}
+
   build-esp32sx-esptool:
     name: 🏗️ESP32-Sx
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm, esp32-tools-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -104,7 +231,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
@@ -113,17 +240,46 @@ jobs:
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        id: cache-bsp
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
+      - name: Shallow fetch ESP32 BSP (cache miss)
+        if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        run: >-
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
+          "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
+          /home/runner/Arduino/hardware/espressif/esp32
+      - name: Restore cached ESP32 tool archives
+        id: cache-tools
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform].tools_key != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/esp32-tools-dist
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].tools_key }}
+      - name: Stage ESP32 tool archives for get.py
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform] != null }}
+        continue-on-error: true
+        timeout-minutes: 45
+        run: >-
+          python3 .github/scripts/esp32_tools.py stage
+          /home/runner/Arduino/hardware/espressif/esp32 "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" /home/runner/esp32-tools-dist
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet --branch 2.2.54 https://github.com/adafruit/SdFat.git /home/runner/Arduino/libraries/SdFat
-          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
-          git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
-          git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
-          git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
-          git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
-          git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
-          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          source .github/scripts/retry.sh
+          clone_retry --quiet --branch 2.2.54 https://github.com/adafruit/SdFat.git /home/runner/Arduino/libraries/SdFat
+          clone_retry --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          clone_retry --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          clone_retry --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
+          clone_retry --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
+          clone_retry --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
+          clone_retry --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
+          clone_retry --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
+          clone_retry --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -286,7 +442,7 @@ jobs:
 
   build-esp32sx:
     name: 🏗️ESP32-Sx
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm, esp32-tools-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -330,20 +486,49 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        id: cache-bsp
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
+      - name: Shallow fetch ESP32 BSP (cache miss)
+        if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        run: >-
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
+          "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
+          /home/runner/Arduino/hardware/espressif/esp32
+      - name: Restore cached ESP32 tool archives
+        id: cache-tools
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform].tools_key != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/esp32-tools-dist
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].tools_key }}
+      - name: Stage ESP32 tool archives for get.py
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform] != null }}
+        continue-on-error: true
+        timeout-minutes: 45
+        run: >-
+          python3 .github/scripts/esp32_tools.py stage
+          /home/runner/Arduino/hardware/espressif/esp32 "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" /home/runner/esp32-tools-dist
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
-          git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
-          git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
-          git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
-          git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
-          git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
-          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          source .github/scripts/retry.sh
+          clone_retry --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          clone_retry --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          clone_retry --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
+          clone_retry --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
+          clone_retry --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
+          clone_retry --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
+          clone_retry --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
+          clone_retry --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -381,7 +566,7 @@ jobs:
 
   build-esp32:
     name: 🏗️ESP32/Cx
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm, esp32-tools-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -443,7 +628,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
@@ -452,10 +637,39 @@ jobs:
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        id: cache-bsp
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
+      - name: Shallow fetch ESP32 BSP (cache miss)
+        if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        run: >-
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
+          "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
+          /home/runner/Arduino/hardware/espressif/esp32
+      - name: Restore cached ESP32 tool archives
+        id: cache-tools
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform].tools_key != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/esp32-tools-dist
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].tools_key }}
+      - name: Stage ESP32 tool archives for get.py
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform] != null }}
+        continue-on-error: true
+        timeout-minutes: 45
+        run: >-
+          python3 .github/scripts/esp32_tools.py stage
+          /home/runner/Arduino/hardware/espressif/esp32 "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" /home/runner/esp32-tools-dist
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          source .github/scripts/retry.sh
+          clone_retry --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          clone_retry --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
       - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -583,17 +797,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
         # manually install Adafruit WiFiNINA library fork
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
-          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
-          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          source .github/scripts/retry.sh
+          clone_retry --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
+          clone_retry --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          clone_retry --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+          clone_retry --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -666,17 +881,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
         # manually install OneWireNG/TempControlLib for OneWireNg (RP2040 Supported OneWire w/backwards compat.)
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
-          git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
-          git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          source .github/scripts/retry.sh
+          clone_retry --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
+          clone_retry --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          clone_retry --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          clone_retry --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -747,14 +963,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino library
         run: |
-          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+          source .github/scripts/retry.sh
+          clone_retry --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          clone_retry --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
       - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -795,7 +1012,7 @@ jobs:
 
   build-esp32sx-dev:
     name: 🏗️ESP32-Sx(DEV)
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm, esp32-tools-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -845,20 +1062,49 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        id: cache-bsp
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
+      - name: Shallow fetch ESP32 BSP (cache miss)
+        if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        run: >-
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
+          "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
+          /home/runner/Arduino/hardware/espressif/esp32
+      - name: Restore cached ESP32 tool archives
+        id: cache-tools
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform].tools_key != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/esp32-tools-dist
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].tools_key }}
+      - name: Stage ESP32 tool archives for get.py
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform] != null }}
+        continue-on-error: true
+        timeout-minutes: 45
+        run: >-
+          python3 .github/scripts/esp32_tools.py stage
+          /home/runner/Arduino/hardware/espressif/esp32 "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" /home/runner/esp32-tools-dist
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
-          git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
-          git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
-          git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
-          git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
-          git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
-          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+          source .github/scripts/retry.sh
+          clone_retry --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          clone_retry --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          clone_retry --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
+          clone_retry --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
+          clone_retry --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
+          clone_retry --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
+          clone_retry --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
+          clone_retry --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -895,7 +1141,7 @@ jobs:
 
   build-esp32-dev:
     name: 🏗️ESP32/Cx(DEV)
-    needs: nanopb-warm
+    needs: [nanopb-warm, bsp-resolve, bsp-warm, esp32-tools-warm]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
@@ -945,7 +1191,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
@@ -954,10 +1200,39 @@ jobs:
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
+      - name: Restore cached ESP32 BSP
+        id: cache-bsp
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.keys || '{}')[matrix.arduino-platform] != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/Arduino/hardware/espressif/esp32
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.keys)[matrix.arduino-platform] }}
+      - name: Shallow fetch ESP32 BSP (cache miss)
+        if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        run: >-
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
+          "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
+          /home/runner/Arduino/hardware/espressif/esp32
+      - name: Restore cached ESP32 tool archives
+        id: cache-tools
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform].tools_key != null }}
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/esp32-tools-dist
+          key: ${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].tools_key }}
+      - name: Stage ESP32 tool archives for get.py
+        if: ${{ fromJSON(needs.bsp-resolve.outputs.bsp || '{}')[matrix.arduino-platform] != null }}
+        continue-on-error: true
+        timeout-minutes: 45
+        run: >-
+          python3 .github/scripts/esp32_tools.py stage
+          /home/runner/Arduino/hardware/espressif/esp32 "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" /home/runner/esp32-tools-dist
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+          source .github/scripts/retry.sh
+          clone_retry --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          clone_retry --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
       - name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -1043,6 +1318,9 @@ jobs:
     name: Merge Artifacts for build-files
     runs-on: ubuntu-latest
     needs: [build-esp32sx-esptool, build-esp32sx, build-esp32, build-esp8266, build-samd, build-rp2040]
+    # Skipped warm-up ancestors (skip_warm, no BSP refs) would otherwise skip this job
+    # via the implicit success(); run unless a direct build failed or was skipped.
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'skipped') }}
 
     steps:
       - name: Merge Artifacts from Builds
@@ -1056,6 +1334,9 @@ jobs:
     name: Merge Artifacts for build-files-dev
     runs-on: ubuntu-latest
     needs: [build-esp32sx-dev, build-esp32-dev]
+    # Skipped warm-up ancestors (skip_warm, no BSP refs) would otherwise skip this job
+    # via the implicit success(); run unless a direct build failed or was skipped.
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'skipped') }}
 
     steps:
       - name: Merge Artifacts from Dev Builds
@@ -1077,7 +1358,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ${{ env.CI_ARDUINO_REF }}
           path: ci
       - name: pre-install
         run: bash ci/actions_install.sh
