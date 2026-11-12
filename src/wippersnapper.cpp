@@ -324,6 +324,16 @@ bool applyCheckinResponse(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
   }
 
+  if (Ws->CheckInModel->IsWakeCheckin()) {
+    // Remove components applied from an earlier response but not in this
+    // one, before adding new ones that may reuse their pins
+    Ws->CheckInModel->RemoveStaleComponents(stream);
+  } else {
+    // Not a light sleep wake: apply every component as before, recording
+    // them afresh so a later wake can reconcile against this response
+    Ws->CheckInModel->ForgetComponents();
+  }
+
   // Save a copy of the stream, the component adds are decoded in a second
   // pass after the controllers are configured
   pb_istream_t adds_stream = *stream;
