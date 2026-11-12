@@ -323,7 +323,8 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     return false;
   }
 
-  // Hash the raw response before decoding, decoding applies component adds
+  // Hash the raw response before decoding, the second decode pass applies
+  // component adds
   // TODO: Skip re-applying an unchanged response on a light sleep wake (#1048)
   if (Ws->CheckInModel->ResponseChanged(stream)) {
     WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
@@ -341,10 +342,14 @@ bool handleCheckinResponse(pb_istream_t *stream) {
     Ws->CheckInModel->ForgetComponents();
   }
 
-  // Decode the Checkin Response message
+  // Save a copy of the stream, the component adds are decoded in a second
+  // pass after the controllers are configured
+  pb_istream_t adds_stream = *stream;
+
+  // Decode the Checkin Response message, without executing component adds
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
   if (!Ws->CheckInModel->ProcessResponse(stream)) {
-    Ws->haltErrorV2("Unable to decode checkin response, rebooting soon...");
+    Ws->haltErrorV2("Checkin response was malformed, rebooting soon...");
   }
 
   // Validate the broker's response code, halt and reboot if invalid
@@ -365,6 +370,21 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetReferenceVoltage());
   Ws->CheckInModel->ConfigureControllers();
   WS_DEBUG_PRINTLN("[checkin] Controllers configured");
+
+  // Execute the component adds now that sleep and the controllers are
+  // configured. A failed add is reported by its handler and skipped.
+  WS_DEBUG_PRINTLN("[checkin] Adding components");
+  if (!Ws->CheckInModel->ProcessComponentAdds(&adds_stream)) {
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode component adds, "
+                     "continuing");
+  }
+  if (Ws->CheckInModel->GetAddsFailed() > 0) {
+    WS_DEBUG_PRINT("[checkin] ");
+    WS_DEBUG_PRINTVAR(Ws->CheckInModel->GetAddsFailed());
+    WS_DEBUG_PRINT(" of ");
+    WS_DEBUG_PRINTVAR(Ws->CheckInModel->GetAddsTotal());
+    WS_DEBUG_PRINTLN(" component adds failed, continuing");
+  }
   Ws->NetworkFSM();
 
   // Complete is published by the checkin caller, not from inside this MQTT
