@@ -97,11 +97,12 @@ public:
     cyw43_wifi_get_rssi(&cyw43_state, &rssi);
     WS_PRINTER.printf(
         "[wifi %7lu ms] %-22s status=%d link=%d tcpip=%d join=0x%04lx "
-        "rssi=%ld\n",
+        "rssi=%ld ip=%s\n",
         (unsigned long)millis(), tag, (int)WiFi.status(),
         cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA),
         cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA),
-        (unsigned long)cyw43_state.wifi_join_state, (long)rssi);
+        (unsigned long)cyw43_state.wifi_join_state, (long)rssi,
+        WiFi.localIP().toString().c_str());
   }
 
   /*!
@@ -432,26 +433,64 @@ protected:
       Ws->_wdt->feed();
       logWiFiState("after 1s delay");
       if (Ws->_isWiFiMultiV2 && _hiddenIdx < 0) {
-        // multi network mode
-        _wifiMulti.clearAPList();
-        // add default network
-        _wifiMulti.addAP(_ssid, _pass);
-        // add array of alternative networks
-        for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          // skip empty slots, they'd match hidden networks' empty SSIDs
-          if (strlen(Ws->_multiNetworksV2[i].ssid) > 0) {
-            _wifiMulti.addAP(Ws->_multiNetworksV2[i].ssid,
-                             Ws->_multiNetworksV2[i].pass);
+        // UAT DEBUG: WiFiMulti::run() steps done by hand, so the join and the
+        // DHCP lease can be timed separately (it blocks through both)
+        logWiFiState("multi scan start");
+        int n = WiFi.scanNetworks();
+        Ws->_wdt->feed();
+        logWiFiState("multi scan done");
+        const char *bestSsid = nullptr;
+        const char *bestPass = nullptr;
+        int32_t bestRssi = INT32_MIN;
+        for (int i = 0; i < n; i++) {
+          const char *scanSsid = WiFi.SSID(i);
+          if (scanSsid == NULL || scanSsid[0] == '\0')
+            continue;
+          for (int k = 0; k <= WS_MAX_ALT_WIFI_NETWORKS; k++) {
+            const char *ssid =
+                (k == 0) ? _ssid : Ws->_multiNetworksV2[k - 1].ssid;
+            if (strlen(ssid) > 0 && strcmp(ssid, scanSsid) == 0 &&
+                WiFi.RSSI(i) > bestRssi) {
+              bestSsid = ssid;
+              bestPass = (k == 0) ? _pass : Ws->_multiNetworksV2[k - 1].pass;
+              bestRssi = WiFi.RSSI(i);
+            }
           }
         }
-        Ws->_wdt->feed();
-        logWiFiState("wifimulti run");
-        int multiResult = _wifiMulti.run(TEN_SECONDS_IN_MS);
-        logWiFiState("wifimulti returned");
-        if (multiResult == WL_CONNECTED) {
+        if (bestSsid != nullptr) {
+          WS_PRINTER.printf("[wifi %7lu ms] joining strongest, rssi=%ld\n",
+                            (unsigned long)millis(), (long)bestRssi);
+          WiFi.beginNoBlock(bestSsid, bestPass);
           Ws->_wdt->feed();
-          _statusV2 = WS_NET_CONNECTED;
-          return;
+          logWiFiState("join returned");
+          // Poll up to 30 s, logging every change, to see when the IP lands
+          int lastStatus = -1;
+          int lastLink = -99;
+          uint32_t lastIp = 0;
+          unsigned long t0 = millis();
+          while (millis() - t0 < 30 * ONE_SECOND_IN_MS) {
+            int st = WiFi.status();
+            int link = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
+            uint32_t ip = (uint32_t)WiFi.localIP();
+            if (st != lastStatus || link != lastLink || ip != lastIp) {
+              lastStatus = st;
+              lastLink = link;
+              lastIp = ip;
+              logWiFiState(ip != 0 ? "IP ARRIVED" : "poll change");
+            }
+            if (st == WL_CONNECTED)
+              break;
+            WS_DELAY_WITH_WDT(100);
+          }
+          logWiFiState(lastStatus == WL_CONNECTED ? "multi connected"
+                                                  : "multi gave up");
+          if (lastStatus == WL_CONNECTED) {
+            Ws->_wdt->feed();
+            _statusV2 = WS_NET_CONNECTED;
+            return;
+          }
+        } else {
+          logWiFiState("no configured network in scan");
         }
         Ws->_wdt->feed();
       } else {
