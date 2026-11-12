@@ -315,7 +315,9 @@ void wippersnapper::provision() {
               False otherwise.
 */
 bool handleCheckinResponse(pb_istream_t *stream) {
-  // A response outside of checkin() has no model to decode into
+  // A response outside of checkin() has no model to decode into. Logged only:
+  // this runs inside the MQTT callback, where publishing (e.g. to the Error
+  // API) can consume an in-flight PINGRESP and force a reconnect (#1066).
   if (Ws->CheckInModel == nullptr) {
     WS_DEBUG_PRINTLN("[app] WARNING: Unexpected Checkin Response, ignoring");
     return false;
@@ -329,9 +331,15 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   }
   WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
 
-  // Remove components applied from an earlier response but not in this one,
-  // before adding new ones that may reuse their pins
-  Ws->CheckInModel->RemoveStaleComponents(stream);
+  if (Ws->CheckInModel->IsWakeCheckin()) {
+    // Remove components applied from an earlier response but not in this
+    // one, before adding new ones that may reuse their pins
+    Ws->CheckInModel->RemoveStaleComponents(stream);
+  } else {
+    // Not a light sleep wake: apply every component as before, recording
+    // them afresh so a later wake can reconcile against this response
+    Ws->CheckInModel->ForgetComponents();
+  }
 
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
@@ -1211,11 +1219,21 @@ void wippersnapper::checkin() {
   // response callback, which may run inside pingBrokerV2() while it waits for
   // a PINGRESP: publishing there consumed the PINGRESP while waiting for the
   // PUBACK ("Dropped a packet"), failing the ping and forcing a reconnect.
-  if (!Ws->CheckInModel->Complete()) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to publish checkin complete message");
-  } else {
-    Ws->CheckInModel->SaveResponseHash();
+  // Without Complete, IO and the device are out of sync, so retry and then
+  // reboot to check in afresh rather than run with a mismatched config.
+  bool completed = false;
+  for (int attempt = 0; attempt < 3 && !completed; attempt++) {
+    completed = Ws->CheckInModel->Complete();
+    if (!completed) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to publish checkin complete message");
+      Ws->_wdt->feed();
+    }
   }
+  if (!completed) {
+    haltErrorV2("ERROR: Unable to publish checkin complete message, rebooting "
+                "soon...");
+  }
+  Ws->CheckInModel->SaveResponseHash();
   WS_DEBUG_PRINTLN("Completed checkin process!");
   // Perform cleanup for checkin process, we don't need it anymore
   delete Ws->CheckInModel;
