@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Shallow-fetch one arduino-esp32 commit and check it out as <branch>, so that
 # ci-arduino's build_platform.py reuses it instead of cloning.
-# Usage: fetch_bsp.sh <owner> <branch> <sha> <dest>
+# Usage: fetch_bsp_arduino_esp32.sh <owner> <branch> <sha> <dest>
 set -euo pipefail
 owner=$1 branch=$2 sha=$3 dest=$4
 
