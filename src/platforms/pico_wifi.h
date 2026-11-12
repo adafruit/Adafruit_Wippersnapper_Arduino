@@ -428,9 +428,9 @@ protected:
     } else {
       _disconnect();
       logWiFiState("after disconnect");
-      delay(5 * ONE_SECOND_IN_MS);
+      delay(ONE_SECOND_IN_MS);
       Ws->_wdt->feed();
-      logWiFiState("after 5s delay");
+      logWiFiState("after 1s delay");
       if (Ws->_isWiFiMultiV2 && _hiddenIdx < 0) {
         // multi network mode
         _wifiMulti.clearAPList();
@@ -507,7 +507,7 @@ protected:
     Ws->_wdt->feed();
     logWiFiState("disconnect");
     WiFi.disconnect();
-    delay(5 * ONE_SECOND_IN_MS);
+    delay(ONE_SECOND_IN_MS);
     Ws->_wdt->feed();
   }
 };
