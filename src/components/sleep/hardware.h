@@ -52,6 +52,8 @@ public:
   void SetSleepMode(ws_sleep_SleepMode mode);
   void CalculateSleepDuration();
   int GetSleepDurationSecs();
+  void StoreTimerDuration(uint32_t duration_secs);
+  uint32_t GetTimerDuration();
   void SetSleepEnterTime();
   void GetSleepWakeupCause();
   // Storage API for RTC timestamps
