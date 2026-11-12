@@ -117,6 +117,8 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
             component add. Must be called with a copy of the stream passed
             to ProcessResponse(), after the controllers are configured.
             A failed add is counted and skipped, it never fails the decode.
+            On a framing error the response from ProcessResponse() is
+            restored, so the getters and configureSleep() stay valid.
     @param  stream
             Copy of the incoming data stream, positioned at the response.
     @returns True if the response was decoded, False on a framing error.
@@ -124,6 +126,11 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
 bool CheckinModel::ProcessComponentAdds(pb_istream_t *stream) {
   _adds_total = 0;
   _adds_failed = 0;
+
+  // Keep the response from ProcessResponse(), a framing error part way
+  // through this pass would otherwise leave a zeroed or partially decoded
+  // response behind for configureSleep() and the getters
+  ws_checkin_B2D first_pass = _CheckinB2D;
 
   // Re-zero the B2D wrapper, the response fields are re-decoded with the
   // same values so the getters remain valid after this pass
@@ -138,6 +145,7 @@ bool CheckinModel::ProcessComponentAdds(pb_istream_t *stream) {
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
     WS_DEBUG_PRINT("[checkin] ERROR: Unable to decode component adds: ");
     WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(stream));
+    _CheckinB2D = first_pass;
     return false;
   }
   return true;
