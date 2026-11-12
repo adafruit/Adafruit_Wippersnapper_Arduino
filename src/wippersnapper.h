@@ -175,7 +175,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "2.0.0-alpha.17" ///< WipperSnapper app. version (semver-formatted)
+  "2.0.0-alpha.18" ///< WipperSnapper app. version (semver-formatted)
 
 // Timeouts and intervals
 #define WS_BROKER_KEEPALIVE_MS                                                 \
