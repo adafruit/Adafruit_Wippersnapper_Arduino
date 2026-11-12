@@ -324,12 +324,18 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   }
 
   // Hash the raw response before decoding, decoding applies component adds.
-  // An unchanged response (e.g. after a light sleep wake) is already applied.
-  if (!Ws->CheckInModel->ResponseChanged(stream)) {
+  // On a light sleep wake an unchanged response is already applied, any
+  // other checkin applies it in full.
+  bool changed = Ws->CheckInModel->ResponseChanged(stream);
+  if (Ws->CheckInModel->IsWakeCheckin() && !changed) {
     WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
     return Ws->CheckInModel->SkipResponse(stream);
   }
-  WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
+  if (changed) {
+    WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
+  } else {
+    WS_DEBUG_PRINTLN("[checkin] Response unchanged, applying in full");
+  }
 
   if (Ws->CheckInModel->IsWakeCheckin()) {
     // Remove components applied from an earlier response but not in this
@@ -1191,13 +1197,17 @@ void wippersnapper::connect() {
 /*!
     @brief    Publishes a CheckinRequest and blocks until the broker's
               CheckinResponse has been handled.
+    @param    wake
+              True if checking in after a light sleep wake, where the
+              response is reconciled against the last one applied.
 */
-void wippersnapper::checkin() {
+void wippersnapper::checkin(bool wake) {
   // TODO: Possibly refactor checkin process into a component class
   // for clarity
   // TODO: Remove logging from checkin process,
   // but only after we test on staging
   Ws->CheckInModel = new CheckinModel();
+  Ws->CheckInModel->SetWakeCheckin(wake);
   WS_DEBUG_PRINTLN("Creating checkin request...");
   // Publish the checkin request
   if (!Ws->CheckInModel->Checkin(BOARD_ID, WS_VERSION)) {
@@ -1419,7 +1429,11 @@ void wippersnapper::loopSleep() {
     NetworkFSM(true);
     // Sync with IO before sleeping again, an unchanged response is skipped
     WS_DEBUG_PRINTLN("[app] Checking in after light sleep wake...");
-    checkin();
+    checkin(true);
+    // Teal, not green: green means a full boot checkin completed
+    setStatusLEDColor(WS_COLOR_RGB32_TEAL, Ws->status_pixel_brightnessV2);
+    delay(100);
+    setStatusLEDColor(WS_COLOR_RGB32_BLACK, Ws->status_pixel_brightnessV2);
   }
   // For light sleep, this allows the next loopSleep() cycle to begin
 }
