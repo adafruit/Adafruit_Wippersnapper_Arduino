@@ -242,7 +242,7 @@ public:
       Ws->_configV2.io_port = 1883;
     Ws->_mqttV2 = new Adafruit_MQTT_Client(
         _wifi_client, Ws->_configV2.aio_url, Ws->_configV2.io_port, clientID,
-        Ws->_configV2.aio_user, Ws->_configV2.aio_key);
+        Ws->_configV2.aio_user, Ws->_configV2.aio_key, WS_MQTT_BUFFER_SZ);
   }
 
   /*!

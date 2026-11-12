@@ -12,8 +12,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "model.h"
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 
 /*!
     @brief  SleepModel constructor

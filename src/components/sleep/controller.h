@@ -15,10 +15,10 @@
 #ifndef WS_SLEEP_CONTROLLER_H
 #define WS_SLEEP_CONTROLLER_H
 
+#include "wippersnapper.h"
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "hardware.h"
 #include "model.h"
-#include "wippersnapper.h"
 
 class wippersnapper; ///< Forward declaration
 class SleepModel;    ///< Forward declaration

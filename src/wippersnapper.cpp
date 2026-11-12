@@ -481,6 +481,23 @@ bool routeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
 */
 void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("=> New B2D message!");
+  // Usable B2D payload capacity: the subscription buffer is allocated with
+  // WS_MQTT_BUFFER_SZ bytes (checked in generateWSTopics()), one byte of which
+  // is reserved for the NUL terminator.
+  const uint32_t cap = (uint32_t)WS_MQTT_BUFFER_SZ - 1;
+  WS_DEBUG_PRINT("[mqtt] B2D rx len=");
+  WS_DEBUG_PRINTVAR((uint32_t)len);
+  WS_DEBUG_PRINT(" cap=");
+  WS_DEBUG_PRINTLNVAR(cap);
+  if ((uint32_t)len >= cap) {
+    WS_DEBUG_PRINT(
+        "[mqtt] RX ERROR: B2D payload overfilled buffer, truncated (len=");
+    WS_DEBUG_PRINTVAR((uint32_t)len);
+    WS_DEBUG_PRINT(" cap=");
+    WS_DEBUG_PRINTVAR(cap);
+    WS_DEBUG_PRINTLN(")");
+    return;
+  }
 #if defined(WS_DEBUG) && (WS_DEBUG_PROTO == 1)
   // Hex dump of the raw incoming payload
   WS_PRINTER.print("[proto] B2D payload, len=");
@@ -502,9 +519,13 @@ void cbBrokerToDevice(char *data, uint16_t len) {
   // Decode message
   pb_istream_t istream = pb_istream_from_buffer((uint8_t *)data, len);
   if (!pb_decode(&istream, ws_signal_BrokerToDevice_fields, &msg_signal)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");
+    WS_DEBUG_PRINT("[mqtt] RX ERROR: B2D decode failed (len=");
+    WS_DEBUG_PRINTVAR((uint32_t)len);
+    WS_DEBUG_PRINT("): ");
+    WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(&istream));
     return;
   }
+  WS_DEBUG_PRINTLN("[mqtt] B2D decode ok");
 }
 
 /*!
@@ -622,9 +643,40 @@ bool wippersnapper::generateWSTopics() {
   // Build the broker-to-device topic
   snprintf(Ws->_topicB2d, lenSignalTopic, "%s/ws-b2d/%s",
            Ws->_configV2.aio_user, _device_uidV2);
-  // Subscribe to broker-to-device topic
-  _subscribeB2d = new Adafruit_MQTT_Subscribe(Ws->_mqttV2, Ws->_topicB2d, 1);
-  Ws->_mqttV2->subscribe(_subscribeB2d);
+  // Subscribe to broker-to-device topic. The subscription's payload buffer
+  // must be at least as large as the MQTT packet buffer so a B2D payload that
+  // fits in the packet buffer is never truncated.
+  _subscribeB2d = new Adafruit_MQTT_Subscribe(Ws->_mqttV2, Ws->_topicB2d, 1,
+                                              WS_MQTT_BUFFER_SZ);
+  if (_subscribeB2d == NULL) {
+    WS_DEBUG_PRINTLN("[mqtt] ERROR: B2D subscription not created");
+    free(Ws->_topicB2d);
+    Ws->_topicB2d = NULL;
+    return false;
+  }
+  WS_DEBUG_PRINT("[mqtt] b2d sub buf: lastread_max=");
+  WS_DEBUG_PRINTVAR((uint32_t)_subscribeB2d->lastread_max);
+  WS_DEBUG_PRINT(" mqtt_buf=");
+  WS_DEBUG_PRINTLNVAR((uint32_t)Ws->_mqttV2->bufferSize());
+  bool subOk = true;
+  if (_subscribeB2d->lastread_max == 0) {
+    WS_DEBUG_PRINTLN("[mqtt] ERROR: B2D subscription buffer alloc failed");
+    subOk = false;
+  } else if (_subscribeB2d->lastread_max < Ws->_mqttV2->bufferSize()) {
+    WS_DEBUG_PRINTLN(
+        "[mqtt] ERROR: B2D subscription buffer smaller than MQTT buffer");
+    subOk = false;
+  } else if (!Ws->_mqttV2->subscribe(_subscribeB2d)) {
+    WS_DEBUG_PRINTLN("[mqtt] ERROR: subscribe to B2D topic failed");
+    subOk = false;
+  }
+  if (!subOk) {
+    free(Ws->_topicB2d);
+    Ws->_topicB2d = NULL;
+    delete _subscribeB2d;
+    _subscribeB2d = NULL;
+    return false;
+  }
   _subscribeB2d->setCallback(cbBrokerToDevice);
 
   // Create global device to broker topic
@@ -903,6 +955,17 @@ void wippersnapper::haltErrorV2(const char *error,
 }
 
 /*!
+    @brief    Prints " tag=<tag>" and a newline, terminating a
+              "[mqtt] ... D2B ..." log line.
+    @param    tag
+              The DeviceToBroker payload tag (which_payload).
+*/
+static void printD2bTag(pb_size_t tag) {
+  WS_DEBUG_PRINT(" tag=");
+  WS_DEBUG_PRINTLNVAR((uint32_t)tag);
+}
+
+/*!
     @brief    Wraps and publishes a DeviceToBroker signal message
                 to Adafruit IO.
     @param    which_payload
@@ -915,11 +978,20 @@ void wippersnapper::haltErrorV2(const char *error,
 bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   WS_DEBUG_PRINTLN("=> Publishing DeviceToBroker signal message...");
 
+  // The MQTT client and D2B topic must exist before anything is published
+  if (Ws->_mqttV2 == NULL || Ws->_topicD2b == NULL) {
+    WS_DEBUG_PRINT("[mqtt] TX ERROR: D2B not ready (client/topic null)");
+    printD2bTag(which_payload);
+    return false;
+  }
+
   // Alloc memory on heap for the DeviceToBroker message
   ws_signal_DeviceToBroker *msg =
       (ws_signal_DeviceToBroker *)malloc(sizeof(ws_signal_DeviceToBroker));
   if (msg == NULL) {
-    WS_DEBUG_PRINTLN("ERROR: Failed to allocate memory for D2B message!");
+    WS_DEBUG_PRINT("[mqtt] TX ERROR: D2B msg alloc failed size=");
+    WS_DEBUG_PRINTVAR((uint32_t)sizeof(ws_signal_DeviceToBroker));
+    printD2bTag(which_payload);
     return false;
   }
 
@@ -974,7 +1046,8 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
     msg->payload.sleep = *(ws_sleep_D2B *)payload;
     break;
   default:
-    WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
+    WS_DEBUG_PRINT("[mqtt] TX ERROR: D2B invalid payload tag");
+    printD2bTag(which_payload);
     free(msg);
     return false;
   }
@@ -983,18 +1056,42 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   size_t szMessageBuf;
   if (!pb_get_encoded_size(&szMessageBuf, ws_signal_DeviceToBroker_fields,
                            msg)) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Unable to get encoded size of signal message, bailing out!");
+    WS_DEBUG_PRINT("[mqtt] TX ERROR: D2B encoded size failed");
+    printD2bTag(which_payload);
+    free(msg);
+    return false;
+  }
+
+  // Refuse messages that will not fit in the MQTT packet buffer, rather than
+  // letting Adafruit_MQTT::publishPacket() send them truncated. This runs
+  // before the msgBuf VLA so an oversized message never takes stack space.
+  // Overhead: fixed header (1) + remaining-length varint (max 4) + topic
+  // length (2) + topic + QoS 1 packet id (2)
+  size_t mqttBufSz = Ws->_mqttV2->bufferSize();
+  size_t d2bOverhead = 1 + 4 + 2 + strlen(Ws->_topicD2b) + 2;
+  if (mqttBufSz <= d2bOverhead || szMessageBuf > mqttBufSz - d2bOverhead) {
+    WS_DEBUG_PRINT("[mqtt] TX ERROR: D2B too large payload=");
+    WS_DEBUG_PRINTVAR((uint32_t)szMessageBuf);
+    WS_DEBUG_PRINT(" max=");
+    if (mqttBufSz > d2bOverhead) {
+      WS_DEBUG_PRINTVAR((uint32_t)(mqttBufSz - d2bOverhead));
+    } else {
+      WS_DEBUG_PRINTVAR((uint32_t)0);
+    }
+    printD2bTag(which_payload);
     free(msg);
     return false;
   }
 
   // Size the message buffer to fit the encoded d2b message
   uint8_t msgBuf[szMessageBuf];
-  // Encode the signal message into the buffer
+  // Encode the signal message into the buffer. ws_pb_encode() prints the
+  // nanopb error string itself on failure.
   pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, szMessageBuf);
   if (!ws_pb_encode(&stream, ws_signal_DeviceToBroker_fields, msg)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode d2b message, bailing out!");
+    WS_DEBUG_PRINT("[mqtt] TX ERROR: D2B encode failed size=");
+    WS_DEBUG_PRINTVAR((uint32_t)szMessageBuf);
+    printD2bTag(which_payload);
     free(msg);
     return false;
   }
@@ -1012,14 +1109,20 @@ bool wippersnapper::PublishD2b(pb_size_t which_payload, void *payload) {
   WS_PRINTER.println();
 #endif
   // Attempt to publish the signal message to the broker
-  WS_DEBUG_PRINT("Publishing signal message to broker...");
+  WS_DEBUG_PRINTLN("Publishing signal message to broker...");
   if (!Ws->_mqttV2->publish(Ws->_topicD2b, msgBuf, szMessageBuf, 1)) {
-    WS_DEBUG_PRINTLN("ERROR: Failedf to publish d2b message to broker!");
+    WS_DEBUG_PRINT("[mqtt] TX ERROR: D2B publish failed size=");
+    WS_DEBUG_PRINTVAR((uint32_t)szMessageBuf);
+    printD2bTag(which_payload);
     free(msg);
     return false;
   }
 
   WS_DEBUG_PRINTLN("Published!");
+  WS_DEBUG_PRINT("[mqtt] D2B tx ok tag=");
+  WS_DEBUG_PRINTVAR((uint32_t)which_payload);
+  WS_DEBUG_PRINT(" size=");
+  WS_DEBUG_PRINTLNVAR((uint32_t)szMessageBuf);
   // Free the allocated message's memory
   free(msg);
   return true;
@@ -1218,7 +1321,27 @@ void wippersnapper::connect() {
     haltErrorV2("Unable to generate MQTT client ID");
     return;
   }
+  uint32_t heapBefore = WS_FREE_HEAP();
   setupMQTTClient(mqttClientId);
+  uint32_t heapAfter = WS_FREE_HEAP();
+  if (Ws->_mqttV2 == NULL) {
+    WS_DEBUG_PRINTLN("[mqtt] ERROR: MQTT client not created");
+    haltErrorV2("Unable to create MQTT client");
+    return;
+  }
+  WS_DEBUG_PRINT("[mqtt] buf alloc: requested=");
+  WS_DEBUG_PRINTVAR((uint32_t)WS_MQTT_BUFFER_SZ);
+  WS_DEBUG_PRINT(" got=");
+  WS_DEBUG_PRINTVAR((uint32_t)Ws->_mqttV2->bufferSize());
+  WS_DEBUG_PRINT(" heap_before=");
+  WS_DEBUG_PRINTVAR(heapBefore);
+  WS_DEBUG_PRINT(" heap_after=");
+  WS_DEBUG_PRINTLNVAR(heapAfter);
+  if (Ws->_mqttV2->bufferSize() == 0) {
+    WS_DEBUG_PRINTLNVAR(Ws->_mqttV2->connectErrorString(-3));
+    haltErrorV2("Unable to allocate MQTT buffer");
+    return;
+  }
   WS_DEBUG_PRINTLN("Set up MQTT client successfully!");
 
   WS_DEBUG_PRINTLN("Generating device's MQTT topics...");

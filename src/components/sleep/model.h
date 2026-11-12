@@ -15,8 +15,8 @@
 #ifndef WS_SLEEP_MODEL_H
 #define WS_SLEEP_MODEL_H
 
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "wippersnapper.h"
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing

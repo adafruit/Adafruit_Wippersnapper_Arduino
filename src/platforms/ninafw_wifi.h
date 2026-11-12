@@ -188,7 +188,7 @@ public:
   void setupMQTTClient(const char *clientID) {
     Ws->_mqtt = new Adafruit_MQTT_Client(
         _mqtt_client, Ws->_config.aio_url, Ws->_config.io_port, clientID,
-        Ws->_config.aio_user, Ws->_config.aio_key);
+        Ws->_config.aio_user, Ws->_config.aio_key, WS_MQTT_BUFFER_SZ);
   }
 
   /*!

@@ -12,8 +12,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #include "hardware.h"
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 #ifdef ARDUINO_ARCH_ESP32
 #include <stdlib.h>
 // Stored in RTC memory to persist across sleep cycles
