@@ -171,10 +171,8 @@ public:
   }
 
   /*!
-      @brief    Sets the sensor's previous period and converts from seconds
-                to milliseconds.
-      @param    period The period for the sensor to return values within, in
-                seconds.
+      @brief    Sets the timestamp of the sensor's previous read.
+      @param    period The previous read timestamp, in milliseconds.
   */
   void SetSensorPeriodPrv(ulong period) { _sensor_period_prv = period; }
 
