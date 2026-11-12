@@ -16,6 +16,16 @@
 #ifndef WS_BOARDS_H
 #define WS_BOARDS_H
 
+// arduino-pico defines ARDUINO_ARCH_RP2040 for both the RP2040 and the
+// RP2350, and marks the RP2350 with PICO_RP2350 (from its
+// lib/rp2350/platform_def.txt, for Arduino IDE and PlatformIO builds alike).
+// Nothing defines ARDUINO_ARCH_RP2350, which the RP2350 sleep and watchdog
+// code is guarded on, so without this it never compiled.
+#if defined(ARDUINO_ARCH_RP2040) && defined(PICO_RP2350) &&                    \
+    !defined(ARDUINO_ARCH_RP2350)
+#define ARDUINO_ARCH_RP2350 ///< RP2350 build of arduino-pico
+#endif
+
 #if defined(ADAFRUIT_PYPORTAL)
 #define BOARD_ID "pyportal-tinyusb"
 #define USE_TINYUSB
