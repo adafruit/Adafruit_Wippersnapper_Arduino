@@ -32,6 +32,137 @@
 #include <WiFiClientSecure.h>
 #if defined(PICO_CYW43_SUPPORTED)
 #include <pico/cyw43_arch.h>
+// UAT DEBUG: DHCP packet trace
+#include <lwip/netif.h>
+#include <lwip/pbuf.h>
+
+/*!
+    @brief  UAT DEBUG: one DHCP packet seen on the WiFi netif.
+*/
+struct WsDhcpEvent {
+  uint32_t ms;     ///< millis() when seen
+  char dir;        ///< '>' sent, '<' received
+  uint8_t type;    ///< DHCP message type (option 53)
+  uint32_t xid;    ///< Transaction ID
+  uint32_t yiaddr; ///< "Your" IP address
+};
+static WsDhcpEvent ws_dhcp_ring[32];                ///< Events not yet printed
+static volatile uint8_t ws_dhcp_head = 0;           ///< Next slot to write
+static volatile uint8_t ws_dhcp_tail = 0;           ///< Next slot to print
+static netif_input_fn ws_dhcp_orig_input = nullptr; ///< Wrapped input
+static netif_linkoutput_fn ws_dhcp_orig_linkout = nullptr; ///< Wrapped output
+
+/*!
+    @brief  UAT DEBUG: records the frame if it is a DHCP packet.
+    @param  p    Ethernet frame.
+    @param  dir  '>' sent, '<' received.
+*/
+static void wsDhcpRecord(struct pbuf *p, char dir) {
+  if (p == nullptr || p->len < 14 + 20 + 8 + 244)
+    return;
+  const uint8_t *f = (const uint8_t *)p->payload;
+  if (f[12] != 0x08 || f[13] != 0x00) // IPv4
+    return;
+  const uint8_t *ip = f + 14;
+  uint16_t ihl = (ip[0] & 0x0f) * 4;
+  if (ip[9] != 17 || p->len < 14 + ihl + 8 + 244) // UDP
+    return;
+  const uint8_t *udp = ip + ihl;
+  uint16_t sp = (udp[0] << 8) | udp[1];
+  uint16_t dp = (udp[2] << 8) | udp[3];
+  if (!((sp == 67 && dp == 68) || (sp == 68 && dp == 67)))
+    return;
+  const uint8_t *b = udp + 8;
+  uint16_t blen = p->len - (14 + ihl + 8);
+  uint8_t type = 0;
+  for (uint16_t i = 240; i + 1 < blen;) {
+    uint8_t code = b[i];
+    if (code == 255)
+      break;
+    if (code == 0) {
+      i++;
+      continue;
+    }
+    uint8_t len = b[i + 1];
+    if (code == 53 && len >= 1 && i + 2 < blen) {
+      type = b[i + 2];
+      break;
+    }
+    i += 2 + len;
+  }
+  uint8_t next = (ws_dhcp_head + 1) & 31;
+  if (next == ws_dhcp_tail)
+    return; // full, drop
+  WsDhcpEvent &e = ws_dhcp_ring[ws_dhcp_head];
+  e.ms = millis();
+  e.dir = dir;
+  e.type = type;
+  e.xid = ((uint32_t)b[4] << 24) | ((uint32_t)b[5] << 16) |
+          ((uint32_t)b[6] << 8) | b[7];
+  e.yiaddr = ((uint32_t)b[16] << 24) | ((uint32_t)b[17] << 16) |
+             ((uint32_t)b[18] << 8) | b[19];
+  ws_dhcp_head = next;
+}
+
+/*!
+    @brief  UAT DEBUG: netif input wrapper that records DHCP packets.
+    @param  p    Received frame.
+    @param  nif  Netif.
+    @return The wrapped input's result.
+*/
+static err_t wsDhcpInput(struct pbuf *p, struct netif *nif) {
+  wsDhcpRecord(p, '<');
+  return ws_dhcp_orig_input(p, nif);
+}
+
+/*!
+    @brief  UAT DEBUG: netif linkoutput wrapper that records DHCP packets.
+    @param  nif  Netif.
+    @param  p    Frame to send.
+    @return The wrapped linkoutput's result.
+*/
+static err_t wsDhcpLinkout(struct netif *nif, struct pbuf *p) {
+  wsDhcpRecord(p, '>');
+  return ws_dhcp_orig_linkout(nif, p);
+}
+
+/*!
+    @brief  UAT DEBUG: wraps the Ethernet netifs' input and linkoutput, once
+            each netif exists (after WiFi begin).
+*/
+static void wsDhcpInstall() {
+  for (struct netif *n = netif_list; n != nullptr; n = n->next) {
+    if (n->hwaddr_len != 6)
+      continue;
+    if (n->input != wsDhcpInput) {
+      ws_dhcp_orig_input = n->input;
+      n->input = wsDhcpInput;
+    }
+    if (n->linkoutput != wsDhcpLinkout) {
+      ws_dhcp_orig_linkout = n->linkoutput;
+      n->linkoutput = wsDhcpLinkout;
+    }
+  }
+}
+
+/*!
+    @brief  UAT DEBUG: prints and clears the recorded DHCP packets.
+*/
+static void wsDhcpDump() {
+  static const char *names[] = {"?",       "DISCOVER", "OFFER",
+                                "REQUEST", "DECLINE",  "ACK",
+                                "NAK",     "RELEASE",  "INFORM"};
+  while (ws_dhcp_tail != ws_dhcp_head) {
+    WsDhcpEvent e = ws_dhcp_ring[ws_dhcp_tail];
+    ws_dhcp_tail = (ws_dhcp_tail + 1) & 31;
+    WS_PRINTER.printf(
+        "[dhcp %7lu ms] %c %-8s xid=%08lx yiaddr=%u.%u.%u.%u\n",
+        (unsigned long)e.ms, e.dir, e.type <= 8 ? names[e.type] : "?",
+        (unsigned long)e.xid, (unsigned)(e.yiaddr >> 24),
+        (unsigned)(e.yiaddr >> 16) & 0xff, (unsigned)(e.yiaddr >> 8) & 0xff,
+        (unsigned)e.yiaddr & 0xff);
+  }
+}
 #endif
 extern wippersnapper *Ws;
 
@@ -93,16 +224,19 @@ public:
           Phase being logged.
   */
   void logWiFiState(const char *tag) {
+    wsDhcpDump();
     int32_t rssi = 0;
     cyw43_wifi_get_rssi(&cyw43_state, &rssi);
+    uint32_t pm = 0;
+    cyw43_wifi_get_pm(&cyw43_state, &pm);
     WS_PRINTER.printf(
         "[wifi %7lu ms] %-22s status=%d link=%d tcpip=%d join=0x%04lx "
-        "rssi=%ld ip=%s\n",
+        "rssi=%ld pm=0x%06lx ip=%s\n",
         (unsigned long)millis(), tag, (int)WiFi.status(),
         cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA),
         cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA),
         (unsigned long)cyw43_state.wifi_join_state, (long)rssi,
-        WiFi.localIP().toString().c_str());
+        (unsigned long)pm, WiFi.localIP().toString().c_str());
   }
 
   /*!
@@ -461,6 +595,7 @@ protected:
           WS_PRINTER.printf("[wifi %7lu ms] joining strongest, rssi=%ld\n",
                             (unsigned long)millis(), (long)bestRssi);
           WiFi.beginNoBlock(bestSsid, bestPass);
+          wsDhcpInstall();
           Ws->_wdt->feed();
           logWiFiState("join returned");
           // Poll up to 30 s, logging every change, to see when the IP lands
@@ -480,6 +615,7 @@ protected:
             }
             if (st == WL_CONNECTED)
               break;
+            wsDhcpDump();
             WS_DELAY_WITH_WDT(100);
           }
           logWiFiState(lastStatus == WL_CONNECTED ? "multi connected"
