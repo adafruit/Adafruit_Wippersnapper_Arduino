@@ -61,6 +61,16 @@
   } ///< Prints debug output in hex disabled.
 #endif
 
+// Free heap, in bytes. On ESP32 this is internal RAM only (excludes PSRAM).
+// Returns 0 on architectures without a free-heap API.
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
+#define WS_FREE_HEAP() ((uint32_t)ESP.getFreeHeap()) ///< Free heap, bytes
+#elif defined(ARDUINO_ARCH_RP2040)
+#define WS_FREE_HEAP() ((uint32_t)rp2040.getFreeHeap()) ///< Free heap, bytes
+#else
+#define WS_FREE_HEAP() ((uint32_t)0) ///< Free heap unsupported on this arch
+#endif
+
 #define WS_DELAY_WITH_WDT(timeout)                                             \
   {                                                                            \
     unsigned long start = millis();                                            \
