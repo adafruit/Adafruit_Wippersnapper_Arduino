@@ -315,23 +315,37 @@ void wippersnapper::provision() {
               False otherwise.
 */
 bool handleCheckinResponse(pb_istream_t *stream) {
-  // A response outside of checkin() has no model to decode into
+  // A response outside of checkin() has no model to decode into. Logged only:
+  // this runs inside the MQTT callback, where publishing (e.g. to the Error
+  // API) can consume an in-flight PINGRESP and force a reconnect (#1066).
   if (Ws->CheckInModel == nullptr) {
     WS_DEBUG_PRINTLN("[app] WARNING: Unexpected Checkin Response, ignoring");
     return false;
   }
 
   // Hash the raw response before decoding, decoding applies component adds.
-  // An unchanged response (e.g. after a light sleep wake) is already applied.
-  if (!Ws->CheckInModel->ResponseChanged(stream)) {
+  // On a light sleep wake an unchanged response is already applied, any
+  // other checkin applies it in full.
+  bool changed = Ws->CheckInModel->ResponseChanged(stream);
+  if (Ws->CheckInModel->IsWakeCheckin() && !changed) {
     WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
     return Ws->CheckInModel->SkipResponse(stream);
   }
-  WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
+  if (changed) {
+    WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
+  } else {
+    WS_DEBUG_PRINTLN("[checkin] Response unchanged, applying in full");
+  }
 
-  // Remove components applied from an earlier response but not in this one,
-  // before adding new ones that may reuse their pins
-  Ws->CheckInModel->RemoveStaleComponents(stream);
+  if (Ws->CheckInModel->IsWakeCheckin()) {
+    // Remove components applied from an earlier response but not in this
+    // one, before adding new ones that may reuse their pins
+    Ws->CheckInModel->RemoveStaleComponents(stream);
+  } else {
+    // Not a light sleep wake: apply every component as before, recording
+    // them afresh so a later wake can reconcile against this response
+    Ws->CheckInModel->ForgetComponents();
+  }
 
   // Decode the Checkin Response message
   WS_DEBUG_PRINTLN("[app] Decoding Checkin Response message");
@@ -1211,15 +1225,19 @@ void wippersnapper::connect() {
               Time to wait for the response, in milliseconds. 0 halts on a
               publish failure and waits for the WDT to reset the device if no
               response arrives.
+    @param    wake
+              True if checking in after a light sleep wake, where the
+              response is reconciled against the last one applied.
     @returns  True if the response was handled, False on a publish failure or
               timeout.
 */
-bool wippersnapper::checkin(uint32_t timeout_ms) {
+bool wippersnapper::checkin(uint32_t timeout_ms, bool wake) {
   // TODO: Possibly refactor checkin process into a component class
   // for clarity
   // TODO: Remove logging from checkin process,
   // but only after we test on staging
   Ws->CheckInModel = new CheckinModel();
+  Ws->CheckInModel->SetWakeCheckin(wake);
   WS_DEBUG_PRINTLN("Creating checkin request...");
   // Publish the checkin request
   bool got_response = false;
@@ -1244,16 +1262,28 @@ bool wippersnapper::checkin(uint32_t timeout_ms) {
     got_response = Ws->CheckInModel->GotResponse();
     if (!got_response) {
       WS_DEBUG_PRINTLN("ERROR: Timed out waiting for checkin response");
-    } else if (!Ws->CheckInModel->Complete()) {
+    } else {
       // Publish the complete response message to indicate the checkin routine
       // is done and the device is ready for use. Done here rather than in the
       // response callback, which may run inside pingBrokerV2() while it waits
       // for a PINGRESP: publishing there consumed the PINGRESP while waiting
       // for the PUBACK ("Dropped a packet"), failing the ping and forcing a
       // reconnect.
-      WS_DEBUG_PRINTLN("ERROR: Unable to publish checkin complete message");
-      got_response = false;
-    } else {
+      // Without Complete, IO and the device are out of sync (the response is
+      // already applied), so retry and then reboot to check in afresh rather
+      // than run or sleep with a mismatched config.
+      bool completed = false;
+      for (int attempt = 0; attempt < 3 && !completed; attempt++) {
+        completed = Ws->CheckInModel->Complete();
+        if (!completed) {
+          WS_DEBUG_PRINTLN("ERROR: Unable to publish checkin complete message");
+          Ws->_wdt->feed();
+        }
+      }
+      if (!completed) {
+        haltErrorV2("ERROR: Unable to publish checkin complete message, "
+                    "rebooting soon...");
+      }
       Ws->CheckInModel->SaveResponseHash();
       WS_DEBUG_PRINTLN("Completed checkin process!");
     }
@@ -1449,8 +1479,13 @@ void wippersnapper::loopSleep() {
     NetworkFSM(true);
     // Sync with IO before sleeping again, an unchanged response is skipped
     WS_DEBUG_PRINTLN("[app] Checking in after light sleep wake...");
-    if (checkin(WS_TIMEOUT_WAKE_CHECKIN))
+    if (checkin(WS_TIMEOUT_WAKE_CHECKIN, true)) {
+      // Teal, not green: green means a full boot checkin completed
+      setStatusLEDColor(WS_COLOR_RGB32_TEAL, Ws->status_pixel_brightnessV2);
+      delay(100);
+      setStatusLEDColor(WS_COLOR_RGB32_BLACK, Ws->status_pixel_brightnessV2);
       break;
+    }
     // Save battery: sleep again with the existing config, retry on next wake
     WS_DEBUG_PRINTLN("[app] Wake checkin failed, going back to sleep...");
     if (Ws->_mqttV2 != nullptr)

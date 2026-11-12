@@ -237,7 +237,7 @@ public:
   virtual void _connect();
   virtual void _disconnect(bool wifi_off = true);
   void connect();
-  bool checkin(uint32_t timeout_ms = 0);
+  bool checkin(uint32_t timeout_ms = 0, bool wake = false);
   void disconnect(bool wifi_off = true);
   virtual void getMacAddr();
   virtual int32_t getRSSI();
