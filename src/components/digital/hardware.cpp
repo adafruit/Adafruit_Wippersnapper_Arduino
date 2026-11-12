@@ -97,7 +97,7 @@ bool DigitalHardware::SetMode() {
     }
   } else {
     uint8_t mode;
-    if (!GetInputMode(_direction, &mode))
+    if (!GetInputMode(_direction, mode))
       return false;
     if (!has_expander) {
       pinMode(_pin_num, mode);
@@ -106,6 +106,17 @@ bool DigitalHardware::SetMode() {
     }
   }
   return true;
+}
+
+/*!
+    @brief  Checks whether this platform can set up a pin for an input
+            direction (e.g. ESP8266 has no pull-down).
+    @param  direction  D_INPUT, D_INPUT_PULL_UP or D_INPUT_PULL_DOWN.
+    @return True if the direction is supported, else False.
+*/
+bool DigitalHardware::IsInputModeSupported(ws_digital_Direction direction) {
+  uint8_t mode;
+  return GetInputMode(direction, mode);
 }
 
 /*!
@@ -122,28 +133,25 @@ bool DigitalHardware::SetMode() {
     @note   RP2350 chip revisions before A4 have a pull-down erratum (E9)
             that can latch the pin high.
     @param  direction  D_INPUT, D_INPUT_PULL_UP or D_INPUT_PULL_DOWN.
-    @param  mode       Out: the pinMode() value to use. May be nullptr to
-                       only check for support.
+    @param  mode       Out: the pinMode() value to use. Left unchanged if
+                       the direction isn't supported.
     @return True if this platform supports the direction, else False.
 */
 bool DigitalHardware::GetInputMode(ws_digital_Direction direction,
-                                   uint8_t *mode) {
-  uint8_t input_mode;
+                                   uint8_t &mode) {
   if (direction == ws_digital_Direction_D_INPUT) {
-    input_mode = INPUT;
+    mode = INPUT;
   } else if (direction == ws_digital_Direction_D_INPUT_PULL_UP) {
-    input_mode = INPUT_PULLUP;
+    mode = INPUT_PULLUP;
   } else if (direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
 #if defined(INPUT_PULLDOWN) || defined(ARDUINO_API_VERSION)
-    input_mode = INPUT_PULLDOWN;
+    mode = INPUT_PULLDOWN;
 #else
     return false;
 #endif
   } else {
     return false;
   }
-  if (mode != nullptr)
-    *mode = input_mode;
   return true;
 }
 

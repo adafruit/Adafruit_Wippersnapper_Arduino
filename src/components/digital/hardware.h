@@ -47,7 +47,8 @@ public:
   ws_digital_SampleMode GetSampleMode() const;
   ExpanderHardware *GetExpanderDriver() const;
 
-  static bool GetInputMode(ws_digital_Direction direction, uint8_t *mode);
+  static bool IsInputModeSupported(ws_digital_Direction direction);
+  static bool GetInputMode(ws_digital_Direction direction, uint8_t &mode);
 
   // Sleep cycle support
   bool DidReadSend() const;

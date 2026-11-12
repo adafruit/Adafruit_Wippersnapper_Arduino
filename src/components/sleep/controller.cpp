@@ -361,17 +361,20 @@ void SleepController::SetWakeEnablePin(uint8_t pin, uint8_t pull) {
             For pull-down/no pull: active = HIGH (button pressed to VCC)
 */
 bool SleepController::CheckWakeEnablePin() {
-  // Configure pin with specified pull mode
-  // Falls back to a floating input if the core can't set the requested pull
+  // Map the pull setting (0 = none, 1 = pull-down, 2 = pull-up) to a
+  // digital direction
+  ws_digital_Direction direction = ws_digital_Direction_D_INPUT;
+  if (_wake_enable_pin_pull == 1) {
+    direction = ws_digital_Direction_D_INPUT_PULL_DOWN;
+  } else if (_wake_enable_pin_pull == 2) {
+    direction = ws_digital_Direction_D_INPUT_PULL_UP;
+  }
+
+  // Fall back to a floating input if the core can't set the requested pull
   uint8_t mode = INPUT;
-  if (_wake_enable_pin_pull == 1 || _wake_enable_pin_pull == 2) {
-    ws_digital_Direction pull = (_wake_enable_pin_pull == 1)
-                                    ? ws_digital_Direction_D_INPUT_PULL_DOWN
-                                    : ws_digital_Direction_D_INPUT_PULL_UP;
-    if (!DigitalHardware::GetInputMode(pull, &mode)) {
-      WS_DEBUG_PRINTLN("[sleep] WARNING: Wake enable pin pull not supported "
-                       "on this platform, using INPUT");
-    }
+  if (!DigitalHardware::GetInputMode(direction, mode)) {
+    WS_DEBUG_PRINTLN("[sleep] WARNING: Wake enable pin pull not supported "
+                     "on this platform, using INPUT");
   }
   pinMode(_wake_enable_pin, mode);
   int pinState = digitalRead(_wake_enable_pin);
