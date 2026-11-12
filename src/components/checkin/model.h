@@ -50,6 +50,9 @@ public:
   ~CheckinModel();
   bool Checkin(const char *hardware_uid, const char *firmware_version);
   bool ProcessResponse(pb_istream_t *stream);
+  bool ProcessComponentAdds(pb_istream_t *stream);
+  uint16_t GetAddsTotal();
+  uint16_t GetAddsFailed();
   bool ValidateResponse();
   void ConfigureControllers();
   bool GotResponse();
@@ -88,6 +91,11 @@ private:
                         void **arg);
   static bool cbTelemetryAdds(pb_istream_t *stream, const pb_field_t *field,
                               void **arg);
+  static bool cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
+                            void **arg);
+  static bool cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
+                             void **arg);
+  bool SkipFailedAdd(pb_istream_t *stream, const char *add_type);
   CheckinAction ReconcileAdd(const pb_istream_t *raw, pb_size_t type,
                              const pb_msgdesc_t *remove_fields,
                              const void *remove_msg);
@@ -105,6 +113,11 @@ private:
   bool _has_pending = false;  ///< True if _pending awaits CommitAdd()
   bool _wake_checkin = false; ///< True if checking in after a light sleep wake
   bool _mark_only = false;    ///< True while RemoveStaleComponents() marks
+  uint16_t _adds_total = 0;   ///< Component adds seen during checkin
+  uint16_t _adds_failed = 0;  ///< Component adds that failed during checkin
+  ws_display_Add _display_add =
+      ws_display_Add_init_zero; ///< Display add decode buffer, kept off the
+                                ///< stack (~1.5KB)
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
 #endif                    // WS_CHECKIN_H
