@@ -158,6 +158,25 @@ public:
   bool HasMux() { return _i2c_mux_channel != NO_MUX_CH; }
 
   /*!
+      @brief    Validates an i2c device's sensor types. Static so it can be
+                called before a driver is constructed.
+      @param    types
+                Pointer to an array of TypesEntry objects.
+      @param    types_count
+                The number of sensor types in the array.
+      @returns  True if all sensor types are valid, False if any entry has
+                an unspecified sensor type.
+  */
+  static bool ValidateSensorTypes(const ws_i2c_Add_TypesEntry *types,
+                                  size_t types_count) {
+    for (size_t i = 0; i < types_count; i++) {
+      if (types[i].value == ws_sensor_Type_T_UNSPECIFIED)
+        return false;
+    }
+    return true;
+  }
+
+  /*!
       @brief    Configures an i2c device's sensors.
       @param    types
                 Pointer to an array of TypesEntry objects.
@@ -1194,10 +1213,6 @@ public:
 
   // Maps SensorType to function calls
   std::map<ws_sensor_Type, fnGetEvent> SensorEventHandlers = {
-      {ws_sensor_Type_T_UNSPECIFIED,
-       [this](sensors_event_t *event) -> bool {
-         return this->getEventRaw(event);
-       }},
       {ws_sensor_Type_T_LIGHT,
        [this](sensors_event_t *event) -> bool {
          return this->getEventLight(event);
