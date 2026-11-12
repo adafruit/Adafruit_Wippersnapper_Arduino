@@ -57,6 +57,9 @@ public:
   bool SkipResponse(pb_istream_t *stream);
   void SaveResponseHash();
   void RemoveStaleComponents(pb_istream_t *stream);
+  void ForgetComponents();
+  void SetWakeCheckin(bool wake);
+  bool IsWakeCheckin();
   bool Complete();
   void configureSleep();
   int32_t GetTotalGPIOPins();
@@ -96,12 +99,12 @@ private:
   ws_checkin_D2B _CheckinD2B =
       ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;           ///< Flag indicating if response was received
-  uint8_t _response_sha[CHECKIN_SHA_LEN]; ///< SHA-256 of this response
-  bool _has_response_sha = false; ///< True if _response_sha was computed
-  CheckinComponent _pending;      ///< Component Add being applied
-  int _pending_idx = -1;          ///< Index of _pending's existing entry, or -1
-  bool _has_pending = false;      ///< True if _pending awaits CommitAdd()
-  bool _mark_only = false;        ///< True while RemoveStaleComponents() marks
+  uint8_t _sha_checkin_response[CHECKIN_SHA_LEN]; ///< Response SHA-256, 0=unset
+  CheckinComponent _pending;  ///< Component Add being applied
+  int _pending_idx = -1;      ///< Index of _pending's existing entry, or -1
+  bool _has_pending = false;  ///< True if _pending awaits CommitAdd()
+  bool _wake_checkin = false; ///< True if checking in after a light sleep wake
+  bool _mark_only = false;    ///< True while RemoveStaleComponents() marks
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
 #endif                    // WS_CHECKIN_H

@@ -48,6 +48,7 @@ typedef enum ws_led_status_t {
 #define WS_COLOR_RGB32_PINK 0xFF00FF   ///< Pink (as a uint32)
 #define WS_COLOR_RGB32_BLUE 0x0000FF   ///< Blue (as a uint32)
 #define WS_COLOR_RGB32_AMBER 0xFFBF00  ///< Amber (as a uint32)
+#define WS_COLOR_RGB32_TEAL 0x008080   ///< Teal (as a uint32)
 
 // colors for each status state
 #define LED_NET_CONNECT WS_COLOR_RGB32_PINK ///< Network connection state

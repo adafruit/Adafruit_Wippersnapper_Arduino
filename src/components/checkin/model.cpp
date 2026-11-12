@@ -22,8 +22,8 @@
 // SHA-256 of the last fully handled checkin response. Plain RAM on purpose:
 // it survives light sleep, but is cleared by a reset or deep sleep wake, where
 // nothing is configured yet and the response must always be applied.
-static uint8_t last_response_sha[CHECKIN_SHA_LEN];
-static bool has_last_response_sha = false;
+// All zero until a response hash is saved.
+static uint8_t last_sha_checkin_response[CHECKIN_SHA_LEN];
 // Components applied from checkin responses, same RAM lifetime as above
 static std::vector<CheckinComponent> checkin_components;
 
@@ -93,7 +93,10 @@ static bool decodeRemove(const CheckinComponent &component,
 /*!
     @brief  CheckinModel constructor
 */
-CheckinModel::CheckinModel() { _got_response = false; }
+CheckinModel::CheckinModel() {
+  _got_response = false;
+  memset(_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+}
 
 /*!
     @brief  CheckinModel destructor
@@ -353,8 +356,9 @@ bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
   if (action == CHECKIN_SKIP)
     return true;
   // Servo Add does not replace an existing servo, remove it first
-  if (action == CHECKIN_REPLACE)
-    (void)Ws->_servo_controller->Handle_Servo_Remove(&remove_msg);
+  if (action == CHECKIN_REPLACE &&
+      !Ws->_servo_controller->Handle_Servo_Remove(&remove_msg))
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
   return model->CommitAdd(Ws->_servo_controller->Handle_Servo_Add(&add_msg));
 }
 
@@ -408,8 +412,9 @@ bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
   if (action == CHECKIN_SKIP)
     return true;
   // Pixels Add does not replace an existing strand, remove it first
-  if (action == CHECKIN_REPLACE)
-    (void)Ws->_pixels_controller->Handle_Pixels_Remove(&remove_msg);
+  if (action == CHECKIN_REPLACE &&
+      !Ws->_pixels_controller->Handle_Pixels_Remove(&remove_msg))
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
   return model->CommitAdd(Ws->_pixels_controller->Handle_Pixels_Add(&add_msg));
 }
 
@@ -438,8 +443,9 @@ bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
   if (action == CHECKIN_SKIP)
     return true;
   // DS18x20 Add does not replace an existing sensor, remove it first
-  if (action == CHECKIN_REPLACE)
-    (void)Ws->_ds18x20_controller->Handle_Ds18x20Remove(&remove_msg);
+  if (action == CHECKIN_REPLACE &&
+      !Ws->_ds18x20_controller->Handle_Ds18x20Remove(&remove_msg))
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
   return model->CommitAdd(Ws->_ds18x20_controller->Handle_Ds18x20Add(&add_msg));
 }
 
@@ -468,8 +474,9 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
   if (action == CHECKIN_SKIP)
     return true;
   // UART Add rejects a port already in use, remove it first
-  if (action == CHECKIN_REPLACE)
-    (void)Ws->_uart_controller->Handle_UartRemove(&remove_msg);
+  if (action == CHECKIN_REPLACE &&
+      !Ws->_uart_controller->Handle_UartRemove(&remove_msg))
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
   return model->CommitAdd(Ws->_uart_controller->Handle_UartAdd(&add_msg));
 }
 
@@ -599,6 +606,23 @@ void CheckinModel::configureSleep() {
 bool CheckinModel::GotResponse() { return _got_response; }
 
 /*!
+    @brief  Checks that a checkin response hash buffer holds a hash.
+    @param  sha
+            CHECKIN_SHA_LEN byte hash buffer.
+    @returns True if the buffer is not null and not all zero, False if it is
+             missing, was never computed or hashing is unsupported.
+*/
+static bool IsShaValid(const uint8_t *sha) {
+  if (sha == nullptr)
+    return false;
+  for (size_t i = 0; i < CHECKIN_SHA_LEN; i++) {
+    if (sha[i] != 0)
+      return true;
+  }
+  return false;
+}
+
+/*!
     @brief  Hashes the raw, not yet decoded, checkin message and compares it
             against the last fully handled checkin response.
     @param  stream
@@ -611,11 +635,14 @@ bool CheckinModel::GotResponse() { return _got_response; }
 */
 bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
   // A buffer stream's state points at its next unread byte
-  _has_response_sha =
-      sha256((const uint8_t *)stream->state, stream->bytes_left, _response_sha);
-  if (!_has_response_sha || !has_last_response_sha)
+  if (!sha256((const uint8_t *)stream->state, stream->bytes_left,
+              _sha_checkin_response))
+    memset(_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+  if (!IsShaValid(_sha_checkin_response) ||
+      !IsShaValid(last_sha_checkin_response))
     return true;
-  return memcmp(_response_sha, last_response_sha, CHECKIN_SHA_LEN) != 0;
+  return memcmp(_sha_checkin_response, last_sha_checkin_response,
+                CHECKIN_SHA_LEN) != 0;
 }
 
 /*!
@@ -638,10 +665,10 @@ bool CheckinModel::SkipResponse(pb_istream_t *stream) {
             response. Call only once the response has been applied.
 */
 void CheckinModel::SaveResponseHash() {
-  if (!_has_response_sha)
+  if (!IsShaValid(_sha_checkin_response))
     return;
-  memcpy(last_response_sha, _response_sha, CHECKIN_SHA_LEN);
-  has_last_response_sha = true;
+  memset(last_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+  memcpy(last_sha_checkin_response, _sha_checkin_response, CHECKIN_SHA_LEN);
 }
 
 /*!
@@ -719,11 +746,33 @@ bool CheckinModel::CommitAdd(bool added) {
     memcpy(checkin_components[_pending_idx].add_sha, _pending.add_sha,
            CHECKIN_SHA_LEN);
   } else {
-    // The old component was removed and its replacement failed
+    // The old component was removed (or its removal failed and was logged)
+    // and its replacement failed, so stop tracking it
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to replace component");
     checkin_components.erase(checkin_components.begin() + _pending_idx);
   }
   return added;
 }
+
+/*!
+    @brief  Forgets the components applied from earlier checkin responses,
+            so this response's adds are all applied and recorded afresh.
+*/
+void CheckinModel::ForgetComponents() { checkin_components.clear(); }
+
+/*!
+    @brief  Marks this checkin as one made after a light sleep wake, the only
+            case where a response is reconciled against earlier ones.
+    @param  wake
+            True if checking in after a light sleep wake.
+*/
+void CheckinModel::SetWakeCheckin(bool wake) { _wake_checkin = wake; }
+
+/*!
+    @brief  Returns whether this checkin was made after a light sleep wake.
+    @returns True if checking in after a light sleep wake, False otherwise.
+*/
+bool CheckinModel::IsWakeCheckin() { return _wake_checkin; }
 
 /*!
     @brief  Removes components applied from earlier checkin responses that
