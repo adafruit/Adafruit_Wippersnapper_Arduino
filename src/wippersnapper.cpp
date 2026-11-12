@@ -1291,6 +1291,12 @@ void wippersnapper::connect() {
 #endif
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+    // Arm sleep only now that components are added, an ext0 wakeup pin must
+    // already be configured by the Digital or Analog controller
+    if (!Ws->_sdCardV2->ApplySleepConfig())
+      haltErrorV2("Failed to configure sleep from config.json!");
+#endif
     WS_DEBUG_PRINTLN("[Offline] Hardware configured, skipping network setup "
                      "and running app...");
     // Blink status LED to green to indicate successful configuration
