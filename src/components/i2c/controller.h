@@ -126,7 +126,8 @@ public:
   // Helpers //
   TwoWire *GetOrCreateI2cBus(const char *pin_scl, const char *pin_sda);
   bool InitMux(I2cHardware *bus, const char *name, uint32_t address);
-  bool RemoveDriver(uint32_t address,
+  bool RemoveDriver(uint32_t address, const char *pin_scl, const char *pin_sda,
+                    uint32_t mux_address,
                     uint32_t mux_channel = WS_I2C_MUX_CHANNEL_ANY);
   size_t GetI2cBusCount();
   TwoWire *GetI2cBusByIndex(size_t index);
