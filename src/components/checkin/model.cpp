@@ -644,19 +644,24 @@ bool CheckinModel::cbTelemetryAdds(pb_istream_t *stream,
 bool CheckinModel::cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
                                  void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
-  // Not tracked for light sleep reconcile, so the mark pass only skips it
-  // TODO: Track display and expander adds too, a changed wake checkin
-  // re-adds them
-  if (model->_mark_only)
-    return pb_read(stream, NULL, stream->bytes_left);
   model->_adds_total++;
+  pb_istream_t raw = *stream;
   memset(&model->_display_add, 0, sizeof(model->_display_add));
   if (!pb_decode(stream, ws_display_Add_fields, &model->_display_add)) {
     return model->SkipFailedAdd(stream, "display");
   }
-  if (!Ws->_display_controller->Handle_Display_Add(&model->_display_add)) {
+  ws_display_Remove remove_msg = ws_display_Remove_init_zero;
+  strncpy(remove_msg.name, model->_display_add.name,
+          sizeof(remove_msg.name) - 1);
+  // Display Add replaces an existing display of the same name itself
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_display_tag,
+                          ws_display_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
+    return true;
+  if (!model->CommitAdd(
+          Ws->_display_controller->Handle_Display_Add(&model->_display_add)))
     model->_adds_failed++;
-  }
   return true;
 }
 
@@ -670,12 +675,8 @@ bool CheckinModel::cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
 bool CheckinModel::cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
                                   void **arg) {
   CheckinModel *model = (CheckinModel *)*arg;
-  // Not tracked for light sleep reconcile, so the mark pass only skips it
-  // TODO: Track display and expander adds too, a changed wake checkin
-  // re-adds them
-  if (model->_mark_only)
-    return pb_read(stream, NULL, stream->bytes_left);
   model->_adds_total++;
+  pb_istream_t raw = *stream;
   ws_expander_Add add_msg = ws_expander_Add_init_zero;
   // Set up the nested i2c cfg's settings callback before decoding, same as
   // ExpanderController::Router
@@ -683,9 +684,21 @@ bool CheckinModel::cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
   if (!pb_decode(stream, ws_expander_Add_fields, &add_msg)) {
     return model->SkipFailedAdd(stream, "expander");
   }
-  if (!Ws->_expander_controller->Handle_Add(&add_msg)) {
+  ws_expander_Remove remove_msg = ws_expander_Remove_init_zero;
+  remove_msg.has_cfg_i2c = true;
+  remove_msg.cfg_i2c.has_descriptor = add_msg.cfg_i2c.has_descriptor;
+  remove_msg.cfg_i2c.descriptor = add_msg.cfg_i2c.descriptor;
+  CheckinAction action =
+      model->ReconcileAdd(&raw, ws_signal_BrokerToDevice_expander_tag,
+                          ws_expander_Remove_fields, &remove_msg);
+  if (action == CHECKIN_SKIP)
+    return true;
+  // Expander Add rejects an address already in use, remove it first
+  if (action == CHECKIN_REPLACE &&
+      !Ws->_expander_controller->Handle_Remove(&remove_msg))
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
+  if (!model->CommitAdd(Ws->_expander_controller->Handle_Add(&add_msg)))
     model->_adds_failed++;
-  }
   return true;
 }
 
@@ -1011,6 +1024,18 @@ void CheckinModel::RemoveStaleComponents(pb_istream_t *stream) {
       ws_telemetry_Remove msg = ws_telemetry_Remove_init_zero;
       if (decodeRemove(c, ws_telemetry_Remove_fields, &msg))
         (void)Ws->_telemetry_controller->Handle_TelemetryRemove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_display_tag: {
+      ws_display_Remove msg = ws_display_Remove_init_zero;
+      if (decodeRemove(c, ws_display_Remove_fields, &msg))
+        (void)Ws->_display_controller->Handle_Display_Remove(&msg);
+      break;
+    }
+    case ws_signal_BrokerToDevice_expander_tag: {
+      ws_expander_Remove msg = ws_expander_Remove_init_zero;
+      if (decodeRemove(c, ws_expander_Remove_fields, &msg))
+        (void)Ws->_expander_controller->Handle_Remove(&msg);
       break;
     }
     default:
