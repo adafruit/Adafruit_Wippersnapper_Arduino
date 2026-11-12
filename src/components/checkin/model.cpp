@@ -356,8 +356,9 @@ bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
   if (action == CHECKIN_SKIP)
     return true;
   // Servo Add does not replace an existing servo, remove it first
-  if (action == CHECKIN_REPLACE)
-    (void)Ws->_servo_controller->Handle_Servo_Remove(&remove_msg);
+  if (action == CHECKIN_REPLACE &&
+      !Ws->_servo_controller->Handle_Servo_Remove(&remove_msg))
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
   return model->CommitAdd(Ws->_servo_controller->Handle_Servo_Add(&add_msg));
 }
 
@@ -411,8 +412,9 @@ bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
   if (action == CHECKIN_SKIP)
     return true;
   // Pixels Add does not replace an existing strand, remove it first
-  if (action == CHECKIN_REPLACE)
-    (void)Ws->_pixels_controller->Handle_Pixels_Remove(&remove_msg);
+  if (action == CHECKIN_REPLACE &&
+      !Ws->_pixels_controller->Handle_Pixels_Remove(&remove_msg))
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
   return model->CommitAdd(Ws->_pixels_controller->Handle_Pixels_Add(&add_msg));
 }
 
@@ -441,8 +443,9 @@ bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
   if (action == CHECKIN_SKIP)
     return true;
   // DS18x20 Add does not replace an existing sensor, remove it first
-  if (action == CHECKIN_REPLACE)
-    (void)Ws->_ds18x20_controller->Handle_Ds18x20Remove(&remove_msg);
+  if (action == CHECKIN_REPLACE &&
+      !Ws->_ds18x20_controller->Handle_Ds18x20Remove(&remove_msg))
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
   return model->CommitAdd(Ws->_ds18x20_controller->Handle_Ds18x20Add(&add_msg));
 }
 
@@ -471,8 +474,9 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
   if (action == CHECKIN_SKIP)
     return true;
   // UART Add rejects a port already in use, remove it first
-  if (action == CHECKIN_REPLACE)
-    (void)Ws->_uart_controller->Handle_UartRemove(&remove_msg);
+  if (action == CHECKIN_REPLACE &&
+      !Ws->_uart_controller->Handle_UartRemove(&remove_msg))
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
   return model->CommitAdd(Ws->_uart_controller->Handle_UartAdd(&add_msg));
 }
 
@@ -722,7 +726,9 @@ bool CheckinModel::CommitAdd(bool added) {
     memcpy(checkin_components[_pending_idx].add_sha, _pending.add_sha,
            CHECKIN_SHA_LEN);
   } else {
-    // The old component was removed and its replacement failed
+    // The old component was removed (or its removal failed and was logged)
+    // and its replacement failed, so stop tracking it
+    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to replace component");
     checkin_components.erase(checkin_components.begin() + _pending_idx);
   }
   return added;
