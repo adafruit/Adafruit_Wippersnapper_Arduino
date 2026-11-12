@@ -121,16 +121,23 @@ public:
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(100);
+    _hiddenIdx = -1;
 
-    // Perform a network scan
-    int n = WiFi.scanNetworks();
+    // Perform a network scan, including hidden networks
+    int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true);
     if (n == 0) {
       WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
       return WS_SSID_SCAN_NO_NETWORKS;
     }
 
     // Was the network within secrets.json found?
+    bool foundHidden = false;
     for (int i = 0; i < n; ++i) {
+      if (WiFi.SSID(i).length() == 0) {
+        // hidden networks don't broadcast their SSID
+        foundHidden = true;
+        continue;
+      }
       if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
         WS_DEBUG_PRINT("SSID (");
         WS_DEBUG_PRINTVAR(_ssid);
@@ -142,7 +149,8 @@ public:
       if (Ws->_isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(Ws->_multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+          if (strlen(Ws->_multiNetworksV2[j].ssid) > 0 &&
+              strcmp(Ws->_multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) == 0) {
             WS_DEBUG_PRINT("SSID (");
             WS_DEBUG_PRINTVAR(Ws->_multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
@@ -154,19 +162,75 @@ public:
       }
     }
 
-    // User-set network not found, print scan results to serial console
-    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
+    // Print scan results before a directed scan replaces them
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
     for (int i = 0; i < n; ++i) {
-      WS_DEBUG_PRINTVAR(WiFi.SSID(i));
+      if (WiFi.SSID(i).length() == 0) {
+        WS_DEBUG_PRINT("<hidden>");
+      } else {
+        WS_DEBUG_PRINTVAR(WiFi.SSID(i));
+      }
       WS_DEBUG_PRINT(" ");
       WS_DEBUG_PRINTVAR(WiFi.RSSI(i));
       WS_DEBUG_PRINTLN("dB");
     }
 
+    // Hidden networks only reveal their SSID in reply to a directed probe
+    if (foundHidden) {
+      if (scan_hidden_ssid(_ssid)) {
+        _hiddenIdx = 0;
+      } else if (Ws->_isWiFiMultiV2) {
+        for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
+          if (scan_hidden_ssid(Ws->_multiNetworksV2[j].ssid)) {
+            _hiddenIdx = j + 1;
+            break;
+          }
+        }
+      }
+    }
+
     WiFi.scanDelete(); // Free the scan result memory
 
+    if (_hiddenIdx >= 0)
+      return WS_SSID_SCAN_SSID_FOUND;
+
+    // User-set network not found
+    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     return WS_SSID_SCAN_SSID_NOT_FOUND;
+  }
+
+  /*!
+  @brief   Performs a directed scan (probe request) for a hidden network.
+  @note    A `show_hidden` scan only reports hidden networks with an empty
+           SSID, so it can't tell which hidden network (if any) is ours.
+           A directed scan puts `ssid` in the probe request, and only an
+           AP with that SSID answers. This keeps a wrong SSID failing at
+           scan time, and picks which multi-network credentials to join.
+  @param   ssid
+           The SSID of the hidden network to scan for.
+  @returns True if an access point responded to `ssid`, False otherwise.
+  */
+  bool scan_hidden_ssid(const char *ssid) {
+    if (ssid == NULL || strlen(ssid) == 0)
+      return false;
+
+    WS_DEBUG_PRINT("Scanning for hidden WiFi network: ");
+    WS_DEBUG_PRINTLNVAR(ssid);
+    Ws->_wdt->feed();
+    int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true,
+                              /*passive=*/false, /*max_ms_per_chan=*/300,
+                              /*channel=*/0, ssid);
+    Ws->_wdt->feed();
+    for (int i = 0; i < n; i++) {
+      // directed scans only report APs answering to `ssid`
+      if (WiFi.SSID(i).length() == 0 ||
+          strcmp(WiFi.SSID(i).c_str(), ssid) == 0) {
+        WS_DEBUG_PRINT("Found hidden WiFi network on ch");
+        WS_DEBUG_PRINTLNVAR(WiFi.channel(i));
+        return true;
+      }
+    }
+    return false;
   }
 
   /*!
@@ -248,8 +312,10 @@ protected:
   NetworkClientSecure *_mqtt_client_secure =
       nullptr; ///< Pointer to a secure network client object
   NetworkClient *_mqtt_client_insecure =
-      nullptr;          ///< Pointer to an insecure network client object
-  WiFiMulti _wifiMulti; ///< WiFiMulti object for multi-network mode
+      nullptr;            ///< Pointer to an insecure network client object
+  WiFiMulti _wifiMulti;   ///< WiFiMulti object for multi-network mode
+  int8_t _hiddenIdx = -1; ///< Hidden network found by a directed scan: -1
+                          ///< none, 0 `_ssid`, n `_multiNetworksV2[n-1]`
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
@@ -327,7 +393,7 @@ protected:
       WiFi.setAutoReconnect(false);
       _disconnect();
       delay(100);
-      if (Ws->_isWiFiMultiV2) {
+      if (Ws->_isWiFiMultiV2 && _hiddenIdx < 0) {
         // multi network mode
         _wifiMulti.APlistClean();
         _wifiMulti.setAllowOpenAP(false);
@@ -345,8 +411,16 @@ protected:
         } else {
           _statusV2 = WS_NET_DISCONNECTED;
         }
+      } else if (_hiddenIdx > 0) {
+        // hidden alternative network found by check_valid_ssid(), WiFiMulti
+        // can't see it
+        WiFi.begin(Ws->_multiNetworksV2[_hiddenIdx - 1].ssid,
+                   Ws->_multiNetworksV2[_hiddenIdx - 1].pass);
+        _statusV2 = WS_NET_DISCONNECTED;
+        Ws->_wdt->feed();
+        delay(5 * ONE_SECOND_IN_MS);
       } else {
-        // single network mode
+        // single network mode, or the hidden default network
         WiFi.begin(_ssid, _pass);
         _statusV2 = WS_NET_DISCONNECTED;
         Ws->_wdt->feed();

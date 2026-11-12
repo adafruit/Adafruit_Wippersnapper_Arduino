@@ -127,14 +127,7 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvTmp119(i2c, addr, mux_channel, driver_name);
      }},
-    // Component id in Wippersnapper_Components is "vcnl4030"; the legacy
-    // misspelling ("vncl") is also registered to match existing sibling keys.
     {"vcnl4030",
-     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
-        const char *driver_name) -> drvBase * {
-       return new drvVcnl4030(i2c, addr, mux_channel, driver_name);
-     }},
-    {"vncl4030",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvVcnl4030(i2c, addr, mux_channel, driver_name);
@@ -447,32 +440,25 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvTsl2591(i2c, addr, mux_channel, driver_name);
      }},
-    {"vncl4020",
+    {"vcnl4020",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
-       return new drvVncl4020(i2c, addr, mux_channel, driver_name);
+       return new drvVcnl4020(i2c, addr, mux_channel, driver_name);
      }},
     {"veml7700",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvVeml7700(i2c, addr, mux_channel, driver_name);
      }},
-    {"vncl4040",
+    {"vcnl4040",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
-       return new drvVncl4040(i2c, addr, mux_channel, driver_name);
+       return new drvVcnl4040(i2c, addr, mux_channel, driver_name);
      }},
-    // Component id in Wippersnapper_Components is "vcnl4200"; the legacy
-    // misspelling ("vncl") is also registered to match existing sibling keys.
     {"vcnl4200",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
-       return new drvVncl4200(i2c, addr, mux_channel, driver_name);
-     }},
-    {"vncl4200",
-     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
-        const char *driver_name) -> drvBase * {
-       return new drvVncl4200(i2c, addr, mux_channel, driver_name);
+       return new drvVcnl4200(i2c, addr, mux_channel, driver_name);
      }},
     {"vl53l0x",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -686,6 +672,11 @@ bool I2cController::Handle_Add(ws_i2c_Add *msg) {
         msg->descriptor, "Invalid device address in I2C add message!");
     return false;
   }
+  if (!drvBase::ValidateSensorTypes(msg->types, msg->types_count)) {
+    Ws->error_handler->publishComponentError(
+        msg->descriptor, "Unspecified sensor type in I2C add message!");
+    return false;
+  }
 
   // Parse out device name and descriptor
   char name[16];
@@ -879,22 +870,16 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
   for (size_t i = 0; i < spaces_count; i++) {
     ws_i2c_AddressSpaceResult *result = _i2c_model->GetNextProbedResult();
     if (result == nullptr) {
-      ws_i2c_Descriptor desc = {};
-      desc.has_address_space = true;
-      desc.address_space = spaces[i];
-      Ws->error_handler->publishComponentError(
-          desc, "Too many address spaces to probe!");
+      Ws->error_handler->publishDeviceError(
+          spaces[i], "Too many address spaces to probe!");
       break;
     }
 
     // Find or create the bus for this address space
     I2cHardware *bus = findOrCreateBus(spaces[i].pin_scl, spaces[i].pin_sda);
     if (bus == nullptr) {
-      ws_i2c_Descriptor desc = {};
-      desc.has_address_space = true;
-      desc.address_space = spaces[i];
-      Ws->error_handler->publishComponentError(
-          desc, "Failed to find or create I2C bus!");
+      Ws->error_handler->publishDeviceError(
+          spaces[i], "Failed to find or create I2C bus!");
       continue;
     }
 
@@ -903,11 +888,8 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
     uint32_t *found_buf = _i2c_model->GetFoundAddressBuf(result_idx);
     size_t *found_count = _i2c_model->GetFoundAddressCount(result_idx);
     if (found_buf == nullptr || found_count == nullptr) {
-      ws_i2c_Descriptor desc = {};
-      desc.has_address_space = true;
-      desc.address_space = spaces[i];
-      Ws->error_handler->publishComponentError(
-          desc, "Internal error: probe buffer overflow!");
+      Ws->error_handler->publishDeviceError(
+          spaces[i], "Internal error: probe buffer overflow!");
       continue;
     }
 
@@ -915,11 +897,8 @@ bool I2cController::Handle_Probe(pb_istream_t *stream) {
     ws_i2c_probe_err_t probe_err = bus->ProbeAddresses(
         &spaces[i], addresses, addresses_count, result, found_buf, found_count);
     if (probe_err != WS_I2C_PROBE_OK) {
-      ws_i2c_Descriptor desc = {};
-      desc.has_address_space = true;
-      desc.address_space = spaces[i];
-      Ws->error_handler->publishComponentError(
-          desc, I2cHardware::ProbeErrorToString(probe_err));
+      Ws->error_handler->publishDeviceError(
+          spaces[i], I2cHardware::ProbeErrorToString(probe_err));
       continue;
     }
 
