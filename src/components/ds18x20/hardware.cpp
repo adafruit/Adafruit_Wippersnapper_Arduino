@@ -72,7 +72,20 @@ bool DS18X20Hardware::GetSensor() {
 #endif
 
   OneWireNg::ErrorCode ec = _ow->readSingleId(_sensorId);
-  return ec == OneWireNg::EC_SUCCESS;
+  if (ec != OneWireNg::EC_SUCCESS)
+    return false;
+
+  // A floating pin reads to the MCU as a present device, which is incorrect, so
+  // we should check the device present is actually a DSTherm family device
+  const char *family_name = DSTherm::getFamilyName(_sensorId);
+  if (family_name == NULL) {
+    WS_DEBUG_PRINTLN("[ds18x20] ERROR: Found sensor is not a DSTherm!");
+    return false;
+  }
+
+  WS_DEBUG_PRINT("[ds18x20] Found Sensor: ");
+  WS_DEBUG_PRINTLNVAR(family_name);
+  return true;
 }
 
 /*!

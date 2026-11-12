@@ -23,7 +23,7 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) ||                          \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) ||                           \
-    defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                    \
+    defined(ARDUINO_ESP32S3_DEV) || defined(ARDUINO_RASPBERRY_PI_PICO_W) ||    \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
@@ -36,7 +36,7 @@
     defined(ARDUINO_RASPBERRY_PI_PICO_2W) ||                                   \
     defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040) ||                                \
-    defined(ARDUINO_ARCH_RP2040)
+    defined(ARDUINO_XIAO_ESP32S3) || defined(ARDUINO_ARCH_RP2040)
 #include "Wippersnapper_FS.h"
 // Build metadata from generate_ws_version.py, see wippersnapper.cpp
 #if defined(__has_include)

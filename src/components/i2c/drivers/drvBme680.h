@@ -257,7 +257,8 @@ public:
   bool getEventPressure(sensors_event_t *pressureEvent) {
     if (!AttemptRead())
       return false;
-    pressureEvent->pressure = (float)_bme->pressure;
+    // Adafruit_BME680 reports pressure in Pa; sensors_event_t expects hPa
+    pressureEvent->pressure = (float)_bme->pressure / 100.0F;
     return true;
   }
 
