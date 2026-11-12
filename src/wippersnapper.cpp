@@ -354,9 +354,6 @@ bool applyCheckinResponse(pb_istream_t *stream) {
     Ws->haltErrorV2("Invalid checkin response, rebooting soon...");
   }
 
-  // Configure sleep settings if enabled
-  Ws->CheckInModel->configureSleep();
-
   // Configure controller settings using Response
   WS_DEBUG_PRINTLN("[checkin] Configuring controllers");
   WS_DEBUG_PRINT("[checkin] Total GPIO pins: ");
@@ -368,8 +365,8 @@ bool applyCheckinResponse(pb_istream_t *stream) {
   Ws->CheckInModel->ConfigureControllers();
   WS_DEBUG_PRINTLN("[checkin] Controllers configured");
 
-  // Execute the component adds now that sleep and the controllers are
-  // configured. A failed add is reported by its handler and skipped.
+  // Execute the component adds now that the controllers are configured. A
+  // failed add is reported by its handler and skipped.
   WS_DEBUG_PRINTLN("[checkin] Adding components");
   if (!Ws->CheckInModel->ProcessComponentAdds(&adds_stream)) {
     WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode component adds, "
@@ -382,6 +379,11 @@ bool applyCheckinResponse(pb_istream_t *stream) {
     WS_DEBUG_PRINTVAR(Ws->CheckInModel->GetAddsTotal());
     WS_DEBUG_PRINTLN(" component adds failed, continuing");
   }
+
+  // Configure sleep settings if enabled, after the component adds: an ext0
+  // wake pin takes its pull from its Digital/Analog component, which only
+  // exists once the adds have run
+  Ws->CheckInModel->configureSleep();
   Ws->NetworkFSM();
 
   return true;
