@@ -207,11 +207,14 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
     rc = true;
 #endif
 
+    _sleep_hardware->StoreTimerDuration(rc ? msg->config.timer.duration : 0);
     WS_DEBUG_PRINT("[sleep] Timer wakeup set to ");
     WS_DEBUG_PRINTVAR(msg->config.timer.duration);
     WS_DEBUG_PRINTLN(" seconds");
     break;
   case ws_sleep_SleepConfig_ext0_tag:
+    // No timer wakeup armed, so a failed wake cannot re-arm one
+    _sleep_hardware->StoreTimerDuration(0);
 #ifdef ARDUINO_ARCH_ESP32
     rc = _sleep_hardware->RegisterExt0Wakeup(
         msg->config.ext0.pin, msg->config.ext0.level, msg->config.ext0.pull);
@@ -219,16 +222,16 @@ bool SleepController::ConfigureSleep(const ws_sleep_SleepConfig *msg) {
       WS_DEBUG_PRINTLN("[sleep] ERROR: Failed to set ext0 wakeup");
     }
 #else
-  {
-    // Convert pin name string to numeric GPIO pin
-    const char *pin_num = msg->config.ext0.pin;
-    if ((pin_num[0] == 'D' || pin_num[0] == 'A') && pin_num[1] != '\0') {
-      pin_num = pin_num + 1;
+    {
+      // Convert pin name string to numeric GPIO pin
+      const char *pin_num = msg->config.ext0.pin;
+      if ((pin_num[0] == 'D' || pin_num[0] == 'A') && pin_num[1] != '\0') {
+        pin_num = pin_num + 1;
+      }
+      uint gpio_pin = (uint)strtol(pin_num, nullptr, 10);
+      Ws->_wdt->registerGPIOWakeup(gpio_pin, true, msg->config.ext0.level);
+      rc = true;
     }
-    uint gpio_pin = (uint)strtol(pin_num, nullptr, 10);
-    Ws->_wdt->registerGPIOWakeup(gpio_pin, true, msg->config.ext0.level);
-    rc = true;
-  }
 #endif
     WS_DEBUG_PRINT("[sleep] EXT0 wakeup set on pin ");
     WS_DEBUG_PRINTVAR(msg->config.ext0.pin);
@@ -478,10 +481,15 @@ void SleepController::HandleNetFSMFailure() {
 #endif
   } else {
     msg_sleep_cfg.which_config = ws_sleep_SleepConfig_timer_tag;
-    // Set the timer duration to the last known sleep duration, so we can
-    // re-enter sleep
-    msg_sleep_cfg.config.timer.duration =
-        _sleep_hardware->GetSleepDurationSecs();
+    // Sleep again for the configured timer duration, not the measured time
+    // slept: a GPIO wake (RP2350 has no ext0 to restore) or an early wake
+    // measures a short sleep, re-sleeping briefly (or for 0 s) in a
+    // battery-draining retry loop. With no timer to re-arm, reboot instead.
+    msg_sleep_cfg.config.timer.duration = _sleep_hardware->GetTimerDuration();
+    if (msg_sleep_cfg.config.timer.duration == 0) {
+      Ws->haltErrorV2(
+          "[sleep] ERROR: No wakeup source to re-arm, rebooting soon...");
+    }
   }
 
   // Configure sleep mode (sleep_enabled=true to re-enter sleep after FSM
