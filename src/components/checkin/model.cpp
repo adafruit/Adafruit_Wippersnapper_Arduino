@@ -239,15 +239,26 @@ uint16_t CheckinModel::GetAddsFailed() { return _adds_failed; }
             not published to IO.
     @param  stream
             The add's substream, partially consumed by the failed decode.
+    @param  raw
+            Copy of stream taken before the add was decoded. Must be a
+            buffer stream (pb_istream_from_buffer) so restoring it rewinds.
     @param  add_type
             Name of the add type, for the log message.
     @returns True, so nanopb continues decoding the next add.
 */
-bool CheckinModel::SkipFailedAdd(pb_istream_t *stream, const char *add_type) {
+bool CheckinModel::SkipFailedAdd(pb_istream_t *stream, const pb_istream_t *raw,
+                                 const char *add_type) {
   WS_DEBUG_PRINT("[checkin] ERROR: Failed to decode ");
   WS_DEBUG_PRINTVAR(add_type);
   WS_DEBUG_PRINT(" add: ");
   WS_DEBUG_PRINTLNVAR(PB_GET_ERROR(stream));
+  // A failed nested decode (packed array overflow, failed callback field)
+  // can return without closing its own substream. stream's bytes_left then
+  // already excludes that nested field while its read position hasn't moved
+  // past it, so draining bytes_left would stop short of the end of this add
+  // and the rest of the response would be misparsed. Rewind to the start of
+  // the add and drain all of it instead.
+  *stream = *raw;
   // Drain what's left of this add, otherwise nanopb calls the callback
   // again on the leftover bytes
   if (stream->bytes_left > 0) {
@@ -373,7 +384,7 @@ bool CheckinModel::cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_digital_Add add_msg = ws_digital_Add_init_zero;
   if (!pb_decode(stream, ws_digital_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "digital");
+    return model->SkipFailedAdd(stream, &raw, "digital");
   }
   ws_digital_Remove remove_msg = ws_digital_Remove_init_zero;
   strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
@@ -402,7 +413,7 @@ bool CheckinModel::cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_analog_Add add_msg = ws_analog_Add_init_zero;
   if (!pb_decode(stream, ws_analog_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "analog");
+    return model->SkipFailedAdd(stream, &raw, "analog");
   }
   ws_analog_Remove remove_msg = ws_analog_Remove_init_zero;
   strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
@@ -431,7 +442,7 @@ bool CheckinModel::cbServoAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_servo_Add add_msg = ws_servo_Add_init_zero;
   if (!pb_decode(stream, ws_servo_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "servo");
+    return model->SkipFailedAdd(stream, &raw, "servo");
   }
   ws_servo_Remove remove_msg = ws_servo_Remove_init_zero;
   strncpy(remove_msg.servo_pin, add_msg.servo_pin,
@@ -464,7 +475,7 @@ bool CheckinModel::cbPWMAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_pwm_Add add_msg = ws_pwm_Add_init_zero;
   if (!pb_decode(stream, ws_pwm_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "pwm");
+    return model->SkipFailedAdd(stream, &raw, "pwm");
   }
   ws_pwm_Remove remove_msg = ws_pwm_Remove_init_zero;
   strncpy(remove_msg.pin, add_msg.pin, sizeof(remove_msg.pin) - 1);
@@ -493,7 +504,7 @@ bool CheckinModel::cbPixelsAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_pixels_Add add_msg = ws_pixels_Add_init_zero;
   if (!pb_decode(stream, ws_pixels_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "pixels");
+    return model->SkipFailedAdd(stream, &raw, "pixels");
   }
   ws_pixels_Remove remove_msg = ws_pixels_Remove_init_zero;
   strncpy(remove_msg.pin_data, add_msg.pin_data,
@@ -526,7 +537,7 @@ bool CheckinModel::cbDs18x20Adds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_ds18x20_Add add_msg = ws_ds18x20_Add_init_zero;
   if (!pb_decode(stream, ws_ds18x20_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "ds18x20");
+    return model->SkipFailedAdd(stream, &raw, "ds18x20");
   }
   ws_ds18x20_Remove remove_msg = ws_ds18x20_Remove_init_zero;
   strncpy(remove_msg.onewire_pin, add_msg.onewire_pin,
@@ -559,7 +570,7 @@ bool CheckinModel::cbUartAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   ws_uart_Add add_msg = ws_uart_Add_init_zero;
   if (!pb_decode(stream, ws_uart_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "uart");
+    return model->SkipFailedAdd(stream, &raw, "uart");
   }
   ws_uart_Remove remove_msg = ws_uart_Remove_init_zero;
   remove_msg.has_descriptor = add_msg.has_descriptor;
@@ -593,7 +604,7 @@ bool CheckinModel::cbI2cAdds(pb_istream_t *stream, const pb_field_t *field,
   ws_i2c_Add add_msg = ws_i2c_Add_init_zero;
   Ws->_i2c_controller->SetupAddDecodeCallbacks(&add_msg);
   if (!pb_decode(stream, ws_i2c_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "i2c");
+    return model->SkipFailedAdd(stream, &raw, "i2c");
   }
   ws_i2c_Remove remove_msg = ws_i2c_Remove_init_zero;
   remove_msg.has_descriptor = add_msg.has_descriptor;
@@ -624,7 +635,7 @@ bool CheckinModel::cbTelemetryAdds(pb_istream_t *stream,
   pb_istream_t raw = *stream;
   ws_telemetry_Add add_msg = ws_telemetry_Add_init_zero;
   if (!pb_decode(stream, ws_telemetry_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "telemetry");
+    return model->SkipFailedAdd(stream, &raw, "telemetry");
   }
   ws_telemetry_Remove remove_msg = ws_telemetry_Remove_init_zero;
   remove_msg.type = add_msg.type;
@@ -655,7 +666,7 @@ bool CheckinModel::cbDisplayAdds(pb_istream_t *stream, const pb_field_t *field,
   pb_istream_t raw = *stream;
   memset(&model->_display_add, 0, sizeof(model->_display_add));
   if (!pb_decode(stream, ws_display_Add_fields, &model->_display_add)) {
-    return model->SkipFailedAdd(stream, "display");
+    return model->SkipFailedAdd(stream, &raw, "display");
   }
   ws_display_Remove remove_msg = ws_display_Remove_init_zero;
   strncpy(remove_msg.name, model->_display_add.name,
@@ -689,7 +700,7 @@ bool CheckinModel::cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
   // ExpanderController::Router
   Ws->_i2c_controller->SetupAddDecodeCallbacks(&add_msg.cfg_i2c);
   if (!pb_decode(stream, ws_expander_Add_fields, &add_msg)) {
-    return model->SkipFailedAdd(stream, "expander");
+    return model->SkipFailedAdd(stream, &raw, "expander");
   }
   ws_expander_Remove remove_msg = ws_expander_Remove_init_zero;
   remove_msg.has_cfg_i2c = true;
