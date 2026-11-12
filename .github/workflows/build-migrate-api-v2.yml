@@ -143,7 +143,7 @@ jobs:
       - name: Shallow fetch BSP at the resolved commit
         if: steps.cache-bsp.outputs.cache-hit != 'true'
         run: >-
-          bash .github/scripts/fetch_bsp.sh
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
           "${{ matrix.bsp.owner }}" "${{ matrix.bsp.branch }}" "${{ matrix.bsp.sha }}"
           /home/runner/Arduino/hardware/espressif/esp32
       - name: Save BSP to cache
@@ -296,7 +296,7 @@ jobs:
         if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
         continue-on-error: true
         run: >-
-          bash .github/scripts/fetch_bsp.sh
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
           "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
           /home/runner/Arduino/hardware/espressif/esp32
       - name: Restore cached ESP32 tool archives
@@ -547,7 +547,7 @@ jobs:
         if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
         continue-on-error: true
         run: >-
-          bash .github/scripts/fetch_bsp.sh
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
           "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
           /home/runner/Arduino/hardware/espressif/esp32
       - name: Restore cached ESP32 tool archives
@@ -712,7 +712,7 @@ jobs:
         if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
         continue-on-error: true
         run: >-
-          bash .github/scripts/fetch_bsp.sh
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
           "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
           /home/runner/Arduino/hardware/espressif/esp32
       - name: Restore cached ESP32 tool archives
@@ -1260,7 +1260,7 @@ jobs:
         if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
         continue-on-error: true
         run: >-
-          bash .github/scripts/fetch_bsp.sh
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
           "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
           /home/runner/Arduino/hardware/espressif/esp32
       - name: Restore cached ESP32 tool archives
@@ -1409,7 +1409,7 @@ jobs:
         if: ${{ steps.cache-bsp.outcome != 'skipped' && steps.cache-bsp.outputs.cache-hit != 'true' }}
         continue-on-error: true
         run: >-
-          bash .github/scripts/fetch_bsp.sh
+          bash .github/scripts/fetch_bsp_arduino_esp32.sh
           "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].owner }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].branch }}" "${{ fromJSON(needs.bsp-resolve.outputs.bsp)[matrix.arduino-platform].sha }}"
           /home/runner/Arduino/hardware/espressif/esp32
       - name: Restore cached ESP32 tool archives
