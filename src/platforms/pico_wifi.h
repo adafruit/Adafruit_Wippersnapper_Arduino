@@ -294,7 +294,6 @@ protected:
       *_mqtt_client_insecure; ///< Pointer to an insecure WiFi client object
   WiFiClientSecure
       *_mqtt_client_secure; ///< Pointer to a secure WiFi client object
-  WiFiMulti _wifiMulti;     ///< WiFiMulti object for multi-network mode
   int8_t _hiddenIdx = -1;   ///< Hidden network found by a directed scan: -1
                             ///< none, 0 `_ssid`, n `_multiNetworksV2[n-1]`
 
@@ -389,6 +388,69 @@ protected:
       "-----END CERTIFICATE-----\n"; ///< Root certificate for io.adafruit.com
 
   /*!
+  @brief  Waits for a connection started with WiFi.beginNoBlock(), feeding
+          the WDT while it polls.
+  @return True if connected, False on timeout.
+  */
+  bool waitForConnection() {
+    int lastResult = WL_DISCONNECTED;
+    RETRY_FUNCTION_UNTIL_TIMEOUT(
+        []() -> int { return WiFi.status(); }, // Function call each cycle
+        lastResult,                            // return variable
+        [](int status) { return status == WL_CONNECTED; }, // check
+        PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
+        PICO_CONNECT_RETRY_DELAY_MS); // interval between retries
+    if (lastResult != WL_CONNECTED)
+      return false;
+    // wait 2seconds for connection to stabilize
+    WS_DELAY_WITH_WDT(2 * ONE_SECOND_IN_MS);
+    return true;
+  }
+
+  /*!
+  @brief  Connects to the strongest configured network in range, trying the
+          next strongest on failure. Replaces WiFiMulti::run(), which blocks
+          in WiFi.begin() past the hardware WDT period without feeding it.
+  @return True if connected, False if no configured network connected.
+  */
+  bool connectStrongest() {
+    int n = WiFi.scanNetworks();
+    Ws->_wdt->feed();
+    // Index 0 is the default network, n is _multiNetworksV2[n-1]
+    bool tried[WS_MAX_ALT_WIFI_NETWORKS + 1] = {false};
+    while (true) {
+      int best = -1;
+      int32_t bestRssi = INT32_MIN;
+      for (int i = 0; i < n; i++) {
+        const char *scanSsid = WiFi.SSID(i);
+        if (scanSsid == NULL || scanSsid[0] == '\0')
+          continue;
+        for (int k = 0; k <= WS_MAX_ALT_WIFI_NETWORKS; k++) {
+          const char *ssid =
+              (k == 0) ? _ssid : Ws->_multiNetworksV2[k - 1].ssid;
+          if (!tried[k] && strlen(ssid) > 0 && strcmp(ssid, scanSsid) == 0 &&
+              WiFi.RSSI(i) > bestRssi) {
+            best = k;
+            bestRssi = WiFi.RSSI(i);
+          }
+        }
+      }
+      if (best < 0)
+        return false;
+      tried[best] = true;
+      if (best == 0) {
+        WiFi.beginNoBlock(_ssid, _pass);
+      } else {
+        WiFi.beginNoBlock(Ws->_multiNetworksV2[best - 1].ssid,
+                          Ws->_multiNetworksV2[best - 1].pass);
+      }
+      Ws->_wdt->feed();
+      if (waitForConnection())
+        return true;
+    }
+  }
+
+  /*!
   @brief  Establishes a connection with the wireless network.
   */
   void _connect() {
@@ -398,7 +460,12 @@ protected:
 
     WiFi.mode(WIFI_STA);
     Ws->_wdt->feed();
-    WiFi.setTimeout(20 * ONE_SECOND_IN_MS);
+    // WiFi.begin() and WiFiMulti::run() block for up to twice this timeout,
+    // beginNoBlock() and DNS lookups for up to it, none feeding the WDT. The
+    // RP2040/RP2350 hardware WDT tops out at ~8.4 s/~16.8 s whatever
+    // WS_TIMEOUT_WDT asks for, so keep each blocking call short and poll for
+    // the connection with WDT feeds instead (waitForConnection()).
+    WiFi.setTimeout(5 * ONE_SECOND_IN_MS);
     Ws->_wdt->feed();
 
     if (strlen(_ssid) == 0) {
@@ -409,48 +476,23 @@ protected:
       Ws->_wdt->feed();
       if (Ws->_isWiFiMultiV2 && _hiddenIdx < 0) {
         // multi network mode
-        _wifiMulti.clearAPList();
-        // add default network
-        _wifiMulti.addAP(_ssid, _pass);
-        // add array of alternative networks
-        for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          // skip empty slots, they'd match hidden networks' empty SSIDs
-          if (strlen(Ws->_multiNetworksV2[i].ssid) > 0) {
-            _wifiMulti.addAP(Ws->_multiNetworksV2[i].ssid,
-                             Ws->_multiNetworksV2[i].pass);
-          }
-        }
-        Ws->_wdt->feed();
-        if (_wifiMulti.run(TEN_SECONDS_IN_MS) == WL_CONNECTED) {
-          Ws->_wdt->feed();
+        if (connectStrongest()) {
           _statusV2 = WS_NET_CONNECTED;
           return;
         }
-        Ws->_wdt->feed();
       } else {
         if (_hiddenIdx > 0) {
-          // hidden alternative network found by check_valid_ssid(), WiFiMulti
+          // hidden alternative network found by check_valid_ssid(), a scan
           // can't see it
-          WiFi.begin(Ws->_multiNetworksV2[_hiddenIdx - 1].ssid,
-                     Ws->_multiNetworksV2[_hiddenIdx - 1].pass);
+          WiFi.beginNoBlock(Ws->_multiNetworksV2[_hiddenIdx - 1].ssid,
+                            Ws->_multiNetworksV2[_hiddenIdx - 1].pass);
         } else {
           // single network mode, or the hidden default network
-          WiFi.begin(_ssid, _pass);
+          WiFi.beginNoBlock(_ssid, _pass);
         }
-
-        // Use the macro to retry the status check until connected / timed out
-        int lastResult = WL_DISCONNECTED;
-        RETRY_FUNCTION_UNTIL_TIMEOUT(
-            []() -> int { return WiFi.status(); }, // Function call each cycle
-            lastResult,                            // return variable
-            [](int status) { return status == WL_CONNECTED; }, // check
-            PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
-            PICO_CONNECT_RETRY_DELAY_MS); // interval between retries
-
-        if (lastResult == WL_CONNECTED) {
+        Ws->_wdt->feed();
+        if (waitForConnection()) {
           _statusV2 = WS_NET_CONNECTED;
-          // wait 2seconds for connection to stabilize
-          WS_DELAY_WITH_WDT(2 * ONE_SECOND_IN_MS);
           return;
         }
       }
