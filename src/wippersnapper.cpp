@@ -1236,7 +1236,7 @@ bool wippersnapper::checkin(uint32_t timeout_ms) {
     // certain time frame, the WDT will reset the device and try again
     unsigned long start = millis();
     while (!Ws->CheckInModel->GotResponse() &&
-           (timeout_ms == 0 || millis() - start < timeout_ms)) {
+           (timeout_ms == 0 || (millis() - start) < timeout_ms)) {
       Ws->_mqttV2->processPackets(
           WS_MQTT_POLL_TIMEOUT_MS); // TODO: Test with lower timeout value
       pingBrokerV2();               // Keep MQTT connection alive
