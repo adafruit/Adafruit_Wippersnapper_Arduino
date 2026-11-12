@@ -38,6 +38,8 @@ public:
   bool GotResponse();
   bool ResponseChanged(pb_istream_t *stream);
   void SaveResponseHash();
+  bool StoreResponse(pb_istream_t *stream);
+  pb_istream_t GetStoredResponse();
   bool Complete();
   void configureSleep();
   int32_t GetTotalGPIOPins();
@@ -79,7 +81,9 @@ private:
       ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;           ///< Flag indicating if response was received
   uint8_t _sha_checkin_response[CHECKIN_SHA_LEN]; ///< Response SHA-256, 0=unset
-  uint16_t _adds_total = 0;  ///< Component adds seen during checkin
+  std::vector<uint8_t> _stored_response; ///< Raw checkin response, applied
+                                         ///< outside the MQTT callback
+  uint16_t _adds_total = 0;              ///< Component adds seen during checkin
   uint16_t _adds_failed = 0; ///< Component adds that failed during checkin
   ws_display_Add _display_add =
       ws_display_Add_init_zero; ///< Display add decode buffer, kept off the
