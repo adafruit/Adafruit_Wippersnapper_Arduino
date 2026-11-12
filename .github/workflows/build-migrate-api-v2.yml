@@ -8,18 +8,48 @@ on:
     branches:
       - migrate-api-v2
   pull_request:
-    # 'edited' covers PRs retargeted to migrate-api-v2 after opening; each
-    # build job skips edits that leave the base unchanged (title/body edits),
-    # and membrowse is skipped with them.
+    # No 'edited' here: a title/body edit would start a run whose jobs all
+    # skip, and that newest run hides this commit's real results in the PR's
+    # checks. PRs retargeted onto a new base are rebuilt by
+    # rebuild-on-retarget-migrate-api-v2.yml, which dispatches this workflow.
     # No branch filter: PRs stacked on v2 feature branches need this build too
     # (only PRs whose merge result contains this file can run it, so v1 PRs
     # into main are unaffected).
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened]
   # Manual runs, and the target for the nightly cron dispatcher
   # (nightly-migrate-api-v2.yml, which must live on the default branch --
   # GitHub only fires `schedule` crons from there, so it dispatches this
-  # workflow on the migrate-api-v2 ref instead).
+  # workflow on the migrate-api-v2 ref instead). Also dispatched by
+  # rebuild-on-retarget-migrate-api-v2.yml on a retargeted PR's head branch,
+  # with ref=<that PR's merge commit SHA> and pr_sha=<its head SHA>, so the
+  # run's checks land on the PR head commit as a run of their own that later
+  # PR edits can't supersede.
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to build (branch, tag or SHA); blank = the ref this run was dispatched on"
+        required: false
+        default: ""
+      # Declaring this is also what lets the retarget dispatcher tell a head
+      # branch with this version of the workflow from an older one: dispatching
+      # an undeclared input fails (HTTP 422) instead of running stale logic.
+      pr_sha:
+        description: "PR head SHA when ref is that PR's merge commit (used for the build ID); the run must be dispatched on a branch whose tip is this SHA"
+        required: false
+        default: ""
+  # Called by release-migrate-api-v2.yml to build a release tag, whose
+  # build-files artifact is then attached to the draft release.
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: false
+        default: ""
+      # Unused by callers today; declared so inputs.pr_sha is "" here too.
+      pr_sha:
+        type: string
+        required: false
+        default: ""
 
 jobs:
   # Mirrors `build-esp32sx-esptool` in the v1 workflow (build-clang-doxy.yml on
@@ -28,7 +58,6 @@ jobs:
   # boot_app0 + app) using the board's definition.json from Wippersnapper_Boards.
   build-esp32sx-esptool:
     name: 🏗️ESP32-Sx
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -38,6 +67,7 @@ jobs:
             "funhouse_noota",
             "magtag",
             "metroesp32s2",
+            "esp32s3_devkitc_1_n8",
             "feather_esp32s2",
             "feather_esp32s2_tft",
             "feather_esp32s2_reverse_tft",
@@ -47,12 +77,15 @@ jobs:
             "qtpy_esp32s2",
             "qtpy_esp32s3_n4r2",
             "lilygo_t_display_s3",
+            "xiao_esp32s3",
           ]
     steps:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
@@ -73,10 +106,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -265,7 +308,6 @@ jobs:
   # (mirrors the rump `build-esp32sx` job in the v1 workflow).
   build-esp32sx:
     name: 🏗️ESP32-Sx
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -281,6 +323,8 @@ jobs:
         with:
           python-version: "3.x"
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
@@ -301,10 +345,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -371,7 +425,6 @@ jobs:
 
   build-esp32:
     name: 🏗️ESP32/Cx
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -380,21 +433,30 @@ jobs:
           [
             "wippersnapper_feather_esp32",
             "qtpy_esp32",
+            "sparklemotion_esp32",
+            "sparklemotionmini_esp32",
+            "sparklemotionstick_esp32",
             "feather_esp32_v2",
             "itsybitsy_esp32",
+            "dfrobot_beetle_esp32c3",
             "wippersnapper_qtpy_esp32c3",
             "dfrobot_firebeetle2_esp32c5",
             "lilygo_t_dongle_c5",
+            "espressif_esp32c5_devkitc_1_n8r4",
             "wippersnapper_feather_esp32c6"
           ]
         include:
           - offset: "0x1000"
+          - offset: "0x0"
+            arduino-platform: "dfrobot_beetle_esp32c3"
           - offset: "0x0"
             arduino-platform: "wippersnapper_qtpy_esp32c3"
           - offset: "0x2000"
             arduino-platform: "dfrobot_firebeetle2_esp32c5"
           - offset: "0x2000"
             arduino-platform: "lilygo_t_dongle_c5"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32c5_devkitc_1_n8r4"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
@@ -402,6 +464,8 @@ jobs:
         with:
           python-version: "3.x"
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
@@ -422,10 +486,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -538,7 +612,6 @@ jobs:
 
   build-samd:
     name: 🏗️SAMD
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -554,6 +627,8 @@ jobs:
         with:
           python-version: "3.x"
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
@@ -574,10 +649,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -637,7 +722,6 @@ jobs:
 
   build-rp2040:
     name: 🏗️RP2040
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -657,6 +741,8 @@ jobs:
         with:
           python-version: "3.x"
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
@@ -677,10 +763,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -738,7 +834,6 @@ jobs:
 
   build-esp8266:
     name: 🏗️ESP8266
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -749,6 +844,8 @@ jobs:
         with:
           python-version: "3.x"
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
@@ -769,10 +866,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -836,13 +943,13 @@ jobs:
 
   build-esp32sx-dev:
     name: 🏗️ESP32-Sx(DEV)
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         arduino-platform:
           [
+            "esp32s3_devkitc_1_n8_debug",
             "feather_esp32s2_debug",
             "feather_esp32s2_tft_debug",
             "feather_esp32s3_debug",
@@ -857,6 +964,8 @@ jobs:
         with:
           python-version: "3.x"
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
@@ -877,10 +986,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -947,7 +1066,6 @@ jobs:
 
   build-esp32-dev:
     name: 🏗️ESP32/Cx(DEV)
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -956,6 +1074,7 @@ jobs:
           [
             "wippersnapper_feather_esp32c6_debug",
             "lilygo_t_dongle_c5_debug",
+            "espressif_esp32c5_devkitc_1_n8r4_debug",
           ]
         include:
           - offset: "0x1000"
@@ -963,11 +1082,15 @@ jobs:
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
           - offset: "0x2000"
             arduino-platform: "lilygo_t_dongle_c5_debug"
+          - offset: "0x2000"
+            arduino-platform: "espressif_esp32c5_devkitc_1_n8r4_debug"
     steps:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Get WipperSnapper version
         run: |
           git remote add adafruit https://github.com/adafruit/Adafruit_Wippersnapper_Arduino.git || true
@@ -988,10 +1111,20 @@ jobs:
           echo "WS_VERSION: $WS_VERSION"
       # Semver build metadata (+<sha>.<run>) for the firmware, see #1023.
       # PRs report their head commit, not the merge commit checkout builds.
+      # A retarget rebuild passes the head commit as inputs.pr_sha. Its checks
+      # attach to the dispatched branch's tip (github.sha), so if the branch
+      # moved before the dispatch, they'd be on a commit this run didn't build:
+      # fail instead. The push's own pull_request run builds the new head.
       - name: Generate build ID
         env:
-          PR_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
+          PR_SHA: ${{ github.event.pull_request.head.sha || inputs.pr_sha }}
+          DISPATCHED_PR_SHA: ${{ inputs.pr_sha }}
+        run: |
+          if [ -n "$DISPATCHED_PR_SHA" ] && [ "$DISPATCHED_PR_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Dispatched for PR head $DISPATCHED_PR_SHA, but the branch is now at $GITHUB_SHA. Its own pull_request run builds the new head."
+            exit 1
+          fi
+          python3 generate_ws_version.py ${PR_SHA:+--sha "$PR_SHA"}
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
@@ -1107,13 +1240,14 @@ jobs:
   # which is dropped on migrate-api-v2. Doxygen only deploys from main/master.
   clang_and_doxy:
     name: 🔎Clang & Doxygen
-    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
 
       - uses: actions/checkout@v7
         with:
@@ -1131,6 +1265,34 @@ jobs:
           GH_REPO_TOKEN: ${{ secrets.GH_REPO_TOKEN }}
           PRETTYNAME: "Adafruit.io WipperSnapper Library"
         run: bash ci/doxy_gen_and_deploy.sh
+
+  # Mirrors the v1 workflow: release-migrate-api-v2.yml attaches the contents
+  # of `build-files` to the draft release; `build-files-dev` is not released.
+  merge-job-build-files:
+    name: Merge Artifacts for build-files
+    runs-on: ubuntu-latest
+    needs: [build-esp32sx-esptool, build-esp32sx, build-esp32, build-esp8266, build-samd, build-rp2040]
+
+    steps:
+      - name: Merge Artifacts from Builds
+        uses: actions/upload-artifact/merge@v7
+        with:
+          name: build-files
+          pattern: build-files-!(dev)-*
+          delete-merged: true
+
+  merge-job2:
+    name: Merge Artifacts for build-files-dev
+    runs-on: ubuntu-latest
+    needs: [build-esp32sx-dev, build-esp32-dev]
+
+    steps:
+      - name: Merge Artifacts from Dev Builds
+        uses: actions/upload-artifact/merge@v7
+        with:
+          name: build-files-dev
+          pattern: build-files-dev-*
+          delete-merged: true
 
   membrowse:
     # Wait for every release and development build group before reporting.
