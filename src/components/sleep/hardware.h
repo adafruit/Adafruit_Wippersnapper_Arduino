@@ -15,6 +15,7 @@
 #ifndef WS_SLEEP_HARDWARE_H
 #define WS_SLEEP_HARDWARE_H
 
+#include "helpers/ws_arch.h" // Defines ARDUINO_ARCH_RP2350, used below
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
 
 #ifdef ARDUINO_ARCH_ESP32

@@ -17,6 +17,8 @@
 #ifndef WIPPERSNAPPER_H
 #define WIPPERSNAPPER_H
 
+#include "helpers/ws_arch.h"
+
 // Debug Flags
 // #DEBUG_PROFILE 1 ///< Enable debug output for function profiling
 // Debug Flags

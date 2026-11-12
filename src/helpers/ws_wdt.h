@@ -18,6 +18,7 @@
 #define WS_WDT_H
 
 #include "Adafruit_SleepyDog.h"
+#include "ws_arch.h"
 #ifdef ARDUINO_ARCH_ESP32
 #include "esp_task_wdt.h"
 #endif
