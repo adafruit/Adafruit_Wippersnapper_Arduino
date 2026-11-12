@@ -22,15 +22,18 @@
 // SHA-256 of the last fully handled checkin response. Plain RAM on purpose:
 // it survives light sleep, but is cleared by a reset or deep sleep wake, where
 // nothing is configured yet and the response must always be applied.
-static uint8_t last_response_sha[CHECKIN_SHA_LEN];
-static bool has_last_response_sha = false;
+// All zero until a response hash is saved.
+static uint8_t last_sha_checkin_response[CHECKIN_SHA_LEN];
 
 // TODO: Remove all debug prints after we are confident during testing
 
 /*!
     @brief  CheckinModel constructor
 */
-CheckinModel::CheckinModel() { _got_response = false; }
+CheckinModel::CheckinModel() {
+  _got_response = false;
+  memset(_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+}
 
 /*!
     @brief  CheckinModel destructor
@@ -434,6 +437,23 @@ void CheckinModel::configureSleep() {
 bool CheckinModel::GotResponse() { return _got_response; }
 
 /*!
+    @brief  Checks that a checkin response hash buffer holds a hash.
+    @param  sha
+            CHECKIN_SHA_LEN byte hash buffer.
+    @returns True if the buffer is not null and not all zero, False if it is
+             missing, was never computed or hashing is unsupported.
+*/
+static bool IsShaValid(const uint8_t *sha) {
+  if (sha == nullptr)
+    return false;
+  for (size_t i = 0; i < CHECKIN_SHA_LEN; i++) {
+    if (sha[i] != 0)
+      return true;
+  }
+  return false;
+}
+
+/*!
     @brief  Hashes the raw, not yet decoded, checkin message and compares it
             against the last fully handled checkin response.
     @param  stream
@@ -448,21 +468,24 @@ bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
   // A buffer stream's state points at its next unread byte
   const uint8_t *data = (const uint8_t *)stream->state;
   size_t len = stream->bytes_left;
+  memset(_sha_checkin_response, 0, CHECKIN_SHA_LEN);
 #if defined(ARDUINO_ARCH_ESP32)
-  _has_response_sha = mbedtls_sha256(data, len, _response_sha, 0) == 0;
+  if (mbedtls_sha256(data, len, _sha_checkin_response, 0) != 0)
+    memset(_sha_checkin_response, 0, CHECKIN_SHA_LEN);
 #elif defined(ARDUINO_ARCH_RP2350)
   br_sha256_context ctx;
   br_sha256_init(&ctx);
   br_sha256_update(&ctx, data, len);
-  br_sha256_out(&ctx, _response_sha);
-  _has_response_sha = true;
+  br_sha256_out(&ctx, _sha_checkin_response);
 #else
   (void)data;
   (void)len;
 #endif
-  if (!_has_response_sha || !has_last_response_sha)
+  if (!IsShaValid(_sha_checkin_response) ||
+      !IsShaValid(last_sha_checkin_response))
     return true;
-  return memcmp(_response_sha, last_response_sha, CHECKIN_SHA_LEN) != 0;
+  return memcmp(_sha_checkin_response, last_sha_checkin_response,
+                CHECKIN_SHA_LEN) != 0;
 }
 
 /*!
@@ -470,10 +493,10 @@ bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
             response. Call only once the response has been applied.
 */
 void CheckinModel::SaveResponseHash() {
-  if (!_has_response_sha)
+  if (!IsShaValid(_sha_checkin_response))
     return;
-  memcpy(last_response_sha, _response_sha, CHECKIN_SHA_LEN);
-  has_last_response_sha = true;
+  memset(last_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+  memcpy(last_sha_checkin_response, _sha_checkin_response, CHECKIN_SHA_LEN);
 }
 
 /*!

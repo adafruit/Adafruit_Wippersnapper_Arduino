@@ -70,8 +70,7 @@ private:
   ws_checkin_D2B _CheckinD2B =
       ws_checkin_D2B_init_zero; ///< Device to Broker message wrapper
   bool _got_response;           ///< Flag indicating if response was received
-  uint8_t _response_sha[CHECKIN_SHA_LEN]; ///< SHA-256 of this response
-  bool _has_response_sha = false; ///< True if _response_sha was computed
+  uint8_t _sha_checkin_response[CHECKIN_SHA_LEN]; ///< Response SHA-256, 0=unset
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
 #endif                    // WS_CHECKIN_H
