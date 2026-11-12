@@ -1051,6 +1051,36 @@ void CheckinModel::RemoveStaleComponents(pb_istream_t *stream) {
 }
 
 /*!
+    @brief  Copies a received checkin response so it can be applied after
+            the MQTT callback returns. Applying it publishes (device and
+            component errors), and publishing inside the callback can
+            consume another packet's reply.
+    @param  stream
+            Incoming data stream positioned at the start of the checkin
+            message. Consumed.
+    @returns True if stored, False if the stream could not be read.
+*/
+bool CheckinModel::StoreResponse(pb_istream_t *stream) {
+  _stored_response.resize(stream->bytes_left);
+  if (!pb_read(stream, _stored_response.data(), _stored_response.size())) {
+    _stored_response.clear();
+    return false;
+  }
+  _got_response = true;
+  return true;
+}
+
+/*!
+    @brief  Returns a stream over the checkin response stored by
+            StoreResponse().
+    @returns Buffer stream over the stored response.
+*/
+pb_istream_t CheckinModel::GetStoredResponse() {
+  return pb_istream_from_buffer(_stored_response.data(),
+                                _stored_response.size());
+}
+
+/*!
     @brief  Publishes a ws_checkin_Complete message to the broker,
             signaling that the device has completed the checkin routine.
     @returns True if the message was published successfully, False otherwise.
