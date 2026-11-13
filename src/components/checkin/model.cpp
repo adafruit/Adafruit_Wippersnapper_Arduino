@@ -758,6 +758,11 @@ void CheckinModel::configureSleep() {
       WS_DEBUG_PRINTLN("[app] Processing sleep configuration from checkin");
       Ws->_sleep_controller->handleSleepConfig(sleep_cfg, true);
     }
+  } else if (Ws->_sleep_controller->isSleepEnabled()) {
+    // Sleep was turned off while asleep, resume regular operation
+    WS_DEBUG_PRINTLN("[app] Sleep disabled by checkin");
+    ws_sleep_SleepConfig sleep_cfg = ws_sleep_SleepConfig_init_zero;
+    Ws->_sleep_controller->handleSleepConfig(&sleep_cfg, false);
   }
 #endif
 }
@@ -806,6 +811,21 @@ bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
     return true;
   return memcmp(_sha_checkin_response, last_sha_checkin_response,
                 CHECKIN_SHA_LEN) != 0;
+}
+
+/*!
+    @brief  Consumes an unchanged checkin response without applying it, as
+            it is already applied. The checkin caller publishes Complete.
+    @param  stream
+            Incoming data stream positioned at the start of the checkin
+            message.
+    @returns True if skipped, False otherwise.
+*/
+bool CheckinModel::SkipResponse(pb_istream_t *stream) {
+  if (!pb_read(stream, nullptr, stream->bytes_left))
+    return false;
+  _got_response = true;
+  return true;
 }
 
 /*!
