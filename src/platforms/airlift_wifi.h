@@ -381,11 +381,17 @@ protected:
   /*!
       @brief  Disconnects from the wireless network.
       @param  wifi_off  Unused on this platform.
+      @return  True if disconnected from the network, False otherwise.
   */
-  void _disconnect(bool wifi_off = true) {
+  bool _disconnect(bool wifi_off = true) {
     (void)wifi_off;
-    WiFi.disconnect();
+    // WiFiNINA returns 1 when the co-processor acknowledged the command
+    int disconnect_rc = WiFi.disconnect();
+    if (disconnect_rc != 1) {
+      return false;
+    }
     delay(500);
+    return WiFi.status() != WL_CONNECTED;
   }
 };
 

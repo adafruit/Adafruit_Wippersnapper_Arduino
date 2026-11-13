@@ -249,10 +249,10 @@ public:
   virtual void set_ssid_pass();
   virtual ws_ssid_scan_t check_valid_ssid();
   virtual void _connect();
-  virtual void _disconnect(bool wifi_off = true);
+  virtual bool _disconnect(bool wifi_off = true);
   void connect();
   void checkin();
-  void disconnect(bool wifi_off = true);
+  bool disconnect(bool wifi_off = true);
   virtual void getMacAddr();
   virtual int32_t getRSSI();
   virtual void setupMQTTClient(const char *clientID);
