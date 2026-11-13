@@ -1640,6 +1640,9 @@ void wippersnapper::loopSleep() {
       WS_DEBUG_PRINTLN("[app] Failed to disconnect from IO.");
     }
   }
+  // wait a bit before attempting to disconnect from WiFi
+  delay(500);
+
   // Attempt to disconnect from WiFi
   if (disconnect(true)) {
     WS_DEBUG_PRINTLN("[app] Disconnected from WiFi.");
