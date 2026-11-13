@@ -1630,6 +1630,8 @@ void wippersnapper::loopSleep() {
   // connection state on-wake
   if (!Ws->_sdCardV2->isModeOffline() && Ws->_mqttV2 != nullptr)
     Ws->_mqttV2->disconnect();
+  // wait a bit before attempting to disconnect from WiFi
+  delay(500);
   disconnect(true);
 
   // Enter sleep
