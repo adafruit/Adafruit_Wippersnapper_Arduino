@@ -59,7 +59,28 @@ jobs:
         run: ${{ matrix.setup_cmd }}
 
       - name: Build firmware
+        # DO NOT MERGE: write a linker map so a failed link names the symbol
+        # that pulled each archive member in.
+        env:
+          PLATFORMIO_BUILD_FLAGS: -Wl,-Map,${{ github.workspace }}/link-${{ matrix.mcu }}.map -Wl,--cref
         run: ${{ matrix.build_cmd }}
+
+      - name: Show why archive members were pulled in (DO NOT MERGE)
+        if: ${{ always() }}
+        run: |
+          map="${{ github.workspace }}/link-${{ matrix.mcu }}.map"
+          [ -f "$map" ] || { echo "no map at $map"; exit 0; }
+          # First section of a GNU ld map: "archive(member)\n  referencing-object (symbol)"
+          awk '/^Archive member included/{p=1;next} /^(Discarded input sections|Allocating common symbols|Memory Configuration)/{exit} p' "$map" \
+            | grep -A1 -E "lib(arduino_tinyusb|pico)\.a\(" | head -120 || true
+
+      - name: Upload link map (DO NOT MERGE)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: link-map-${{ matrix.target_name }}
+          path: ${{ github.workspace }}/link-${{ matrix.mcu }}.map
+          if-no-files-found: ignore
 
       - name: Run Membrowse PR Action
         id: analyze
