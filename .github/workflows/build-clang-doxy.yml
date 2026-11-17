@@ -29,7 +29,7 @@ on:
         required: true
 
 env:
-  CI_ARDUINO_REF: ci-wippersnapper
+  CI_ARDUINO_REF: ci-wippersnapper-bsp-3-3-13
 
 jobs:
   nanopb-warm:
