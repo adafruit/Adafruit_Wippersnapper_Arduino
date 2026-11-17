@@ -123,7 +123,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-bsp-3-3-13
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v7
@@ -362,7 +362,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-bsp-3-3-13
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -503,7 +503,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-bsp-3-3-13
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v7
@@ -666,7 +666,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-bsp-3-3-13
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -780,7 +780,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-bsp-3-3-13
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -883,7 +883,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-bsp-3-3-13
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -1003,7 +1003,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-bsp-3-3-13
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
@@ -1128,7 +1128,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-bsp-3-3-13
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v7
@@ -1252,7 +1252,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-bsp-3-3-13
           path: ci
       - name: pre-install
         run: bash ci/actions_install.sh
