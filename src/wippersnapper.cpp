@@ -316,27 +316,32 @@ void wippersnapper::provision() {
 */
 bool applyCheckinResponse(pb_istream_t *stream) {
   // Hash the raw response before decoding, the second decode pass applies
-  // component adds. On a light sleep wake an unchanged response is already
-  // applied, any other checkin applies it in full.
+  // component adds. On a light sleep wake an unchanged response's components
+  // are already applied and are skipped, any other checkin applies them in
+  // full. The response is always decoded so its sleep config is checked
+  // against the applied one, which a standalone Sleep message may have
+  // changed without changing the response.
   bool changed = Ws->CheckInModel->ResponseChanged(stream);
-  if (Ws->CheckInModel->IsWakeCheckin() && !changed) {
+  bool skip_components = Ws->CheckInModel->IsWakeCheckin() && !changed;
+  if (skip_components) {
     WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
-    return Ws->CheckInModel->SkipResponse(stream);
-  }
-  if (changed) {
+    WS_DEBUG_PRINTLN("[checkin] Skipping components, checking sleep config");
+  } else if (changed) {
     WS_DEBUG_PRINTLN("[checkin] Response is new or changed");
   } else {
     WS_DEBUG_PRINTLN("[checkin] Response unchanged, applying in full");
   }
 
-  if (Ws->CheckInModel->IsWakeCheckin()) {
-    // Remove components applied from an earlier response but not in this
-    // one, before adding new ones that may reuse their pins
-    Ws->CheckInModel->RemoveStaleComponents(stream);
-  } else {
-    // Not a light sleep wake: apply every component as before, recording
-    // them afresh so a later wake can reconcile against this response
-    Ws->CheckInModel->ForgetComponents();
+  if (!skip_components) {
+    if (Ws->CheckInModel->IsWakeCheckin()) {
+      // Remove components applied from an earlier response but not in this
+      // one, before adding new ones that may reuse their pins
+      Ws->CheckInModel->RemoveStaleComponents(stream);
+    } else {
+      // Not a light sleep wake: apply every component as before, recording
+      // them afresh so a later wake can reconcile against this response
+      Ws->CheckInModel->ForgetComponents();
+    }
   }
 
   // Save a copy of the stream, the component adds are decoded in a second
@@ -354,35 +359,38 @@ bool applyCheckinResponse(pb_istream_t *stream) {
     Ws->haltErrorV2("Invalid checkin response, rebooting soon...");
   }
 
-  // Configure controller settings using Response
-  WS_DEBUG_PRINTLN("[checkin] Configuring controllers");
-  WS_DEBUG_PRINT("[checkin] Total GPIO pins: ");
-  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalGPIOPins());
-  WS_DEBUG_PRINT("[checkin] Total analog pins: ");
-  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalAnalogPins());
-  WS_DEBUG_PRINT("[checkin] Reference voltage: ");
-  WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetReferenceVoltage());
-  Ws->CheckInModel->ConfigureControllers();
-  WS_DEBUG_PRINTLN("[checkin] Controllers configured");
+  if (!skip_components) {
+    // Configure controller settings using Response
+    WS_DEBUG_PRINTLN("[checkin] Configuring controllers");
+    WS_DEBUG_PRINT("[checkin] Total GPIO pins: ");
+    WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalGPIOPins());
+    WS_DEBUG_PRINT("[checkin] Total analog pins: ");
+    WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetTotalAnalogPins());
+    WS_DEBUG_PRINT("[checkin] Reference voltage: ");
+    WS_DEBUG_PRINTLNVAR(Ws->CheckInModel->GetReferenceVoltage());
+    Ws->CheckInModel->ConfigureControllers();
+    WS_DEBUG_PRINTLN("[checkin] Controllers configured");
 
-  // Execute the component adds now that the controllers are configured. A
-  // failed add is reported by its handler and skipped.
-  WS_DEBUG_PRINTLN("[checkin] Adding components");
-  if (!Ws->CheckInModel->ProcessComponentAdds(&adds_stream)) {
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode component adds, "
-                     "continuing");
-  }
-  if (Ws->CheckInModel->GetAddsFailed() > 0) {
-    WS_DEBUG_PRINT("[checkin] ");
-    WS_DEBUG_PRINTVAR(Ws->CheckInModel->GetAddsFailed());
-    WS_DEBUG_PRINT(" of ");
-    WS_DEBUG_PRINTVAR(Ws->CheckInModel->GetAddsTotal());
-    WS_DEBUG_PRINTLN(" component adds failed, continuing");
+    // Execute the component adds now that the controllers are configured. A
+    // failed add is reported by its handler and skipped.
+    WS_DEBUG_PRINTLN("[checkin] Adding components");
+    if (!Ws->CheckInModel->ProcessComponentAdds(&adds_stream)) {
+      WS_DEBUG_PRINTLN("[checkin] ERROR: Unable to decode component adds, "
+                       "continuing");
+    }
+    if (Ws->CheckInModel->GetAddsFailed() > 0) {
+      WS_DEBUG_PRINT("[checkin] ");
+      WS_DEBUG_PRINTVAR(Ws->CheckInModel->GetAddsFailed());
+      WS_DEBUG_PRINT(" of ");
+      WS_DEBUG_PRINTVAR(Ws->CheckInModel->GetAddsTotal());
+      WS_DEBUG_PRINTLN(" component adds failed, continuing");
+    }
   }
 
-  // Configure sleep settings if enabled, after the component adds: an ext0
-  // wake pin takes its pull from its Digital/Analog component, which only
-  // exists once the adds have run
+  // Configure sleep settings on every checkin, after the component adds: an
+  // ext0 wake pin takes its pull from its Digital/Analog component, which
+  // only exists once the adds have run. Only a changed sleep config is
+  // applied.
   Ws->CheckInModel->configureSleep();
   Ws->NetworkFSM();
 

@@ -166,6 +166,11 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
   // Zero-out the B2D wrapper message
   memset(&_CheckinB2D, 0, sizeof(_CheckinB2D));
 
+  // Set up the sleep_config.ext0s callback before nanopb decodes the
+  // Response, so configureSleep() can compare the response's ext0
+  _CheckinB2D.cb_payload.funcs.decode = &cbSetupSleepConfig;
+  _CheckinB2D.cb_payload.arg = this;
+
   // Decode the B2D wrapper message
   if (!pb_decode(stream, ws_checkin_B2D_fields, &_CheckinB2D)) {
     char decode_error[128];
@@ -348,10 +353,37 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   response->component_adds.expander_adds.funcs.decode = &cbExpanderAdds;
   response->component_adds.expander_adds.arg = model;
 
+  // Return true WITHOUT consuming the stream - nanopb will continue
+  // to decode the Response submessage with our callback now set up
+  return true;
+}
+
+/*!
+    @brief    Pre-decode callback for setting up the sleep_config.ext0s
+              callback. Called by nanopb via MSG_W_CB before the Response
+              submessage is decoded by ProcessResponse(), so the response's
+              ext0 is decoded into the sleep model on every checkin, even
+              when the component adds are skipped.
+    @param    stream
+              Incoming data stream (Response submessage bytes).
+    @param    field
+              Field descriptor for the Response field.
+    @param    arg
+              Pointer to CheckinModel instance.
+    @returns  True to continue decoding (don't consume stream).
+*/
+bool CheckinModel::cbSetupSleepConfig(pb_istream_t *stream,
+                                      const pb_field_t *field, void **arg) {
+  (void)stream;
+  (void)arg;
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  // Get the Response struct that nanopb will decode into
+  ws_checkin_Response *response = (ws_checkin_Response *)field->pData;
   // sleep_config.ext0s is a callback field, decode it into the sleep model
   if (Ws->_sleep_controller != nullptr)
     Ws->_sleep_controller->GetModel()->SetupExt0Decode(&response->sleep_config);
+#else
+  (void)field;
 #endif
 
   // Return true WITHOUT consuming the stream - nanopb will continue
@@ -753,7 +785,10 @@ float CheckinModel::GetReferenceVoltage() {
 }
 
 /*!
-    @brief  Configures sleep controller based on checkin response.
+    @brief  Configures sleep controller based on checkin response. Runs on
+            every checkin, including an unchanged light sleep wake, but only
+            calls handleSleepConfig() if the sleep config differs from the
+            one applied.
 */
 void CheckinModel::configureSleep() {
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
@@ -761,6 +796,11 @@ void CheckinModel::configureSleep() {
   if (IsSleepEnabled()) {
     ws_sleep_SleepConfig *sleep_cfg = GetSleepConfig();
     if (sleep_cfg != nullptr) {
+      // Already armed, by an earlier checkin or a standalone Sleep message
+      if (!Ws->_sleep_controller->didSleepConfigChange(sleep_cfg, true)) {
+        WS_DEBUG_PRINTLN("[app] Sleep configuration unchanged");
+        return;
+      }
       WS_DEBUG_PRINTLN("[app] Processing sleep configuration from checkin");
       Ws->_sleep_controller->handleSleepConfig(sleep_cfg, true);
     }
@@ -817,21 +857,6 @@ bool CheckinModel::ResponseChanged(pb_istream_t *stream) {
     return true;
   return memcmp(_sha_checkin_response, last_sha_checkin_response,
                 CHECKIN_SHA_LEN) != 0;
-}
-
-/*!
-    @brief  Consumes an unchanged checkin response without applying it, as
-            it is already applied. The checkin caller publishes Complete.
-    @param  stream
-            Incoming data stream positioned at the start of the checkin
-            message.
-    @returns True if skipped, False otherwise.
-*/
-bool CheckinModel::SkipResponse(pb_istream_t *stream) {
-  if (!pb_read(stream, nullptr, stream->bytes_left))
-    return false;
-  _got_response = true;
-  return true;
 }
 
 /*!
