@@ -14,8 +14,10 @@ void setup() {
   wipper.provision();
 
   Serial.begin(115200); // wippersnapper serial
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
   Serial1.begin(115200);  // ESP-IDF messages serial
   Serial1.setDebugOutput(true); // Enable ESP-IDF messages over Serial1
+#endif
   //while (!Serial) delay(10);
 
   wipper.connect();
