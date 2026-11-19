@@ -1491,6 +1491,11 @@ void wippersnapper::run() {
     // Sleep is enabled: feed the TWDT and hand control to loopSleep()
     WS_DEBUG_PRINTLN("[app] Sleep enabled, entering loopSleep()");
     Ws->_wdt->feed();
+    // Start a fresh cycle, a previous one may have been cut short by a
+    // SleepConfig disabling sleep, leaving a stale timer and controller flags
+    ResetAllControllerFlags();
+    _loop_start_time = 0;
+    _loop_timer_started = false;
     // A checkin after a light sleep wake may disable sleep again
     while (Ws->_sleep_controller->isSleepEnabled()) {
       loopSleep();
@@ -1551,11 +1556,9 @@ void wippersnapper::loopSleep() {
   // component-driven sleep readiness or by global timestamp expiration.
 
   // Track when the loop started for run duration timeout
-  static unsigned long loop_start_time = 0;
-  static bool loop_timer_started = false;
-  if (!loop_timer_started) {
-    loop_start_time = millis();
-    loop_timer_started = true;
+  if (!_loop_timer_started) {
+    _loop_start_time = millis();
+    _loop_timer_started = true;
   }
 
   Ws->_wdt->feed();
@@ -1610,7 +1613,7 @@ void wippersnapper::loopSleep() {
   // hard-deadline and the MCU sleeps regardless of controller status
   bool has_deadline_expired = false;
   if (Ws->_sleep_controller->getRunDurationMs() > 0 &&
-      (millis() - loop_start_time) >=
+      (millis() - _loop_start_time) >=
           Ws->_sleep_controller->getRunDurationMs()) {
     has_deadline_expired = true;
   }
@@ -1636,8 +1639,8 @@ void wippersnapper::loopSleep() {
   // Reset all flags and variables for use in the next loopsleep() (for light
   // sleep mode)
   ResetAllControllerFlags();
-  loop_start_time = 0;
-  loop_timer_started = false;
+  _loop_start_time = 0;
+  _loop_timer_started = false;
 
   // Disconnect from MQTT Broker and WiFi before sleep to prevent issues with
   // connection state on-wake
