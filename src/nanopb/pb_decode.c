@@ -525,6 +525,19 @@ static bool checkreturn decode_static_field(pb_istream_t *stream, pb_wire_type_t
                 if ((*size)++ >= field->array_size)
                     PB_RETURN_ERROR(stream, "array overflow");
 
+                if (PB_LTYPE_IS_SUBMSG(field->type))
+                {
+                    /* The entry is now counted, so pb_release() will walk it
+                     * even if decoding fails before pb_dec_submessage().
+                     * Set defaults here so that its pointers are valid. */
+                    pb_field_iter_t submsg_iter;
+                    if (pb_field_iter_begin(&submsg_iter, field->submsg_desc, field->pData))
+                    {
+                        if (!pb_message_set_to_defaults(&submsg_iter))
+                            PB_RETURN_ERROR(stream, "failed to set defaults");
+                    }
+                }
+
                 return decode_basic_field(stream, wire_type, field);
             }
 
@@ -743,7 +756,27 @@ static bool checkreturn decode_pointer_field(pb_istream_t *stream, pb_wire_type_
                 if (*size == PB_SIZE_MAX)
                     PB_RETURN_ERROR(stream, "too many array entries");
                 
-                if (!allocate_field(stream, field->pField, field->data_size, (size_t)(*size + 1)))
+                if (field->array_size > 1)
+                {
+                    /* Fixed count array (array_size is 1 for other pointer arrays).
+                     * There is no count field, so pb_release() frees all array_size
+                     * entries. Allocate and initialize the whole array at once. */
+                    bool new_array = (*(void**)field->pField == NULL);
+
+                    if (*size >= field->array_size)
+                        PB_RETURN_ERROR(stream, "array overflow");
+
+                    if (!allocate_field(stream, field->pField, field->data_size, field->array_size))
+                        return false;
+
+                    if (new_array)
+                    {
+                        pb_size_t i;
+                        for (i = 0; i < field->array_size; i++)
+                            initialize_pointer_field(*(char**)field->pField + field->data_size * i, field);
+                    }
+                }
+                else if (!allocate_field(stream, field->pField, field->data_size, (size_t)(*size + 1)))
                     return false;
             
                 field->pData = *(char**)field->pField + field->data_size * (*size);
@@ -765,7 +798,13 @@ static bool checkreturn decode_callback_field(pb_istream_t *stream, pb_wire_type
      */
     if (PB_HTYPE(field->type) == PB_HTYPE_ONEOF)
     {
-        if (*(pb_size_t*)field->pSize != 0 && *(pb_size_t*)field->pSize != field->tag)
+        bool clear_data = (*(pb_size_t*)field->pSize != field->tag);
+
+#ifdef PB_ENABLE_UNSAFE_DECODE_ONEOF_CALLBACKS
+        if (*(pb_size_t*)field->pSize == 0) clear_data = false;
+#endif
+
+        if (clear_data)
         {
             memset(field->pData, 0, (size_t)field->data_size);
         }
@@ -914,7 +953,9 @@ static bool pb_field_set_to_default(pb_field_iter_t *field)
         while (ext != NULL)
         {
             pb_field_iter_t ext_iter;
-            if (pb_field_iter_begin_extension(&ext_iter, ext))
+            if (ext->type->decode != NULL)
+                ext->found = false; /* Custom type: arg is not a message descriptor */
+            else if (pb_field_iter_begin_extension(&ext_iter, ext))
             {
                 ext->found = false;
                 if (!pb_message_set_to_defaults(&ext_iter))
@@ -931,6 +972,26 @@ static bool pb_field_set_to_default(pb_field_iter_t *field)
             /* Set has_field to false. Still initialize the optional field
              * itself also. */
             *(bool*)field->pSize = false;
+        }
+        else if (PB_HTYPE(type) == PB_HTYPE_REPEATED &&
+                 field->pSize == &field->array_size &&
+                 PB_LTYPE_IS_SUBMSG(type))
+        {
+            /* Fixed count array: there is no count field, so pb_release()
+             * walks all array_size entries even if they were not decoded.
+             * Initialize all submessages so that their pointers are valid. */
+            pb_size_t i;
+            for (i = 0; i < field->array_size; i++)
+            {
+                pb_field_iter_t submsg_iter;
+                if (pb_field_iter_begin(&submsg_iter, field->submsg_desc,
+                                        (char*)field->pData + field->data_size * i))
+                {
+                    if (!pb_message_set_to_defaults(&submsg_iter))
+                        return false;
+                }
+            }
+            init_data = false;
         }
         else if (PB_HTYPE(type) == PB_HTYPE_REPEATED ||
                  PB_HTYPE(type) == PB_HTYPE_ONEOF)
@@ -1284,7 +1345,8 @@ static void pb_release_single_field(pb_field_iter_t *field)
         while (ext != NULL)
         {
             pb_field_iter_t ext_iter;
-            if (pb_field_iter_begin_extension(&ext_iter, ext))
+            if (ext->type->decode == NULL &&
+                pb_field_iter_begin_extension(&ext_iter, ext))
             {
                 pb_release_single_field(&ext_iter);
             }
@@ -1335,6 +1397,11 @@ static void pb_release_single_field(pb_field_iter_t *field)
             /* Release entries in repeated string or bytes array */
             void **pItem = *(void***)field->pField;
             pb_size_t count = *(pb_size_t*)field->pSize;
+
+            /* Fixed count arrays report array_size even if never allocated */
+            if (pItem == NULL)
+                count = 0;
+
             for (; count > 0; count--)
             {
                 pb_free(*pItem);
@@ -1657,9 +1724,9 @@ static bool checkreturn pb_dec_submessage(pb_istream_t *stream, const pb_field_i
         unsigned int flags = 0;
 
         /* Static required/optional fields are already initialized by top-level
-         * pb_decode(), no need to initialize them again. */
-        if (PB_ATYPE(field->type) == PB_ATYPE_STATIC &&
-            PB_HTYPE(field->type) != PB_HTYPE_REPEATED)
+         * pb_decode() and repeated/oneof fields by decode_static_field(), no
+         * need to initialize them again. */
+        if (PB_ATYPE(field->type) == PB_ATYPE_STATIC)
         {
             flags = PB_DECODE_NOINIT;
         }
@@ -1719,6 +1786,9 @@ bool pb_decode_double_as_float(pb_istream_t *stream, float *dest)
         /* Special value */
         exponent = 128;
         mantissa >>= 1;
+        /* Preserve NaN if its payload was lost when narrowing the mantissa. */
+        if (mantissa == 0 && (uint32_t)value != 0)
+            mantissa = 1;
     }
     else
     {
