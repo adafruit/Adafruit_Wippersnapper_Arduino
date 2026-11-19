@@ -97,7 +97,8 @@ private:
                             void **arg);
   static bool cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg);
-  bool SkipFailedAdd(pb_istream_t *stream, const char *add_type);
+  bool SkipFailedAdd(pb_istream_t *stream, const pb_istream_t *raw,
+                     const char *add_type);
   CheckinAction ReconcileAdd(const pb_istream_t *raw, pb_size_t type,
                              const pb_msgdesc_t *remove_fields,
                              const void *remove_msg);
