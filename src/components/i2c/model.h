@@ -24,7 +24,9 @@
 #define MAX_PROBE_ADDRESSES 112 ///< Maximum number of addresses to probe
 #define MAX_I2C_SETTINGS 8      ///< Maximum settings per I2C device
 #define MAX_SETTING_KEY_LEN 32  ///< Maximum length of a setting key string
-#define MAX_SETTING_STR_LEN 32  ///< Maximum length of a setting string value
+// MAX_SETTING_STR_LEN must match ws.config.Value.str_value max_size in
+// Wippersnapper_Protobuf proto/wippersnapper/config.options.
+#define MAX_SETTING_STR_LEN 32 ///< Maximum length of a setting string value
 
 /// A single decoded key-value setting from ws_config_Settings.
 struct DecodedSetting {
@@ -171,8 +173,6 @@ private:
                                     const pb_field_t *field, void **arg);
   static bool cbDecodeSettingKey(pb_istream_t *stream, const pb_field_t *field,
                                  void **arg);
-  static bool cbDecodeSettingStrValue(pb_istream_t *stream,
-                                      const pb_field_t *field, void **arg);
   // Message storage
   ws_i2c_D2B _msg_i2c_d2b;
   ws_i2c_Add _msg_i2c_add;
