@@ -348,6 +348,7 @@ void Wippersnapper_FS::createSecretsFile() {
   strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
   strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
   strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
+  secretsConfig.network_country[0] = '\0';
   secretsConfig.status_pixel_brightness = STATUS_PIXEL_BRIGHTNESS_DEFAULT;
 
   // Serialize the struct to a JSON document
