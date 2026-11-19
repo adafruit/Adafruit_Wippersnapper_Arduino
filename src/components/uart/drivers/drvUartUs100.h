@@ -157,17 +157,15 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() override {
-    // is _hw_serial nullptr?
-    if (_hw_serial == nullptr) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: _hw_serial is null!");
+    Stream *serial = GetSerialStream();
+    if (serial == nullptr) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: US-100 serial port is null!");
       return false;
-    } else {
-      WS_DEBUG_PRINTLN("[uart] _hw_serial is not null, proceeding...");
     }
 
     WS_DEBUG_PRINTLN(
         "[uart] Initializing US-100 Ultrasonic Distance Sensor...");
-    _uart_dev = new UARTDevice(_hw_serial);
+    _uart_dev = new UARTDevice(serial);
     WS_DEBUG_PRINTLN("[uart] Creating GenericDevice...");
     // Create a GenericDevice instance using the UARTDevice
     return _uart_dev->CreateDevice();

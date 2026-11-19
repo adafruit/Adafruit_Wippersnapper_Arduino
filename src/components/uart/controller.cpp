@@ -152,8 +152,14 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
       delete uart_hardware;
       return false;
     }
-    uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
-                                   msg->name, msg->descriptor.pin_rx);
+#if HAS_SW_SERIAL
+    if (uart_hardware->isSoftwareSerial())
+      uart_driver = new drvUartUs100(uart_hardware->GetSoftwareSerial(),
+                                     msg->name, msg->descriptor.pin_rx);
+    else
+#endif // HAS_SW_SERIAL
+      uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
+                                     msg->name, msg->descriptor.pin_rx);
     const ws_uart_GenericInputConfig &cfg =
         msg->cfg_device.config.generic_input;
     for (pb_size_t i = 0; i < cfg.types_count; i++) {
@@ -165,8 +171,14 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     break;
   }
   case ws_uart_DeviceConfig_pm25aqi_tag: {
-    uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(), msg->name,
-                                  msg->descriptor.pin_rx);
+#if HAS_SW_SERIAL
+    if (uart_hardware->isSoftwareSerial())
+      uart_driver = new drvUartPm25(uart_hardware->GetSoftwareSerial(),
+                                    msg->name, msg->descriptor.pin_rx);
+    else
+#endif // HAS_SW_SERIAL
+      uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
+                                    msg->name, msg->descriptor.pin_rx);
     const ws_uart_PM25AQIConfig &cfg = msg->cfg_device.config.pm25aqi;
     for (pb_size_t i = 0; i < cfg.types_count; i++) {
       sensor_types[i] = cfg.types[i].value;

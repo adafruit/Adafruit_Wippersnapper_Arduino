@@ -130,6 +130,19 @@ public:
   bool IsSoftwareSerial() const { return _is_software_serial; }
 
   /*!
+      @brief    Gets the serial port this driver talks over, whether it is a
+                HardwareSerial or a SoftwareSerial.
+      @returns  Pointer to the serial Stream, or nullptr if none was given.
+  */
+  Stream *GetSerialStream() {
+#if HAS_SW_SERIAL
+    if (_is_software_serial)
+      return _sw_serial;
+#endif // HAS_SW_SERIAL
+    return _hw_serial;
+  }
+
+  /*!
       @brief    Initializes the UART device.
       @returns  True if initialized successfully, False otherwise.
   */
