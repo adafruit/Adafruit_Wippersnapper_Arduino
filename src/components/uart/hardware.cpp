@@ -116,6 +116,70 @@ uint16_t UARTHardware::UartPacketFormatToConfig(
   }
 }
 
+#if defined(ARDUINO_ARCH_ESP8266) && HAS_SW_SERIAL
+/*!
+    @brief  Converts a ws_uart_PacketFormat to an ESP8266 SoftwareSerial
+            (EspSoftwareSerial) config, whose values differ from
+            HardwareSerial's.
+    @param  uart_pkt_fmt
+            The UART packet format to convert.
+    @return The corresponding EspSoftwareSerial::Config value.
+*/
+static EspSoftwareSerial::Config
+UartPacketFormatToSwConfig(const ws_uart_PacketFormat uart_pkt_fmt) {
+  switch (uart_pkt_fmt) {
+  case ws_uart_PacketFormat_PF_5N1:
+    return EspSoftwareSerial::SWSERIAL_5N1;
+  case ws_uart_PacketFormat_PF_6N1:
+    return EspSoftwareSerial::SWSERIAL_6N1;
+  case ws_uart_PacketFormat_PF_7N1:
+    return EspSoftwareSerial::SWSERIAL_7N1;
+  case ws_uart_PacketFormat_PF_5N2:
+    return EspSoftwareSerial::SWSERIAL_5N2;
+  case ws_uart_PacketFormat_PF_6N2:
+    return EspSoftwareSerial::SWSERIAL_6N2;
+  case ws_uart_PacketFormat_PF_7N2:
+    return EspSoftwareSerial::SWSERIAL_7N2;
+  case ws_uart_PacketFormat_PF_8N2:
+    return EspSoftwareSerial::SWSERIAL_8N2;
+  case ws_uart_PacketFormat_PF_5E1:
+    return EspSoftwareSerial::SWSERIAL_5E1;
+  case ws_uart_PacketFormat_PF_6E1:
+    return EspSoftwareSerial::SWSERIAL_6E1;
+  case ws_uart_PacketFormat_PF_7E1:
+    return EspSoftwareSerial::SWSERIAL_7E1;
+  case ws_uart_PacketFormat_PF_8E1:
+    return EspSoftwareSerial::SWSERIAL_8E1;
+  case ws_uart_PacketFormat_PF_5E2:
+    return EspSoftwareSerial::SWSERIAL_5E2;
+  case ws_uart_PacketFormat_PF_6E2:
+    return EspSoftwareSerial::SWSERIAL_6E2;
+  case ws_uart_PacketFormat_PF_7E2:
+    return EspSoftwareSerial::SWSERIAL_7E2;
+  case ws_uart_PacketFormat_PF_8E2:
+    return EspSoftwareSerial::SWSERIAL_8E2;
+  case ws_uart_PacketFormat_PF_5O1:
+    return EspSoftwareSerial::SWSERIAL_5O1;
+  case ws_uart_PacketFormat_PF_6O1:
+    return EspSoftwareSerial::SWSERIAL_6O1;
+  case ws_uart_PacketFormat_PF_7O1:
+    return EspSoftwareSerial::SWSERIAL_7O1;
+  case ws_uart_PacketFormat_PF_8O1:
+    return EspSoftwareSerial::SWSERIAL_8O1;
+  case ws_uart_PacketFormat_PF_5O2:
+    return EspSoftwareSerial::SWSERIAL_5O2;
+  case ws_uart_PacketFormat_PF_6O2:
+    return EspSoftwareSerial::SWSERIAL_6O2;
+  case ws_uart_PacketFormat_PF_7O2:
+    return EspSoftwareSerial::SWSERIAL_7O2;
+  case ws_uart_PacketFormat_PF_8O2:
+    return EspSoftwareSerial::SWSERIAL_8O2;
+  default: // PF_8N1 and PF_UNSPECIFIED
+    return EspSoftwareSerial::SWSERIAL_8N1;
+  }
+}
+#endif // ARDUINO_ARCH_ESP8266 && HAS_SW_SERIAL
+
 /*!
  * @brief  Configures the UART serial using a provided configuration.
  * @return True if the serial was successfully configured, False otherwise.
@@ -149,7 +213,12 @@ bool UARTHardware::ConfigureSerial() {
           "[uart] ERROR: Failed to allocate a SoftwareSerial instance!");
       return false;
     }
+#if defined(ARDUINO_ARCH_ESP8266)
+    _swSerial->begin((uint32_t)_config.baud_rate,
+                     UartPacketFormatToSwConfig(_config.format));
+#else
     _swSerial->begin((unsigned long)_config.baud_rate);
+#endif
     _baud_rate = _config.baud_rate;
 #endif // HAS_SW_SERIAL
   } else {
