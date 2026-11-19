@@ -363,6 +363,10 @@ private:
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   void loopSleep();
   void ResetAllControllerFlags();
+  unsigned long _loop_start_time =
+      0; ///< millis() when the current loopSleep() cycle started
+  bool _loop_timer_started =
+      false; ///< True once the current loopSleep() cycle's timer is armed
 #endif
   void blinkOfflineHeartbeat();
 
