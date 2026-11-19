@@ -130,9 +130,10 @@ bool UARTHardware::ConfigureSerial() {
   uint16_t cfg = UartPacketFormatToConfig(_config.format);
 
   // SerialConfig no longer carries use_sw_serial (adafruit/
-  // Wippersnapper_Protobuf#230), so the device picks. ESP8266 needs
-  // SoftwareSerial: UART0 is the USB/debug Serial and UART1 is TX-only. Other
-  // architectures use the hardware UART their board definition provides.
+  // Wippersnapper_Protobuf#230), so the device picks. Board definitions
+  // currently expose a single UART on its default pins. ESP8266 needs
+  // SoftwareSerial there (UART0 is the USB/debug Serial and UART1 is TX-only);
+  // other architectures use that default hardware UART.
 #if defined(ARDUINO_ARCH_ESP8266) && HAS_SW_SERIAL
   bool use_sw_serial = true;
 #else
@@ -170,7 +171,14 @@ bool UARTHardware::ConfigureSerial() {
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg, rx_pin,
                      tx_pin, false, (unsigned long)_config.timeout);
 #elif ARDUINO_ARCH_RP2040
-    // Pins are already defined by the Serial1/Serial2 instances
+    // Serial1 runs on its default pins, which is all board definitions expose.
+    // TODO: to support other pins, use Serial1/Serial2 (UART0/UART1) when the
+    // RX/TX pair belongs to that UART and it is free, calling setRX/setTX
+    // first. Check the pair against arduino-pico's SerialUART::setRX/setTX pin
+    // lists beforehand: they panic on an invalid pin. Otherwise fall back to
+    // SoftwareSerial, which arduino-pico implements with PIO (SerialPIO): check
+    // `if (!*_swSerial)` after begin() for "no free PIO state machine", since
+    // Servo and the Pico W radio share the PIO state machines.
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
 #else
 // ESP8266, SAMD, and other platforms
