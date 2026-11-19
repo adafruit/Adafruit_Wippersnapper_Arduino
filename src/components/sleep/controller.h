@@ -78,10 +78,10 @@ private:
   ws_sleep_Ext0Config _applied_ext0 =
       ws_sleep_Ext0Config_init_zero; ///< Last applied ext0 wakeup config,
                                      ///< empty pin if none
-  bool _has_ext_pwr_components;   ///< Whether externally powered components are
-                                  ///< present (i.e: tft, i2c, neopixel, etc)
-  uint8_t _wake_enable_pin;       ///< Pin to check for wake enable
-  uint8_t _wake_enable_pin_pull;  ///< Pull mode: 0=none, 1=pulldown, 2=pullup
+  bool _has_ext_pwr_components;  ///< Whether externally powered components are
+                                 ///< present (i.e: tft, i2c, neopixel, etc)
+  uint8_t _wake_enable_pin;      ///< Pin to check for wake enable
+  uint8_t _wake_enable_pin_pull; ///< Pull mode: 0=none, 1=pulldown, 2=pullup
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
 
