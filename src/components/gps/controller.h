@@ -39,6 +39,7 @@ public:
   bool Handle_GpsDeviceRemove(ws_gps_Remove *msg);
   // GPS transport setup
   bool AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config);
+  bool AddSoftwareSerialGPS(Stream *serial, ws_gps_Config *gps_config);
   bool AddGPS(TwoWire *wire, uint32_t i2c_addr, ws_gps_Config *gps_config);
   // Polling
   void update(bool force = false);
@@ -46,6 +47,7 @@ public:
   void ResetFlags();
 
 private:
+  bool BeginUartGPS(GPSHardware *gps_hw, ws_gps_Config *gps_config);
   GPSModel *_gps_model;                    ///< GPS model instance
   std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
   std::vector<UARTHardware *> _ports;      ///< UART hardware for GPS serial
