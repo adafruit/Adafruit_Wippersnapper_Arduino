@@ -345,11 +345,13 @@ protected:
   /*!
       @brief  Disconnects from the wireless network.
       @param  wifi_off  Unused on this platform.
+      @return  True if disconnected from the network, False otherwise.
   */
-  void _disconnect(bool wifi_off = true) {
+  bool _disconnect(bool wifi_off = true) {
     (void)wifi_off;
-    WiFi.disconnect();
+    bool is_disconnected = WiFi.disconnect();
     delay(500);
+    return is_disconnected;
   }
 };
 

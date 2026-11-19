@@ -57,7 +57,6 @@ public:
   void ConfigureControllers();
   bool GotResponse();
   bool ResponseChanged(pb_istream_t *stream);
-  bool SkipResponse(pb_istream_t *stream);
   void SaveResponseHash();
   void RemoveStaleComponents(pb_istream_t *stream);
   void ForgetComponents();
@@ -75,6 +74,9 @@ private:
   static bool
   cbSetupResponse(pb_istream_t *stream, const pb_field_t *field,
                   void **arg); //< Pre-decode callback to set up component_adds
+  static bool
+  cbSetupSleepConfig(pb_istream_t *stream, const pb_field_t *field,
+                     void **arg); //< Pre-decode callback to set up ext0s
   static bool cbDigitalAdds(pb_istream_t *stream, const pb_field_t *field,
                             void **arg);
   static bool cbAnalogAdds(pb_istream_t *stream, const pb_field_t *field,
