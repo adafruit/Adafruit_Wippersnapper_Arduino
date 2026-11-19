@@ -452,8 +452,11 @@ void SleepHardware::DisableExternalComponents() {
   pinMode(TFT_I2C_POWER, OUTPUT);
   digitalWrite(TFT_I2C_POWER, LOW);
 #elif defined(NEOPIXEL_I2C_POWER)
-  pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_I2C_POWER, LOW);
+  // Keep the shared NeoPixel/I2C rail powered during light sleep
+  if (GetSleepMode() == ws_sleep_SleepMode_S_DEEP) {
+    pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
+    digitalWrite(NEOPIXEL_I2C_POWER, LOW);
+  }
 #endif
 }
 
