@@ -116,13 +116,18 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(ws_gps_Add *msg) {
     }
     _ports.push_back(uart_hw);
 
-    // TODO: GPSHardware only takes a HardwareSerial, so GPS over UART is not
-    // yet supported where UARTHardware picks SoftwareSerial (ESP8266).
-    if (uart_hw->GetHardwareSerial() == nullptr) {
-      WS_DEBUG_PRINTLN("[gps] ERROR: GPS needs a hardware UART on this board!");
+    if (uart_hw->GetHardwareSerial() != nullptr) {
+      did_add = AddGPS(uart_hw->GetHardwareSerial(), &msg->config);
+#if HAS_SW_SERIAL
+    } else if (uart_hw->GetSoftwareSerial() != nullptr) {
+      // e.g. ESP8266, where UARTHardware picks SoftwareSerial
+      did_add =
+          AddSoftwareSerialGPS(uart_hw->GetSoftwareSerial(), &msg->config);
+#endif // HAS_SW_SERIAL
+    } else {
+      WS_DEBUG_PRINTLN("[gps] ERROR: UART port has no serial instance!");
       return false;
     }
-    did_add = AddGPS(uart_hw->GetHardwareSerial(), &msg->config);
   } else if (msg->has_add_i2c) {
     // I2C transport path
     WS_DEBUG_PRINTLN("[gps] Configuring GPS via I2C transport...");
@@ -205,7 +210,37 @@ bool GPSController::AddGPS(HardwareSerial *serial, ws_gps_Config *gps_config) {
     delete gps_hw;
     return false;
   }
+  return BeginUartGPS(gps_hw, gps_config);
+}
 
+/*!
+ * @brief Adds a GPS hardware instance on a software serial port (e.g. ESP8266
+ *        SoftwareSerial) to the controller.
+ * @param serial Pointer to the already-started software serial, as a Stream.
+ * @param gps_config Pointer to the GPS configuration message.
+ * @return True if the GPS was added successfully, false otherwise.
+ */
+bool GPSController::AddSoftwareSerialGPS(Stream *serial,
+                                         ws_gps_Config *gps_config) {
+  GPSHardware *gps_hw = new GPSHardware();
+
+  if (!gps_hw->SetSoftwareSerialInterface(serial)) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to set GPS software UART interface!");
+    delete gps_hw;
+    return false;
+  }
+  return BeginUartGPS(gps_hw, gps_config);
+}
+
+/*!
+ * @brief Initializes and configures a UART GPS whose interface is already set,
+ *        then adds it to the controller. Deletes gps_hw on failure.
+ * @param gps_hw Pointer to the GPS hardware instance.
+ * @param gps_config Pointer to the GPS configuration message.
+ * @return True if the GPS was added successfully, false otherwise.
+ */
+bool GPSController::BeginUartGPS(GPSHardware *gps_hw,
+                                 ws_gps_Config *gps_config) {
   if (!gps_hw->begin()) {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize GPS hardware!");
     delete gps_hw;
