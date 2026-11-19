@@ -126,9 +126,7 @@ wippersnapper::~wippersnapper() {
                         driver initialized for quick reconnection.
     @return   True if disconnected from the network, False otherwise.
 */
-bool wippersnapper::disconnect(bool wifi_off) {
-  return _disconnect(wifi_off);
-}
+bool wippersnapper::disconnect(bool wifi_off) { return _disconnect(wifi_off); }
 
 // Concrete class definition for abstract classes
 
