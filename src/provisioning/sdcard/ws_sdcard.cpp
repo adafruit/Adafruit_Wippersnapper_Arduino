@@ -508,10 +508,18 @@ bool ws_sdcard::ParseDigitalAdd(ws_digital_Add &msg_DigitalAdd, const char *pin,
           "[SD] Parsing Error: Digital pin's direction not found!")) {
     return false;
   } else if (strcmp(direction, "INPUT") == 0) {
-    if (pull != nullptr) {
-      msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT_PULL_UP;
-    } else {
+    // "pull" is optional: the config schema only defines "UP" and "DOWN",
+    // so no "pull" key means an input with no pull resistor (D_INPUT)
+    if (pull == nullptr) {
       msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT;
+    } else if (strcmp(pull, "UP") == 0) {
+      msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT_PULL_UP;
+    } else if (strcmp(pull, "DOWN") == 0) {
+      msg_DigitalAdd.gpio_direction = ws_digital_Direction_D_INPUT_PULL_DOWN;
+    } else {
+      WS_DEBUG_PRINT("[SD] Parsing Error: Unknown pull found: ");
+      WS_DEBUG_PRINTLNVAR(pull);
+      return false;
     }
   } else if (strcmp(direction, "OUTPUT") == 0) {
     WS_DEBUG_PRINTLN(
@@ -838,8 +846,8 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
             The JSON object containing the wake timer configuration.
     @param  run_duration
             The duration for which the device should run before sleeping.
-    @returns True if the sleep configuration was successfully parsed and
-   component configured, False otherwise.
+    @returns True if the sleep configuration was successfully parsed, False
+   otherwise. Sleep is armed later by ApplySleepConfig().
 */
 bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                                       const JsonObject &timer_config,
@@ -853,10 +861,9 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
                                           sleep_config["wakeEnablePinPull"] |
                                               0);
 
-  // Pass the message directly to the sleep controller
-  // Lock is always true for offline mode
-  return Ws->_sleep_controller->handleSleepConfig(
-      Ws->_sleep_controller->GetModel()->GetSleepConfig(), true);
+  // Sleep is armed later by ApplySleepConfig(), once components are added
+  _has_sleep_config = true;
+  return true;
 }
 
 /*!
@@ -864,22 +871,44 @@ bool ws_sdcard::ParseSleepConfigTimer(const JsonObject &sleep_config,
     @param  sleep_config
             The JSON object containing the sleep configuration.
     @param  pin_config
-            The JSON object containing the wake pin configuration.
+            The JSON object containing the wake pin configuration. The pin's
+            pull direction is taken from the component that owns the pin.
     @param  run_duration
             The duration for which the device should run before sleeping.
-    @returns True if the sleep configuration was successfully parsed and
-   component configured, False otherwise.
+    @returns True if the sleep configuration was successfully parsed, False
+   otherwise. Sleep is armed later by ApplySleepConfig().
 */
 bool ws_sdcard::ParseSleepConfigPin(const JsonObject &sleep_config,
                                     const JsonObject &pin_config,
                                     int run_duration) {
+  const char *pin_name = pin_config["name"];
+  if (pin_name == nullptr) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Sleep pinConfig name not found!");
+    return false;
+  }
+
   // Configure the sleep enter message using the model
   // Note: lock is always true for offline mode
   Ws->_sleep_controller->GetModel()->SetSleepEnterExt0(
-      true, sleep_config["mode"], run_duration, pin_config["name"],
-      pin_config["level"], pin_config["pull"]);
+      true, sleep_config["mode"], run_duration, pin_name, pin_config["level"]);
 
-  // Pass the message directly to the sleep controller
+  // Sleep is armed later by ApplySleepConfig(), once components are added
+  _has_sleep_config = true;
+  return true;
+}
+
+/*!
+    @brief  Arms the sleep configuration parsed from config.json. Must be
+            called after the components have been added to their
+            controllers (callDecodeB2D()), an ext0 wakeup pin must already
+            be configured by the Digital or Analog controller.
+    @returns True if sleep was configured or no sleep configuration was
+             present, False if configuring sleep failed.
+*/
+bool ws_sdcard::ApplySleepConfig() {
+  if (!_has_sleep_config) {
+    return true;
+  }
   // Lock is always true for offline mode
   return Ws->_sleep_controller->handleSleepConfig(
       Ws->_sleep_controller->GetModel()->GetSleepConfig(), true);

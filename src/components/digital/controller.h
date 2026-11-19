@@ -41,6 +41,8 @@ public:
   void SetMaxDigitalPins(uint8_t max_digital_pins);
   bool QueryPinState(uint8_t pin_num, ws_digital_Direction *direction,
                      bool *value);
+  bool getPinPullDirection(uint8_t pin_num,
+                           ws_digital_Direction *pull_direction);
 
 private:
   bool EncodePublishPinEvent(DigitalHardware *pin);

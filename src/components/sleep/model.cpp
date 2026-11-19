@@ -21,6 +21,8 @@
 SleepModel::SleepModel() {
   memset(&_msg_sleep_goodnight, 0, sizeof(_msg_sleep_goodnight));
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
+  memset(&_ext0_config, 0, sizeof(_ext0_config));
+  _has_ext0 = false;
 }
 
 /*!
@@ -29,6 +31,8 @@ SleepModel::SleepModel() {
 SleepModel::~SleepModel() {
   memset(&_msg_sleep_goodnight, 0, sizeof(_msg_sleep_goodnight));
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
+  memset(&_ext0_config, 0, sizeof(_ext0_config));
+  _has_ext0 = false;
 }
 
 /*!
@@ -36,6 +40,18 @@ SleepModel::~SleepModel() {
     @return Sleep Enter message object.
 */
 ws_sleep_SleepConfig *SleepModel::GetSleepConfig() { return &_msg_sleep_enter; }
+
+/*!
+    @brief  Returns whether an ext0 wakeup config has been set.
+    @return True if an ext0 wakeup config is present, False otherwise.
+*/
+bool SleepModel::HasExt0() { return _has_ext0; }
+
+/*!
+    @brief  Gets the ext0 wakeup config.
+    @return Pointer to the ext0 wakeup config. Only valid if HasExt0().
+*/
+const ws_sleep_Ext0Config *SleepModel::GetExt0Config() { return &_ext0_config; }
 
 /*!
     @brief  Gets a Sleep Goodnight message object.
@@ -52,18 +68,62 @@ ws_sleep_Goodnight *SleepModel::GetSleepGoodnight() {
 uint32_t SleepModel::getRunDurationMs() { return _run_duration; }
 
 /*!
-    @brief  Decodes a Sleep Enter message into the _msg_sleep_enter
-            object from a nanopb stream.
+    @brief  Decodes the SleepConfig of a Sleep B2D message into the
+            _msg_sleep_enter object, and its ext0s into _ext0_config.
     @param  stream
-            The nanopb input stream.
-    @return True if the Sleep Enter message was successfully decoded.
+            The nanopb input stream of the Sleep B2D envelope.
+    @return True if a SleepConfig was found and decoded.
 */
 bool SleepModel::DecodeSleepConfig(pb_istream_t *stream) {
   // Zero-out the Sleep Enter message struct to ensure a clean decode
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
+  SetupExt0Decode(&_msg_sleep_enter);
 
-  // Decode the stream into a Sleep Enter message
-  return pb_decode(stream, ws_sleep_SleepConfig_fields, &_msg_sleep_enter);
+  // Decode the SleepConfig on its own: decoding the B2D envelope would zero
+  // the oneof member, and with it the ext0s decode callback
+  return ws_pb_decode_oneof_submsg(stream, ws_sleep_B2D_sleep_config_tag,
+                                   ws_sleep_SleepConfig_fields,
+                                   &_msg_sleep_enter);
+}
+
+/*!
+    @brief  Sets up a SleepConfig's ext0s callback field to decode into this
+            model, dropping any previously decoded ext0 config. Call before
+            decoding the message that holds the SleepConfig.
+    @param  msg
+            The SleepConfig to decode, e.g. a checkin response's.
+*/
+void SleepModel::SetupExt0Decode(ws_sleep_SleepConfig *msg) {
+  _has_ext0 = false;
+  msg->ext0s.funcs.decode = &cbDecodeExt0;
+  msg->ext0s.arg = this;
+}
+
+/*!
+    @brief  Decodes one entry of a SleepConfig's repeated ext0s field.
+    @param  stream
+            The Ext0Config submessage stream.
+    @param  field
+            Field descriptor of the ext0s field.
+    @param  arg
+            Pointer to the SleepModel to decode into.
+    @return True if decoded, False otherwise.
+*/
+bool SleepModel::cbDecodeExt0(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg) {
+  (void)field;
+  SleepModel *model = (SleepModel *)*arg;
+  ws_sleep_Ext0Config ext0 = ws_sleep_Ext0Config_init_zero;
+  if (!pb_decode(stream, ws_sleep_Ext0Config_fields, &ext0))
+    return false;
+  // ext0 wakes on a single pin, use the first
+  if (model->_has_ext0) {
+    WS_DEBUG_PRINTLN("[sleep] WARNING: Only one ext0 pin is used, ignoring");
+    return true;
+  }
+  model->_ext0_config = ext0;
+  model->_has_ext0 = true;
+  return true;
 }
 
 /*!
@@ -92,8 +152,9 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode,
   _msg_sleep_enter.mode = mode_enum;
 
   // Configure timer-specific fields
-  _msg_sleep_enter.which_config = ws_sleep_SleepConfig_timer_tag;
-  _msg_sleep_enter.config.timer.duration = timer_duration;
+  _msg_sleep_enter.has_timer = true;
+  _msg_sleep_enter.timer.duration = timer_duration;
+  _has_ext0 = false;
 }
 
 /*!
@@ -108,12 +169,13 @@ void SleepModel::SetSleepEnterTimer(bool lock, const char *mode,
             Name of the pin to wake from.
     @param  pin_level
             Input level to trigger wakeup (false=low, true=high).
-    @param  pin_pull
-            Enable internal pull resistor.
+    @note   The pin's pull direction is not set here, it is taken from the
+            Digital/Analog component that owns the pin when sleep is
+            configured.
 */
 void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
                                    uint32_t run_duration, const char *pin_name,
-                                   bool pin_level, bool pin_pull) {
+                                   bool pin_level) {
   // Clear the message
   memset(&_msg_sleep_enter, 0, sizeof(_msg_sleep_enter));
 
@@ -126,13 +188,11 @@ void SleepModel::SetSleepEnterExt0(bool lock, const char *mode,
   _msg_sleep_enter.mode = mode_enum;
 
   // Configure pin-specific fields
-  _msg_sleep_enter.which_config = ws_sleep_SleepConfig_ext0_tag;
-  strncpy(_msg_sleep_enter.config.ext0.pin, pin_name,
-          sizeof(_msg_sleep_enter.config.ext0.pin) - 1);
-  _msg_sleep_enter.config.ext0
-      .pin[sizeof(_msg_sleep_enter.config.ext0.pin) - 1] = '\0';
-  _msg_sleep_enter.config.ext0.level = pin_level;
-  _msg_sleep_enter.config.ext0.pull = pin_pull;
+  memset(&_ext0_config, 0, sizeof(_ext0_config));
+  strncpy(_ext0_config.pin, pin_name, sizeof(_ext0_config.pin) - 1);
+  _ext0_config.pin[sizeof(_ext0_config.pin) - 1] = '\0';
+  _ext0_config.level = pin_level;
+  _has_ext0 = true;
 }
 
 /*!

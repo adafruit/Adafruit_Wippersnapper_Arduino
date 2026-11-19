@@ -56,6 +56,9 @@ public:
   void end();
   bool isSDCardInitialized() { return is_mode_offline; }
   bool parseConfigFile();
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
+  bool ApplySleepConfig();
+#endif
   bool CreateNewLogFile();
   bool isModeOffline() { return is_mode_offline; }
   uint32_t getHeartbeatIntervalMs();
@@ -144,6 +147,8 @@ private:
   uint32_t _soft_rtc_counter; ///< Holds the counter for a "soft rtc"
   bool _use_test_data;        ///< True if sample data is being used for testing
   bool _is_battery_low;       ///< True if battery < LOW_SD_WRITE_BATT_THRESH
+  bool _has_sleep_config = false; ///< True if config.json held a sleep config
+                                  ///< that ApplySleepConfig() must apply
 };
 extern wippersnapper *Ws;
 #endif // WS_SDCARD_H

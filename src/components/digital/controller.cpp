@@ -163,6 +163,16 @@ bool DigitalController::Handle_Digital_Add(ws_digital_Add *msg) {
     return false;
   }
 
+  // Reject a pull this platform's core can't set (e.g. a pull-down on
+  // ESP8266), rather than leaving the pin silently floating
+  bool is_output = (msg->gpio_direction == ws_digital_Direction_D_OUTPUT);
+  if (!is_output &&
+      !DigitalHardware::IsInputModeSupported(msg->gpio_direction)) {
+    Ws->error_handler->publishComponentError(
+        msg->pin, "Pull resistor not supported on this platform");
+    return false;
+  }
+
   // Remove existing pin if re-adding (destructor deinits hardware)
   RemovePin(pin_num, expander_drv);
 
@@ -179,7 +189,8 @@ bool DigitalController::Handle_Digital_Add(ws_digital_Add *msg) {
 
   // Add the pin to the controller's list of pins
   if (msg->gpio_direction == ws_digital_Direction_D_INPUT ||
-      msg->gpio_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
+      msg->gpio_direction == ws_digital_Direction_D_INPUT_PULL_UP ||
+      msg->gpio_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
     _pins_input.push_back(new_pin);
   } else if (msg->gpio_direction == ws_digital_Direction_D_OUTPUT) {
     _pins_output.push_back(new_pin);
@@ -260,6 +271,25 @@ bool DigitalController::QueryPinState(uint8_t pin_num,
     *direction = pin->GetDirection();
   if (value)
     *value = pin->GetPinValue();
+  return true;
+}
+
+/*!
+    @brief  Reports whether a host-MCU pin is registered with this controller
+            and, if so, its internal pull resistor direction. Used by the
+            sleep controller to configure an ext0 wakeup pin's pull.
+    @param  pin_num         The pin's number.
+    @param  pull_direction  Out: D_INPUT_PULL_UP, D_INPUT_PULL_DOWN, or
+                            D_INPUT (no pull).
+    @return True if the pin is registered with this controller, else False.
+*/
+bool DigitalController::getPinPullDirection(
+    uint8_t pin_num, ws_digital_Direction *pull_direction) {
+  DigitalHardware *pin = GetPin(pin_num, nullptr);
+  if (!pin)
+    return false;
+  if (pull_direction)
+    *pull_direction = pin->getPullDirection();
   return true;
 }
 
