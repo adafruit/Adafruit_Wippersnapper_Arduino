@@ -317,20 +317,6 @@ bool I2cModel::cbDecodeSettingKey(pb_istream_t *stream, const pb_field_t *field,
   return true;
 }
 
-bool I2cModel::cbDecodeSettingStrValue(pb_istream_t *stream,
-                                       const pb_field_t *field, void **arg) {
-  char *str_buf = (char *)*arg;
-  size_t len = stream->bytes_left;
-  if (len >= MAX_SETTING_STR_LEN) {
-    len = MAX_SETTING_STR_LEN - 1;
-  }
-  if (!pb_read(stream, (pb_byte_t *)str_buf, len)) {
-    return false;
-  }
-  str_buf[len] = '\0';
-  return true;
-}
-
 bool I2cModel::cbDecodeSettingsEntry(pb_istream_t *stream,
                                      const pb_field_t *field, void **arg) {
   I2cModel *model = (I2cModel *)*arg;
@@ -342,13 +328,14 @@ bool I2cModel::cbDecodeSettingsEntry(pb_istream_t *stream,
       &model->_decoded_settings[model->_decoded_settings_count];
   memset(setting, 0, sizeof(DecodedSetting));
 
-  // Prepare entry with callbacks for key and string value
+  // Prepare entry with a callback for the key. str_value is a fixed-size
+  // array (config.options max_size == MAX_SETTING_STR_LEN), not a callback:
+  // nanopb no longer runs decode callbacks inside a oneof
+  // (nanopb/nanopb@5e72160).
   ws_config_Settings_SettingsEntry entry =
       ws_config_Settings_SettingsEntry_init_zero;
   entry.key.funcs.decode = cbDecodeSettingKey;
   entry.key.arg = setting->key;
-  entry.value.value.str_value.funcs.decode = cbDecodeSettingStrValue;
-  entry.value.value.str_value.arg = setting->str_value;
 
   if (!pb_decode(stream, ws_config_Settings_SettingsEntry_fields, &entry)) {
     return false;
@@ -364,8 +351,11 @@ bool I2cModel::cbDecodeSettingsEntry(pb_istream_t *stream,
       setting->float_value = entry.value.value.float_value;
     } else if (entry.value.which_value == ws_config_Value_bool_value_tag) {
       setting->bool_value = entry.value.value.bool_value;
+    } else if (entry.value.which_value == ws_config_Value_str_value_tag) {
+      strncpy(setting->str_value, entry.value.value.str_value,
+              sizeof(setting->str_value) - 1);
+      setting->str_value[sizeof(setting->str_value) - 1] = '\0';
     }
-    // str_value already written by cbDecodeSettingStrValue callback
   }
 
   model->_decoded_settings_count++;
@@ -381,8 +371,11 @@ ws_config_Value DecodedSettingToValue(const DecodedSetting &setting) {
     value.value.float_value = setting.float_value;
   } else if (setting.which_value == ws_config_Value_bool_value_tag) {
     value.value.bool_value = setting.bool_value;
+  } else if (setting.which_value == ws_config_Value_str_value_tag) {
+    strncpy(value.value.str_value, setting.str_value,
+            sizeof(value.value.str_value) - 1);
+    value.value.str_value[sizeof(value.value.str_value) - 1] = '\0';
   }
-  // str_value is a proto callback and is not bridged here (no setter uses it).
   return value;
 }
 
