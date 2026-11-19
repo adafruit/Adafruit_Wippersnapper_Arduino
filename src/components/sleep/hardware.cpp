@@ -417,8 +417,11 @@ void SleepHardware::ReenableExternalComponents() {
   digitalWrite(TFT_I2C_POWER, HIGH);
 #elif defined(NEOPIXEL_I2C_POWER)
   pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_I2C_POWER, LOW);
+  digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
 #endif
+
+  // Re-create the status pixel released by DisableExternalComponents()
+  initStatusLED();
 }
 
 /*!
