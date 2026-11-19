@@ -60,6 +60,13 @@
 /* Limit for depth of recursive message structure */
 /* #define PB_MESSAGE_NESTING_MAX 10 */
 
+/* Enable support for legacy callbacks inside oneofs when decoding.
+ * Depending on message structure, this may be unsafe if decoded data
+ * is untrusted. This is disabled by default since nanopb-0.4.9.3.
+ * Prefer using submsg_callback, no_unions or callback_function generator
+ * options instead. See GHSA-p24j-vqcp-x988 for details. */
+/* #define PB_ENABLE_UNSAFE_DECODE_ONEOF_CALLBACKS 1 */
+
 /******************************************************************
  * You usually don't need to change anything below this line.     *
  * Feel free to look around and use the defined macros, though.   *
@@ -68,7 +75,7 @@
 
 /* Version of the nanopb library. Just in case you want to check it in
  * your own program. */
-#define NANOPB_VERSION "nanopb-0.4.9.2"
+#define NANOPB_VERSION "nanopb-0.4.9.3"
 
 /* Include all the system headers needed by nanopb. You will need the
  * definitions of the following:
@@ -381,7 +388,14 @@ PB_STATIC_ASSERT(sizeof(uint64_t) == 2 * sizeof(uint32_t), UINT64_T_WRONG_SIZE)
  * Note that actual structs used will have a different length of bytes array.
  */
 #define PB_BYTES_ARRAY_T(n) struct { pb_size_t size; pb_byte_t bytes[n]; }
-#define PB_BYTES_ARRAY_T_ALLOCSIZE(n) ((size_t)n + offsetof(pb_bytes_array_t, bytes))
+/* Size to allocate for a bytes array holding n bytes. Never less than the
+ * struct itself, so a pb_bytes_array_t pointer into the allocation stays
+ * inside it for small n (gcc -Warray-bounds complains otherwise).
+ */
+#define PB_BYTES_ARRAY_T_ALLOCSIZE(n) \
+    (((size_t)(n) + offsetof(pb_bytes_array_t, bytes)) < sizeof(pb_bytes_array_t) \
+        ? sizeof(pb_bytes_array_t) \
+        : ((size_t)(n) + offsetof(pb_bytes_array_t, bytes)))
 
 struct pb_bytes_array_s {
     pb_size_t size;
