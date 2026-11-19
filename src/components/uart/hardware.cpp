@@ -129,7 +129,14 @@ bool UARTHardware::ConfigureSerial() {
   int8_t tx_pin = (int8_t)_pin_tx.num;
   uint16_t cfg = UartPacketFormatToConfig(_config.format);
 
-  if (_config.use_sw_serial) {
+  // TODO: SerialConfig no longer has use_sw_serial (adafruit/
+  // Wippersnapper_Protobuf#230), so the device must decide when to use
+  // SoftwareSerial itself (e.g. ESP8266, whose UART1 is TX-only). Until then
+  // only hardware serial is used and sw_serial_invert is ignored. The
+  // controller already only hands drivers GetHardwareSerial(), so the old
+  // SoftwareSerial branch here never worked end-to-end.
+  bool use_sw_serial = false;
+  if (use_sw_serial) {
 // Does this architecture support SoftwareSerial?
 #if HAS_SW_SERIAL
     // Create a new SoftwareSerial instance

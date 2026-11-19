@@ -135,12 +135,17 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   drvUartBase *uart_driver = nullptr;
-  ws_sensor_Type *sensor_types = nullptr;
+  // Sensor types arrive as map<uint32, ws.sensor.Type>. The UART Event is a
+  // plain repeated SensorEvent with no key, so only each entry's value is kept.
+  static_assert(pb_arraysize(ws_uart_GenericInputConfig, types) ==
+                    pb_arraysize(ws_uart_PM25AQIConfig, types),
+                "UART sensor type maps must have the same max_count");
+  ws_sensor_Type sensor_types[pb_arraysize(ws_uart_PM25AQIConfig, types)];
   size_t sensor_types_count = 0;
   float sensor_period = 0;
 
   switch (msg->cfg_device.which_config) {
-  case ws_uart_DeviceConfig_generic_input_tag:
+  case ws_uart_DeviceConfig_generic_input_tag: {
     if (strcmp(msg->name, "us100") != 0) {
       Ws->error_handler->publishComponentError(
           msg->descriptor, "Unsupported generic input device");
@@ -149,19 +154,28 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     }
     uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
                                    msg->name, msg->descriptor.pin_rx);
-    sensor_types = msg->cfg_device.config.generic_input.types;
-    sensor_types_count = msg->cfg_device.config.generic_input.types_count;
-    sensor_period = msg->cfg_device.config.generic_input.period;
+    const ws_uart_GenericInputConfig &cfg =
+        msg->cfg_device.config.generic_input;
+    for (pb_size_t i = 0; i < cfg.types_count; i++) {
+      sensor_types[i] = cfg.types[i].value;
+    }
+    sensor_types_count = cfg.types_count;
+    sensor_period = cfg.period;
     WS_DEBUG_PRINTLN("[uart] Added US-100 Ultrasonic Distance Sensor!");
     break;
-  case ws_uart_DeviceConfig_pm25aqi_tag:
+  }
+  case ws_uart_DeviceConfig_pm25aqi_tag: {
     uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(), msg->name,
                                   msg->descriptor.pin_rx);
-    sensor_types = msg->cfg_device.config.pm25aqi.types;
-    sensor_types_count = msg->cfg_device.config.pm25aqi.types_count;
-    sensor_period = msg->cfg_device.config.pm25aqi.period;
+    const ws_uart_PM25AQIConfig &cfg = msg->cfg_device.config.pm25aqi;
+    for (pb_size_t i = 0; i < cfg.types_count; i++) {
+      sensor_types[i] = cfg.types[i].value;
+    }
+    sensor_types_count = cfg.types_count;
+    sensor_period = cfg.period;
     WS_DEBUG_PRINTLN("[uart] Added PM2.5 AQI device!");
     break;
+  }
   default:
     Ws->error_handler->publishComponentError(msg->descriptor,
                                              "Unsupported UART device config");
