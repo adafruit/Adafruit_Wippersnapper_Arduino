@@ -38,6 +38,7 @@ public:
   ExpanderController();
   ~ExpanderController();
   bool Router(pb_istream_t *stream);
+  void RemoveAll();
   bool Handle_Add(ws_expander_Add *msg);
   bool Handle_Remove(ws_expander_Remove *msg);
   ExpanderHardware *GetDriver(uint8_t addr);

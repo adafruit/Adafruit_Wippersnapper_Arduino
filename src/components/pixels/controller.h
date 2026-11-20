@@ -36,6 +36,7 @@ public:
   PixelsController();
   ~PixelsController();
   bool Router(pb_istream_t *stream);
+  void RemoveAll();
   bool Handle_Pixels_Add(ws_pixels_Add *msg);
   bool Handle_Pixels_Write(ws_pixels_Write *msg);
   bool Handle_Pixels_Remove(ws_pixels_Remove *msg);

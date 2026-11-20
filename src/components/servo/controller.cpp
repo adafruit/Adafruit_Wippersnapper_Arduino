@@ -26,18 +26,25 @@ ServoController::ServoController() {
     @brief  Destructor
 */
 ServoController::~ServoController() {
-  // De-initialize all servos
+  RemoveAll();
+  if (_servo_model != nullptr) {
+    delete _servo_model;
+    _servo_model = nullptr;
+  }
+}
+
+/*!
+    @brief  Removes every servo, as a checkin that applies its response in
+            full re-adds them.
+*/
+void ServoController::RemoveAll() {
   for (int i = 0; i < _active_servo_pins; i++) {
     if (_servo_hardware[i] != nullptr) {
       delete _servo_hardware[i];
       _servo_hardware[i] = nullptr;
     }
   }
-
-  if (_servo_model != nullptr) {
-    delete _servo_model;
-    _servo_model = nullptr;
-  }
+  _active_servo_pins = 0;
 }
 
 /*!
@@ -54,6 +61,13 @@ bool ServoController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[servo] ERROR: Unable to decode Servo B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_servo_B2D_add_tag ||
+      b2d.which_payload == ws_servo_B2D_remove_tag ||
+      b2d.which_payload == ws_servo_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_servo_tag);
 
   // Route based on payload type
   bool res = false;

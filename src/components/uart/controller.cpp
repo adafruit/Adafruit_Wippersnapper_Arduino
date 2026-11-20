@@ -24,6 +24,18 @@ UARTController::UARTController() { _uart_model = new UARTModel(); }
     @brief  Destructs the UARTController.
 */
 UARTController::~UARTController() {
+  RemoveAll();
+  if (_uart_model != nullptr) {
+    delete _uart_model;
+    _uart_model = nullptr;
+  }
+}
+
+/*!
+    @brief  Removes every UART device and port, as a checkin that applies
+            its response in full re-adds them.
+*/
+void UARTController::RemoveAll() {
   // Delete drivers before ports — drivers hold a pointer to the
   // hardware's serial, so hardware must outlive the driver teardown.
   for (drvUartBase *drv : _uart_drivers) {
@@ -34,10 +46,6 @@ UARTController::~UARTController() {
     delete hw;
   }
   _ports.clear();
-  if (_uart_model != nullptr) {
-    delete _uart_model;
-    _uart_model = nullptr;
-  }
 }
 
 /*!
@@ -54,6 +62,13 @@ bool UARTController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Unable to decode UART B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_uart_B2D_add_tag ||
+      b2d.which_payload == ws_uart_B2D_remove_tag ||
+      b2d.which_payload == ws_uart_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_uart_tag);
 
   // Route based on payload type
   bool res = false;

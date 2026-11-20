@@ -40,6 +40,7 @@ public:
   ServoController();
   ~ServoController();
   bool Router(pb_istream_t *stream);
+  void RemoveAll();
   bool Handle_Servo_Add(ws_servo_Add *msg);
   bool Handle_Servo_Write(ws_servo_Write *msg);
   bool Handle_Servo_Remove(ws_servo_Remove *msg);

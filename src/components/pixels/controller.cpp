@@ -26,11 +26,21 @@ PixelsController::PixelsController() {
     @brief  Destructs a PixelsController object
 */
 PixelsController::~PixelsController() {
+  RemoveAll();
+  delete _pixels_model;
+}
+
+/*!
+    @brief  Removes every pixel strand, turning it off, as a checkin that
+   applies its response in full re-adds them.
+*/
+void PixelsController::RemoveAll() {
   for (int i = 0; i < _num_strands; i++) {
+    _pixel_strands[i]->RemoveStrand();
     delete _pixel_strands[i];
+    _pixel_strands[i] = nullptr;
   }
   _num_strands = 0;
-  delete _pixels_model;
 }
 
 /*!
@@ -47,6 +57,13 @@ bool PixelsController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pixels] ERROR: Unable to decode Pixels B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_pixels_B2D_add_tag ||
+      b2d.which_payload == ws_pixels_B2D_remove_tag ||
+      b2d.which_payload == ws_pixels_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_pixels_tag);
 
   // Route based on payload type
   bool res = false;

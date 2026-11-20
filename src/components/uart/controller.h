@@ -36,6 +36,7 @@ public:
   ~UARTController();
   // Routing
   bool Router(pb_istream_t *stream);
+  void RemoveAll();
   bool Handle_UartAdd(ws_uart_Add *msg);
   bool Handle_UartRemove(ws_uart_Remove *msg);
   bool Handle_UartWrite(ws_uart_Write *msg);

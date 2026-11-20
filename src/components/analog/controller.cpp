@@ -55,9 +55,18 @@ AnalogController::AnalogController() {
     @brief  Analog controller destructor
 */
 AnalogController::~AnalogController() {
+  RemoveAll();
+  delete _analog_model;
+}
+
+/*!
+    @brief  Removes every analog pin, as a checkin that applies its
+            response in full re-adds them.
+*/
+void AnalogController::RemoveAll() {
   for (size_t i = 0; i < _pins.size(); i++)
     delete _pins[i];
-  delete _analog_model;
+  _pins.clear();
 }
 
 /*!
@@ -92,6 +101,13 @@ bool AnalogController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[analog] ERROR: Unable to decode Analog B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_analog_B2D_add_tag ||
+      b2d.which_payload == ws_analog_B2D_remove_tag ||
+      b2d.which_payload == ws_analog_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_analog_tag);
 
   // Route based on payload type
   bool res = false;

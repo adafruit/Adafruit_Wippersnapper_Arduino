@@ -17,7 +17,13 @@
 
 ExpanderController::ExpanderController() {}
 
-ExpanderController::~ExpanderController() {
+ExpanderController::~ExpanderController() { RemoveAll(); }
+
+/*!
+    @brief  Removes every expander, as a checkin that applies its response
+            in full re-adds them. Remove the pins on them first.
+*/
+void ExpanderController::RemoveAll() {
   for (ExpanderHardware *drv : _expanders) {
     delete drv;
   }
@@ -41,6 +47,13 @@ bool ExpanderController::Router(pb_istream_t *stream) {
         "[expander] ERROR: Unable to decode expander B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_expander_B2D_add_tag ||
+      b2d.which_payload == ws_expander_B2D_remove_tag ||
+      b2d.which_payload == ws_expander_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_expander_tag);
 
   bool res = false;
   switch (b2d.which_payload) {
