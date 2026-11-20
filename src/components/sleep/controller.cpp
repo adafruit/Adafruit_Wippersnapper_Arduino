@@ -66,6 +66,10 @@ bool SleepController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to decode Sleep B2D SleepConfig");
     return false;
   }
+  // The saved checkin hash no longer matches the applied sleep state, so the
+  // next light sleep wake checkin must not be skipped as unchanged: it may
+  // turn this sleep config off with a response identical to the last one
+  CheckinModel::ForgetResponseHash();
   // Lock is always true when receiving a standalone sleep config command
   return handleSleepConfig(_sleep_model->GetSleepConfig(), true);
 }
