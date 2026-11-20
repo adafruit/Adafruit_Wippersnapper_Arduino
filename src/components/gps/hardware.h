@@ -80,7 +80,7 @@ public:
   bool begin();
   bool SetInterface(HardwareSerial *serial);
   bool SetInterface(TwoWire *wire);
-  void SetPollPeriod(ulong poll_period);
+  void SetPollPeriod(uint32_t poll_period);
   void SetPollPeriodPrv(ulong poll_period_prv);
   ulong GetPollPeriod();
   ulong GetPollPeriodPrv();
@@ -141,7 +141,7 @@ private:
       nullptr;                      ///< Optional Adafruit UBlox DDC instance
   Adafruit_UBX *_ubx_gps = nullptr; ///< Optional Adafruit UBX instance
   uint32_t _addr;                   ///< Optional i2c address
-  ulong _period;     ///< Polling period for GPS data (Specified by IO), in ms
+  ulong _period;     ///< Polling period for GPS data (IO sends seconds), in ms
   ulong _period_prv; ///< Previous period for GPS data (Specified by IO), in ms
   ulong _kat_prv;    ///< Last time the GPS hardware was polled, in ms
   int _nmea_update_rate; ///< NMEA update rate for GPS data, in Hz

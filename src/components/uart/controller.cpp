@@ -137,7 +137,7 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   drvUartBase *uart_driver = nullptr;
   ws_sensor_Type *sensor_types = nullptr;
   size_t sensor_types_count = 0;
-  float sensor_period = 0;
+  uint32_t sensor_period = 0; // seconds
 
   switch (msg->cfg_device.which_config) {
   case ws_uart_DeviceConfig_generic_input_tag:

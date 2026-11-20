@@ -160,21 +160,21 @@ public:
       @brief    Sets the sensor's period and converts from seconds to
                 milliseconds.
       @param    period The period for the sensor to return values within, in
-                seconds.
+                seconds, as specified by GenericInputConfig.period /
+                PM25AQIConfig.period. Stored internally in milliseconds.
   */
-  void SetSensorPeriod(float period) {
-    if (period < 0) {
-      _sensor_period = 0;
+  void SetSensorPeriod(uint32_t period) {
+    // Clamp rather than overflow when converting seconds to milliseconds
+    if (period > (ulong)-1 / ONE_SECOND_IN_MS) {
+      _sensor_period = (ulong)-1;
       return;
     }
-    _sensor_period = (unsigned long)(period * 1000.0f);
+    _sensor_period = (ulong)period * ONE_SECOND_IN_MS;
   }
 
   /*!
-      @brief    Sets the sensor's previous period and converts from seconds
-                to milliseconds.
-      @param    period The period for the sensor to return values within, in
-                seconds.
+      @brief    Sets the timestamp of the sensor's previous read.
+      @param    period The previous read timestamp, in milliseconds.
   */
   void SetSensorPeriodPrv(ulong period) { _sensor_period_prv = period; }
 

@@ -394,14 +394,16 @@ bool GPSHardware::BuildPmtkAck(char *msg_cmd, char *msg_resp) {
 /*!
  * @brief Sets the polling period for GPS data.
  * @param poll_period
- *        The polling period in milliseconds.
+ *        The polling period in seconds, as specified by
+ *        ws_gps_Config.period. Stored internally in milliseconds.
  */
-void GPSHardware::SetPollPeriod(ulong poll_period) {
-  if (poll_period < 0) {
-    _period = 0;
+void GPSHardware::SetPollPeriod(uint32_t poll_period) {
+  // Clamp rather than overflow when converting seconds to milliseconds
+  if (poll_period > (ulong)-1 / ONE_SECOND_IN_MS) {
+    _period = (ulong)-1;
     return;
   }
-  _period = (unsigned long)(poll_period * 1000.0f);
+  _period = (ulong)poll_period * ONE_SECOND_IN_MS;
 }
 
 /*!
