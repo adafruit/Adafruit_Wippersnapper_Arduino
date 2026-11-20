@@ -322,6 +322,13 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("Firmware Version: ");
     bootFile.println(WS_VERSION WS_BUILD);
 
+#ifdef WS_PB_BUNDLE_VERSION
+    bootFile.print("Protobuf Bundle Version: ");
+    bootFile.println(WS_PB_BUNDLE_VERSION);
+#else
+    bootFile.println("ERROR: Protobuf Bundle Version missing");
+#endif
+
     bootFile.print("Board ID: ");
     bootFile.println(BOARD_ID);
 
