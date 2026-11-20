@@ -26,12 +26,20 @@ DS18X20Controller::DS18X20Controller() {
     @brief  DS18X20Controller destructor
 */
 DS18X20Controller::~DS18X20Controller() {
+  RemoveAll();
+  delete _DS18X20_model;
+}
+
+/*!
+    @brief  Removes every DS18x20 sensor, as a checkin that applies its
+            response in full re-adds them.
+*/
+void DS18X20Controller::RemoveAll() {
   for (size_t i = 0; i < _DS18X20_pins.size(); i++) {
     delete _DS18X20_pins[i];
   }
   _DS18X20_pins.clear();
   _num_drivers = 0;
-  delete _DS18X20_model;
 }
 
 /*!
@@ -48,6 +56,13 @@ bool DS18X20Controller::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[ds18x20] ERROR: Unable to decode DS18X20 B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_ds18x20_B2D_add_tag ||
+      b2d.which_payload == ws_ds18x20_B2D_remove_tag ||
+      b2d.which_payload == ws_ds18x20_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_ds18x20_tag);
 
   // Route based on payload type
   bool res = false;

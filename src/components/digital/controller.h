@@ -32,6 +32,7 @@ public:
   DigitalController();
   ~DigitalController();
   bool Router(pb_istream_t *stream);
+  void RemoveAll();
   bool Handle_Digital_Add(ws_digital_Add *msg);
   bool Handle_Digital_Remove(ws_digital_Remove *msg);
   bool Handle_Digital_Write(ws_digital_Write *msg);

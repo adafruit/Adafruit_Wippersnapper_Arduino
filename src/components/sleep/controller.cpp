@@ -66,6 +66,9 @@ bool SleepController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[sleep] ERROR: Unable to decode Sleep B2D SleepConfig");
     return false;
   }
+  // The next light sleep wake checkin must not be skipped as unchanged: it
+  // may turn this sleep config off with a response identical to the last one
+  CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_sleep_tag);
   // Lock is always true when receiving a standalone sleep config command
   return handleSleepConfig(_sleep_model->GetSleepConfig(), true);
 }

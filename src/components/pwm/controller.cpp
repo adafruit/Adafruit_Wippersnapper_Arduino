@@ -24,9 +24,20 @@ PWMController::PWMController() { _pwm_model = new PWMModel(); }
     @brief  Dtor for PWMController.
 */
 PWMController::~PWMController() {
-  for (size_t i = 0; i < _pins.size(); i++)
-    delete _pins[i];
+  RemoveAll();
   delete _pwm_model;
+}
+
+/*!
+    @brief  Removes every PWM pin, as a checkin that applies its
+            response in full re-adds them.
+*/
+void PWMController::RemoveAll() {
+  for (size_t i = 0; i < _pins.size(); i++) {
+    _pins[i]->detach();
+    delete _pins[i];
+  }
+  _pins.clear();
 }
 
 /*!
@@ -43,6 +54,13 @@ bool PWMController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[pwm] ERROR: Unable to decode PWM B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_pwm_B2D_add_tag ||
+      b2d.which_payload == ws_pwm_B2D_remove_tag ||
+      b2d.which_payload == ws_pwm_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_pwm_tag);
 
   // Route based on payload type
   bool res = false;

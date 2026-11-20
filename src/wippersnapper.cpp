@@ -317,9 +317,12 @@ void wippersnapper::provision() {
 bool applyCheckinResponse(pb_istream_t *stream) {
   // Hash the raw response before decoding, the second decode pass applies
   // component adds. On a light sleep wake an unchanged response is already
-  // applied, any other checkin applies it in full.
+  // applied, unless a standalone message has changed what is applied since,
+  // any other checkin applies it in full.
+  uint64_t standalone_changes = CheckinModel::TakeStandaloneChanges();
   bool changed = Ws->CheckInModel->ResponseChanged(stream);
-  if (Ws->CheckInModel->IsWakeCheckin() && !changed) {
+  if (Ws->CheckInModel->IsWakeCheckin() && !changed &&
+      standalone_changes == 0) {
     WS_DEBUG_PRINTLN("[checkin] Response unchanged since last checkin");
     return Ws->CheckInModel->SkipResponse(stream);
   }
@@ -330,6 +333,9 @@ bool applyCheckinResponse(pb_istream_t *stream) {
   }
 
   if (Ws->CheckInModel->IsWakeCheckin()) {
+    // Rebuild the component types a standalone message changed, their
+    // applied state is unknown
+    Ws->CheckInModel->RebuildChangedTypes(standalone_changes);
     // Remove components applied from an earlier response but not in this
     // one, before adding new ones that may reuse their pins
     Ws->CheckInModel->RemoveStaleComponents(stream);
