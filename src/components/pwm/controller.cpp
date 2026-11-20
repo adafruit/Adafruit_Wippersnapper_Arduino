@@ -151,6 +151,24 @@ bool PWMController::Handle_PWM_Remove(ws_pwm_Remove *msg) {
 }
 
 /*!
+    @brief  Removes every PWM pin on an expander, before the expander is
+            removed, as the pins hold its driver.
+    @param  expander
+            The expander being removed.
+*/
+void PWMController::RemovePinsOn(ExpanderHardware *expander) {
+  for (size_t i = 0; i < _pins.size();) {
+    if (_pins[i]->GetExpanderDriver() == expander) {
+      _pins[i]->detach();
+      delete _pins[i];
+      _pins.erase(_pins.begin() + i);
+    } else {
+      i++;
+    }
+  }
+}
+
+/*!
     @brief  Removes a pin from the vector by pin number.
             Detaches and deletes the pin object, freeing the hardware resource.
     @param  pin The pin number to remove.

@@ -306,6 +306,10 @@ bool ExpanderController::Handle_Remove(ws_expander_Remove *msg) {
   // Find and remove the expander by address
   for (size_t i = 0; i < _expanders.size(); i++) {
     if (_expanders[i]->getAddress() == addr) {
+      // Pins on this expander hold its driver, remove them first
+      Ws->digital_controller->RemovePinsOn(_expanders[i]);
+      Ws->analog_controller->RemovePinsOn(_expanders[i]);
+      Ws->_pwm_controller->RemovePinsOn(_expanders[i]);
       delete _expanders[i];
       _expanders.erase(_expanders.begin() + i);
       did_remove = true;

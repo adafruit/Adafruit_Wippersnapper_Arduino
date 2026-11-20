@@ -129,6 +129,23 @@ bool AnalogController::Router(pb_istream_t *stream) {
 }
 
 /*!
+    @brief  Removes every analog pin on an expander, before the expander is
+            removed, as the pins hold its driver.
+    @param  expander
+            The expander being removed.
+*/
+void AnalogController::RemovePinsOn(ExpanderHardware *expander) {
+  for (size_t i = 0; i < _pins.size();) {
+    if (_pins[i]->getExpander() == expander) {
+      delete _pins[i];
+      _pins.erase(_pins.begin() + i);
+    } else {
+      i++;
+    }
+  }
+}
+
+/*!
     @brief  Removes a pin from the vector by pin number.
             Deletes the pin object (destructor deinits hardware).
     @param  pin_num
