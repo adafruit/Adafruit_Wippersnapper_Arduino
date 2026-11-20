@@ -25,11 +25,21 @@ DigitalController::DigitalController() { _digital_model = new DigitalModel(); }
     @brief  DigitalController destructor
 */
 DigitalController::~DigitalController() {
+  RemoveAll();
+  delete _digital_model;
+}
+
+/*!
+    @brief  Removes every digital pin, as a checkin that applies its
+            response in full re-adds them.
+*/
+void DigitalController::RemoveAll() {
   for (size_t i = 0; i < _pins_input.size(); i++)
     delete _pins_input[i];
+  _pins_input.clear();
   for (size_t i = 0; i < _pins_output.size(); i++)
     delete _pins_output[i];
-  delete _digital_model;
+  _pins_output.clear();
 }
 
 /*!
@@ -56,6 +66,13 @@ bool DigitalController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[digital] ERROR: Unable to decode Digital B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_digital_B2D_add_tag ||
+      b2d.which_payload == ws_digital_B2D_remove_tag ||
+      b2d.which_payload == ws_digital_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_digital_tag);
 
   // Route based on payload type
   bool res = false;

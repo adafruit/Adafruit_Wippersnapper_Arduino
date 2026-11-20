@@ -61,6 +61,9 @@ public:
   void SaveResponseHash();
   void RemoveStaleComponents(pb_istream_t *stream);
   void ForgetComponents();
+  static void NoteStandaloneChange(pb_size_t type);
+  static uint64_t TakeStandaloneChanges();
+  void RebuildChangedTypes(uint64_t changes);
   void SetWakeCheckin(bool wake);
   bool IsWakeCheckin();
   bool StoreResponse(pb_istream_t *stream);

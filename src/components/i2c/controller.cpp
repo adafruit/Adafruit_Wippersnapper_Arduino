@@ -517,8 +517,22 @@ I2cController::I2cController() { _i2c_model = new I2cModel(); }
     @brief  I2cController destructor
 */
 I2cController::~I2cController() {
+  RemoveAll();
   if (_i2c_model)
     delete _i2c_model;
+}
+
+/*!
+    @brief  Removes every I2C driver and MUX, as a checkin that applies its
+            response in full re-adds them. The buses are kept, other
+            components may hold them.
+*/
+void I2cController::RemoveAll() {
+  for (drvBase *driver : _i2c_drivers)
+    delete driver;
+  _i2c_drivers.clear();
+  for (I2cHardware *bus : _i2c_buses)
+    bus->RemoveMux();
 }
 
 /*!
@@ -570,6 +584,13 @@ bool I2cController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2C B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_i2c_B2D_add_tag ||
+      b2d.which_payload == ws_i2c_B2D_remove_tag ||
+      b2d.which_payload == ws_i2c_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_i2c_tag);
 
   // Route based on payload type
   bool res = false;

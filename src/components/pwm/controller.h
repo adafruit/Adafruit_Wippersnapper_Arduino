@@ -33,6 +33,7 @@ public:
   PWMController();
   ~PWMController();
   bool Router(pb_istream_t *stream);
+  void RemoveAll();
   bool Handle_PWM_Add(ws_pwm_Add *msg);
   bool Handle_PWM_Write(ws_pwm_Write *msg);
   bool Handle_PWM_Remove(ws_pwm_Remove *msg);

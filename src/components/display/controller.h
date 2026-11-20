@@ -32,6 +32,7 @@ public:
   DisplayController();
   ~DisplayController();
   bool Router(pb_istream_t *stream);
+  void RemoveAll();
   bool Handle_Display_Add(ws_display_Add *msg);
   bool Handle_Display_Remove(ws_display_Remove *msg);
   bool Handle_Display_Write(ws_display_Write *msg);
