@@ -96,6 +96,31 @@ bool DigitalController::Router(pb_istream_t *stream) {
 }
 
 /*!
+    @brief  Removes every digital pin on an expander, before the expander
+            is removed, as the pins hold its driver.
+    @param  expander
+            The expander being removed.
+*/
+void DigitalController::RemovePinsOn(ExpanderHardware *expander) {
+  for (size_t i = 0; i < _pins_output.size();) {
+    if (_pins_output[i]->GetExpanderDriver() == expander) {
+      delete _pins_output[i];
+      _pins_output.erase(_pins_output.begin() + i);
+    } else {
+      i++;
+    }
+  }
+  for (size_t i = 0; i < _pins_input.size();) {
+    if (_pins_input[i]->GetExpanderDriver() == expander) {
+      delete _pins_input[i];
+      _pins_input.erase(_pins_input.begin() + i);
+    } else {
+      i++;
+    }
+  }
+}
+
+/*!
     @brief  Removes a pin from both vectors by pin number.
             Deletes the pin object (destructor deinits hardware).
     @param  pin_num
