@@ -78,9 +78,12 @@ public:
     if (!_pm25)
       return false;
     delay(3 * ONE_SECOND_IN_MS); // Wait for the sensor to boot up
-                                 /*     if (IsSoftwareSerial)
-                                       return _pm25->begin_UART(_sw_serial); */
-    return _pm25->begin_UART(_hw_serial);
+    Stream *serial = GetSerialStream();
+    if (serial == nullptr) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: PM2.5 serial port is null!");
+      return false;
+    }
+    return _pm25->begin_UART(serial);
   }
 
   /*!

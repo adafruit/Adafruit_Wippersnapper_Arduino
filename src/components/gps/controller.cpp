@@ -116,6 +116,12 @@ bool GPSController::Handle_GpsDeviceAddOrReplace(ws_gps_Add *msg) {
     }
     _ports.push_back(uart_hw);
 
+    // TODO: GPSHardware only takes a HardwareSerial, so GPS over UART is not
+    // yet supported where UARTHardware picks SoftwareSerial (ESP8266).
+    if (uart_hw->GetHardwareSerial() == nullptr) {
+      WS_DEBUG_PRINTLN("[gps] ERROR: GPS needs a hardware UART on this board!");
+      return false;
+    }
     did_add = AddGPS(uart_hw->GetHardwareSerial(), &msg->config);
   } else if (msg->has_add_i2c) {
     // I2C transport path
