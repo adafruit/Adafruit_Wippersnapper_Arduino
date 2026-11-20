@@ -382,8 +382,8 @@ protected:
   SoftwareSerial *_sw_serial;    ///< Pointer to a SoftwareSerial instance
 #endif                           // HAS_SW_SERIAL
   char _name[DRV_UART_NAME_LEN]; ///< The device's name
-  WsPinName _port; ///< The RX pin (name + resolved port number) for the
-                   ///< UART device
+  WsPinName _port;   ///< The RX pin (name + resolved port number) for the
+                     ///< UART device
   WsPinName _pin_tx; ///< The TX pin (name + resolved pin number) for the
                      ///< UART device
 

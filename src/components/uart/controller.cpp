@@ -318,8 +318,10 @@ void UARTController::update(bool force) {
     if (_uart_model->EncodeUartInputEvent()) {
       // Handle the UartInputEvent message
       if (Ws->_sdCardV2->isModeOffline()) {
-        // TODO: Logging the UartInputEvent to SD card is not not implemented, raise an error
-        WS_DEBUG_PRINTLN("[uart] ERROR: Unable to log UartInputEvent to SD card!");
+        // TODO: Logging the UartInputEvent to SD card is not not implemented,
+        // raise an error
+        WS_DEBUG_PRINTLN(
+            "[uart] ERROR: Unable to log UartInputEvent to SD card!");
         drv->SetDidReadSend(false);
       } else {
         // In online mode, publish to Adafruit IO
