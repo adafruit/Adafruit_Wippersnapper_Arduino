@@ -39,7 +39,7 @@ public:
   ws_uart_Event *GetUartInputEventMsg();
   ws_uart_D2B *GetUartD2B();
   void ClearUartInputEventMsg();
-  void ConfigureUartInputEventMsg(const char *pin_rx);
+  void ConfigureUartInputEventMsg(const char *pin_rx, const char *pin_tx);
 
 private:
   ws_uart_Add _msg_UartAdd;          ///< ws_uart_Add message

@@ -30,6 +30,9 @@
 #define DRV_UART_PIN_NAME_LEN (sizeof(((ws_uart_Descriptor *)0)->pin_rx))
 static_assert(sizeof(WsPinName::name) >= DRV_UART_PIN_NAME_LEN,
               "WsPinName.name must hold any ws_uart_Descriptor pin name");
+static_assert(sizeof(WsPinName::name) >=
+                  sizeof(((ws_uart_Descriptor *)0)->pin_tx),
+              "WsPinName.name must hold ws_uart_Descriptor.pin_tx");
 
 /*!
     @brief  Base class for UART Drivers.
@@ -115,6 +118,22 @@ public:
       @returns  The RX pin name.
   */
   const char *GetPortName() const { return _port.name; }
+
+  /*!
+      @brief    Gets the name of the TX pin for the UART device.
+      @returns  The TX pin name.
+  */
+  const char *GetPinTx() const { return _pin_tx.name; }
+
+  /*!
+      @brief    Validates and stores the TX pin name, resolving it to a
+                pin number.
+      @param    pin_tx
+                The name of the TX pin for the UART device.
+      @returns  True if the name is non-null, fits without truncation, and
+                resolves to a pin number; False otherwise.
+  */
+  bool SetPinTx(const char *pin_tx) { return _pin_tx.Set(pin_tx); }
 
   /*!
       @brief    Gets the name of the UART driver.
@@ -365,6 +384,8 @@ protected:
   char _name[DRV_UART_NAME_LEN]; ///< The device's name
   WsPinName _port; ///< The RX pin (name + resolved port number) for the
                    ///< UART device
+  WsPinName _pin_tx; ///< The TX pin (name + resolved pin number) for the
+                     ///< UART device
 
   /*!
       @brief    Validates and stores the RX pin name, resolving it to a
