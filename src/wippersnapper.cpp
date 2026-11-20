@@ -255,6 +255,12 @@ void wippersnapper::provision() {
   // Tagged build line, early so a board that halts while provisioning still
   // reports it (may be missed on native USB; connect() prints it again)
   WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
+#ifdef WS_PB_BUNDLE_VERSION
+  WS_DEBUG_PRINTLN("[ws:boot] protobuf bundle=" WS_PB_BUNDLE_VERSION);
+#else
+  WS_DEBUG_PRINTLN("[ws:boot] ERROR: protobuf bundle version missing "
+                   "(src/protos/VERSION not found at build time)");
+#endif
   // Publish the global Ws pointer and create the controllers
   _init();
 
@@ -1206,6 +1212,11 @@ void wippersnapper::ProcessPackets() {
 void PrintDeviceInfo() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINTLN("Firmware Version: " WS_VERSION WS_BUILD);
+#ifdef WS_PB_BUNDLE_VERSION
+  WS_DEBUG_PRINTLN("Protobuf Bundle Version: " WS_PB_BUNDLE_VERSION);
+#else
+  WS_DEBUG_PRINTLN("ERROR: Protobuf Bundle Version missing");
+#endif
   WS_DEBUG_PRINTLN("API: Version 2");
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLNVAR(BOARD_ID);
@@ -1257,6 +1268,12 @@ void wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Tagged build line for HIL / log parsers - keep the format stable
   WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
+#ifdef WS_PB_BUNDLE_VERSION
+  WS_DEBUG_PRINTLN("[ws:boot] protobuf bundle=" WS_PB_BUNDLE_VERSION);
+#else
+  WS_DEBUG_PRINTLN("[ws:boot] ERROR: protobuf bundle version missing "
+                   "(src/protos/VERSION not found at build time)");
+#endif
   // Dump device info to the serial monitor
   PrintDeviceInfo();
 
