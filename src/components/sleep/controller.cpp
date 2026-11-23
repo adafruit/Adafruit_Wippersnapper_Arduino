@@ -152,11 +152,26 @@ void SleepController::WakeFromLightSleep() {
   const char *ext0_pin_name = _sleep_hardware->GetEspSleepExt0PinName();
   if (ext0_pin_name != nullptr) {
     int32_t ext0_pin = WsPinNameToNum(ext0_pin_name);
+    ws_digital_Direction pull_direction = ws_digital_Direction_D_INPUT;
     if (ext0_pin != WS_PIN_INVALID &&
         Ws->digital_controller->getPinPullDirection((uint8_t)ext0_pin,
-                                                    nullptr)) {
-      rtc_gpio_deinit((gpio_num_t)ext0_pin);
-      WS_DEBUG_PRINTLN("[sleep] Released ext0 wake pin back to digital GPIO");
+                                                    &pull_direction)) {
+      gpio_num_t pin = (gpio_num_t)ext0_pin;
+      rtc_gpio_deinit(pin);
+      // Put back the digital component's pull mode here so the pin doesn't
+      // float
+      if (pull_direction == ws_digital_Direction_D_INPUT_PULL_UP) {
+        gpio_pulldown_dis(pin);
+        gpio_pullup_en(pin);
+      } else if (pull_direction == ws_digital_Direction_D_INPUT_PULL_DOWN) {
+        gpio_pullup_dis(pin);
+        gpio_pulldown_en(pin);
+      } else {
+        gpio_pullup_dis(pin);
+        gpio_pulldown_dis(pin);
+      }
+      WS_DEBUG_PRINTLN("[sleep] Released ext0 wake pin back to digital GPIO, "
+                       "restored its pull");
     }
   }
 #endif
