@@ -417,8 +417,15 @@ void SleepHardware::ReenableExternalComponents() {
   digitalWrite(TFT_I2C_POWER, HIGH);
 #elif defined(NEOPIXEL_I2C_POWER)
   pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
+#ifndef PIN_I2C_POWER_INVERTED
+  digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
+#else
   digitalWrite(NEOPIXEL_I2C_POWER, LOW);
 #endif
+#endif
+
+  // Re-create the status pixel released by DisableExternalComponents()
+  initStatusLED();
 }
 
 /*!
@@ -449,8 +456,15 @@ void SleepHardware::DisableExternalComponents() {
   pinMode(TFT_I2C_POWER, OUTPUT);
   digitalWrite(TFT_I2C_POWER, LOW);
 #elif defined(NEOPIXEL_I2C_POWER)
-  pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_I2C_POWER, LOW);
+  // Keep the shared NeoPixel/I2C rail powered during light sleep
+  if (GetSleepMode() == ws_sleep_SleepMode_S_DEEP) {
+    pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
+#ifndef PIN_I2C_POWER_INVERTED
+    digitalWrite(NEOPIXEL_I2C_POWER, LOW);
+#else
+    digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
+#endif
+  }
 #endif
 }
 

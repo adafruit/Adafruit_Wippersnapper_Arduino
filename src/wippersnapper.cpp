@@ -124,8 +124,9 @@ wippersnapper::~wippersnapper() {
     @brief    Disconnects from Adafruit IO+ wippersnapper.
     @param    wifi_off  If true, turns off WiFi radio. If false, keeps WiFi
                         driver initialized for quick reconnection.
+    @return   True if disconnected from the network, False otherwise.
 */
-void wippersnapper::disconnect(bool wifi_off) { _disconnect(wifi_off); }
+bool wippersnapper::disconnect(bool wifi_off) { return _disconnect(wifi_off); }
 
 // Concrete class definition for abstract classes
 
@@ -142,11 +143,13 @@ void wippersnapper::_connect() {
     @param    wifi_off
               If true, turns off WiFi radio. If false, keeps WiFi
               driver initialized for quick reconnection.
+    @return   True if disconnected from the network, False otherwise.
 */
-void wippersnapper::_disconnect(bool wifi_off) {
+bool wippersnapper::_disconnect(bool wifi_off) {
   (void)wifi_off; // Avoid unused parameter warning for some network interfaces
   WS_DEBUG_PRINTLN("wippersnapper::_disconnect()");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return false;
 }
 
 /*!
@@ -255,6 +258,12 @@ void wippersnapper::provision() {
   // Tagged build line, early so a board that halts while provisioning still
   // reports it (may be missed on native USB; connect() prints it again)
   WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
+#ifdef WS_PB_BUNDLE_VERSION
+  WS_DEBUG_PRINTLN("[ws:boot] protobuf bundle=" WS_PB_BUNDLE_VERSION);
+#else
+  WS_DEBUG_PRINTLN("[ws:boot] ERROR: protobuf bundle version missing "
+                   "(src/protos/VERSION not found at build time)");
+#endif
   // Publish the global Ws pointer and create the controllers
   _init();
 
@@ -1206,6 +1215,11 @@ void wippersnapper::ProcessPackets() {
 void PrintDeviceInfo() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINTLN("Firmware Version: " WS_VERSION WS_BUILD);
+#ifdef WS_PB_BUNDLE_VERSION
+  WS_DEBUG_PRINTLN("Protobuf Bundle Version: " WS_PB_BUNDLE_VERSION);
+#else
+  WS_DEBUG_PRINTLN("ERROR: Protobuf Bundle Version missing");
+#endif
   WS_DEBUG_PRINTLN("API: Version 2");
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLNVAR(BOARD_ID);
@@ -1257,6 +1271,12 @@ void wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Tagged build line for HIL / log parsers - keep the format stable
   WS_DEBUG_PRINTLN("[ws:boot] build=" WS_VERSION WS_BUILD);
+#ifdef WS_PB_BUNDLE_VERSION
+  WS_DEBUG_PRINTLN("[ws:boot] protobuf bundle=" WS_PB_BUNDLE_VERSION);
+#else
+  WS_DEBUG_PRINTLN("[ws:boot] ERROR: protobuf bundle version missing "
+                   "(src/protos/VERSION not found at build time)");
+#endif
   // Dump device info to the serial monitor
   PrintDeviceInfo();
 
@@ -1478,6 +1498,11 @@ void wippersnapper::run() {
     // Sleep is enabled: feed the TWDT and hand control to loopSleep()
     WS_DEBUG_PRINTLN("[app] Sleep enabled, entering loopSleep()");
     Ws->_wdt->feed();
+    // Start a fresh cycle, a previous one may have been cut short by a
+    // SleepConfig disabling sleep, leaving a stale timer and controller flags
+    ResetAllControllerFlags();
+    _loop_start_time = 0;
+    _loop_timer_started = false;
     // A checkin after a light sleep wake may disable sleep again
     while (Ws->_sleep_controller->isSleepEnabled()) {
       loopSleep();
@@ -1538,11 +1563,9 @@ void wippersnapper::loopSleep() {
   // component-driven sleep readiness or by global timestamp expiration.
 
   // Track when the loop started for run duration timeout
-  static unsigned long loop_start_time = 0;
-  static bool loop_timer_started = false;
-  if (!loop_timer_started) {
-    loop_start_time = millis();
-    loop_timer_started = true;
+  if (!_loop_timer_started) {
+    _loop_start_time = millis();
+    _loop_timer_started = true;
   }
 
   Ws->_wdt->feed();
@@ -1597,7 +1620,7 @@ void wippersnapper::loopSleep() {
   // hard-deadline and the MCU sleeps regardless of controller status
   bool has_deadline_expired = false;
   if (Ws->_sleep_controller->getRunDurationMs() > 0 &&
-      (millis() - loop_start_time) >=
+      (millis() - _loop_start_time) >=
           Ws->_sleep_controller->getRunDurationMs()) {
     has_deadline_expired = true;
   }
@@ -1623,14 +1646,27 @@ void wippersnapper::loopSleep() {
   // Reset all flags and variables for use in the next loopsleep() (for light
   // sleep mode)
   ResetAllControllerFlags();
-  loop_start_time = 0;
-  loop_timer_started = false;
+  _loop_start_time = 0;
+  _loop_timer_started = false;
 
   // Disconnect from MQTT Broker and WiFi before sleep to prevent issues with
   // connection state on-wake
-  if (!Ws->_sdCardV2->isModeOffline() && Ws->_mqttV2 != nullptr)
-    Ws->_mqttV2->disconnect();
-  disconnect(true);
+  if (!Ws->_sdCardV2->isModeOffline() && Ws->_mqttV2 != nullptr) {
+    if (Ws->_mqttV2->disconnect()) {
+      WS_DEBUG_PRINTLN("[app] Disconnected from IO.");
+    } else {
+      WS_DEBUG_PRINTLN("[app] Failed to disconnect from IO.");
+    }
+  }
+  // wait a bit before attempting to disconnect from WiFi
+  delay(500);
+
+  // Attempt to disconnect from WiFi
+  if (disconnect(true)) {
+    WS_DEBUG_PRINTLN("[app] Disconnected from WiFi.");
+  } else {
+    WS_DEBUG_PRINTLN("[app] Failed to disconnect from WiFi.");
+  }
 
   // Enter sleep
   if (all_controllers_complete) {
