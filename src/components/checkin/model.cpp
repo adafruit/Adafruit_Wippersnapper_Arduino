@@ -857,6 +857,17 @@ void CheckinModel::SaveResponseHash() {
 }
 
 /*!
+    @brief  Forgets the hash of the last fully handled checkin response, so
+            the next checkin is applied even if its response is unchanged.
+            Call when a standalone message changes state the checkin
+            response also sets, as the saved hash no longer matches what is
+            applied. Static, as no CheckinModel exists between checkins.
+*/
+void CheckinModel::ForgetResponseHash() {
+  memset(last_sha_checkin_response, 0, CHECKIN_SHA_LEN);
+}
+
+/*!
     @brief  Decides how to apply a component Add from a checkin response by
             comparing it against the components applied from earlier
             responses. Follow with CommitAdd() unless CHECKIN_SKIP.

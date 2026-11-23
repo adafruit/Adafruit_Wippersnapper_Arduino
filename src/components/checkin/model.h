@@ -59,6 +59,7 @@ public:
   bool ResponseChanged(pb_istream_t *stream);
   bool SkipResponse(pb_istream_t *stream);
   void SaveResponseHash();
+  static void ForgetResponseHash();
   void RemoveStaleComponents(pb_istream_t *stream);
   void ForgetComponents();
   void SetWakeCheckin(bool wake);
