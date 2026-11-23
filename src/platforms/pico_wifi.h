@@ -461,13 +461,16 @@ protected:
   /*!
       @brief  Disconnects from the wireless network.
       @param  wifi_off  Unused on this platform.
+      @return  True if disconnected from the network, False otherwise.
   */
-  void _disconnect(bool wifi_off = true) {
+  bool _disconnect(bool wifi_off = true) {
     (void)wifi_off;
     Ws->_wdt->feed();
     WiFi.disconnect();
     delay(5 * ONE_SECOND_IN_MS);
     Ws->_wdt->feed();
+    // disconnect() always returns WL_DISCONNECTED, check the link status
+    return WiFi.status() != WL_CONNECTED;
   }
 };
 

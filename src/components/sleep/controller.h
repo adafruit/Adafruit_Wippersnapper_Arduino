@@ -36,6 +36,7 @@ public:
   // Routing
   bool Router(pb_istream_t *stream);
   bool handleSleepConfig(ws_sleep_SleepConfig *msg, bool enable);
+  bool didSleepConfigChange(const ws_sleep_SleepConfig *msg, bool enable);
   // PB API Accessors
   SleepModel *GetModel();
   // Sleep API
@@ -65,15 +66,22 @@ private:
   bool ConfigureLightSleep(const ws_sleep_SleepConfig *msg);
   bool getExt0PinPullDirection(const char *pin_name,
                                ws_digital_Direction *pull_direction);
+  void saveSleepConfig(const ws_sleep_SleepConfig *msg);
   SleepModel *_sleep_model;       ///< Sleep model
   SleepHardware *_sleep_hardware; ///< Sleep hardware
   bool _wake_enable_pin_state;    ///< Value of BOOT button during class
                                   ///< construction
   bool _sleep_enabled;            ///< Whether the app should enter sleep mode
-  bool _has_ext_pwr_components;   ///< Whether externally powered components are
-                                  ///< present (i.e: tft, i2c, neopixel, etc)
-  uint8_t _wake_enable_pin;       ///< Pin to check for wake enable
-  uint8_t _wake_enable_pin_pull;  ///< Pull mode: 0=none, 1=pulldown, 2=pullup
+  ws_sleep_SleepConfig _applied_cfg =
+      ws_sleep_SleepConfig_init_zero; ///< Last applied sleep config, ext0s
+                                      ///< callback unused
+  ws_sleep_Ext0Config _applied_ext0 =
+      ws_sleep_Ext0Config_init_zero; ///< Last applied ext0 wakeup config,
+                                     ///< empty pin if none
+  bool _has_ext_pwr_components;  ///< Whether externally powered components are
+                                 ///< present (i.e: tft, i2c, neopixel, etc)
+  uint8_t _wake_enable_pin;      ///< Pin to check for wake enable
+  uint8_t _wake_enable_pin_pull; ///< Pull mode: 0=none, 1=pulldown, 2=pullup
 };
 extern wippersnapper *Ws; ///< Wippersnapper V2 instance
 

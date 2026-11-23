@@ -113,11 +113,74 @@ bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg,
     WS_DEBUG_PRINTLN("[sleep] WARNING: Unsupported sleep mode");
   }
 
+  // Record the armed config for didSleepConfigChange(), or clear it on
+  // failure so the next checkin applies the config again
+  if (res) {
+    saveSleepConfig(msg);
+  } else {
+    saveSleepConfig(nullptr);
+  }
+
   WS_DEBUG_PRINTLN("[sleep] Sleep configuration complete.");
   WS_DEBUG_PRINT("Sleep Enabled: ");
   WS_DEBUG_PRINTLNVAR(_sleep_enabled ? "YES" : "NO");
 
   return res;
+}
+
+/*!
+    @brief  Checks whether a sleep config differs from the sleep state
+            currently applied, by a checkin or a standalone Sleep message.
+            The config's ext0 must already be decoded into the sleep model.
+    @param  msg
+            The sleep config to compare.
+    @param  enable
+            Whether the config enables sleep.
+    @return True if handleSleepConfig() needs to apply it, False if it
+            matches the applied sleep state.
+*/
+bool SleepController::didSleepConfigChange(const ws_sleep_SleepConfig *msg,
+                                           bool enable) {
+  // Turning sleep on or off is always a change
+  if (enable != _sleep_enabled)
+    return true;
+  // Sleep stays off, the config is ignored
+  if (!enable || msg == nullptr)
+    return false;
+
+  if (msg->mode != _applied_cfg.mode ||
+      msg->has_timer != _applied_cfg.has_timer)
+    return true;
+  if (msg->has_timer && msg->timer.duration != _applied_cfg.timer.duration)
+    return true;
+
+  // An applied ext0 always has a pin, an empty pin means none was applied
+  if (!_sleep_model->HasExt0())
+    return _applied_ext0.pin[0] != '\0';
+  const ws_sleep_Ext0Config *ext0 = _sleep_model->GetExt0Config();
+  if (ext0->level != _applied_ext0.level)
+    return true;
+  return strncmp(ext0->pin, _applied_ext0.pin, sizeof(_applied_ext0.pin)) != 0;
+}
+
+/*!
+    @brief  Records a sleep config as the one currently applied, for
+            didSleepConfigChange().
+    @param  msg
+            The applied sleep config, or nullptr to clear the record.
+*/
+void SleepController::saveSleepConfig(const ws_sleep_SleepConfig *msg) {
+  memset(&_applied_cfg, 0, sizeof(_applied_cfg));
+  memset(&_applied_ext0, 0, sizeof(_applied_ext0));
+  if (msg == nullptr)
+    return;
+  // Scalar fields only, the ext0s callback is not part of the record
+  _applied_cfg.mode = msg->mode;
+  _applied_cfg.has_timer = msg->has_timer;
+  _applied_cfg.timer = msg->timer;
+  if (_sleep_model->HasExt0())
+    memcpy(&_applied_ext0, _sleep_model->GetExt0Config(),
+           sizeof(_applied_ext0));
 }
 
 /*!
