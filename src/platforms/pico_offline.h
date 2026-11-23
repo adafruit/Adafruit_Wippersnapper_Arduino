@@ -140,7 +140,7 @@ protected:
     (void)wifi_off;
     WS_DEBUG_PRINTLN("[pico_offline] Error: _disconnect() is not supported "
                      "in this implementation!");
-    return false;
+    return true;
   }
 };
 
