@@ -126,7 +126,11 @@ bool PixelsController::Handle_Pixels_Write(ws_pixels_Write *msg) {
   }
 
   // Call hardware to fill the strand
-  WS_DEBUG_PRINTLN("[pixels]: Filling strand!");
+  WS_DEBUG_PRINTLN("[pixels]: Filling strand on Pin ");
+  WS_DEBUG_PRINTVAR(msg->pin_data);
+  WS_DEBUG_PRINTLN(" with color ");
+  WS_DEBUG_PRINTLNVAR(msg->color);
+  
   _pixel_strands[idx]->FillStrand(msg->color);
   return true;
 }
