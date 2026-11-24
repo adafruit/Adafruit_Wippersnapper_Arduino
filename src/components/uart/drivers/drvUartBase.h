@@ -93,15 +93,11 @@ public:
   void SetDidReadSend(bool did_read_send) { _did_read_send = did_read_send; }
 
   /*!
-      @brief    Gets the port number for the UART device.
-      @returns  The port number, resolved from the RX pin name, or 0 if
-                the pin name did not resolve.
+      @brief    Gets the RX pin number for the UART device.
+      @returns  The RX pin number, resolved from the RX pin name, or
+                WS_PIN_INVALID if the pin name did not resolve.
   */
-  uint32_t GetPortNum() const {
-    if (_pin_rx.num == WS_PIN_INVALID)
-      return 0;
-    return (uint32_t)_pin_rx.num;
-  }
+  int32_t GetPinRxNum() const { return _pin_rx.num; }
 
   /*!
       @brief    Gets the name of the RX pin for the UART device.
