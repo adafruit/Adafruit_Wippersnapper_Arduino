@@ -152,6 +152,8 @@ bool PixelsController::Handle_Pixels_Remove(ws_pixels_Remove *msg) {
 
   // Call hardware to deinitialize the strand
   _pixel_strands[idx]->RemoveStrand();
+  WS_DEBUG_PRINT("[pixels]: Removed strand on Pin ");
+  WS_DEBUG_PRINTLNVAR(msg->pin_data);
   return true;
 }
 
