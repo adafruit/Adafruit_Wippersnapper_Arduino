@@ -151,8 +151,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
       delete uart_hardware;
       return false;
     }
-    uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
-                                   msg->name, msg->descriptor.pin_rx);
+    uart_driver =
+        new drvUartUs100(uart_hardware->GetHardwareSerial(), msg->name);
     const ws_uart_GenericInputConfig &cfg =
         msg->cfg_device.config.generic_input;
     for (pb_size_t i = 0; i < cfg.types_count; i++) {
@@ -164,8 +164,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     break;
   }
   case ws_uart_DeviceConfig_pm25aqi_tag: {
-    uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(), msg->name,
-                                  msg->descriptor.pin_rx);
+    uart_driver =
+        new drvUartPm25(uart_hardware->GetHardwareSerial(), msg->name);
     const ws_uart_PM25AQIConfig &cfg = msg->cfg_device.config.pm25aqi;
     for (pb_size_t i = 0; i < cfg.types_count; i++) {
       sensor_types[i] = cfg.types[i].value;
@@ -183,6 +183,13 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   }
 
   // Common driver configuration
+  if (!uart_driver->SetPinRx(msg->descriptor.pin_rx)) {
+    Ws->error_handler->publishComponentError(msg->descriptor,
+                                             "Invalid RX pin name");
+    delete uart_driver;
+    delete uart_hardware;
+    return false;
+  }
   if (!uart_driver->SetPinTx(msg->descriptor.pin_tx)) {
     Ws->error_handler->publishComponentError(msg->descriptor,
                                              "Invalid TX pin name");
@@ -300,8 +307,7 @@ void UARTController::update(bool force) {
 
     // Read the events from the drivers
     _uart_model->ClearUartInputEventMsg();
-    _uart_model->ConfigureUartInputEventMsg(drv->GetPortName(),
-                                            drv->GetPinTx());
+    _uart_model->ConfigureUartInputEventMsg(drv->GetPinRx(), drv->GetPinTx());
     for (size_t i = 0; i < num_sensors; i++) {
       // Attempt to read from the driver
       sensors_event_t event = {0};
