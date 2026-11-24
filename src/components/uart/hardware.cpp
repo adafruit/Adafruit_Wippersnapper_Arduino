@@ -208,10 +208,10 @@ bool UARTHardware::isSoftwareSerial() const {
 }
 
 /*!
- * @brief  Gets the bus number of the hardware instance.
- * @return The bus number of the hardware instance, or -1 if not set.
+ * @brief  Gets the RX pin number of the hardware instance.
+ * @return The RX pin number, or WS_PIN_INVALID if not resolved.
  */
-int UARTHardware::getPortNum() { return (int)_pin_rx.num; }
+int UARTHardware::getPinRxNum() { return (int)_pin_rx.num; }
 
 /*!
  * @brief  Gets the HardwareSerial instance for this port

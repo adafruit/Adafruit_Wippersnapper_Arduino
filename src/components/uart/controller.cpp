@@ -107,14 +107,14 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   }
 
   // Have we already added this UART port?
-  int32_t port = WsPinNameToNum(msg->descriptor.pin_rx);
-  if (port == WS_PIN_INVALID) {
+  int32_t pin_rx_num = WsPinNameToNum(msg->descriptor.pin_rx);
+  if (pin_rx_num == WS_PIN_INVALID) {
     Ws->error_handler->publishComponentError(msg->descriptor,
                                              "Invalid RX pin name");
     return false;
   }
   for (UARTHardware *hw : _ports) {
-    if (hw->getPortNum() == port) {
+    if (hw->getPinRxNum() == pin_rx_num) {
       Ws->error_handler->publishComponentError(msg->descriptor,
                                                "Port already in use");
       return false;
@@ -131,7 +131,6 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     delete uart_hardware;
     return false;
   }
-  _ports.push_back(uart_hardware);
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   drvUartBase *uart_driver = nullptr;
@@ -152,8 +151,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
       delete uart_hardware;
       return false;
     }
-    uart_driver = new drvUartUs100(uart_hardware->GetHardwareSerial(),
-                                   msg->name, msg->descriptor.pin_rx);
+    uart_driver =
+        new drvUartUs100(uart_hardware->GetHardwareSerial(), msg->name);
     const ws_uart_GenericInputConfig &cfg =
         msg->cfg_device.config.generic_input;
     for (pb_size_t i = 0; i < cfg.types_count; i++) {
@@ -165,8 +164,8 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     break;
   }
   case ws_uart_DeviceConfig_pm25aqi_tag: {
-    uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(), msg->name,
-                                  msg->descriptor.pin_rx);
+    uart_driver =
+        new drvUartPm25(uart_hardware->GetHardwareSerial(), msg->name);
     const ws_uart_PM25AQIConfig &cfg = msg->cfg_device.config.pm25aqi;
     for (pb_size_t i = 0; i < cfg.types_count; i++) {
       sensor_types[i] = cfg.types[i].value;
@@ -184,6 +183,20 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
   }
 
   // Common driver configuration
+  if (!uart_driver->SetPinRx(msg->descriptor.pin_rx)) {
+    Ws->error_handler->publishComponentError(msg->descriptor,
+                                             "Invalid RX pin name");
+    delete uart_driver;
+    delete uart_hardware;
+    return false;
+  }
+  if (!uart_driver->SetPinTx(msg->descriptor.pin_tx)) {
+    Ws->error_handler->publishComponentError(msg->descriptor,
+                                             "Invalid TX pin name");
+    delete uart_driver;
+    delete uart_hardware;
+    return false;
+  }
   uart_driver->EnableSensorEvents(sensor_types, sensor_types_count);
   uart_driver->SetSensorPeriod(sensor_period);
 
@@ -192,8 +205,12 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
     Ws->error_handler->publishComponentError(
         msg->descriptor, "Failed to initialize UART driver");
     delete uart_driver;
+    delete uart_hardware;
     return false;
   }
+  // Only register the port once its driver is fully up, so every failure
+  // path above can free uart_hardware without leaving a dangling entry
+  _ports.push_back(uart_hardware);
   _uart_drivers.push_back(uart_driver);
 
   // Print what we added on uart
@@ -211,20 +228,20 @@ bool UARTController::Handle_UartAdd(ws_uart_Add *msg) {
 bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
 
   // Find the corresponding hardware instance for the UART port
-  int32_t port_num = WsPinNameToNum(msg->descriptor.pin_rx);
-  if (port_num == WS_PIN_INVALID) {
+  int32_t pin_rx_num = WsPinNameToNum(msg->descriptor.pin_rx);
+  if (pin_rx_num == WS_PIN_INVALID) {
     Ws->error_handler->publishComponentError(msg->descriptor,
                                              "Invalid RX pin name");
     return false;
   }
   for (std::vector<UARTHardware *>::iterator it = _ports.begin();
        it != _ports.end(); ++it) {
-    if ((*it)->getPortNum() == port_num) {
+    if ((*it)->getPinRxNum() == pin_rx_num) {
       // Find the corresponding driver for the uart port
       for (std::vector<drvUartBase *>::iterator driver_it =
                _uart_drivers.begin();
            driver_it != _uart_drivers.end(); ++driver_it) {
-        if ((*driver_it)->GetPortNum() == (uint32_t)port_num) {
+        if ((*driver_it)->GetPinRxNum() == pin_rx_num) {
           // Driver found, remove it
           delete *driver_it;
           _uart_drivers.erase(driver_it);
@@ -232,7 +249,7 @@ bool UARTController::Handle_UartRemove(ws_uart_Remove *msg) {
           delete *it;
           _ports.erase(it);
           WS_DEBUG_PRINT("[uart] Removed UART device on port ");
-          WS_DEBUG_PRINTLNVAR(port_num);
+          WS_DEBUG_PRINTLNVAR(pin_rx_num);
           return true;
         }
       }
@@ -290,7 +307,7 @@ void UARTController::update(bool force) {
 
     // Read the events from the drivers
     _uart_model->ClearUartInputEventMsg();
-    _uart_model->ConfigureUartInputEventMsg(drv->GetPortName());
+    _uart_model->ConfigureUartInputEventMsg(drv->GetPinRx(), drv->GetPinTx());
     for (size_t i = 0; i < num_sensors; i++) {
       // Attempt to read from the driver
       sensors_event_t event = {0};
@@ -307,17 +324,11 @@ void UARTController::update(bool force) {
     if (_uart_model->EncodeUartInputEvent()) {
       // Handle the UartInputEvent message
       if (Ws->_sdCardV2->isModeOffline()) {
-        // TODO: This is UNIMPLEMENTED!
-        // In offline mode, log to SD card
-        /* if
-        (!Ws->_sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
-        { WS_DEBUG_PRINTLN("[uart] ERROR: Unable to log the UartInputEvent to
-        SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+        // TODO: Logging the UartInputEvent to SD card is not not implemented,
+        // raise an error
+        WS_DEBUG_PRINTLN(
+            "[uart] ERROR: Unable to log UartInputEvent to SD card!");
         drv->SetDidReadSend(false);
-        } else {
-        drv->SetDidReadSend(true);
-        } */
-        drv->SetDidReadSend(true); // For now, assume success in offline mode
       } else {
         // In online mode, publish to Adafruit IO
         if (!Ws->PublishD2b(ws_signal_DeviceToBroker_uart_tag,

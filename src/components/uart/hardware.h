@@ -40,7 +40,7 @@ public:
   ~UARTHardware();
   bool ConfigureSerial();
   uint16_t UartPacketFormatToConfig(const ws_uart_PacketFormat uart_format);
-  int getPortNum();
+  int getPinRxNum();
   bool isHardwareSerial() const;
   bool isSoftwareSerial() const;
   HardwareSerial *GetHardwareSerial();

@@ -31,13 +31,9 @@ public:
                 Pointer to a HardwareSerial instance.
       @param    driver_name
                 The name of the driver.
-      @param    port_name
-                The name of the RX pin for the UART device corresponding to
-     the Serial instance.
   */
-  drvUartPm25(HardwareSerial *hw_serial, const char *driver_name,
-              const char *port_name)
-      : drvUartBase(hw_serial, driver_name, port_name) {
+  drvUartPm25(HardwareSerial *hw_serial, const char *driver_name)
+      : drvUartBase(hw_serial, driver_name) {
     // Handled by drvUartBase constructor
   }
 
@@ -48,13 +44,9 @@ public:
               Pointer to a SoftwareSerial instance.
     @param    driver_name
               The name of the driver.
-    @param   port_name
-              The name of the RX pin for the UART device corresponding to
-    the Serial instance.
 */
-  drvUartPm25(SoftwareSerial *sw_serial, const char *driver_name,
-              const char *port_name)
-      : drvUartBase(sw_serial, driver_name, port_name) {
+  drvUartPm25(SoftwareSerial *sw_serial, const char *driver_name)
+      : drvUartBase(sw_serial, driver_name) {
     // Handled by drvUartBase constructor
   }
 #endif // HAS_SW_SERIAL

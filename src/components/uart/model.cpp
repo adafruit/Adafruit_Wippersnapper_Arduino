@@ -83,13 +83,20 @@ void UARTModel::ClearUartInputEventMsg() {
     @brief  Configures an UartInputEvent message with addressing information.
     @param  pin_rx
             The RX pin name for the UART port.
+    @param  pin_tx
+            The TX pin name for the UART port.
 */
-void UARTModel::ConfigureUartInputEventMsg(const char *pin_rx) {
+void UARTModel::ConfigureUartInputEventMsg(const char *pin_rx,
+                                           const char *pin_tx) {
   _msg_UartInputEvent.has_descriptor = true;
   strncpy(_msg_UartInputEvent.descriptor.pin_rx, pin_rx,
           sizeof(_msg_UartInputEvent.descriptor.pin_rx) - 1);
   _msg_UartInputEvent.descriptor
       .pin_rx[sizeof(_msg_UartInputEvent.descriptor.pin_rx) - 1] = '\0';
+  strncpy(_msg_UartInputEvent.descriptor.pin_tx, pin_tx,
+          sizeof(_msg_UartInputEvent.descriptor.pin_tx) - 1);
+  _msg_UartInputEvent.descriptor
+      .pin_tx[sizeof(_msg_UartInputEvent.descriptor.pin_tx) - 1] = '\0';
 }
 
 /*!
