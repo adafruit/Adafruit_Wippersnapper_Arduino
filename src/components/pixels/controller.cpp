@@ -26,8 +26,12 @@ PixelsController::PixelsController() {
     @brief  Destructs a PixelsController object
 */
 PixelsController::~PixelsController() {
-  for (int i = 0; i < _num_strands; i++) {
-    delete _pixel_strands[i];
+  for (uint8_t i = 0; i < _num_strands; i++) {
+    if (_pixel_strands[i] != nullptr) {
+      _pixel_strands[i]->RemoveStrand();
+      delete _pixel_strands[i];
+      _pixel_strands[i] = nullptr;
+    }
   }
   _num_strands = 0;
   delete _pixels_model;
@@ -93,12 +97,20 @@ bool PixelsController::Router(pb_istream_t *stream) {
     @returns True if successful, False otherwise
 */
 bool PixelsController::Handle_Pixels_Add(ws_pixels_Add *msg) {
+  if (_num_strands >= MAX_PIXEL_STRANDS) {
+    Ws->error_handler->publishComponentError(
+        msg->pin_data, "Maximum number of pixel strands on a device!");
+    return false;
+  }
+
   _pixel_strands[_num_strands] = new PixelsHardware();
 
   // Configure the pixel strand
   if (!_pixel_strands[_num_strands]->AddStrand(
           msg->type, msg->ordering, msg->num, msg->brightness, msg->pin_data,
           msg->pin_dotstar_clock)) {
+    delete _pixel_strands[_num_strands];
+    _pixel_strands[_num_strands] = nullptr;
     Ws->error_handler->publishComponentError(
         msg->pin_data, "Failed to initialize pixel strand!");
     return false;
@@ -148,6 +160,15 @@ bool PixelsController::Handle_Pixels_Remove(ws_pixels_Remove *msg) {
 
   // Call hardware to deinitialize the strand
   _pixel_strands[idx]->RemoveStrand();
+  delete _pixel_strands[idx];
+  _pixel_strands[idx] = nullptr;
+
+  // Shift remaining strands down to keep the array contiguous
+  for (uint8_t i = idx; i < _num_strands - 1; i++) {
+    _pixel_strands[i] = _pixel_strands[i + 1];
+  }
+  _pixel_strands[_num_strands - 1] = nullptr;
+  _num_strands--;
   return true;
 }
 
