@@ -26,6 +26,7 @@
 #include "drivers/drvApds9999.h"
 #include "drivers/drvAs5600.h"
 #include "drivers/drvAs7331.h"
+#include "drivers/drvAs7343.h"
 #include "drivers/drvBase.h" ///< Base i2c input driver class
 #include "drivers/drvBh1750.h"
 #include "drivers/drvBme280.h"
