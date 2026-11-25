@@ -31,7 +31,6 @@ public:
   void parseSecrets();
   void fsHalt(String msg,
               ws_led_status_t status_state = WS_LED_STATUS_ERROR_RUNTIME);
-  void fsWarn(String msg);
   void GetSDCSPin();
 };
 extern wippersnapper *Ws;

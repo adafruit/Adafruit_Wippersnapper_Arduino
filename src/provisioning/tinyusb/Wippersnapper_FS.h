@@ -51,11 +51,10 @@ public:
   bool writeFSContents();
   void fsHalt(String msg);
   void fsHalt(String msg, ws_led_status_t ledStatusColor);
-  void fsWarn(String msg);
   void eraseCPFS();
 
   bool createBootFile();
-  void writeToBootOut(PGM_P str);
+  void writeToBootOut(PGM_P str, bool halt = false);
   void eraseBootFile();
 
   // Secrets.json API

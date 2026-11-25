@@ -429,9 +429,11 @@ void Wippersnapper_FS::parseSecrets() {
       // check if over 3, warn user and take first three
       for (int i = 0; i < altNetworkCount; i++) {
         if (i >= 3) {
-          fsWarn(String("WARNING: More than 3 networks in secrets.json, "
-                        "only the first 3 will be used. Not using ") +
-                 (altnetworks[i]["network_ssid"] | ""));
+          String msg = String("WARNING: More than 3 networks in secrets.json, "
+                              "only the first 3 will be used. Not using ") +
+                       (altnetworks[i]["network_ssid"] | "") + "\n";
+          WS_DEBUG_PRINTVAR(msg.c_str());
+          writeToBootOut(msg.c_str());
           break;
         }
         convertFromJson(altnetworks[i], Ws->_multiNetworksV2[i]);
@@ -454,11 +456,16 @@ void Wippersnapper_FS::parseSecrets() {
 
   // Parse the optional WiFi country, an invalid one is ignored
   JsonVariantConst country = doc["network_type_wifi"]["network_country"];
+  // TODO: if the v1 write-only-if-changed boot file
+  // (adafruit/Adafruit_Wippersnapper_Arduino#656) comes to v2, warnings
+  // must be part of the content it compares, not appended each boot
   if (!parseCountryCode(country, Ws->_configV2.network_country)) {
-    fsWarn(String("WARNING: network_country in secrets.json must be a two "
-                  "letter ISO 3166 code, such as \"GB\". Ignoring: ") +
-           (country.is<const char *>() ? country.as<const char *>()
-                                       : "(not a string)"));
+    String msg =
+        String("WARNING: network_country in secrets.json must be a "
+               "two letter ISO 3166 code, such as \"GB\". Ignoring: ") +
+        (country | "(not a string)") + "\n";
+    WS_DEBUG_PRINTVAR(msg.c_str());
+    writeToBootOut(msg.c_str());
   }
 
   // Validate the config struct is not filled with default values
@@ -466,20 +473,16 @@ void Wippersnapper_FS::parseSecrets() {
       strcmp(Ws->_configV2.aio_key, "YOUR_IO_KEY_HERE") == 0) {
     writeToBootOut(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
-        "io_username and io_key to match your Adafruit IO credentials!\n");
-    fsHalt(
-        "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
-        "io_username and io_key to match your Adafruit IO credentials!");
+        "io_username and io_key to match your Adafruit IO credentials!\n",
+        true);
   }
 
   if (strcmp(Ws->_configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
       strcmp(Ws->_configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
     writeToBootOut("ERROR: Invalid network credentials in secrets.json! TO "
                    "FIX: Please change network_ssid and network_password to "
-                   "match your Adafruit IO credentials!\n");
-    fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
-           "change network_ssid and network_password to match your Adafruit IO "
-           "credentials!");
+                   "match your Adafruit IO credentials!\n",
+                   true);
   }
 
   writeToBootOut("Secrets Contents\n");
@@ -496,36 +499,26 @@ void Wippersnapper_FS::parseSecrets() {
 
 /*!
     @brief    Appends message string to wipper_boot_out.txt file.
+    @note     A boot file that can't be opened is reported to serial and
+              skipped, so a warning or log line never halts by itself.
     @param    str
                 PROGMEM string.
+    @param    halt
+                If true, halts with fsHalt(str) after writing, for fatal
+                errors. False (default) returns, for log lines and
+                warnings.
 */
-void Wippersnapper_FS::writeToBootOut(PGM_P str) {
-  // Append error output to FS
+void Wippersnapper_FS::writeToBootOut(PGM_P str, bool halt) {
   File32 bootFile = wipperFatFs_v2.open("/wipper_boot_out.txt", FILE_WRITE);
-  if (!bootFile)
-    fsHalt("ERROR: Unable to open wipper_boot_out.txt for logging!");
-  bootFile.print(str);
-  bootFile.flush();
-  bootFile.close();
-}
-
-/*!
-    @brief    Reports a non-fatal problem, such as an ignored setting in
-              secrets.json, to the serial console and
-              wipper_boot_out.txt, then continues.
-    @note     Unlike writeToBootOut(), a boot file that can't be opened
-              is skipped rather than halting.
-    @param    msg
-                Warning message.
-*/
-void Wippersnapper_FS::fsWarn(String msg) {
-  WS_DEBUG_PRINTLNVAR(msg.c_str());
-  File32 bootFile = wipperFatFs_v2.open("/wipper_boot_out.txt", FILE_WRITE);
-  if (!bootFile)
-    return;
-  bootFile.println(msg);
-  bootFile.flush();
-  bootFile.close();
+  if (bootFile) {
+    bootFile.print(str);
+    bootFile.flush();
+    bootFile.close();
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Unable to open wipper_boot_out.txt for logging!");
+  }
+  if (halt)
+    fsHalt(str);
 }
 
 /*!
