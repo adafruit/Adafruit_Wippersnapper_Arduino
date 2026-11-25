@@ -269,11 +269,17 @@ bool UARTHardware::ConfigureSerial() {
   // timeout argument above is only the auto-baud detection timeout.)
   unsigned long timeout_ms =
       _config.timeout > 0 ? (unsigned long)_config.timeout : ONE_SECOND_IN_MS;
-  if (_hwSerial != nullptr)
-    _hwSerial->setTimeout(timeout_ms);
+  // Only one port is ever configured, so set the timeout on exactly one.
 #if HAS_SW_SERIAL
-  if (_swSerial != nullptr)
+  if (_swSerial != nullptr) {
     _swSerial->setTimeout(timeout_ms);
+  } else if (_hwSerial != nullptr) {
+    _hwSerial->setTimeout(timeout_ms);
+  }
+#else
+  if (_hwSerial != nullptr) {
+    _hwSerial->setTimeout(timeout_ms);
+  }
 #endif // HAS_SW_SERIAL
   return true;
 }
