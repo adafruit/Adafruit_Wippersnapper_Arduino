@@ -112,6 +112,8 @@ bool ExpanderController::AddExpander(const char *device_name, uint8_t i2c_addr,
     drv = new ExpanderMCP23X08();
   } else if (strcmp(device_name, "aw9523") == 0) {
     drv = new ExpanderAW9523();
+  } else if (strcmp(device_name, "pca9554") == 0) {
+    drv = new ExpanderPCA9554();
   } else if (strcmp(device_name, "pcf8574") == 0) {
     drv = new ExpanderPCF8574();
   } else if (strcmp(device_name, "pcf8575") == 0) {
