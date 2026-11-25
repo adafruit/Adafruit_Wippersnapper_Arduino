@@ -504,14 +504,19 @@ void SleepController::StartSleep() {
     // Light sleep gates the USB-OTG clock mid-session, so the host's
     // transfers fail (error -71) and it gives up on the port, leaving it
     // un-enumerated after wake. Disconnect from the host first, and reconnect
-    // once awake so it enumerates again (serial + WIPPER drive).
-    TinyUSBDevice.detach();
+    // once awake so it enumerates again (serial + WIPPER drive). Skip the
+    // detach when no host has the device mounted (e.g. on battery).
+    if (TinyUSBDevice.mounted()) {
+      TinyUSBDevice.detach();
+      delay(2); // let the host see the disconnect before the clock stops
+    }
 #endif
     Serial.end();
     // Start light sleep
     esp_err_t err = esp_light_sleep_start();
 #ifdef USE_TINYUSB
     TinyUSBDevice.attach();
+    delay(10); // let the reconnect settle before using the port again
 #endif
     // === WOKE UP FROM LIGHT SLEEP ===
     WS_DEBUG_PRINTLN("[sleep] *** WOKE FROM LIGHT SLEEP ***");
