@@ -4,8 +4,8 @@
 ESP-IDF's esp_wifi_set_country_code() only accepts the country codes listed in
 its doc comment in components/esp_wifi/include/esp_wifi.h ("Supported country
 codes are ..."). The firmware keeps its own copy of that list in
-src/helpers/ws_helper_wifi_country.h, as `static const char chNN[]` strings of
-two-letter codes plus `strcmp(cc, "XX")` special cases (JP). This script
+src/helpers/ws_helper_wifi_country.h, as `chNN[]` string constants of
+two-letter codes plus strcmp/strncmp(cc, "XX") special cases (JP). This script
 compares the two sets, so a BSP bump that changes IDF's list is caught.
 
 The IDF commit is found from each BSP like this:
@@ -102,7 +102,8 @@ def firmware_table(path):
     text = re.sub(r"/\*.*?\*/|//[^\n]*", "", text, flags=re.S)
     table = {}
     arrays = re.findall(
-        r"static\s+const\s+char\s+(ch\d+)\s*\[\s*\]\s*(?:PROGMEM\s*)?=\s*"
+        r"(?:static\s+)?(?:(?:const|constexpr)\s+)+char\s+(ch\d+)\s*\[\s*\]\s*"
+        r"(?:PROGMEM\s*)?=\s*"
         r"((?:\"[^\"]*\"\s*)+);", text)
     for name, literals in arrays:
         s = "".join(re.findall(r'"([^"]*)"', literals))
@@ -114,7 +115,7 @@ def firmware_table(path):
             if code in table:
                 raise RuntimeError("%s is in both %s and %s" % (code, table[code], name))
             table[code] = name
-    for code in re.findall(r'strcmp\s*\(\s*\w+\s*,\s*"([A-Z]{2})"\s*\)', text):
+    for code in re.findall(r'strn?cmp(?:_P)?\s*\(\s*\w+\s*,\s*"([A-Z]{2})"', text):
         if code in table:
             raise RuntimeError("%s is in both %s and a strcmp()" % (code, table[code]))
         table[code] = "strcmp"
