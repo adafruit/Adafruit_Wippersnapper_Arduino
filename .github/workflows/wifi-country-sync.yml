@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 #
-# Checks the firmware's WiFi country table (src/helpers/ws_helper_wifi_country.h)
+# Checks the firmware's WiFi country table (TABLE in
+# .github/scripts/check_wifi_country_table.py)
 # against the "Supported country codes" list of esp_wifi_set_country_code() in
 # the ESP-IDF that each pinned arduino-esp32 BSP ships. Fails when the
 # platformio.ini pioarduino pin or ci-arduino's main ESP32 BSP ref drifts from
@@ -44,6 +45,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: >
           python3 .github/scripts/check_wifi_country_table.py
-          --table src/helpers/ws_helper_wifi_country.h
           --platformio platformio.ini
           --all-platforms ci/all_platforms.py

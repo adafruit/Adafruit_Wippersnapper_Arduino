@@ -20,7 +20,7 @@ Usage:
                               [--all-platforms PATH] [--bsp OWNER/REF ...]
                               [--esp-wifi-h PATH ...]
 
-  --table          firmware table (default src/helpers/ws_helper_wifi_country.h)
+  --table          firmware table (default TABLE below)
   --platformio     check the pioarduino pin in this platformio.ini
                    (default platformio.ini, pass "" to skip)
   --all-platforms  ci-arduino's all_platforms.py: check every arduino-esp32
@@ -49,6 +49,8 @@ import zipfile
 GHA = os.environ.get("GITHUB_ACTIONS") == "true"
 TEMPLATE = "package/package_esp32_index.template.json"
 ESP_WIFI_H = "components/esp_wifi/include/esp_wifi.h"
+# The firmware's country table. Change it here if the header moves.
+TABLE = "src/helpers/ws_helper_wifi_country.h"
 
 
 def annotate(level, msg):
@@ -197,7 +199,7 @@ def compare(label, idf, table, strict):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--table", default="src/helpers/ws_helper_wifi_country.h")
+    ap.add_argument("--table", default=TABLE)
     ap.add_argument("--platformio", default="platformio.ini")
     ap.add_argument("--all-platforms")
     ap.add_argument("--bsp", action="append", default=[])
@@ -205,7 +207,8 @@ def main():
     args = ap.parse_args()
 
     if not os.path.isfile(args.table):
-        annotate("error", "WiFi country table file not found: %s" % args.table)
+        annotate("error", "WiFi country table file not found: %s (if it moved, update TABLE "
+                 "in %s)" % (args.table, os.path.relpath(__file__)))
         return 1
     try:
         table = firmware_table(args.table)
