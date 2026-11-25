@@ -594,12 +594,15 @@ bool wippersnapper::generateWSTopics() {
               The error message to write to the serial and filesystem.
 */
 void wippersnapper::errorWriteHangV2(const char *error) {
-  // Print error
-  WS_DEBUG_PRINTLNVAR(error);
 #ifdef USE_TINYUSB
+  // Print error and write it to the boot file
   _fileSystemV2->writeToBootOut(error);
+  _fileSystemV2->writeToBootOut("\n");
   TinyUSBDevice.attach();
   delay(500);
+#else
+  // Print error
+  WS_DEBUG_PRINTLNVAR(error);
 #endif
   // Signal and hang forever
   while (1) {

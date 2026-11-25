@@ -54,7 +54,7 @@ public:
   void eraseCPFS();
 
   bool createBootFile();
-  void writeToBootOut(PGM_P str);
+  void writeToBootOut(PGM_P str, bool halt = false);
   void eraseBootFile();
 
   // Secrets.json API
