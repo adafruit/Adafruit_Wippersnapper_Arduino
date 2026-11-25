@@ -738,9 +738,25 @@ bool CheckinModel::cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
   if (action == CHECKIN_SKIP)
     return true;
   // Expander Add rejects an address already in use, remove it first
-  if (action == CHECKIN_REPLACE &&
-      !Ws->_expander_controller->Handle_Remove(&remove_msg))
-    WS_DEBUG_PRINTLN("[checkin] ERROR: Failed to remove component to replace");
+  if (action == CHECKIN_REPLACE) {
+    if (!Ws->_expander_controller->Handle_Remove(&remove_msg))
+      WS_DEBUG_PRINTLN(
+          "[checkin] ERROR: Failed to remove component to replace");
+    // Handle_Remove also deleted its pins: forget pin entries so the pin
+    // adds, applied after expander adds, re-add them.
+    for (size_t i = 0; i < checkin_components.size();) {
+      pb_size_t type = checkin_components[i].type;
+      if (type == ws_signal_BrokerToDevice_digital_tag ||
+          type == ws_signal_BrokerToDevice_analog_tag ||
+          type == ws_signal_BrokerToDevice_pwm_tag)
+        checkin_components.erase(checkin_components.begin() + i);
+      else
+        i++;
+    }
+    // The erase may have moved the expander's own entry
+    model->_pending_idx = findComponent(ws_signal_BrokerToDevice_expander_tag,
+                                        model->_pending.remove);
+  }
   if (!model->CommitAdd(Ws->_expander_controller->Handle_Add(&add_msg)))
     model->_adds_failed++;
   return true;
@@ -1024,12 +1040,12 @@ void CheckinModel::RemoveStaleComponents(pb_istream_t *stream) {
           ws_checkin_Response_Response_R_OK)
     return;
 
-  for (size_t i = 0; i < checkin_components.size();) {
+  // Newest first: pins are recorded after the expander they sit on, as
+  // expander adds apply first, so a pin is removed while its expander exists
+  for (size_t i = checkin_components.size(); i-- > 0;) {
     CheckinComponent &c = checkin_components[i];
-    if (c.seen) {
-      i++;
+    if (c.seen)
       continue;
-    }
     WS_DEBUG_PRINTLN("[checkin] Removing component no longer in checkin");
     switch (c.type) {
     case ws_signal_BrokerToDevice_digital_tag: {
