@@ -19,9 +19,16 @@ DisplayController::DisplayController() {
   _last_bar_update = 0;
 }
 
-DisplayController::~DisplayController() {
+DisplayController::~DisplayController() { RemoveAll(); }
+
+/*!
+    @brief  Removes every display, as a checkin that applies its
+            response in full re-adds them.
+*/
+void DisplayController::RemoveAll() {
   for (int i = 0; i < _num_displays; i++) {
     delete _displays[i];
+    _displays[i] = nullptr;
   }
   _num_displays = 0;
 }
@@ -39,6 +46,13 @@ bool DisplayController::Router(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[display] ERROR: Unable to decode Display B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_display_B2D_add_tag ||
+      b2d.which_payload == ws_display_B2D_remove_tag ||
+      b2d.which_payload == ws_display_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_display_tag);
 
   switch (b2d.which_payload) {
   case ws_display_B2D_add_tag:

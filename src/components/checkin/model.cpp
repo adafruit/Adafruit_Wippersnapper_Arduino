@@ -26,6 +26,19 @@
 static uint8_t last_sha_checkin_response[CHECKIN_SHA_LEN];
 // Components applied from checkin responses, same RAM lifetime as above
 static std::vector<CheckinComponent> checkin_components;
+// Bit per BrokerToDevice payload tag changed by a standalone message since
+// the last applied checkin, same RAM lifetime as above
+static uint64_t standalone_changes = 0;
+
+/*!
+    @brief  Returns the standalone_changes bit of a BrokerToDevice payload tag.
+    @param  type
+            BrokerToDevice payload tag.
+    @returns The tag's bit, 0 if out of range.
+*/
+static uint64_t typeBit(pb_size_t type) {
+  return type < 64 ? (uint64_t)1 << type : 0;
+}
 
 /*!
     @brief  Computes the SHA-256 of a buffer.
@@ -997,6 +1010,110 @@ bool CheckinModel::CommitAdd(bool added) {
             so this response's adds are all applied and recorded afresh.
 */
 void CheckinModel::ForgetComponents() { checkin_components.clear(); }
+
+/*!
+    @brief  Notes that a standalone message, outside a checkin, added,
+            removed or modified a component of this type. The saved checkin
+            response and its component list no longer match what is
+            applied, so the next light sleep wake checkin is not skipped and
+            rebuilds this type.
+    @param  type
+            BrokerToDevice payload tag of the message.
+*/
+void CheckinModel::NoteStandaloneChange(pb_size_t type) {
+  standalone_changes |= typeBit(type);
+}
+
+/*!
+    @brief  Returns the types noted by NoteStandaloneChange() and clears
+            them. Messages handled after this, even during this checkin, are
+            noted for the next one.
+    @returns Bit per BrokerToDevice payload tag changed.
+*/
+uint64_t CheckinModel::TakeStandaloneChanges() {
+  uint64_t changes = standalone_changes;
+  standalone_changes = 0;
+  return changes;
+}
+
+/*!
+    @brief  Removes every component of the types a standalone message
+            changed, and forgets them, so this response re-adds them all.
+            Their applied state is unknown: a standalone Add is not in the
+            component list, and a standalone Remove leaves its entry behind.
+            Call before RemoveStaleComponents().
+    @param  changes
+            Types from TakeStandaloneChanges().
+*/
+void CheckinModel::RebuildChangedTypes(uint64_t changes) {
+  // Digital, analog and PWM pins can sit on an expander, rebuild with it
+  if (changes & typeBit(ws_signal_BrokerToDevice_expander_tag))
+    changes |= typeBit(ws_signal_BrokerToDevice_digital_tag) |
+               typeBit(ws_signal_BrokerToDevice_analog_tag) |
+               typeBit(ws_signal_BrokerToDevice_pwm_tag);
+  // Pins before the expanders they sit on, I2C drivers last
+  static const pb_size_t order[] = {ws_signal_BrokerToDevice_digital_tag,
+                                    ws_signal_BrokerToDevice_analog_tag,
+                                    ws_signal_BrokerToDevice_pwm_tag,
+                                    ws_signal_BrokerToDevice_servo_tag,
+                                    ws_signal_BrokerToDevice_pixels_tag,
+                                    ws_signal_BrokerToDevice_ds18x20_tag,
+                                    ws_signal_BrokerToDevice_uart_tag,
+                                    ws_signal_BrokerToDevice_telemetry_tag,
+                                    ws_signal_BrokerToDevice_display_tag,
+                                    ws_signal_BrokerToDevice_expander_tag,
+                                    ws_signal_BrokerToDevice_i2c_tag};
+  for (size_t i = 0; i < sizeof(order) / sizeof(order[0]); i++) {
+    pb_size_t type = order[i];
+    if (!(changes & typeBit(type)))
+      continue;
+    WS_DEBUG_PRINT("[checkin] Changed outside checkin, rebuilding type ");
+    WS_DEBUG_PRINTLNVAR(type);
+    switch (type) {
+    case ws_signal_BrokerToDevice_digital_tag:
+      Ws->digital_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_analog_tag:
+      Ws->analog_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_pwm_tag:
+      Ws->_pwm_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_servo_tag:
+      Ws->_servo_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_pixels_tag:
+      Ws->_pixels_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_ds18x20_tag:
+      Ws->_ds18x20_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_uart_tag:
+      Ws->_uart_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_telemetry_tag:
+      Ws->_telemetry_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_display_tag:
+      Ws->_display_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_expander_tag:
+      Ws->_expander_controller->RemoveAll();
+      break;
+    case ws_signal_BrokerToDevice_i2c_tag:
+      Ws->_i2c_controller->RemoveAll();
+      break;
+    default:
+      break;
+    }
+    for (size_t j = 0; j < checkin_components.size();) {
+      if (checkin_components[j].type == type)
+        checkin_components.erase(checkin_components.begin() + j);
+      else
+        j++;
+    }
+  }
+}
 
 /*!
     @brief  Marks this checkin as one made after a light sleep wake, the only

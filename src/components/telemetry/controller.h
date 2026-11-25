@@ -32,6 +32,7 @@ public:
   ~TelemetryController();
   // Routing
   bool Router(pb_istream_t *stream);
+  void RemoveAll();
   bool Handle_TelemetryAdd(ws_telemetry_Add *msg);
   bool Handle_TelemetryRemove(ws_telemetry_Remove *msg);
   // Polling

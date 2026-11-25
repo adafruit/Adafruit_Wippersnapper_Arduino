@@ -25,11 +25,19 @@ TelemetryController::TelemetryController() {
     @brief  TelemetryController destructor
 */
 TelemetryController::~TelemetryController() {
+  RemoveAll();
+  delete _telemetry_model;
+}
+
+/*!
+    @brief  Removes every telemetry metric, as a checkin that applies its
+            response in full re-adds them.
+*/
+void TelemetryController::RemoveAll() {
   for (size_t i = 0; i < _telemetry_metrics.size(); i++) {
     delete _telemetry_metrics[i];
   }
   _telemetry_metrics.clear();
-  delete _telemetry_model;
 }
 
 /*!
@@ -47,6 +55,13 @@ bool TelemetryController::Router(pb_istream_t *stream) {
         "[telemetry] ERROR: Unable to decode telemetry B2D envelope");
     return false;
   }
+
+  // A component change the saved checkin response may not have, see
+  // CheckinModel::NoteStandaloneChange()
+  if (b2d.which_payload == ws_telemetry_B2D_add_tag ||
+      b2d.which_payload == ws_telemetry_B2D_remove_tag ||
+      b2d.which_payload == ws_telemetry_B2D_modify_tag)
+    CheckinModel::NoteStandaloneChange(ws_signal_BrokerToDevice_telemetry_tag);
 
   // Route based on payload type
   bool res = false;

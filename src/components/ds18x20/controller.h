@@ -31,6 +31,7 @@ public:
   ~DS18X20Controller();
   // Routing
   bool Router(pb_istream_t *stream);
+  void RemoveAll();
   bool Handle_Ds18x20Add(ws_ds18x20_Add *msg);
   bool Handle_Ds18x20Remove(ws_ds18x20_Remove *msg);
   // Polling

@@ -34,6 +34,7 @@ public:
   // Routing
   bool Router(pb_istream_t *stream);
   void RemovePinsOn(ExpanderHardware *expander);
+  void RemoveAll();
   bool Handle_Analog_Add(ws_analog_Add *msg);
   bool Handle_Analog_Remove(ws_analog_Remove *msg);
   void update(bool force = false);
