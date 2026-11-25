@@ -1003,12 +1003,12 @@ void CheckinModel::RemoveStaleComponents(pb_istream_t *stream) {
           ws_checkin_Response_Response_R_OK)
     return;
 
-  for (size_t i = 0; i < checkin_components.size();) {
+  // Newest first: pins are recorded after the expander they sit on, as
+  // expander adds apply first, so a pin is removed while its expander exists
+  for (size_t i = checkin_components.size(); i-- > 0;) {
     CheckinComponent &c = checkin_components[i];
-    if (c.seen) {
-      i++;
+    if (c.seen)
       continue;
-    }
     WS_DEBUG_PRINTLN("[checkin] Removing component no longer in checkin");
     switch (c.type) {
     case ws_signal_BrokerToDevice_digital_tag: {
