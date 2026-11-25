@@ -21,6 +21,15 @@
 class wippersnapper; ///< Forward declaration
 
 /*!
+    @brief  Which component adds a decode pass of a checkin response applies.
+*/
+enum CheckinAddsPass {
+  CHECKIN_ADDS_ALL,       ///< Every type (RemoveStaleComponents() marking)
+  CHECKIN_ADDS_EXPANDERS, ///< Expanders only, applied first
+  CHECKIN_ADDS_OTHERS     ///< Every type but expanders
+};
+
+/*!
     @brief  How to apply a component Add from a checkin response.
 */
 enum CheckinAction {
@@ -98,6 +107,7 @@ private:
                             void **arg);
   static bool cbExpanderAdds(pb_istream_t *stream, const pb_field_t *field,
                              void **arg);
+  bool decodeAddsPass(pb_istream_t *stream, CheckinAddsPass pass);
   bool SkipFailedAdd(pb_istream_t *stream, const pb_istream_t *raw,
                      const char *add_type);
   CheckinAction ReconcileAdd(const pb_istream_t *raw, pb_size_t type,
@@ -117,6 +127,7 @@ private:
   bool _has_pending = false;  ///< True if _pending awaits CommitAdd()
   bool _wake_checkin = false; ///< True if checking in after a light sleep wake
   bool _mark_only = false;    ///< True while RemoveStaleComponents() marks
+  CheckinAddsPass _adds_pass = CHECKIN_ADDS_ALL; ///< Adds the decode applies
   std::vector<uint8_t> _stored_response; ///< Raw checkin response, applied
                                          ///< outside the MQTT callback
   uint16_t _adds_total = 0;              ///< Component adds seen during checkin

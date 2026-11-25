@@ -197,6 +197,8 @@ bool CheckinModel::ProcessResponse(pb_istream_t *stream) {
             This pass decodes into a scratch struct, so the response from
             ProcessResponse() is left untouched for the getters and
             configureSleep(), even if this decode fails part way through.
+            Expanders are added in a first pass of their own, the digital,
+            analog and PWM pins on them decode before them on the wire.
     @param  stream
             Copy of the incoming data stream, positioned at the response.
     @returns True if the response was decoded, False otherwise.
@@ -205,6 +207,25 @@ bool CheckinModel::ProcessComponentAdds(pb_istream_t *stream) {
   _adds_total = 0;
   _adds_failed = 0;
 
+  pb_istream_t expanders_stream = *stream;
+  bool decoded = decodeAddsPass(&expanders_stream, CHECKIN_ADDS_EXPANDERS) &&
+                 decodeAddsPass(stream, CHECKIN_ADDS_OTHERS);
+  _adds_pass = CHECKIN_ADDS_ALL;
+  return decoded;
+}
+
+/*!
+    @brief  Decodes the checkin response once, applying the component adds
+            selected by pass.
+    @param  stream
+            Copy of the incoming data stream, positioned at the response.
+            Consumed.
+    @param  pass
+            Which component adds to apply.
+    @returns True if the response was decoded, False otherwise.
+*/
+bool CheckinModel::decodeAddsPass(pb_istream_t *stream, CheckinAddsPass pass) {
+  _adds_pass = pass;
   ws_checkin_B2D adds_pass = ws_checkin_B2D_init_zero;
 
   // Set up the pre-decode callback (cb_payload) which will be called BEFORE
@@ -325,7 +346,15 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
   ws_checkin_Response *response = (ws_checkin_Response *)field->pData;
   CheckinModel *model = (CheckinModel *)*arg;
 
-  // Set up callbacks for ALL component types
+  // Expanders first: the pins on them need them to exist
+  if (model->_adds_pass != CHECKIN_ADDS_OTHERS) {
+    response->component_adds.expander_adds.funcs.decode = &cbExpanderAdds;
+    response->component_adds.expander_adds.arg = model;
+  }
+  if (model->_adds_pass == CHECKIN_ADDS_EXPANDERS)
+    return true;
+
+  // Set up callbacks for the other component types
   response->component_adds.digital_adds.funcs.decode = &cbDigitalAdds;
   response->component_adds.digital_adds.arg = model;
 
@@ -355,9 +384,6 @@ bool CheckinModel::cbSetupResponse(pb_istream_t *stream,
 
   response->component_adds.display_adds.funcs.decode = &cbDisplayAdds;
   response->component_adds.display_adds.arg = model;
-
-  response->component_adds.expander_adds.funcs.decode = &cbExpanderAdds;
-  response->component_adds.expander_adds.arg = model;
 
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2350)
   // sleep_config.ext0s is a callback field, decode it into the sleep model
