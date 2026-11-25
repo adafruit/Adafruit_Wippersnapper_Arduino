@@ -262,6 +262,25 @@ bool UARTHardware::ConfigureSerial() {
 #endif
     _baud_rate = _config.baud_rate;
   }
+
+  // SerialConfig.timeout is the maximum time to wait for serial data, in ms
+  // (proto default 1000 ms). Apply it as the Stream read timeout used by
+  // readBytes()/readString() etc. on every architecture. (ESP32's begin()
+  // timeout argument above is only the auto-baud detection timeout.)
+  unsigned long timeout_ms =
+      _config.timeout > 0 ? (unsigned long)_config.timeout : ONE_SECOND_IN_MS;
+  // Only one port is ever configured, so set the timeout on exactly one.
+#if HAS_SW_SERIAL
+  if (_swSerial != nullptr) {
+    _swSerial->setTimeout(timeout_ms);
+  } else if (_hwSerial != nullptr) {
+    _hwSerial->setTimeout(timeout_ms);
+  }
+#else
+  if (_hwSerial != nullptr) {
+    _hwSerial->setTimeout(timeout_ms);
+  }
+#endif // HAS_SW_SERIAL
   return true;
 }
 
