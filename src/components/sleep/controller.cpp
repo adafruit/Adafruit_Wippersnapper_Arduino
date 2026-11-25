@@ -484,9 +484,13 @@ void SleepController::StartSleep() {
 #ifdef ARDUINO_ARCH_ESP32
 #ifdef USE_TINYUSB
     // Deep sleep powers USB down and wakes through a reset, disconnect from
-    // the host first so it sees a clean unplug and enumerates the wake
+    // the host first so it sees a clean unplug and enumerates the wake.
+    // Skip the detach when no host has the device mounted (e.g. on battery).
     WS_PRINTER.flush();
-    TinyUSBDevice.detach();
+    if (TinyUSBDevice.mounted()) {
+      TinyUSBDevice.detach();
+      delay(2); // let the host see the disconnect before USB powers down
+    }
 #endif
     esp_deep_sleep_start();
 #else
@@ -534,12 +538,17 @@ void SleepController::StartSleep() {
     // Dormant sleep stops the USB clock mid-session, which the host reports
     // as a malfunctioning device that never re-enumerates. Disconnect from
     // the host first, and reconnect once awake so it enumerates again.
+    // Skip the detach when no host has the device mounted (e.g. on battery).
     WS_PRINTER.flush();
-    TinyUSBDevice.detach();
+    if (TinyUSBDevice.mounted()) {
+      TinyUSBDevice.detach();
+      delay(2); // let the host see the disconnect before the clock stops
+    }
 #endif
     Ws->_wdt->startSleep();
 #ifdef USE_TINYUSB
     TinyUSBDevice.attach();
+    delay(10); // let the reconnect settle before using the port again
 #endif
 #endif
   } else {
