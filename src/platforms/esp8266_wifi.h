@@ -18,11 +18,11 @@
 #define ESP8266_WIFI_H
 
 #ifdef ARDUINO_ARCH_ESP8266
+#include "../helpers/ws_helper_wifi_country.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "ESP8266WiFi.h"
 #include "ESP8266WiFiMulti.h"
-#include "wifi_country.h"
 #include "wippersnapper.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
@@ -194,7 +194,7 @@ public:
            stored in flash, so there's nothing to restore when unset.
   */
   void set_wifi_country() {
-    if (strlen(Ws->_configV2.network_country) > 0) {
+    if (strlen(Ws->_configV2.network_country) == 2) {
       wifi_country_t country = {};
       strlcpy(country.cc, Ws->_configV2.network_country, sizeof(country.cc));
       country.schan = 1;

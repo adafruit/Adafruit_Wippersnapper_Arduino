@@ -1,5 +1,5 @@
 /*!
- * @file wifi_country.h
+ * @file ws_helper_wifi_country.h
  *
  * WiFi regulatory country codes shared by the ESP32 and ESP8266
  * platforms, so a country set in secrets.json behaves the same on both.
@@ -13,10 +13,10 @@
  * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_WIFI_COUNTRY_H
-#define WS_WIFI_COUNTRY_H
+#ifndef WS_HELPER_WIFI_COUNTRY_H
+#define WS_HELPER_WIFI_COUNTRY_H
 
-#include "wippersnapper.h"
+#include "ws_helper_macros.h"
 #include <Arduino.h>
 
 /*!
@@ -74,4 +74,4 @@ inline void ws_print_wifi_country(const char *cc, uint8_t schan,
   WS_DEBUG_PRINTLNVAR(schan + nchan - 1);
 }
 
-#endif // WS_WIFI_COUNTRY_H
+#endif // WS_HELPER_WIFI_COUNTRY_H

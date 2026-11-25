@@ -184,7 +184,7 @@ public:
   */
   void set_wifi_country() {
 #if defined(PICO_CYW43_SUPPORTED)
-    if (strlen(Ws->_configV2.network_country) == 0)
+    if (strlen(Ws->_configV2.network_country) != 2)
       return;
     // The iovar needs the radio on, as scanNetworks() would do
     if ((cyw43_state.itf_state & (1 << CYW43_ITF_STA)) == 0)

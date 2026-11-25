@@ -20,13 +20,13 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include "wippersnapper.h"
 
+#include "../helpers/ws_helper_wifi_country.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "WiFi.h"
 #include "WiFiMulti.h"
 #include "esp_wifi.h"
-#include "wifi_country.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
 extern wippersnapper *Ws; ///< Wippersnapper client instance
@@ -212,7 +212,7 @@ public:
   */
   void set_wifi_country() {
     const char *country = "01";
-    if (strlen(Ws->_configV2.network_country) > 0) {
+    if (strlen(Ws->_configV2.network_country) == 2) {
       if (ws_wifi_country_channels(Ws->_configV2.network_country) > 0) {
         country = Ws->_configV2.network_country;
       } else {

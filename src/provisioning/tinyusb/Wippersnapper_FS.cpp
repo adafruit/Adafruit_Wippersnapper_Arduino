@@ -432,7 +432,6 @@ void Wippersnapper_FS::parseSecrets() {
           String msg = String("WARNING: More than 3 networks in secrets.json, "
                               "only the first 3 will be used. Not using ") +
                        (altnetworks[i]["network_ssid"] | "") + "\n";
-          WS_DEBUG_PRINTVAR(msg.c_str());
           writeToBootOut(msg.c_str());
           break;
         }
@@ -464,7 +463,6 @@ void Wippersnapper_FS::parseSecrets() {
         String("WARNING: network_country in secrets.json must be a "
                "two letter ISO 3166 code, such as \"GB\". Ignoring: ") +
         (country | "(not a string)") + "\n";
-    WS_DEBUG_PRINTVAR(msg.c_str());
     writeToBootOut(msg.c_str());
   }
 
@@ -498,15 +496,16 @@ void Wippersnapper_FS::parseSecrets() {
 }
 
 /*!
-    @brief    Appends message string to wipper_boot_out.txt file.
-    @note     A boot file that can't be opened is reported to serial and
-              skipped, so a warning or log line never halts by itself.
+    @brief    Appends message string to wipper_boot_out.txt file, and
+              prints it to serial.
+    @note     A boot file that can't be opened is skipped, so a warning
+              or log line never halts by itself.
     @param    str
                 PROGMEM string.
     @param    halt
                 If true, halts with fsHalt(str) after writing, for fatal
-                errors. False (default) returns, for log lines and
-                warnings.
+                errors. False (default) prints it and returns, for log
+                lines and warnings.
 */
 void Wippersnapper_FS::writeToBootOut(PGM_P str, bool halt) {
   File32 bootFile = wipperFatFs_v2.open("/wipper_boot_out.txt", FILE_WRITE);
@@ -514,11 +513,10 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str, bool halt) {
     bootFile.print(str);
     bootFile.flush();
     bootFile.close();
-  } else {
-    WS_DEBUG_PRINTLN("ERROR: Unable to open wipper_boot_out.txt for logging!");
   }
   if (halt)
-    fsHalt(str);
+    fsHalt(str); // prints it repeatedly
+  WS_DEBUG_PRINTVAR(str);
 }
 
 /*!
