@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: Tyeth Gundry for Adafruit Industries, 2026
+#
+# SPDX-License-Identifier: MIT
+#
+# Checks the firmware's WiFi country table (TABLE in
+# .github/scripts/check_wifi_country_table.py)
+# against the "Supported country codes" list of esp_wifi_set_country_code() in
+# the ESP-IDF that each pinned arduino-esp32 BSP ships. Fails when the
+# platformio.ini pioarduino pin or ci-arduino's main ESP32 BSP ref drifts from
+# the table. One-off refs (S31, P4, ...) only warn. See
+# .agents/skills/bump-esp32-bsp/SKILL.md.
+name: WiFi country table sync
+
+on:
+  push:
+    branches:
+      - migrate-api-v2
+  pull_request:
+    # No branch or path filter: a ci-arduino BSP move changes nothing in this
+    # repo, so any PR (or the DO-NOT-MERGE test PR of a BSP bump, which
+    # swaps CI_ARDUINO_REF below) should re-check it. Takes about 20s.
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+env:
+  # Point at a ci-arduino branch to check a BSP bump before it merges
+  CI_ARDUINO_REF: ci-wippersnapper
+
+permissions:
+  contents: read
+
+jobs:
+  wifi-country-sync:
+    name: WiFi country table vs ESP-IDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: adafruit/ci-arduino
+          ref: ${{ env.CI_ARDUINO_REF }}
+          path: ci
+      - name: Compare the country table with each BSP's esp_wifi.h
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          python3 .github/scripts/check_wifi_country_table.py
+          --platformio platformio.ini
+          --all-platforms ci/all_platforms.py
