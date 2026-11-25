@@ -1,0 +1,23 @@
+{
+  "skill_name": "bump_esp32_bsp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "arduino-esp32 3.3.14 is out. Bump WipperSnapper to it.",
+      "expected_output": "Inventories the current fork refs in ci-arduino all_platforms.py and leaves the S31/P4 outliers alone. Mirrors tag 3.3.14 as adafruit/arduino-esp32 bsp-3-3-14 (after confirming with tyeth). Moves the bsp-3-3-13 targets on a ci-wippersnapper-bsp-3-3-14 branch, checks for dead refs and validates every FQBN menu option against the 3.3.14 boards.txt. Finds the numbered pioarduino release whose platform.json ships 3.3.14 and pins it in platformio.ini, in separate PRs for v1 main and v2 migrate-api-v2. Re-checks each .boards.local.txt override. Runs .github/scripts/check_wifi_country_table.py against the new pins. Opens DO-NOT-MERGE CI_ARDUINO_REF test PRs for v1 and v2. Does not build with arduino-cli locally.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "The WiFi country table sync check failed on my PR: 'IDF supports, table lacks: SA'. What do I do?",
+      "expected_output": "Explains that the pinned BSP's ESP-IDF esp_wifi.h now lists SA as a supported country code. SA must be added to ch13 or ch11 in src/helpers/ws_helper_wifi_country.h according to its regulatory 2.4GHz channel range, which has to be checked rather than guessed. Updates the doc comment if ch11 changes, then re-runs check_wifi_country_table.py until it passes.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Pin platformio to pioarduino stable so we always get the latest ESP32 core.",
+      "expected_output": "Pushes back. The skill says to pin a numbered pioarduino release that ships the same arduino-esp32 tag as ci-arduino, because stable moves (it already points at arduino-esp32 4.x), and check_wifi_country_table.py warns on a moving pin. Offers to find the numbered release that matches ci-arduino's current bsp-X-Y-Z ref instead.",
+      "files": []
+    }
+  ]
+}
