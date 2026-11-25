@@ -438,8 +438,9 @@ void Wippersnapper_FS::parseSecrets() {
         convertFromJson(altnetworks[i], Ws->_multiNetworksV2[i]);
         WS_DEBUG_PRINT("Added SSID: ");
         WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].ssid);
-        WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].pass);
+        WS_DEBUG_PRINT("PASS: (");
+        WS_DEBUG_PRINTVAR(strlen(Ws->_multiNetworksV2[i].pass));
+        WS_DEBUG_PRINTLN(" chars)");
       }
       Ws->_isWiFiMultiV2 = true;
     } else {
@@ -483,13 +484,14 @@ void Wippersnapper_FS::parseSecrets() {
                    true);
   }
 
-  writeToBootOut("Secrets Contents\n");
-  writeToBootOut("Network Info\n: ");
-  writeToBootOut(Ws->_configV2.network.ssid);
-  writeToBootOut(Ws->_configV2.network.pass);
-  writeToBootOut("IO Creds.\n: ");
-  writeToBootOut(Ws->_configV2.aio_user);
-  writeToBootOut(Ws->_configV2.aio_key);
+  // Users share this file when asking for help, so never log the WiFi
+  // password or IO key, only their lengths
+  String secrets = String("Secrets Contents\nNetwork SSID: ") +
+                   Ws->_configV2.network.ssid + "\nNetwork password: (" +
+                   strlen(Ws->_configV2.network.pass) +
+                   " chars)\nIO username: " + Ws->_configV2.aio_user +
+                   "\nIO key: (" + strlen(Ws->_configV2.aio_key) + " chars)\n";
+  writeToBootOut(secrets.c_str());
 
   // Close secrets.json file
   secretsFile.close();

@@ -97,8 +97,9 @@ void WipperSnapper_LittleFS::parseSecrets() {
         convertFromJson(altnetworks[i], Ws->_multiNetworksV2[i]);
         WS_DEBUG_PRINT("Added SSID: ");
         WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].ssid);
-        WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].pass);
+        WS_DEBUG_PRINT("PASS: (");
+        WS_DEBUG_PRINTVAR(strlen(Ws->_multiNetworksV2[i].pass));
+        WS_DEBUG_PRINTLN(" chars)");
       }
       Ws->_isWiFiMultiV2 = true;
     } else {
