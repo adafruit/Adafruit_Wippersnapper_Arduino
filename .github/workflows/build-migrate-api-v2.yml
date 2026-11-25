@@ -229,6 +229,7 @@ jobs:
             "qtpy_esp32s2",
             "qtpy_esp32s3_n4r2",
             "lilygo_t_display_s3",
+            "qualia_s3_rgb666",
             "xiao_esp32s3",
           ]
     steps:
