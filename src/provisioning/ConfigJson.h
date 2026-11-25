@@ -25,6 +25,7 @@ void convertFromJson(JsonVariantConst src, networkConfig &dst);
 // Converters for secrets configuration
 void convertToJson(const secretsConfig &src, JsonVariant dst);
 void convertFromJson(JsonVariantConst src, secretsConfig &dst);
+bool parseCountryCode(JsonVariantConst src, char dst[3]);
 // Converters for display configuration
 void convertToJson(const displayConfig &src, JsonVariant dst);
 void convertFromJson(JsonVariantConst src, displayConfig &dst);

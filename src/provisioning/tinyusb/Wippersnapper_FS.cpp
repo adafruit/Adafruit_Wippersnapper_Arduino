@@ -370,6 +370,7 @@ void Wippersnapper_FS::createSecretsFile() {
   strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
   strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
   strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
+  secretsConfig.network_country[0] = '\0';
   secretsConfig.status_pixel_brightness = 0.2;
 
   // Create and fill JSON document from secretsConfig
@@ -428,17 +429,18 @@ void Wippersnapper_FS::parseSecrets() {
       // check if over 3, warn user and take first three
       for (int i = 0; i < altNetworkCount; i++) {
         if (i >= 3) {
-          WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
-                         "only the first 3 will be used. Not using ");
-          WS_DEBUG_PRINTLNVAR(
-              altnetworks[i]["network_ssid"].as<const char *>());
+          String msg = String("WARNING: More than 3 networks in secrets.json, "
+                              "only the first 3 will be used. Not using ") +
+                       (altnetworks[i]["network_ssid"] | "") + "\n";
+          writeToBootOut(msg.c_str());
           break;
         }
         convertFromJson(altnetworks[i], Ws->_multiNetworksV2[i]);
         WS_DEBUG_PRINT("Added SSID: ");
         WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].ssid);
-        WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].pass);
+        WS_DEBUG_PRINT("PASS: (");
+        WS_DEBUG_PRINTVAR(strlen(Ws->_multiNetworksV2[i].pass));
+        WS_DEBUG_PRINTLN(" chars)");
       }
       Ws->_isWiFiMultiV2 = true;
     } else {
@@ -452,52 +454,71 @@ void Wippersnapper_FS::parseSecrets() {
   // Extract a config struct from the JSON document
   Ws->_configV2 = doc.as<secretsConfig>();
 
+  // Parse the optional WiFi country, an invalid one is ignored
+  JsonVariantConst country = doc["network_type_wifi"]["network_country"];
+  // TODO: if the v1 write-only-if-changed boot file
+  // (adafruit/Adafruit_Wippersnapper_Arduino#656) comes to v2, warnings
+  // must be part of the content it compares, not appended each boot
+  if (!parseCountryCode(country, Ws->_configV2.network_country)) {
+    String msg =
+        String("WARNING: network_country in secrets.json must be a "
+               "two letter ISO 3166 code, such as \"GB\". Ignoring: ") +
+        (country | "(not a string)") + "\n";
+    writeToBootOut(msg.c_str());
+  }
+
   // Validate the config struct is not filled with default values
   if (strcmp(Ws->_configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
       strcmp(Ws->_configV2.aio_key, "YOUR_IO_KEY_HERE") == 0) {
     writeToBootOut(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
-        "io_username and io_key to match your Adafruit IO credentials!\n");
-    fsHalt(
-        "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
-        "io_username and io_key to match your Adafruit IO credentials!");
+        "io_username and io_key to match your Adafruit IO credentials!\n",
+        true);
   }
 
   if (strcmp(Ws->_configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
       strcmp(Ws->_configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
     writeToBootOut("ERROR: Invalid network credentials in secrets.json! TO "
                    "FIX: Please change network_ssid and network_password to "
-                   "match your Adafruit IO credentials!\n");
-    fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
-           "change network_ssid and network_password to match your Adafruit IO "
-           "credentials!");
+                   "match your Adafruit IO credentials!\n",
+                   true);
   }
 
-  writeToBootOut("Secrets Contents\n");
-  writeToBootOut("Network Info\n: ");
-  writeToBootOut(Ws->_configV2.network.ssid);
-  writeToBootOut(Ws->_configV2.network.pass);
-  writeToBootOut("IO Creds.\n: ");
-  writeToBootOut(Ws->_configV2.aio_user);
-  writeToBootOut(Ws->_configV2.aio_key);
+  // Users share this file when asking for help, so never log the WiFi
+  // password or IO key, only their lengths
+  String secrets = String("Secrets Contents\nNetwork SSID: ") +
+                   Ws->_configV2.network.ssid + "\nNetwork password: (" +
+                   strlen(Ws->_configV2.network.pass) +
+                   " chars)\nIO username: " + Ws->_configV2.aio_user +
+                   "\nIO key: (" + strlen(Ws->_configV2.aio_key) + " chars)\n";
+  writeToBootOut(secrets.c_str());
 
   // Close secrets.json file
   secretsFile.close();
 }
 
 /*!
-    @brief    Appends message string to wipper_boot_out.txt file.
+    @brief    Appends message string to wipper_boot_out.txt file, and
+              prints it to serial.
+    @note     A boot file that can't be opened is skipped, so a warning
+              or log line never halts by itself.
     @param    str
                 PROGMEM string.
+    @param    halt
+                If true, halts with fsHalt(str) after writing, for fatal
+                errors. False (default) prints it and returns, for log
+                lines and warnings.
 */
-void Wippersnapper_FS::writeToBootOut(PGM_P str) {
-  // Append error output to FS
+void Wippersnapper_FS::writeToBootOut(PGM_P str, bool halt) {
   File32 bootFile = wipperFatFs_v2.open("/wipper_boot_out.txt", FILE_WRITE);
-  if (!bootFile)
-    fsHalt("ERROR: Unable to open wipper_boot_out.txt for logging!");
-  bootFile.print(str);
-  bootFile.flush();
-  bootFile.close();
+  if (bootFile) {
+    bootFile.print(str);
+    bootFile.flush();
+    bootFile.close();
+  }
+  if (halt)
+    fsHalt(str); // prints it repeatedly
+  WS_DEBUG_PRINTVAR(str);
 }
 
 /*!

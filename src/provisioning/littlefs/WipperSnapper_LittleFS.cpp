@@ -97,8 +97,9 @@ void WipperSnapper_LittleFS::parseSecrets() {
         convertFromJson(altnetworks[i], Ws->_multiNetworksV2[i]);
         WS_DEBUG_PRINT("Added SSID: ");
         WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].ssid);
-        WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLNVAR(Ws->_multiNetworksV2[i].pass);
+        WS_DEBUG_PRINT("PASS: (");
+        WS_DEBUG_PRINTVAR(strlen(Ws->_multiNetworksV2[i].pass));
+        WS_DEBUG_PRINTLN(" chars)");
       }
       Ws->_isWiFiMultiV2 = true;
     } else {
@@ -111,6 +112,15 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
   // Extract a config struct from the JSON document
   Ws->_configV2 = doc.as<secretsConfig>();
+
+  // Parse the optional WiFi country, an invalid one is ignored
+  JsonVariantConst country = doc["network_type_wifi"]["network_country"];
+  // No USB drive on LittleFS boards, so no wipper_boot_out.txt to log to
+  if (!parseCountryCode(country, Ws->_configV2.network_country)) {
+    WS_DEBUG_PRINT("WARNING: network_country in secrets.json must be a two "
+                   "letter ISO 3166 code, such as \"GB\". Ignoring: ");
+    WS_DEBUG_PRINTLNVAR(country | "(not a string)");
+  }
 
   // Validate the config struct is not filled with default values
   if (strcmp(Ws->_configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||

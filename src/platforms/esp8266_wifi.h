@@ -18,6 +18,7 @@
 #define ESP8266_WIFI_H
 
 #ifdef ARDUINO_ARCH_ESP8266
+#include "../helpers/ws_helper_wifi_country.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "ESP8266WiFi.h"
@@ -114,6 +115,7 @@ public:
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(100);
+    set_wifi_country();
 
     // Perform a network scan, including hidden networks
     int n = WiFi.scanNetworks(/*async=*/false, /*show_hidden=*/true);
@@ -181,6 +183,38 @@ public:
     // User-set network not found
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     return WS_SSID_SCAN_SSID_NOT_FOUND;
+  }
+
+  /*!
+  @brief   Sets the WiFi regulatory country from secrets.json.
+  @note    The SDK takes the channel range as given rather than looking
+           the country up, so it comes from the list ESP32 uses. Codes
+           outside that list get world safe "01" (channels 1-11), as on
+           ESP32. The SDK default is "CN" (channels 1-13) and isn't
+           stored in flash, so there's nothing to restore when unset.
+  */
+  void set_wifi_country() {
+    if (strlen(Ws->_configV2.network_country) == 2) {
+      wifi_country_t country = {};
+      strlcpy(country.cc, Ws->_configV2.network_country, sizeof(country.cc));
+      country.schan = 1;
+      country.nchan = ws_wifi_country_channels(country.cc);
+      country.policy = WIFI_COUNTRY_POLICY_AUTO;
+      if (country.nchan == 0) {
+        WS_DEBUG_PRINT("ERROR: Unsupported WiFi country code: ");
+        WS_DEBUG_PRINTLNVAR(country.cc);
+        strlcpy(country.cc, "01", sizeof(country.cc));
+        country.nchan = 11;
+      }
+      if (!wifi_set_country(&country)) {
+        WS_DEBUG_PRINT("ERROR: Unable to set WiFi country: ");
+        WS_DEBUG_PRINTLNVAR(country.cc);
+      }
+    }
+
+    wifi_country_t info = {};
+    if (wifi_get_country(&info))
+      ws_print_wifi_country(info.cc, info.schan, info.nchan);
   }
 
   /*!
