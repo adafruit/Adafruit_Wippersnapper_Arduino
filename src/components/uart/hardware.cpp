@@ -116,6 +116,70 @@ uint16_t UARTHardware::UartPacketFormatToConfig(
   }
 }
 
+#if defined(ARDUINO_ARCH_ESP8266) && HAS_SW_SERIAL
+/*!
+    @brief  Converts a ws_uart_PacketFormat to an ESP8266 SoftwareSerial
+            (EspSoftwareSerial) config, whose values differ from
+            HardwareSerial's.
+    @param  uart_pkt_fmt
+            The UART packet format to convert.
+    @return The corresponding EspSoftwareSerial::Config value.
+*/
+static EspSoftwareSerial::Config
+UartPacketFormatToSwConfig(const ws_uart_PacketFormat uart_pkt_fmt) {
+  switch (uart_pkt_fmt) {
+  case ws_uart_PacketFormat_PF_5N1:
+    return EspSoftwareSerial::SWSERIAL_5N1;
+  case ws_uart_PacketFormat_PF_6N1:
+    return EspSoftwareSerial::SWSERIAL_6N1;
+  case ws_uart_PacketFormat_PF_7N1:
+    return EspSoftwareSerial::SWSERIAL_7N1;
+  case ws_uart_PacketFormat_PF_5N2:
+    return EspSoftwareSerial::SWSERIAL_5N2;
+  case ws_uart_PacketFormat_PF_6N2:
+    return EspSoftwareSerial::SWSERIAL_6N2;
+  case ws_uart_PacketFormat_PF_7N2:
+    return EspSoftwareSerial::SWSERIAL_7N2;
+  case ws_uart_PacketFormat_PF_8N2:
+    return EspSoftwareSerial::SWSERIAL_8N2;
+  case ws_uart_PacketFormat_PF_5E1:
+    return EspSoftwareSerial::SWSERIAL_5E1;
+  case ws_uart_PacketFormat_PF_6E1:
+    return EspSoftwareSerial::SWSERIAL_6E1;
+  case ws_uart_PacketFormat_PF_7E1:
+    return EspSoftwareSerial::SWSERIAL_7E1;
+  case ws_uart_PacketFormat_PF_8E1:
+    return EspSoftwareSerial::SWSERIAL_8E1;
+  case ws_uart_PacketFormat_PF_5E2:
+    return EspSoftwareSerial::SWSERIAL_5E2;
+  case ws_uart_PacketFormat_PF_6E2:
+    return EspSoftwareSerial::SWSERIAL_6E2;
+  case ws_uart_PacketFormat_PF_7E2:
+    return EspSoftwareSerial::SWSERIAL_7E2;
+  case ws_uart_PacketFormat_PF_8E2:
+    return EspSoftwareSerial::SWSERIAL_8E2;
+  case ws_uart_PacketFormat_PF_5O1:
+    return EspSoftwareSerial::SWSERIAL_5O1;
+  case ws_uart_PacketFormat_PF_6O1:
+    return EspSoftwareSerial::SWSERIAL_6O1;
+  case ws_uart_PacketFormat_PF_7O1:
+    return EspSoftwareSerial::SWSERIAL_7O1;
+  case ws_uart_PacketFormat_PF_8O1:
+    return EspSoftwareSerial::SWSERIAL_8O1;
+  case ws_uart_PacketFormat_PF_5O2:
+    return EspSoftwareSerial::SWSERIAL_5O2;
+  case ws_uart_PacketFormat_PF_6O2:
+    return EspSoftwareSerial::SWSERIAL_6O2;
+  case ws_uart_PacketFormat_PF_7O2:
+    return EspSoftwareSerial::SWSERIAL_7O2;
+  case ws_uart_PacketFormat_PF_8O2:
+    return EspSoftwareSerial::SWSERIAL_8O2;
+  default: // PF_8N1 and PF_UNSPECIFIED
+    return EspSoftwareSerial::SWSERIAL_8N1;
+  }
+}
+#endif // ARDUINO_ARCH_ESP8266 && HAS_SW_SERIAL
+
 /*!
  * @brief  Configures the UART serial using a provided configuration.
  * @return True if the serial was successfully configured, False otherwise.
@@ -129,13 +193,16 @@ bool UARTHardware::ConfigureSerial() {
   int8_t tx_pin = (int8_t)_pin_tx.num;
   uint16_t cfg = UartPacketFormatToConfig(_config.format);
 
-  // TODO: SerialConfig no longer has use_sw_serial (adafruit/
-  // Wippersnapper_Protobuf#230), so the device must decide when to use
-  // SoftwareSerial itself (e.g. ESP8266, whose UART1 is TX-only). Until then
-  // only hardware serial is used and sw_serial_invert is ignored. The
-  // controller already only hands drivers GetHardwareSerial(), so the old
-  // SoftwareSerial branch here never worked end-to-end.
+  // SerialConfig no longer carries use_sw_serial (adafruit/
+  // Wippersnapper_Protobuf#230), so the device picks. Board definitions
+  // currently expose a single UART on its default pins. ESP8266 needs
+  // SoftwareSerial there (UART0 is the USB/debug Serial and UART1 is TX-only);
+  // other architectures use that default hardware UART.
+#if defined(ARDUINO_ARCH_ESP8266) && HAS_SW_SERIAL
+  bool use_sw_serial = true;
+#else
   bool use_sw_serial = false;
+#endif
   if (use_sw_serial) {
 // Does this architecture support SoftwareSerial?
 #if HAS_SW_SERIAL
@@ -146,7 +213,12 @@ bool UARTHardware::ConfigureSerial() {
           "[uart] ERROR: Failed to allocate a SoftwareSerial instance!");
       return false;
     }
+#if defined(ARDUINO_ARCH_ESP8266)
+    _swSerial->begin((uint32_t)_config.baud_rate,
+                     UartPacketFormatToSwConfig(_config.format));
+#else
     _swSerial->begin((unsigned long)_config.baud_rate);
+#endif
     _baud_rate = _config.baud_rate;
 #endif // HAS_SW_SERIAL
   } else {
@@ -168,7 +240,14 @@ bool UARTHardware::ConfigureSerial() {
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg, rx_pin,
                      tx_pin, false, (unsigned long)_config.timeout);
 #elif ARDUINO_ARCH_RP2040
-    // Pins are already defined by the Serial1/Serial2 instances
+    // Serial1 runs on its default pins, which is all board definitions expose.
+    // TODO: to support other pins, use Serial1/Serial2 (UART0/UART1) when the
+    // RX/TX pair belongs to that UART and it is free, calling setRX/setTX
+    // first. Check the pair against arduino-pico's SerialUART::setRX/setTX pin
+    // lists beforehand: they panic on an invalid pin. Otherwise fall back to
+    // SoftwareSerial, which arduino-pico implements with PIO (SerialPIO): check
+    // `if (!*_swSerial)` after begin() for "no free PIO state machine", since
+    // Servo and the Pico W radio share the PIO state machines.
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
 #else
 // ESP8266, SAMD, and other platforms

@@ -80,11 +80,11 @@ bool GPSHardware::Handle_GPSConfig(ws_gps_Config *gps_config) {
       }
       WS_DEBUG_PRINT("[gps] Expected response: ");
       WS_DEBUG_PRINTLNVAR(msg_resp);
-      if (_iface_type == GPS_IFACE_UART_HW) {
+      if (IsUartIface()) {
         // Flush the RX/TX buffers before sending
-        _hw_serial->flush();
-        while (_hw_serial->available() > 0) {
-          _hw_serial->read();
+        _uart->flush();
+        while (_uart->available() > 0) {
+          _uart->read();
         }
       } else if (_iface_type == GPS_IFACE_I2C) {
         WS_DEBUG_PRINT("[gps] Flushing I2C buffers...");
@@ -182,8 +182,32 @@ bool GPSHardware::SetInterface(HardwareSerial *serial) {
     return false;
   // Configure the hardware serial interface
   _hw_serial = serial;
+  _uart = serial;
   _iface_type = GPS_IFACE_UART_HW;
   return true;
+}
+
+/*!
+ * @brief Sets a software UART interface for the GPS controller (e.g. ESP8266
+ *        SoftwareSerial). The port must already be started by UARTHardware.
+ * @param serial
+ *        Pointer to the software serial port, as a Stream.
+ * @returns True if the interface was set successfully, False otherwise.
+ */
+bool GPSHardware::SetSoftwareSerialInterface(Stream *serial) {
+  if (serial == nullptr)
+    return false;
+  _uart = serial;
+  _iface_type = GPS_IFACE_UART_SW;
+  return true;
+}
+
+/*!
+ * @brief Checks whether the GPS talks over a UART, hardware or software.
+ * @returns True for GPS_IFACE_UART_HW or GPS_IFACE_UART_SW, False otherwise.
+ */
+bool GPSHardware::IsUartIface() const {
+  return _iface_type == GPS_IFACE_UART_HW || _iface_type == GPS_IFACE_UART_SW;
 }
 
 /*!
@@ -268,7 +292,7 @@ bool GPSHardware::DetectUbxI2C(uint32_t addr) {
  */
 bool GPSHardware::QueryModuleType() {
   WS_DEBUG_PRINTLN("[gps] Detecting module type...");
-  if (_iface_type == GPS_IFACE_UART_HW) {
+  if (IsUartIface()) {
     // Try to detect MediaTek GPS module
     if (DetectMtkUart()) {
       WS_DEBUG_PRINTLN("[gps] Using MediaTek GPS driver!");
@@ -311,22 +335,22 @@ bool GPSHardware::QueryModuleType() {
  * @returns True if a MediaTek GPS module was detected, False otherwise.
  */
 bool GPSHardware::DetectMtkUart() {
-  if (_iface_type != GPS_IFACE_UART_HW) {
-    WS_DEBUG_PRINTLN("[gps] ERROR: MediaTek GPS module only supports Hardware "
-                     "Serial interface!");
+  if (!IsUartIface()) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: MediaTek GPS detection needs a UART "
+                     "interface!");
     return false;
   }
 
   // Clear the tx and rx buffers before sending the command
-  _hw_serial->flush();
-  while (_hw_serial->available() > 0) {
-    _hw_serial->read();
+  _uart->flush();
+  while (_uart->available() > 0) {
+    _uart->read();
   }
-  _hw_serial->println(CMD_MTK_QUERY_FW);
+  _uart->println(CMD_MTK_QUERY_FW);
   // Query MediaTek firmware version
   // Wait for response
   uint16_t timeout = 2 * ONE_SECOND_IN_MS; // 2 second timeout
-  while (_hw_serial->available() < MAX_NEMA_SENTENCE_LEN && timeout--) {
+  while (_uart->available() < MAX_NEMA_SENTENCE_LEN && timeout--) {
     delay(1);
   }
 
@@ -337,7 +361,7 @@ bool GPSHardware::DetectMtkUart() {
   // command by reading out the NMEA sentence string into a buffer
   size_t buf_len = MAX_NEMA_SENTENCE_LEN * 4; // +3 for \r\n and null terminator
   char buffer[buf_len];
-  size_t available = _hw_serial->available();
+  size_t available = _uart->available();
   size_t bytes_to_read = min(available, buf_len - 1);
   // Print the two out
   WS_DEBUG_PRINT("[gps] Reading MediaTek GPS response: ");
@@ -345,7 +369,7 @@ bool GPSHardware::DetectMtkUart() {
   WS_DEBUG_PRINT(" bytes, reading ");
   WS_DEBUG_PRINTLNVAR(bytes_to_read);
   for (size_t i = 0; i < bytes_to_read; i++) {
-    buffer[i] = _hw_serial->read();
+    buffer[i] = _uart->read();
   }
   buffer[bytes_to_read] = '\0';
   WS_DEBUG_PRINT("[gps] MediaTek GPS response: ");
@@ -356,6 +380,17 @@ bool GPSHardware::DetectMtkUart() {
   }
 
   // Attempt to use Adafruit_GPS
+  if (_iface_type == GPS_IFACE_UART_SW) {
+    // Stream constructor: Adafruit_GPS::begin() leaves the port alone, so the
+    // SoftwareSerial keeps the baud rate and format UARTHardware set up.
+    _ada_gps = new Adafruit_GPS(_uart);
+    if (!_ada_gps->begin(DEFAULT_MTK_NMEA_BAUD_RATE)) {
+      WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
+      return false;
+    }
+    _driver_type = GPS_DRV_MTK;
+    return true;
+  }
   _ada_gps = new Adafruit_GPS(_hw_serial);
   int baud_rate;
 #if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350) ||            \
@@ -520,7 +555,7 @@ void GPSHardware::UartReadDiscard() {
  * @brief Discards any data in the UART or I2C RX buffer.
  */
 void GPSHardware::ReadDiscardBuffer() {
-  if (_iface_type == GPS_IFACE_UART_HW) {
+  if (IsUartIface()) {
     UartReadDiscard();
   } else if (_iface_type == GPS_IFACE_I2C) {
     I2cReadDiscard();

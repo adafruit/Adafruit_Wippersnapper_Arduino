@@ -79,6 +79,7 @@ public:
   ~GPSHardware();
   bool begin();
   bool SetInterface(HardwareSerial *serial);
+  bool SetSoftwareSerialInterface(Stream *serial);
   bool SetInterface(TwoWire *wire);
   void SetPollPeriod(uint32_t poll_period);
   void SetPollPeriodPrv(ulong poll_period_prv);
@@ -132,11 +133,13 @@ private:
   bool BuildPmtkAck(char *msg_cmd, char *msg_resp);
   void I2cReadDiscard();
   void UartReadDiscard();
+  bool IsUartIface() const;
   GpsInterfaceType _iface_type;         ///< Type of interface used by GPS
   GpsDriverType _driver_type;           ///< Type of GPS driver used by GPS
   HardwareSerial *_hw_serial = nullptr; ///< Optional HardwareSerial instance
-  TwoWire *_wire = nullptr;             ///< Optional TwoWire instance
-  Adafruit_GPS *_ada_gps = nullptr;     ///< Optional Adafruit GPS instance
+  Stream *_uart = nullptr;          ///< UART used for I/O, hardware or software
+  TwoWire *_wire = nullptr;         ///< Optional TwoWire instance
+  Adafruit_GPS *_ada_gps = nullptr; ///< Optional Adafruit GPS instance
   Adafruit_UBloxDDC *_ubx_gps_ddc =
       nullptr;                      ///< Optional Adafruit UBlox DDC instance
   Adafruit_UBX *_ubx_gps = nullptr; ///< Optional Adafruit UBX instance
