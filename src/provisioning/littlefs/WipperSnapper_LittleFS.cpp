@@ -88,10 +88,9 @@ void WipperSnapper_LittleFS::parseSecrets() {
       // check if over 3, warn user and take first three
       for (int i = 0; i < altNetworkCount; i++) {
         if (i >= 3) {
-          WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
-                         "only the first 3 will be used. Not using ");
-          WS_DEBUG_PRINTLNVAR(
-              altnetworks[i]["network_ssid"].as<const char *>());
+          fsWarn(String("WARNING: More than 3 networks in secrets.json, "
+                        "only the first 3 will be used. Not using ") +
+                 (altnetworks[i]["network_ssid"] | ""));
           break;
         }
         convertFromJson(altnetworks[i], Ws->_multiNetworksV2[i]);
@@ -111,6 +110,15 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
   // Extract a config struct from the JSON document
   Ws->_configV2 = doc.as<secretsConfig>();
+
+  // Parse the optional WiFi country, an invalid one is ignored
+  JsonVariantConst country = doc["network_type_wifi"]["network_country"];
+  if (!parseCountryCode(country, Ws->_configV2.network_country)) {
+    fsWarn(String("WARNING: network_country in secrets.json must be a two "
+                  "letter ISO 3166 code, such as \"GB\". Ignoring: ") +
+           (country.is<const char *>() ? country.as<const char *>()
+                                       : "(not a string)"));
+  }
 
   // Validate the config struct is not filled with default values
   if (strcmp(Ws->_configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
@@ -132,6 +140,18 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
   // Stop LittleFS, we no longer need it
   LittleFS.end();
+}
+
+/*!
+    @brief    Reports a non-fatal problem, such as an ignored setting in
+              secrets.json, to the serial console, then continues.
+    @note     LittleFS boards have no USB drive, so there's no
+              wipper_boot_out.txt to write it to.
+    @param    msg
+                Warning message.
+*/
+void WipperSnapper_LittleFS::fsWarn(String msg) {
+  WS_DEBUG_PRINTLNVAR(msg.c_str());
 }
 
 /*!

@@ -13,7 +13,8 @@
  *
  */
 #include "ConfigJson.h"
-#include "wippersnapper.h"
+#include <ctype.h>
+#include <string.h>
 
 /*!
     @brief  Checks for an ASCII letter, without depending on the locale.
@@ -27,31 +28,30 @@ static bool isAsciiLetter(char c) {
 
 /*!
     @brief  Parses the optional WiFi country, an ISO 3166 alpha-2 code.
-    @note   Anything other than two letters is reported and ignored,
-            rather than truncated into a different but valid code
-            (e.g. "Germany" into "GE", Georgia).
+    @note   Anything other than two letters is rejected rather than
+            truncated into a different but valid code (e.g. "Germany"
+            into "GE", Georgia). The caller reports it.
     @param  src
             The network_country value from secrets.json, may be null.
     @param  dst
             Buffer of 3 for the uppercase code, "" if unset or invalid.
+    @returns False if a value was given but isn't a two letter code,
+             True otherwise (including unset).
 */
-static void parseCountryCode(JsonVariantConst src, char dst[3]) {
+bool parseCountryCode(JsonVariantConst src, char dst[3]) {
   dst[0] = '\0';
   if (src.isNull())
-    return;
+    return true;
   const char *cc = src.is<const char *>() ? src.as<const char *>() : nullptr;
   if (cc != nullptr && cc[0] == '\0')
-    return; // documented default, use the core's country
-  if (cc != nullptr && strlen(cc) == 2 && isAsciiLetter(cc[0]) &&
-      isAsciiLetter(cc[1])) {
-    dst[0] = toupper(cc[0]);
-    dst[1] = toupper(cc[1]);
-    dst[2] = '\0';
-    return;
-  }
-  WS_DEBUG_PRINT("WARNING: network_country in secrets.json must be a two "
-                 "letter ISO 3166 code, such as \"GB\". Ignoring: ");
-  WS_DEBUG_PRINTLNVAR(cc != nullptr ? cc : "(not a string)");
+    return true; // documented default, use the core's country
+  if (cc == nullptr || strlen(cc) != 2 || !isAsciiLetter(cc[0]) ||
+      !isAsciiLetter(cc[1]))
+    return false;
+  dst[0] = toupper(cc[0]);
+  dst[1] = toupper(cc[1]);
+  dst[2] = '\0';
+  return true;
 }
 
 // Converts a network configuration structure to a JSON variant
@@ -80,9 +80,9 @@ void convertToJson(const secretsConfig &src, JsonVariant dst) {
 void convertFromJson(JsonVariantConst src, secretsConfig &dst) {
   // Parse network credentials from secrets
   dst.network = src["network_type_wifi"];
-  // Parse optional WiFi regulatory country, e.g. "GB", stored uppercase
-  parseCountryCode(src["network_type_wifi"]["network_country"],
-                   dst.network_country);
+  // The caller parses the optional WiFi country with parseCountryCode(),
+  // so it can report an invalid one
+  dst.network_country[0] = '\0';
   // Parse IO credentials from secrets
   strlcpy(dst.aio_user, src["io_username"] | "YOUR_IO_USERNAME_HERE",
           sizeof(dst.aio_user));

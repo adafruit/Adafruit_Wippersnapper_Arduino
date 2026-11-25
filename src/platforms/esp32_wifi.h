@@ -26,6 +26,7 @@
 #include "WiFi.h"
 #include "WiFiMulti.h"
 #include "esp_wifi.h"
+#include "wifi_country.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
 extern wippersnapper *Ws; ///< Wippersnapper client instance
@@ -206,28 +207,37 @@ public:
   @brief   Sets the WiFi regulatory country from secrets.json, which
            decides the channels scanned and joined (e.g. 12-13 in "GB").
   @note    ESP-IDF stores the country in flash, so it is reset to the
-           default "01" (world safe, channels 1-11) when unset.
+           default "01" (world safe, channels 1-11) when unset. Codes
+           outside the list shared with ESP8266 get "01" too.
   */
   void set_wifi_country() {
-    const char *country = strlen(Ws->_configV2.network_country) > 0
-                              ? Ws->_configV2.network_country
-                              : "01";
-    char current[4] = {0}; // IDF doesn't state its write size, allow cc[3]
-    if (esp_wifi_get_country_code(current) == ESP_OK &&
-        strncmp(current, country, 2) == 0)
-      return;
-
-    // 802.11d stays on, so a connected AP's country info still applies
-    if (esp_wifi_set_country_code(country, true) == ESP_OK) {
-      WS_DEBUG_PRINT("WiFi country set to: ");
-      WS_DEBUG_PRINTLNVAR(country);
-    } else {
-      WS_DEBUG_PRINT("ERROR: Unsupported WiFi country code: ");
-      WS_DEBUG_PRINTLNVAR(country);
-      // Don't keep a country left in flash by an earlier boot
-      if (strncmp(current, "01", 2) != 0)
-        esp_wifi_set_country_code("01", true);
+    const char *country = "01";
+    if (strlen(Ws->_configV2.network_country) > 0) {
+      if (ws_wifi_country_channels(Ws->_configV2.network_country) > 0) {
+        country = Ws->_configV2.network_country;
+      } else {
+        WS_DEBUG_PRINT("ERROR: Unsupported WiFi country code: ");
+        WS_DEBUG_PRINTLNVAR(Ws->_configV2.network_country);
+      }
     }
+
+    // Only write when it differs, as IDF stores it in flash
+    char current[4] = {0}; // IDF doesn't state its write size, allow cc[3]
+    if (esp_wifi_get_country_code(current) != ESP_OK ||
+        strncmp(current, country, 2) != 0) {
+      // 802.11d stays on, so a connected AP's country info still applies
+      if (esp_wifi_set_country_code(country, true) != ESP_OK) {
+        WS_DEBUG_PRINT("ERROR: Unable to set WiFi country: ");
+        WS_DEBUG_PRINTLNVAR(country);
+        // Don't keep a country left in flash by an earlier boot
+        if (strncmp(current, "01", 2) != 0)
+          esp_wifi_set_country_code("01", true);
+      }
+    }
+
+    wifi_country_t info = {};
+    if (esp_wifi_get_country(&info) == ESP_OK)
+      ws_print_wifi_country(info.cc, info.schan, info.nchan);
   }
 
   /*!
