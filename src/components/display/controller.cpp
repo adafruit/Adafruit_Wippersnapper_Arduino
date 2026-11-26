@@ -79,7 +79,8 @@ bool DisplayController::Router(pb_istream_t *stream) {
 static bool resolveEpdDefaults(ws_display_Add *msg, const char *name) {
   if (!msg->has_interface_type ||
       msg->interface_type.which_descriptor !=
-          ws_display_InterfaceDescriptor_spi_epd_tag)
+          ws_display_InterfaceDescriptor_spi_tag ||
+      msg->type != ws_display_DisplayClass_DISPLAY_CLASS_EPD)
     return false;
   if (msg->which_config != ws_display_Add_config_epd_tag)
     return false;
@@ -258,13 +259,8 @@ bool DisplayController::Handle_Display_Add(ws_display_Add *msg) {
 void DisplayController::PublishDisplayComponentError(
     ws_display_InterfaceDescriptor iface, const char *error) {
   switch (iface.which_descriptor) {
-  case ws_display_InterfaceDescriptor_spi_epd_tag:
-    Ws->error_handler->publishComponentError(iface.descriptor.spi_epd.spi,
-                                             error);
-    break;
-  case ws_display_InterfaceDescriptor_spi_tft_tag:
-    Ws->error_handler->publishComponentError(iface.descriptor.spi_tft.spi,
-                                             error);
+  case ws_display_InterfaceDescriptor_spi_tag:
+    Ws->error_handler->publishComponentError(iface.descriptor.spi.spi, error);
     break;
   case ws_display_InterfaceDescriptor_i2c_tag:
     Ws->error_handler->publishComponentError(iface.descriptor.i2c, error);

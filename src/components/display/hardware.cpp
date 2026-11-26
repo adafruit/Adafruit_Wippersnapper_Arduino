@@ -82,10 +82,15 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
 
   switch (addMsg->interface_type.which_descriptor) {
   // DSI todo
-  case ws_display_InterfaceDescriptor_spi_tft_tag:
-    return beginSpiTft(addMsg);
-  case ws_display_InterfaceDescriptor_spi_epd_tag:
-    return beginSpiEpd(addMsg);
+  case ws_display_InterfaceDescriptor_spi_tag:
+    // SPI EPD and TFT share one interface descriptor; Add.type picks the class
+    if (_class == ws_display_DisplayClass_DISPLAY_CLASS_EPD)
+      return beginSpiEpd(addMsg);
+    if (_class == ws_display_DisplayClass_DISPLAY_CLASS_TFT)
+      return beginSpiTft(addMsg);
+    WS_DEBUG_PRINTLN(
+        "[display] ERROR: SPI interface requires an EPD or TFT display type!");
+    return false;
   case ws_display_InterfaceDescriptor_ttl_rgb666_tag:
     return beginTtlRgb666(addMsg);
   case ws_display_InterfaceDescriptor_i8080_tag:
@@ -104,8 +109,7 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
     @return True on success, False on failure.
 */
 bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
-  ws_display_DisplaySpiDescriptor *spi =
-      &msg->interface_type.descriptor.spi_tft;
+  ws_display_DisplaySpiDescriptor *spi = &msg->interface_type.descriptor.spi;
   ws_spi_Descriptor *dev = &spi->spi;
 
   int16_t cs = parsePin(dev->pin_cs);
@@ -349,7 +353,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     return false;
   }
   ws_display_DisplaySpiDescriptor *spi_epd_config =
-      &msg->interface_type.descriptor.spi_epd;
+      &msg->interface_type.descriptor.spi;
   ws_spi_Descriptor *spi_pin_config = &spi_epd_config->spi;
 
   int16_t dc = -1;
