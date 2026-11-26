@@ -211,7 +211,7 @@ protected:
   uint8_t _text_sz = 1;        ///< Text size multiplier
   int16_t _width;              ///< Display width
   int16_t _height;             ///< Display height
-  uint8_t _rotation;           ///< Display rotation (0-3)
+  uint8_t _rotation = 0;       ///< Display rotation (0-3)
 
   /*! @brief Cached status bar layout and state. */
   int _statusbar_icons_y;         ///< Y position of status bar icons
