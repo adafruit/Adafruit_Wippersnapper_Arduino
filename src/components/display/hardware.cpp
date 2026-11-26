@@ -465,10 +465,31 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     WS_DEBUG_PRINTLNVAR(driver);
   }
 
-  // Create driver based on the driver string from the component definition
+  // Panel size, orientation-independent (long x short side). Zero when the
+  // payload omits dimensions, which keeps the legacy 2.9" 296x128 selection.
+  int32_t long_side = max(config->properties.width, config->properties.height);
+  int32_t short_side = min(config->properties.width, config->properties.height);
+  bool is_213 = long_side == 250 && short_side == 122;
+
+  // Create driver based on the driver string from the component definition,
+  // narrowed by panel size (and panel string where revisions share a chip)
   if (strcmp(driver, "SSD1680") == 0) {
-    _drvDisp = new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "ILI0373") == 0) {
+    if (is_213 && strcmp(msg->panel, "2.13-250x122-mono-pre2024") == 0) {
+      _drvDisp = new dispDrvThinkInkMonoBN(dc, rst, cs, sram_cs, busy);
+    } else if (is_213 && strcmp(msg->panel, "2.13-250x122-mono-bare") == 0) {
+      // TODO(verify on HIL): ADA6383 is the ZJY122250-0213BAAMFGN SSD1680Z
+      // panel; Adafruit_EPD labels ThinkInk_213_Grayscale4_MFGN as the
+      // SSD1680Z 2.13" panel, but it may also run as GDEY0213B74.
+      _drvDisp =
+          new dispDrvThinkInkGrayscale4MFGN213(dc, rst, cs, sram_cs, busy);
+    } else if (is_213) {
+      // Post-August-2024 2.13" mono (learn guide: GDEY0213B74)
+      _drvDisp = new dispDrvThinkInkMonoGDEY0213B74(dc, rst, cs, sram_cs, busy);
+    } else {
+      _drvDisp =
+          new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
+    }
+  } else if (strcmp(driver, "ILI0373") == 0 || strcmp(driver, "IL0373") == 0) {
     _drvDisp = new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "SSD1683") == 0) {
     _drvDisp = new dispDrvThinkInkGrayscale4MFGN(dc, rst, cs, sram_cs, busy);

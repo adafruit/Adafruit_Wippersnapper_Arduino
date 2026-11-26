@@ -31,9 +31,12 @@
 #endif
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
 #include "drivers/dispDrvThinkInkGrayscale4MFGN.h"
+#include "drivers/dispDrvThinkInkGrayscale4MFGN213.h"
 #include "drivers/dispDrvThinkInkGrayscale4T5.h"
 #include "drivers/dispDrvThinkInkMonoAAAMFGN.h"
 #include "drivers/dispDrvThinkInkMonoBAAMFGN.h"
+#include "drivers/dispDrvThinkInkMonoBN.h"
+#include "drivers/dispDrvThinkInkMonoGDEY0213B74.h"
 #include "drivers/dispDrvThinkInkMonoM06.h"
 
 /*!
