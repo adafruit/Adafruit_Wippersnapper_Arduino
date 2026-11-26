@@ -82,10 +82,15 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
 
   switch (addMsg->interface_type.which_descriptor) {
   // DSI todo
-  case ws_display_InterfaceDescriptor_spi_tft_tag:
-    return beginSpiTft(addMsg);
-  case ws_display_InterfaceDescriptor_spi_epd_tag:
-    return beginSpiEpd(addMsg);
+  case ws_display_InterfaceDescriptor_spi_tag:
+    // SPI EPD and TFT share one interface descriptor; Add.type picks the class
+    if (_class == ws_display_DisplayClass_DISPLAY_CLASS_EPD)
+      return beginSpiEpd(addMsg);
+    if (_class == ws_display_DisplayClass_DISPLAY_CLASS_TFT)
+      return beginSpiTft(addMsg);
+    WS_DEBUG_PRINTLN(
+        "[display] ERROR: SPI interface requires an EPD or TFT display type!");
+    return false;
   case ws_display_InterfaceDescriptor_ttl_rgb666_tag:
     return beginTtlRgb666(addMsg);
   case ws_display_InterfaceDescriptor_i8080_tag:
@@ -104,7 +109,7 @@ bool DisplayHardware::begin(ws_display_Add *addMsg) {
     @return True on success, False on failure.
 */
 bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
-  ws_display_TftSpiDescriptor *spi = &msg->interface_type.descriptor.spi_tft;
+  ws_display_DisplaySpiDescriptor *spi = &msg->interface_type.descriptor.spi;
   ws_spi_Descriptor *dev = &spi->spi;
 
   int16_t cs = parsePin(dev->pin_cs);
@@ -225,9 +230,8 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
     @param  config  EPD SPI pin configuration to use for the probe.
     @return The byte returned by the panel.
 */
-uint8_t
-DisplayHardware::EpdBitBangReadRegister(uint8_t cmd,
-                                        ws_display_EpdSpiDescriptor *config) {
+uint8_t DisplayHardware::EpdBitBangReadRegister(
+    uint8_t cmd, ws_display_DisplaySpiDescriptor *config) {
   int16_t mosi = parsePin(config->spi.pin_mosi);
   int16_t miso = parsePin(config->spi.pin_miso);
   int16_t sck = parsePin(config->spi.pin_sck);
@@ -288,7 +292,7 @@ DisplayHardware::EpdBitBangReadRegister(uint8_t cmd,
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as an SSD1680.
 */
-bool DisplayHardware::detect_ssd1680(ws_display_EpdSpiDescriptor *config) {
+bool DisplayHardware::detect_ssd1680(ws_display_DisplaySpiDescriptor *config) {
   uint8_t status = EpdBitBangReadRegister(0x71, config);
   return status == 0xFF;
 }
@@ -298,7 +302,7 @@ bool DisplayHardware::detect_ssd1680(ws_display_EpdSpiDescriptor *config) {
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as an SSD1683.
 */
-bool DisplayHardware::detect_ssd1683(ws_display_EpdSpiDescriptor *config) {
+bool DisplayHardware::detect_ssd1683(ws_display_DisplaySpiDescriptor *config) {
   uint8_t status = EpdBitBangReadRegister(0x2F, config);
   return (status & 0x03) == 0x01;
 }
@@ -308,7 +312,7 @@ bool DisplayHardware::detect_ssd1683(ws_display_EpdSpiDescriptor *config) {
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as a UC8151D.
 */
-bool DisplayHardware::detect_uc8151d(ws_display_EpdSpiDescriptor *config) {
+bool DisplayHardware::detect_uc8151d(ws_display_DisplaySpiDescriptor *config) {
   uint8_t rev = EpdBitBangReadRegister(0x70, config);
   return rev != 0xFF;
 }
@@ -318,7 +322,7 @@ bool DisplayHardware::detect_uc8151d(ws_display_EpdSpiDescriptor *config) {
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as a UC8179.
 */
-bool DisplayHardware::detect_uc8179(ws_display_EpdSpiDescriptor *config) {
+bool DisplayHardware::detect_uc8179(ws_display_DisplaySpiDescriptor *config) {
   uint8_t dualspi = EpdBitBangReadRegister(0x15, config);
   return dualspi != 0xFF;
 }
@@ -328,7 +332,7 @@ bool DisplayHardware::detect_uc8179(ws_display_EpdSpiDescriptor *config) {
     @param  config  EPD SPI pin configuration to probe.
     @return True if the panel responds as a UC8253.
 */
-bool DisplayHardware::detect_uc8253(ws_display_EpdSpiDescriptor *config) {
+bool DisplayHardware::detect_uc8253(ws_display_DisplaySpiDescriptor *config) {
   uint8_t status = EpdBitBangReadRegister(0x71, config);
   return status != 0xFF;
 }
@@ -348,8 +352,8 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
         "[display] ERROR: No interface type specified for SPI EPD!");
     return false;
   }
-  ws_display_EpdSpiDescriptor *spi_epd_config =
-      &msg->interface_type.descriptor.spi_epd;
+  ws_display_DisplaySpiDescriptor *spi_epd_config =
+      &msg->interface_type.descriptor.spi;
   ws_spi_Descriptor *spi_pin_config = &spi_epd_config->spi;
 
   int16_t dc = -1;
