@@ -823,6 +823,8 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
   } else if (strcasecmp(driverName, "charlcd") == 0 ||
              strcasecmp(driverName, "MCP23008") == 0) {
     drv = new dispDrvCharLcd(i2c, addr, 0, driverName, msg->panel);
+  } else if (strcasecmp(driverName, "PCF8574") == 0) {
+    drv = new dispDrvCharLcdPcf8574(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "7seg") == 0 ||
              (strcasecmp(driverName, "HT16K33") == 0 &&
               strcasecmp(msg->panel, "4digit-7seg") == 0)) {

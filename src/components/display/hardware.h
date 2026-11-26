@@ -19,6 +19,7 @@
 #include "drivers/dispDrvBaseI2c.h"
 #include "drivers/dispDrvBaseRgb666.h"
 #include "drivers/dispDrvCharLcd.h"
+#include "drivers/dispDrvCharLcdPcf8574.h"
 #include "drivers/dispDrvIli9341.h"
 #include "drivers/dispDrvQuadAlphaNum.h"
 #include "drivers/dispDrvSh1106.h"
