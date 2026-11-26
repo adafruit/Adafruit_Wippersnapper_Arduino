@@ -171,7 +171,13 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   if (strcmp(msg->driver, "ST7789") == 0) {
     _drvDisp = new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
   } else if (strcmp(msg->driver, "ST7735") == 0) {
+    // LilyGO T-Dongle C5 0.96" 160x80 (INITR_MINI160x80_PLUGIN)
     _drvDisp = new dispDrvSt7735(cs, dc, mosi, sck, rst, miso);
+  } else if (strcmp(msg->driver, "ST7735R") == 0) {
+    // 1.8" 128x160 ST7735R breakout (ADA358)
+    _drvDisp = new dispDrvSt7735(cs, dc, mosi, sck, rst, miso, INITR_BLACKTAB);
+  } else if (strcmp(msg->driver, "ILI9341") == 0) {
+    _drvDisp = new dispDrvIli9341(cs, dc, mosi, sck, rst, miso);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported TFT driver: ");
     WS_DEBUG_PRINTLNVAR(msg->driver);

@@ -24,7 +24,8 @@
 #define ST7735_STATUSBAR_ICON_MARGIN 5  ///< Margin from edge of display
 
 /*!
-    @brief  Driver for ST7735-based TFT displays (e.g. 0.96" 160x80 IPS).
+    @brief  Driver for ST7735-based TFT displays (e.g. 0.96" 160x80 IPS,
+            1.8" 128x160 ST7735R).
 */
 class dispDrvSt7735 : public dispDrvBase {
 public:
@@ -36,10 +37,15 @@ public:
       @param  sck   SCK pin.
       @param  rst   Reset pin (-1 if not used).
       @param  miso  MISO pin (-1 if not used).
+      @param  init_options  Adafruit_ST7735::initR() panel option (an
+                            INITR_* value). Defaults to the LilyGO 0.96"
+                            160x80 plugin panel.
   */
   dispDrvSt7735(int16_t cs, int16_t dc, int16_t mosi, int16_t sck,
-                int16_t rst = -1, int16_t miso = -1)
-      : dispDrvBase(cs, dc, mosi, sck, rst, miso), _display(nullptr) {}
+                int16_t rst = -1, int16_t miso = -1,
+                uint8_t init_options = INITR_MINI160x80_PLUGIN)
+      : dispDrvBase(cs, dc, mosi, sck, rst, miso), _display(nullptr),
+        _init_options(init_options) {}
 
   ~dispDrvSt7735() {
     if (_display) {
@@ -61,12 +67,13 @@ public:
     if (!_display)
       return false;
 
-    // INITR_MINI160x80_PLUGIN matches the LilyGO 0.96" 160x80 panel:
+    // INITR_MINI160x80_PLUGIN (default) matches the LilyGO 0.96" 160x80 panel:
     // BGR, inverted, column offset 26 / row offset 1 (== LilyGo's
     // GREENTAB160x80 config). This variant handles the inversion internally,
     // so no explicit invertDisplay() call is needed. If a different 160x80
     // panel renders negative colours, toggle invertDisplay().
-    _display->initR(INITR_MINI160x80_PLUGIN);
+    // INITR_BLACKTAB is the 1.8" 128x160 ST7735R breakout (ADA358).
+    _display->initR(_init_options);
     _display->setRotation(_rotation);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
@@ -225,6 +232,7 @@ public:
 
 private:
   Adafruit_ST7735 *_display;
+  uint8_t _init_options; ///< initR() panel option (INITR_*)
 };
 
 #endif // WS_DISP_DRV_ST7735_H
