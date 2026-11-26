@@ -490,10 +490,20 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   }
 
   thinkinkmode_t epd_mode;
-  if (config->mode == ws_display_EPDMode_EPD_MODE_GRAYSCALE4)
+  switch (config->mode) {
+  case ws_display_EPDMode_EPD_MODE_GRAYSCALE4:
     epd_mode = THINKINK_GRAYSCALE4;
-  else
+    break;
+  case ws_display_EPDMode_EPD_MODE_TRICOLOR:
+    epd_mode = THINKINK_TRICOLOR;
+    break;
+  case ws_display_EPDMode_EPD_MODE_QUADCOLOR:
+    epd_mode = THINKINK_QUADCOLOR;
+    break;
+  default:
     epd_mode = THINKINK_MONO;
+    break;
+  }
 
   _drvDisp->setWidth(config->properties.width);
   _drvDisp->setHeight(config->properties.height);
