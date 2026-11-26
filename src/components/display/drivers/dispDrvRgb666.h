@@ -34,10 +34,16 @@ public:
   /*!
       @brief  Constructor — panel selection by name string.
       @param  panel  Panel identifier (e.g. "TL021WVC02", "TL032FWV01").
+      @param  wire   I2C bus the on-board PCA9554A I/O expander (0x3F) is on.
+                     Must be the I2C controller's bus for the board's SDA/SCL,
+                     not the global Wire: on ESP32 that controller creates its
+                     own TwoWire on the same peripheral, and begin() on the
+                     global Wire then returns without allocating its buffers,
+                     so every transfer fails.
   */
-  dispDrvRgb666(const char *panel)
+  dispDrvRgb666(const char *panel, TwoWire *wire)
       : dispDrvBaseRgb666("dispDrvRgb666", panel), _display(nullptr),
-        _expander(nullptr), _rgbpanel(nullptr) {
+        _expander(nullptr), _rgbpanel(nullptr), _wire(wire) {
     strncpy(_panel, panel, sizeof(_panel) - 1);
     _panel[sizeof(_panel) - 1] = '\0';
   }
@@ -55,10 +61,21 @@ public:
   }
 
   bool begin() override {
-    Wire.setClock(400000);
+    if (_wire == nullptr)
+      return false;
+
+    // Arduino_XCA9554SWSPI::begin() still returns true when the expander
+    // doesn't answer (every later write is then a silent no-op), so probe it
+    // here to fail the Add instead of reporting a dark panel as success.
+    _wire->beginTransmission(0x3F);
+    if (_wire->endTransmission() != 0) {
+      WS_DEBUG_PRINTLN("[display] ERROR: PCA9554A I/O expander (0x3F) not "
+                       "found on the I2C bus!");
+      return false;
+    }
 
     _expander = new Arduino_XCA9554SWSPI(PCA_TFT_RESET, PCA_TFT_CS, PCA_TFT_SCK,
-                                         PCA_TFT_MOSI, &Wire, 0x3F);
+                                         PCA_TFT_MOSI, _wire, 0x3F);
     if (!_expander)
       return false;
 
@@ -267,6 +284,7 @@ private:
   Arduino_RGB_Display *_display;
   Arduino_XCA9554SWSPI *_expander;
   Arduino_ESP32RGBPanel *_rgbpanel;
+  TwoWire *_wire; ///< I2C bus the PCA9554A I/O expander is on
   char _panel[20];
 };
 
