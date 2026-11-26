@@ -19,11 +19,6 @@
 #include "dispDrvBase.h"
 #include <Adafruit_ILI9341.h>
 
-#define ILI9341_STATUSBAR_HEIGHT 20      ///< Status bar height in pixels
-#define ILI9341_STATUSBAR_ICON_SZ 16     ///< Status bar icon size in pixels
-#define ILI9341_STATUSBAR_ICON_SPACING 4 ///< Spacing between icons
-#define ILI9341_STATUSBAR_ICON_MARGIN 5  ///< Margin from edge of display
-
 /*!
     @brief  Driver for ILI9341-based TFT displays.
 */
@@ -97,7 +92,7 @@ public:
     _display->fillScreen(ILI9341_BLACK);
 
     // Draw white status bar at top
-    _display->fillRect(0, 0, _display->width(), ILI9341_STATUSBAR_HEIGHT,
+    _display->fillRect(0, 0, _display->width(), EPD_STATUS_BAR_HEIGHT,
                        ILI9341_WHITE);
 
     // Draw username on left side
@@ -107,27 +102,25 @@ public:
     _display->print(io_username);
 
     // Calculate icon positions (right-aligned), centered vertically
-    _statusbar_icons_y =
-        (ILI9341_STATUSBAR_HEIGHT - ILI9341_STATUSBAR_ICON_SZ) / 2;
-    _statusbar_icon_battery_x = _display->width() - ILI9341_STATUSBAR_ICON_SZ -
-                                ILI9341_STATUSBAR_ICON_MARGIN;
+    _statusbar_icons_y = (EPD_STATUS_BAR_HEIGHT - EPD_STATUS_BAR_ICON_SZ) / 2;
+    _statusbar_icon_battery_x =
+        _display->width() - EPD_STATUS_BAR_ICON_SZ - EPD_STATUS_BAR_ICON_MARGIN;
     _statusbar_icon_wifi_x = _statusbar_icon_battery_x -
-                             ILI9341_STATUSBAR_ICON_SZ -
-                             ILI9341_STATUSBAR_ICON_SPACING;
-    _statusbar_icon_cloud_x = _statusbar_icon_wifi_x -
-                              ILI9341_STATUSBAR_ICON_SZ -
-                              ILI9341_STATUSBAR_ICON_SPACING;
+                             EPD_STATUS_BAR_ICON_SZ -
+                             EPD_STATUS_BAR_ICON_SPACING;
+    _statusbar_icon_cloud_x = _statusbar_icon_wifi_x - EPD_STATUS_BAR_ICON_SZ -
+                              EPD_STATUS_BAR_ICON_SPACING;
 
     // Draw icons
     _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                         epd_bmp_cloud_online, ILI9341_STATUSBAR_ICON_SZ,
-                         ILI9341_STATUSBAR_ICON_SZ, ILI9341_BLACK);
+                         epd_bmp_cloud_online, EPD_STATUS_BAR_ICON_SZ,
+                         EPD_STATUS_BAR_ICON_SZ, ILI9341_BLACK);
     _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                         epd_bmp_wifi_full, ILI9341_STATUSBAR_ICON_SZ,
-                         ILI9341_STATUSBAR_ICON_SZ, ILI9341_BLACK);
+                         epd_bmp_wifi_full, EPD_STATUS_BAR_ICON_SZ,
+                         EPD_STATUS_BAR_ICON_SZ, ILI9341_BLACK);
     _display->drawBitmap(_statusbar_icon_battery_x, _statusbar_icons_y,
-                         epd_bmp_bat_full, ILI9341_STATUSBAR_ICON_SZ,
-                         ILI9341_STATUSBAR_ICON_SZ, ILI9341_BLACK);
+                         epd_bmp_bat_full, EPD_STATUS_BAR_ICON_SZ,
+                         EPD_STATUS_BAR_ICON_SZ, ILI9341_BLACK);
 
     // Reset text color and size for main text area
     _display->setTextColor(ILI9341_WHITE);
@@ -152,16 +145,16 @@ public:
 
     if (update_mqtt) {
       _display->fillRect(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                         ILI9341_STATUSBAR_ICON_SZ, ILI9341_STATUSBAR_ICON_SZ,
+                         EPD_STATUS_BAR_ICON_SZ, EPD_STATUS_BAR_ICON_SZ,
                          ILI9341_WHITE);
       if (mqtt_status) {
         _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                             epd_bmp_cloud_online, ILI9341_STATUSBAR_ICON_SZ,
-                             ILI9341_STATUSBAR_ICON_SZ, ILI9341_BLACK);
+                             epd_bmp_cloud_online, EPD_STATUS_BAR_ICON_SZ,
+                             EPD_STATUS_BAR_ICON_SZ, ILI9341_BLACK);
       } else {
         _display->drawBitmap(_statusbar_icon_cloud_x, _statusbar_icons_y,
-                             epd_bmp_cloud_offline, ILI9341_STATUSBAR_ICON_SZ,
-                             ILI9341_STATUSBAR_ICON_SZ, ILI9341_BLACK);
+                             epd_bmp_cloud_offline, EPD_STATUS_BAR_ICON_SZ,
+                             EPD_STATUS_BAR_ICON_SZ, ILI9341_BLACK);
       }
       _statusbar_mqtt_connected = mqtt_status;
     }
@@ -176,11 +169,11 @@ public:
         wifi_icon = epd_bmp_wifi_weak;
       }
       _display->fillRect(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                         ILI9341_STATUSBAR_ICON_SZ, ILI9341_STATUSBAR_ICON_SZ,
+                         EPD_STATUS_BAR_ICON_SZ, EPD_STATUS_BAR_ICON_SZ,
                          ILI9341_WHITE);
       _display->drawBitmap(_statusbar_icon_wifi_x, _statusbar_icons_y,
-                           wifi_icon, ILI9341_STATUSBAR_ICON_SZ,
-                           ILI9341_STATUSBAR_ICON_SZ, ILI9341_BLACK);
+                           wifi_icon, EPD_STATUS_BAR_ICON_SZ,
+                           EPD_STATUS_BAR_ICON_SZ, ILI9341_BLACK);
       _statusbar_rssi = rssi;
     }
   }
@@ -195,11 +188,11 @@ public:
 
     // Reserve the status-bar strip only when one is enabled; otherwise
     // clear and write from the very top of the panel.
-    const int16_t bar_h = _status_bar ? ILI9341_STATUSBAR_HEIGHT : 0;
+    const int16_t bar_h = _status_bar ? EPD_STATUS_BAR_HEIGHT : 0;
     _display->fillRect(0, bar_h, _display->width(), _display->height() - bar_h,
                        ILI9341_BLACK);
 
-    int16_t y_idx = _status_bar ? (ILI9341_STATUSBAR_HEIGHT + 5) : 0;
+    int16_t y_idx = _status_bar ? (EPD_STATUS_BAR_HEIGHT + 5) : 0;
     int16_t line_height = 8 * _text_sz;
 
     _display->setTextSize(_text_sz);
