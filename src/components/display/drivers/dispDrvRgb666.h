@@ -43,7 +43,7 @@ public:
   */
   dispDrvRgb666(const char *panel, TwoWire *wire)
       : dispDrvBaseRgb666("dispDrvRgb666", panel), _display(nullptr),
-        _expander(nullptr), _rgbpanel(nullptr), _wire(wire) {
+        _expander(nullptr), _rgbpanel(nullptr), _wire(wire), _started(false) {
     strncpy(_panel, panel, sizeof(_panel) - 1);
     _panel[sizeof(_panel) - 1] = '\0';
   }
@@ -51,11 +51,14 @@ public:
   ~dispDrvRgb666() {
     // rgbpanel and expander are owned by display, cleaned up by its destructor
     if (_display) {
-      _display->fillScreen(RGB565_BLACK);
+      if (_started)
+        _display->fillScreen(RGB565_BLACK);
       delete _display;
       _display = nullptr;
     }
-    if (_expander) {
+    // Only once begin() got the expander going: Arduino_XCA9554SWSPI's
+    // state (is_found) is uninitialised until its begin() runs.
+    if (_expander && _started) {
       _expander->digitalWrite(PCA_TFT_BACKLIGHT, LOW);
     }
   }
@@ -137,6 +140,7 @@ public:
       WS_DEBUG_PRINTLN("[display] ERROR: Arduino_RGB_Display begin() failed!");
       return false;
     }
+    _started = true;
 
     _display->fillScreen(RGB565_BLACK);
     _display->setTextColor(RGB565_WHITE);
@@ -285,6 +289,7 @@ private:
   Arduino_XCA9554SWSPI *_expander;
   Arduino_ESP32RGBPanel *_rgbpanel;
   TwoWire *_wire; ///< I2C bus the PCA9554A I/O expander is on
+  bool _started;  ///< True once the panel and its expander have begun
   char _panel[20];
 };
 
