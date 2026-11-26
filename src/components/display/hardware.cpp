@@ -52,6 +52,16 @@ const ws_display_InterfaceDescriptor *DisplayHardware::getInterface() {
 const char *DisplayHardware::getName() { return _name; }
 
 /*!
+    @brief  Resolves DisplayProperties.status_bar: the field is optional and
+            an absent value means the status bar is shown.
+    @param  props  The display properties, or nullptr if none were sent.
+    @return True if the status bar should be shown.
+*/
+static bool statusBarEnabled(const ws_display_DisplayProperties *props) {
+  return !props || !props->has_status_bar || props->status_bar;
+}
+
+/*!
     @brief  Parses a "D<n>" pin string into an integer pin number.
     @param  pinStr  Null-terminated pin string (e.g. "D5").
     @return The parsed pin number, or -1 if the input is invalid.
@@ -220,6 +230,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
   _drvDisp->setRotation(config->rotation);
+  _drvDisp->setStatusBar(statusBarEnabled(config));
   if (config->text_size > 0) {
     _drvDisp->setTextSize(config->text_size);
   }
@@ -552,6 +563,8 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 
   _drvDisp->setWidth(config->properties.width);
   _drvDisp->setHeight(config->properties.height);
+  _drvDisp->setStatusBar(
+      statusBarEnabled(config->has_properties ? &config->properties : nullptr));
   if (config->properties.text_size > 0)
     _drvDisp->setTextSize(config->properties.text_size);
 
@@ -610,6 +623,7 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   _drvDisp->setWidth(width);
   _drvDisp->setHeight(height);
   _drvDisp->setRotation(config->rotation);
+  _drvDisp->setStatusBar(statusBarEnabled(config));
   if (config->text_size > 0)
     _drvDisp->setTextSize(config->text_size);
 
@@ -746,6 +760,7 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
   _drvDisp->setRotation(config->rotation);
+  _drvDisp->setStatusBar(statusBarEnabled(config));
   if (config->text_size > 0)
     _drvDisp->setTextSize(config->text_size);
 
@@ -857,6 +872,7 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     drv->ConfigureSSD1306(cfg->width, cfg->height,
                           cfg->text_size > 0 ? cfg->text_size : 1);
     drv->setRotation(cfg->rotation);
+    drv->setStatusBar(statusBarEnabled(cfg));
   } else if (config == ws_display_Add_config_char_lcd_tag) {
     ws_display_CharLcdConfig *cfg = &msg->config.config_char_lcd;
     drv->ConfigureCharLcd(cfg->rows, cfg->columns, true);

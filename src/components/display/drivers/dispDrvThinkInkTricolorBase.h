@@ -142,9 +142,12 @@ public:
   void writeMessage(const char *message) override {
     if (!_display)
       return;
-    _display->fillRect(0, EPD_STATUS_BAR_HEIGHT, _display->width(),
-                       _display->height() - EPD_STATUS_BAR_HEIGHT, EPD_WHITE);
-    int16_t y_idx = EPD_STATUS_BAR_HEIGHT + 4;
+    // Reserve the status-bar strip only when one is enabled; otherwise
+    // clear and write from the very top of the panel.
+    const int16_t bar_h = _status_bar ? EPD_STATUS_BAR_HEIGHT : 0;
+    _display->fillRect(0, bar_h, _display->width(), _display->height() - bar_h,
+                       EPD_WHITE);
+    int16_t y_idx = _status_bar ? (EPD_STATUS_BAR_HEIGHT + 4) : 0;
     _display->setCursor(0, y_idx);
     int16_t line_height = 8 * _text_sz;
     size_t msg_size = strlen(message);
@@ -168,7 +171,7 @@ public:
       }
       _display->print(message[i]);
     }
-    if (_have_latest)
+    if (_status_bar && _have_latest)
       drawStatusIcons(_latest_rssi, _latest_mqtt);
     refresh();
   }

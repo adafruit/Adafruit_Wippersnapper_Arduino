@@ -103,14 +103,45 @@ public:
       @param    message
                   The message to be displayed.
   */
+  /*!
+      @brief  Draws the compact status bar (username and icons).
+      @param  io_username  Adafruit IO username to display.
+  */
+  void drawStatusBar(const char *io_username) override {
+    if (_display == nullptr)
+      return;
+    _display->clearDisplay();
+    drawOledStatusBar(_display, io_username, 1 /* lit pixel */, 0);
+    _display->display();
+  }
+
+  /*!
+      @brief  Updates the status bar icons when the state changed.
+      @param  rssi         Current WiFi RSSI value.
+      @param  bat          Current battery level (0-100, unused).
+      @param  mqtt_status  True if MQTT is connected.
+  */
+  void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_status) override {
+    (void)bat;
+    if (_display == nullptr)
+      return;
+    if (drawOledStatusIcons(_display, rssi, mqtt_status, 1 /* lit pixel */, 0))
+      _display->display();
+  }
+
   void WriteMessage(const char *message) override {
     if (_display == nullptr)
       return;
 
     // Start with a fresh display buffer
     // and settings
-    int16_t y_idx = 0;
-    _display->clearDisplay();
+    // Keep the status bar strip when enabled; otherwise use the whole panel
+    int16_t y_idx = _status_bar ? OLED_STATUS_BAR_HEIGHT + 1 : 0;
+    if (_status_bar)
+      _display->fillRect(0, OLED_STATUS_BAR_HEIGHT, _display->width(),
+                         _display->height() - OLED_STATUS_BAR_HEIGHT, 0);
+    else
+      _display->clearDisplay();
     _display->setTextSize(_text_sz);
     _display->setTextColor(1 /* lit pixel */);
     _display->setCursor(0, y_idx);
