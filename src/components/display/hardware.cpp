@@ -814,6 +814,12 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     drv = new dispDrvSsd1306(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "SH1107") == 0) {
     drv = new dispDrvSh1107(i2c, addr, 0, driverName, msg->panel);
+  } else if (strcasecmp(driverName, "SH1106") == 0) {
+    drv = new dispDrvSh1106(i2c, addr, 0, driverName, msg->panel);
+  } else if (strcasecmp(driverName, "SSD1305") == 0) {
+    drv = new dispDrvSsd1305(i2c, addr, 0, driverName, msg->panel);
+  } else if (strcasecmp(driverName, "SSD1327") == 0) {
+    drv = new dispDrvSsd1327(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "charlcd") == 0 ||
              strcasecmp(driverName, "MCP23008") == 0) {
     drv = new dispDrvCharLcd(i2c, addr, 0, driverName, msg->panel);
