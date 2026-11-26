@@ -500,7 +500,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
             board.
 */
 bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
-#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+#ifdef ARDUINO_QUALIA_S3_RGB666
   if (msg->which_config != ws_display_Add_config_display_tag) {
     WS_DEBUG_PRINTLN("[display] ERROR: Expected display config for RGB666!");
     return false;
@@ -515,7 +515,21 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   WS_DEBUG_PRINT("[display] RGB666 panel: ");
   WS_DEBUG_PRINTLNVAR(msg->panel);
 
-  _drvDisp = new dispDrvRgb666(msg->panel);
+  // The panel's PCA9554A I/O expander is on the board's default I2C bus,
+  // shared with I2C components (and the expander component for its UP/DN
+  // buttons), so use the I2C controller's bus rather than the global Wire.
+  // Pin names in the "D<n>" form the broker uses, so the bus matches the one
+  // I2C components on the default pins get ("SCL"/"SDA" don't resolve).
+  char pin_scl[8], pin_sda[8];
+  snprintf(pin_scl, sizeof(pin_scl), "D%d", SCL);
+  snprintf(pin_sda, sizeof(pin_sda), "D%d", SDA);
+  TwoWire *i2c = Ws->_i2c_controller->GetOrCreateI2cBus(pin_scl, pin_sda);
+  if (i2c == nullptr) {
+    WS_DEBUG_PRINTLN("[display] ERROR: I2C bus not found for RGB666 panel!");
+    return false;
+  }
+
+  _drvDisp = new dispDrvRgb666(msg->panel, i2c);
   if (!_drvDisp)
     return false;
 

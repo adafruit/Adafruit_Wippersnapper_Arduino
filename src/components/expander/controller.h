@@ -20,6 +20,7 @@
 #include "drivers/drv_aw9523.h"
 #include "drivers/drv_mcp23x08.h"
 #include "drivers/drv_mcp23x17.h"
+#include "drivers/drv_pca9554.h"
 #include "drivers/drv_pcf8574.h"
 #include "drivers/drv_pcf8575.h"
 #include "drivers/drv_seesaw.h"
