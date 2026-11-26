@@ -282,7 +282,8 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: adafruit/Wippersnapper_Boards
-          ref: api-v2
+          # UAT only: Qualia board def (Boards #284) + magic config (Boards #285)
+          ref: qualia-s3-rgb666-magic
           path: ws-boards
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
