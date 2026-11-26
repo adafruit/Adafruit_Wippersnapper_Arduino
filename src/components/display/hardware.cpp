@@ -856,6 +856,7 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     WS_DEBUG_PRINTLNVAR(cfg->height);
     drv->ConfigureSSD1306(cfg->width, cfg->height,
                           cfg->text_size > 0 ? cfg->text_size : 1);
+    drv->setRotation(cfg->rotation);
   } else if (config == ws_display_Add_config_char_lcd_tag) {
     ws_display_CharLcdConfig *cfg = &msg->config.config_char_lcd;
     drv->ConfigureCharLcd(cfg->rows, cfg->columns, true);
