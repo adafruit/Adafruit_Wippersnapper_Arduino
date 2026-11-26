@@ -470,6 +470,8 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   int32_t long_side = max(config->properties.width, config->properties.height);
   int32_t short_side = min(config->properties.width, config->properties.height);
   bool is_213 = long_side == 250 && short_side == 122;
+  bool is_154_152 = long_side == 152 && short_side == 152;
+  bool tricolor = config->mode == ws_display_EPDMode_EPD_MODE_TRICOLOR;
 
   // Create driver based on the driver string from the component definition,
   // narrowed by panel size (and panel string where revisions share a chip)
@@ -485,12 +487,24 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     } else if (is_213) {
       // Post-August-2024 2.13" mono (learn guide: GDEY0213B74)
       _drvDisp = new dispDrvThinkInkMonoGDEY0213B74(dc, rst, cs, sram_cs, busy);
+    } else if (tricolor) {
+      _drvDisp = new dispDrvThinkInkTricolorZ94(dc, rst, cs, sram_cs, busy);
     } else {
       _drvDisp =
           new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
     }
   } else if (strcmp(driver, "ILI0373") == 0 || strcmp(driver, "IL0373") == 0) {
-    _drvDisp = new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+    if (is_154_152) {
+      _drvDisp = new dispDrvThinkInkTricolorZ17(dc, rst, cs, sram_cs, busy);
+    } else if (tricolor) {
+      _drvDisp = new dispDrvThinkInkTricolorZ10(dc, rst, cs, sram_cs, busy);
+    } else {
+      _drvDisp = new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+    }
+  } else if (strcmp(driver, "SSD1681") == 0) {
+    _drvDisp = new dispDrvThinkInkTricolorZ90(dc, rst, cs, sram_cs, busy);
+  } else if (strcmp(driver, "SSD1608") == 0) {
+    _drvDisp = new dispDrvThinkInkMonoD27(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "SSD1683") == 0) {
     _drvDisp = new dispDrvThinkInkGrayscale4MFGN(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "UC8179") == 0) {
@@ -498,7 +512,11 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   } else if (strcmp(driver, "UC8253") == 0) {
     _drvDisp = new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "UC8151D") == 0 || strcmp(driver, "UC8151") == 0) {
-    _drvDisp = new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
+    if (tricolor) {
+      _drvDisp = new dispDrvThinkInkTricolorZ13(dc, rst, cs, sram_cs, busy);
+    } else {
+      _drvDisp = new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
+    }
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported EPD driver: ");
     WS_DEBUG_PRINTLNVAR(driver);

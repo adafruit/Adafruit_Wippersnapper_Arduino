@@ -36,8 +36,14 @@
 #include "drivers/dispDrvThinkInkMonoAAAMFGN.h"
 #include "drivers/dispDrvThinkInkMonoBAAMFGN.h"
 #include "drivers/dispDrvThinkInkMonoBN.h"
+#include "drivers/dispDrvThinkInkMonoD27.h"
 #include "drivers/dispDrvThinkInkMonoGDEY0213B74.h"
 #include "drivers/dispDrvThinkInkMonoM06.h"
+#include "drivers/dispDrvThinkInkTricolorZ10.h"
+#include "drivers/dispDrvThinkInkTricolorZ13.h"
+#include "drivers/dispDrvThinkInkTricolorZ17.h"
+#include "drivers/dispDrvThinkInkTricolorZ90.h"
+#include "drivers/dispDrvThinkInkTricolorZ94.h"
 
 /*!
     @brief  High-level wrapper that owns the active display driver and routes
