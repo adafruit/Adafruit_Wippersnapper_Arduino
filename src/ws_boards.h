@@ -318,7 +318,7 @@
 #ifdef BOARD_HAS_PSRAM
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #endif
-#elif defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666)
+#elif defined(ARDUINO_QUALIA_S3_RGB666)
 #define BOARD_ID "qualia-s3-rgb666"
 #define USE_TINYUSB
 #define USE_PSRAM
