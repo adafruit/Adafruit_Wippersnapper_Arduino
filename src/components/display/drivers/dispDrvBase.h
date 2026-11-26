@@ -112,6 +112,20 @@ public:
   virtual void setTextSize(uint8_t s) { _text_sz = s; }
 
   /*!
+      @brief  Enables or disables the status bar (DisplayProperties.status_bar,
+              true when absent). When disabled, drivers draw no status bar
+              and write messages from the very top of the panel.
+      @param  enabled  True to reserve and draw a status bar.
+  */
+  void setStatusBar(bool enabled) { _status_bar = enabled; }
+
+  /*!
+      @brief  Returns whether the status bar is enabled for this display.
+      @return True if the status bar is enabled.
+  */
+  bool hasStatusBar() const { return _status_bar; }
+
+  /*!
       @brief  Sets the backlight control pin.
       @param  pin  Pin number for the backlight (-1 to disable).
       @param  active_low  True if the backlight is active-low (driven LOW = on).
@@ -212,6 +226,7 @@ protected:
   int16_t _width;              ///< Display width
   int16_t _height;             ///< Display height
   uint8_t _rotation = 0;       ///< Display rotation (0-3)
+  bool _status_bar = true;     ///< True when a status bar is shown
 
   /*! @brief Cached status bar layout and state. */
   int _statusbar_icons_y;         ///< Y position of status bar icons

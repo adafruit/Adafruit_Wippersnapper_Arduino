@@ -35,8 +35,10 @@
 #define LED_BACKPACK_ALIGNMENT_LEFT 1  ///< LED backpack left-aligned text
 #define LED_BACKPACK_ALIGNMENT_RIGHT 2 ///< LED backpack right-aligned text
 #define LED_BACKPACK_ALIGNMENT_DEFAULT                                         \
-  LED_BACKPACK_ALIGNMENT_LEFT ///< Default LED backpack alignment
-#define LED_MAX_CHARS 4       ///< Maximum characters on an LED backpack display
+  LED_BACKPACK_ALIGNMENT_LEFT     ///< Default LED backpack alignment
+#define OLED_STATUS_BAR_HEIGHT 9  ///< OLED status bar: 8px icons + 1px line
+#define OLED_STATUS_BAR_ICON_SZ 8 ///< OLED status bar icon size in pixels
+#define LED_MAX_CHARS 4 ///< Maximum characters on an LED backpack display
 #endif
 
 /*!
@@ -176,6 +178,81 @@ public:
   void writeMessage(const char *message) override { WriteMessage(message); }
 
 protected:
+  /*!
+      @brief  Draws the compact OLED status bar into the buffer: the
+              Adafruit IO username on the left and 8x8 cloud / WiFi /
+              battery icons on the right, above a separator line. The caller
+              pushes the buffer to the panel.
+      @param  gfx          The display's GFX canvas.
+      @param  io_username  Adafruit IO username to display.
+      @param  fg           Foreground (lit) colour.
+      @param  bg           Background colour.
+  */
+  void drawOledStatusBar(Adafruit_GFX *gfx, const char *io_username,
+                         uint16_t fg, uint16_t bg) {
+    gfx->fillRect(0, 0, gfx->width(), OLED_STATUS_BAR_HEIGHT, bg);
+    gfx->setTextSize(1);
+    gfx->setTextColor(fg);
+    gfx->setTextWrap(false);
+    gfx->setCursor(0, 0);
+    // Leave room for the three icons on the right
+    int16_t max_chars = (gfx->width() - 3 * (OLED_STATUS_BAR_ICON_SZ + 2)) / 6;
+    for (int16_t i = 0; io_username && io_username[i] && i < max_chars; i++)
+      gfx->write(io_username[i]);
+    gfx->drawFastHLine(0, OLED_STATUS_BAR_HEIGHT - 1, gfx->width(), fg);
+    _statusbar_rssi = 0;
+    _statusbar_mqtt_connected = true;
+    drawOledStatusIcons(gfx, 0, true, fg, bg, true);
+  }
+
+  /*!
+      @brief  Redraws the OLED status bar icons into the buffer when they
+              changed (WiFi by 5 dBm or more), or always when forced.
+      @param  gfx          The display's GFX canvas.
+      @param  rssi         WiFi RSSI value.
+      @param  mqtt_status  True if MQTT is connected.
+      @param  fg           Foreground (lit) colour.
+      @param  bg           Background colour.
+      @param  force        True to redraw even if nothing changed.
+      @return True if any icon was redrawn (the caller should refresh).
+  */
+  bool drawOledStatusIcons(Adafruit_GFX *gfx, int8_t rssi, bool mqtt_status,
+                           uint16_t fg, uint16_t bg, bool force = false) {
+    bool update_rssi = force || abs(rssi - _statusbar_rssi) >= 5;
+    bool update_mqtt = force || mqtt_status != _statusbar_mqtt_connected;
+    if (!update_rssi && !update_mqtt)
+      return false;
+    const int16_t sz = OLED_STATUS_BAR_ICON_SZ;
+    const int16_t bat_x = gfx->width() - sz;
+    const int16_t wifi_x = bat_x - sz - 2;
+    const int16_t cloud_x = wifi_x - sz - 2;
+    if (force) {
+      gfx->fillRect(bat_x, 0, sz, sz, bg);
+      gfx->drawBitmap(bat_x, 0, oled_bmp_bat_full, sz, sz, fg);
+    }
+    if (update_mqtt) {
+      gfx->fillRect(cloud_x, 0, sz, sz, bg);
+      gfx->drawBitmap(cloud_x, 0,
+                      mqtt_status ? oled_bmp_cloud_online
+                                  : oled_bmp_cloud_offline,
+                      sz, sz, fg);
+      _statusbar_mqtt_connected = mqtt_status;
+    }
+    if (update_rssi) {
+      const unsigned char *wifi_icon = oled_bmp_wifi_no_signal;
+      if (rssi >= -50)
+        wifi_icon = oled_bmp_wifi_full;
+      else if (rssi >= -60)
+        wifi_icon = oled_bmp_wifi_fair;
+      else if (rssi >= -70)
+        wifi_icon = oled_bmp_wifi_weak;
+      gfx->fillRect(wifi_x, 0, sz, sz, bg);
+      gfx->drawBitmap(wifi_x, 0, wifi_icon, sz, sz, fg);
+      _statusbar_rssi = rssi;
+    }
+    return true;
+  }
+
   TwoWire *_i2c = nullptr;       ///< I2C hardware interface
   uint16_t _address = 0;         ///< I2C device address
   uint32_t _i2c_mux_channel = 0; ///< Optional I2C MUX channel
