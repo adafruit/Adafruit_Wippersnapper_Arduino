@@ -229,12 +229,13 @@ public:
     if (!_display)
       return;
 
-    // Clear only below status bar, start text below status bar
-    _display->fillRect(0, RGB666_STATUSBAR_HEIGHT, _display->width(),
-                       _display->height() - RGB666_STATUSBAR_HEIGHT,
+    // Reserve the status-bar strip only when one is enabled; otherwise
+    // clear and write from the very top of the panel.
+    const int16_t bar_h = _status_bar ? RGB666_STATUSBAR_HEIGHT : 0;
+    _display->fillRect(0, bar_h, _display->width(), _display->height() - bar_h,
                        RGB565_BLACK);
 
-    int16_t y_idx = RGB666_STATUSBAR_HEIGHT + 5;
+    int16_t y_idx = _status_bar ? (RGB666_STATUSBAR_HEIGHT + 5) : 0;
     int16_t line_height = 8 * _text_sz;
 
     _display->setTextSize(_text_sz);

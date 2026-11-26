@@ -804,7 +804,7 @@ void DisplayHardware::showSplash() {
     @param  io_username  Adafruit IO username to display.
 */
 void DisplayHardware::drawStatusBar(const char *io_username) {
-  if (_drvDisp)
+  if (_drvDisp && _drvDisp->hasStatusBar())
     _drvDisp->drawStatusBar(io_username);
 }
 
@@ -816,7 +816,7 @@ void DisplayHardware::drawStatusBar(const char *io_username) {
 */
 void DisplayHardware::updateStatusBar(int8_t rssi, uint8_t bat,
                                       bool mqtt_connected) {
-  if (_drvDisp)
+  if (_drvDisp && _drvDisp->hasStatusBar())
     _drvDisp->updateStatusBar(rssi, bat, mqtt_connected);
 }
 
