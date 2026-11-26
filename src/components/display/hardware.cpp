@@ -36,6 +36,16 @@ DisplayHardware::~DisplayHardware() {
 ws_display_Add DisplayHardware::getAddMsg() { return _addMsg; }
 
 /*!
+    @brief  Gets the interface descriptor this display was added with, used
+            to identify the display instance on Remove/Write.
+    @return Pointer to the stored interface descriptor, or nullptr if the
+            Add message carried none.
+*/
+const ws_display_InterfaceDescriptor *DisplayHardware::getInterface() {
+  return _addMsg.has_interface_type ? &_addMsg.interface_type : nullptr;
+}
+
+/*!
     @brief  Returns the name of this display instance.
     @return Pointer to the display's name string.
 */
@@ -423,6 +433,16 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   }
   ws_display_EPDConfig *config = &msg->config.config_epd;
 
+  // Driver "auto" (or empty / "unspecified", e.g. from a board's magic
+  // config) means probe the panel's chip, as on the MagTag and the 2.9"
+  // grayscale FeatherWing (ILI0373 before mid-2025, SSD1680 after).
+  const char *driver = msg->driver;
+  bool auto_detect = strlen(driver) == 0 || strcasecmp(driver, "auto") == 0 ||
+                     strcasecmp(driver, "unspecified") == 0;
+  if (auto_detect && config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED) {
+    config->mode = ws_display_EPDMode_EPD_MODE_GRAYSCALE4;
+  }
+
   // Parse EPD mode
   if (config->mode == ws_display_EPDMode_EPD_MODE_UNSPECIFIED) {
     WS_DEBUG_PRINTLN("[display] ERROR: EPD mode is unspecified!");
@@ -434,21 +454,18 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     _drvDisp = nullptr;
   }
 
-  // MagTag hardware auto-detection (requires SPI probing)
-  const char *driver = msg->driver;
-  if (strncmp(_name, "eink-magtag", sizeof("eink-magtag") - 1) == 0 &&
-      strlen(driver) == 0) {
+  // Chip auto-detection (requires SPI probing)
+  if (auto_detect) {
     if (EpdBitBangReadRegister(0x71, spi_epd_config) == 0xFF) {
       driver = "SSD1680";
     } else {
       driver = "ILI0373";
     }
-    WS_DEBUG_PRINT("[display] MagTag auto-detected driver: ");
+    WS_DEBUG_PRINT("[display] EPD auto-detected driver: ");
     WS_DEBUG_PRINTLNVAR(driver);
   }
 
-  // Create driver based on driver string (component-name resolution
-  // already done by controller)
+  // Create driver based on the driver string from the component definition
   if (strcmp(driver, "SSD1680") == 0) {
     _drvDisp = new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "ILI0373") == 0) {
@@ -459,7 +476,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     _drvDisp = new dispDrvThinkInkMonoAAAMFGN(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "UC8253") == 0) {
     _drvDisp = new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "UC8151") == 0) {
+  } else if (strcmp(driver, "UC8151D") == 0 || strcmp(driver, "UC8151") == 0) {
     _drvDisp = new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported EPD driver: ");
@@ -742,11 +759,16 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     drv = new dispDrvSsd1306(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "SH1107") == 0) {
     drv = new dispDrvSh1107(i2c, addr, 0, driverName, msg->panel);
-  } else if (strcasecmp(driverName, "charlcd") == 0) {
+  } else if (strcasecmp(driverName, "charlcd") == 0 ||
+             strcasecmp(driverName, "MCP23008") == 0) {
     drv = new dispDrvCharLcd(i2c, addr, 0, driverName, msg->panel);
-  } else if (strcasecmp(driverName, "7seg") == 0) {
+  } else if (strcasecmp(driverName, "7seg") == 0 ||
+             (strcasecmp(driverName, "HT16K33") == 0 &&
+              strcasecmp(msg->panel, "4digit-7seg") == 0)) {
     drv = new dispDrv7Seg(i2c, addr, 0, driverName, msg->panel);
-  } else if (strcasecmp(driverName, "quadalphanum") == 0) {
+  } else if (strcasecmp(driverName, "quadalphanum") == 0 ||
+             (strcasecmp(driverName, "HT16K33") == 0 &&
+              strcasecmp(msg->panel, "quadalphanum") == 0)) {
     drv = new dispDrvQuadAlphaNum(i2c, addr, 0, driverName, msg->panel);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported I2C display driver: ");
