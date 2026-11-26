@@ -283,6 +283,8 @@ public:
     if (!_display)
       return;
     _display->fillScreen(0x0000);
+    if (!statusBarEnabled())
+      return;
     _display->fillRect(0, 0, _display->width(), DSI_STATUSBAR_HEIGHT, 0xFFFF);
     _display->setTextSize(2);
     _display->setTextColor(0x0000);
@@ -317,7 +319,7 @@ public:
       @param  mqtt_status  True if MQTT is connected.
   */
   void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_status) override {
-    if (!_display)
+    if (!_display || !statusBarEnabled())
       return;
     bool update_rssi = abs(rssi - _statusbar_rssi) >= 3;
     bool update_mqtt = mqtt_status != _statusbar_mqtt_connected;
@@ -358,9 +360,12 @@ public:
   void writeMessage(const char *message) override {
     if (!_display)
       return;
-    _display->fillRect(0, DSI_STATUSBAR_HEIGHT, _display->width(),
-                       _display->height() - DSI_STATUSBAR_HEIGHT, 0x0000);
-    int16_t y_idx = DSI_STATUSBAR_HEIGHT + 10;
+    // Reserve the status-bar strip only when one is enabled; otherwise
+    // clear and write from the very top of the panel.
+    const int16_t bar_h = statusBarEnabled() ? DSI_STATUSBAR_HEIGHT : 0;
+    _display->fillRect(0, bar_h, _display->width(), _display->height() - bar_h,
+                       0x0000);
+    int16_t y_idx = statusBarEnabled() ? (DSI_STATUSBAR_HEIGHT + 10) : 0;
     int16_t line_height = 8 * _text_sz;
     _display->setTextSize(_text_sz);
     _display->setCursor(0, y_idx);
@@ -388,6 +393,17 @@ public:
   }
 
 private:
+  /// Status bar on/off. A constant for now: once
+  /// adafruit/Adafruit_Wippersnapper_Arduino#1178 lands, statusBarEnabled()
+  /// returns the per-display option (DisplayProperties.status_bar) instead.
+  static const bool kStatusBarEnabled = true;
+
+  /*!
+      @brief  Returns whether the status bar is shown on this display.
+      @return True if the status bar is shown.
+  */
+  bool statusBarEnabled() const { return kStatusBarEnabled; }
+
   static const int16_t DSI_TD2_NATIVE_W = 720;  ///< Native panel width
   static const int16_t DSI_TD2_NATIVE_H = 1280; ///< Native panel height
 
