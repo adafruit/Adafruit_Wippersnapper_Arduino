@@ -326,14 +326,16 @@ jobs:
           clone_retry --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           clone_retry --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           clone_retry --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          # Qualia: Arduino_GFX fork tag = moononournation/Arduino_GFX#822
-          # (ESP32-S31 + ESP-IDF 6 RGB panel) + the Arduino_ESP32RGBPanel
-          # del()/destructor teardown with panel reuse. Pinned to a tag because
-          # release builds reuse this job. Cloned into the registry copy's
-          # folder so ci-arduino sees "GFX Library for Arduino" installed and
-          # skips it. Drop once both are in a GFX release.
+          # Qualia: upstream Arduino_GFX at the merge of
+          # moononournation/Arduino_GFX#822 (ESP32-S31 + ESP-IDF 6 RGB panel),
+          # which is not in a GFX release yet (latest is v1.6.9). Pinned to the
+          # commit because release builds reuse this job. Cloned into the
+          # registry copy's folder so ci-arduino sees "GFX Library for Arduino"
+          # installed and skips it. Drop once a GFX release includes #822.
           if [ "${{ matrix.arduino-platform }}" = "qualia_s3_rgb666" ]; then
-            clone_retry --quiet --depth 1 --branch wippersnapper-rgb-panel-3 https://github.com/tyeth/Arduino_GFX.git /home/runner/Arduino/libraries/GFX_Library_for_Arduino
+            GFX_DIR=/home/runner/Arduino/libraries/GFX_Library_for_Arduino
+            clone_retry --quiet --filter=blob:none https://github.com/moononournation/Arduino_GFX.git "$GFX_DIR"
+            git -C "$GFX_DIR" checkout --quiet 9591390b0afbc1f60c9d51ce1c0e0a28fa21cd68
           fi
       - name: Install Dependencies (esptool)
         run: |
