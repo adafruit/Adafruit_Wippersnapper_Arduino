@@ -30,14 +30,15 @@
     @brief  Driver for RGB666 dotclock displays on Qualia ESP32-S3.
     @note   The GFX library objects behind the panel (Arduino_ESP32RGBPanel,
             Arduino_RGB_Display, Arduino_XCA9554SWSPI) have no destructors,
-            and the esp_lcd RGB panel that Arduino_ESP32RGBPanel creates
-            (with its PSRAM framebuffer and the ESP32-S3's only RGB LCD
-            peripheral) has no public teardown. So they are created once, on
-            the first successful begin(), shared by every instance of this
-            driver and kept for the life of the firmware: deleting and
-            re-creating them would leak them, and a second esp_lcd RGB panel
-            can't be created. A re-add of the same panel reuses them; a
-            different panel needs a reboot.
+            and Arduino_ESP32RGBPanel keeps the esp_lcd RGB panel it creates
+            (PSRAM framebuffer plus the ESP32-S3's only RGB panel slot) in a
+            private handle that it never deletes. So they are created once,
+            on the first successful begin(), and kept for the life of the
+            firmware: re-creating them leaked them, and the second
+            esp_lcd_new_rgb_panel() fails inside the library's
+            ESP_ERROR_CHECK, aborting the board. A re-add of the same panel
+            and size reuses them; a different panel or size needs a reboot.
+            One driver instance owns the panel at a time.
 */
 class dispDrvRgb666 : public dispDrvBaseRgb666 {
 public:
@@ -56,9 +57,12 @@ public:
               but keeps the shared GFX objects (see the class note).
   */
   ~dispDrvRgb666() {
-    if (_display && s_ready) {
-      _display->fillScreen(RGB565_BLACK);
-      s_expander->digitalWrite(PCA_TFT_BACKLIGHT, LOW);
+    if (s_owner == this) {
+      if (_display && s_ready) {
+        _display->fillScreen(RGB565_BLACK);
+        s_expander->digitalWrite(PCA_TFT_BACKLIGHT, LOW);
+      }
+      s_owner = nullptr;
     }
     _display = nullptr;
   }
@@ -75,6 +79,11 @@ public:
       WS_DEBUG_PRINTLNVAR(_panel);
       return false;
     }
+    if (s_owner != nullptr && s_owner != this) {
+      WS_DEBUG_PRINTLN("[display] ERROR: RGB666 panel already in use by "
+                       "another display component!");
+      return false;
+    }
 
     if (s_rgbpanel != nullptr) {
       // The panel hardware was already set up by an earlier add.
@@ -83,9 +92,9 @@ public:
                          "earlier, reboot to retry!");
         return false;
       }
-      if (panel_id != s_panel_id) {
-        WS_DEBUG_PRINTLN("[display] ERROR: Changing the RGB666 panel type "
-                         "needs a reboot!");
+      if (panel_id != s_panel_id || _width != s_width || _height != s_height) {
+        WS_DEBUG_PRINTLN("[display] ERROR: Changing the RGB666 panel type or "
+                         "size needs a reboot!");
         return false;
       }
       _display = s_display;
@@ -95,6 +104,7 @@ public:
         return false;
       _display = s_display;
     }
+    s_owner = this;
 
     _display->fillScreen(RGB565_BLACK);
     _display->setTextColor(RGB565_WHITE);
@@ -263,6 +273,17 @@ private:
   bool createPanel(int8_t panel_id) {
     Wire.setClock(400000);
 
+    // Arduino_XCA9554SWSPI::begin() still returns true when the expander
+    // doesn't answer (every later write is then a silent no-op), which would
+    // latch a dark panel as ready for the whole boot. Probe it first, before
+    // anything is allocated, so a later add can retry.
+    Wire.beginTransmission(0x3F);
+    if (Wire.endTransmission() != 0) {
+      WS_DEBUG_PRINTLN("[display] ERROR: PCA9554A I/O expander (0x3F) not "
+                       "found on the I2C bus!");
+      return false;
+    }
+
     // Select init operations and dotclock timings per panel.
     // Timings from CircuitPython dotclockframebuffer configs.
     const uint8_t *init_ops = nullptr;
@@ -307,6 +328,8 @@ private:
         _width, _height, s_rgbpanel, _rotation, true /* auto_flush */,
         s_expander, GFX_NOT_DEFINED /* RST */, init_ops, init_ops_len);
     s_panel_id = panel_id;
+    s_width = _width;
+    s_height = _height;
 
     if (!s_display->begin()) {
       WS_DEBUG_PRINTLN("[display] ERROR: Arduino_RGB_Display begin() failed!");
@@ -319,16 +342,20 @@ private:
   Arduino_RGB_Display *_display; ///< This instance's view of s_display
   char _panel[20];               ///< Panel name from the Add message
 
-  /// Shared display, created once (see the class note)
-  static inline Arduino_RGB_Display *s_display = nullptr;
-  /// Shared I/O expander bus for the panel, created once
-  static inline Arduino_XCA9554SWSPI *s_expander = nullptr;
-  /// Shared dot-clock RGB panel, created once
-  static inline Arduino_ESP32RGBPanel *s_rgbpanel = nullptr;
-  /// Panel type the shared objects were created for, from panelId()
-  static inline int8_t s_panel_id = -1;
-  /// True once the shared display has begun successfully
-  static inline bool s_ready = false;
+  static inline Arduino_RGB_Display *s_display =
+      nullptr; ///< Shared display, created once (see the class note)
+  static inline Arduino_XCA9554SWSPI *s_expander =
+      nullptr; ///< Shared I/O expander bus for the panel, created once
+  static inline Arduino_ESP32RGBPanel *s_rgbpanel =
+      nullptr; ///< Shared dot-clock RGB panel, created once
+  static inline int8_t s_panel_id =
+      -1; ///< Panel type the shared objects were made for, from panelId()
+  static inline int16_t s_width = 0;  ///< Width the panel was created with
+  static inline int16_t s_height = 0; ///< Height the panel was created with
+  static inline bool s_ready =
+      false; ///< True once the shared display has begun successfully
+  static inline dispDrvRgb666 *s_owner =
+      nullptr; ///< Driver instance currently using the shared panel
 };
 
 #endif // ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
