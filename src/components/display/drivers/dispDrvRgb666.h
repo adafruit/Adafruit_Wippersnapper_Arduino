@@ -16,7 +16,7 @@
 #ifndef WS_DISP_DRV_RGB666_H
 #define WS_DISP_DRV_RGB666_H
 
-#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+#ifdef ARDUINO_QUALIA_S3_RGB666
 
 #include "dispDrvBase.h"
 #include <Arduino_GFX_Library.h>
@@ -270,6 +270,6 @@ private:
   char _panel[20];
 };
 
-#endif // ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+#endif // ARDUINO_QUALIA_S3_RGB666
 
 #endif // WS_DISP_DRV_RGB666_H
