@@ -26,7 +26,7 @@
 #include "drivers/dispDrvSt7789.h"
 #include "drivers/dispDrvSt7789I8080.h"
 #include "wippersnapper.h"
-#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+#ifdef ARDUINO_QUALIA_S3_RGB666
 #include "drivers/dispDrvRgb666.h"
 #endif
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
