@@ -72,14 +72,14 @@ protected:
   bool beginI8080(ws_display_Add *msg);
   bool beginI2cDisplay(ws_display_Add *msg);
   static int16_t parsePin(const char *pinStr);
-  static uint8_t EpdBitBangReadRegister(uint8_t cmd,
-                                        ws_display_EpdSpiDescriptor *config);
+  static uint8_t
+  EpdBitBangReadRegister(uint8_t cmd, ws_display_DisplaySpiDescriptor *config);
 
   // EPD auto-detection helpers
-  bool detect_ssd1680(ws_display_EpdSpiDescriptor *config);
-  bool detect_ssd1683(ws_display_EpdSpiDescriptor *config);
-  bool detect_uc8151d(ws_display_EpdSpiDescriptor *config);
-  bool detect_uc8179(ws_display_EpdSpiDescriptor *config);
-  bool detect_uc8253(ws_display_EpdSpiDescriptor *config);
+  bool detect_ssd1680(ws_display_DisplaySpiDescriptor *config);
+  bool detect_ssd1683(ws_display_DisplaySpiDescriptor *config);
+  bool detect_uc8151d(ws_display_DisplaySpiDescriptor *config);
+  bool detect_uc8179(ws_display_DisplaySpiDescriptor *config);
+  bool detect_uc8253(ws_display_DisplaySpiDescriptor *config);
 };
 #endif // WS_DISPLAY_HARDWARE_H
