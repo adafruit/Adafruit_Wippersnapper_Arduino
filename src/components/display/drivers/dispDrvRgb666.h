@@ -28,6 +28,17 @@
 
 /*!
     @brief  Driver for RGB666 dotclock displays on Qualia ESP32-S3.
+    @note   The GFX library objects behind the panel (Arduino_ESP32RGBPanel,
+            Arduino_RGB_Display, Arduino_XCA9554SWSPI) have no destructors,
+            and Arduino_ESP32RGBPanel keeps the esp_lcd RGB panel it creates
+            (PSRAM framebuffer plus the ESP32-S3's only RGB panel slot) in a
+            private handle that it never deletes. So they are created once,
+            on the first successful begin(), and kept for the life of the
+            firmware: re-creating them leaked them, and the second
+            esp_lcd_new_rgb_panel() fails inside the library's
+            ESP_ERROR_CHECK, aborting the board. A re-add of the same panel
+            and size reuses them; a different panel or size needs a reboot.
+            One driver instance owns the panel at a time.
 */
 class dispDrvRgb666 : public dispDrvBaseRgb666 {
 public:
@@ -43,104 +54,64 @@ public:
   */
   dispDrvRgb666(const char *panel, TwoWire *wire)
       : dispDrvBaseRgb666("dispDrvRgb666", panel), _display(nullptr),
-        _expander(nullptr), _rgbpanel(nullptr), _wire(wire), _started(false) {
+        _wire(wire) {
     strncpy(_panel, panel, sizeof(_panel) - 1);
     _panel[sizeof(_panel) - 1] = '\0';
   }
 
+  /*!
+      @brief  Destructor. Blanks the panel and switches the backlight off,
+              but keeps the shared GFX objects (see the class note).
+  */
   ~dispDrvRgb666() {
-    // rgbpanel and expander are owned by display, cleaned up by its destructor
-    if (_display) {
-      if (_started)
+    if (s_owner == this) {
+      if (_display && s_ready) {
         _display->fillScreen(RGB565_BLACK);
-      delete _display;
-      _display = nullptr;
+        s_expander->digitalWrite(PCA_TFT_BACKLIGHT, LOW);
+      }
+      s_owner = nullptr;
     }
-    // Only once begin() got the expander going: Arduino_XCA9554SWSPI's
-    // state (is_found) is uninitialised until its begin() runs.
-    if (_expander && _started) {
-      _expander->digitalWrite(PCA_TFT_BACKLIGHT, LOW);
-    }
+    _display = nullptr;
   }
 
+  /*!
+      @brief  Brings the panel up: creates the GFX objects on the first call,
+              reuses them afterwards (see the class note).
+      @return True if the panel is ready, False otherwise.
+  */
   bool begin() override {
-    if (_wire == nullptr)
-      return false;
-
-    // Arduino_XCA9554SWSPI::begin() still returns true when the expander
-    // doesn't answer (every later write is then a silent no-op), so probe it
-    // here to fail the Add instead of reporting a dark panel as success.
-    _wire->beginTransmission(0x3F);
-    if (_wire->endTransmission() != 0) {
-      WS_DEBUG_PRINTLN("[display] ERROR: PCA9554A I/O expander (0x3F) not "
-                       "found on the I2C bus!");
-      return false;
-    }
-
-    _expander = new Arduino_XCA9554SWSPI(PCA_TFT_RESET, PCA_TFT_CS, PCA_TFT_SCK,
-                                         PCA_TFT_MOSI, _wire, 0x3F);
-    if (!_expander)
-      return false;
-
-    // Select init operations and dotclock timings per panel.
-    // Timings from CircuitPython dotclockframebuffer configs.
-    // Accepts both panel part numbers and Adafruit PIDs.
-    const uint8_t *init_ops = nullptr;
-    size_t init_ops_len = 0;
-    uint16_t h_fp, h_pw, h_bp, v_fp, v_pw, v_bp;
-    uint16_t pclk_active_neg = 0;
-    int32_t prefer_speed = 16000000;
-
-    if (strcmp(_panel, "TL021WVC02") == 0 ||
-        strcmp(_panel, "adafruit-5792") == 0) {
-      // 2.1" round 480x480
-      init_ops = TL021WVC02_init_operations;
-      init_ops_len = sizeof(TL021WVC02_init_operations);
-      h_fp = 46;
-      h_pw = 2;
-      h_bp = 44;
-      v_fp = 50;
-      v_pw = 16;
-      v_bp = 16;
-      pclk_active_neg = 0; // pclk_active_high = True
-    } else if (strcmp(_panel, "TL032FWV01") == 0 ||
-               strcmp(_panel, "adafruit-5797") == 0) {
-      // 3.2" bar 320x820
-      init_ops = tl032fwv01_init_operations;
-      init_ops_len = sizeof(tl032fwv01_init_operations);
-      h_fp = 150;
-      h_pw = 3;
-      h_bp = 251;
-      v_fp = 100;
-      v_pw = 6;
-      v_bp = 90;
-      pclk_active_neg = 1; // pclk_active_high = False
-    } else {
+    int8_t panel_id = panelId(_panel);
+    if (panel_id < 0) {
       WS_DEBUG_PRINT("[display] ERROR: Unknown RGB666 panel: ");
       WS_DEBUG_PRINTLNVAR(_panel);
       return false;
     }
-
-    _rgbpanel = new Arduino_ESP32RGBPanel(
-        TFT_DE, TFT_VSYNC, TFT_HSYNC, TFT_PCLK, TFT_R1, TFT_R2, TFT_R3, TFT_R4,
-        TFT_R5, TFT_G0, TFT_G1, TFT_G2, TFT_G3, TFT_G4, TFT_G5, TFT_B1, TFT_B2,
-        TFT_B3, TFT_B4, TFT_B5, 1 /* hsync_polarity */, h_fp, h_pw, h_bp,
-        1 /* vsync_polarity */, v_fp, v_pw, v_bp, pclk_active_neg,
-        prefer_speed);
-    if (!_rgbpanel)
-      return false;
-
-    _display = new Arduino_RGB_Display(
-        _width, _height, _rgbpanel, _rotation, true /* auto_flush */, _expander,
-        GFX_NOT_DEFINED /* RST */, init_ops, init_ops_len);
-    if (!_display)
-      return false;
-
-    if (!_display->begin()) {
-      WS_DEBUG_PRINTLN("[display] ERROR: Arduino_RGB_Display begin() failed!");
+    if (s_owner != nullptr && s_owner != this) {
+      WS_DEBUG_PRINTLN("[display] ERROR: RGB666 panel already in use by "
+                       "another display component!");
       return false;
     }
-    _started = true;
+
+    if (s_rgbpanel != nullptr) {
+      // The panel hardware was already set up by an earlier add.
+      if (!s_ready) {
+        WS_DEBUG_PRINTLN("[display] ERROR: RGB666 panel failed to initialize "
+                         "earlier, reboot to retry!");
+        return false;
+      }
+      if (panel_id != s_panel_id || _width != s_width || _height != s_height) {
+        WS_DEBUG_PRINTLN("[display] ERROR: Changing the RGB666 panel type or "
+                         "size needs a reboot!");
+        return false;
+      }
+      _display = s_display;
+      _display->setRotation(_rotation);
+    } else {
+      if (!createPanel(panel_id))
+        return false;
+      _display = s_display;
+    }
+    s_owner = this;
 
     _display->fillScreen(RGB565_BLACK);
     _display->setTextColor(RGB565_WHITE);
@@ -148,8 +119,8 @@ public:
     _display->setTextSize(_text_sz);
 
     // Enable backlight via IO expander
-    _expander->pinMode(PCA_TFT_BACKLIGHT, OUTPUT);
-    _expander->digitalWrite(PCA_TFT_BACKLIGHT, HIGH);
+    s_expander->pinMode(PCA_TFT_BACKLIGHT, OUTPUT);
+    s_expander->digitalWrite(PCA_TFT_BACKLIGHT, HIGH);
 
     WS_DEBUG_PRINT("[display] RGB666 panel '");
     WS_DEBUG_PRINTVAR(_panel);
@@ -285,12 +256,115 @@ public:
   }
 
 private:
-  Arduino_RGB_Display *_display;
-  Arduino_XCA9554SWSPI *_expander;
-  Arduino_ESP32RGBPanel *_rgbpanel;
-  TwoWire *_wire; ///< I2C bus the PCA9554A I/O expander is on
-  bool _started;  ///< True once the panel and its expander have begun
-  char _panel[20];
+  /*!
+      @brief  Maps a panel name to a panel type.
+      @param  panel  Panel part number or Adafruit PID.
+      @return 0 for the 2.1" round 480x480, 1 for the 3.2" bar 320x820, or
+              -1 if the name is unknown.
+  */
+  static int8_t panelId(const char *panel) {
+    if (strcmp(panel, "TL021WVC02") == 0 || strcmp(panel, "adafruit-5792") == 0)
+      return 0;
+    if (strcmp(panel, "TL032FWV01") == 0 || strcmp(panel, "adafruit-5797") == 0)
+      return 1;
+    return -1;
+  }
+
+  /*!
+      @brief  Creates the shared GFX objects for a panel type and begins the
+              display. Runs at most once per boot: the objects are stored
+              as soon as they exist, so a failure is never retried.
+      @param  panel_id  Panel type from panelId().
+      @return True if the display began, False otherwise.
+  */
+  bool createPanel(int8_t panel_id) {
+    if (_wire == nullptr)
+      return false;
+
+    // Arduino_XCA9554SWSPI::begin() still returns true when the expander
+    // doesn't answer (every later write is then a silent no-op), which would
+    // latch a dark panel as ready for the whole boot. Probe it first, before
+    // anything is allocated, so a later add can retry.
+    _wire->beginTransmission(0x3F);
+    if (_wire->endTransmission() != 0) {
+      WS_DEBUG_PRINTLN("[display] ERROR: PCA9554A I/O expander (0x3F) not "
+                       "found on the I2C bus!");
+      return false;
+    }
+
+    // Select init operations and dotclock timings per panel.
+    // Timings from CircuitPython dotclockframebuffer configs.
+    const uint8_t *init_ops = nullptr;
+    size_t init_ops_len = 0;
+    uint16_t h_fp, h_pw, h_bp, v_fp, v_pw, v_bp;
+    uint16_t pclk_active_neg = 0;
+    int32_t prefer_speed = 16000000;
+
+    if (panel_id == 0) {
+      // 2.1" round 480x480
+      init_ops = TL021WVC02_init_operations;
+      init_ops_len = sizeof(TL021WVC02_init_operations);
+      h_fp = 46;
+      h_pw = 2;
+      h_bp = 44;
+      v_fp = 50;
+      v_pw = 16;
+      v_bp = 16;
+      pclk_active_neg = 0; // pclk_active_high = True
+    } else {
+      // 3.2" bar 320x820
+      init_ops = tl032fwv01_init_operations;
+      init_ops_len = sizeof(tl032fwv01_init_operations);
+      h_fp = 150;
+      h_pw = 3;
+      h_bp = 251;
+      v_fp = 100;
+      v_pw = 6;
+      v_bp = 90;
+      pclk_active_neg = 1; // pclk_active_high = False
+    }
+
+    s_expander = new Arduino_XCA9554SWSPI(
+        PCA_TFT_RESET, PCA_TFT_CS, PCA_TFT_SCK, PCA_TFT_MOSI, _wire, 0x3F);
+    s_rgbpanel = new Arduino_ESP32RGBPanel(
+        TFT_DE, TFT_VSYNC, TFT_HSYNC, TFT_PCLK, TFT_R1, TFT_R2, TFT_R3, TFT_R4,
+        TFT_R5, TFT_G0, TFT_G1, TFT_G2, TFT_G3, TFT_G4, TFT_G5, TFT_B1, TFT_B2,
+        TFT_B3, TFT_B4, TFT_B5, 1 /* hsync_polarity */, h_fp, h_pw, h_bp,
+        1 /* vsync_polarity */, v_fp, v_pw, v_bp, pclk_active_neg,
+        prefer_speed);
+    s_display = new Arduino_RGB_Display(
+        _width, _height, s_rgbpanel, _rotation, true /* auto_flush */,
+        s_expander, GFX_NOT_DEFINED /* RST */, init_ops, init_ops_len);
+    s_panel_id = panel_id;
+    s_width = _width;
+    s_height = _height;
+
+    if (!s_display->begin()) {
+      WS_DEBUG_PRINTLN("[display] ERROR: Arduino_RGB_Display begin() failed!");
+      return false;
+    }
+    s_ready = true;
+    return true;
+  }
+
+  Arduino_RGB_Display *_display; ///< This instance's view of s_display
+  TwoWire *_wire;                ///< I2C bus the PCA9554A I/O expander is on
+  char _panel[20];               ///< Panel name from the Add message
+
+  static inline Arduino_RGB_Display *s_display =
+      nullptr; ///< Shared display, created once (see the class note)
+  static inline Arduino_XCA9554SWSPI *s_expander =
+      nullptr; ///< Shared I/O expander bus for the panel, created once
+  static inline Arduino_ESP32RGBPanel *s_rgbpanel =
+      nullptr; ///< Shared dot-clock RGB panel, created once
+  static inline int8_t s_panel_id =
+      -1; ///< Panel type the shared objects were made for, from panelId()
+  static inline int16_t s_width = 0;  ///< Width the panel was created with
+  static inline int16_t s_height = 0; ///< Height the panel was created with
+  static inline bool s_ready =
+      false; ///< True once the shared display has begun successfully
+  static inline dispDrvRgb666 *s_owner =
+      nullptr; ///< Driver instance currently using the shared panel
 };
 
 #endif // ARDUINO_ADAFRUIT_QUALIA_S3_RGB666

@@ -130,14 +130,8 @@ bool SleepController::handleSleepConfig(ws_sleep_SleepConfig *msg,
 */
 void SleepController::WakeFromLightSleep() {
   Serial.begin(115200);
-  // If already enumerated, additional class driver begin() e.g msc, hid, midi
-  // won't take effect until re-enumeration
-  // TODO: This doesn't compile on ESP32-C3, do we need it?
-  /*   if (TinyUSBDevice.mounted()) {
-      TinyUSBDevice.detach();
-      delay(10);
-      TinyUSBDevice.attach();
-    } */
+  // USB re-enumeration after light sleep (TinyUSB boards) is handled by the
+  // detach/attach around the sleep in StartSleep()
 
   // Refresh the cached sleep wakeup cause from hardware
   _sleep_hardware->GetSleepWakeupCause();
@@ -509,9 +503,13 @@ void SleepController::StartSleep() {
 #ifdef ARDUINO_ARCH_ESP32
 #ifdef USE_TINYUSB
     // Deep sleep powers USB down and wakes through a reset, disconnect from
-    // the host first so it sees a clean unplug and enumerates the wake
+    // the host first so it sees a clean unplug and enumerates the wake.
+    // Skip the detach when no host has the device mounted (e.g. on battery).
     WS_PRINTER.flush();
-    TinyUSBDevice.detach();
+    if (TinyUSBDevice.mounted()) {
+      TinyUSBDevice.detach();
+      delay(2); // let the host see the disconnect before USB powers down
+    }
 #endif
     esp_deep_sleep_start();
 #else
@@ -525,9 +523,24 @@ void SleepController::StartSleep() {
     // Flush serial output before entering light sleep
     WS_DEBUG_PRINTLN("[sleep] Starting light sleep NOW...");
     Serial.flush();
+#ifdef USE_TINYUSB
+    // Light sleep gates the USB-OTG clock mid-session, so the host's
+    // transfers fail (error -71) and it gives up on the port, leaving it
+    // un-enumerated after wake. Disconnect from the host first, and reconnect
+    // once awake so it enumerates again (serial + WIPPER drive). Skip the
+    // detach when no host has the device mounted (e.g. on battery).
+    if (TinyUSBDevice.mounted()) {
+      TinyUSBDevice.detach();
+      delay(2); // let the host see the disconnect before the clock stops
+    }
+#endif
     Serial.end();
     // Start light sleep
     esp_err_t err = esp_light_sleep_start();
+#ifdef USE_TINYUSB
+    TinyUSBDevice.attach();
+    delay(10); // let the reconnect settle before using the port again
+#endif
     // === WOKE UP FROM LIGHT SLEEP ===
     WS_DEBUG_PRINTLN("[sleep] *** WOKE FROM LIGHT SLEEP ***");
     WS_PRINTER.flush();
@@ -544,12 +557,17 @@ void SleepController::StartSleep() {
     // Dormant sleep stops the USB clock mid-session, which the host reports
     // as a malfunctioning device that never re-enumerates. Disconnect from
     // the host first, and reconnect once awake so it enumerates again.
+    // Skip the detach when no host has the device mounted (e.g. on battery).
     WS_PRINTER.flush();
-    TinyUSBDevice.detach();
+    if (TinyUSBDevice.mounted()) {
+      TinyUSBDevice.detach();
+      delay(2); // let the host see the disconnect before the clock stops
+    }
 #endif
     Ws->_wdt->startSleep();
 #ifdef USE_TINYUSB
     TinyUSBDevice.attach();
+    delay(10); // let the reconnect settle before using the port again
 #endif
 #endif
   } else {
