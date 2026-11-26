@@ -43,7 +43,10 @@ private:
   DisplayHardware *_displays[MAX_DISPLAYS] = {nullptr};
   uint8_t _num_displays;
   unsigned long _last_bar_update; ///< Timestamp of last status bar update
-  bool removeExistingDisplayByName(const char *name);
+  bool removeExistingDisplay(const char *name,
+                             const ws_display_InterfaceDescriptor *desc);
+  int8_t
+  findDisplayIndexByDescriptor(const ws_display_InterfaceDescriptor *desc);
   int8_t findDisplayIndexByName(const char *name);
 };
 extern wippersnapper *Ws; ///< Global V2 instance

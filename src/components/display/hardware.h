@@ -49,6 +49,7 @@ public:
   bool write(ws_display_Write *msg);
   const char *getName();
   ws_display_Add getAddMsg();
+  const ws_display_InterfaceDescriptor *getInterface();
   void showSplash();
   void drawStatusBar(const char *io_username);
   void updateStatusBar(int8_t rssi, uint8_t bat, bool mqtt_connected);
