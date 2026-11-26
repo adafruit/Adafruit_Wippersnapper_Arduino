@@ -500,7 +500,7 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
             board.
 */
 bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
-#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+#ifdef ARDUINO_QUALIA_S3_RGB666
   if (msg->which_config != ws_display_Add_config_display_tag) {
     WS_DEBUG_PRINTLN("[display] ERROR: Expected display config for RGB666!");
     return false;
