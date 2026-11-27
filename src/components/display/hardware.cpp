@@ -52,6 +52,16 @@ const ws_display_InterfaceDescriptor *DisplayHardware::getInterface() {
 const char *DisplayHardware::getName() { return _name; }
 
 /*!
+    @brief  Resolves DisplayProperties.status_bar: the field is optional and
+            an absent value means the status bar is shown.
+    @param  props  The display properties, or nullptr if none were sent.
+    @return True if the status bar should be shown.
+*/
+static bool statusBarEnabled(const ws_display_DisplayProperties *props) {
+  return !props || !props->has_status_bar || props->status_bar;
+}
+
+/*!
     @brief  Parses a "D<n>" pin string into an integer pin number.
     @param  pinStr  Null-terminated pin string (e.g. "D5").
     @return The parsed pin number, or -1 if the input is invalid.
@@ -171,7 +181,13 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   if (strcmp(msg->driver, "ST7789") == 0) {
     _drvDisp = new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
   } else if (strcmp(msg->driver, "ST7735") == 0) {
+    // LilyGO T-Dongle C5 0.96" 160x80 (INITR_MINI160x80_PLUGIN)
     _drvDisp = new dispDrvSt7735(cs, dc, mosi, sck, rst, miso);
+  } else if (strcmp(msg->driver, "ST7735R") == 0) {
+    // 1.8" 128x160 ST7735R breakout (ADA358)
+    _drvDisp = new dispDrvSt7735(cs, dc, mosi, sck, rst, miso, INITR_BLACKTAB);
+  } else if (strcmp(msg->driver, "ILI9341") == 0) {
+    _drvDisp = new dispDrvIli9341(cs, dc, mosi, sck, rst, miso);
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported TFT driver: ");
     WS_DEBUG_PRINTLNVAR(msg->driver);
@@ -214,6 +230,7 @@ bool DisplayHardware::beginSpiTft(ws_display_Add *msg) {
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
   _drvDisp->setRotation(config->rotation);
+  _drvDisp->setStatusBar(statusBarEnabled(config));
   if (config->text_size > 0) {
     _drvDisp->setTextSize(config->text_size);
   }
@@ -465,11 +482,46 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
     WS_DEBUG_PRINTLNVAR(driver);
   }
 
-  // Create driver based on the driver string from the component definition
+  // Panel size, orientation-independent (long x short side). Zero when the
+  // payload omits dimensions, which keeps the legacy 2.9" 296x128 selection.
+  int32_t long_side = max(config->properties.width, config->properties.height);
+  int32_t short_side = min(config->properties.width, config->properties.height);
+  bool is_213 = long_side == 250 && short_side == 122;
+  bool is_154_152 = long_side == 152 && short_side == 152;
+  bool tricolor = config->mode == ws_display_EPDMode_EPD_MODE_TRICOLOR;
+
+  // Create driver based on the driver string from the component definition,
+  // narrowed by panel size (and panel string where revisions share a chip)
   if (strcmp(driver, "SSD1680") == 0) {
-    _drvDisp = new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
-  } else if (strcmp(driver, "ILI0373") == 0) {
-    _drvDisp = new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+    if (is_213 && strcmp(msg->panel, "2.13-250x122-mono-pre2024") == 0) {
+      _drvDisp = new dispDrvThinkInkMonoBN(dc, rst, cs, sram_cs, busy);
+    } else if (is_213 && strcmp(msg->panel, "2.13-250x122-mono-bare") == 0) {
+      // TODO(verify on HIL): ADA6383 is the ZJY122250-0213BAAMFGN SSD1680Z
+      // panel; Adafruit_EPD labels ThinkInk_213_Grayscale4_MFGN as the
+      // SSD1680Z 2.13" panel, but it may also run as GDEY0213B74.
+      _drvDisp =
+          new dispDrvThinkInkGrayscale4MFGN213(dc, rst, cs, sram_cs, busy);
+    } else if (is_213) {
+      // Post-August-2024 2.13" mono (learn guide: GDEY0213B74)
+      _drvDisp = new dispDrvThinkInkMonoGDEY0213B74(dc, rst, cs, sram_cs, busy);
+    } else if (tricolor) {
+      _drvDisp = new dispDrvThinkInkTricolorZ94(dc, rst, cs, sram_cs, busy);
+    } else {
+      _drvDisp =
+          new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
+    }
+  } else if (strcmp(driver, "ILI0373") == 0 || strcmp(driver, "IL0373") == 0) {
+    if (is_154_152) {
+      _drvDisp = new dispDrvThinkInkTricolorZ17(dc, rst, cs, sram_cs, busy);
+    } else if (tricolor) {
+      _drvDisp = new dispDrvThinkInkTricolorZ10(dc, rst, cs, sram_cs, busy);
+    } else {
+      _drvDisp = new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+    }
+  } else if (strcmp(driver, "SSD1681") == 0) {
+    _drvDisp = new dispDrvThinkInkTricolorZ90(dc, rst, cs, sram_cs, busy);
+  } else if (strcmp(driver, "SSD1608") == 0) {
+    _drvDisp = new dispDrvThinkInkMonoD27(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "SSD1683") == 0) {
     _drvDisp = new dispDrvThinkInkGrayscale4MFGN(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "UC8179") == 0) {
@@ -477,7 +529,11 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
   } else if (strcmp(driver, "UC8253") == 0) {
     _drvDisp = new dispDrvThinkInkMonoBAAMFGN(dc, rst, cs, sram_cs, busy);
   } else if (strcmp(driver, "UC8151D") == 0 || strcmp(driver, "UC8151") == 0) {
-    _drvDisp = new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
+    if (tricolor) {
+      _drvDisp = new dispDrvThinkInkTricolorZ13(dc, rst, cs, sram_cs, busy);
+    } else {
+      _drvDisp = new dispDrvThinkInkMonoM06(dc, rst, cs, sram_cs, busy);
+    }
   } else {
     WS_DEBUG_PRINT("[display] ERROR: Unsupported EPD driver: ");
     WS_DEBUG_PRINTLNVAR(driver);
@@ -507,6 +563,8 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 
   _drvDisp->setWidth(config->properties.width);
   _drvDisp->setHeight(config->properties.height);
+  _drvDisp->setStatusBar(
+      statusBarEnabled(config->has_properties ? &config->properties : nullptr));
   if (config->properties.text_size > 0)
     _drvDisp->setTextSize(config->properties.text_size);
 
@@ -565,6 +623,7 @@ bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
   _drvDisp->setWidth(width);
   _drvDisp->setHeight(height);
   _drvDisp->setRotation(config->rotation);
+  _drvDisp->setStatusBar(statusBarEnabled(config));
   if (config->text_size > 0)
     _drvDisp->setTextSize(config->text_size);
 
@@ -701,6 +760,7 @@ bool DisplayHardware::beginI8080(ws_display_Add *msg) {
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
   _drvDisp->setRotation(config->rotation);
+  _drvDisp->setStatusBar(statusBarEnabled(config));
   if (config->text_size > 0)
     _drvDisp->setTextSize(config->text_size);
 
@@ -769,9 +829,17 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     drv = new dispDrvSsd1306(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "SH1107") == 0) {
     drv = new dispDrvSh1107(i2c, addr, 0, driverName, msg->panel);
+  } else if (strcasecmp(driverName, "SH1106") == 0) {
+    drv = new dispDrvSh1106(i2c, addr, 0, driverName, msg->panel);
+  } else if (strcasecmp(driverName, "SSD1305") == 0) {
+    drv = new dispDrvSsd1305(i2c, addr, 0, driverName, msg->panel);
+  } else if (strcasecmp(driverName, "SSD1327") == 0) {
+    drv = new dispDrvSsd1327(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "charlcd") == 0 ||
              strcasecmp(driverName, "MCP23008") == 0) {
     drv = new dispDrvCharLcd(i2c, addr, 0, driverName, msg->panel);
+  } else if (strcasecmp(driverName, "PCF8574") == 0) {
+    drv = new dispDrvCharLcdPcf8574(i2c, addr, 0, driverName, msg->panel);
   } else if (strcasecmp(driverName, "7seg") == 0 ||
              (strcasecmp(driverName, "HT16K33") == 0 &&
               strcasecmp(msg->panel, "4digit-7seg") == 0)) {
@@ -803,6 +871,8 @@ bool DisplayHardware::beginI2cDisplay(ws_display_Add *msg) {
     WS_DEBUG_PRINTLNVAR(cfg->height);
     drv->ConfigureSSD1306(cfg->width, cfg->height,
                           cfg->text_size > 0 ? cfg->text_size : 1);
+    drv->setRotation(cfg->rotation);
+    drv->setStatusBar(statusBarEnabled(cfg));
   } else if (config == ws_display_Add_config_char_lcd_tag) {
     ws_display_CharLcdConfig *cfg = &msg->config.config_char_lcd;
     drv->ConfigureCharLcd(cfg->rows, cfg->columns, true);
@@ -840,7 +910,7 @@ void DisplayHardware::showSplash() {
     @param  io_username  Adafruit IO username to display.
 */
 void DisplayHardware::drawStatusBar(const char *io_username) {
-  if (_drvDisp)
+  if (_drvDisp && _drvDisp->hasStatusBar())
     _drvDisp->drawStatusBar(io_username);
 }
 
@@ -852,7 +922,7 @@ void DisplayHardware::drawStatusBar(const char *io_username) {
 */
 void DisplayHardware::updateStatusBar(int8_t rssi, uint8_t bat,
                                       bool mqtt_connected) {
-  if (_drvDisp)
+  if (_drvDisp && _drvDisp->hasStatusBar())
     _drvDisp->updateStatusBar(rssi, bat, mqtt_connected);
 }
 
