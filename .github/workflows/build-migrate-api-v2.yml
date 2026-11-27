@@ -61,7 +61,9 @@ on:
         default: ""
 
 env:
-  CI_ARDUINO_REF: ci-wippersnapper
+  # TEMPORARY: adafruit/ci-arduino#255 (Feather ESP32-C6 -> huge_app); revert
+  # to ci-wippersnapper once it merges.
+  CI_ARDUINO_REF: ci-wippersnapper-c6-huge-app
 
 jobs:
   nanopb-warm:
@@ -924,6 +926,17 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: build SAMD platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+      # TEMPORARY (#1175 SAMD flash overflow): flash use per library from the
+      # linker map, which ld still writes when the link overflows. Remove
+      # before merge.
+      - name: "TEMP: flash use by library (linker map)"
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: |
+          map=$(ls -t examples/*/build/*/*.map ~/.cache/arduino/sketches/*/*.map /tmp/arduino/sketches/*/*.map 2>/dev/null | head -1)
+          if [ -z "$map" ]; then echo "no linker map found"; exit 0; fi
+          echo "map: $map"
+          python3 .github/scripts/map_sizes.py "$map" 60
       - name: Key core downloads by installed core versions
         id: core-key
         if: ${{ !cancelled() }}
