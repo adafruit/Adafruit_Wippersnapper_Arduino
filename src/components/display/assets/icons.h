@@ -72,4 +72,46 @@ const unsigned char epd_bmp_bat_full[] = {
     0xfa, 0xf0, 0x0b, 0xf0, 0x0b, 0xf0, 0x0b, 0xf0, 0x0b, 0xff, 0xfa,
     0xc0, 0x06, 0x7f, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
+/**
+ * @brief 8x8 WiFi signal icon, 4 bars (OLED status bar)
+ */
+const unsigned char oled_bmp_wifi_full[] = {0x03, 0x03, 0x0F, 0x0F,
+                                            0x3F, 0x3F, 0xFF, 0xFF};
+
+/**
+ * @brief 8x8 WiFi signal icon, 3 bars (OLED status bar)
+ */
+const unsigned char oled_bmp_wifi_fair[] = {0x00, 0x00, 0x0C, 0x0C,
+                                            0x3C, 0x3C, 0xFC, 0xFC};
+
+/**
+ * @brief 8x8 WiFi signal icon, 2 bars (OLED status bar)
+ */
+const unsigned char oled_bmp_wifi_weak[] = {0x00, 0x00, 0x00, 0x00,
+                                            0x30, 0x30, 0xF0, 0xF0};
+
+/**
+ * @brief 8x8 WiFi signal icon, no signal: 1 bar and a cross (OLED status bar)
+ */
+const unsigned char oled_bmp_wifi_no_signal[] = {0x05, 0x02, 0x05, 0x00,
+                                                 0x00, 0x00, 0xC0, 0xC0};
+
+/**
+ * @brief 8x8 cloud icon, filled: connected to Adafruit IO (OLED status bar)
+ */
+const unsigned char oled_bmp_cloud_online[] = {0x00, 0x18, 0x3C, 0x7E,
+                                               0xFF, 0xFF, 0x7E, 0x00};
+
+/**
+ * @brief 8x8 cloud icon, outline: disconnected (OLED status bar)
+ */
+const unsigned char oled_bmp_cloud_offline[] = {0x00, 0x18, 0x24, 0x42,
+                                                0x81, 0x81, 0x7E, 0x00};
+
+/**
+ * @brief 8x8 battery icon, full (OLED status bar)
+ */
+const unsigned char oled_bmp_bat_full[] = {0x00, 0xFE, 0xFF, 0xFF,
+                                           0xFF, 0xFF, 0xFE, 0x00};
+
 #endif // _ICONS_H_
