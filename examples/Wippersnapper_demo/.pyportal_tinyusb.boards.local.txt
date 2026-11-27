@@ -1,0 +1,9 @@
+# [DO NOT MERGE] CI experiment: link-time optimisation (LTO) for the pyportal_tinyusb target.
+# Board-level compiler.* keys override the Adafruit SAMD platform.txt defaults (which are empty).
+# -flto on C/C++ compiles, LTO + linker plugin at the final link (compiler.ldflags already passes
+# -mcpu/-mthumb and the board's CMSIS ldflags pass -mfloat-abi=hard -mfpu=fpv4-sp-d16), and
+# gcc-ar so the core.a archive keeps an LTO-aware symbol index.
+adafruit_pyportal_m4.compiler.c.extra_flags=-flto
+adafruit_pyportal_m4.compiler.cpp.extra_flags=-flto
+adafruit_pyportal_m4.compiler.c.elf.extra_flags=-flto -fuse-linker-plugin
+adafruit_pyportal_m4.compiler.ar.cmd=arm-none-eabi-gcc-ar
