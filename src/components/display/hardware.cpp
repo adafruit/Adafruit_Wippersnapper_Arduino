@@ -491,16 +491,17 @@ bool DisplayHardware::beginSpiEpd(ws_display_Add *msg) {
 }
 
 // ---------------------------------------------------------------------------
-// TTL RGB666 initialization (Qualia ESP32-S3)
+// TTL RGB666 initialization (Qualia ESP32-S3, ESP32-S31-Korvo-1)
 // ---------------------------------------------------------------------------
 /*!
-    @brief  Initializes a TTL RGB666 panel driver (Qualia ESP32-S3 only).
+    @brief  Initializes a TTL RGB dotclock panel driver on boards with fixed
+            panel wiring (Qualia ESP32-S3, ESP32-S31-Korvo-1).
     @param  msg  The Display Add message with RGB666 interface and config.
     @return True on success, False on failure or when unsupported on this
             board.
 */
 bool DisplayHardware::beginTtlRgb666(ws_display_Add *msg) {
-#ifdef ARDUINO_ADAFRUIT_QUALIA_S3_RGB666
+#if defined(ARDUINO_ADAFRUIT_QUALIA_S3_RGB666) || defined(WS_ESP32S31_KORVO_1)
   if (msg->which_config != ws_display_Add_config_display_tag) {
     WS_DEBUG_PRINTLN("[display] ERROR: Expected display config for RGB666!");
     return false;
