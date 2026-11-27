@@ -97,11 +97,6 @@ public:
   }
 
   /*!
-      @brief    Writes a message to the SSD1306 display.
-      @param    message
-                  The message to be displayed.
-  */
-  /*!
       @brief  Draws the compact status bar (username and icons).
       @param  io_username  Adafruit IO username to display.
   */
@@ -128,6 +123,11 @@ public:
       _display->display();
   }
 
+  /*!
+      @brief    Writes a message to the SSD1306 display.
+      @param    message
+                  The message to be displayed.
+  */
   void WriteMessage(const char *message) override {
     if (_display == nullptr)
       return;
